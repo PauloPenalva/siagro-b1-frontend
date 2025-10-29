@@ -34,6 +34,10 @@ export default class Add extends TabelaCustoBaseController {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }
+
+    if (!this.validateLineItems()) {
+      return; 
+    }
     
     const oModel = this.getView().getModel() as ODataModel;
 

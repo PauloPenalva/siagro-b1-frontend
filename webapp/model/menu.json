@@ -17,7 +17,7 @@
 			"title": "Armazenagem",
 			"icon": "sap-icon://employee",
 			"expanded": false,
-            "key": "root2",
+      "key": "root2",
 			"items": [
 				{
 					"title": "Produtos",

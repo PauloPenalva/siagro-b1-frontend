@@ -12,6 +12,7 @@ import "jquery";
 import models from "../../model/models";
 import { CaracteristcaQualidade } from "siagrob1/types/CaracteristcaQualidade";
 import { ServicoArmazenagem } from "siagrob1/types/ServicoArmazenagem";
+import Row from "sap/ui/table/Row";
 
 /**
  * @namespace siagrob1.controller.TabelaCusto
@@ -150,13 +151,122 @@ export default class TabelaCustoBaseController extends BaseController {
       }
     }
 
-    async formatDescricaoServico(sId: string): Promise<string> {
-      const oTable = <Table> this.byId("tableServicos");
-      if (sId) {
-        const sPath = `/odata/ServicosArmazem/${sId}`;
-        const sv = await models.requestModel(sPath, oTable) as ServicoArmazenagem;
-      
-        return sv.Descricao;
-      }
+  async formatDescricaoServico(sId: string): Promise<string> {
+    const oTable = <Table> this.byId("tableServicos");
+    if (sId) {
+      const sPath = `/odata/ServicosArmazem/${sId}`;
+      const sv = await models.requestModel(sPath, oTable) as ServicoArmazenagem;
+    
+      return sv.Descricao;
     }
+  }
+
+  public validateLineItems(){
+    if (!this.validateDescontosSecagem()) {
+      MessageBox.alert("Preencha corretamente os descontos de secagem.")
+      return false;
+    }
+    
+    if (!this.validateValoresSecagem()) {
+      MessageBox.alert("Preencha corretamente os custos de secagem.")
+      return false;
+    }
+
+    if (!this.validateQualidades()) {
+      MessageBox.alert("Preencha corretamente a(s) qualidade(s).")
+      return false;
+    }
+    
+    if (!this.validateServicos()) {
+      MessageBox.alert("Preencha corretamente o(s) serviço(s).")
+      return false;
+    }
+
+    return true;
+  }
+
+  private validateDescontosSecagem() {
+    const oTable = <Table> this.byId("tableDescontoSecagem");
+    let bValid = true;
+    
+    oTable.getRows().forEach((oRow)=>{
+      if (oRow instanceof Row) {
+        const oContext = oRow.getBindingContext() as Context;
+        if (oContext) {
+          const nUmidadeDe = <number> oContext.getProperty("UmidadeDe");
+          const nUmidadeAte = <number> oContext.getProperty("UmidadeAte");
+          const nPercentualDesconto = <number> oContext.getProperty("PercentualDesconto");
+          if (nUmidadeDe == null || nUmidadeAte == null || nPercentualDesconto == null) {
+               bValid = false;
+          }
+        }
+      }
+    });
+
+    return bValid;
+  }
+
+  private validateValoresSecagem() {
+    const oTable = <Table> this.byId("tableValorSecagem");
+    let bValid = true;
+    
+    oTable.getRows().forEach((oRow)=>{
+      if (oRow instanceof Row) {
+        const oContext = oRow.getBindingContext() as Context;
+        if (oContext) {
+          const nUmidadeDe = <number> oContext.getProperty("UmidadeDe");
+          const nUmidadeAte = <number> oContext.getProperty("UmidadeAte");
+          const nValorCobranca = <number> oContext.getProperty("ValorCobranca");
+          if (nUmidadeDe == null || nUmidadeAte == null || nValorCobranca == null) {
+               bValid = false;
+          }
+        }
+      }
+    });
+
+    return bValid;
+  }
+
+  private validateQualidades() {
+    const oTable = <Table> this.byId("tableQualidade");
+    let bValid = true;
+    
+    oTable.getRows().forEach((oRow)=>{
+      if (oRow instanceof Row) {
+        const oContext = oRow.getBindingContext() as Context;
+        if (oContext) {
+          const sId = <string> oContext.getProperty("CaracteristicaQualidadeId");
+          const nTolerancia = <number> oContext.getProperty("Tolerancia");
+          const nDesconto = <number> oContext.getProperty("Desconto");
+          if (sId == null || nTolerancia == null || nDesconto == null) {
+               bValid = false;
+          }
+        }
+      }
+    });
+
+    return bValid;
+  }
+
+  private validateServicos() {
+    const oTable = <Table> this.byId("tableServicos");
+    let bValid = true;
+    
+    oTable.getRows().forEach((oRow)=>{
+      if (oRow instanceof Row) {
+        const oContext = oRow.getBindingContext() as Context;
+        if (oContext) {
+          const sId = <string> oContext.getProperty("ServicoId");
+          const nTolerancia = <number> oContext.getProperty("Valor");
+          const sPontoExecucao = <string> oContext.getProperty("PontoExecucao");
+          if (sId == null || nTolerancia == null || sPontoExecucao == null) {
+               bValid = false;
+          }
+        }
+      }
+    });
+
+    return bValid;
+  }
+
 }
