@@ -210,8 +210,7 @@ export default abstract class BaseController extends Controller {
 
   getSelectRowContext(oTable: Table): Context {
     const iRowSelected = oTable.getSelectedIndex();
-
-		if (iRowSelected > 0)  {
+		if (iRowSelected < 0)  {
 			return;
 		}
 
