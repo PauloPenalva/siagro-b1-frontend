@@ -1,0 +1,168 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+    <f:SimpleForm
+        id="formTabelaCusto"
+        editable="true"
+        layout="ResponsiveGridLayout"
+        labelSpanXL="4"
+        labelSpanL="4"
+        labelSpanM="4"
+        labelSpanS="12"
+        adjustLabelSpan="false"
+        emptySpanXL="0"
+        emptySpanL="0"
+        emptySpanM="0"
+        emptySpanS="0"
+        columnsXL="3"
+        columnsL="2"
+        columnsM="2"
+        singleContainerFullSize="true"
+		busyIndicatorDelay="0"
+    >
+        <f:content>
+            <core:Title
+                text="Dados da Tabela de Custos"
+                emphasized="true"
+            />
+            <Label text="Codigo" />
+            <Input
+                value="{Id}"
+                editable="false"
+            />
+            <Label text="Descricao" />
+            <Input
+                value="{Descricao}"
+                editable="true"
+                required="true"
+                liveChange=".validateField"
+            />
+            <Label text="Taxa Armazenagem" />
+            <Input
+                required="true"
+                value="{
+                  path: 'TaxaArmazenagem',
+                  type: 'sap.ui.model.odata.type.Double',
+                  formatOptions: {
+                      decimals: 6,
+                      decimalSeparator: ',',
+                      groupingEnabled: true,
+                      groupingSeparator: '.'
+                  }
+                }"
+                editable="true"
+                liveChange=".validateField"
+            />
+            <Label text="Carencia Armazenagem" />
+            <Input
+                required="true"
+                value="{
+                    path: 'CarenciaArmazenagem',
+                    type: 'sap.ui.model.odata.type.Int32',
+                    formatOptions: {
+                        groupingEnabled: true,
+                        groupingSeparator: '.'
+                    }
+                }"
+                editable="true"
+                liveChange=".validateField"
+            />
+            <Label text="Vencimento Armazenagem" />
+            <Input
+                required="true"
+                value="{
+                  path: 'VencimentoArmazenagem',
+                  type: 'sap.ui.model.odata.type.Int32',
+                  formatOptions: {
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                  }
+                }"
+                editable="true"
+                liveChange=".validateField"
+            />
+
+            <core:Title />
+            <Label text="Taxa Expurgo" />
+            <Input
+                required="true"
+                value="{
+                  path: 'TaxaExpurgo',
+                  type: 'sap.ui.model.odata.type.Double',
+                  formatOptions: {
+                    decimals: 6,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                  }
+                }"
+                editable="true"
+                liveChange=".validateField"
+            />
+            <Label text="Vencimento Expurgo" />
+            <Input
+                required="true"
+                value="{
+                  path: 'VencimentoExpurgo',
+                  type: 'sap.ui.model.odata.type.Int32',
+                  formatOptions: {
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                  }
+                }"
+                editable="true"
+                liveChange=".validateField"
+            />
+            <Label text="Carencia Quebra Técnica" />
+            <Input
+                required="true"
+                value="{
+                  path: 'CarenciaQuebraTecnica',
+                  type: 'sap.ui.model.odata.type.Int32',
+                  formatOptions: {
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                  }
+                }"
+                editable="true"
+                liveChange=".validateField"
+            />
+            <Label text="Vencimento Quebra Técnica" />
+            <Input
+                required="true"
+                value="{
+                  path: 'VencimentoQuebraTecnica',
+                  type: 'sap.ui.model.odata.type.Int32',
+                  formatOptions: {
+                      groupingEnabled: true,
+                      groupingSeparator: '.'
+                  }
+                }"
+                editable="true"
+                liveChange=".validateField"
+            />
+
+            <Label text="Taxa Quebra Técnica" />
+            <Input
+                required="true"
+                value="{
+                  path: 'TaxaQuebraTecnica',
+                  type: 'sap.ui.model.odata.type.Double',
+                  formatOptions: {
+                    decimals: 6,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                  }
+                }"
+                editable="true"
+                liveChange=".validateField"
+            />
+            <core:Title />
+        </f:content>
+    </f:SimpleForm>
+</core:FragmentDefinition>

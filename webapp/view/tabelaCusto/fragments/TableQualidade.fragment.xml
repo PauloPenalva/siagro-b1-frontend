@@ -1,0 +1,92 @@
+<core:FragmentDefinition
+   	xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+   	xmlns:core="sap.ui.core">
+
+		<t:Table
+				class="sapUiSizeCondensed"
+				id="tableQualidade"
+				alternateRowColors="true"
+				enableBusyIndicator="true"
+				enableSelectAll="false"
+				selectionBehavior="Row"
+				selectionMode="Single"
+				visibleRowCount="15"
+				visibleRowCountMode="Fixed"
+				busyIndicatorDelay="0"
+				rows="{Qualidades}"
+				visible="true">
+				<t:extension>
+					<OverflowToolbar >
+						<content>
+							<Title text="Qualidade"/>
+							<ToolbarSpacer />
+							<Button text="Incluir" type="Emphasized" icon="sap-icon://add" press=".onAddQualidade" />
+							<Button text="Remover" icon="sap-icon://delete" press=".onRemoveQualidade" />
+						</content>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column
+						label="Codigo"
+						width="10rem"
+						>
+						<t:template>
+							<Input 
+								value="{CaracteristicaQualidadeId}"
+								showValueHelp="true" 
+								valueHelpOnly="true"
+								valueHelpRequest=".cqValueHelpRequest"/>
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Descrição"
+						width="20rem"
+						>
+						<t:template>
+							<Text 
+								text="{ 
+									parts: ['CaracteristicaQualidadeId'], 	
+									formatter: '.formatDescricaoCaracteristica'
+								}"
+							/>	
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Tolerancia %"
+						width="10rem"
+						>
+						<t:template>
+							<Input value="{
+								path: 'Tolerancia',
+								type: 'sap.ui.model.odata.type.Double',
+								formatOptions: {
+									decimals: 8,
+									decimalSeparator: ',',
+									groupingEnabled: true,
+									groupingSeparator: '.'
+								}
+							}" />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Desconto %"
+						width="10rem"
+						>
+						<t:template>
+							<Input value="{
+								path: 'Desconto',
+								type: 'sap.ui.model.odata.type.Double',
+								formatOptions: {
+										decimals: 8,
+										decimalSeparator: ',',
+										groupingEnabled: true,
+										groupingSeparator: '.'}
+								}" />
+						</t:template>
+					</t:Column>
+				</t:columns>
+		</t:Table>
+</core:FragmentDefinition>

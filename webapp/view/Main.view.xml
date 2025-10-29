@@ -1,0 +1,21 @@
+<mvc:View
+	controllerName="siagrob1.controller.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<Page
+		showHeader="false"
+		title="{i18n>appTitle}"
+		id="page">
+		<content>
+			
+		</content>
+	</Page>
+
+</mvc:View>

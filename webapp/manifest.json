@@ -1,0 +1,163 @@
+{
+	"_version": "1.21.0",
+
+	"sap.app": {
+		"id": "siagrob1",
+		"type": "application",
+		"i18n": "i18n/i18n.properties",
+		"title": "{{appTitle}}",
+		"description": "{{appDescription}}",
+		"applicationVersion": {
+			"version": "${version}"
+		},
+		"sourceTemplate": {
+			"id": "generator-ui5-ts-app",
+			"version": "1.1.0"
+		},
+		"dataSources": {
+			"mainService": {
+				"uri": "/odata/",
+				"type": "OData",
+				"settings": {
+				"odataVersion": "4.0"
+				}
+			}
+		}
+	},
+
+	"sap.ui": {
+		"technology": "UI5",
+		"icons": {},
+		"deviceTypes": {
+			"desktop": true,
+			"tablet": true,
+			"phone": true
+		}
+	},
+
+	"sap.ui5": {
+		"rootView": {
+			"viewName": "siagrob1.view.App",
+			"type": "XML",
+			"id": "app"
+		},
+
+		"dependencies": {
+			"minUI5Version": "1.141.0",
+			"libs": {
+				"sap.ui.core": {},
+				"sap.m": {}
+			}
+		},
+
+		"handleValidation": true,
+
+		"contentDensities": {
+			"compact": true,
+			"cozy": true
+		},
+
+		"models": {
+			"i18n": {
+				"type": "sap.ui.model.resource.ResourceModel",
+				"settings": {
+					"bundleName": "siagrob1.i18n.i18n",
+					"supportedLocales": ["en", "de"],
+					"fallbackLocale": "en",
+					"async": true
+				}
+			},
+			"": {
+				"type": "sap.ui.model.odata.v4.ODataModel",
+				"dataSource": "mainService",
+				"preload": true,
+				"settings": {
+					"operationMode": "Server",
+					"synchronizationMode": "None",
+					"autoExpandSelect": true,
+					"earlyRequests": false,
+					"updateGroupId" : "UpdateGroup",
+					"groupId": "$auto",
+								"httpHeaders": {
+
+					}
+				}
+			},
+			"ui": {
+				"type": "sap.ui.model.json.JSONModel",
+				"settings": {}
+			}
+		},
+
+		"routing": {
+			"config": {
+				"bypassed": {
+					"target": "notFound"
+				},
+				"routerClass": "sap.m.routing.Router",
+				"type": "View",
+				"viewType": "XML",
+				"controlId": "app",
+				"controlAggregation": "pages"
+			},
+			"routes": [
+				{
+					"pattern": "",
+					"name": "main",
+					"target": "main"
+				},
+				{
+					"pattern": "parceirosNegocio",
+					"name": "parceirosNegocio",
+					"target": "parceirosNegocio"
+				},
+				{
+					"pattern": "tabelaCusto",
+					"name": "tabelaCusto",
+					"target": "tabelaCusto"
+				},
+				{
+					"pattern": "tabelaCustoNew",
+					"name": "tabelaCustoNew",
+					"target": "tabelaCustoNew"
+				},
+				{
+					"pattern": "tabelaCustoEdit/{id}",
+					"name": "tabelaCustoEdit",
+					"target": "tabelaCustoEdit"
+				}
+			],
+			"targets": {
+				"notFound" : {
+					"id" : "notFound",
+					"name" : "siagrob1.view.NotFound",
+					"transition" : "show"
+				},
+				"main": {
+					"id": "main",
+					"name": "siagrob1.view.Main"
+				},
+				"parceirosNegocio": {
+					"id": "ParceirosNegocio",
+          "level": 2,
+					"name": "siagrob1.view.parceirosNegocio.Main"
+				},
+				"tabelaCusto": {
+					"id": "tabelaCusto",
+          "level": 2,
+					"name": "siagrob1.view.tabelaCusto.Main"
+				},
+				"tabelaCustoNew": {
+					"id": "tabelaCustoNew",
+          "level": 2,
+					"name": "siagrob1.view.tabelaCusto.Add"
+				},
+				"tabelaCustoEdit": {
+					"id": "tabelaCustoEdit",
+          "level": 2,
+					"name": "siagrob1.view.tabelaCusto.Edit"
+				}
+			}
+		}
+	}
+}

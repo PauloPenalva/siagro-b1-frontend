@@ -1,0 +1,90 @@
+<core:FragmentDefinition
+   	xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+   	xmlns:core="sap.ui.core">
+
+		<t:Table
+				class="sapUiSizeCondensed"
+				id="tableServicos"
+				alternateRowColors="true"
+				enableBusyIndicator="true"
+				enableSelectAll="false"
+				selectionBehavior="Row"
+				selectionMode="Single"
+				visibleRowCount="15"
+				visibleRowCountMode="Fixed"
+				busyIndicatorDelay="0"
+				rows="{Servicos}"
+				visible="true">
+				<t:extension>
+					<OverflowToolbar >
+						<content>
+							<Title text="Serviços"/>
+							<ToolbarSpacer />
+							<Button text="Incluir" type="Emphasized" icon="sap-icon://add" press=".onAddServicos" />
+							<Button text="Remover" icon="sap-icon://delete" press=".onRemoveServicos" />
+						</content>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column
+						label="Codigo"
+						width="10rem"
+						>
+						<t:template>
+							<Input 
+								value="{ServicoId}" 
+								showValueHelp="true" 
+								valueHelpOnly="true" 
+								valueHelpRequest="servicoValueHelpRequest"
+							/>
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Descrição"
+						width="20rem"
+						>
+						<t:template>
+							<Text 
+								text="{ 
+									parts:['ServicoId'], 
+									formatter:'.formatDescricaoServico'
+								}" 
+							/>
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Valor R$"
+						width="10rem"
+						>
+						<t:template>
+							<Input value="{
+								path: 'Valor',
+								type: 'sap.ui.model.odata.type.Double',
+								formatOptions: {
+										decimals: 8,
+										decimalSeparator: ',',
+										groupingEnabled: true,
+										groupingSeparator: '.'}
+							}" />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Ponto Execução"
+						width="10rem"
+						>
+						<t:template>
+							<Select selectedKey="{PontoExecucao}" forceSelection="false" >
+                <core:ListItem key="ENTRADA" text="ENTRADA"></core:ListItem>
+                <core:ListItem key="SAIDA" text="SAIDA"></core:ListItem>
+                <!-- <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+                </layoutData> -->
+              </Select>
+						</t:template>
+					</t:Column>
+				</t:columns>
+		</t:Table>
+</core:FragmentDefinition>
