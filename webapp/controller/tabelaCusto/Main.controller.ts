@@ -7,9 +7,10 @@ import Table from "sap/ui/table/Table";
 import MessageBox from "sap/m/MessageBox";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import Context from "sap/ui/model/odata/v4/Context";
 
 /**
- * @namespace siagrob1.controller.TabelaCusto
+ * @namespace siagrob1.controller.tabelaCusto
  */
 export default class Main extends BaseController {
 
@@ -43,12 +44,14 @@ export default class Main extends BaseController {
 
 	onEdit(): void {
 		const oTable = this.byId("tabelaCustoTable") as Table;
-    const oContext = this.getSelectRowContext(oTable);
-		
-		if (!oContext) {
-			MessageBox.alert("Selecione um item para editar.");
+    const i = oTable.getSelectedIndex();
+
+    if (i < 0) {
+      MessageBox.alert("Selecione um item para editar.");
 			return;
-		}
+    }
+    
+    const oContext = oTable.getContextByIndex(i);
     
 		const sId = oContext.getProperty("Id") as string;
 		this.navTo("tabelaCustoEdit", {id: sId});
@@ -57,12 +60,14 @@ export default class Main extends BaseController {
 	async onDelete() {
 		const oModel = this.getView().getModel() as ODataModel;
 		const oTable = this.byId("tabelaCustoTable") as Table;
-		const oBindingContext = this.getSelectRowContext(oTable);
+		const i = oTable.getSelectedIndex();
 
-		if (!oBindingContext)  {
-			MessageBox.alert("Selecione um item para editar.");
+    if (i < 0) {
+      MessageBox.alert("Selecione um item para deletar.");
 			return;
-		}
+    }
+
+		const oBindingContext = oTable.getContextByIndex(i) as Context;
 
 		if (await confirmDialog("Deseja realmente deletar este registro ?","Deletar registro ?")) {
 			try{

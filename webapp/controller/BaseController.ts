@@ -186,15 +186,16 @@ export default abstract class BaseController extends Controller {
       }
     }
 
-    if (oControl instanceof DatePicker && oControl.getRequired()){
-      const sValue = oControl.getDateValue();
-      if (!sValue) {
-        oControl.setValueState(ValueState.Error);
-        oControl.setValueStateText("Campo obrigatório.");
-      } else {
-        oControl.setValueState(ValueState.None);
-      }
-    }
+    // if (oControl instanceof DatePicker && oControl.getRequired()){
+    //   const sValue = oControl.getLastValue();
+    //   console.log(sValue);
+    //   if (!sValue) {
+    //     oControl.setValueState(ValueState.Error);
+    //     oControl.setValueStateText("Campo obrigatório.");
+    //   } else {
+    //     oControl.setValueState(ValueState.None);
+    //   }
+    // }
   }
     
   public clearStates(sFormId: string) {
@@ -214,7 +215,6 @@ export default abstract class BaseController extends Controller {
 			return;
 		}
 
-		const oSelectedItem = oTable.getRows()[iRowSelected]
-		return oSelectedItem.getBindingContext() as Context;
+    return oTable.getContextByIndex(iRowSelected) as Context;
   }
 }

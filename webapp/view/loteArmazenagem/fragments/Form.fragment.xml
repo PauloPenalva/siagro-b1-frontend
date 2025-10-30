@@ -42,11 +42,16 @@
             />
             <Label text="Data" />
             <DatePicker
-                value="{DataLote}"
+                value="{
+                  path: 'DataLote',
+                  type: 'sap.ui.model.odata.type.Date',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
                 editable="true"
                 required="true"
                 liveChange=".validateField"
-                displayFormat="dd.MM.yyyy"
                 valueFormat="yyyy-MM-dd"
             />
             <Label text="Descricao" />
