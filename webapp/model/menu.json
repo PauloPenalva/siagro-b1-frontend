@@ -12,6 +12,14 @@
 					"key": "parceirosNegocio"
 				},
         {
+					"title": "Produtos",
+					"key": "produtos"
+				},
+        {
+					"title": "Safras",
+					"key": "safras"
+				},
+        {
 					"title": "Armazéns",
 					"key": "armazens"
 				}
@@ -24,12 +32,12 @@
       "key": "root2",
 			"items": [
 				{
-					"title": "Produtos",
-					"key": "produtos"
-				},
-				{
 					"title": "Tabela de Custos",
 					"key": "tabelaCusto"
+				},
+				{
+					"title": "Lotes de Armazenagem",
+					"key": "lotesArmazenagem"
 				}
 			]
 		}

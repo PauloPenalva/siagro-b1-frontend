@@ -1,0 +1,259 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+    <f:SimpleForm
+      id="formLoteArmazenagem"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0"
+    >
+        <f:content>
+            <core:Title
+                text="Dados do Lote de Armazenagem"
+                emphasized="true"
+            />
+            <Label text="Codigo" />
+            <Input
+                value="{
+                  path: 'Id',
+                  type: 'sap.ui.model.odata.type.Int32',
+                  formatOptions: {
+                    groupingEnabled: false
+                  }
+                }"
+                editable="false"
+            />
+            <Label text="Data" />
+            <DatePicker
+                value="{DataLote}"
+                editable="true"
+                required="true"
+                liveChange=".validateField"
+                displayFormat="dd.MM.yyyy"
+                valueFormat="yyyy-MM-dd"
+            />
+            <Label text="Descricao" />
+            <Input
+                value="{Descricao}"
+                editable="true"
+                required="true"
+                liveChange=".validateField"
+            />
+            <Label text="Produto" />
+            <Input 
+								required="true"
+                value="{
+                  path: 'ProdutoId',
+                  type: 'sap.ui.model.odata.type.Int32',
+                  formatOptions: {
+                    groupingEnabled: false
+                  }
+                }" 
+								showValueHelp="true" 
+								valueHelpOnly="true" 
+								valueHelpRequest=".produtoValueHelpRequest">
+              <layoutData>
+                  <l:GridData span="XL2 L2 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+								value="{
+                  parts:[{ 
+                    path: 'ProdutoId',
+                    type: 'sap.ui.model.odata.type.Int32',
+                    formatOptions: {
+                      groupingEnabled: false
+                    }
+                  }],
+                  formatter: '.formatProdutoDescricao'
+                }" 
+								editable="false"/>
+            <Label text="Cliente" />
+            <Input 
+								required="true"
+                value="{
+                  path: 'ParceiroNegocioId',
+                  type: 'sap.ui.model.odata.type.Int32',
+                  formatOptions: {
+                    groupingEnabled: false
+                  }
+                }" 
+								showValueHelp="true" 
+								valueHelpOnly="true" 
+								valueHelpRequest=".bpValueHelpRequest">
+              <layoutData>
+                  <l:GridData span="XL2 L2 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+								value="{
+                  parts:[{ 
+                    path: 'ParceiroNegocioId',
+                    type: 'sap.ui.model.odata.type.Int32',
+                    formatOptions: {
+                      groupingEnabled: false
+                    }
+                  }],
+                  formatter: '.formatRazaoSocialBP'
+                }" 
+								editable="false"/>
+            <Label text="Cobrança" />
+            <Input 
+								required="true"
+                value="{
+                  path: 'ParceiroNegocioCobrancaId',
+                  type: 'sap.ui.model.odata.type.Int32',
+                  formatOptions: {
+                    groupingEnabled: false
+                  }
+                }" 
+								showValueHelp="true" 
+								valueHelpOnly="true" 
+								valueHelpRequest=".bpValueHelpRequest">
+              <layoutData>
+                  <l:GridData span="XL2 L2 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+								value="{
+                  parts:[{ 
+                    path: 'ParceiroNegocioCobrancaId',
+                    type: 'sap.ui.model.odata.type.Int32',
+                    formatOptions: {
+                      groupingEnabled: false
+                    }
+                  }],
+                  formatter: '.formatRazaoSocialBP'
+                }" 
+								editable="false"/>
+            <Label text="Faturamento" />
+            <Input 
+								required="true"
+                value="{
+                  path: 'ParceiroNegocioFaturamentoId',
+                  type: 'sap.ui.model.odata.type.Int32',
+                  formatOptions: {
+                    groupingEnabled: false
+                  }
+                }" 
+								showValueHelp="true" 
+								valueHelpOnly="true" 
+								valueHelpRequest=".bpValueHelpRequest">
+              <layoutData>
+                  <l:GridData span="XL2 L2 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+								value="{
+                  parts:[{ 
+                    path: 'ParceiroNegocioFaturamentoId',
+                    type: 'sap.ui.model.odata.type.Int32',
+                    formatOptions: {
+                      groupingEnabled: false
+                    }
+                  }],
+                  formatter: '.formatRazaoSocialBP'
+                }" 
+								editable="false"/>
+            <core:Title />
+            <Label text="Armazém" />
+            <Input 
+								required="true"
+                value="{
+                  path: 'ArmazemId',
+                  type: 'sap.ui.model.odata.type.Int32',
+                  formatOptions: {
+                    groupingEnabled: false
+                  }
+                }" 
+								showValueHelp="true" 
+								valueHelpOnly="true" 
+								valueHelpRequest=".armazemValueHelpRequest">
+              <layoutData>
+                  <l:GridData span="XL2 L2 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+								value="{
+                  parts:[{ 
+                    path: 'ArmazemId',
+                    type: 'sap.ui.model.odata.type.Int32',
+                    formatOptions: {
+                      groupingEnabled: false
+                    }
+                  }],
+                  formatter: '.formatArmazemDescricao'
+                }" 
+								editable="false"/>
+            <Label text="Tabela de Custos" />
+            <Input 
+								required="true"
+                value="{
+                  path: 'TabelaCustoId',
+                  type: 'sap.ui.model.odata.type.Int32',
+                  formatOptions: {
+                    groupingEnabled: false
+                  }
+                }" 
+								showValueHelp="true" 
+								valueHelpOnly="true" 
+								valueHelpRequest=".tabelaCustoValueHelpRequest">
+              <layoutData>
+                  <l:GridData span="XL2 L2 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+								value="{
+                  parts:[{ 
+                    path: 'TabelaCustoId',
+                    type: 'sap.ui.model.odata.type.Int32',
+                    formatOptions: {
+                      groupingEnabled: false
+                    }
+                  }],
+                  formatter: '.formatTabelaCustoDescricao'
+                }" 
+								editable="false"/>
+            <Label text="Saldo" />
+            <Input
+                value="{ 
+                  path: 'Saldo', 
+                  type: 'sap.ui.model.odata.type.Double',
+                    formatOptions: {
+                      decimals: 3,
+                      decimalSeparator: ',',
+                      groupingEnabled: true,
+                      groupingSeparator: '.'
+                    }
+                }"
+                editable="false"
+            />
+            <Label text="Encerrado ?" />
+            <CheckBox
+                selected="{
+                  path: 'Encerrado',
+                  type: 'sap.ui.model.odata.type.Boolean'
+                }"
+                editable="true"
+            />
+        </f:content>
+        <core:Title />
+    </f:SimpleForm>
+</core:FragmentDefinition>

@@ -154,45 +154,45 @@ export default abstract class BaseController extends Controller {
     return bValid;
   }
 
-  validateField(ev: Input$LiveChangeEvent) {
+  validateField(ev: Input$LiveChangeEvent ) {
     const oControl = ev.getSource();
     if (oControl instanceof Input && oControl.getRequired()){
-      const sValue = ev.getSource().getValue().trim();
+      const sValue = oControl.getValue().trim();
       if (!sValue) {
-        ev.getSource().setValueState(ValueState.Error);
-        ev.getSource().setValueStateText("Campo obrigatório.");
+        oControl.setValueState(ValueState.Error);
+        oControl.setValueStateText("Campo obrigatório.");
       } else {
-        ev.getSource().setValueState(ValueState.None);
+        oControl.setValueState(ValueState.None);
       }
     }
 
     if (oControl instanceof Select && oControl.getRequired()) {
       const sKey = oControl.getSelectedKey();
       if (!sKey) {
-        ev.getSource().setValueState(ValueState.Error);
-        ev.getSource().setValueStateText("Campo obrigatório.");
+        oControl.setValueState(ValueState.Error);
+        oControl.setValueStateText("Campo obrigatório.");
       } else {
-        ev.getSource().setValueState(ValueState.None);
+        oControl.setValueState(ValueState.None);
       }
     }
 
     if (oControl instanceof ComboBox && oControl.getRequired()){
-      const sValue = ev.getSource().getValue().trim();
+      const sValue = oControl.getValue().trim();
       if (!sValue) {
-        ev.getSource().setValueState(ValueState.Error);
-        ev.getSource().setValueStateText("Campo obrigatório.");
+        oControl.setValueState(ValueState.Error);
+        oControl.setValueStateText("Campo obrigatório.");
       } else {
-        ev.getSource().setValueState(ValueState.None);
+        oControl.setValueState(ValueState.None);
       }
     }
 
     if (oControl instanceof DatePicker && oControl.getRequired()){
-      const sValue = ev.getSource().getValue().trim();
+      const sValue = oControl.getDateValue();
       if (!sValue) {
-        ev.getSource().setValueState(ValueState.Error);
-        ev.getSource().setValueStateText("Campo obrigatório.");
+        oControl.setValueState(ValueState.Error);
+        oControl.setValueStateText("Campo obrigatório.");
       } else {
-        ev.getSource().setValueState(ValueState.None);
+        oControl.setValueState(ValueState.None);
       }
     }
   }

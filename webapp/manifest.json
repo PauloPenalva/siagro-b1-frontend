@@ -140,6 +140,36 @@
           "pattern": "armazensEdit/{id}",
           "name": "armazensEdit",
           "target": "armazensEdit"
+        },
+        {
+          "pattern": "lotesArmazenagem",
+          "name": "lotesArmazenagem",
+          "target": "lotesArmazenagem"
+        },
+        {
+          "pattern": "lotesArmazenagemNew",
+          "name": "lotesArmazenagemNew",
+          "target": "lotesArmazenagemNew"
+        },
+        {
+          "pattern": "lotesArmazenagemEdit/{id}",
+          "name": "lotesArmazenagemEdit",
+          "target": "lotesArmazenagemEdit"
+        },
+        {
+          "pattern": "safras",
+          "name": "safras",
+          "target": "safras"
+        },
+        {
+          "pattern": "safrasNew",
+          "name": "safrasNew",
+          "target": "safrasNew"
+        },
+        {
+          "pattern": "safrasEdit/{id}",
+          "name": "safrasEdit",
+          "target": "safrasEdit"
         }
 			],
 			"targets": {
@@ -186,6 +216,32 @@
 					"id": "armazensEdit",
           "level": 2,
 					"name": "siagrob1.view.armazem.Edit"
+				},
+        "lotesArmazenagem": {
+					"id": "lotesArmazenagem",
+          "level": 2,
+					"name": "siagrob1.view.loteArmazenagem.Main"
+				},"lotesArmazenagemNew": {
+					"id": "lotesArmazenagemNew",
+          "level": 2,
+					"name": "siagrob1.view.loteArmazenagem.Add"
+				},"lotesArmazenagemEdit": {
+					"id": "lotesArmazenagemEdit",
+          "level": 2,
+					"name": "siagrob1.view.loteArmazenagem.Edit"
+				},
+        "safras": {
+					"id": "safras",
+          "level": 2,
+					"name": "siagrob1.view.safra.Main"
+				},"safrasNew": {
+					"id": "safrasNew",
+          "level": 2,
+					"name": "siagrob1.view.safra.Add"
+				},"safrasEdit": {
+					"id": "safrasEdit",
+          "level": 2,
+					"name": "siagrob1.view.safra.Edit"
 				}
 			}
 		}

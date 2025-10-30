@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.armazem.Edit"
+	controllerName="siagrob1.controller.safra.Add"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -13,12 +13,9 @@
 	<Page
 		showHeader="true"
 		title="Safra"
-		id="armazemEdit"
-		busy="{ui>/busy}">
+		id="safraAdd">
 		<content>
-
-			<core:Fragment fragmentName="siagrob1.view.armazem.fragments.Form" type="XML" />
-
+			<core:Fragment fragmentName="siagrob1.view.safra.fragments.Form" type="XML" />
 		</content>
 		<footer>
 			<Toolbar>
