@@ -9,12 +9,12 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 
 /**
- * @namespace siagrob1.controller.TabelaCusto
+ * @namespace siagrob1.controller.armazem
  */
 export default class Main extends BaseController {
 
 	onInit(): void | undefined {
-		this.getRouter().getRoute("tabelaCusto").attachPatternMatched(() => this.routeMatched())
+		this.getRouter().getRoute("armazens").attachPatternMatched(() => this.routeMatched())
 	}
 
 	private routeMatched() {
@@ -22,7 +22,7 @@ export default class Main extends BaseController {
 	}
 
 	onRefresh(): void | undefined {
-		(this.getView().byId("tabelaCustoTable").getBinding("rows") as ODataListBinding).refresh();
+		(this.getView().byId("tableArmazens").getBinding("rows") as ODataListBinding).refresh();
 	}
 
 	onSearch(ev: SearchField$SearchEvent): void | undefined {
@@ -34,15 +34,15 @@ export default class Main extends BaseController {
 			and: false,
 		});
 
-		(this.getView().byId("tabelaCustoTable").getBinding("rows") as ODataListBinding).filter([oFilters]);
+		(this.getView().byId("tableArmazens").getBinding("rows") as ODataListBinding).filter([oFilters]);
 	}
 
 	onCreate() {
-			this.navTo("tabelaCustoNew");
+			this.navTo("armazensNew");
 	}
 
 	onEdit(): void {
-		const oTable = this.byId("tabelaCustoTable") as Table;
+		const oTable = this.byId("tableArmazens") as Table;
     const oContext = this.getSelectRowContext(oTable);
 		
 		if (!oContext) {
@@ -51,12 +51,12 @@ export default class Main extends BaseController {
 		}
     
 		const sId = oContext.getProperty("Id") as string;
-		this.navTo("tabelaCustoEdit", {id: sId});
+		this.navTo("armazensEdit", {id: sId});
 	}
 
 	async onDelete() {
 		const oModel = this.getView().getModel() as ODataModel;
-		const oTable = this.byId("tabelaCustoTable") as Table;
+		const oTable = this.byId("tableArmazens") as Table;
 		const oBindingContext = this.getSelectRowContext(oTable);
 
 		if (!oBindingContext)  {
@@ -64,7 +64,7 @@ export default class Main extends BaseController {
 			return;
 		}
 
-		if (await confirmDialog("Deseja realmente deletar este registro ?","Deletar registro ?")) {
+		if (await confirmDialog("Deseja realmente deletar este registro ?", "Deletar registro ?")) {
 			try{
 				this.setBusy(true)
 	

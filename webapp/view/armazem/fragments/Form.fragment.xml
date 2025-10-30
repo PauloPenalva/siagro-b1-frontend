@@ -1,0 +1,56 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+    <f:SimpleForm
+      id="formArmazem"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0"
+    >
+        <f:content>
+            <core:Title
+                text="Dados do Armazém"
+                emphasized="true"
+            />
+            <Label text="Codigo" />
+            <Input
+                value="{Id}"
+                editable="false"
+            />
+            <Label text="Descricao" />
+            <Input
+                value="{Descricao}"
+                editable="true"
+                required="true"
+                liveChange=".validateField"
+            />
+            <Label text="Inativo ?" />
+            <CheckBox
+                selected="{
+                  path: 'Inativo',
+                  type: 'sap.ui.model.odata.type.Boolean'
+                }"
+                editable="true"
+            />
+        </f:content>
+        <core:Title />
+        <core:Title />
+    </f:SimpleForm>
+</core:FragmentDefinition>

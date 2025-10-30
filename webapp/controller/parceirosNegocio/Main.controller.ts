@@ -22,6 +22,6 @@ export default class Main extends BaseController {
 			and: false,
 		});
 
-		(this.getView().byId("table").getBinding("rows") as ODataListBinding).filter([oFilters]);
+		(this.getView().byId("tableParceirosNegocio").getBinding("rows") as ODataListBinding).filter([oFilters]);
 	}
 }

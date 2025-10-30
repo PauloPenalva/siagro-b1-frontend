@@ -125,7 +125,22 @@
 					"pattern": "tabelaCustoEdit/{id}",
 					"name": "tabelaCustoEdit",
 					"target": "tabelaCustoEdit"
-				}
+				},
+        {
+          "pattern": "armazens",
+          "name": "armazens",
+          "target": "armazens"
+        },
+        {
+          "pattern": "armazensNew",
+          "name": "armazensNew",
+          "target": "armazensNew"
+        },
+        {
+          "pattern": "armazensEdit/{id}",
+          "name": "armazensEdit",
+          "target": "armazensEdit"
+        }
 			],
 			"targets": {
 				"notFound" : {
@@ -156,6 +171,21 @@
 					"id": "tabelaCustoEdit",
           "level": 2,
 					"name": "siagrob1.view.tabelaCusto.Edit"
+				},
+        "armazens": {
+					"id": "armazens",
+          "level": 2,
+					"name": "siagrob1.view.armazem.Main"
+				},
+        "armazensNew": {
+					"id": "armazensNew",
+          "level": 2,
+					"name": "siagrob1.view.armazem.Add"
+				},
+        "armazensEdit": {
+					"id": "armazensEdit",
+          "level": 2,
+					"name": "siagrob1.view.armazem.Edit"
 				}
 			}
 		}

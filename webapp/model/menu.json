@@ -5,15 +5,19 @@
 			"title": "Cadastros",
 			"icon": "sap-icon://building",
 			"key": "root1",
-            "expanded": false,
-            "items": [
+      "expanded": false,
+      "items": [
 				{
 					"title": "Parceiros de Negócio",
 					"key": "parceirosNegocio"
+				},
+        {
+					"title": "Armazéns",
+					"key": "armazens"
 				}
 			]
 		},
-        {
+    {
 			"title": "Armazenagem",
 			"icon": "sap-icon://employee",
 			"expanded": false,
