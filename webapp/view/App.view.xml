@@ -16,20 +16,33 @@
                 secondTitle="Gestão Agrícola"
                 homeIcon="https://sdk.openui5.org/1.141.0/resources/sap/ui/documentation/sdk/images/logo_sap.png"
                 showNavButton="true"
-                showMenuButton="true"
+                showMenuButton="false"
 				        showNotifications="true"
                 navButtonPressed=".onNavBack"
                 homeIconPressed=".onHomePress"
-                menuButtonPressed=".onMenuButtonPress"
-            >
+                productSwitcherPressed=".onOpenProductSwitch"
+			          showProductSwitcher="true"
+                menuButtonPressed=".onMenuButtonPress">
+                <f:menu>
+                  <Menu>
+                    <MenuItem text="Parceiros de Negócio" key="parceirosNegocio" press=".onItemPressed"/>
+                    <MenuItem text="Motoristas" key="motoristas" press=".onItemPressed"/>
+                    <MenuItem text="Veiculos" key="veiculos" press=".onItemPressed"/>
+                    <MenuItem text="Produtos" key="produtos" press=".onItemPressed"/>
+                    <MenuItem text="Safras" key="safras" press=".onItemPressed"/>
+                    <MenuItem text="Armazéns" key="armazens" press=".onItemPressed"/>
+                    <MenuItem text="Tabela de Custos" key="tabelaCusto" press=".onItemPressed"/>
+                    <MenuItem text="Lotes de Armazenagem" key="lotesArmazenagem" press=".onItemPressed"/>
+                  </Menu>
+                </f:menu>
                 <f:profile>
                     <Avatar initials="YK" />
                 </f:profile>
             </f:ShellBar>
         </tnt:header>
-        <tnt:sideContent>
+        <!-- <tnt:sideContent >
             <core:Fragment fragmentName="siagrob1.fragments.SideMenu" type="XML" />
-        </tnt:sideContent>
+        </tnt:sideContent> -->
         <tnt:mainContents>
             <App id="app" />
         </tnt:mainContents>

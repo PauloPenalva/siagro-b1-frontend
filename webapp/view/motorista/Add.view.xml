@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.safra.Add"
+	controllerName="siagrob1.controller.motorista.Add"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -10,9 +10,9 @@
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-	<Page title="Safra">
+	<Page title="Motorista">
 		<content>
-      <core:Fragment fragmentName="siagrob1.view.safra.fragments.Form" type="XML" />
+      <core:Fragment fragmentName="siagrob1.view.motorista.fragments.Form" type="XML" />
 		</content>
 		<footer>
 			<Toolbar>

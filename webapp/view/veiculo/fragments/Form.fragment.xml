@@ -1,0 +1,79 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+    <f:SimpleForm
+      id="formVeiculo"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0">
+        <f:content>
+          <core:Title
+              text="Dados do Veiculo"
+              emphasized="true"
+          />
+          <Label text="Codigo" />
+          <Input
+              value="{Id}"
+              editable="false"
+          />
+          <Label text="Placa" />
+          <Input
+              value="{Placa}"
+              editable="true"
+              required="true"
+              liveChange=".validateField"
+          />
+          <Label text="Modelo" />
+          <Input
+              value="{Modelo}"
+              editable="true"
+              liveChange=".validateField"
+          />
+          <Label text="Municipio" />
+          <Input
+              value="{Municipio}"
+              editable="true"
+              liveChange=".validateField"
+          />
+          <Label text="Uf" />
+          <Input
+              value="{EstadoCodigo}"
+              editable="true"
+              required="true"
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".ufValueHelpResquest"
+              liveChange=".validateField">
+            <layoutData>
+              <l:GridData span="XL2 L2 M3 S4" />
+            </layoutData>
+          </Input>
+          <Input
+              value="{
+                parts: ['EstadoCodigo'],
+                formatter: '.formatSiglaUf'
+              }"
+              editable="false"
+          />
+        </f:content>
+        <core:Title />
+        <core:Title />
+    </f:SimpleForm>
+</core:FragmentDefinition>

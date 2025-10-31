@@ -11,7 +11,7 @@
 
 	<Page title="Safras">
 		<content>
-			<t:Table
+      <t:Table
 				id="tableSafra"
 				busyIndicatorDelay="0"
 				selectionMode="Single"
@@ -26,8 +26,8 @@
 			>
 				<t:extension>
 					<OverflowToolbar >
-						<ToolbarSpacer />
-						<SearchField placeholder="Search..." width="30%" search=".onSearch"/>
+            <ToolbarSpacer />
+						<SearchField placeholder="Pesquisar..." width="30%" search=".onSearch"/>
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>

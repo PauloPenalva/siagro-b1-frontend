@@ -10,11 +10,7 @@
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-	<Page
-		showHeader="true"
-		title="Safra"
-		id="safraEdit"
-		busy="{ui>/busy}">
+	<Page title="Safra" busy="{ui>/busy}">
 		<content>
 
 			<core:Fragment fragmentName="siagrob1.view.safra.fragments.Form" type="XML" />

@@ -170,6 +170,36 @@
           "pattern": "safrasEdit/{id}",
           "name": "safrasEdit",
           "target": "safrasEdit"
+        }, 
+        {
+          "pattern": "motoristas",
+          "name": "motoristas",
+          "target": "motoristas"
+        },
+        {
+          "pattern": "motoristasNew",
+          "name": "motoristasNew",
+          "target": "motoristasNew"
+        },
+        {
+          "pattern": "motoristasEdit/{id}",
+          "name": "motoristasEdit",
+          "target": "motoristasEdit"
+        },
+        {
+          "pattern": "veiculos",
+          "name": "veiculos",
+          "target": "veiculos"
+        },
+        {
+          "pattern": "veiculosNew",
+          "name": "veiculosNew",
+          "target": "veiculosNew"
+        },
+        {
+          "pattern": "veiculosEdit/{id}",
+          "name": "veiculosEdit",
+          "target": "veiculosEdit"
         }
 			],
 			"targets": {
@@ -242,6 +272,32 @@
 					"id": "safrasEdit",
           "level": 2,
 					"name": "siagrob1.view.safra.Edit"
+				},
+        "motoristas": {
+					"id": "motoristas",
+          "level": 2,
+					"name": "siagrob1.view.motorista.Main"
+				},"motoristasNew": {
+					"id": "motoristasNew",
+          "level": 2,
+					"name": "siagrob1.view.motorista.Add"
+				},"motoristasEdit": {
+					"id": "motoristasEdit",
+          "level": 2,
+					"name": "siagrob1.view.motorista.Edit"
+				},
+        "veiculos": {
+					"id": "veiculos",
+          "level": 2,
+					"name": "siagrob1.view.veiculo.Main"
+				},"veiculosNew": {
+					"id": "veiculosNew",
+          "level": 2,
+					"name": "siagrob1.view.veiculo.Add"
+				},"veiculosEdit": {
+					"id": "veiculosEdit",
+          "level": 2,
+					"name": "siagrob1.view.veiculo.Edit"
 				}
 			}
 		}
