@@ -31,20 +31,28 @@
             />
             <Label text="Codigo" />
             <Input
-                value="{Id}"
-                editable="false"
+                value="{Key}"
+                editable="true"
+                required="true"
+                liveChange=".validadeField"
             />
             <Label text="Descricao" />
             <Input
-                value="{Descricao}"
+                value="{Name}"
                 editable="true"
                 required="true"
                 liveChange=".validateField"
             />
+            <Label text="CNPJ" />
+            <Input
+                value="{TaxId}"
+                editable="true"
+                required="false"
+            />
             <Label text="Inativo ?" />
             <CheckBox
                 selected="{
-                  path: 'Inativo',
+                  path: 'Inactive',
                   type: 'sap.ui.model.odata.type.Boolean'
                 }"
                 editable="true"

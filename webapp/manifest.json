@@ -112,6 +112,11 @@
 					"target": "parceirosNegocio"
 				},
 				{
+					"pattern": "produtos",
+					"name": "produtos",
+					"target": "produtos"
+				},
+				{
 					"pattern": "tabelaCusto",
 					"name": "tabelaCusto",
 					"target": "tabelaCusto"
@@ -216,6 +221,11 @@
 					"id": "ParceirosNegocio",
           "level": 2,
 					"name": "siagrob1.view.parceirosNegocio.Main"
+				},
+				"produtos": {
+					"id": "produtos",
+          "level": 2,
+					"name": "siagrob1.view.produtos.Main"
 				},
 				"tabelaCusto": {
 					"id": "tabelaCusto",

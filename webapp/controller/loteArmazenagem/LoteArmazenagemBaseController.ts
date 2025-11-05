@@ -8,6 +8,7 @@ import ProdutoValueHelp from "siagrob1/valueHelpers/ProdutoValueHelp";
 import ArmazemValueHelp from "siagrob1/valueHelpers/ArmazemValueHelp";
 import TabelaCustoValueHelp from "siagrob1/valueHelpers/TabelaCustoValueHelp";
 import { TabelaCusto } from "siagrob1/types/TabelaCusto";
+import { Armazem } from "siagrob1/types/Armazem";
 
 /**
  * @namespace siagrob1.controller.loteArmazenagem
@@ -21,7 +22,7 @@ export default class LoteArmazenagemBaseController extends BaseController {
         this.getView()
       );
       if (obj) {
-        ev.getSource().setValue(obj.Id.toString());
+        ev.getSource().setValue(obj.CardCode.toString());
       }
     }
 
@@ -32,7 +33,7 @@ export default class LoteArmazenagemBaseController extends BaseController {
         this.getView()
       );
       if (obj) {
-        ev.getSource().setValue(obj.Id.toString());
+        ev.getSource().setValue(obj.ItemCode.toString());
       }
     }
   
@@ -59,23 +60,23 @@ export default class LoteArmazenagemBaseController extends BaseController {
   async formatRazaoSocialBP(sId: string): Promise<string> {
         //const oInput = <Input> this.byId("parceiroNegocioRazaoSocial") 
         if (sId) {
-          const sPath = `/odata/Participantes/${sId}`;
+          const sPath = `/odata/BusinessPartners/${sId}`;
           const cq = 
             //await models.requestModel(sPath, oInput) as ParceiroNegocio
             await models.requestModel(sPath) as ParceiroNegocio
           
-          return cq.RazaoSocial;
+          return cq.CardName;
         }
       }
   async formatProdutoDescricao(sId: string): Promise<string> {
         //const oInput = <Input> this.byId("parceiroNegocioRazaoSocial") 
         if (sId) {
-          const sPath = `/odata/Produtos/${sId}`;
+          const sPath = `/odata/Items/${sId}`;
           const cq = 
             //await models.requestModel(sPath, oInput) as ParceiroNegocio
             await models.requestModel(sPath) as Produto
           
-          return cq.Descricao;
+          return cq.ItemName;
         }
       }
   
@@ -83,7 +84,7 @@ export default class LoteArmazenagemBaseController extends BaseController {
         if (sId) {
           const sPath = `/odata/Armazens/${sId}`;
           const cq = 
-            await models.requestModel(sPath) as Produto
+            await models.requestModel(sPath) as Armazem
           
           return cq.Descricao;
         }

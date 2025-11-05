@@ -5,7 +5,7 @@ import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 
 /**
- * @namespace siagrob1.controller.ParceirosNegocio
+ * @namespace siagrob1.controller.produtos
  */
 export default class Main extends BaseController {
 
@@ -17,11 +17,11 @@ export default class Main extends BaseController {
 		const query = ev.getParameter("query");
 		const oFilters = new Filter({
 			filters: [
-				new Filter("CardName", FilterOperator.Contains, query),
+				new Filter("ItemName", FilterOperator.Contains, query),
 			],
 			and: false,
 		});
 
-		(this.getView().byId("tableParceirosNegocio").getBinding("rows") as ODataListBinding).filter([oFilters]);
+		(this.getView().byId("tableProdutos").getBinding("rows") as ODataListBinding).filter([oFilters]);
 	}
 }

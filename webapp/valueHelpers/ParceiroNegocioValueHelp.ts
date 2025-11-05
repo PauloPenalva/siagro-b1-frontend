@@ -23,28 +23,16 @@ export default class ParceiroNegocioValueHelp {
 					columns: [
 						new Column({ header: new Text({ text: "Codigo"})}),
 						new Column({ header: new Text({ text: "Razão Social"})}),
-						new Column({ header: new Text({ text: "Nome Comercial"})}),
-						new Column({ header: new Text({ text: "Cnpj"})}),
-						new Column({ header: new Text({ text: "IE"})}),
-						new Column({ header: new Text({ text: "Tipo"})}),
-						new Column({ header: new Text({ text: "Status"})}),
 					],
 					items: {
-						path: "/Participantes",
+						path: "/BusinessPartners",
 						sorter: [
-              new Sorter("RazaoSocial"),
-              new Sorter("NomeFantasia"),
-              new Sorter("Id"),
+              new Sorter("CardName"),
             ],
 						template: new ColumnListItem({
 							cells: [
-								new Text({ text: "{Id}" }),
-								new Text({ text: "{RazaoSocial}" }),
-								new Text({ text: "{NomeFantasia}" }),
-								new Text({ text: "{Cnpj}" }),
-								new Text({ text: "{InscricaoEstadual}" }),
-								new Text({ text: "{TipoParticipante}" }),
-								new Text({ text: "{Status}" }),
+								new Text({ text: "{CardCode}" }),
+								new Text({ text: "{CardName}" }),
 							],
 						}),
 					},
@@ -52,10 +40,8 @@ export default class ParceiroNegocioValueHelp {
 						const value = ev.getParameter("value");
 						const filters = new Filter({
 							filters: [
-								new Filter("RazaoSocial", FilterOperator.Contains, value),
-								new Filter("NomeFantasia", FilterOperator.Contains, value),
-								new Filter("Cnpj", FilterOperator.Contains, value),
-								new Filter("InscricaoEstadual", FilterOperator.Contains, value),
+								new Filter("CardName", FilterOperator.Contains, value),
+								new Filter("CardCode", FilterOperator.Contains, value),
 							],
 							and: false,
 						});

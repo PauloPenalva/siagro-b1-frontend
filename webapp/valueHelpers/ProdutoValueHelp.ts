@@ -25,15 +25,14 @@ export default class ProdutoValueHelp {
 						new Column({ header: new Text({ text: "Descrição"})}),
 					],
 					items: {
-						path: "/Produtos",
+						path: "/Items",
 						sorter: [
-              new Sorter("Descricao"),
-              new Sorter("Id"),
+              new Sorter("ItemName"),
             ],
 						template: new ColumnListItem({
 							cells: [
-								new Text({ text: "{Id}" }),
-								new Text({ text: "{Descricao}" }),
+								new Text({ text: "{ItemCode}" }),
+								new Text({ text: "{ItemName}" }),
 							],
 						}),
 					},
@@ -41,7 +40,8 @@ export default class ProdutoValueHelp {
 						const value = ev.getParameter("value");
 						const filters = new Filter({
 							filters: [
-								new Filter("Descricao", FilterOperator.Contains, value),
+								new Filter("ItemName", FilterOperator.Contains, value),
+								new Filter("ItemCode", FilterOperator.Contains, value),
 							],
 							and: false,
 						});

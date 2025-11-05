@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.parceirosNegocio.Main"
+	controllerName="siagrob1.controller.produtos.Main"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -11,11 +11,10 @@
 
 	<Page
 		showHeader="true"
-		title="Parceiros de Negócio"
-		id="pageParceirosNegocio">
+		title="Produtos">
 		<content>
 			<t:Table
-				id="tableParceirosNegocio"
+				id="tableProdutos"
 				busyIndicatorDelay="0"
 				selectionMode="Single"
 				selectionBehavior="Row"
@@ -24,7 +23,7 @@
 				enableBusyIndicator="true"
 				alternateRowColors="true"
 				rows="{
-					path: '/BusinessPartners'
+					path: '/Items'
 				}"
 			>
 				<t:extension>
@@ -36,22 +35,23 @@
 				<t:columns>
 					<t:Column
 						label="Codigo"
-						sortProperty="CardCode"
-						filterProperty="CardCode"
+						sortProperty="ItemCode"
+						filterProperty="ItemCode"
 						>
 						<t:template>
-							<Text text="{CardCode}" />
+							<Text text="{ItemCode}" />
 						</t:template>
 					</t:Column>
 					<t:Column
-						label="Razão Social"
-						sortProperty="CardName"
-						filterProperty="CardName"
+						label="Descrição"
+						sortProperty="ItemName"
+						filterProperty="ItemName"
 						>
 						<t:template>
-							<Text text="{CardName}" />
+							<Text text="{ItemName}" />
 						</t:template>
 					</t:Column>
+
 				</t:columns>
 
 			</t:Table>

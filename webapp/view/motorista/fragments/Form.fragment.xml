@@ -30,12 +30,13 @@
           />
           <Label text="Codigo" />
           <Input
-              value="{Id}"
-              editable="false"
+              value="{Key}"
+              required="true"
+              liveChange=".validateField"
           />
           <Label text="Nome" />
           <Input
-              value="{Nome}"
+              value="{Name}"
               editable="true"
               required="true"
               liveChange=".validateField"
