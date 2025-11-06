@@ -16,17 +16,17 @@ export default class VeiculoBaseController extends BaseController {
         this.getView()
       );
       if (obj) {
-        ev.getSource().setValue(obj.Codigo);
+        ev.getSource().setValue(obj.Key);
       }
     }
 
   async formatSiglaUf(sCodigo: string): Promise<string> {
         if (sCodigo) {
-          const sPath = `/odata/Estados/${sCodigo}`;
+          const sPath = `/odata/States/${sCodigo}?$select=Abbreviation`;
           const cq = 
             await models.requestModel(sPath) as Estado
           
-          return cq.Sigla;
+          return cq.Abbreviation;
         }
       }
   

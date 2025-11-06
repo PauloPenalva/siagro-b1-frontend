@@ -25,7 +25,7 @@ export default class Edit extends VeiculoBaseController {
 
 		const {id} = ev.getParameter("arguments") as {id: string | null};
 		if (id != null) {
-			const sPath = `/Veiculos/${id}`;
+      const sPath = `/Trucks('${id}')`;
 			oView.bindElement({
 				path: sPath,
 				events: {

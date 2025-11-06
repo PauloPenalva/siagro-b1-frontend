@@ -23,16 +23,14 @@ export default class CaracteristcaQualidadeValueHelp {
 					columns: [
 						new Column({ header: new Text({ text: "Codigo"})}),
 						new Column({ header: new Text({ text: "Descrição"})}),
-						new Column({ header: new Text({ text: "Ponto Execução"})})
 					],
 					items: {
-						path: "/CaracteristicasQualidade",
-						sorter: new Sorter("Id"),
+						path: "/QualityAttribs",
+						sorter: new Sorter("Key"),
 						template: new ColumnListItem({
 							cells: [
-								new Text({ text: "{Id}" }),
-								new Text({ text: "{Descricao}" }),
-								new Text({ text: "{PontoExecucao}" })
+								new Text({ text: "{Key}" }),
+								new Text({ text: "{Name}" }),
 							],
 						}),
 					},
@@ -40,9 +38,8 @@ export default class CaracteristcaQualidadeValueHelp {
 						const value = ev.getParameter("value");
 						const filters = new Filter({
 							filters: [
-								new Filter("Id", FilterOperator.Contains, value),
-								new Filter("Descricao", FilterOperator.Contains, value),
-								new Filter("PontoExecucao", FilterOperator.Contains, value),
+								new Filter("Key", FilterOperator.Contains, value),
+								new Filter("Name", FilterOperator.Contains, value),
 							],
 							and: false,
 						});

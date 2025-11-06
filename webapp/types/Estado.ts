@@ -1,4 +1,4 @@
 export type Estado = {
-  Codigo?: string,
-  Sigla?: string,
+  Key?: string,
+  Abbreviation?: string,
 }

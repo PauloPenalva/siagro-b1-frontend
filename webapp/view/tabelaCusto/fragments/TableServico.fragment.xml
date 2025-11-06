@@ -16,7 +16,7 @@
 				visibleRowCount="15"
 				visibleRowCountMode="Fixed"
 				busyIndicatorDelay="0"
-				rows="{Servicos}"
+				rows="{ServiceDetails}"
 				visible="true">
 				<t:extension>
 					<OverflowToolbar >
@@ -35,7 +35,7 @@
 						>
 						<t:template>
 							<Input 
-								value="{ServicoId}" 
+								value="{ProcessingServiceKey}" 
 								showValueHelp="true" 
 								valueHelpOnly="true" 
 								valueHelpRequest="servicoValueHelpRequest"
@@ -49,40 +49,27 @@
 						<t:template>
 							<Text 
 								text="{ 
-									parts:['ServicoId'], 
+									parts:['ProcessingServiceKey'], 
 									formatter:'.formatDescricaoServico'
 								}" 
 							/>
 						</t:template>
 					</t:Column>
 					<t:Column
-						label="Valor R$"
+						label="Valor R$/KG"
 						width="10rem"
 						>
 						<t:template>
 							<Input value="{
-								path: 'Valor',
+								path: 'Price',
 								type: 'sap.ui.model.odata.type.Double',
 								formatOptions: {
 										decimals: 8,
 										decimalSeparator: ',',
 										groupingEnabled: true,
-										groupingSeparator: '.'}
+										groupingSeparator: '.'
+                }
 							}" />
-						</t:template>
-					</t:Column>
-					<t:Column
-						label="Ponto Execução"
-						width="10rem"
-						>
-						<t:template>
-							<Select selectedKey="{PontoExecucao}" forceSelection="false" >
-                <core:ListItem key="ENTRADA" text="ENTRADA"></core:ListItem>
-                <core:ListItem key="SAIDA" text="SAIDA"></core:ListItem>
-                <!-- <layoutData>
-                  <l:GridData span="XL3 L3 M3 S4" />
-                </layoutData> -->
-              </Select>
 						</t:template>
 					</t:Column>
 				</t:columns>

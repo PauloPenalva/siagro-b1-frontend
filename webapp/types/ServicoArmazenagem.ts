@@ -1,4 +1,4 @@
 export type ServicoArmazenagem = {
-    Id?: string,
-    Descricao?: string,
+    Key?: string,
+    Description?: string,
 }

@@ -16,7 +16,7 @@
         visibleRowCount="15"
         visibleRowCountMode="Fixed"
         busyIndicatorDelay="0"
-        rows="{DescontosSecagem}"
+        rows="{DryingParameters}"
         visible="true"
     >
         <t:extension>
@@ -47,7 +47,7 @@
                     <Input
                         required="true"
                         value="{
-                        path: 'UmidadeDe',
+                        path: 'InitialMoisture',
                         type: 'sap.ui.model.odata.type.Double',
                         formatOptions: {
                             decimals: 1,
@@ -67,7 +67,7 @@
                     <Input
                         required="true"
                         value="{
-                        path: 'UmidadeAte',
+                        path: 'FinalMoisture',
                         type: 'sap.ui.model.odata.type.Double',
                         formatOptions: {
                             decimals: 1,
@@ -87,7 +87,7 @@
                     <Input
                         required="true"
                         value="{
-                          path: 'PercentualDesconto',
+                          path: 'Rate',
                           type: 'sap.ui.model.odata.type.Double',
                           formatOptions: {
                             decimals: 8,

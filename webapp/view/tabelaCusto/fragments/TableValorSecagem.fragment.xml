@@ -16,7 +16,7 @@
 				visibleRowCount="15"
 				visibleRowCountMode="Fixed"
 				busyIndicatorDelay="0"
-				rows="{ValoresSecagem}"
+				rows="{DryingDetails}"
 				visible="true">
 				<t:extension>
 					<OverflowToolbar >
@@ -35,7 +35,7 @@
 						>
 						<t:template>
 							<Input value="{
-								path: 'UmidadeDe',
+								path: 'InitialMoisture',
 								type: 'sap.ui.model.odata.type.Double',
 								formatOptions: {
 										decimals: 1,
@@ -52,7 +52,7 @@
 						>
 						<t:template>
 							<Input value="{
-								path: 'UmidadeAte',
+								path: 'FinalMoisture',
 								type: 'sap.ui.model.odata.type.Double',
 								formatOptions: {
 										decimals: 1,
@@ -64,12 +64,12 @@
 						</t:template>
 					</t:Column>
 					<t:Column
-						label="Valor R$"
+						label="Valor R$/KG"
 						width="10rem"
 						>
 						<t:template>
 							<Input value="{
-								path: 'ValorCobranca',
+								path: 'Price',
 								type: 'sap.ui.model.odata.type.Double',
 								formatOptions: {
 										decimals: 8,

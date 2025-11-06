@@ -31,12 +31,14 @@
             />
             <Label text="Codigo" />
             <Input
-                value="{Id}"
-                editable="false"
+                value="{Key}"
+                editable="true"
+                required="true"
+                liveChange=".validateField"
             />
             <Label text="Descricao" />
             <Input
-                value="{Descricao}"
+                value="{Name}"
                 editable="true"
                 required="true"
                 liveChange=".validateField"
@@ -44,7 +46,7 @@
             <Label text="Inativa ?" />
             <CheckBox
                 selected="{
-                  path: 'Inativa',
+                  path: 'Inactive',
                   type: 'sap.ui.model.odata.type.Boolean'
                 }"
                 editable="true"

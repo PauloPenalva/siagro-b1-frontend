@@ -16,7 +16,7 @@
 				visibleRowCount="15"
 				visibleRowCountMode="Fixed"
 				busyIndicatorDelay="0"
-				rows="{Qualidades}"
+				rows="{QualityParameters}"
 				visible="true">
 				<t:extension>
 					<OverflowToolbar >
@@ -35,7 +35,7 @@
 						>
 						<t:template>
 							<Input 
-								value="{CaracteristicaQualidadeId}"
+								value="{QualityAttribKey}"
 								showValueHelp="true" 
 								valueHelpOnly="true"
 								valueHelpRequest=".cqValueHelpRequest"/>
@@ -48,7 +48,7 @@
 						<t:template>
 							<Text 
 								text="{ 
-									parts: ['CaracteristicaQualidadeId'], 	
+									parts: ['QualityAttribKey'], 	
 									formatter: '.formatDescricaoCaracteristica'
 								}"
 							/>	
@@ -60,7 +60,7 @@
 						>
 						<t:template>
 							<Input value="{
-								path: 'Tolerancia',
+								path: 'MaxLimitRate',
 								type: 'sap.ui.model.odata.type.Double',
 								formatOptions: {
 									decimals: 8,
@@ -77,7 +77,7 @@
 						>
 						<t:template>
 							<Input value="{
-								path: 'Desconto',
+								path: 'ExcessDiscountRate',
 								type: 'sap.ui.model.odata.type.Double',
 								formatOptions: {
 										decimals: 8,

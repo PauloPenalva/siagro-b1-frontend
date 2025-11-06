@@ -32,10 +32,10 @@ export default class Main extends BaseController {
 		const query = ev.getParameter("query");
 		const oFilters = new Filter({
 			filters: [
-				new Filter("Placa", FilterOperator.Contains, query),
-				new Filter("Modelo", FilterOperator.Contains, query),
-				new Filter("Municipio", FilterOperator.Contains, query),
-				new Filter("Estado/Sigla", FilterOperator.Contains, query),
+				new Filter("Key", FilterOperator.Contains, query),
+				new Filter("Model", FilterOperator.Contains, query),
+				new Filter("City", FilterOperator.Contains, query),
+				new Filter("State/Abbreviation", FilterOperator.Contains, query),
 			],
 			and: false,
 		});
@@ -58,7 +58,7 @@ export default class Main extends BaseController {
     
 		const oContext = oTable.getContextByIndex(i) as Context;
     
-		const sId = oContext.getProperty("Id") as string;
+		const sId = oContext.getProperty("Key") as string;
 		this.navTo("veiculosEdit", {id: sId});
 	}
 

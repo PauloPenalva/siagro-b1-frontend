@@ -24,7 +24,7 @@
 				enableBusyIndicator="true"
 				alternateRowColors="true"
 				rows="{
-					path: '/LotesArmazenagem'
+					path: '/StorageLots'
 				}"
 			>
 				<t:extension>
@@ -36,56 +36,55 @@
 				<t:columns>
 					<t:Column
 						label="Codigo"
-						sortProperty="Id"
-						filterProperty="Id"
+						sortProperty="Key"
+						filterProperty="Key"
 						>
 						<t:template>
-							<Text text="{Id}" wrapping="false"/>
+							<Text text="{Key}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Data"
+						sortProperty="CreationDate"
+						filterProperty="CreationDate"
+						>
+						<t:template>
+							<Text
+                text="{
+                  path: 'CreationDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+            />
 						</t:template>
 					</t:Column>
 					<t:Column
 						label="Descrição"
-						sortProperty="Descricao"
-						filterProperty="Descricao"
+						sortProperty="Description"
+						filterProperty="Description"
 						>
 						<t:template>
-							<Text text="{Descricao}" wrapping="false"/>
+							<Text text="{Description}" wrapping="false"/>
 						</t:template>
 					</t:Column>
 					<t:Column
 						label="Produto"
-						sortProperty="Produto/Descricao"
-						filterProperty="Produto/Descricao"
+						sortProperty="ItemCode"
+						filterProperty="ItemCode"
 						>
 						<t:template>
-							<Text text="{Produto/Descricao}" wrapping="false"/>
+							<Text text="{ItemCode}" wrapping="false"/>
 						</t:template>
 					</t:Column>
           <t:Column
-						label="Razão Social"
-            sortProperty="ParceiroNegocio/RazaoSocial"
-						filterProperty="ParceiroNegocio/RazaoSocial"
+						label="Cliente"
+            sortProperty="CardCode"
+						filterProperty="CardCode"
 						>
 						<t:template>
-							<Text text="{ParceiroNegocio/RazaoSocial}" wrapping="false"/>
-						</t:template>
-					</t:Column>
-           <t:Column
-						label="Nome Comercial"
-            sortProperty="ParceiroNegocio/NomeFantasia"
-						filterProperty="ParceiroNegocio/NomeFantasia"
-						>
-						<t:template>
-							<Text text="{ParceiroNegocio/NomeFantasia}" wrapping="false"/>
-						</t:template>
-					</t:Column>
-          <t:Column
-						label="CPF/CNPJ"
-            sortProperty="ParceiroNegocio/Cnpj"
-						filterProperty="ParceiroNegocio/Cnpj"
-						>
-						<t:template>
-							<Text text="{path: 'ParceiroNegocio/Cnpj', formatter: '.formatter.formatCnpj'}" wrapping="false"/>
+							<Text text="{CardCode}" wrapping="false"/>
 						</t:template>
 					</t:Column>
           <t:Column
@@ -96,7 +95,7 @@
                 wrapping="false"
                 textAlign="Right"
                 text="{
-                  path: 'Saldo',
+                  path: 'Balance',
                   type: 'sap.ui.model.odata.type.Double',
                     formatOptions: {
                       decimals: 3,
@@ -107,16 +106,7 @@
                 }" />
 						</t:template>
 					</t:Column>
-          <t:Column
-						label="Und.Med."
-            >
-						<t:template>
-							<Text 
-                wrapping="false"
-                text="{UnidadeMedida}" />
-						</t:template>
-					</t:Column>
-				</t:columns>
+       	</t:columns>
 
 			</t:Table>
 		</content>

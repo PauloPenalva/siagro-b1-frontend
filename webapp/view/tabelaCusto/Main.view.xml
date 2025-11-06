@@ -25,9 +25,9 @@
 				alternateRowColors="true"
 				busy="{ui>/isBusy}"
 				rows="{
-					path: '/TabelasCusto',
+					path: '/ProcessingCosts',
 					parameters: {
-						$select: 'Id,Descricao'
+						$select: 'Key,Description'
 					}
 				}"
 			>
@@ -40,22 +40,22 @@
 				<t:columns>
 					<t:Column
 						label="Codigo"
-						sortProperty="Id"
-						filterProperty="Id"
+						sortProperty="Key"
+						filterProperty="Key"
 						width="10rem"
 						>
 						<t:template>
-							<Text text="{Id}" />
+							<Text text="{Key}" />
 						</t:template>
 					</t:Column>
 					<t:Column
 						label="Descrição"
-						sortProperty="Descricao"
-						filterProperty="Descricao"
+						sortProperty="Description"
+						filterProperty="Description"
 						width="100%"
 						>
 						<t:template>
-							<Text text="{Descricao}" wrapping="false" />
+							<Text text="{Description}" wrapping="false" />
 						</t:template>
 					</t:Column>
 

@@ -126,7 +126,7 @@ export default class TabelaCustoBaseController extends BaseController {
       this.getView()
     );
     if (obj) {
-      ev.getSource().setValue(obj.Id);
+      ev.getSource().setValue(obj.Key);
     }
   }
 
@@ -136,28 +136,28 @@ export default class TabelaCustoBaseController extends BaseController {
       this.getView()
     );
     if (obj) {
-      ev.getSource().setValue(obj.Id);
+      ev.getSource().setValue(obj.Key);
     }
   }
 
   async formatDescricaoCaracteristica(sId: string): Promise<string> {
       const oTable = <Table> this.byId("tableQualidade");
       if (sId) {
-        const sPath = `/odata/CaracteristicasQualidade/${sId}`;
+        const sPath = `/odata/QualityAttribs('${sId}')`;
         const cq = 
           await models.requestModel(sPath, oTable) as CaracteristcaQualidade
         
-        return cq.Descricao;
+        return cq.Name;
       }
     }
 
   async formatDescricaoServico(sId: string): Promise<string> {
     const oTable = <Table> this.byId("tableServicos");
     if (sId) {
-      const sPath = `/odata/ServicosArmazem/${sId}`;
+      const sPath = `/odata/ProcessingServices('${sId}')`;
       const sv = await models.requestModel(sPath, oTable) as ServicoArmazenagem;
     
-      return sv.Descricao;
+      return sv.Description;
     }
   }
 
@@ -193,9 +193,9 @@ export default class TabelaCustoBaseController extends BaseController {
       if (oRow instanceof Row) {
         const oContext = oRow.getBindingContext() as Context;
         if (oContext) {
-          const nUmidadeDe = <number> oContext.getProperty("UmidadeDe");
-          const nUmidadeAte = <number> oContext.getProperty("UmidadeAte");
-          const nPercentualDesconto = <number> oContext.getProperty("PercentualDesconto");
+          const nUmidadeDe = <number> oContext.getProperty("InitialMoisture");
+          const nUmidadeAte = <number> oContext.getProperty("FinalMoisture");
+          const nPercentualDesconto = <number> oContext.getProperty("Rate");
           if (nUmidadeDe == null || nUmidadeAte == null || nPercentualDesconto == null) {
                bValid = false;
           }
@@ -214,9 +214,9 @@ export default class TabelaCustoBaseController extends BaseController {
       if (oRow instanceof Row) {
         const oContext = oRow.getBindingContext() as Context;
         if (oContext) {
-          const nUmidadeDe = <number> oContext.getProperty("UmidadeDe");
-          const nUmidadeAte = <number> oContext.getProperty("UmidadeAte");
-          const nValorCobranca = <number> oContext.getProperty("ValorCobranca");
+          const nUmidadeDe = <number> oContext.getProperty("InitialMoisture");
+          const nUmidadeAte = <number> oContext.getProperty("FinalMoisture");
+          const nValorCobranca = <number> oContext.getProperty("Price");
           if (nUmidadeDe == null || nUmidadeAte == null || nValorCobranca == null) {
                bValid = false;
           }
@@ -235,9 +235,9 @@ export default class TabelaCustoBaseController extends BaseController {
       if (oRow instanceof Row) {
         const oContext = oRow.getBindingContext() as Context;
         if (oContext) {
-          const sId = <string> oContext.getProperty("CaracteristicaQualidadeId");
-          const nTolerancia = <number> oContext.getProperty("Tolerancia");
-          const nDesconto = <number> oContext.getProperty("Desconto");
+          const sId = <string> oContext.getProperty("QualityAttribKey");
+          const nTolerancia = <number> oContext.getProperty("MaxLimitRate");
+          const nDesconto = <number> oContext.getProperty("ExcessDiscountRate");
           if (sId == null || nTolerancia == null || nDesconto == null) {
                bValid = false;
           }
@@ -256,10 +256,9 @@ export default class TabelaCustoBaseController extends BaseController {
       if (oRow instanceof Row) {
         const oContext = oRow.getBindingContext() as Context;
         if (oContext) {
-          const sId = <string> oContext.getProperty("ServicoId");
-          const nTolerancia = <number> oContext.getProperty("Valor");
-          const sPontoExecucao = <string> oContext.getProperty("PontoExecucao");
-          if (sId == null || nTolerancia == null || sPontoExecucao == null) {
+          const sId = <string> oContext.getProperty("ProcessingServiceKey");
+          const nTolerancia = <number> oContext.getProperty("Price");
+          if (sId == null || nTolerancia == null ) {
                bValid = false;
           }
         }

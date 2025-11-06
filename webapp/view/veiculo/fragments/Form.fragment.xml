@@ -25,36 +25,31 @@
 		  busyIndicatorDelay="0">
         <f:content>
           <core:Title
-              text="Dados do Veiculo"
-              emphasized="true"
+            text="Dados do Veiculo"
+            emphasized="true"
           />
           <Label text="Codigo" />
           <Input
-              value="{Id}"
-              editable="false"
-          />
-          <Label text="Placa" />
-          <Input
-              value="{Placa}"
-              editable="true"
-              required="true"
-              liveChange=".validateField"
+            value="{Key}"
+            editable="true"
+            required="true"
+            liveChange=".validateField"
           />
           <Label text="Modelo" />
           <Input
-              value="{Modelo}"
+              value="{Model}"
               editable="true"
               liveChange=".validateField"
           />
           <Label text="Municipio" />
           <Input
-              value="{Municipio}"
+              value="{City}"
               editable="true"
               liveChange=".validateField"
           />
           <Label text="Uf" />
           <Input
-              value="{EstadoCodigo}"
+              value="{StateKey}"
               editable="true"
               required="true"
               showValueHelp="true" 
@@ -67,7 +62,7 @@
           </Input>
           <Input
               value="{
-                parts: ['EstadoCodigo'],
+                parts: ['StateKey'],
                 formatter: '.formatSiglaUf'
               }"
               editable="false"

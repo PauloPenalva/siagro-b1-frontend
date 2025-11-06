@@ -21,7 +21,7 @@
 				enableBusyIndicator="true"
 				alternateRowColors="true"
 				rows="{
-					path: '/Safras'
+					path: '/HarvestSeasons'
 				}"
 			>
 				<t:extension>
@@ -33,20 +33,20 @@
 				<t:columns>
 					<t:Column
 						label="Codigo"
-						sortProperty="Id"
-						filterProperty="Id"
+						sortProperty="Key"
+						filterProperty="Key"
 						>
 						<t:template>
-							<Text text="{Id}" />
+							<Text text="{Key}" />
 						</t:template>
 					</t:Column>
 					<t:Column
 						label="Descrição"
-						sortProperty="Descricao"
-						filterProperty="Descricao"
+						sortProperty="Name"
+						filterProperty="Name"
 						>
 						<t:template>
-							<Text text="{Descricao}" />
+							<Text text="{Name}" />
 						</t:template>
 					</t:Column>
 				</t:columns>

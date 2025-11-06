@@ -17,7 +17,7 @@ export default class Add extends VeiculoBaseController {
     
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;
-		const oBinding = oModel.bindList("/Veiculos")
+		const oBinding = oModel.bindList("/Trucks")
 
 		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 			oModel.resetChanges(oModel.getUpdateGroupId())

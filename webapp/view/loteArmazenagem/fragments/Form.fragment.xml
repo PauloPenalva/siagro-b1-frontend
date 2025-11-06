@@ -31,20 +31,16 @@
             />
             <Label text="Codigo" />
             <Input
-                value="{
-                  path: 'Id',
-                  type: 'sap.ui.model.odata.type.Int32',
-                  formatOptions: {
-                    groupingEnabled: false
-                  }
-                }"
-                editable="false"
+                value="{Key}"
+                editable="true"
+                required="true"
+                liveChange=".validateField"
             />
             <Label text="Data" />
             <DatePicker
                 value="{
-                  path: 'DataLote',
-                  type: 'sap.ui.model.odata.type.Date',
+                  path: 'CreationDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }
@@ -52,11 +48,10 @@
                 editable="true"
                 required="true"
                 liveChange=".validateField"
-                valueFormat="yyyy-MM-dd"
             />
             <Label text="Descricao" />
             <Input
-                value="{Descricao}"
+                value="{Description}"
                 editable="true"
                 required="true"
                 liveChange=".validateField"
@@ -64,182 +59,77 @@
             <Label text="Produto" />
             <Input 
 								required="true"
-                value="{
-                  path: 'ProdutoId',
-                  type: 'sap.ui.model.odata.type.Int32',
-                  formatOptions: {
-                    groupingEnabled: false
-                  }
-                }" 
+                value="{ItemCode}" 
 								showValueHelp="true" 
 								valueHelpOnly="true" 
 								valueHelpRequest=".produtoValueHelpRequest">
               <layoutData>
-                  <l:GridData span="XL2 L2 M3 S4" />
+                  <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
             <Input 
 								value="{
-                  parts:[{ 
-                    path: 'ProdutoId',
-                    type: 'sap.ui.model.odata.type.Int32',
-                    formatOptions: {
-                      groupingEnabled: false
-                    }
-                  }],
+                  parts:['ItemCode'],
                   formatter: '.formatProdutoDescricao'
                 }" 
 								editable="false"/>
             <Label text="Cliente" />
             <Input 
 								required="true"
-                value="{
-                  path: 'ParceiroNegocioId',
-                  type: 'sap.ui.model.odata.type.Int32',
-                  formatOptions: {
-                    groupingEnabled: false
-                  }
-                }" 
+                value="{CardCode}" 
 								showValueHelp="true" 
 								valueHelpOnly="true" 
 								valueHelpRequest=".bpValueHelpRequest">
               <layoutData>
-                  <l:GridData span="XL2 L2 M3 S4" />
+                  <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
             <Input 
 								value="{
-                  parts:[{ 
-                    path: 'ParceiroNegocioId',
-                    type: 'sap.ui.model.odata.type.Int32',
-                    formatOptions: {
-                      groupingEnabled: false
-                    }
-                  }],
+                  parts:['CardCode'],
                   formatter: '.formatRazaoSocialBP'
                 }" 
 								editable="false"/>
-            <Label text="Cobrança" />
-            <Input 
-								required="true"
-                value="{
-                  path: 'ParceiroNegocioCobrancaId',
-                  type: 'sap.ui.model.odata.type.Int32',
-                  formatOptions: {
-                    groupingEnabled: false
-                  }
-                }" 
-								showValueHelp="true" 
-								valueHelpOnly="true" 
-								valueHelpRequest=".bpValueHelpRequest">
-              <layoutData>
-                  <l:GridData span="XL2 L2 M3 S4" />
-              </layoutData>
-            </Input>
-            <Input 
-								value="{
-                  parts:[{ 
-                    path: 'ParceiroNegocioCobrancaId',
-                    type: 'sap.ui.model.odata.type.Int32',
-                    formatOptions: {
-                      groupingEnabled: false
-                    }
-                  }],
-                  formatter: '.formatRazaoSocialBP'
-                }" 
-								editable="false"/>
-            <Label text="Faturamento" />
-            <Input 
-								required="true"
-                value="{
-                  path: 'ParceiroNegocioFaturamentoId',
-                  type: 'sap.ui.model.odata.type.Int32',
-                  formatOptions: {
-                    groupingEnabled: false
-                  }
-                }" 
-								showValueHelp="true" 
-								valueHelpOnly="true" 
-								valueHelpRequest=".bpValueHelpRequest">
-              <layoutData>
-                  <l:GridData span="XL2 L2 M3 S4" />
-              </layoutData>
-            </Input>
-            <Input 
-								value="{
-                  parts:[{ 
-                    path: 'ParceiroNegocioFaturamentoId',
-                    type: 'sap.ui.model.odata.type.Int32',
-                    formatOptions: {
-                      groupingEnabled: false
-                    }
-                  }],
-                  formatter: '.formatRazaoSocialBP'
-                }" 
-								editable="false"/>
+            
             <core:Title />
             <Label text="Armazém" />
             <Input 
 								required="true"
-                value="{
-                  path: 'ArmazemId',
-                  type: 'sap.ui.model.odata.type.Int32',
-                  formatOptions: {
-                    groupingEnabled: false
-                  }
-                }" 
+                value="{WarehouseKey}" 
 								showValueHelp="true" 
 								valueHelpOnly="true" 
 								valueHelpRequest=".armazemValueHelpRequest">
               <layoutData>
-                  <l:GridData span="XL2 L2 M3 S4" />
+                  <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
             <Input 
 								value="{
-                  parts:[{ 
-                    path: 'ArmazemId',
-                    type: 'sap.ui.model.odata.type.Int32',
-                    formatOptions: {
-                      groupingEnabled: false
-                    }
-                  }],
+                  parts:['WarehouseKey'],
                   formatter: '.formatArmazemDescricao'
                 }" 
 								editable="false"/>
             <Label text="Tabela de Custos" />
             <Input 
 								required="true"
-                value="{
-                  path: 'TabelaCustoId',
-                  type: 'sap.ui.model.odata.type.Int32',
-                  formatOptions: {
-                    groupingEnabled: false
-                  }
-                }" 
+                value="{ProcessingCostKey}" 
 								showValueHelp="true" 
 								valueHelpOnly="true" 
 								valueHelpRequest=".tabelaCustoValueHelpRequest">
               <layoutData>
-                  <l:GridData span="XL2 L2 M3 S4" />
+                  <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
             <Input 
 								value="{
-                  parts:[{ 
-                    path: 'TabelaCustoId',
-                    type: 'sap.ui.model.odata.type.Int32',
-                    formatOptions: {
-                      groupingEnabled: false
-                    }
-                  }],
+                  parts:['ProcessingCostKey'],
                   formatter: '.formatTabelaCustoDescricao'
                 }" 
 								editable="false"/>
             <Label text="Saldo" />
             <Input
                 value="{ 
-                  path: 'Saldo', 
+                  path: 'Balance', 
                   type: 'sap.ui.model.odata.type.Double',
                     formatOptions: {
                       decimals: 3,
@@ -250,15 +140,6 @@
                 }"
                 editable="false"
             />
-            <Label text="Encerrado ?" />
-            <CheckBox
-                selected="{
-                  path: 'Encerrado',
-                  type: 'sap.ui.model.odata.type.Boolean'
-                }"
-                editable="true"
-            />
         </f:content>
-        <core:Title />
     </f:SimpleForm>
 </core:FragmentDefinition>

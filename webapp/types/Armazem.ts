@@ -1,4 +1,4 @@
 export type Armazem = {
-  Id?: number,
-  Descricao?: string
+  Key?: string,
+  Name?: string
 }

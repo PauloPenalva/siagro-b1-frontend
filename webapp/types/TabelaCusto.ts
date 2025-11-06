@@ -1,4 +1,4 @@
 export type TabelaCusto = {
-  Id?: number,
-  Descricao?: string,
+  Key?: string,
+  Description?: string,
 }

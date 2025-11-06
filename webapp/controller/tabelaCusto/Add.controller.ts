@@ -17,7 +17,7 @@ export default class Add extends TabelaCustoBaseController {
     
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;
-		const oBinding = oModel.bindList("/TabelasCusto")
+		const oBinding = oModel.bindList("/ProcessingCosts")
 
 		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 			oModel.resetChanges(oModel.getUpdateGroupId())

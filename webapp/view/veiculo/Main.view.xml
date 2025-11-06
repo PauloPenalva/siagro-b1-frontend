@@ -21,7 +21,7 @@
 				enableBusyIndicator="true"
 				alternateRowColors="true"
 				rows="{
-					path: '/Veiculos'
+					path: '/Trucks'
 				}"
 			>
 				<t:extension>
@@ -33,47 +33,38 @@
 				<t:columns>
 					<t:Column
 						label="Codigo"
-						sortProperty="Id"
-						filterProperty="Id"
+						sortProperty="Key"
+						filterProperty="Key"
 						>
 						<t:template>
-							<Text text="{Id}" />
+							<Text text="{Key}" />
 						</t:template>
 					</t:Column>
 					<t:Column
-						label="Placa"
-						sortProperty="Placa"
-						filterProperty="Placa"
-						>
-						<t:template>
-							<Text text="{Placa}" />
-						</t:template>
-					</t:Column>
-          <t:Column
 						label="Modelo"
-						sortProperty="Modelo"
-						filterProperty="Modelo"
+						sortProperty="Model"
+						filterProperty="Model"
 						>
 						<t:template>
-							<Text text="{Modelo}" />
+							<Text text="{Model}" />
 						</t:template>
 					</t:Column>
           <t:Column
 						label="Municipio"
-						sortProperty="Municipio"
-						filterProperty="Municipio"
+						sortProperty="City"
+						filterProperty="City"
 						>
 						<t:template>
-							<Text text="{Municipio}" />
+							<Text text="{City}" />
 						</t:template>
 					</t:Column>
           <t:Column
 						label="Uf"
-						sortProperty="Estado/Sigla"
-						filterProperty="Estado/Sigla"
+						sortProperty="State/Abbreviation"
+						filterProperty="State/Abbreviation"
 						>
 						<t:template>
-							<Text text="{Estado/Sigla}" />
+							<Text text="{State/Abbreviation}" />
 						</t:template>
 					</t:Column>
 				</t:columns>

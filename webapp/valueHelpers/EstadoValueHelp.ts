@@ -21,18 +21,20 @@ export default class EstadoValueHelp {
 				dlg = new TableSelectDialog(id, {
 					title: "Uf",
 					columns: [
-						new Column({ header: new Text({ text: "Sigla"})}),
+            new Column({ header: new Text({ text: "Sigla"})}),
+						new Column({ header: new Text({ text: "Name"})}),
 						new Column({ header: new Text({ text: "Codigo"})}),
 					],
 					items: {
-						path: "/Estados",
+						path: "/States",
 						sorter: [
-              new Sorter("Sigla")
+              new Sorter("Abbreviation")
             ],
 						template: new ColumnListItem({
 							cells: [
-								new Text({ text: "{Sigla}" }),
-								new Text({ text: "{Codigo}" }),
+								new Text({ text: "{Abbreviation}" }),
+								new Text({ text: "{Key}" }),
+								new Text({ text: "{Name}" }),
 							],
 						}),
 					},
@@ -40,7 +42,9 @@ export default class EstadoValueHelp {
 						const value = ev.getParameter("value");
 						const filters = new Filter({
 							filters: [
-								new Filter("Sigla", FilterOperator.Contains, value),
+								new Filter("Abbreviation", FilterOperator.Contains, value),
+								new Filter("Key", FilterOperator.Contains, value),
+								new Filter("Name", FilterOperator.Contains, value),
 							],
 							and: false,
 						});

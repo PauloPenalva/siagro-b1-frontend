@@ -25,15 +25,15 @@ export default class TabelaCustoValueHelp {
 						new Column({ header: new Text({ text: "Descrição"})}),
 					],
 					items: {
-						path: "/TabelasCusto",
+						path: "/ProcessingCosts",
 						sorter: [
-              new Sorter("Descricao"),
-              new Sorter("Id"),
+              new Sorter("Description"),
+              new Sorter("Key"),
             ],
 						template: new ColumnListItem({
 							cells: [
-								new Text({ text: "{Id}" }),
-								new Text({ text: "{Descricao}" }),
+								new Text({ text: "{Key}" }),
+								new Text({ text: "{Description}" }),
 							],
 						}),
 					},
@@ -41,7 +41,8 @@ export default class TabelaCustoValueHelp {
 						const value = ev.getParameter("value");
 						const filters = new Filter({
 							filters: [
-								new Filter("Descricao", FilterOperator.Contains, value),
+								new Filter("Description", FilterOperator.Contains, value),
+								new Filter("Key", FilterOperator.Contains, value),
 							],
 							and: false,
 						});

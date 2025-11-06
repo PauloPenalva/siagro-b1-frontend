@@ -31,24 +31,26 @@
             />
             <Label text="Codigo" />
             <Input
-                value="{Id}"
-                editable="false"
-            />
-            <Label text="Descricao" />
-            <Input
-                value="{Descricao}"
+                value="{Key}"
                 editable="true"
                 required="true"
                 liveChange=".validateField"
             />
-            <Label text="Taxa Armazenagem" />
+            <Label text="Descricao" />
+            <Input
+                value="{Description}"
+                editable="true"
+                required="true"
+                liveChange=".validateField"
+            />
+            <Label text="Preço Armaz. R$/KG" />
             <Input
                 required="true"
                 value="{
-                  path: 'TaxaArmazenagem',
+                  path: 'StoragePrice',
                   type: 'sap.ui.model.odata.type.Double',
                   formatOptions: {
-                      decimals: 6,
+                      decimals: 8,
                       decimalSeparator: ',',
                       groupingEnabled: true,
                       groupingSeparator: '.'
@@ -57,11 +59,11 @@
                 editable="true"
                 liveChange=".validateField"
             />
-            <Label text="Carencia Armazenagem" />
+            <Label text="Carencia Armaz. (em dias)" />
             <Input
                 required="true"
                 value="{
-                    path: 'CarenciaArmazenagem',
+                    path: 'StorageGraceDays',
                     type: 'sap.ui.model.odata.type.Int32',
                     formatOptions: {
                         groupingEnabled: true,
@@ -71,11 +73,11 @@
                 editable="true"
                 liveChange=".validateField"
             />
-            <Label text="Vencimento Armazenagem" />
+            <Label text="Venc. Armaz. (em dias)" />
             <Input
                 required="true"
                 value="{
-                  path: 'VencimentoArmazenagem',
+                  path: 'StorageBillingIntervalDays',
                   type: 'sap.ui.model.odata.type.Int32',
                   formatOptions: {
                     groupingEnabled: true,
@@ -87,11 +89,11 @@
             />
 
             <core:Title />
-            <Label text="Taxa Expurgo" />
+            <Label text="Preço Expurgo (R$/KG)" />
             <Input
                 required="true"
                 value="{
-                  path: 'TaxaExpurgo',
+                  path: 'FumigationPrice',
                   type: 'sap.ui.model.odata.type.Double',
                   formatOptions: {
                     decimals: 6,
@@ -103,11 +105,11 @@
                 editable="true"
                 liveChange=".validateField"
             />
-            <Label text="Vencimento Expurgo" />
+            <Label text="Venc. Expurgo (em dias)" />
             <Input
                 required="true"
                 value="{
-                  path: 'VencimentoExpurgo',
+                  path: 'FumigationIntervalDays',
                   type: 'sap.ui.model.odata.type.Int32',
                   formatOptions: {
                     groupingEnabled: true,
@@ -117,11 +119,11 @@
                 editable="true"
                 liveChange=".validateField"
             />
-            <Label text="Carencia Quebra Técnica" />
+            <Label text="Carencia Q.Téc. (em dias)" />
             <Input
                 required="true"
                 value="{
-                  path: 'CarenciaQuebraTecnica',
+                  path: 'TechnicalLossGraceDays',
                   type: 'sap.ui.model.odata.type.Int32',
                   formatOptions: {
                     groupingEnabled: true,
@@ -131,11 +133,11 @@
                 editable="true"
                 liveChange=".validateField"
             />
-            <Label text="Vencimento Quebra Técnica" />
+            <Label text="Venc. Q.Téc. (em dias)" />
             <Input
                 required="true"
                 value="{
-                  path: 'VencimentoQuebraTecnica',
+                  path: 'TechnicalLossIntervalDays',
                   type: 'sap.ui.model.odata.type.Int32',
                   formatOptions: {
                       groupingEnabled: true,
@@ -146,11 +148,11 @@
                 liveChange=".validateField"
             />
 
-            <Label text="Taxa Quebra Técnica" />
+            <Label text="Desconto Q.Téc. (%)" />
             <Input
                 required="true"
                 value="{
-                  path: 'TaxaQuebraTecnica',
+                  path: 'TechnicalLossRate',
                   type: 'sap.ui.model.odata.type.Double',
                   formatOptions: {
                     decimals: 6,

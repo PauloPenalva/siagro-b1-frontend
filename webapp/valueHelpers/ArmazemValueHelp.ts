@@ -25,15 +25,15 @@ export default class ArmazemValueHelp {
 						new Column({ header: new Text({ text: "Descrição"})}),
 					],
 					items: {
-						path: "/Armazens",
+						path: "/Warehouses",
 						sorter: [
-              new Sorter("Descricao"),
-              new Sorter("Id"),
+              new Sorter("Name"),
+              new Sorter("Key"),
             ],
 						template: new ColumnListItem({
 							cells: [
-								new Text({ text: "{Id}" }),
-								new Text({ text: "{Descricao}" }),
+								new Text({ text: "{Key}" }),
+								new Text({ text: "{Name}" }),
 							],
 						}),
 					},
@@ -41,7 +41,7 @@ export default class ArmazemValueHelp {
 						const value = ev.getParameter("value");
 						const filters = new Filter({
 							filters: [
-								new Filter("Descricao", FilterOperator.Contains, value),
+								new Filter("Name", FilterOperator.Contains, value),
 							],
 							and: false,
 						});

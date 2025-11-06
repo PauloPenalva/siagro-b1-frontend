@@ -43,7 +43,7 @@ export default class LoteArmazenagemBaseController extends BaseController {
         this.getView()
       );
       if (obj) {
-        ev.getSource().setValue(obj.Id.toString());
+        ev.getSource().setValue(obj.Key);
       }
     }
 
@@ -53,7 +53,7 @@ export default class LoteArmazenagemBaseController extends BaseController {
         this.getView()
       );
       if (obj) {
-        ev.getSource().setValue(obj.Id.toString());
+        ev.getSource().setValue(obj.Key);
       }
     }
 
@@ -82,21 +82,21 @@ export default class LoteArmazenagemBaseController extends BaseController {
   
     async formatArmazemDescricao(sId: string): Promise<string> {
         if (sId) {
-          const sPath = `/odata/Armazens/${sId}`;
+          const sPath = `/odata/Warehouses/${sId}?$select=Name`;
           const cq = 
             await models.requestModel(sPath) as Armazem
           
-          return cq.Descricao;
+          return cq.Name;
         }
       }
 
     async formatTabelaCustoDescricao(sId: string): Promise<string> {
         if (sId) {
-          const sPath = `/odata/TabelasCusto/${sId}`;
+          const sPath = `/odata/ProcessingCosts/${sId}?$select=Description`;
           const cq = 
             await models.requestModel(sPath) as TabelaCusto
           
-          return cq.Descricao;
+          return cq.Description;
         }
       }
 }

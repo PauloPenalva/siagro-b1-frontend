@@ -17,7 +17,7 @@ export default class Add extends LoteArmazenagemBaseController {
     
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;
-		const oBinding = oModel.bindList("/LotesArmazenagem")
+		const oBinding = oModel.bindList("/StorageLots")
 
 		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 			oModel.resetChanges(oModel.getUpdateGroupId())

@@ -17,7 +17,7 @@ export default class Add extends BaseController {
     
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;
-		const oBinding = oModel.bindList("/Safras")
+		const oBinding = oModel.bindList("/HarvestSeasons")
 
 		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 			oModel.resetChanges(oModel.getUpdateGroupId())
