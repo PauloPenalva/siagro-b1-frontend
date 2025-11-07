@@ -98,7 +98,8 @@
 				"type": "View",
 				"viewType": "XML",
 				"controlId": "app",
-				"controlAggregation": "pages"
+				"controlAggregation": "pages",
+        "clearControlAggregation": true
 			},
 			"routes": [
 				{
@@ -205,6 +206,16 @@
           "pattern": "veiculosEdit/{id}",
           "name": "veiculosEdit",
           "target": "veiculosEdit"
+        },
+        {
+          "pattern": "weighingTickets",
+          "name": "weighingTickets",
+          "target": "weighingTickets"
+        },
+        {
+          "pattern": "weighingTicketsNew",
+          "name": "weighingTicketsNew",
+          "target": "weighingTicketsNew"
         }
 			],
 			"targets": {
@@ -215,99 +226,142 @@
 				},
 				"main": {
 					"id": "main",
-					"name": "siagrob1.view.Main"
+					"name": "siagrob1.view.Main",
+          "clearControlAggregation": true
 				},
 				"parceirosNegocio": {
 					"id": "ParceirosNegocio",
-          "level": 2,
-					"name": "siagrob1.view.parceirosNegocio.Main"
+          "level": 1,
+					"name": "siagrob1.view.parceirosNegocio.Main",
+          "clearControlAggregation": true
 				},
 				"produtos": {
 					"id": "produtos",
-          "level": 2,
-					"name": "siagrob1.view.produtos.Main"
+          "level": 1,
+					"name": "siagrob1.view.produtos.Main",
+          "clearControlAggregation": true
 				},
 				"tabelaCusto": {
 					"id": "tabelaCusto",
-          "level": 2,
-					"name": "siagrob1.view.tabelaCusto.Main"
+          "level": 1,
+					"name": "siagrob1.view.tabelaCusto.Main",
+          "clearControlAggregation": true
 				},
 				"tabelaCustoNew": {
 					"id": "tabelaCustoNew",
           "level": 2,
-					"name": "siagrob1.view.tabelaCusto.Add"
+					"name": "siagrob1.view.tabelaCusto.Add",
+          "targetParent": "tabelaCusto",
+          "clearControlAggregation": true
 				},
 				"tabelaCustoEdit": {
 					"id": "tabelaCustoEdit",
           "level": 2,
-					"name": "siagrob1.view.tabelaCusto.Edit"
+					"name": "siagrob1.view.tabelaCusto.Edit",
+          "targetParent": "tabelaCusto",
+          "clearControlAggregation": true
 				},
         "armazens": {
 					"id": "armazens",
-          "level": 2,
-					"name": "siagrob1.view.armazem.Main"
+          "level": 1,
+					"name": "siagrob1.view.armazem.Main",
+          "clearControlAggregation": true
 				},
         "armazensNew": {
 					"id": "armazensNew",
           "level": 2,
-					"name": "siagrob1.view.armazem.Add"
+					"name": "siagrob1.view.armazem.Add",
+          "clearControlAggregation": true
 				},
         "armazensEdit": {
 					"id": "armazensEdit",
           "level": 2,
-					"name": "siagrob1.view.armazem.Edit"
+					"name": "siagrob1.view.armazem.Edit",
+          "clearControlAggregation": true
 				},
         "lotesArmazenagem": {
 					"id": "lotesArmazenagem",
-          "level": 2,
-					"name": "siagrob1.view.loteArmazenagem.Main"
-				},"lotesArmazenagemNew": {
+          "level": 1,
+					"name": "siagrob1.view.loteArmazenagem.Main",
+          "clearControlAggregation": true
+				},
+        "lotesArmazenagemNew": {
 					"id": "lotesArmazenagemNew",
           "level": 2,
-					"name": "siagrob1.view.loteArmazenagem.Add"
-				},"lotesArmazenagemEdit": {
+					"name": "siagrob1.view.loteArmazenagem.Add",
+          "clearControlAggregation": true
+				},
+        "lotesArmazenagemEdit": {
 					"id": "lotesArmazenagemEdit",
           "level": 2,
-					"name": "siagrob1.view.loteArmazenagem.Edit"
+					"name": "siagrob1.view.loteArmazenagem.Edit",
+          "clearControlAggregation": true
 				},
         "safras": {
 					"id": "safras",
-          "level": 2,
-					"name": "siagrob1.view.safra.Main"
-				},"safrasNew": {
+          "level": 1,
+					"name": "siagrob1.view.safra.Main",
+          "clearControlAggregation": true
+				},
+        "safrasNew": {
 					"id": "safrasNew",
           "level": 2,
-					"name": "siagrob1.view.safra.Add"
-				},"safrasEdit": {
+					"name": "siagrob1.view.safra.Add",
+          "clearControlAggregation": true
+				},
+        "safrasEdit": {
 					"id": "safrasEdit",
           "level": 2,
-					"name": "siagrob1.view.safra.Edit"
+					"name": "siagrob1.view.safra.Edit",
+          "clearControlAggregation": true
 				},
         "motoristas": {
 					"id": "motoristas",
-          "level": 2,
-					"name": "siagrob1.view.motorista.Main"
-				},"motoristasNew": {
+          "level": 1,
+					"name": "siagrob1.view.motorista.Main",
+          "clearControlAggregation": true
+				},
+        "motoristasNew": {
 					"id": "motoristasNew",
           "level": 2,
-					"name": "siagrob1.view.motorista.Add"
-				},"motoristasEdit": {
+					"name": "siagrob1.view.motorista.Add",
+          "clearControlAggregation": true
+				},
+        "motoristasEdit": {
 					"id": "motoristasEdit",
           "level": 2,
-					"name": "siagrob1.view.motorista.Edit"
+					"name": "siagrob1.view.motorista.Edit",
+          "clearControlAggregation": true
 				},
         "veiculos": {
 					"id": "veiculos",
-          "level": 2,
-					"name": "siagrob1.view.veiculo.Main"
-				},"veiculosNew": {
+          "level": 1,
+					"name": "siagrob1.view.veiculo.Main",
+          "clearControlAggregation": true
+				},
+        "veiculosNew": {
 					"id": "veiculosNew",
           "level": 2,
-					"name": "siagrob1.view.veiculo.Add"
-				},"veiculosEdit": {
+					"name": "siagrob1.view.veiculo.Add",
+          "clearControlAggregation": true
+				},
+        "veiculosEdit": {
 					"id": "veiculosEdit",
           "level": 2,
-					"name": "siagrob1.view.veiculo.Edit"
+					"name": "siagrob1.view.veiculo.Edit",
+          "clearControlAggregation": true
+				},
+        "weighingTickets": {
+					"id": "weighingTickets",
+          "level": 1,
+					"name": "siagrob1.view.weighingTicket.Main",
+          "clearControlAggregation": true
+				},
+        "weighingTicketsNew": {
+					"id": "weighingTicketsNew",
+          "level": 2,
+					"name": "siagrob1.view.weighingTicket.Add",
+          "clearControlAggregation": true
 				}
 			}
 		}

@@ -33,6 +33,7 @@
                     <MenuItem text="Armazéns" key="armazens" press=".onItemPressed"/>
                     <MenuItem text="Tabela de Custos" key="tabelaCusto" press=".onItemPressed"/>
                     <MenuItem text="Lotes de Armazenagem" key="lotesArmazenagem" press=".onItemPressed"/>
+                    <MenuItem text="Tickets de Pesagem" key="weighingTickets" press=".onItemPressed"/>
                   </Menu>
                 </f:menu>
                 <f:profile>
