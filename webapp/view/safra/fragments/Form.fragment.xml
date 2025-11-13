@@ -33,8 +33,7 @@
             <Input
                 value="{Key}"
                 editable="true"
-                required="true"
-                liveChange=".validateField"
+                visible="false"
             />
             <Label text="Descricao" />
             <Input

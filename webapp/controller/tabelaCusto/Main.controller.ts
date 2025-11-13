@@ -31,7 +31,6 @@ export default class Main extends BaseController {
 		const oFilters = new Filter({
 			filters: [
 				new Filter("Description", FilterOperator.Contains, query),
-				new Filter("Key", FilterOperator.Contains, query),
 			],
 			and: false,
 		});

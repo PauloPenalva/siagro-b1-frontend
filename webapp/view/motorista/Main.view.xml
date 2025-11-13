@@ -35,9 +35,11 @@
 						label="Codigo"
 						sortProperty="Key"
 						filterProperty="Key"
+            visible="true"
+            width="5rem"
 						>
 						<t:template>
-							<Text text="{Key}" />
+							<Text text="{Key}" wrapping="false"/>
 						</t:template>
 					</t:Column>
 					<t:Column

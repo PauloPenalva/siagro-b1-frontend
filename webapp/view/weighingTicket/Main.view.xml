@@ -26,9 +26,54 @@
 			>
 				<t:extension>
 					<OverflowToolbar >
+            <Button text="Incluir" icon="sap-icon://add" type="Emphasized" press=".onCreate"/>
+            <Button text="Editar" icon="sap-icon://edit" press=".onEdit"/>
+            <Button text="Deletar" icon="sap-icon://delete" press=".onDelete"/>
+            <MenuButton text="Outras Ações" icon="sap-icon://manager-insight">
+              <menu>
+                <Menu>
+                  <MenuItem startsSection="true" text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
+                  <MenuItem text="1ª Pesagem" icon="sap-icon://inventory" press=".openFirstWeighing"/>
+                  <MenuItem text="2ª Pesagem" icon="sap-icon://inventory" press=".openSecondWeighing"/>
+                  <MenuItem text="Classificar" icon="sap-icon://quality-issue" press=""/>
+                  <MenuItem startsSection="true" text="Gerar Romaneio" icon="sap-icon://add-document" press=""/>
+                </Menu>
+              </menu>
+            </MenuButton>
             <ToolbarSpacer />
-						<SearchField placeholder="Pesquisar..." width="30%" search=".onSearch"/>
+           	<SearchField placeholder="Pesquisar..." width="30%" search=".onSearch"/>
 					</OverflowToolbar>
+          <IconTabBar 
+            class="sapUiResponsiveContentPadding"
+            select=".onFilterSelect">
+            <items>
+              <IconTabFilter
+                icon="sap-icon://begin"
+                iconColor="Positive"
+                count="0"
+                text="1ª Pesagem"
+                key="FirstWeighing"
+                />
+              <IconTabFilter
+                icon="sap-icon://begin"
+                iconColor="Positive"
+                count="0"
+                text="2ª Pesagem"
+                key="SecondWeighing" />
+              <IconTabFilter
+                icon="sap-icon://compare"
+                iconColor="Critical"
+                count="0"
+                text="Classificar"
+                key="QualityDetails" />
+              <IconTabFilter
+                icon="sap-icon://inventory"
+                iconColor="Negative"
+                count="0"
+                text="Romaneio"
+                key="WarehouseMovement" />
+            </items>
+          </IconTabBar>
 				</t:extension>
 				<t:columns>
 					<t:Column
@@ -44,9 +89,22 @@
 						label="Codigo"
 						sortProperty="Key"
 						filterProperty="Key"
+            width="5rem"
 						>
 						<t:template>
-							<Text text="{Key}" />
+							<Text text="{Key}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Operação"
+						sortProperty="Operation"
+						filterProperty="Operation"
+						>
+						<t:template>
+							<Text text="{
+                path: 'Operation',
+                formatter: '.formatter.formatOperation'
+              }" />
 						</t:template>
 					</t:Column>
 					<t:Column
@@ -147,15 +205,6 @@
 
 			</t:Table>
 		</content>
-    <footer>
-			<OverflowToolbar>
-				<Button text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
-				<ToolbarSpacer />
-				<Button text="Incluir" icon="sap-icon://add" type="Emphasized" press=".onCreate"/>
-				<Button text="Editar" icon="sap-icon://edit" press=".onEdit"/>
-				<Button text="Deletar" icon="sap-icon://delete" press=".onDelete"/>
-			</OverflowToolbar>
-		</footer>
 	</Page>
 
 </mvc:View>

@@ -25,7 +25,7 @@ export default class Edit extends TabelaCustoBaseController {
 
 		const {id} = ev.getParameter("arguments") as {id: string | null};
 		if (id != null) {
-			const sPath = `/ProcessingCosts('${id}')`;
+			const sPath = `/ProcessingCosts(${id})`;
 			oView.bindElement({
 				path: sPath,
 				events: {

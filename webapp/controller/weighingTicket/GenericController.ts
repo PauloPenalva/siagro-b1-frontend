@@ -14,6 +14,7 @@ import { Produto } from "siagrob1/types/Produto";
  */
 export default class GenericController extends BaseController {
   
+  
   async truckValueHelpRequest(ev: Input$ValueHelpRequestEvent) {
     const obj = await TruckValueHelp.open("truckValueHelp", this.getView());
     if (obj) {

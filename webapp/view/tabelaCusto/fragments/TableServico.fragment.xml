@@ -31,7 +31,7 @@
 				<t:columns>
 					<t:Column
 						label="Codigo"
-						width="10rem"
+						width="5rem"
 						>
 						<t:template>
 							<Input 

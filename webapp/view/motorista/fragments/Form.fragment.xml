@@ -31,8 +31,7 @@
           <Label text="Codigo" />
           <Input
               value="{Key}"
-              required="true"
-              liveChange=".validateField"
+              visible="false"
           />
           <Label text="Nome" />
           <Input

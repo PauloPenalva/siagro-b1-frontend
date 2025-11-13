@@ -143,7 +143,7 @@ export default class TabelaCustoBaseController extends BaseController {
   async formatDescricaoCaracteristica(sId: string): Promise<string> {
       const oTable = <Table> this.byId("tableQualidade");
       if (sId) {
-        const sPath = `/odata/QualityAttribs('${sId}')`;
+        const sPath = `/odata/QualityAttribs(${sId})`;
         const cq = 
           await models.requestModel(sPath, oTable) as CaracteristcaQualidade
         
@@ -154,7 +154,7 @@ export default class TabelaCustoBaseController extends BaseController {
   async formatDescricaoServico(sId: string): Promise<string> {
     const oTable = <Table> this.byId("tableServicos");
     if (sId) {
-      const sPath = `/odata/ProcessingServices('${sId}')`;
+      const sPath = `/odata/ProcessingServices(${sId})`;
       const sv = await models.requestModel(sPath, oTable) as ServicoArmazenagem;
     
       return sv.Description;

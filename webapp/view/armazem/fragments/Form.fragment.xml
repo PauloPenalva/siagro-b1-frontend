@@ -31,10 +31,9 @@
             />
             <Label text="Codigo" />
             <Input
-                value="{Key}"
-                editable="true"
-                required="true"
-                liveChange=".validadeField"
+              value="{Key}"
+              editable="true"
+              visible="false"
             />
             <Label text="Descricao" />
             <Input

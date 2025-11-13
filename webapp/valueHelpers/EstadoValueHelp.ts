@@ -33,8 +33,8 @@ export default class EstadoValueHelp {
 						template: new ColumnListItem({
 							cells: [
 								new Text({ text: "{Abbreviation}" }),
-								new Text({ text: "{Key}" }),
 								new Text({ text: "{Name}" }),
+								new Text({ text: "{Key}" }),
 							],
 						}),
 					},

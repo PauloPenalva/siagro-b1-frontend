@@ -23,7 +23,7 @@
 				visibleRowCountMode="Auto"
 				enableBusyIndicator="true"
 				alternateRowColors="true"
-				busy="{ui>/isBusy}"
+        busy="{ui>/isBusy}"
 				rows="{
 					path: '/ProcessingCosts',
 					parameters: {
@@ -42,10 +42,10 @@
 						label="Codigo"
 						sortProperty="Key"
 						filterProperty="Key"
-						width="10rem"
-						>
+						width="5rem"
+            >
 						<t:template>
-							<Text text="{Key}" />
+							<Text text="{Key}" wrapping="false"/>
 						</t:template>
 					</t:Column>
 					<t:Column

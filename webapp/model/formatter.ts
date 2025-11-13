@@ -28,6 +28,17 @@ export default {
     } else {
       return value;
     }
-
+  },
+  formatOperation: (value: string) => {
+    switch (value){
+      case "IN":
+        return "ENTRADA"
+      case "OUT":
+        return "SAIDA"
+      case "NONE":
+        return "PESAGEM"
+      default:
+        return ""
+    }
   }
 };

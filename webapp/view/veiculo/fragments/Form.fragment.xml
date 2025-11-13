@@ -32,8 +32,13 @@
           <Input
             value="{Key}"
             editable="true"
-            required="true"
-            liveChange=".validateField"
+            visible="false"
+          />
+          <Label text="Placa" />
+          <Input
+              value="{LicensePlate}"
+              editable="true"
+              liveChange=".validateField"
           />
           <Label text="Modelo" />
           <Input

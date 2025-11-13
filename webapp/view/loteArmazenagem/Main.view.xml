@@ -38,6 +38,8 @@
 						label="Codigo"
 						sortProperty="Key"
 						filterProperty="Key"
+            visible="true"
+            width="5rem"
 						>
 						<t:template>
 							<Text text="{Key}" wrapping="false"/>

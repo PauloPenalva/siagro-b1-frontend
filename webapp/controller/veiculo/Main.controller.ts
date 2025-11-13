@@ -32,7 +32,6 @@ export default class Main extends BaseController {
 		const query = ev.getParameter("query");
 		const oFilters = new Filter({
 			filters: [
-				new Filter("Key", FilterOperator.Contains, query),
 				new Filter("Model", FilterOperator.Contains, query),
 				new Filter("City", FilterOperator.Contains, query),
 				new Filter("State/Abbreviation", FilterOperator.Contains, query),

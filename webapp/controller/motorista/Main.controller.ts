@@ -34,7 +34,6 @@ export default class Main extends BaseController {
 			filters: [
 				new Filter("Name", FilterOperator.Contains, query),
 				new Filter("Cpf", FilterOperator.Contains, query),
-				new Filter("Key", FilterOperator.Contains, query),
 			],
 			and: false,
 		});
