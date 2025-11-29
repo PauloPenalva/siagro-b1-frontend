@@ -1,0 +1,115 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <t:Table
+    id="purchaseContractPriceFixationsTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    visibleRowCount="15"
+    visibleRowCountMode="Fixed"
+    busyIndicatorDelay="0"
+    rows="{PriceFixations}"
+    visible="true"
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Fixações" />
+          <ToolbarSpacer />
+          <Button
+              text="Incluir"
+              type="Emphasized"
+              icon="sap-icon://add"
+              press=".onAddPriceFixation"
+          />
+          <Button
+              text="Remover"
+              icon="sap-icon://delete"
+              press=".onRemovePriceFixation"
+          />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+  <t:columns>
+    <t:Column label="Data">
+      <t:template>
+        <DatePicker
+            value="{
+              path: 'FixationDate',
+              targetType: 'any',
+              formatter: '.formatter.formatDate'
+            }"
+            displayFormat="dd/MM/yyyy"
+        />
+      </t:template>
+    </t:Column>
+    <t:Column label="Frete">
+      <t:template>
+        <Input
+            value="{
+            path: 'FreightCost',
+            type: 'sap.ui.model.odata.type.Double',
+            formatOptions: {
+                decimals: 2,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+            } 
+          }"
+        />
+      </t:template>
+    </t:Column>
+    <t:Column label="Volume">
+      <t:template>
+        <Input
+            value="{
+            path: 'FixationVolume',
+            type: 'sap.ui.model.odata.type.Double',
+            formatOptions: {
+                decimals: 3,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+            } 
+          }"
+        />
+      </t:template>
+    </t:Column>
+    <t:Column label="Preço">
+      <t:template>
+        <Input
+            value="{
+            path: 'FixationPrice',
+            type: 'sap.ui.model.odata.type.Double',
+            formatOptions: {
+                decimals: 8,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+            } 
+          }"
+        />
+      </t:template>
+    </t:Column>
+    <t:Column label="Status">
+      <t:template>
+        <Text
+            text="{
+            path: 'Status',
+            targetType: 'any',
+            formatter: '.formatter.formatPriceFixationStatus'
+          }"
+        />
+      </t:template>
+    </t:Column>
+  </t:columns>
+</t:Table>
+</core:FragmentDefinition>

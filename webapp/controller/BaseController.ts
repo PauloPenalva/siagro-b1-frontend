@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Controller from "sap/ui/core/mvc/Controller";
 import UIComponent from "sap/ui/core/UIComponent";
 import AppComponent from "../Component";
@@ -15,6 +16,7 @@ import ComboBox from "sap/m/ComboBox";
 import DatePicker from "sap/m/DatePicker";
 import Table from "sap/ui/table/Table";
 import Context from "sap/ui/model/odata/v4/Context";
+import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 
 /**
  * @namespace siagrob1.controller
@@ -82,6 +84,9 @@ export default abstract class BaseController extends Controller {
    * If not, it will replace the current entry of the browser history with the main route.
    */
   public onNavBack(): void {
+    
+    this.resetModelChanges();
+
     const sPreviousHash = History.getInstance().getPreviousHash();
     if (sPreviousHash !== undefined) {
       window.history.go(-1);
@@ -209,6 +214,7 @@ export default abstract class BaseController extends Controller {
     });
   }
 
+
   getSelectRowContext(oTable: Table): Context {
     const iRowSelected = oTable.getSelectedIndex();
 		if (iRowSelected < 0)  {
@@ -216,5 +222,18 @@ export default abstract class BaseController extends Controller {
 		}
 
     return oTable.getContextByIndex(iRowSelected) as Context;
+  }
+
+  setViewModelProperty(name: string, value: any){
+    (this.getModel("viewModel") as JSONModel)
+      .setProperty(name, value)
+  }
+
+  resetModelChanges(){
+    const oModel = this.getView().getModel() as ODataModel;
+
+		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
+			oModel.resetChanges(oModel.getUpdateGroupId());
+		}
   }
 }

@@ -5,6 +5,25 @@ export default {
 		return value?.toUpperCase();
 	},
 
+  formatDecimal: (
+    number: number | string, 
+    decimals: number = 4,
+    useGrouping = true,
+    locale = 'pt-BR'
+  ): string  => {
+    const num = typeof number === 'string' ? parseFloat(number) : number;
+    
+    if (isNaN(num)) {
+        throw new Error('O valor fornecido não é um número válido');
+    }
+    
+    return num.toLocaleString(locale, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+        useGrouping: useGrouping
+    });
+  },
+
   formatCnpj: (value: string) => {
     if (!value) return "";
 
@@ -29,6 +48,14 @@ export default {
       return value;
     }
   },
+
+  formatDate: (value: string) => {
+    console.log(value);
+    if (!value) return "";
+    const date = new Date(value); // o JS aceita micros sem problema
+    return date.toLocaleDateString("pt-BR"); // 19/11/2025
+  },
+  
   formatOperation: (value: string) => {
     switch (value){
       case "IN":
@@ -40,5 +67,22 @@ export default {
       default:
         return ""
     }
+  },
+
+  formatWarehouseType: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Owner", "PRÓPRIO");
+    m.set("ThirdParty", "DE TERCEIROS");
+    
+    return m.get(value);
+  },
+
+   formatPriceFixationStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Pending", "PENDENTE");
+    m.set("Confirmed", "CONFIRMADO");
+    m.set("Canceled", "CANCELADO");
+    
+    return m.get(value);
   }
 };

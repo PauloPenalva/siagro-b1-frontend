@@ -30,8 +30,9 @@
           />
           <Label text="Codigo" />
           <Input
-              value="{Key}"
-              visible="false"
+              value="{Code}"
+              required="true"
+              maxLength="11"
           />
           <Label text="Nome" />
           <Input
@@ -39,13 +40,7 @@
               editable="true"
               required="true"
               liveChange=".validateField"
-          />
-          <Label text="Cpf" />
-          <Input
-              value="{Cpf}"
-              editable="true"
-              required="true"
-              liveChange=".validateField"
+              maxLength="100"
           />
         </f:content>
         <core:Title />

@@ -3,71 +3,67 @@ import BaseController from "../BaseController";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
-import Table from "sap/ui/table/Table";
-import MessageBox from "sap/m/MessageBox";
-import ODataModel from "sap/ui/model/odata/v4/ODataModel";
-import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import formatter from "siagrob1/model/formatter";
+import MessageBox from "sap/m/MessageBox";
+import Table from "sap/ui/table/Table";
+import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import Context from "sap/ui/model/odata/v4/Context";
+import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 
 /**
- * @namespace siagrob1.controller.armazem
+ * @namespace siagrob1.controller.purchaseContracts
  */
 export default class Main extends BaseController {
 
   formatter = formatter;
 
 	onInit(): void | undefined {
-		this.getRouter().getRoute("armazens").attachPatternMatched(() => this.routeMatched())
-	}
 
-	private routeMatched() {
-		this.onRefresh();
-	}
-
-	onRefresh(): void | undefined {
-		(this.getView().byId("tableArmazens").getBinding("rows") as ODataListBinding).refresh();
 	}
 
 	onSearch(ev: SearchField$SearchEvent): void | undefined {
 		const query = ev.getParameter("query");
 		const oFilters = new Filter({
 			filters: [
-				new Filter("Name", FilterOperator.Contains, query),
 				new Filter("Code", FilterOperator.Contains, query),
 			],
 			and: false,
 		});
 
-		(this.getView().byId("tableArmazens").getBinding("rows") as ODataListBinding).filter([oFilters]);
+		(this.getView().byId("tablePurchaseContracts").getBinding("rows") as ODataListBinding).filter([oFilters]);
 	}
 
-	onCreate() {
-			this.navTo("armazensNew");
+  onCreate() {
+		this.navTo("purchaseContractsNew");
 	}
 
 	onEdit(): void {
-		const oTable = this.byId("tableArmazens") as Table;
-    const oContext = this.getSelectRowContext(oTable);
-		
-		if (!oContext) {
-			MessageBox.alert("Selecione um item para editar.");
-			return;
-		}
+		const oTable = this.byId("tablePurchaseContracts") as Table;
+    const i = oTable.getSelectedIndex()
+
+    if (i < 0) {
+      MessageBox.warning("Selecione um registro.")
+      return;
+    }
+
+    const oContext = oTable.getContextByIndex(i)
+		const sId = oContext.getProperty("Key") as string;
     
-		const sId = oContext.getProperty("Code") as string;
-		this.navTo("armazensEdit", {id: sId});
+		this.navTo("purchaseContractsEdit", {id: sId});
 	}
 
 	async onDelete() {
 		const oModel = this.getView().getModel() as ODataModel;
-		const oTable = this.byId("tableArmazens") as Table;
-		const oBindingContext = this.getSelectRowContext(oTable);
+		const oTable = this.byId("tableLoteArmazenagem") as Table;
+		
+    const i = oTable.getSelectedIndex()
 
-		if (!oBindingContext)  {
-			MessageBox.alert("Selecione um item para editar.");
-			return;
-		}
-
+    if (i < 0) {
+      MessageBox.warning("Selecione um registro.")
+      return;
+    }
+    const oBindingContext = oTable.getContextByIndex(i) as Context;
+ 
 		if (await confirmDialog("Deseja realmente deletar este registro ?", "Deletar registro ?")) {
 			try{
 				this.setBusy(true)

@@ -31,7 +31,7 @@ export default class Main extends BaseController {
 		const oFilters = new Filter({
 			filters: [
 				new Filter("Name", FilterOperator.Contains, query),
-				new Filter("Key", FilterOperator.Contains, query),
+				new Filter("Code", FilterOperator.Contains, query),
 			],
 			and: false,
 		});
@@ -54,7 +54,7 @@ export default class Main extends BaseController {
     
 		const oContext = oTable.getContextByIndex(i) as Context;
     
-		const sId = oContext.getProperty("Key") as string;
+		const sId = oContext.getProperty("Code") as string;
 		this.navTo("safrasEdit", {id: sId});
 	}
 

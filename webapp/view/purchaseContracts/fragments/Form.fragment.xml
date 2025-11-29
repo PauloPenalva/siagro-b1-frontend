@@ -1,0 +1,27 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+    <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractForm" type="XML" />
+    <IconTabBar
+			tabDensityMode="Compact"
+			expanded="true"
+			headerMode="Inline"
+			expandable="false"
+			class="sapUiResponsiveContentPadding">
+			<items>
+        <IconTabFilter text="Impostos">
+          <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractTaxes" type="XML" />
+        </IconTabFilter>
+        <IconTabFilter text="Fixações">
+          <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractPriceFixations" type="XML" />
+        </IconTabFilter>
+        <IconTabFilter text="Parametros de Qualidade">
+          <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractQualityParameters" type="XML" />
+        </IconTabFilter>
+			</items>
+		</IconTabBar>
+</core:FragmentDefinition>

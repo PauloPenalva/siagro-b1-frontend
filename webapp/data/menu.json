@@ -22,5 +22,9 @@
   {
     "title": "Lotes de Armazenagem",
     "key": "lotesArmazenagem"
+  },
+  {
+    "title": "Contratos de Compra",
+    "key": "purchaseContracts"
   }
 ]

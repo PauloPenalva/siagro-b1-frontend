@@ -75,15 +75,17 @@
 					"operationMode": "Server",
 					"synchronizationMode": "None",
 					"autoExpandSelect": true,
-					"earlyRequests": false,
+					"earlyRequests": true,
 					"updateGroupId" : "UpdateGroup",
 					"groupId": "$auto",
-								"httpHeaders": {
-
-					}
+					"httpHeaders": { }
 				}
 			},
 			"ui": {
+				"type": "sap.ui.model.json.JSONModel",
+				"settings": {}
+			},
+      "viewModel": {
 				"type": "sap.ui.model.json.JSONModel",
 				"settings": {}
 			}
@@ -216,6 +218,21 @@
           "pattern": "weighingTicketsNew",
           "name": "weighingTicketsNew",
           "target": "weighingTicketsNew"
+        },
+        {
+          "pattern": "purchaseContracts",
+          "name": "purchaseContracts",
+          "target": "purchaseContracts"
+        },
+        {
+          "pattern": "purchaseContractsNew",
+          "name": "purchaseContractsNew",
+          "target": "purchaseContractsNew"
+        },
+        {
+          "pattern": "purchaseContractsEdit/{id}",
+          "name": "purchaseContractsEdit",
+          "target": "purchaseContractsEdit"
         }
 			],
 			"targets": {
@@ -361,6 +378,24 @@
 					"id": "weighingTicketsNew",
           "level": 2,
 					"name": "siagrob1.view.weighingTicket.Add",
+          "clearControlAggregation": true
+				},
+        "purchaseContracts": {
+					"id": "purchaseContracts",
+          "level": 1,
+					"name": "siagrob1.view.purchaseContracts.Main",
+          "clearControlAggregation": true
+				},
+        "purchaseContractsNew": {
+					"id": "purchaseContractsNew",
+          "level": 2,
+					"name": "siagrob1.view.purchaseContracts.Add",
+          "clearControlAggregation": true
+				},
+        "purchaseContractsEdit": {
+					"id": "purchaseContractsEdit",
+          "level": 2,
+					"name": "siagrob1.view.purchaseContracts.Edit",
           "clearControlAggregation": true
 				}
 			}

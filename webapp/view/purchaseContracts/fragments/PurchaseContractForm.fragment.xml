@@ -1,0 +1,249 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+ <f:SimpleForm
+      id="formPurchaseContracts"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0"
+    >
+        <f:content>
+            <core:Title
+                text="Dados do Contrato"
+                emphasized="true"
+            />
+            <Label text="Codigo" />
+            <Input
+                value="{Code}"
+                editable="true"
+                required="true"
+                maxLength="50"
+            />
+            <Label text="Sequencia"/>
+            <Input
+                value="{Sequence}"
+                editable="true"
+                required="true"
+                maxLength="3"
+            />
+            <Label text="Complemento" />
+            <Input
+                value="{Complement}"
+                editable="true"
+                maxLength="100"
+            />
+            <Label text="Data" />
+            <DatePicker
+                value="{
+                  path: 'CreationDate',
+                  targetType: 'any',
+                  formatter: '.formatter.formatDate'
+                }"
+                editable="true"
+                required="true"
+                liveChange=".validateField"
+                displayFormat="dd/MM/yyyy"
+            />
+            <Label text="Tipo"/>
+            <Select 
+              forceSelection="false"
+              required="true"
+              selectedKey="{
+                path: 'Type',
+                targetType: 'any'
+              }"
+              >
+              <core:ListItem key="Fixed" text="FIX"/>
+              <core:ListItem key="ToBeDetermined" text="PAF"/>
+            </Select>
+            <Label text="Status"/>
+            <Select 
+              forceSelection="false"
+              required="true"
+              editable="false"
+              selectedKey="{
+                path: 'Status',
+                targetType: 'any'
+              }"
+            >
+              <core:ListItem key="Draft" text="RASCUNHO"/>
+              <core:ListItem key="Approved" text="APROVADO"/>
+              <core:ListItem key="Finished" text="FINALIZADO"/>
+              <core:ListItem key="Canceled" text="CANCELADO"/>
+            </Select>
+            
+            <Label text="Fornecedor" />
+            <Input
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openBusinessPartnersValueHelp"
+              required="true"
+              value="{CardCode}"
+              >
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Input>
+          
+            <Input 
+              value="{
+                parts: ['CardCode'],
+                formatter: '.formatBusinessPartnerName'
+              }" 
+              editable="false"
+            />
+
+            <Label text="Inicio entrega" />
+            <DatePicker
+                value="{
+                  path: 'DeliveryStartDate',
+                  targetType: 'any',
+                  formatter: '.formatter.formatDate'
+                }"
+                editable="true"
+                required="true"
+                liveChange=".validateField"
+                displayFormat="dd/MM/yyyy"
+            />
+            <Label text="Termino entrega" />
+            <DatePicker
+                value="{
+                  path: 'DeliveryEndDate',
+                  targetType: 'any',
+                  formatter: '.formatter.formatDate'
+                }"
+                editable="true"
+                required="true"
+                displayFormat="dd/MM/yyyy"
+                liveChange=".validateField"
+            >
+            </DatePicker>
+
+            <Label text="Tipo do Frete"/>
+            <Select 
+              forceSelection="false"
+              required="true"
+              selectedKey="{
+                path: 'FreightTerms',
+                targetType: 'any'
+              }"
+              >
+              <core:ListItem key="Cif" text="CIF"/>
+              <core:ListItem key="Fob" text="FOB"/>
+              <core:ListItem key="None" text="SEM FRETE"/>
+            </Select>
+          
+            <core:Title />
+            <Label text="Produto" />
+            <Input 
+								required="true"
+                value="{ItemCode}" 
+								showValueHelp="true" 
+								valueHelpOnly="true" 
+								valueHelpRequest=".openItemValueHelp">
+              <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts:['ItemCode'],
+                formatter: '.formatItemName'
+              }" 
+              editable="false"
+            />
+            <Label text="Un.Med." />
+            <Input 
+								required="true"
+                value="{UnitOfMeasureCode}" 
+								showValueHelp="true" 
+								valueHelpOnly="true" 
+								valueHelpRequest=".openUnitsOfMeasureValueHelp">
+              <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts:['UnitOfMeasureCode'],
+                formatter: '.formatUnitOfMeasureDescription'
+              }" 
+              editable="false"
+            />
+            <Label text="Safra" />
+            <Input 
+								required="true"
+                value="{HarvestSeasonCode}" 
+								showValueHelp="true" 
+								valueHelpOnly="true" 
+								valueHelpRequest=".openHarvestSeasonsValueHelp">
+              <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts:['HarvestSeasonCode'],
+                formatter: '.formatHarvestSeasonName'
+              }" 
+              editable="false"
+            />
+            <Label text="Quantidade"/>
+            <Input 
+              required="true"
+              value="{
+                path: 'TotalVolume',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions: {
+                    decimals: 3,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                } 
+              }"
+            />
+            <Label text="Local de entrega" />
+            <Input 
+								required="true"
+                value="{DeliveryLocationCode}" 
+								showValueHelp="true" 
+								valueHelpOnly="true" 
+								valueHelpRequest=".openWarehouseValueHelp">
+              <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts:['DeliveryLocationCode'],
+                formatter: '.formatWarehouseName'
+              }" 
+              editable="false"
+            />
+            <Label text="Observações" />
+            <TextArea 
+              value="{Comments}"
+              rows="5"
+              cols="10"
+            />
+
+        </f:content>
+    </f:SimpleForm>
+</core:FragmentDefinition>

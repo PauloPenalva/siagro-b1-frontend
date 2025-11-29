@@ -2,19 +2,19 @@ import MessageToast from "sap/m/MessageToast";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
-import BaseController from "../BaseController";
+import PurchaseContractsBaseController from "./BaseController";
 
 /**
- * @namespace siagrob1.controller.armazem
+ * @namespace siagrob1.controller.purchaseContracts
  */
-export default class Edit extends BaseController {
+export default class Edit extends PurchaseContractsBaseController {
 
 	onInit(): void | undefined {	
-		this.getRouter().getRoute("armazensEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
+		this.getRouter().getRoute("purchaseContractsEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
-		this.clearStates("formArmazem");
+		this.clearStates("formPurchaseContracts");
     
     const oModel = this.getView().getModel() as ODataModel;
 		const oView = this.getView();
@@ -25,7 +25,7 @@ export default class Edit extends BaseController {
 
 		const {id} = ev.getParameter("arguments") as {id: string | null};
 		if (id != null) {
-			const sPath = `/Warehouses('${id}')`;
+			const sPath = `/PurchaseContracts(${id})`;
 			oView.bindElement({
 				path: sPath,
 				events: {
@@ -39,7 +39,7 @@ export default class Edit extends BaseController {
 	}
 
 	async onSave() {
-		if (!this.validateForm("formArmazem")) {
+		if (!this.validateForm("formLoteArmazenagem")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }
@@ -69,4 +69,6 @@ export default class Edit extends BaseController {
 
 		this.onNavBack();
 	}
+
+
 }

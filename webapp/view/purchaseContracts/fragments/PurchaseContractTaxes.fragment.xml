@@ -1,0 +1,80 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <t:Table
+    id="purchaseContractsTaxesTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    visibleRowCount="15"
+    visibleRowCountMode="Fixed"
+    busyIndicatorDelay="0"
+    rows="{Taxes}"
+    visible="true"
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Impostos" />
+          <ToolbarSpacer />
+          <Button
+              text="Incluir"
+              type="Emphasized"
+              icon="sap-icon://add"
+              press=".onAddTax"
+          />
+          <Button
+              text="Remover"
+              icon="sap-icon://delete"
+              press=".onRemoveTax"
+          />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Codigo">
+        <t:template>
+          <Input 
+            width="10rem"
+            required="true"
+            value="{TaxCode}" 
+            showValueHelp="true" 
+            valueHelpOnly="true" 
+            valueHelpRequest=".openTaxesValueHelp">
+          </Input>
+        </t:template>
+      </t:Column>
+      <t:Column label="Descricao">
+        <t:template>
+          <Text 
+            width="10rem"
+            text="{
+              parts: ['TaxCode'],
+              formatter: '.formatTaxName'
+            }" 
+            >
+          </Text>
+        </t:template>
+      </t:Column>
+       <t:Column label="Aliquota %">
+        <t:template>
+          <Text 
+            width="10rem"
+            text="{
+              parts: ['TaxCode'],
+              formatter: '.formatTaxRate'
+            }" 
+            >
+          </Text>
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

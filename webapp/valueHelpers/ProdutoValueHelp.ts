@@ -8,11 +8,11 @@ import Filter from 'sap/ui/model/Filter';
 import FilterOperator from 'sap/ui/model/FilterOperator';
 import ODataListBinding from 'sap/ui/model/odata/v4/ODataListBinding';
 import Sorter from 'sap/ui/model/Sorter';
-import { Produto } from 'siagrob1/types/Produto';
+import { Item } from 'siagrob1/types/Items';
 
 export default class ProdutoValueHelp {
 
-	public static open(id: string, view: View): Promise<Produto>{
+	public static open(id: string, view: View): Promise<Item>{
 		return new Promise(resolve => {
 
 			let dlg = Core.byId(id) as TableSelectDialog;
@@ -59,7 +59,7 @@ export default class ProdutoValueHelp {
 
 			dlg.attachConfirm((ev: TableSelectDialog$ConfirmEvent) => {
 				const ctx = ev.getParameter("selectedItem").getBindingContext();
-				resolve(ctx.getObject() as Produto);
+				resolve(ctx.getObject() as Item);
 			});
 
 			dlg.open(null);

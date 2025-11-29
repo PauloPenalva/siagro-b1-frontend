@@ -1,0 +1,81 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <t:Table
+    id="purchaseContractQualityParameterTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    visibleRowCount="15"
+    visibleRowCountMode="Fixed"
+    busyIndicatorDelay="0"
+    rows="{QualityParameters}"
+    visible="true"
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Parametros de Qualidade" />
+          <ToolbarSpacer />
+          <Button
+              text="Incluir"
+              type="Emphasized"
+              icon="sap-icon://add"
+              press=".onAddQualityParameter"
+          />
+          <Button
+              text="Remover"
+              icon="sap-icon://delete"
+              press=".onRemoveQualityParameter"
+          />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Codigo" width="10rem">
+        <t:template>
+          <Input 
+            value="{QualityAttribCode}" 
+            showValueHelp="true" 
+            valueHelpOnly="true" 
+            valueHelpRequest=".openQualityAttribsValueHelp"
+          />
+        </t:template>
+      </t:Column>
+      <t:Column label="Nome" width="10rem">
+        <t:template>
+          <Text 
+            text="{ 
+              parts: ['QualityAttribCode'],
+              formatter: '.formatQualityAttribName'
+            }" 
+            
+          />
+        </t:template>
+      </t:Column>
+      <t:Column label="Limite %" width="10rem">
+        <t:template>
+          <Input 
+            value="{
+              path: 'MaxLimitRate',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions: {
+                  decimals: 1,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+              }
+            }" 
+          />
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

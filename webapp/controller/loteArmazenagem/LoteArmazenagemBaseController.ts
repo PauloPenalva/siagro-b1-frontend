@@ -2,8 +2,8 @@ import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import BaseController from "../BaseController";
 import ParceiroNegocioValueHelp from "siagrob1/valueHelpers/ParceiroNegocioValueHelp";
 import models from "../../model/models"
-import { ParceiroNegocio } from "siagrob1/types/ParceiroNegocio";
-import { Produto } from "siagrob1/types/Produto";
+import { BusinessPartner } from "siagrob1/types/BusinessPartner";
+import { Item } from "siagrob1/types/Items";
 import ProdutoValueHelp from "siagrob1/valueHelpers/ProdutoValueHelp";
 import ArmazemValueHelp from "siagrob1/valueHelpers/ArmazemValueHelp";
 import TabelaCustoValueHelp from "siagrob1/valueHelpers/TabelaCustoValueHelp";
@@ -24,7 +24,7 @@ export default class LoteArmazenagemBaseController extends BaseController {
       if (obj) {
         ev.getSource().setValue(obj.CardCode.toString());
       }
-    }
+  }
 
 
   async produtoValueHelpRequest(ev: Input$ValueHelpRequestEvent) {
@@ -43,7 +43,7 @@ export default class LoteArmazenagemBaseController extends BaseController {
         this.getView()
       );
       if (obj) {
-        ev.getSource().setValue(obj.Key);
+        ev.getSource().setValue(obj.Code);
       }
     }
 
@@ -63,7 +63,7 @@ export default class LoteArmazenagemBaseController extends BaseController {
           const sPath = `/odata/BusinessPartners/${sId}`;
           const cq = 
             //await models.requestModel(sPath, oInput) as ParceiroNegocio
-            await models.requestModel(sPath) as ParceiroNegocio
+            await models.requestModel(sPath) as BusinessPartner
           
           return cq.CardName;
         }
@@ -74,7 +74,7 @@ export default class LoteArmazenagemBaseController extends BaseController {
           const sPath = `/odata/Items/${sId}`;
           const cq = 
             //await models.requestModel(sPath, oInput) as ParceiroNegocio
-            await models.requestModel(sPath) as Produto
+            await models.requestModel(sPath) as Item
           
           return cq.ItemName;
         }

@@ -33,13 +33,13 @@
 				<t:columns>
 					<t:Column
 						label="Codigo"
-						sortProperty="Key"
-						filterProperty="Key"
+						sortProperty="Code"
+						filterProperty="Code"
             visible="true"
-            width="5rem"
+            width="10rem"
 						>
 						<t:template>
-							<Text text="{Key}" wrapping="false"/>
+							<Text text="{Code}" wrapping="false"/>
 						</t:template>
 					</t:Column>
 					<t:Column

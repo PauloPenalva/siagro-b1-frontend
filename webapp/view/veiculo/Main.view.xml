@@ -33,22 +33,13 @@
 				<t:columns>
 					<t:Column
 						label="Codigo"
-						sortProperty="Key"
-						filterProperty="Key"
+						sortProperty="Code"
+						filterProperty="Code"
             visible="true"
             width="5rem"
 						>
 						<t:template>
-							<Text text="{Key}" wrapping="false"/>
-						</t:template>
-					</t:Column>
-					<t:Column
-						label="Placa"
-						sortProperty="LicensePlate"
-						filterProperty="LicensePlate"
-						>
-						<t:template>
-							<Text text="{LicensePlate}" />
+							<Text text="{Code}" wrapping="false"/>
 						</t:template>
 					</t:Column>
 					<t:Column

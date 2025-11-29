@@ -1,0 +1,62 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+
+<TableSelectDialog 
+  class="sapUiPopupWithPadding sapUiSizeCompact"
+  growing="true"
+  growingThreshold="20"
+  items="{
+    path: '/Warehouses',
+    sorter: {
+      path: 'Name', 
+      descending: false
+    }
+  }"
+  rememberSelections="true"
+  title="Armazéns"
+>
+<columns>
+  <Column>
+    <header>
+      <Text text="Codigo" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Nome" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="CNPJ" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Tipo" />
+    </header>
+  </Column>
+</columns>
+<ColumnListItem >
+  <cells>
+    <Text text="{Code}" />
+    <Text text="{Name}" />
+    <Text text="{
+      path: 'TaxId',
+      targetType: 'any',
+      formatter: '.formatter.formatCnpj'
+    }" />
+    <Text text="{
+      path: 'Type',
+      targetType: 'any',
+      formatter: '.formatter.formatWarehouseType'
+    }" />
+  </cells>
+</ColumnListItem>
+</TableSelectDialog>
+</core:FragmentDefinition>

@@ -36,12 +36,12 @@
 				<t:columns>
 					<t:Column
 						label="Codigo"
-						sortProperty="Key"
-						filterProperty="Key"
+						sortProperty="Code"
+						filterProperty="Code"
             width="5rem"
 						>
 						<t:template>
-							<Text text="{Key}" wrapping="false" />
+							<Text text="{Code}" wrapping="false" />
 						</t:template>
 					</t:Column>
 					<t:Column
@@ -62,6 +62,20 @@
 							<Text text="{TaxId}" />
 						</t:template>
 					</t:Column>
+          <t:Column
+						label="Tipo"
+						sortProperty="Type"
+						filterProperty="Type"
+						>
+						<t:template>
+							<Text text="{
+                path: 'Type',
+                targetType: 'any',
+                formatter: '.formatter.formatWarehouseType'
+              }" />
+						</t:template>
+					</t:Column>
+
 				</t:columns>
 
 			</t:Table>

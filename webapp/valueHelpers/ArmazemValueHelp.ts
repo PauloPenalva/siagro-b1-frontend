@@ -28,11 +28,11 @@ export default class ArmazemValueHelp {
 						path: "/Warehouses",
 						sorter: [
               new Sorter("Name"),
-              new Sorter("Key"),
+              new Sorter("Code"),
             ],
 						template: new ColumnListItem({
 							cells: [
-								new Text({ text: "{Key}" }),
+								new Text({ text: "{Code}" }),
 								new Text({ text: "{Name}" }),
 							],
 						}),

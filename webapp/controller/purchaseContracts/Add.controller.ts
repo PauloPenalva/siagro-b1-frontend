@@ -1,30 +1,32 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
-import BaseController from "../BaseController";
+import BaseController from "./BaseController";
 
 /**
- * @namespace siagrob1.controller.armazem
+ * @namespace siagrob1.controller.purchaseContracts
  */
 export default class Add extends BaseController {
 
 	onInit(): void | undefined {
-		this.getRouter().getRoute("armazensNew").attachPatternMatched(() => this.newRouteMatched());
+		this.getRouter().getRoute("purchaseContractsNew").attachPatternMatched(() => this.newRouteMatched());
 	}
+
 	private newRouteMatched() {
 		
-    this.clearStates("formArmazem");
+		this.resetChanges();
+
+    this.clearStates("formPurchaseContracts");
     
     const oView = this.getView();
-		const oModel = this.getModel() as ODataModel;
-		const oBinding = oModel.bindList("/Warehouses")
-
-		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
-			oModel.resetChanges(oModel.getUpdateGroupId())
-		}
+		const oModel = this.getView().getModel() as ODataModel;
+		const oBinding = oModel.bindList("/PurchaseContracts")
 
 		const oContext = oBinding.create({
-      "Type": "ThirdParty" 
+      "Type": "Fixed",
+      "Status": "Draft",
+      "FreightTerms": "None"
     }, false, false, false);
 
 		oView.setBindingContext(oContext);
@@ -32,7 +34,7 @@ export default class Add extends BaseController {
 
 	async onSave() {
 		
-    if (!this.validateForm("formArmazem")) {
+    if (!this.validateForm("formPurchaseContracts")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }
@@ -52,14 +54,17 @@ export default class Add extends BaseController {
 		}
 	}
 
-	onCancel() {
-	 	const oModel = this.getView().getModel() as ODataModel;
+  private resetChanges(){
+    const oModel = this.getView().getModel() as ODataModel;
 
 		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 			oModel.resetChanges(oModel.getUpdateGroupId());
 		}
+  }
 
-		this.onNavBack();
+	onCancel() {
+    this.resetChanges();
+    this.onNavBack();
 	}
 
 }

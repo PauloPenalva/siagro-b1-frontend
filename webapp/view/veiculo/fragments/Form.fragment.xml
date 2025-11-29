@@ -30,15 +30,10 @@
           />
           <Label text="Codigo" />
           <Input
-            value="{Key}"
+            value="{Code}"
             editable="true"
-            visible="false"
-          />
-          <Label text="Placa" />
-          <Input
-              value="{LicensePlate}"
-              editable="true"
-              liveChange=".validateField"
+            maxLength="7"
+            required="true"
           />
           <Label text="Modelo" />
           <Input
