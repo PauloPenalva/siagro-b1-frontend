@@ -3,7 +3,7 @@ metadata:
   name: siagrob1
 type: application
 framework:
-  name: OpenUI5
+  name: SAPUI5
   version: "1.141.0"
   libraries:
     - name: sap.m

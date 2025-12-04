@@ -3,7 +3,7 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Table from "sap/ui/table/Table";
 import MessageBox from "sap/m/MessageBox";
 import Context from "sap/ui/model/odata/v4/Context";
-import GenericController from "../GenericController";
+import CommonController from "../common/CommonController";
 import { BusinessPartner } from "siagrob1/types/BusinessPartner";
 import { Item } from "siagrob1/types/Items";
 import { UnitOfMeasure } from "siagrob1/types/UnitOfMeasure";
@@ -11,11 +11,37 @@ import { HarvestSeason } from "siagrob1/types/HarvestSeason";
 import { Warehouse } from "siagrob1/types/Warehouse";
 import { Taxes } from "siagrob1/types/Taxes";
 import { QualityAttrib } from "siagrob1/types/QualityAttrib";
+import { LogisticRegion } from "siagrob1/types/LogisticRegion";
+import { Agent } from "siagrob1/types/Agent";
+import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 
 /**
  * @namespace siagrob1.controller.purchaseContracts
  */
-export default abstract class PurchaseContractsBaseController extends GenericController {
+export default abstract class PurchaseContractsBaseController extends CommonController {
+  
+  onAddBroker() {
+    const oTable = this.byId("purchaseContractsBrokersTable") as Table;
+    const oBinding = oTable.getBinding("rows") as ODataListBinding;
+    oBinding.create({}, false, true, false);
+  }
+
+  onRemoveBroker() {
+    const oModel = this.getView().getModel() as ODataModel;
+    const oTable = this.byId("purchaseContractsBrokersTable") as Table;
+    const aSelectedIndices = oTable.getSelectedIndices();
+
+    if (aSelectedIndices.length === 0) {
+      MessageBox.alert("Selecione um item para remover.");
+      return;
+    }
+
+    const index = aSelectedIndices[0];
+
+    const oContext = oTable.getContextByIndex(index) as Context;
+
+    void oContext.delete(oModel.getUpdateGroupId());
+  }
   
   onAddTax() {
     const oTable = this.byId("purchaseContractsTaxesTable") as Table;
@@ -68,9 +94,7 @@ export default abstract class PurchaseContractsBaseController extends GenericCon
   onAddQualityParameter() {
     const oTable = this.byId("purchaseContractQualityParameterTable") as Table;
     const oBinding = oTable.getBinding("rows") as ODataListBinding;
-    oBinding.create({
-      "Status": "Pending"
-    }, false, true, false);
+    oBinding.create({}, false, true, false);
   }
 
   onRemoveQualityParameter() {
@@ -90,15 +114,55 @@ export default abstract class PurchaseContractsBaseController extends GenericCon
     void oContext.delete(oModel.getUpdateGroupId());
   }
 
+  async formatAgentName(key: string){
+    if (!key){
+      return null;
+    } 
+
+    try {
+      this.setBusy(true);
+      const data = await this
+        .getResource<Agent>(`${this.api.agents}('${key}')`)
+      
+      return data?.Name;
+    } finally {
+      this.setBusy(false);
+    }
+
+  }
+
+  async formatLogisticRegionName(key: string){
+    if (!key){
+      return null;
+    } 
+
+    try {
+      this.setBusy(true);
+      const data = await this
+        .getResource<LogisticRegion>(`${this.api.logisticRegions}('${key}')`)
+      
+      return data?.Name;
+    } finally {
+      this.setBusy(false);
+    }
+
+  }
+
   async formatBusinessPartnerName(key: string){
     if (!key){
       return null;
+    } 
+
+    try {
+      this.setBusy(true);
+      const data = await this
+        .getResource<BusinessPartner>(`${this.api.businessPartners}('${key}')`)
+      
+      return data?.CardName;
+    } finally {
+      this.setBusy(false);
     }
 
-    const data = await this
-      .getResource<BusinessPartner>(`${this.api.businessPartners}('${key}')`)
-    
-    return data?.CardName;
   }
 
   async formatItemName(key: string){
@@ -163,4 +227,67 @@ export default abstract class PurchaseContractsBaseController extends GenericCon
     const data = await this.getResource<QualityAttrib>(`${this.api.qualityAttrib}('${key}')`)
     return data?.Name;
   }
+
+  async onWithdrawApproval() {
+    const oView = this.getView();
+    const oContext = oView.getBindingContext() as Context;
+    if (!oContext) {
+      return;
+    }
+    const bConfirm = await confirmDialog("Retirar contrato da aprovação ?");
+    if (bConfirm) {
+    
+      const key = oContext.getProperty("Key") as string;
+      const sUrl = `${this.api.purchaseContractsWithdrawApproval}`
+
+      this.setBusy(true);
+
+      void jQuery.ajax({
+        url: sUrl,
+        method: 'POST',
+        data: JSON.stringify({Key: key}),
+        contentType: 'application/json',
+        success: () => { 
+          oContext.refresh();
+        },
+        error: err => {
+          this.setBusy(false);
+          MessageBox.error(err.responseText);
+        },
+      })
+      .done(() => this.setBusy(false))
+    }
+  }
+
+  async onSendToApproval() {
+    const oView = this.getView();
+    const oContext = oView.getBindingContext() as Context;
+    if (!oContext) {
+      return;
+    }
+    const bConfirm = await confirmDialog("Enviar contrato para aprovação ?");
+    if (bConfirm) {
+    
+      const key = oContext.getProperty("Key") as string;
+      const sUrl = `${this.api.purchaseContractsSendToApproval}`
+
+      this.setBusy(true);
+
+      void jQuery.ajax({
+        url: sUrl,
+        method: 'POST',
+        data: JSON.stringify({Key: key}),
+        contentType: 'application/json',
+        success: () => { 
+          oContext.refresh();
+        },
+        error: err => {
+          this.setBusy(false);
+          MessageBox.error(err.responseText);
+        },
+      })
+      .done(() => this.setBusy(false))
+    }
+  }
+
 }

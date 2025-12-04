@@ -97,6 +97,7 @@ export default abstract class BaseController extends Controller {
 
   public setBusy(isBusy: boolean) {
     (this.getView().getModel("ui") as JSONModel).setProperty("/isBusy", isBusy);
+    (this.getView().getModel("ui") as JSONModel).setProperty("/busy", isBusy);
   }
 
   public validateForm(sFormId?: string) {

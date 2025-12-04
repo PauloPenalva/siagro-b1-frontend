@@ -6,7 +6,7 @@ import BaseController from "./BaseController";
 export default class Main extends BaseController {
 
 	onInit(): void | undefined {
-
+    
 	}
 
 }

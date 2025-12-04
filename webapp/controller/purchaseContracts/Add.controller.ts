@@ -1,20 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
-import BaseController from "./BaseController";
+import BaseController from "./PurchaseContractsBaseController";
+import Context from "sap/ui/model/odata/v4/Context";
+import JSONModel from "sap/ui/model/json/JSONModel";
 
 /**
  * @namespace siagrob1.controller.purchaseContracts
  */
 export default class Add extends BaseController {
 
-	onInit(): void | undefined {
+	onInit(): void  {
 		this.getRouter().getRoute("purchaseContractsNew").attachPatternMatched(() => this.newRouteMatched());
 	}
 
 	private newRouteMatched() {
 		
+    const uiModel = this.getModel("ui") as JSONModel;
+    uiModel.setProperty("/editable", true);
+    
 		this.resetChanges();
 
     this.clearStates("formPurchaseContracts");
@@ -26,7 +30,9 @@ export default class Add extends BaseController {
 		const oContext = oBinding.create({
       "Type": "Fixed",
       "Status": "Draft",
-      "FreightTerms": "None"
+      "FreightTerms": "None",
+      "StandardCurrency": "Brl",
+      "MarketType": ""
     }, false, false, false);
 
 		oView.setBindingContext(oContext);
@@ -45,9 +51,7 @@ export default class Add extends BaseController {
 			this.setBusy(true);
 			await oModel.submitBatch(oModel.getUpdateGroupId());
 			if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
-				MessageToast.show("Dados salvos com sucesso.", {
-					closeOnBrowserNavigation: false
-				});
+				this.navToDetail();
 			}
 		} finally {
 			this.setBusy(false);
@@ -67,4 +71,10 @@ export default class Add extends BaseController {
     this.onNavBack();
 	}
 
+  private navToDetail() {
+    const oContext = this.getView().getBindingContext() as Context;
+    if (oContext) {
+      this.navTo("purchaseContractsDetail", {id: oContext.getProperty("Key") as string});
+    }
+  }
 }

@@ -29,40 +29,41 @@
                 text="Dados do Contrato"
                 emphasized="true"
             />
-            <Label text="Codigo" />
-            <Input
-                value="{Code}"
-                editable="true"
-                required="true"
-                maxLength="50"
-            />
-            <Label text="Sequencia"/>
-            <Input
-                value="{Sequence}"
-                editable="true"
-                required="true"
-                maxLength="3"
-            />
+            <Label text="Moeda Standard"/>
+            <Select 
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{
+                path: 'StandardCurrency',
+                targetType: 'any'
+              }"
+              >
+              <core:ListItem key="Brl" text="BRL"/>
+              <core:ListItem key="Usd" text="USD"/>
+            </Select>
             <Label text="Complemento" />
             <Input
-                value="{Complement}"
-                editable="true"
-                maxLength="100"
+              editable="{ui>/editable}"
+              value="{Complement}"
+              maxLength="100"
             />
             <Label text="Data" />
             <DatePicker
                 value="{
                   path: 'CreationDate',
-                  targetType: 'any',
-                  formatter: '.formatter.formatDate'
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
                 }"
-                editable="true"
+                editable="{ui>/editable}"
                 required="true"
                 liveChange=".validateField"
-                displayFormat="dd/MM/yyyy"
             />
-            <Label text="Tipo"/>
+            <Label text="Tipo Contrato"/>
             <Select 
+              editable="false"
               forceSelection="false"
               required="true"
               selectedKey="{
@@ -73,24 +74,42 @@
               <core:ListItem key="Fixed" text="FIX"/>
               <core:ListItem key="ToBeDetermined" text="PAF"/>
             </Select>
-            <Label text="Status"/>
+            <Label text="Tipo Mercado"/>
             <Select 
+              editable="{ui>/editable}"
               forceSelection="false"
               required="true"
-              editable="false"
               selectedKey="{
-                path: 'Status',
+                path: 'MarketType',
                 targetType: 'any'
               }"
-            >
-              <core:ListItem key="Draft" text="RASCUNHO"/>
-              <core:ListItem key="Approved" text="APROVADO"/>
-              <core:ListItem key="Finished" text="FINALIZADO"/>
-              <core:ListItem key="Canceled" text="CANCELADO"/>
+              >
+              <core:ListItem key="Internal" text="Interno"/>
+              <core:ListItem key="External" text="Exportação"/>
             </Select>
-            
+            <Label text="Comprador" />
+            <Input
+              editable="{ui>/editable}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openAgentsValueHelp"
+              required="true"
+              value="{AgentCode}"
+              >
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts: ['AgentCode'],
+                formatter: '.formatAgentName'
+              }" 
+              editable="false"
+            />
             <Label text="Fornecedor" />
             <Input
+              editable="{ui>/editable}"
               showValueHelp="true"
               valueHelpOnly="true"
               valueHelpRequest=".openBusinessPartnersValueHelp"
@@ -101,7 +120,6 @@
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
             </Input>
-          
             <Input 
               value="{
                 parts: ['CardCode'],
@@ -109,55 +127,23 @@
               }" 
               editable="false"
             />
-
-            <Label text="Inicio entrega" />
-            <DatePicker
-                value="{
-                  path: 'DeliveryStartDate',
-                  targetType: 'any',
-                  formatter: '.formatter.formatDate'
-                }"
-                editable="true"
-                required="true"
-                liveChange=".validateField"
-                displayFormat="dd/MM/yyyy"
+            <Label text="Observações" />
+            <TextArea 
+              editable="{ui>/editable}"
+              value="{Comments}"
+              rows="5"
+              cols="10"
             />
-            <Label text="Termino entrega" />
-            <DatePicker
-                value="{
-                  path: 'DeliveryEndDate',
-                  targetType: 'any',
-                  formatter: '.formatter.formatDate'
-                }"
-                editable="true"
-                required="true"
-                displayFormat="dd/MM/yyyy"
-                liveChange=".validateField"
-            >
-            </DatePicker>
 
-            <Label text="Tipo do Frete"/>
-            <Select 
-              forceSelection="false"
-              required="true"
-              selectedKey="{
-                path: 'FreightTerms',
-                targetType: 'any'
-              }"
-              >
-              <core:ListItem key="Cif" text="CIF"/>
-              <core:ListItem key="Fob" text="FOB"/>
-              <core:ListItem key="None" text="SEM FRETE"/>
-            </Select>
-          
-            <core:Title />
+            <core:Title text="Produto e Preços" />
             <Label text="Produto" />
             <Input 
-								required="true"
-                value="{ItemCode}" 
-								showValueHelp="true" 
-								valueHelpOnly="true" 
-								valueHelpRequest=".openItemValueHelp">
+							editable="{ui>/editable}"	
+              required="true"
+              value="{ItemCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openItemValueHelp">
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
@@ -171,11 +157,12 @@
             />
             <Label text="Un.Med." />
             <Input 
-								required="true"
-                value="{UnitOfMeasureCode}" 
-								showValueHelp="true" 
-								valueHelpOnly="true" 
-								valueHelpRequest=".openUnitsOfMeasureValueHelp">
+              editable="{ui>/editable}"
+              required="true"
+              value="{UnitOfMeasureCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openUnitsOfMeasureValueHelp">
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
@@ -189,11 +176,12 @@
             />
             <Label text="Safra" />
             <Input 
-								required="true"
-                value="{HarvestSeasonCode}" 
-								showValueHelp="true" 
-								valueHelpOnly="true" 
-								valueHelpRequest=".openHarvestSeasonsValueHelp">
+							editable="{ui>/editable}"	
+              required="true"
+              value="{HarvestSeasonCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openHarvestSeasonsValueHelp">
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
@@ -208,6 +196,7 @@
             <Label text="Quantidade"/>
             <Input 
               required="true"
+              editable="{ui>/editable}"
               value="{
                 path: 'TotalVolume',
                 type: 'sap.ui.model.odata.type.Double',
@@ -219,13 +208,135 @@
                 } 
               }"
             />
+            <Label text="Preço Standard"/>
+            <Input 
+              required="true"
+              editable="{ui>/editable}"
+              value="{
+                path: 'StandardPrice',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions: {
+                    decimals: 8,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                } 
+              }"
+            />
+            <Label text="Frete Standard"/>
+            <Input 
+              editable="{ui>/editable}"
+              required="true"
+              value="{
+                path: 'FreightCostStandard',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions: {
+                    decimals: 8,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                } 
+              }"
+            >
+            </Input>
+            <Label text="UM. Frete"/>
+            <Input 
+              editable="{ui>/editable}"
+              required="true"
+              value="{FreightUmCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openUnitsOfMeasureValueHelp"/>
+            <Label text="Prev. Pagto." />
+            <DatePicker
+                value="{
+                  path: 'StandardCashFlowDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+                editable="{ui>/editable}"
+                required="true"
+                liveChange=".validateField"
+            />
+            <Label text="Cond.Pagamento"/>
+            <TextArea 
+              editable="{ui>/editable}"
+              value="{PaymentTerms}"
+              rows="5"
+              cols="10"
+            />
+
+            <core:Title text="Entrega da Mercadoria"/>
+            <Label text="Tipo do Frete"/>
+            <Select 
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{
+                path: 'FreightTerms',
+                targetType: 'any'
+              }"
+              >
+              <core:ListItem key="Cif" text="CIF"/>
+              <core:ListItem key="Fob" text="FOB"/>
+              <core:ListItem key="None" text="SEM FRETE"/>
+            </Select>
+            <Label text="Região Logistica" />
+            <Input 
+							editable="{ui>/editable}"	
+              required="true"
+              value="{LogisticRegionCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openLogisticRegionsValueHelp">
+              <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts:['LogisticRegionCode'],
+                formatter: '.formatLogisticRegionName'
+              }" 
+              editable="false"
+            />
+            <Label text="Inicio entrega" />
+            <DatePicker
+                value="{
+                  path: 'DeliveryStartDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+                editable="{ui>/editable}"
+                required="true"
+                liveChange=".validateField"
+            />
+            <Label text="Termino entrega" />
+            <DatePicker
+                value="{
+                  path: 'DeliveryEndDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+                editable="{ui>/editable}"
+                required="true"
+                liveChange=".validateField"
+            >
+            </DatePicker>
             <Label text="Local de entrega" />
             <Input 
-								required="true"
-                value="{DeliveryLocationCode}" 
-								showValueHelp="true" 
-								valueHelpOnly="true" 
-								valueHelpRequest=".openWarehouseValueHelp">
+							editable="{ui>/editable}"	
+              required="true"
+              value="{DeliveryLocationCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openWarehouseValueHelp">
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
@@ -237,13 +348,7 @@
               }" 
               editable="false"
             />
-            <Label text="Observações" />
-            <TextArea 
-              value="{Comments}"
-              rows="5"
-              cols="10"
-            />
-
+           
         </f:content>
     </f:SimpleForm>
 </core:FragmentDefinition>

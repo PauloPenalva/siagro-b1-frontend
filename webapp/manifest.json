@@ -233,6 +233,11 @@
           "pattern": "purchaseContractsEdit/{id}",
           "name": "purchaseContractsEdit",
           "target": "purchaseContractsEdit"
+        },
+        {
+          "pattern": "purchaseContractsDetail/{id}",
+          "name": "purchaseContractsDetail",
+          "target": "purchaseContractsDetail"
         }
 			],
 			"targets": {
@@ -396,6 +401,12 @@
 					"id": "purchaseContractsEdit",
           "level": 2,
 					"name": "siagrob1.view.purchaseContracts.Edit",
+          "clearControlAggregation": true
+				},
+        "purchaseContractsDetail": {
+					"id": "purchaseContractsDetail",
+          "level": 2,
+					"name": "siagrob1.view.purchaseContracts.Detail",
           "clearControlAggregation": true
 				}
 			}

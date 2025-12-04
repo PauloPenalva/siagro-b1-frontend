@@ -1,6 +1,6 @@
 import MessageBox from "sap/m/MessageBox";
 
-const confirmDialog = (message: string, title: string): Promise<boolean> =>  {
+const confirmDialog = (message: string, title?: string): Promise<boolean> =>  {
 		return new Promise((resolve) => {
 			MessageBox.confirm(message, {
 				title: title,

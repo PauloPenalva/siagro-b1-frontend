@@ -71,17 +71,73 @@ export default {
 
   formatWarehouseType: (value: string) => {
     const m = new Map<string, string>();
-    m.set("Owner", "PRÓPRIO");
-    m.set("ThirdParty", "DE TERCEIROS");
+    m.set("Owner", "Próprio");
+    m.set("ThirdParty", "Terceiro");
     
     return m.get(value);
   },
 
-   formatPriceFixationStatus: (value: string) => {
+  formatPriceFixationStatus: (value: string) => {
     const m = new Map<string, string>();
-    m.set("Pending", "PENDENTE");
-    m.set("Confirmed", "CONFIRMADO");
-    m.set("Canceled", "CANCELADO");
+    m.set("Pending", "Pendente");
+    m.set("Confirmed", "Confirmado");
+    m.set("Canceled", "Cancelado");
+    m.set("InApproval", "Em Aprovação");
+    
+    return m.get(value);
+  },
+
+  formatContractStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Draft"     , "Rascunho");
+    m.set("Approved"  , "Aprovado");
+    m.set("Finished"  , "Finalizado");
+    m.set("Canceled"  , "Cancelado");
+    m.set("InApproval", "Em Aprovação");
+    
+    return m.get(value);
+  },
+
+  stateContractStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Draft"     , "None");
+    m.set("Approved"  , "Success");
+    m.set("Finished"  , "Information");
+    m.set("Canceled"  , "Error");
+    m.set("InApproval", "Warning");
+    
+    return m.get(value);
+  },
+
+  formatContractType: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Fixed", "FIX - Preço Fixo");
+    m.set("ToBeDetermined", "PAF - Preço a Fixar");
+    
+    return m.get(value);
+  },
+
+  formatFreightTerms: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Cif" , "CIF");
+    m.set("Fob" , "FOB");
+    m.set("None", "SEM FRETE");
+    
+    return m.get(value);
+  },
+
+  formatCurrency: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Brl" , "BRL");
+    m.set("Usd" , "USD");
+    
+    return m.get(value);
+  },
+
+  formatMarketType: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Internal" , "Interno");
+    m.set("External" , "Exportação");
     
     return m.get(value);
   }

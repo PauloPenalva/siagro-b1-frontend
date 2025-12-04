@@ -3,7 +3,7 @@ metadata:
   name: siagrob1
 type: application
 framework:
-  name: OpenUI5
+  name: SAPUI5
   version: "1.141.0"
   libraries:
     - name: sap.m
@@ -12,6 +12,9 @@ framework:
     - name: sap.tnt
     - name: sap.ui.layout
     - name: sap.f
+    - name: sap.ui.fl
+    - name: sap.ui.comp
+    - name: sap.uxap
     - name: themelib_sap_horizon
     - name: themelib_sap_belize
     - name: themelib_sap_fiori_3

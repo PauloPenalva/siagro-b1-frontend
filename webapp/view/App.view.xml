@@ -13,10 +13,11 @@
             <f:ShellBar
                 id="shellBar"
                 title="Siagro B1"
-                secondTitle="Gestão Agrícola"
+                secondTitle="Agrobusiness"
                 homeIcon="https://sdk.openui5.org/1.141.0/resources/sap/ui/documentation/sdk/images/logo_sap.png"
                 showNavButton="true"
                 showMenuButton="false"
+                showSearch="true"
 				        showNotifications="true"
                 navButtonPressed=".onNavBack"
                 homeIconPressed=".onHomePress"

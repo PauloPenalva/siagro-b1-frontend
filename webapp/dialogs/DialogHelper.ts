@@ -1,3 +1,4 @@
+import MessageBox from "sap/m/MessageBox";
 import TableSelectDialog, {
   TableSelectDialog$CancelEvent,
 } from "sap/m/TableSelectDialog";
@@ -13,7 +14,7 @@ export default {
 
   formatter: formatter,
   
-  open: (oController: Controller, name: string, filters: string[]): Promise<Context> => {
+  openTableSelectDialog: (oController: Controller, name: string, filters: string[]): Promise<Context> => {
     const id = oController.getView().getId();
     return new Promise(resolve => {
       Fragment.load({
@@ -62,4 +63,21 @@ export default {
     })
     
   },
+
+  async confirmDialog(title: string, message: string) {
+    return new Promise(resolve =>{
+      MessageBox.confirm(title, {
+        title: message,
+        onClose: (value: string) => {
+          if (value === MessageBox.Action.OK.toString()) {
+            resolve(true);
+            return;
+          }
+
+          resolve(false);
+        }
+      });
+    })
+  }
+
 }

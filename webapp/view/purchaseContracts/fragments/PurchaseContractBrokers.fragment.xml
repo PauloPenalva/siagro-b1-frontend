@@ -6,7 +6,7 @@
     xmlns:core="sap.ui.core"
 >
   <t:Table
-    id="purchaseContractQualityParameterTable"
+    id="purchaseContractsBrokersTable"
     class="sapUiSizeCondensed"
     alternateRowColors="true"
     enableBusyIndicator="true"
@@ -14,73 +14,93 @@
     selectionBehavior="Row"
     selectionMode="Single"
     busyIndicatorDelay="0"
-    rows="{
-      path: 'QualityParameters',
-      sorter: { 
-        path: 'QualityAttribCode' 
-      }
-    }"
+    rows="{Brokers}"
     visible="true"
     >
     <t:extension>
       <OverflowToolbar>
         <content>
-          <Title text="Parametros de Qualidade" />
+          <Title text="Corretores do Contrato" />
           <ToolbarSpacer />
           <Button
             visible="{ui>/editable}"
             text="Incluir"
             type="Transparent"
             icon="sap-icon://add"
-            press=".onAddQualityParameter"
+            press=".onAddBroker"
           />
           <Button
             visible="{ui>/editable}"
             text="Remover"
             type="Transparent"
             icon="sap-icon://delete"
-            press=".onRemoveQualityParameter"
+            press=".onRemoveBroker"
           />
         </content>
       </OverflowToolbar>
     </t:extension>
     <t:columns>
-      <t:Column label="Codigo" width="10rem">
+      <t:Column label="Codigo">
         <t:template>
           <Input
             editable="{ui>/editable}"
-            value="{QualityAttribCode}" 
+            required="true"
+            value="{CardCode}" 
             showValueHelp="true" 
             valueHelpOnly="true" 
-            valueHelpRequest=".openQualityAttribsValueHelp"
-          />
+            valueHelpRequest=".openBusinessPartnersValueHelp">
+          </Input>
         </t:template>
       </t:Column>
-      <t:Column label="Nome" width="10rem">
+      <t:Column label="Nome">
         <t:template>
           <Text 
-            text="{ 
-              parts: ['QualityAttribCode'],
-              formatter: '.formatQualityAttribName'
+            wrapping="false"
+            text="{
+              parts: ['CardCode'],
+              formatter: '.formatBusinessPartnerName'
             }" 
-            
-          />
+            >
+          </Text>
         </t:template>
       </t:Column>
-      <t:Column label="Limite %" width="10rem">
+      <t:Column label="Valor">
         <t:template>
           <Input 
             editable="{ui>/editable}"
             value="{
-              path: 'MaxLimitRate',
+              path: 'Commission',
               type: 'sap.ui.model.odata.type.Double',
               formatOptions: {
-                  decimals: 1,
-                  decimalSeparator: ',',
-                  groupingEnabled: true,
-                  groupingSeparator: '.'
+                decimals: 4,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
               }
             }" 
+            >
+          </Input>
+        </t:template>
+      </t:Column>
+      <t:Column label="Valor por">
+        <t:template>
+          <Input 
+            editable="{ui>/editable}"
+            required="true"
+            value="{ComissionUmCode}" 
+            showValueHelp="true" 
+            valueHelpOnly="true" 
+            valueHelpRequest=".openUnitsOfMeasureValueHelp">
+          </Input>
+        </t:template>
+      </t:Column>
+      <t:Column label="Observações">
+        <t:template>
+          <Input 
+            editable="{ui>/editable}"
+            required="true"
+            value="{Comments}" 
+            maxLength="500"
           />
         </t:template>
       </t:Column>

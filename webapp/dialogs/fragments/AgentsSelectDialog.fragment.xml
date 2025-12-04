@@ -1,0 +1,47 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+
+<TableSelectDialog 
+  class="sapUiPopupWithPadding sapUiSizeCompact"
+  growing="true"
+  growingThreshold="20"
+  items="{
+    path: '/Agents',
+    filters: { 
+      path: 'Inactive', 
+      operator: 'EQ', 
+      value1: false 
+    },
+    sorter: {
+      path: 'Code', 
+      descending: false
+    }
+  }"
+  rememberSelections="true"
+  title="Representante"
+>
+<columns>
+  <Column>
+    <header>
+      <Text text="Codigo" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Nome" />
+    </header>
+  </Column>
+</columns>
+<ColumnListItem >
+  <cells>
+    <Text text="{Code}" />
+    <Text text="{Name}" />    
+  </cells>
+</ColumnListItem>
+</TableSelectDialog>
+</core:FragmentDefinition>

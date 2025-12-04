@@ -1,21 +1,43 @@
-import BaseController from "./BaseController";
+import BaseController from "../BaseController";
 import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import Context from "sap/ui/model/odata/v4/Context";
 
-import RequestModel from "siagrob1/model/RequestModel";
 import MessageBox from "sap/m/MessageBox";
+import JSONModel from "sap/ui/model/json/JSONModel";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import formatter from "siagrob1/model/formatter";
+import RequestModel from "siagrob1/model/RequestModel";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 
 /**
  * @namespace siagrob1.controller
  */
-export default abstract class GenericController extends BaseController {
+export default abstract class CommonController extends BaseController {
 
   api = { ...ServerRoutes }
 
   formatter = { ...formatter };
+
+  createFilterModel() {
+    const filterModel = new JSONModel();
+    this.getView().setModel(filterModel, "filter");
+  }
+
+  clearFilters() {
+    this.createFilterModel();
+  } 
+
+  bindElement(path: string, parameters:object = undefined) {
+    const oViewModel = this.getModel("ui") as JSONModel;
+    this.getView().bindElement({
+      path,
+      parameters,
+      events: {
+        dataRequested: () => oViewModel.setProperty("/busy", true), 
+        dataReceived: () => oViewModel.setProperty("/busy", false),
+      }
+    })
+  }
 
   async getResource<T>(resourceUrl: string) {
     if (!resourceUrl) {
@@ -36,8 +58,30 @@ export default abstract class GenericController extends BaseController {
     }
   }
 
+  openAgentsValueHelp(ev: Input$ValueHelpRequestEvent) {
+    DialogHelper.openTableSelectDialog(this, "AgentsSelectDialog", ['Code', 'Name'])
+      .then((oContext: Context) => {
+        const value = oContext.getProperty("Code") as string;
+        ev.getSource().setValue(value);
+      })
+      .catch(err => {
+        throw err;
+      });
+  }
+
+  openLogisticRegionsValueHelp(ev: Input$ValueHelpRequestEvent) {
+    DialogHelper.openTableSelectDialog(this, "LogisticRegionsSelectDialog", ['Code', 'Name'])
+      .then((oContext: Context) => {
+        const value = oContext.getProperty("Code") as string;
+        ev.getSource().setValue(value);
+      })
+      .catch(err => {
+        throw err;
+      });
+  }
+
   openBusinessPartnersValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.open(this, "BusinessPartnersSelectDialog", ['CardCode', 'CardName'])
+    DialogHelper.openTableSelectDialog(this, "BusinessPartnersSelectDialog", ['CardCode', 'CardName'])
       .then((oContext: Context) => {
         const value = oContext.getProperty("CardCode") as string;
         ev.getSource().setValue(value);
@@ -48,7 +92,7 @@ export default abstract class GenericController extends BaseController {
   }
 
   openItemValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.open(this, "ItemsSelectDialog", ["ItemCode","ItemName"])
+    DialogHelper.openTableSelectDialog(this, "ItemsSelectDialog", ["ItemCode","ItemName"])
       .then((oContext: Context) => {
         const value = oContext.getProperty("ItemCode") as string;
         ev.getSource().setValue(value);
@@ -59,7 +103,7 @@ export default abstract class GenericController extends BaseController {
   }
 
   openUnitsOfMeasureValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.open(this, "UnitsOfMeasureSelectDialog", ["Code","Description"])
+    DialogHelper.openTableSelectDialog(this, "UnitsOfMeasureSelectDialog", ["Code","Description"])
       .then((oContext: Context) => {
         const value = oContext.getProperty("Code") as string;
         ev.getSource().setValue(value);
@@ -70,7 +114,7 @@ export default abstract class GenericController extends BaseController {
   }
 
   openHarvestSeasonsValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.open(this, "HarvestSeasonsSelectDialog", ["Code","Name"])
+    DialogHelper.openTableSelectDialog(this, "HarvestSeasonsSelectDialog", ["Code","Name"])
       .then((oContext: Context) => {
         const value = oContext.getProperty("Code") as string;
         ev.getSource().setValue(value);
@@ -81,7 +125,7 @@ export default abstract class GenericController extends BaseController {
   }
 
   openWarehouseValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.open(this, "WarehousesSelectDialog", ["Code","Name", "TaxId"])
+    DialogHelper.openTableSelectDialog(this, "WarehousesSelectDialog", ["Code","Name", "TaxId"])
       .then((oContext: Context) => {
         const value = oContext.getProperty("Code") as string;
         ev.getSource().setValue(value);
@@ -92,7 +136,7 @@ export default abstract class GenericController extends BaseController {
   }
 
   openTaxesValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.open(this, "TaxesSelectDialog", ["Code","Name"])
+    DialogHelper.openTableSelectDialog(this, "TaxesSelectDialog", ["Code","Name"])
       .then((oContext: Context) => {
         const value = oContext.getProperty("Code") as string;
         ev.getSource().setValue(value);
@@ -103,7 +147,7 @@ export default abstract class GenericController extends BaseController {
   }
 
   openQualityAttribsValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.open(this, "QualityAttribsSelectDialog", ["Code","Name"])
+    DialogHelper.openTableSelectDialog(this, "QualityAttribsSelectDialog", ["Code","Name"])
       .then((oContext: Context) => {
         const value = oContext.getProperty("Code") as string;
         ev.getSource().setValue(value);

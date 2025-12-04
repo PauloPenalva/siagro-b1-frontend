@@ -13,8 +13,6 @@
     enableSelectAll="false"
     selectionBehavior="Row"
     selectionMode="Single"
-    visibleRowCount="15"
-    visibleRowCountMode="Fixed"
     busyIndicatorDelay="0"
     rows="{Taxes}"
     visible="true"
@@ -22,18 +20,21 @@
     <t:extension>
       <OverflowToolbar>
         <content>
-          <Title text="Impostos" />
+          <Title text="Impostos do Contrato de Compra" />
           <ToolbarSpacer />
           <Button
-              text="Incluir"
-              type="Emphasized"
-              icon="sap-icon://add"
-              press=".onAddTax"
+            visible="{ui>/editable}"
+            text="Incluir"
+            type="Transparent"
+            icon="sap-icon://add"
+            press=".onAddTax"
           />
           <Button
-              text="Remover"
-              icon="sap-icon://delete"
-              press=".onRemoveTax"
+            visible="{ui>/editable}"
+            text="Remover"
+            type="Transparent"
+            icon="sap-icon://delete"
+            press=".onRemoveTax"
           />
         </content>
       </OverflowToolbar>
@@ -41,7 +42,8 @@
     <t:columns>
       <t:Column label="Codigo">
         <t:template>
-          <Input 
+          <Input
+            editable="{ui>/editable}"
             width="10rem"
             required="true"
             value="{TaxCode}" 
