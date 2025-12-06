@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+    <edmx:DataServices>
+        <Schema Namespace="SIAGROB1" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+            <Annotations Target="SIAGROB1.CaracteristicaQualidade/Id">
+                <Annotation Term="UI.Label" String="Codigo" />
+                <Annotation Term="UI.ReadOnly" Bool="true" />
+            </Annotations>
+            <Annotations Target="SIAGROB1.CaracteristicaQualidade/ChaveIntegracao">
+                <Annotation Term="UI.Label" String="Codigo ERP" />
+            </Annotations>
+            <Annotations Target="SIAGROB1.ContaContabil/Id">
+                <Annotation Term="UI.Label" String="Codigo" />
+                <Annotation Term="UI.ReadOnly" Bool="true" />
+            </Annotations>
+            <Annotations Target="SIAGROB1.ContaContabil/ChaveIntegracao">
+                <Annotation Term="UI.Label" String="Codigo ERP" />
+            </Annotations>
+            <Annotations Target="SIAGROB1.Participante/RazaoSocial">
+                <Annotation Term="UI.Label" String="Razão Social" />
+            </Annotations>
+            <Annotations Target="SIAGROB1.Participante/Id">
+                <Annotation Term="UI.Label" String="Codigo" />
+                <Annotation Term="UI.ReadOnly" Bool="true" />
+            </Annotations>
+            <Annotations Target="SIAGROB1.Participante/ChaveIntegracao">
+                <Annotation Term="UI.Label" String="Codigo ERP" />
+            </Annotations>
+            <Annotations Target="SIAGROB1.Produto/Id">
+                <Annotation Term="UI.Label" String="Codigo" />
+                <Annotation Term="UI.ReadOnly" Bool="true" />
+            </Annotations>
+            <Annotations Target="SIAGROB1.Produto/ChaveIntegracao">
+                <Annotation Term="UI.Label" String="Codigo ERP" />
+            </Annotations>
+            <Annotations Target="SIAGROB1.ServicoArmazem/Id">
+                <Annotation Term="UI.Label" String="Codigo" />
+                <Annotation Term="UI.ReadOnly" Bool="true" />
+            </Annotations>
+            <Annotations Target="SIAGROB1.ServicoArmazem/ChaveIntegracao">
+                <Annotation Term="UI.Label" String="Codigo ERP" />
+            </Annotations>
+            <Annotations Target="SIAGROB1.TabelaCusto/Id">
+                <Annotation Term="UI.Label" String="Codigo" />
+                <Annotation Term="UI.ReadOnly" Bool="true" />
+            </Annotations>
+            <Annotations Target="SIAGROB1.TabelaCusto/ChaveIntegracao">
+                <Annotation Term="UI.Label" String="Codigo ERP" />
+            </Annotations>
+            <Annotations Target="SIAGROB1.TabelaCustoServico/Valor">
+                <Annotation Term="UI.Precision" Int="18" />
+                <Annotation Term="UI.Scale" Int="2" />
+            </Annotations>
+        </Schema>
+        <Schema Namespace="UI" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+            <Term Name="Label" Type="Edm.String" Nullable="false" />
+            <Term Name="ReadOnly" Type="Edm.Boolean" Nullable="false" />
+            <Term Name="Precision" Type="Edm.Int32" Nullable="false" />
+            <Term Name="Scale" Type="Edm.Int32" Nullable="false" />
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

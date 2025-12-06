@@ -1,0 +1,61 @@
+<mvc:View
+	controllerName="siagrob1.controller.parceirosNegocio.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<Page
+		showHeader="true"
+		title="Parceiros de Negócio"
+		id="pageParceirosNegocio">
+		<content>
+			<t:Table
+				id="tableParceirosNegocio"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+				rows="{
+					path: '/BusinessPartners'
+				}"
+			>
+				<t:extension>
+					<OverflowToolbar >
+						<ToolbarSpacer />
+						<SearchField placeholder="Pesquisar..." width="30%" search=".onSearch"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column
+						label="Codigo"
+						sortProperty="CardCode"
+						filterProperty="CardCode"
+						>
+						<t:template>
+							<Text text="{CardCode}" />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Razão Social"
+						sortProperty="CardName"
+						filterProperty="CardName"
+						>
+						<t:template>
+							<Text text="{CardName}" />
+						</t:template>
+					</t:Column>
+				</t:columns>
+
+			</t:Table>
+		</content>
+	</Page>
+
+</mvc:View>

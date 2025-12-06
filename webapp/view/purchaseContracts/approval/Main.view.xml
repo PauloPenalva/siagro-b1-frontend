@@ -1,0 +1,200 @@
+<mvc:View
+	controllerName="siagrob1.controller.purchaseContracts.approval.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+  xmlns:f="sap.f"
+  xmlns:mdc="sap.ui.mdc"
+  xmlns:fb="sap.ui.comp.filterbar"
+  xmlns:vm="sap.ui.fl.variants"
+  xmlns:svm="sap.ui.comp.smartvariants"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Aprovação de Contratos de Compra"/>
+        </f:heading>
+			</f:DynamicPageTitle>
+    </f:title>
+		<f:content>
+      <IconTabBar 
+        id="purchaseContractsApprovalIconTabBar"
+        expanded="true"
+        expandable="false"
+        select=".onFilterSelect">
+        <items>
+          <IconTabFilter
+            icon="sap-icon://inspection"
+            iconColor="Critical"
+              count="{
+              path: '/PurchaseContracts/$count',
+              parameters: {
+                $filter: 'Status eq \'InApproval\''
+              }
+            }"
+            text="Em Aprovação"
+            key="InApproval" />
+          <IconTabFilter
+            icon="sap-icon://accounting-document-verification"
+            iconColor="Positive"
+              count="{
+              path: '/PurchaseContracts/$count',
+              parameters: {
+                $filter: 'Status eq \'Approved\''
+              }
+            }"
+            text="Aprovados"
+            key="Approved" />
+          <IconTabFilter
+            icon="sap-icon://document-text"
+            iconColor="Negative"
+            count="{
+              path: '/PurchaseContracts/$count',
+              parameters: {
+                $filter: 'Status eq \'Rejected\''
+              }
+            }"
+            text="Rejeitados"
+            key="Rejected" />
+          <IconTabFilter
+            icon="sap-icon://document-text"
+            iconColor="Negative"
+            count="{
+              path: '/PurchaseContracts/$count',
+              parameters: {
+                $filter: 'Status eq \'Canceled\''
+              }
+            }"
+            text="Cancelados"
+            key="Canceled" />
+        </items>
+        <content>
+          <Table 
+            id="purchaseContractsApprovalTable"
+            growing="true"
+            growingThreshold="20"
+            growingScrollToLoad="true"
+            alternateRowColors="true"
+            fixedLayout="Strict"
+            busyIndicatorDelay="0"
+            items="{
+              path: '/PurchaseContracts',
+              parameters: {
+                $filter: 'Status eq \'InApproval\'',
+                $count: true
+              }
+            }"
+            >
+            <headerToolbar>
+              <OverflowToolbar>
+                <Title text="Contratos de Compra"/>
+                <ToolbarSpacer/>
+                <SearchField id="purchaseContractsApprovalSearchField" width="30%" placeholder="Pesquisar Contrato..." search=".onSearch"/>
+                <Button
+                  tooltip="Refresh"
+                  icon="sap-icon://refresh"
+                  press=".onRefresh"/>
+              </OverflowToolbar>
+            </headerToolbar>
+            <columns>
+              <Column>
+                <Text text="Status"/>
+              </Column>
+              <Column width="30%">
+                <Text text="Contrato"/>
+              </Column>
+              <Column>
+                <Text text="Comprador"/>
+              </Column>
+              <Column>
+                <Text text="Tipo de Contrato"/>
+              </Column>
+              <Column>
+                <Text text="Tipo Mercado"/>
+              </Column>
+              <Column>
+                <Text text="Emissão"/>
+              </Column>
+              <Column>
+                <Text text="Quantidade"/>
+              </Column>
+              <Column>
+                <Text text="Un.Med."/>
+              </Column>
+            </columns>
+            <items>
+              <ColumnListItem 
+                type="Navigation"
+                press=".onNavigateToDetail"
+              >
+                <cells>
+                  <ObjectStatus 
+                    inverted="true"
+                    state="{
+                      path: 'Status', 
+                      targetType: 'any', 
+                      formatter: '.formatter.stateContractStatus'
+                    }"
+                    text="{
+                      path: 'Status', 
+                      targetType: 'any', 
+                      formatter: '.formatter.formatContractStatus' 
+                    }"/>
+                  <ObjectIdentifier text="{DocType/Name} {Code}" title="{CardName} ({CardCode}) - {ItemName}" />
+                  <!-- <ObjectIdentifier text="{Code}"/> -->
+                  <Text text="{Agent/Name}" />
+                  <Text 
+                    wrapping="false"
+                    text="{
+                      path: 'Type',
+                      targetType: 'any',
+                      formatter: '.formatter.formatContractType'
+                    }"/>
+                    <Text
+                      wrapping="false" 
+                      text="{
+                        path: 'MarketType', 
+                        targetType: 'any', 
+                        formatter: '.formatter.formatMarketType' 
+                      }" />
+                    <Text
+                      wrapping="false"
+                      text="{
+                        path: 'CreationDate',
+                        targetType: 'any',
+                        formatter: '.formatter.formatDate'
+                      }"
+                    />
+                    <Text
+                      wrapping="false"
+                      text="{
+                        path: 'TotalVolume',
+                        type: 'sap.ui.model.type.Float',
+                        formatOptions:{
+                          decimals: 3,
+                          decimalSeparator: ',',
+                          groupingEnabled: true,
+                          groupingSeparator: '.'
+                        }
+                      }"
+                    />
+                    <Text 
+                      text="{UnitOfMeasureCode}" 
+                      wrapping="false"/>
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </content>
+      </IconTabBar>
+      
+    </f:content>
+  
+  </f:DynamicPage>
+
+</mvc:View>

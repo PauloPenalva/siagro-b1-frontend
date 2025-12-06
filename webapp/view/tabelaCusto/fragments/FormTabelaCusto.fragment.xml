@@ -1,0 +1,169 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+    <f:SimpleForm
+        id="formTabelaCusto"
+        editable="true"
+        layout="ResponsiveGridLayout"
+        labelSpanXL="4"
+        labelSpanL="4"
+        labelSpanM="4"
+        labelSpanS="12"
+        adjustLabelSpan="false"
+        emptySpanXL="0"
+        emptySpanL="0"
+        emptySpanM="0"
+        emptySpanS="0"
+        columnsXL="3"
+        columnsL="2"
+        columnsM="2"
+        singleContainerFullSize="true"
+		busyIndicatorDelay="0"
+    >
+        <f:content>
+            <core:Title
+                text="Dados da Tabela de Custos"
+                emphasized="true"
+            />
+            <Label text="Codigo" />
+            <Input
+                value="{Key}"
+                editable="true"
+                visible="false"
+            />
+            <Label text="Descricao" />
+            <Input
+                value="{Description}"
+                editable="true"
+                required="true"
+                liveChange=".validateField"
+            />
+            <Label text="Preço Armaz. R$/KG" />
+            <Input
+                required="true"
+                value="{
+                  path: 'StoragePrice',
+                  type: 'sap.ui.model.odata.type.Double',
+                  formatOptions: {
+                      decimals: 8,
+                      decimalSeparator: ',',
+                      groupingEnabled: true,
+                      groupingSeparator: '.'
+                  }
+                }"
+                editable="true"
+                liveChange=".validateField"
+            />
+            <Label text="Carencia Armaz. (em dias)" />
+            <Input
+                required="true"
+                value="{
+                    path: 'StorageGraceDays',
+                    type: 'sap.ui.model.odata.type.Int32',
+                    formatOptions: {
+                        groupingEnabled: true,
+                        groupingSeparator: '.'
+                    }
+                }"
+                editable="true"
+                liveChange=".validateField"
+            />
+            <Label text="Venc. Armaz. (em dias)" />
+            <Input
+                required="true"
+                value="{
+                  path: 'StorageBillingIntervalDays',
+                  type: 'sap.ui.model.odata.type.Int32',
+                  formatOptions: {
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                  }
+                }"
+                editable="true"
+                liveChange=".validateField"
+            />
+
+            <core:Title />
+            <Label text="Preço Expurgo (R$/KG)" />
+            <Input
+                required="true"
+                value="{
+                  path: 'FumigationPrice',
+                  type: 'sap.ui.model.odata.type.Double',
+                  formatOptions: {
+                    decimals: 6,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                  }
+                }"
+                editable="true"
+                liveChange=".validateField"
+            />
+            <Label text="Venc. Expurgo (em dias)" />
+            <Input
+                required="true"
+                value="{
+                  path: 'FumigationIntervalDays',
+                  type: 'sap.ui.model.odata.type.Int32',
+                  formatOptions: {
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                  }
+                }"
+                editable="true"
+                liveChange=".validateField"
+            />
+            <Label text="Carencia Q.Téc. (em dias)" />
+            <Input
+                required="true"
+                value="{
+                  path: 'TechnicalLossGraceDays',
+                  type: 'sap.ui.model.odata.type.Int32',
+                  formatOptions: {
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                  }
+                }"
+                editable="true"
+                liveChange=".validateField"
+            />
+            <Label text="Venc. Q.Téc. (em dias)" />
+            <Input
+                required="true"
+                value="{
+                  path: 'TechnicalLossIntervalDays',
+                  type: 'sap.ui.model.odata.type.Int32',
+                  formatOptions: {
+                      groupingEnabled: true,
+                      groupingSeparator: '.'
+                  }
+                }"
+                editable="true"
+                liveChange=".validateField"
+            />
+
+            <Label text="Desconto Q.Téc. (%)" />
+            <Input
+                required="true"
+                value="{
+                  path: 'TechnicalLossRate',
+                  type: 'sap.ui.model.odata.type.Double',
+                  formatOptions: {
+                    decimals: 6,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                  }
+                }"
+                editable="true"
+                liveChange=".validateField"
+            />
+            <core:Title />
+        </f:content>
+    </f:SimpleForm>
+</core:FragmentDefinition>

@@ -1,0 +1,54 @@
+<mvc:View
+    controllerName="siagrob1.controller.App"
+    displayBlock="true"
+    xmlns="sap.m"
+    xmlns:tnt="sap.tnt"
+    xmlns:f="sap.f"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    height="100%"
+>
+    <tnt:ToolPage id="toolPage">
+        <tnt:header>
+            <f:ShellBar
+                id="shellBar"
+                title="Siagro B1"
+                secondTitle="Originação de Grãos"
+                homeIcon="https://sdk.openui5.org/1.141.0/resources/sap/ui/documentation/sdk/images/logo_sap.png"
+                showNavButton="true"
+                showMenuButton="false"
+                showSearch="true"
+				        showNotifications="true"
+                navButtonPressed=".onNavBack"
+                homeIconPressed=".onHomePress"
+                productSwitcherPressed=".onOpenProductSwitch"
+			          showProductSwitcher="true"
+                menuButtonPressed=".onMenuButtonPress">
+                <f:menu>
+                  <Menu>
+                    <MenuItem text="Parceiros de Negócio" key="parceirosNegocio" press=".onItemPressed"/>
+                    <MenuItem text="Motoristas" key="motoristas" press=".onItemPressed"/>
+                    <MenuItem text="Veiculos" key="veiculos" press=".onItemPressed"/>
+                    <MenuItem text="Produtos" key="produtos" press=".onItemPressed"/>
+                    <MenuItem text="Safras" key="safras" press=".onItemPressed"/>
+                    <MenuItem text="Armazéns" key="armazens" press=".onItemPressed"/>
+                    <MenuItem text="Tabela de Custos" key="tabelaCusto" press=".onItemPressed"/>
+                    <MenuItem text="Lotes de Armazenagem" key="lotesArmazenagem" press=".onItemPressed"/>
+                    <MenuItem text="Tickets de Pesagem" key="weighingTickets" press=".onItemPressed"/>
+                    <MenuItem text="Contratos de Compra" key="purchaseContracts" press=".onItemPressed"/>
+                    <MenuItem text="Aprovação de Contratos de Compra" key="purchaseContractsApproval" press=".onItemPressed"/>
+                  </Menu>
+                </f:menu>
+                <f:profile>
+                    <Avatar initials="YK" />
+                </f:profile>
+            </f:ShellBar>
+        </tnt:header>
+        <!-- <tnt:sideContent >
+            <core:Fragment fragmentName="siagrob1.fragments.SideMenu" type="XML" />
+        </tnt:sideContent> -->
+        <tnt:mainContents>
+            <App id="app" />
+        </tnt:mainContents>
+    </tnt:ToolPage>
+</mvc:View>

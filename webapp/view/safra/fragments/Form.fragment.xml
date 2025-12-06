@@ -1,0 +1,59 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+    <f:SimpleForm
+      id="formSafra"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0"
+    >
+        <f:content>
+            <core:Title
+                text="Dados da Safra"
+                emphasized="true"
+            />
+            <Label text="Codigo" />
+            <Input
+                value="{Code}"
+                editable="true"
+                maxLength="10"
+                required="true"
+            />
+            <Label text="Descricao" />
+            <Input
+                value="{Name}"
+                editable="true"
+                required="true"
+                maxLength="100"
+                liveChange=".validateField"
+            />
+            <Label text="Inativa ?" />
+            <CheckBox
+                selected="{
+                  path: 'Inactive',
+                  type: 'sap.ui.model.odata.type.Boolean'
+                }"
+                editable="true"
+            />
+        </f:content>
+        <core:Title />
+        <core:Title />
+    </f:SimpleForm>
+</core:FragmentDefinition>

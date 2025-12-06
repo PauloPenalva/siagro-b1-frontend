@@ -1,0 +1,85 @@
+<core:FragmentDefinition
+   	xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+   	xmlns:core="sap.ui.core">
+
+		<t:Table
+				class="sapUiSizeCondensed"
+				id="tableValorSecagem"
+				alternateRowColors="true"
+				enableBusyIndicator="true"
+				enableSelectAll="false"
+				selectionBehavior="Row"
+				selectionMode="Single"
+				visibleRowCount="15"
+				visibleRowCountMode="Fixed"
+				busyIndicatorDelay="0"
+				rows="{DryingDetails}"
+				visible="true">
+				<t:extension>
+					<OverflowToolbar >
+						<content>
+							<Title text="Custos de Secagem"/>
+							<ToolbarSpacer />
+							<Button text="Incluir" type="Emphasized" icon="sap-icon://add" press=".onAddValorSecagem" />
+							<Button text="Remover" icon="sap-icon://delete" press=".onRemoveValorSecagem" />
+						</content>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column
+						label="% De"
+						width="10rem"
+						>
+						<t:template>
+							<Input value="{
+								path: 'InitialMoisture',
+								type: 'sap.ui.model.odata.type.Double',
+								formatOptions: {
+										decimals: 1,
+										decimalSeparator: ',',
+										groupingEnabled: true,
+										groupingSeparator: '.'
+									}
+								}" />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="% Até"
+						width="10rem"
+						>
+						<t:template>
+							<Input value="{
+								path: 'FinalMoisture',
+								type: 'sap.ui.model.odata.type.Double',
+								formatOptions: {
+										decimals: 1,
+										decimalSeparator: ',',
+										groupingEnabled: true,
+										groupingSeparator: '.'
+									}
+								}" />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Valor R$/KG"
+						width="10rem"
+						>
+						<t:template>
+							<Input value="{
+								path: 'Price',
+								type: 'sap.ui.model.odata.type.Double',
+								formatOptions: {
+										decimals: 8,
+										decimalSeparator: ',',
+										groupingEnabled: true,
+										groupingSeparator: '.'
+									}
+								}" />
+						</t:template>
+					</t:Column>
+				</t:columns>
+		</t:Table>
+</core:FragmentDefinition>

@@ -1,0 +1,61 @@
+<mvc:View
+	controllerName="siagrob1.controller.produtos.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<Page
+		showHeader="true"
+		title="Produtos">
+		<content>
+			<t:Table
+				id="tableProdutos"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+				rows="{
+					path: '/Items'
+				}"
+			>
+				<t:extension>
+					<OverflowToolbar >
+						<ToolbarSpacer />
+						<SearchField placeholder="Pesquisar..." width="30%" search=".onSearch"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column
+						label="Codigo"
+						sortProperty="ItemCode"
+						filterProperty="ItemCode"
+						>
+						<t:template>
+							<Text text="{ItemCode}" />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Descrição"
+						sortProperty="ItemName"
+						filterProperty="ItemName"
+						>
+						<t:template>
+							<Text text="{ItemName}" />
+						</t:template>
+					</t:Column>
+
+				</t:columns>
+
+			</t:Table>
+		</content>
+	</Page>
+
+</mvc:View>

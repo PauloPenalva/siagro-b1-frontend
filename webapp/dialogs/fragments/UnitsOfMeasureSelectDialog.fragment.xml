@@ -1,0 +1,42 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+
+<TableSelectDialog 
+  class=" sapUiSizeCompact"
+  growing="true"
+  growingThreshold="20"
+  items="{
+    path: '/UnitsOfMeasure',
+    sorter: {
+      path: 'Description', 
+      descending: false
+    }
+  }"
+  rememberSelections="true"
+  title="Unidades de Medida"
+>
+<columns>
+  <Column>
+    <header>
+      <Text text="Codigo" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Descricao" />
+    </header>
+  </Column>
+</columns>
+<ColumnListItem >
+  <cells>
+    <Text text="{Code}" />
+    <Text text="{Description}" />
+  </cells>
+</ColumnListItem>
+</TableSelectDialog>
+</core:FragmentDefinition>
