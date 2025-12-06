@@ -94,6 +94,7 @@ export default {
     m.set("Finished"  , "Finalizado");
     m.set("Canceled"  , "Cancelado");
     m.set("InApproval", "Em Aprovação");
+    m.set("Rejected"  , "Rejeitado");
     
     return m.get(value);
   },
@@ -104,6 +105,7 @@ export default {
     m.set("Approved"  , "Success");
     m.set("Finished"  , "Information");
     m.set("Canceled"  , "Error");
+    m.set("Rejected"  , "Error");
     m.set("InApproval", "Warning");
     
     return m.get(value);

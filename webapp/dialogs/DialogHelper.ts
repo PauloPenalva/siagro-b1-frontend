@@ -1,7 +1,6 @@
+import Dialog from "sap/m/Dialog";
 import MessageBox from "sap/m/MessageBox";
-import TableSelectDialog, {
-  TableSelectDialog$CancelEvent,
-} from "sap/m/TableSelectDialog";
+import TableSelectDialog from "sap/m/TableSelectDialog";
 import Fragment from "sap/ui/core/Fragment";
 import Controller from "sap/ui/core/mvc/Controller";
 import Filter from "sap/ui/model/Filter";
@@ -13,23 +12,39 @@ import formatter from "siagrob1/model/formatter";
 export default {
 
   formatter: formatter,
+
+  createDialog: async (oController: Controller, name: string): Promise<Dialog> => {
+    const id = oController.getView().getId() + "_" + name;
+    const oDlg = await Fragment.load({
+      name,
+      controller: oController,
+      id
+    }) as Dialog;
+
+    if (oController.getView().indexOfDependent(oDlg) < 0)
+      oController.getView().addDependent(oDlg);
+
+    return oDlg;
+  },
   
   openTableSelectDialog: (oController: Controller, name: string, filters: string[]): Promise<Context> => {
-    const id = oController.getView().getId();
     return new Promise(resolve => {
-      Fragment.load({
-      name: "siagrob1.dialogs.fragments." + name,
-      controller: oController,
-      id,
-    })
-      .then((oControl) => {
-        let oDlg = oController.byId(id) as TableSelectDialog;
-        
-        if (!oDlg) {
-          oDlg = oControl as TableSelectDialog;
-          oController.getView().addDependent(oDlg);
-        }
+      const view = oController.getView();
+      const id = view.getId() + "_" + name;
+      let oDlg = view.byId(id) as TableSelectDialog;
+    
+      if (oDlg) {
+        oDlg.open("");
+        return;
+      }
 
+      Fragment.load({
+        name: "siagrob1.dialogs.fragments." + name,
+        controller: oController,
+        id,
+      })
+      .then((oControl) => {
+        oDlg = oControl as TableSelectDialog;
         oDlg.attachConfirm(ev => {
           const oContext = ev
             .getParameter("selectedItem")
@@ -52,9 +67,7 @@ export default {
           
           (ev.getSource().getBinding("items") as ODataListBinding).filter(oFilters);
         });
-
-        oDlg.attachCancel((ev: TableSelectDialog$CancelEvent) => (ev.getSource().getBinding("items") as ODataListBinding).filter([]));
-
+        view.addDependent(oDlg);
         oDlg.open("");
       })
       .catch((err) => {

@@ -51,7 +51,7 @@ export default class ServicosArmazenagemValueHelp {
 					}
 				});
 
-				dlg.addStyleClass("sapUiPopupWithPadding sapUiSizeCompact");
+				dlg.addStyleClass(" sapUiSizeCompact");
 				view.addDependent(dlg);
 			}
 

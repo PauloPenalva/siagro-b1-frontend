@@ -54,7 +54,7 @@ export default class TabelaCustoValueHelp {
 					}
 				});
 
-				dlg.addStyleClass("sapUiPopupWithPadding sapUiSizeCompact");
+				dlg.addStyleClass(" sapUiSizeCompact");
 				view.addDependent(dlg);
 			}
 

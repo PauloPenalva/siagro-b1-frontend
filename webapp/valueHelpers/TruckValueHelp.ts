@@ -53,7 +53,7 @@ export default class TruckValueHelp {
 					}
 				});
 
-				dlg.addStyleClass("sapUiPopupWithPadding sapUiSizeCompact");
+				dlg.addStyleClass(" sapUiSizeCompact");
 				view.addDependent(dlg);
 			}
 

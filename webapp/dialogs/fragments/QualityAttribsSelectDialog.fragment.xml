@@ -7,7 +7,7 @@
 >
 
 <TableSelectDialog 
-  class="sapUiPopupWithPadding sapUiSizeCompact"
+  class=" sapUiSizeCompact"
   growing="true"
   growingThreshold="20"
   items="{

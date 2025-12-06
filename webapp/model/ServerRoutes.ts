@@ -10,6 +10,8 @@ export default {
   agents: '/odata/Agents',
   
   purchaseContracts: '/odata/PurchaseContracts',
+  purchaseContractsApproval: '/odata/PurchaseContractsApproval',
+  purchaseContractsReject: '/odata/PurchaseContractsReject',
   purchaseContractsTotals: '/odata/PurchaseContractsTotals',
   purchaseContractsWithdrawApproval: '/odata/PurchaseContractsWithdrawApproval',
   purchaseContractsSendToApproval: '/odata/PurchaseContractsSendApproval',

@@ -24,55 +24,7 @@
     <f:header>
       <f:DynamicPageHeader>
         <f:content>
-          <fb:FilterBar id="filterbar" search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
-            <fb:filterGroupItems>
-              	<fb:FilterGroupItem name="status" label="Status" groupName="GroupStatus" visibleInFilterBar="true">
-                  <fb:control>
-                      <Select 
-                        forceSelection="false"
-                        selectedKey="{
-                          path: 'filter>/Status',
-                          type: 'sap.ui.model.type.String'
-                        }"
-                      >
-                        <core:ListItem key="Draft" text="Rascunho"/>
-                        <core:ListItem key="Approved" text="Aprovado"/>
-                        <core:ListItem key="Finished" text="Finalizado"/>
-                        <core:ListItem key="Canceled" text="Cancelado"/>
-                        <core:ListItem key="InApproval" text="Em Aprovação"/>
-                      </Select>
-                  </fb:control>
-                </fb:FilterGroupItem>
-              	<fb:FilterGroupItem name="code" label="Codigo" groupName="GroupCode" visibleInFilterBar="true">
-                  <fb:control>
-                      <Input showClearIcon="true" value="{filter>/Code}">
-                      </Input>
-                  </fb:control>
-                </fb:FilterGroupItem>
-              	<fb:FilterGroupItem name="businessPartners" label="Fornecedor" groupName="GroupFornecedor" visibleInFilterBar="true">
-                  <fb:control>
-                      <Input
-                        showClearIcon="true"
-                        showValueHelp="true"
-                        valueHelpRequest=".openBusinessPartnersValueHelp"
-                        value="{filter>/CardCode}"
-                        >
-                      </Input>
-                  </fb:control>
-                </fb:FilterGroupItem>
-              	<fb:FilterGroupItem name="items" label="Produto" groupName="GroupItem" visibleInFilterBar="true">
-                  <fb:control>
-                      <Input
-                        showClearIcon="true"
-                        showValueHelp="true"
-                        valueHelpRequest=".openItemValueHelp"
-                        value="{filter>/ItemCode}"
-                        >
-                      </Input>
-                  </fb:control>
-                </fb:FilterGroupItem>
-            </fb:filterGroupItems>
-          </fb:FilterBar>
+          <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractFilterbar" type="XML" />
         </f:content>
       </f:DynamicPageHeader>
     </f:header>
@@ -87,7 +39,10 @@
 				enableBusyIndicator="true"
 				alternateRowColors="true"
         rows="{
-					path: '/PurchaseContracts'
+					path: '/PurchaseContracts',
+          sorter: [
+            { path: 'RowId', descending: true }
+          ]
 				}"
 			>
 				<t:extension>
@@ -104,81 +59,17 @@
           <t:Column
 						label="Key"
             visible="false"
-						>
+            width="10rem"
+            >
 						<t:template>
-							<Text text="{Key}" />
-						</t:template>
-					</t:Column>
-          <t:Column
-						label="Tipo Doc"
-						sortProperty="DocType"
-						>
-						<t:template>
-							<Text text="{DocTypeCode}" />
-						</t:template>
-					</t:Column>
-          <t:Column
-						label="Codigo"
-						sortProperty="Code"
-						>
-						<t:template>
-							<Text text="{Code}" />
-						</t:template>
-					</t:Column>
-          <t:Column
-						label="Tipo de Contrato"
-						sortProperty="Code"
-						>
-						<t:template>
-							<Text text="{
-                path: 'Type',
-                targetType: 'any',
-                formatter: '.formatter.formatContractType'
-              }" />
-						</t:template>
-					</t:Column>
-          <t:Column
-						label="Complemento"
-						sortProperty="Complement"
-						>
-						<t:template>
-							<Text text="{Complement}" />
-						</t:template>
-					</t:Column>
-          <t:Column
-						label="Emissão"
-						sortProperty="CreationDate"
-						>
-						<t:template>
-            <Text
-              text="{
-                path: 'CreationDate',
-                targetType: 'any',
-                formatter: '.formatter.formatDate'
-              }"
-            />
-						</t:template>
-					</t:Column>
-          <t:Column
-						label="Fornecedor"
-						sortProperty="CardCode"
-						>
-						<t:template>
-            <Link text="{CardCode}" endIcon="sap-icon://inspect" />
-						</t:template>
-					</t:Column>
-          <t:Column
-						label="Produto"
-						sortProperty="ItemCode"
-						>
-						<t:template>
-            <Link text="{ItemCode}" endIcon="sap-icon://inspect" />
+							<Text text="{Key}" wrapping="false"/>
 						</t:template>
 					</t:Column>
           <t:Column
 						label="Status"
 						sortProperty="Status"
             hAlign="Center"
+            width="10rem"
 						>
 						<t:template>
 							<ObjectStatus 
@@ -196,31 +87,145 @@
 						</t:template>
 					</t:Column>
           <t:Column
-						label="Tipo Mercado"
-						sortProperty="MarketType"
+						label="Tipo Doc"
+						sortProperty="DocType"
+            width="10rem"
 						>
 						<t:template>
-							<Text text="{
-                path: 'MarketType', 
-                targetType: 'any', 
-                formatter: '.formatter.formatMarketType' 
-              }" />
+							<Text text="{DocTypeCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Codigo"
+						sortProperty="Code"
+            width="10rem"
+						>
+						<t:template>
+							<Text text="{Code}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Tipo de Contrato"
+						sortProperty="Code"
+            width="10rem"
+						>
+						<t:template>
+							<Text 
+                wrapping="false"
+                text="{
+                  path: 'Type',
+                  targetType: 'any',
+                  formatter: '.formatter.formatContractType'
+                }"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Complemento"
+						sortProperty="Complement"
+            width="10rem"
+						>
+						<t:template>
+							<Text text="{Complement}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Emissão"
+						sortProperty="CreationDate"
+            width="10rem"
+						>
+						<t:template>
+            <Text
+              wrapping="false"
+              text="{
+                path: 'CreationDate',
+                targetType: 'any',
+                formatter: '.formatter.formatDate'
+              }"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Cod.Fornecedor"
+						sortProperty="CardCode"
+            width="10rem"
+						>
+						<t:template>
+            <Text text="{CardCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Fornecedor"
+						sortProperty="CardName"
+            filterProperty="CardName"
+            filterOperator="Contains"
+            width="15rem"
+						>
+						<t:template>
+            <Text text="{CardName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Cod.Produto"
+						sortProperty="ItemCode"
+            width="10rem"
+						>
+						<t:template>
+            <Text text="{ItemCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Produto"
+						sortProperty="ItemName"
+            filterProperty="ItemName"
+            filterOperator="Contains"
+            width="10rem"
+						>
+						<t:template>
+            <Text text="{ItemName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Tipo Mercado"
+						sortProperty="MarketType"
+            width="10rem"
+						>
+						<t:template>
+							<Text
+                wrapping="false" 
+                text="{
+                  path: 'MarketType', 
+                  targetType: 'any', 
+                  formatter: '.formatter.formatMarketType' 
+                }" />
 						</t:template>
 					</t:Column>
           <t:Column
 						label="Quantidade"
 						sortProperty="TotalVolume"
             hAlign="End"
+            width="10rem"
 						>
 						<t:template>
             <Text
-              text="{TotalVolume}"
+              wrapping="false"
+              text="{
+                path: 'TotalVolume',
+                type: 'sap.ui.model.type.Float',
+                formatOptions:{
+                  decimals: 3,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }"
             />
 						</t:template>
 					</t:Column>
-					<t:Column label="Un.Med.">
+					<t:Column label="Un.Med." width="10rem">
 						<t:template>
-              <Text text="{UnitOfMeasureCode}"/>
+              <Text 
+                text="{UnitOfMeasureCode}" 
+                wrapping="false"/>
 						</t:template>
 					</t:Column>
 				</t:columns>

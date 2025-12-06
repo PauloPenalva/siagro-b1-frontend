@@ -56,7 +56,7 @@ export default class EstadoValueHelp {
 					}
 				});
 
-				dlg.addStyleClass("sapUiPopupWithPadding sapUiSizeCompact");
+				dlg.addStyleClass(" sapUiSizeCompact");
 				view.addDependent(dlg);
 			}
 

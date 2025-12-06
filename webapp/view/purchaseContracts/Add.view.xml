@@ -32,7 +32,7 @@
       
     </uxap:headerContent>
     <uxap:sections>
-      <uxap:ObjectPageSection titleUppercase="false" title="Informações Gerais">
+      <!-- <uxap:ObjectPageSection titleUppercase="false" title="Informações Gerais">
 				<uxap:subSections>
           <uxap:ObjectPageSubSection>
             <uxap:blocks>
@@ -40,7 +40,7 @@
             </uxap:blocks>
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
-			</uxap:ObjectPageSection>
+			</uxap:ObjectPageSection> -->
       <uxap:ObjectPageSection titleUppercase="false" title="Dados do Contrato">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection>

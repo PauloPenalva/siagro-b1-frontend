@@ -13,7 +13,7 @@
             <f:ShellBar
                 id="shellBar"
                 title="Siagro B1"
-                secondTitle="Agrobusiness"
+                secondTitle="Originação de Grãos"
                 homeIcon="https://sdk.openui5.org/1.141.0/resources/sap/ui/documentation/sdk/images/logo_sap.png"
                 showNavButton="true"
                 showMenuButton="false"
@@ -36,6 +36,7 @@
                     <MenuItem text="Lotes de Armazenagem" key="lotesArmazenagem" press=".onItemPressed"/>
                     <MenuItem text="Tickets de Pesagem" key="weighingTickets" press=".onItemPressed"/>
                     <MenuItem text="Contratos de Compra" key="purchaseContracts" press=".onItemPressed"/>
+                    <MenuItem text="Aprovação de Contratos de Compra" key="purchaseContractsApproval" press=".onItemPressed"/>
                   </Menu>
                 </f:menu>
                 <f:profile>

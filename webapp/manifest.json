@@ -238,6 +238,16 @@
           "pattern": "purchaseContractsDetail/{id}",
           "name": "purchaseContractsDetail",
           "target": "purchaseContractsDetail"
+        },
+        {
+          "pattern": "purchaseContractsApproval",
+          "name": "purchaseContractsApproval",
+          "target": "purchaseContractsApproval"
+        },
+        {
+          "pattern": "purchaseContractsApprovalDetail/{id}",
+          "name": "purchaseContractsApprovalDetail",
+          "target": "purchaseContractsApprovalDetail"
         }
 			],
 			"targets": {
@@ -407,6 +417,18 @@
 					"id": "purchaseContractsDetail",
           "level": 2,
 					"name": "siagrob1.view.purchaseContracts.Detail",
+          "clearControlAggregation": true
+				},
+        "purchaseContractsApproval": {
+					"id": "purchaseContractsApproval",
+          "level": 1,
+					"name": "siagrob1.view.purchaseContracts.approval.Main",
+          "clearControlAggregation": true
+				},
+        "purchaseContractsApprovalDetail": {
+					"id": "purchaseContractsApprovalDetail",
+          "level": 2,
+					"name": "siagrob1.view.purchaseContracts.approval.Detail",
           "clearControlAggregation": true
 				}
 			}

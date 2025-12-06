@@ -29,6 +29,14 @@
                 text="Dados do Contrato"
                 emphasized="true"
             />
+            <Label text="Tipo Documento"/>
+            <Input
+              editable="{ui>/editable}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openDocTypesValueHelp"
+              required="true"
+              value="{DocTypeCode}"/>
             <Label text="Moeda Standard"/>
             <Select 
               editable="{ui>/editable}"

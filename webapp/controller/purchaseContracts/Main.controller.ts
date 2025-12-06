@@ -13,7 +13,11 @@ type FilterData = {
   Code?: string,
   CardCode?: string,
   ItemCode?: string,
-  Status?: string
+  Status?: string,
+  Type?:string,
+  DocTypeCode?: string,
+  Complement?: string,
+  MarketType?: string,
 }
 
 /**
@@ -46,10 +50,15 @@ export default class Main extends BaseController {
     const filters: string[] = [];
 
     Object.keys(filterData).forEach((key: string) => {
-      if (key == "Status") {
-        filters.push(`${key} eq '${filterData[key]}'`)
-      } else if (key == "Code" || key == "CardCode" || key == "ItemCode") {
-        filters.push(`contains(${key},'${filterData[key]}')`)
+      const filterKey = key as keyof FilterData;
+      const value = filterData[filterKey];
+
+      if (!value) return;
+
+      if (filterKey == "Status" || filterKey == "Type" || filterKey == "MarketType") {
+        filters.push(`${filterKey} eq '${value}'`)
+      } else {
+        filters.push(`contains(${filterKey},'${value}')`)
       }
     });
 

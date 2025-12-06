@@ -1,0 +1,29 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+<Dialog id="pruchaseContractApprovalDialog" title="{viewModel>/dialogTitle}">
+  <content>
+    <VBox class="sapUiSmallMargin" width="460px">
+      <TextArea 
+        value="{ApprovalComments}"
+        rows="5"
+        cols="20"
+        width="100%"
+        placeholder="Comentários..."
+      />
+    </VBox>
+  </content>
+  <footer>
+    <OverflowToolbar >
+      <ToolbarSpacer />
+      <Button text="{viewModel>/dialogConfirmButtonText}" type="Emphasized" press=".onApproveRejectAction"/>
+      <Button text="Fechar" press=".onCloseApprovalDialog" />
+    </OverflowToolbar>
+  </footer>
+
+</Dialog>
+</core:FragmentDefinition>

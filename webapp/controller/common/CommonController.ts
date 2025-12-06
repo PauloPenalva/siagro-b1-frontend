@@ -28,13 +28,12 @@ export default abstract class CommonController extends BaseController {
   } 
 
   bindElement(path: string, parameters:object = undefined) {
-    const oViewModel = this.getModel("ui") as JSONModel;
     this.getView().bindElement({
       path,
       parameters,
       events: {
-        dataRequested: () => oViewModel.setProperty("/busy", true), 
-        dataReceived: () => oViewModel.setProperty("/busy", false),
+        dataRequested: () => this.setBusy(true), 
+        dataReceived: () => this.setBusy(false),
       }
     })
   }
@@ -56,6 +55,17 @@ export default abstract class CommonController extends BaseController {
         MessageBox.error(`${resourceUrl}\n${err.status} - ${err.statusText}`)
       }
     }
+  }
+
+  openDocTypesValueHelp(ev: Input$ValueHelpRequestEvent) {
+    DialogHelper.openTableSelectDialog(this, "DocTypesSelectDialog", ['Code', 'Name', 'Serie'])
+      .then((oContext: Context) => {
+        const value = oContext.getProperty("Code") as string;
+        ev.getSource().setValue(value);
+      })
+      .catch(err => {
+        throw err;
+      });
   }
 
   openAgentsValueHelp(ev: Input$ValueHelpRequestEvent) {
