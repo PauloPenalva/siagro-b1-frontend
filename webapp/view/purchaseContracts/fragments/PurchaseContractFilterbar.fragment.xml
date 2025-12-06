@@ -5,6 +5,23 @@
 >
 <fb:FilterBar id="purchaseContractFb" search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
   <fb:filterGroupItems>
+       <fb:FilterGroupItem name="status" label="Status" groupName="GroupStatus" visibleInFilterBar="true">
+        <fb:control>
+            <Select 
+              forceSelection="false"
+              selectedKey="{
+                path: 'filter>/Status',
+                type: 'sap.ui.model.type.String'
+              }"
+            >
+              <core:ListItem key="Draft" text="Rascunho"/>
+              <core:ListItem key="Approved" text="Aprovado"/>
+              <core:ListItem key="Finished" text="Finalizado"/>
+              <core:ListItem key="Canceled" text="Cancelado"/>
+              <core:ListItem key="InApproval" text="Em Aprovação"/>
+            </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
       <fb:FilterGroupItem name="docType" label="Tipo do Documento" groupName="GroupDocType" visibleInFilterBar="true">
         <fb:control>
            <Input
@@ -64,23 +81,7 @@
             </Input>
         </fb:control>
       </fb:FilterGroupItem>
-      <fb:FilterGroupItem name="status" label="Status" groupName="GroupStatus" visibleInFilterBar="true">
-        <fb:control>
-            <Select 
-              forceSelection="false"
-              selectedKey="{
-                path: 'filter>/Status',
-                type: 'sap.ui.model.type.String'
-              }"
-            >
-              <core:ListItem key="Draft" text="Rascunho"/>
-              <core:ListItem key="Approved" text="Aprovado"/>
-              <core:ListItem key="Finished" text="Finalizado"/>
-              <core:ListItem key="Canceled" text="Cancelado"/>
-              <core:ListItem key="InApproval" text="Em Aprovação"/>
-            </Select>
-        </fb:control>
-      </fb:FilterGroupItem>
+     
       <fb:FilterGroupItem name="marketType" label="Tipo de Mercado" groupName="GroupMarketType" visibleInFilterBar="true">
         <fb:control>
             <Select 

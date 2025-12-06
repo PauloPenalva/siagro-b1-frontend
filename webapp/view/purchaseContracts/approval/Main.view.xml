@@ -23,6 +23,7 @@
     </f:title>
 		<f:content>
       <IconTabBar 
+        id="purchaseContractsApprovalIconTabBar"
         expanded="true"
         expandable="false"
         select=".onFilterSelect">
@@ -80,6 +81,7 @@
             growingScrollToLoad="true"
             alternateRowColors="true"
             fixedLayout="Strict"
+            busyIndicatorDelay="0"
             items="{
               path: '/PurchaseContracts',
               parameters: {
@@ -89,7 +91,15 @@
             }"
             >
             <headerToolbar>
-              
+              <OverflowToolbar>
+                <Title text="Contratos de Compra"/>
+                <ToolbarSpacer/>
+                <SearchField id="purchaseContractsApprovalSearchField" width="30%" placeholder="Pesquisar Contrato..." search=".onSearch"/>
+                <Button
+                  tooltip="Refresh"
+                  icon="sap-icon://refresh"
+                  press=".onRefresh"/>
+              </OverflowToolbar>
             </headerToolbar>
             <columns>
               <Column>

@@ -3,6 +3,7 @@ import MessageBox from "sap/m/MessageBox";
 import TableSelectDialog from "sap/m/TableSelectDialog";
 import Fragment from "sap/ui/core/Fragment";
 import Controller from "sap/ui/core/mvc/Controller";
+import Device from "sap/ui/Device";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import Context from "sap/ui/model/odata/v4/Context";
@@ -21,8 +22,12 @@ export default {
       id
     }) as Dialog;
 
-    if (oController.getView().indexOfDependent(oDlg) < 0)
+    if (oController.getView().indexOfDependent(oDlg) < 0) {
+       if (Device.system.desktop) {
+        oDlg.addStyleClass("sapUiSizeCompact");
+      }
       oController.getView().addDependent(oDlg);
+    }
 
     return oDlg;
   },
@@ -67,6 +72,11 @@ export default {
           
           (ev.getSource().getBinding("items") as ODataListBinding).filter(oFilters);
         });
+
+        if (Device.system.desktop) {
+          oDlg.addStyleClass("sapUiSizeCompact");
+        }
+
         view.addDependent(oDlg);
         oDlg.open("");
       })
