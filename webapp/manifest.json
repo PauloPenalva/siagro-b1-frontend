@@ -278,6 +278,11 @@
           "pattern": "salesContractsApprovalDetail/{id}",
           "name": "salesContractsApprovalDetail",
           "target": "salesContractsApprovalDetail"
+        },
+        {
+          "pattern": "storageTransactions",
+          "name": "storageTransactions",
+          "target": "storageTransactions"
         }
 			],
 			"targets": {
@@ -495,6 +500,12 @@
 					"id": "salesContractsApprovalDetail",
           "level": 2,
 					"name": "siagrob1.view.salesContracts.approval.Detail",
+          "clearControlAggregation": true
+				},
+        "storageTransactions": {
+					"id": "storageTransactions",
+          "level": 1,
+					"name": "siagrob1.view.storageTransactions.Main",
           "clearControlAggregation": true
 				}
 			}

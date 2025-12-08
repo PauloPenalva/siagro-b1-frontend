@@ -147,7 +147,7 @@
             }" unit="{UnitOfMeasureCode}"  />
           </HBox>
         </VBox>
-        <VBox class="sapUiTinyMarginBottom sapUiMediumMarginEnd">
+        <!-- <VBox class="sapUiTinyMarginBottom sapUiMediumMarginEnd">
           <HBox class="sapUiTinyMarginBottom">
             <Text text="Aguardando Liberação:" class="sapUiMediumMarginEnd" />
             <ObjectNumber number="{
@@ -166,6 +166,21 @@
             <Text text="Liberado para embarque:" class="sapUiMediumMarginEnd" />
             <ObjectNumber number="{
               path: 'viewModel>/TotalShipmentReleases',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions:{
+                decimals: 3,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+              }
+            }" unit="{UnitOfMeasureCode}"  />
+          </HBox>
+        </VBox> -->
+        <VBox class="sapUiTinyMarginBottom sapUiMediumMarginEnd">
+          <HBox class="sapUiTinyMarginBottom">
+            <Text text="Saldo:" class="sapUiMediumMarginEnd" />
+            <ObjectNumber number="{
+              path: 'viewModel>/AvaiableVolume',
               type: 'sap.ui.model.odata.type.Double',
               formatOptions:{
                 decimals: 3,

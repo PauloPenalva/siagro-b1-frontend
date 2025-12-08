@@ -5,7 +5,6 @@ import { PurchaseContractsTotals } from "siagrob1/types/PurchaseContractsTotal";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import Dialog from "sap/m/Dialog";
-import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import PurchaseContractsBaseController from "../PurchaseContractsBaseController";
 
@@ -47,6 +46,7 @@ export default class Detail extends PurchaseContractsBaseController {
           this.viewModel.setProperty("/TotalShipmentReleases", data.TotalShipmentReleases ?? 0)
           this.viewModel.setProperty("/TotalVolume", data.TotalVolume ?? 0)
           this.viewModel.setProperty("/TotalStandard", data.TotalStandard ?? 0)
+          this.viewModel.setProperty("/AvaiableVolume", data.AvaiableVolume ?? 0)
         });
 
 			return;

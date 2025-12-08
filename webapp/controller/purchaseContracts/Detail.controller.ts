@@ -38,6 +38,7 @@ export default class Detail extends PurchaseContractsBaseController {
           viewModel.setProperty("/TotalShipmentReleases", data.TotalShipmentReleases ?? 0)
           viewModel.setProperty("/TotalVolume", data.TotalVolume ?? 0)
           viewModel.setProperty("/TotalStandard", data.TotalStandard ?? 0)
+          viewModel.setProperty("/AvaiableVolume", data.AvaiableVolume ?? 0)
         });
 
 			return;

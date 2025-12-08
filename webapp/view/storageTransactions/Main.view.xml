@@ -1,0 +1,267 @@
+<mvc:View
+	controllerName="siagrob1.controller.storageTransactions.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+  xmlns:f="sap.f"
+  xmlns:mdc="sap.ui.mdc"
+  xmlns:fb="sap.ui.comp.filterbar"
+  xmlns:vm="sap.ui.fl.variants"
+  xmlns:svm="sap.ui.comp.smartvariants"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Romaneios de Movimentação"/>
+        </f:heading>
+			</f:DynamicPageTitle>
+    </f:title>
+    <f:header>
+      <f:DynamicPageHeader>
+        <f:content>
+          <core:Fragment fragmentName="siagrob1.view.salesContracts.fragments.SalesContractFilterbar" type="XML" />
+        </f:content>
+      </f:DynamicPageHeader>
+    </f:header>
+		<f:content>
+      <t:Table
+				id="storageTransactionsTable"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+        rows="{
+					path: '/StorageTransactions',
+          sorter: [
+            { path: 'RowId', descending: true }
+          ]
+				}"
+			>
+				<t:extension>
+					<OverflowToolbar >
+            <Title text="Romaneios de Movimentação" />
+						<ToolbarSpacer />
+						<Button type="Transparent" text="Copiar" press=".onCopy"/>
+						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
+						<Button type="Transparent" text="Criar" press=".onCreate"/>
+						<Button type="Transparent" text="Deletar" press=".onDelete"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+          <t:Column
+						label="Key"
+            visible="false"
+            width="10rem"
+            >
+						<t:template>
+							<Text text="{Key}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Status"
+						sortProperty="TransactionStatus"
+            hAlign="Center"
+            width="10rem"
+						>
+						<t:template>
+							<ObjectStatus 
+                inverted="true"
+                state="{
+                  path: 'TransactionStatus', 
+                  targetType: 'any', 
+                  formatter: '.formatter.stateStorageTransactionStatus'
+                }"
+                text="{
+                  path: 'TransactionStatus', 
+                  targetType: 'any', 
+                  formatter: '.formatter.formatStorageTransactionStatus' 
+                }"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Tipo Doc"
+						sortProperty="DocType"
+            width="10rem"
+						>
+						<t:template>
+							<Text text="{DocTypeCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Codigo"
+						sortProperty="Code"
+            width="10rem"
+						>
+						<t:template>
+							<Text text="{Code}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Tipo"
+						width="10rem"
+						>
+						<t:template>
+							<Text 
+                wrapping="false"
+                text="{
+                  path: 'TransactionType',
+                  targetType: 'any',
+                  formatter: '.formatter.formatStorageTransactionType'
+                }"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Emissão"
+						sortProperty="TransactionDate"
+            width="10rem"
+						>
+						<t:template>
+            <Text
+              wrapping="false"
+              text="{
+                path: 'TransactionDate',
+                targetType: 'any',
+                formatter: '.formatter.formatDate'
+              }"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Veículo"
+						sortProperty="TruckCode"
+            width="10rem"
+						>
+						<t:template>
+            <Text text="{TruckCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Nota Fiscal"
+						sortProperty="InvoiceNumber"
+            width="7rem"
+						>
+						<t:template>
+            <Text text="{InvoiceNumber}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Qtd. Nota Fiscal"
+						sortProperty="InvoiceQty"
+            hAlign="End"
+            width="10rem"
+						>
+						<t:template>
+            <ObjectNumber
+              textAlign="End"
+              number="{
+                path: 'InvoiceQty',
+                type: 'sap.ui.model.type.Float',
+                formatOptions:{
+                  decimals: 3,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }"
+              unit="{UnitOfMeasureCode}"
+            />
+						</t:template>
+					</t:Column>
+           <t:Column
+						label="Peso Liquido"
+						sortProperty="NetWeight"
+            hAlign="End"
+            width="10rem"
+						>
+						<t:template>
+            <ObjectNumber
+              textAlign="End"
+              number="{
+                path: 'NetWeight',
+                type: 'sap.ui.model.type.Float',
+                formatOptions:{
+                  decimals: 3,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }"
+              unit="{UnitOfMeasureCode}"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Armazem"
+						sortProperty="WarehouseCode"
+            width="5rem"
+						>
+						<t:template>
+            <Text text="{WarehouseCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Cli/For"
+						sortProperty="CardCode"
+            width="10rem"
+						>
+						<t:template>
+            <Text text="{CardCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Nome"
+						sortProperty="CardName"
+            filterProperty="CardName"
+            filterOperator="Contains"
+            width="15rem"
+						>
+						<t:template>
+            <Text text="{CardName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Cod.Produto"
+						sortProperty="ItemCode"
+            width="10rem"
+						>
+						<t:template>
+            <Text text="{ItemCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Produto"
+						sortProperty="ItemName"
+            filterProperty="ItemName"
+            filterOperator="Contains"
+            width="10rem"
+						>
+						<t:template>
+            <Text text="{ItemName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Chave NF-e"
+						width="10rem"
+						>
+						<t:template>
+            <Text text="{ChaveNFe}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          
+				</t:columns>
+
+			</t:Table>
+
+    </f:content>
+  
+  </f:DynamicPage>
+
+</mvc:View>

@@ -1,4 +1,5 @@
 export type PurchaseContractsTotals = {
+  AvaiableVolume: number;
   FixedVolume?: number,
   AvailableVolumeToPricing?: number,
   TotalPrice?: number,

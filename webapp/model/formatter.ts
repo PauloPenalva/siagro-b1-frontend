@@ -142,5 +142,35 @@ export default {
     m.set("External" , "Exportação");
     
     return m.get(value);
-  }
+  },
+
+  formatStorageTransactionType: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Receipt", "Entrada");
+    m.set("Shipment", "Saída");
+    m.set("QualityLoss", "Quebra Técnica");
+    m.set("SalesShipment", "Venda");
+    
+    return m.get(value);
+  },
+
+  formatStorageTransactionStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Pending", "Pendente");
+    m.set("Confirmed", "Confirmado");
+    m.set("Cancelled", "Cancelado");
+    m.set("Invoiced", "Faturado");
+    
+    return m.get(value);
+  },
+
+  stateStorageTransactionStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Pending", "None");
+    m.set("Confirmed", "Information");
+    m.set("Invoiced", "Success");
+    m.set("Cancelled", "Error");
+    
+    return m.get(value);
+  },
 };
