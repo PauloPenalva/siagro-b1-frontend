@@ -37,6 +37,8 @@
                     <MenuItem text="Tickets de Pesagem" key="weighingTickets" press=".onItemPressed"/>
                     <MenuItem text="Contratos de Compra" key="purchaseContracts" press=".onItemPressed"/>
                     <MenuItem text="Aprovação de Contratos de Compra" key="purchaseContractsApproval" press=".onItemPressed"/>
+                    <MenuItem text="Contratos de Venda" key="salesContracts" press=".onItemPressed"/>
+                     <MenuItem text="Aprovação de Contratos de Venda" key="salesContractsApproval" press=".onItemPressed"/>
                   </Menu>
                 </f:menu>
                 <f:profile>

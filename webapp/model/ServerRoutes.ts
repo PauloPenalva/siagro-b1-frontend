@@ -16,4 +16,11 @@ export default {
   purchaseContractsWithdrawApproval: '/odata/PurchaseContractsWithdrawApproval',
   purchaseContractsSendToApproval: '/odata/PurchaseContractsSendApproval',
   purchaseContractsCopy: '/odata/PurchaseContractsCopy',
+
+  salesContractsCopy: '/odata/SalesContractsCopy',
+  salesContractsWithdrawApproval: '/odata/SalesContractsWithdrawApproval',
+  salesContractsSendToApproval: '/odata/SalesContractsSendApproval',
+  salesContractsApproval: '/odata/SalesContractsApproval',
+  salesContractsReject: '/odata/SalesContractsReject',
+  salesContractsGetTotals: '/odata/SalesContractsGetTotals(key=$)',
 }

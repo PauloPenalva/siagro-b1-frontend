@@ -248,6 +248,36 @@
           "pattern": "purchaseContractsApprovalDetail/{id}",
           "name": "purchaseContractsApprovalDetail",
           "target": "purchaseContractsApprovalDetail"
+        },
+        {
+          "pattern": "salesContracts",
+          "name": "salesContracts",
+          "target": "salesContracts"
+        },
+        {
+          "pattern": "salesContractsNew",
+          "name": "salesContractsNew",
+          "target": "salesContractsNew"
+        },
+        {
+          "pattern": "salesContractsEdit/{id}",
+          "name": "salesContractsEdit",
+          "target": "salesContractsEdit"
+        },
+        {
+          "pattern": "salesContractsDetail/{id}",
+          "name": "salesContractsDetail",
+          "target": "salesContractsDetail"
+        },
+        {
+          "pattern": "salesContractsApproval",
+          "name": "salesContractsApproval",
+          "target": "salesContractsApproval"
+        },
+        {
+          "pattern": "salesContractsApprovalDetail/{id}",
+          "name": "salesContractsApprovalDetail",
+          "target": "salesContractsApprovalDetail"
         }
 			],
 			"targets": {
@@ -429,6 +459,42 @@
 					"id": "purchaseContractsApprovalDetail",
           "level": 2,
 					"name": "siagrob1.view.purchaseContracts.approval.Detail",
+          "clearControlAggregation": true
+				},
+        "salesContracts": {
+					"id": "salesContracts",
+          "level": 1,
+					"name": "siagrob1.view.salesContracts.Main",
+          "clearControlAggregation": true
+				},
+        "salesContractsNew": {
+					"id": "salesContractsNew",
+          "level": 2,
+					"name": "siagrob1.view.salesContracts.Add",
+          "clearControlAggregation": true
+				},
+        "salesContractsEdit": {
+					"id": "salesContractsEdit",
+          "level": 2,
+					"name": "siagrob1.view.salesContracts.Edit",
+          "clearControlAggregation": true
+				},
+        "salesContractsDetail": {
+					"id": "salesContractsDetail",
+          "level": 2,
+					"name": "siagrob1.view.salesContracts.Detail",
+          "clearControlAggregation": true
+				},
+        "salesContractsApproval": {
+					"id": "salesContractsApproval",
+          "level": 1,
+					"name": "siagrob1.view.salesContracts.approval.Main",
+          "clearControlAggregation": true
+				},
+        "salesContractsApprovalDetail": {
+					"id": "salesContractsApprovalDetail",
+          "level": 2,
+					"name": "siagrob1.view.salesContracts.approval.Detail",
           "clearControlAggregation": true
 				}
 			}

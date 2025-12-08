@@ -1,0 +1,118 @@
+<mvc:View
+	controllerName="siagrob1.controller.salesContracts.Detail"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.ui.layout.form"
+  xmlns:uxap="sap.uxap"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+  <uxap:ObjectPageLayout
+    showFooter="true"
+    toggleHeaderOnTitleClick="true"
+		preserveHeaderStateOnScroll="false"
+    busy="{ui>/busy}"
+    busyIndicatorDelay="0"
+	>
+   	<uxap:headerTitle>
+      <uxap:ObjectPageDynamicHeaderTitle>
+         <uxap:expandedHeading>
+           <Title text="Contrato de Venda"/>
+          </uxap:expandedHeading>
+          <uxap:snappedHeading>
+           <Title text="Contrato de Venda"/>
+         </uxap:snappedHeading>
+        <uxap:actions>
+          <Button enabled="{= ${path: 'Status', targetType: 'any'}==='Draft' ? true : false }" text="Editar" type="Emphasized" press=".onEdit"/>
+          <Button visible="{= ${path: 'Status', targetType: 'any'}==='InApproval' ? true : false }" text="Retirar da Aprovação" type="Transparent" press=".onWithdrawApproval"/>
+          <Button visible="{= ${path: 'Status', targetType: 'any'}==='Draft' ? true : false }" text="Enviar para Aprovação" type="Transparent" press=".onSendToApproval"/>
+        </uxap:actions>
+      </uxap:ObjectPageDynamicHeaderTitle>
+		</uxap:headerTitle>
+
+    <uxap:headerContent>
+      <HBox class="sapUiTinyMarginBottom">
+        <ObjectIdentifier title="{DocType/Name} {Code}" class="sapUiMediumMarginEnd sapUiTinyMarginBottom"/>
+        <ObjectStatus
+          state="{
+            path: 'Status',
+            targetType: 'any',
+            formatter: '.formatter.stateContractStatus'
+          }"
+          inverted="true" 
+          text="{
+            path: 'Status',
+            formatter: '.formatter.formatContractStatus',
+            targetType: 'any'
+          }" />
+      </HBox>
+      <HBox>
+        <VBox class="sapUiTinyMarginBottom sapUiMediumMarginEnd">
+          <HBox class="sapUiTinyMarginBottom">
+            <Text text="Volume Negociado:" class="sapUiMediumMarginEnd" />
+            <ObjectNumber number="{
+              path: 'viewModel>/TotalVolume',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions:{
+                decimals: 3,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+              }
+            }" unit="{UnitOfMeasureCode}"  />
+          </HBox>
+        </VBox>
+        <VBox class="sapUiTinyMarginBottom sapUiMediumMarginEnd">
+          <HBox class="sapUiTinyMarginBottom">
+            <Text text="Total Fixado:" class="sapUiMediumMarginEnd" />
+            <ObjectNumber number="{
+              path: 'viewModel>/TotalPrice',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions:{
+                decimals: 2,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+              }
+            }" unit="{
+              path: 'StandardCurrency',
+              targetType: 'any',
+              formatter: '.formatter.formatCurrency'
+            }"  />
+          </HBox>
+        </VBox>
+      </HBox> 
+   	</uxap:headerContent> 
+    
+    <uxap:sections>
+      <uxap:ObjectPageSection titleUppercase="false" title="Dados do Contrato">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection title=" " titleUppercase="false">
+						<core:Fragment fragmentName="siagrob1.view.salesContracts.fragments.SalesContractForm" type="XML" />
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+      <!-- <uxap:ObjectPageSection titleUppercase="false" title="Parametros de Qualidade">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection titleUppercase="false">
+						 <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractQualityParameters" type="XML" />
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Corretores">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractBrokers" type="XML" />
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection> -->
+    </uxap:sections>
+  </uxap:ObjectPageLayout>
+
+</mvc:View>

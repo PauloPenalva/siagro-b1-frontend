@@ -1,0 +1,70 @@
+<mvc:View
+	controllerName="siagrob1.controller.salesContracts.Edit"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.ui.layout.form"
+  xmlns:uxap="sap.uxap"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+  <uxap:ObjectPageLayout
+    showFooter="true"
+    toggleHeaderOnTitleClick="true"
+		preserveHeaderStateOnScroll="false"
+    busy="{ui>/busy}"
+    busyIndicatorDelay="0"
+	>
+   	<uxap:headerTitle>
+			<uxap:ObjectPageDynamicHeaderTitle>
+        <uxap:expandedHeading>
+           <Title text="Editar Contrato de Compra"/>
+          </uxap:expandedHeading>
+          <uxap:snappedHeading>
+           <Title text="Editar Contrato de Compra"/>
+         </uxap:snappedHeading>
+      </uxap:ObjectPageDynamicHeaderTitle>
+		</uxap:headerTitle>
+    <uxap:headerContent>
+			<ObjectIdentifier title="{DocType/Name} {Code}"/>
+   	</uxap:headerContent> 
+    <uxap:sections>
+      <uxap:ObjectPageSection titleUppercase="false" title="Dados do Contrato">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <uxap:blocks>
+              <core:Fragment fragmentName="siagrob1.view.salesContracts.fragments.SalesContractForm" type="XML" />
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+      <!-- <uxap:ObjectPageSection titleUppercase="false" title="Parametros de Qualidade">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection titleUppercase="false">
+						 <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractQualityParameters" type="XML" />
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Corretores">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractBrokers" type="XML" />
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection> -->
+    </uxap:sections>
+    <uxap:footer>
+      <OverflowToolbar>
+				<ToolbarSpacer />
+				<Button text="Cancelar" press=".onCancel"  />
+				<Button text="Salvar" type="Emphasized" press=".onSave"/>
+			</OverflowToolbar>
+    </uxap:footer>
+  </uxap:ObjectPageLayout>
+
+</mvc:View>

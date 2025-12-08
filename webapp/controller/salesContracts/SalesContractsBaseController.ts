@@ -16,9 +16,9 @@ import { Agent } from "siagrob1/types/Agent";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 
 /**
- * @namespace siagrob1.controller.purchaseContracts
+ * @namespace siagrob1.controller.salesContracts
  */
-export default abstract class PurchaseContractsBaseController extends CommonController {
+export default abstract class SalesContractsBaseController extends CommonController {
   
   onAddBroker() {
     const oTable = this.byId("purchaseContractsBrokersTable") as Table;
@@ -238,7 +238,7 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
     if (bConfirm) {
     
       const key = oContext.getProperty("Key") as string;
-      const sUrl = `${this.api.purchaseContractsWithdrawApproval}`
+      const sUrl = `${this.api.salesContractsWithdrawApproval}`
 
       this.setBusy(true);
 
@@ -269,7 +269,7 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
     if (bConfirm) {
     
       const key = oContext.getProperty("Key") as string;
-      const sUrl = `${this.api.purchaseContractsSendToApproval}`
+      const sUrl = `${this.api.salesContractsSendToApproval}`
 
       this.setBusy(true);
 
