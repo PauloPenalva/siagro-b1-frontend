@@ -150,6 +150,10 @@ export default {
     m.set("Shipment", "Saída");
     m.set("QualityLoss", "Quebra Técnica");
     m.set("SalesShipment", "Venda");
+    m.set("Purchase", "Compra");
+    m.set("PurchaseReturn", "Dev.Compra");
+    m.set("PurchaseQtyComplement", "Compl.Qtd.");
+    m.set("PurchasePriceComplement", "Compl.Preço");
     
     return m.get(value);
   },
