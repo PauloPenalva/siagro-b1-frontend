@@ -6,54 +6,17 @@ import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import CommonController from "../common/CommonController";
+import { Column, EdmType, SpreadsheetSettings } from "sap/ui/export/library";
+import Spreadsheet from "sap/ui/export/Spreadsheet";
 
 /**
  * @namespace siagrob1.controller.storageTransactions
  */
 export default class Main extends CommonController {
 
-
 	onInit(): void  {
-    this.createFilterModel();
-
-    // this.getRouter().getRoute("storageTransactions")
-    //   .attachPatternMatched(() => this.applyFilters());
+    
 	}
-
-  // onClearFilters() {
-  //   this.clearFilters();
-  //   this.applyFilters();
-  // }
-
-	// onSearch(): void {
-  //   this.applyFilters()
-	// }
-
-  // private applyFilters() {
-  //   const oBinding = this.getView().byId("tableSalesContracts").getBinding("rows") as ODataListBinding;
-  //   const filterModel = this.getModel("filter") as JSONModel;
-  //   const filterData = filterModel.getData() as FilterData;
-  //   const filters: string[] = [];
-
-  //   Object.keys(filterData).forEach((key: string) => {
-  //     const filterKey = key as keyof FilterData;
-  //     const value = filterData[filterKey];
-
-  //     if (!value) return;
-
-  //     if (filterKey == "Status" || filterKey == "Type" || filterKey == "MarketType") {
-  //       filters.push(`${filterKey} eq '${value}'`)
-  //     } else {
-  //       filters.push(`contains(${filterKey},'${value}')`)
-  //     }
-  //   });
-
-  //   const filterParam = filters.length > 0 ? filters.join(' and ') : undefined;
-
-	// 	oBinding.changeParameters({
-  //     $filter: filterParam
-  //   });
-  // }
 
   onCreate() {
 		this.navTo("storageTransactionsNew");
@@ -118,25 +81,15 @@ export default class Main extends CommonController {
     if (bConfirm) {
     
       const key = oBindingContext.getProperty("Key") as string;
-      const sUrl = `${this.api.salesContractsCopy}`
+      const model = this.getModel() as ODataModel;
+
+      const action = model.bindContext(this.api.storageTransactionCopy)
+      action.setParameter("Key", key);
 
       this.setBusy(true);
-
-      void jQuery.ajax({
-        url: sUrl,
-        method: 'POST',
-        data: JSON.stringify({Key: key}),
-        contentType: 'application/json',
-        success: () =>  { 
-          this.setBusy(false);
-          this.refreshData();
-        },
-        error: err => {
-          this.setBusy(false);
-          MessageBox.error(err.responseText);
-        },
-      })
-      .done(() => this.setBusy(false))
+      void action.invoke()
+        .then(() => this.refreshData())
+        .finally(() => this.setBusy(false));
     }
   }
 
@@ -145,4 +98,140 @@ export default class Main extends CommonController {
     (oTable.getBinding("rows") as ODataListBinding).refresh();
   }
  
+   private createColumnConfig() {
+        const aCols: Column[] = [];
+
+        aCols.push({
+          label: "Status",
+          property: "TransactionStatus",
+          type: EdmType.Enumeration,
+        });
+
+        aCols.push({
+          label: "Codigo",
+          property: "Code",
+          type: EdmType.String,
+        });
+        
+        aCols.push({
+          label: "Tipo",
+          property: "TransactionType",
+          type: EdmType.Enumeration,
+          valueMap: {
+            "Purchase": "Compra",
+            "PurchaseReturn": "Dev.Compra",
+            "PurchaseQtyComplement": "Compl.Qtd.",
+            "PurchasePriceComplement": "Compl.Preço",
+          }
+        });
+
+        aCols.push({
+          label: "Emissão",
+          property: "TransactionDate",
+          type: EdmType.Date,
+        });
+
+        aCols.push({
+          label: "Placa",
+          property: "TruckCode",
+          type: EdmType.String
+        });
+
+        aCols.push({
+          label: "Nota Fiscal",
+          property: "InvoiceNumber",
+          type: EdmType.String
+        });
+  
+        aCols.push({
+          label: "Serie",
+          property: "InvoiceSerie",
+          type: EdmType.String
+        });
+  
+        aCols.push({
+          label: "Qtd.Nota Fiscal",
+          property: "InvoiceQty",
+          type: EdmType.Number,
+          scale: 3,
+          delimiter: true
+        });
+
+        aCols.push({
+          label: "Peso Bruto",
+          property: "GrossWeight",
+          type: EdmType.Number,
+          scale: 3,
+          delimiter: true
+        });
+
+        aCols.push({
+          label: "Peso Liquido",
+          property: "NetWeight",
+          type: EdmType.Number,
+          scale: 3,
+          delimiter: true
+        });
+
+        aCols.push({
+          label: "Armazem",
+          property: "WarehouseCode",
+          type: EdmType.String
+        });
+
+        aCols.push({
+          label: "Cod.Fornecedor",
+          property: "CardCode",
+          type: EdmType.String,
+        });
+  
+        aCols.push({
+          label: "Fornecedor",
+          property: "CardName",
+          type: EdmType.String,
+        });
+  
+        aCols.push({
+          label: "Cod.Produto",
+          property: "ItemCode",
+          type: EdmType.String,
+        });
+  
+        aCols.push({
+          label: "Produto",
+          property: "ItemName",
+          type: EdmType.String,
+        });
+  
+        aCols.push({
+          label: "Chave NF-e",
+          property: "ChaveNFe",
+          type: EdmType.String,
+        });
+
+        return aCols;
+      }
+  
+    onExcel() {
+      const table = this.byId("storageTransactionsTable") as Table;
+      const binding = table.getBinding("rows") as ODataListBinding
+      const cols = this.createColumnConfig();
+     
+      const setting: SpreadsheetSettings = {
+        dataSource: binding,
+        fileName: 'Romaneios de Movimentação.xlsx',
+        workbook: {
+          columns: cols,
+          hierarchyLevel: "Level",
+          context: {
+            sheetName: 'Romaneios de Movimentação'
+          }
+        }
+      };
+  
+      const oSheet = new Spreadsheet(setting);
+      void oSheet.build().finally(function() {
+        oSheet.destroy();
+      });
+    }
 }

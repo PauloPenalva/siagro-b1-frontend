@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.storageTransactions.Main"
+	controllerName="siagrob1.controller.purchaseOrders.allocation.Main"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -17,7 +17,7 @@
     <f:title>
       <f:DynamicPageTitle>
         <f:heading>
-          <Title text="Romaneios de Movimentação"/>
+          <Title text="Alocação de Romaneios de Compra"/>
         </f:heading>
 			</f:DynamicPageTitle>
     </f:title>
@@ -30,7 +30,7 @@
     </f:header>
 		<f:content>
       <t:Table
-				id="storageTransactionsTable"
+				id="storageTransactionsAllocationTable"
 				busyIndicatorDelay="0"
 				selectionMode="Single"
 				selectionBehavior="Row"
@@ -40,19 +40,16 @@
 				alternateRowColors="true"
         rows="{
 					path: '/StorageTransactions',
-          sorter: [
-            { path: 'RowId', descending: true }
-          ]
+          sorter: [ { path: 'RowId' } ]
 				}"
 			>
 				<t:extension>
 					<OverflowToolbar >
-            <Title text="Romaneios de Movimentação" />
+            <Title text="Romaneios de Compra" />
 						<ToolbarSpacer />
-            <Button type="Transparent" text="Exportar Excel" icon="sap-icon://excel-attachment" press=".onExcel"/>
-						<Button type="Transparent" text="Copiar" press=".onCopy"/>
-						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
-						<Button type="Transparent" text="Criar" press=".onCreate"/>
+						<Button type="Emphasized" text="Alocar" press=".onAlocate"/>
+						<!-- <Button type="Transparent" text="Visualizar" press=".onDetail"/> -->
+						<!-- <Button type="Transparent" text="Criar" press=".onCreate"/> -->
 						<!-- <Button type="Transparent" text="Deletar" press=".onDelete"/> -->
 					</OverflowToolbar>
 				</t:extension>
@@ -176,7 +173,7 @@
             />
 						</t:template>
 					</t:Column>
-          <t:Column
+          <!-- <t:Column
 						label="Peso Bruto"
 						sortProperty="GrossWeight"
             hAlign="End"
@@ -198,7 +195,7 @@
               unit="{UnitOfMeasureCode}"
             />
 						</t:template>
-					</t:Column>
+					</t:Column> -->
           <t:Column
 						label="Peso Liquido"
 						sortProperty="NetWeight"
@@ -210,6 +207,28 @@
               textAlign="End"
               number="{
                 path: 'NetWeight',
+                type: 'sap.ui.model.type.Float',
+                formatOptions:{
+                  decimals: 3,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }"
+              unit="{UnitOfMeasureCode}"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Saldo"
+						hAlign="End"
+            width="10rem"
+						>
+						<t:template>
+            <ObjectNumber
+              textAlign="End"
+              number="{
+                path: 'AvaiableVolumeToAllocate',
                 type: 'sap.ui.model.type.Float',
                 formatOptions:{
                   decimals: 3,

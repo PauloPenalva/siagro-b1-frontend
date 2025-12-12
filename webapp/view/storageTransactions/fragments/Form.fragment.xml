@@ -54,6 +54,8 @@
               <core:ListItem key="PurchaseReturn" text="Dev.Compra"/>
               <core:ListItem key="PurchaseQtyComplement" text="Compra - Compl.Qtd."/>
               <core:ListItem key="PurchasePriceComplement" text="Compra - Compl.Preço"/>
+              <core:ListItem key="SalesShipment" text="Venda"/>
+              <core:ListItem key="SalesShipmentReturn" text="Dev.Venda"/>
             </Select>
             <Label text="Data" />
             <DatePicker

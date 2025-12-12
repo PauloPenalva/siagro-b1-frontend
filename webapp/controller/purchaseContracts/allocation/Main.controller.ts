@@ -1,170 +1,185 @@
-import Dialog from "sap/m/Dialog";
-import MessageBox from "sap/m/MessageBox";
-import MessageToast from "sap/m/MessageToast";
-import JSONModel from "sap/ui/model/json/JSONModel";
-import Context from "sap/ui/model/odata/v4/Context";
+
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
-import ODataModel from "sap/ui/model/odata/v4/ODataModel";
-import Table from "sap/ui/table/Table";
-import CommonController from "siagrob1/controller/common/CommonController";
-import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import formatter from "siagrob1/model/formatter";
+import Table from "sap/ui/table/Table";
+import BaseController from "../PurchaseContractsBaseController";
+import Context from "sap/ui/model/odata/v4/Context";
+import MessageBox from "sap/m/MessageBox";
+import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import ODataModel from "sap/ui/model/odata/v4/ODataModel";
+import MessageToast from "sap/m/MessageToast";
+import { Column, EdmType, SpreadsheetSettings } from "sap/ui/export/library";
+import Spreadsheet from "sap/ui/export/Spreadsheet";
 
 /**
  * @namespace siagrob1.controller.purchaseContracts.allocation
  */
-export default class Main extends CommonController {
+export default class Main extends BaseController {
 
   formatter = formatter;
 
-  private purchaseContractsAvaiableDialog: Dialog;
-
 	onInit(): void  {
-    this.getRouter().getRoute("purchaseContractsAllocations")
-       .attachPatternMatched(() => this.applyFilters());
+    
 	}
 
-  async onAlocate() {
-    const table = this.byId("storageTransactionsAllocationTable") as Table;
-    const context = table.getContextByIndex(table.getSelectedIndex()) as Context;
-    
-    if (context) {
-      this.purchaseContractsAvaiableDialog ??= 
-        await DialogHelper.createDialog(this, "siagrob1.view.purchaseContracts.allocation.fragments.PurchaseContractsAvaiables");
-      
-      this.purchaseContractsAvaiableDialog.setBindingContext(context);
-      this.purchaseContractsAvaiableDialog.open();
-      
-      const model = this.getModel() as ODataModel;
-      const func = model.bindContext("/PurchaseContractsGetAvaiablesList(...)");
-      func.setParameter("CardCode", context.getProperty("CardCode"));
-      func.setParameter("ItemCode", context.getProperty("ItemCode"));
+  private createColumnConfig() {
+			const aCols: Column[] = [];
 
-      this.setBusy(true);
-      void func.invoke()
-        .then(() => {
-          const resultContext = func.getBoundContext();
-          const viewModel = this.getModel("viewModel") as JSONModel
-          viewModel.setData(resultContext.getObject() as object);
-        
-        })
-        .finally(() => this.setBusy(false))
-          
-      return;
-    }
+			aCols.push({
+				label: "Contrato",
+				property: "PurchaseContract/Code",
+				type: EdmType.String,
+			});
 
-    MessageBox.warning("Selecione um registro.")
-  }
+			aCols.push({
+				label: "Cod.Fornecedor",
+				property: "PurchaseContract/CardCode",
+				type: EdmType.String,
+			});
 
-  onCloseDialog() {
-    const viewModel = this.getModel("viewModel") as JSONModel;
-    viewModel.setData([]);
+			aCols.push({
+				label: "Fornecedor",
+				property: "PurchaseContract/CardName",
+				type: EdmType.String,
+			});
 
-    this.purchaseContractsAvaiableDialog?.close();
-  }
+			aCols.push({
+				label: "Cod.Produto",
+				property: "PurchaseContract/ItemCode",
+				type: EdmType.String,
+			});
 
-  async onConfirmDialog() {
-    const dlgId = this.getView().getId() + "_siagrob1.view.purchaseContracts.allocation.fragments.PurchaseContractsAvaiables";
+			aCols.push({
+				label: "Produto",
+				property: "PurchaseContract/ItemName",
+				type: EdmType.String,
+			});
 
-    const dlgTable = sap.ui.core.Fragment.byId(dlgId,"purchaseContractsAvaiableTable") as Table;
-    const selected = dlgTable.getSelectedIndices();
-    if (selected.length == 0 || selected.length > 1) {
-      MessageBox.warning("Selecione um item na lista.");
-      return;
-    }
-    
-    const context = this.purchaseContractsAvaiableDialog.getBindingContext() as Context;
-    const tableCtx = dlgTable.getContextByIndex(selected[0]);
+			aCols.push({
+				label: "Romaneio",
+				property: "StorageTransaction/Code",
+				type: EdmType.String,
+			});
 
-    if (tableCtx) {
-      const storageTransactionKey = context.getProperty("Key") as string;
-      const avaiableVolumeToAlloc = +context.getProperty("AvaiableVolumeToAllocate");
-      const avaiableVolume = +tableCtx.getProperty("AvaiableVolume");
-      const purchaseContractKey = tableCtx.getProperty("Key") as string;
-      const volume = +tableCtx.getProperty("Volume");
-      
-      if (!volume || +volume <=0){
-        MessageBox.warning("Informe o volume a alocar no contrato.");
-        return;
+			aCols.push({
+				label: "Emissão",
+				property: "StorageTransaction/TransactionDate",
+				type: EdmType.Date,
+     	});
+
+      aCols.push({
+				label: "Tipo",
+				property: "StorageTransaction/TransactionType",
+        type: EdmType.Enumeration,
+        valueMap: {
+          "Purchase": "Compra",
+          "PurchaseReturn": "Dev.Compra",
+          "PurchaseQtyComplement": "Compl.Qtd.",
+          "PurchasePriceComplement": "Compl.Preço",
+        }
+     	});
+
+      aCols.push({
+				label: "Quantidade",
+				property: "Volume",
+        type: EdmType.Number,
+				scale: 3,
+				delimiter: true
+			});
+			
+      aCols.push({
+				label: "Un.Med.",
+				property: "StorageTransaction/UnitOfMeasureCode",
+        type: EdmType.String
+			});
+
+      aCols.push({
+				label: "Un.Med.",
+				property: "StorageTransaction/WarehouseCode",
+        type: EdmType.String
+			});
+
+      aCols.push({
+				label: "Placa",
+				property: "StorageTransaction/TruckCode",
+        type: EdmType.String
+			});
+
+      aCols.push({
+				label: "Nota Fiscal",
+				property: "StorageTransaction/InvoiceNumber",
+        type: EdmType.String
+			});
+
+      aCols.push({
+				label: "Serie",
+				property: "StorageTransaction/InvoiceSerie",
+        type: EdmType.String
+			});
+
+      aCols.push({
+				label: "Qtd.Nota Fiscal",
+				property: "StorageTransaction/InvoiceQty",
+        type: EdmType.Number,
+				scale: 3,
+				delimiter: true
+			});
+
+			return aCols;
+		}
+
+  onExcel() {
+    const table = this.byId("tablePurchaseContractsAllocations") as Table;
+    const binding = table.getBinding("rows") as ODataListBinding
+    const cols = this.createColumnConfig();
+
+    const setting: SpreadsheetSettings = {
+      dataSource: binding,
+      fileName: 'Entregas de Contrato de Compra.xlsx',
+      workbook: {
+        columns: cols,
+        hierarchyLevel: "Level",
+        context: {
+          sheetName: 'Entregas de Contrato de Compra'
+        }
       }
+    };
 
-      if (volume > avaiableVolumeToAlloc) {
-        MessageBox.warning(`O volume informado é superior ao saldo disponivel do romaneio (${this.formatter.formatDecimal(avaiableVolumeToAlloc, 3)}).`)
-        return;
-      }
-
-       if (volume > avaiableVolume) {
-        MessageBox.warning(`O volume informado é superior ao saldo disponivel do contrato (${this.formatter.formatDecimal(avaiableVolume, 3)}).`)
-        return;
-      }
-
-      const confirm = await DialogHelper.confirmDialog("Confirma alocação do romaneio ?");
-      if (confirm) {
-        this.purchaseContractsAvaiableDialog?.close();
-        
-        const action = (this.getModel() as ODataModel).bindContext("/PurchaseContractsCreateAllocation(...)");
-        action.setParameter("PurchaseContractKey", purchaseContractKey);
-        action.setParameter("StorageTransactionKey", storageTransactionKey);
-        action.setParameter("Volume", volume);
-
-        this.setBusy(true);
-        void action.invoke()
-          .then(() => {
-            this.refreshData();
-            MessageToast.show(`Romaneio ${context.getProperty("Code")} aplicado com sucesso ao contrato ${tableCtx.getProperty("Code")}.`)
-          })
-          .finally(() => { 
-            this.setBusy(false);
-          });
-      }
-
-      return;
-    }
-  }
-
-  private applyFilters() {
-    const oBinding = this.getView().byId("storageTransactionsAllocationTable").getBinding("rows") as ODataListBinding;
-    const filters: string[] = [];
-    
-    const typesFilter = `(${[
-            `TransactionType eq 'Purchase'`,
-            `TransactionType eq 'PurchaseReturn'`,
-            `TransactionType eq 'PurchaseQtyComplement'`,
-            `TransactionType eq 'PurchasePriceComplement'`
-        ].join(' or ')})`;
-    
-    filters.push("TransactionStatus eq 'Confirmed'");
-    filters.push("AvaiableVolumeToAllocate gt 0");
-
-    const filter = filters.join(' and ');
-
-    // Object.keys(filterData).forEach((key: string) => {
-    //   const filterKey = key as keyof FilterData;
-    //   const value = filterData[filterKey];
-
-    //   if (!value) return;
-
-    //   if (filterKey == "Status" || filterKey == "Type" || filterKey == "MarketType") {
-    //     filters.push(`${filterKey} eq '${value}'`)
-    //   } else {
-    //     filters.push(`contains(${filterKey},'${value}')`)
-    //   }
-    // });
-
-    //const filterParam = filters.length > 0 ? filters.join(' and ') : undefined;
-
-    const filterParam = `${filter} and ${typesFilter}`
-
-		oBinding.changeParameters({
-      $filter: filterParam
+    const oSheet = new Spreadsheet(setting);
+    void oSheet.build().finally(function() {
+      oSheet.destroy();
     });
   }
 
- 
+
+  async onDelete() {
+    const table = this.byId("tablePurchaseContractsAllocations") as Table;
+    const context = table.getContextByIndex(table.getSelectedIndex()) as Context;
+
+    if (!context) {
+      MessageBox.warning("Selecione um registro.")
+      return;
+    }
+
+    if (await DialogHelper.confirmDialog("Estornar entrega de contrato ?")) {
+      const model = this.getModel() as ODataModel;
+      const action = model.bindContext(this.api.purchaseContractsAllocationsDelete);
+      action.setParameter("Key", context.getProperty("Key"));
+
+      this.setBusy(true);
+      void action.invoke()
+        .then(() => {
+          MessageToast.show("Entrega estornada com sucesso.");
+          this.refreshData();
+        })
+        .finally(() => this.setBusy(false));
+    }
+
+  }
+
   private refreshData() {
-    const oTable = this.byId("storageTransactionsAllocationTable") as Table;
+    const oTable = this.byId("tablePurchaseContractsAllocations") as Table;
     (oTable.getBinding("rows") as ODataListBinding).refresh();
   }
  
-
 }

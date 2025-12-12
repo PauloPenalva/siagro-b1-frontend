@@ -250,6 +250,11 @@
           "target": "purchaseContractsApprovalDetail"
         },
         {
+          "pattern": "purchaseOrdersAllocations",
+          "name": "purchaseOrdersAllocations",
+          "target": "purchaseOrdersAllocations"
+        },
+        {
           "pattern": "purchaseContractsAllocations",
           "name": "purchaseContractsAllocations",
           "target": "purchaseContractsAllocations"
@@ -486,7 +491,13 @@
 					"name": "siagrob1.view.purchaseContracts.approval.Detail",
           "clearControlAggregation": true
 				},
-         "purchaseContractsAllocations": {
+        "purchaseOrdersAllocations": {
+					"id": "purchaseOrdersAllocations",
+          "level": 1,
+					"name": "siagrob1.view.purchaseOrders.allocation.Main",
+          "clearControlAggregation": true
+				},
+        "purchaseContractsAllocations": {
 					"id": "purchaseContractsAllocations",
           "level": 1,
 					"name": "siagrob1.view.purchaseContracts.allocation.Main",

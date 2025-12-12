@@ -15,6 +15,7 @@ framework:
     - name: sap.ui.fl
     - name: sap.ui.comp
     - name: sap.uxap
+    - name: sap.ui.export
     - name: themelib_sap_horizon
     - name: themelib_sap_belize
     - name: themelib_sap_fiori_3

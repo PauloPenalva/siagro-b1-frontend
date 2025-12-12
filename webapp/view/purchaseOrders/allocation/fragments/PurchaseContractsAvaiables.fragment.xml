@@ -22,6 +22,15 @@
        <Label text="Nota Fiscal:" class="sapUiTinyMarginEnd" />
        <Text text="{InvoiceNumber}" class="sapUiLargeMarginEnd"/>
      </HBox>
+     <HBox>
+      <Label text="Tipo:" class="sapUiTinyMarginEnd" />
+      <Text 
+        text="{
+          path: 'TransactionType',
+          targetType: 'any',
+          formatter: '.formatter.formatStorageTransactionType'
+        }"/>
+     </HBox>
     </VBox>
     <t:Table
       id="purchaseContractsAvaiableTable"
