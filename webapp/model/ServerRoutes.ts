@@ -8,6 +8,8 @@ export default {
   qualityAttrib: '/odata/QualityAttribs',
   logisticRegions: '/odata/LogisticRegions',
   agents: '/odata/Agents',
+  truckDrivers: '/odata/TruckDrivers',
+  trucks: '/odata/Trucks',
   
   purchaseContracts: '/odata/PurchaseContracts',
   purchaseContractsApproval: '/odata/PurchaseContractsApproval',

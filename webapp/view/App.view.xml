@@ -40,6 +40,7 @@
                     <MenuItem text="Contratos de Venda" key="salesContracts" press=".onItemPressed"/>
                     <MenuItem text="Aprovação de Contratos de Venda" key="salesContractsApproval" press=".onItemPressed"/>
                     <MenuItem text="Romaneios de Movimentação" key="storageTransactions" press=".onItemPressed"/>
+                    <MenuItem text="Alocação de Romaneios de Compra" key="purchaseContractsAllocations" press=".onItemPressed"/>
                   </Menu>
                 </f:menu>
                 <f:profile>

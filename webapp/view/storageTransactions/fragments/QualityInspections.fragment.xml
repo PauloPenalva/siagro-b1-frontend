@@ -1,0 +1,89 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <t:Table
+    id="storageTransactionQualityInspectionTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    busyIndicatorDelay="0"
+    rows="{
+      path: 'QualityInspections',
+      sorter: { 
+        path: 'QualityAttribCode' 
+      }
+    }"
+    visible="true"
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Classificação" />
+          <ToolbarSpacer />
+          <Button
+            visible="{ui>/editable}"
+            text="Incluir"
+            type="Transparent"
+            icon="sap-icon://add"
+            press=".onAddQualityInspection"
+          />
+          <Button
+            visible="{ui>/editable}"
+            text="Remover"
+            type="Transparent"
+            icon="sap-icon://delete"
+            press=".onRemoveQualityInspection"
+          />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Codigo" width="10rem">
+        <t:template>
+          <Input
+            editable="{ui>/editable}"
+            value="{QualityAttribCode}" 
+            showValueHelp="true" 
+            valueHelpOnly="true" 
+            valueHelpRequest=".openQualityAttribsValueHelp"
+          />
+        </t:template>
+      </t:Column>
+      <t:Column label="Nome" width="10rem">
+        <t:template>
+          <Text 
+            text="{ 
+              parts: ['QualityAttribCode'],
+              formatter: '.formatQualityAttribName'
+            }" 
+            
+          />
+        </t:template>
+      </t:Column>
+      <t:Column label="%" width="10rem">
+        <t:template>
+          <Input 
+            editable="{ui>/editable}"
+            value="{
+              path: 'Value',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions: {
+                  decimals: 1,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+              }
+            }" 
+          />
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

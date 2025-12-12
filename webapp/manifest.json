@@ -250,6 +250,11 @@
           "target": "purchaseContractsApprovalDetail"
         },
         {
+          "pattern": "purchaseContractsAllocations",
+          "name": "purchaseContractsAllocations",
+          "target": "purchaseContractsAllocations"
+        },
+        {
           "pattern": "salesContracts",
           "name": "salesContracts",
           "target": "salesContracts"
@@ -283,6 +288,21 @@
           "pattern": "storageTransactions",
           "name": "storageTransactions",
           "target": "storageTransactions"
+        },
+        {
+          "pattern": "storageTransactionsNew",
+          "name": "storageTransactionsNew",
+          "target": "storageTransactionsNew"
+        },
+        {
+          "pattern": "storageTransactionsEdit/{id}",
+          "name": "storageTransactionsEdit",
+          "target": "storageTransactionsEdit"
+        },
+        {
+          "pattern": "storageTransactionsDetail/{id}",
+          "name": "storageTransactionsDetail",
+          "target": "storageTransactionsDetail"
         }
 			],
 			"targets": {
@@ -466,6 +486,12 @@
 					"name": "siagrob1.view.purchaseContracts.approval.Detail",
           "clearControlAggregation": true
 				},
+         "purchaseContractsAllocations": {
+					"id": "purchaseContractsAllocations",
+          "level": 1,
+					"name": "siagrob1.view.purchaseContracts.allocation.Main",
+          "clearControlAggregation": true
+				},
         "salesContracts": {
 					"id": "salesContracts",
           "level": 1,
@@ -506,6 +532,24 @@
 					"id": "storageTransactions",
           "level": 1,
 					"name": "siagrob1.view.storageTransactions.Main",
+          "clearControlAggregation": true
+				},
+        "storageTransactionsNew": {
+					"id": "storageTransactionsNew",
+          "level": 2,
+					"name": "siagrob1.view.storageTransactions.Add",
+          "clearControlAggregation": true
+				},
+        "storageTransactionsEdit": {
+					"id": "storageTransactionsEdit",
+          "level": 2,
+					"name": "siagrob1.view.storageTransactions.Edit",
+          "clearControlAggregation": true
+				},
+        "storageTransactionsDetail": {
+					"id": "storageTransactionsDetail",
+          "level": 2,
+					"name": "siagrob1.view.storageTransactions.Detail",
           "clearControlAggregation": true
 				}
 			}

@@ -55,6 +55,29 @@ export default {
     const date = new Date(value); // o JS aceita micros sem problema
     return date.toLocaleDateString("pt-BR"); // 19/11/2025
   },
+
+  formatTime: (value: string): string =>  {
+    // Divide a string pelos dois pontos
+    const partes = value.split(':');
+    
+    // Se não tiver pelo menos horas e minutos, retorna o original
+    if (partes.length < 2) {
+      return value;
+    }
+    
+    // Pega horas e minutos
+    const horas = partes[0];
+    const minutos = partes[1];
+    
+    // Pega os segundos (que podem ter milissegundos)
+    const segundosComMilissegundos = partes[2] || '00';
+    
+    // Remove os milissegundos pegando apenas a parte inteira dos segundos
+    const segundos = segundosComMilissegundos.split('.')[0];
+  
+    // Formata no padrão HH:mm:ss
+    return `${horas.padStart(2, '0')}:${minutos.padStart(2, '0')}:${segundos.padStart(2, '0')}`;
+  },
   
   formatOperation: (value: string) => {
     switch (value){

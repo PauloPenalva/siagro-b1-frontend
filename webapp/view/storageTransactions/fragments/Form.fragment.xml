@@ -1,0 +1,254 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }"
+>
+ <f:SimpleForm
+      id="storageTransactionForm"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0"
+    >
+        <f:content>
+            <core:Title
+                text="Dados do Romaneio"
+                emphasized="true"
+            />
+            <Label text="Tipo Documento"/>
+            <Input
+              editable="{ui>/editable}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openDocTypesValueHelp"
+              required="true"
+              value="{DocTypeCode}"/>
+            <Label text="Tipo de romaneio"/>
+            <Select 
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{
+                path: 'TransactionType',
+                targetType: 'any'
+              }"
+              >
+              <core:ListItem key="Purchase" text="Compra"/>
+              <core:ListItem key="PurchaseReturn" text="Dev.Compra"/>
+              <core:ListItem key="PurchaseQtyComplement" text="Compra - Compl.Qtd."/>
+              <core:ListItem key="PurchasePriceComplement" text="Compra - Compl.Preço"/>
+            </Select>
+            <Label text="Data" />
+            <DatePicker
+                value="{
+                  path: 'TransactionDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+                editable="{ui>/editable}"
+                required="true"
+                liveChange=".validateField"
+            />
+            <Label text="Hora" />
+            <Input
+              editable="false"
+              value="{
+                path: 'TransactionTime',  
+                formatter: 'formatter.formatTime'
+              }"
+            />
+            <Label text="Cli/For" />
+            <Input
+              editable="{ui>/editable}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openBusinessPartnersValueHelp"
+              required="true"
+              value="{CardCode}"
+              >
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts: ['CardCode'],
+                formatter: '.formatBusinessPartnerName'
+              }" 
+              editable="false"
+            />
+            <Label text="Observações" />
+            <TextArea 
+              editable="{ui>/editable}"
+              value="{Comments}"
+              rows="5"
+              cols="10"
+            />
+
+            <core:Title text="Produto" />
+            <Label text="Produto" />
+            <Input 
+							editable="{ui>/editable}"	
+              required="true"
+              value="{ItemCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openItemValueHelp">
+              <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts:['ItemCode'],
+                formatter: '.formatItemName'
+              }" 
+              editable="false"
+            />
+            <Label text="Un.Med." />
+            <Input 
+              editable="{ui>/editable}"
+              required="true"
+              value="{UnitOfMeasureCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openUnitsOfMeasureValueHelp">
+              <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts:['UnitOfMeasureCode'],
+                formatter: '.formatUnitOfMeasureDescription'
+              }" 
+              editable="false"
+            />
+            <Label text="Peso Bruto"/>
+            <Input 
+              required="true"
+              editable="{ui>/editable}"
+              value="{
+                path: 'GrossWeight',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions: {
+                    decimals: 3,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                } 
+              }"
+              description="{UnitOfMeasureCode}"
+            />
+            <Label text="Peso Liquido"/>
+            <Input 
+              editable="false"
+              value="{
+                path: 'NetWeight',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions: {
+                    decimals: 3,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                } 
+              }"
+              description="{UnitOfMeasureCode}"
+            />
+            <Label text="Armazem" />
+            <Input 
+							editable="{ui>/editable}"	
+              required="true"
+              value="{WarehouseCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openWarehouseValueHelp">
+              <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts:['WarehouseCode'],
+                formatter: '.formatWarehouseName'
+              }" 
+              editable="false"
+            />
+            <Label text="Motorista" />
+            <Input
+              editable="{ui>/editable}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openTruckDriversValueHelp"
+              required="true"
+              value="{TruckDriverCode}"
+              >
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts: ['TruckDriverCode'],
+                formatter: '.formatDriverName'
+              }" 
+              editable="false"
+            />
+            <Label text="Placa" />
+            <Input
+              editable="{ui>/editable}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openTrucksValueHelp"
+              required="true"
+              value="{TruckCode}"
+              >
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Input>
+            
+            <core:Title text="Documento Fiscal"/>
+            <Label text="Numero"/>
+            <Input value="{InvoiceNumber}" maxLength="9"/>
+            <Label text="Série"/>
+            <Input value="{InvoiceSerie}" maxLength="3"/>
+            <Label text="Quantidade"/>
+            <Input 
+              editable="{ui>/editable}"
+              value="{
+                path: 'InvoiceQty',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions: {
+                    decimals: 3,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                } 
+              }"
+              description="{UnitOfMeasureCode}"
+            />
+            <Label text="Chave NF-e"/>
+            <Input value="{ChaveNFe}" maxLength="9"/>
+        </f:content>
+    </f:SimpleForm>
+</core:FragmentDefinition>

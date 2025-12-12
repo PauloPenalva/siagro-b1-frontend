@@ -87,10 +87,10 @@ export default {
     
   },
 
-  async confirmDialog(title: string, message: string) {
+  async confirmDialog(title: string, message?: string) {
     return new Promise(resolve =>{
       MessageBox.confirm(title, {
-        title: message,
+        title: message ?? "",
         onClose: (value: string) => {
           if (value === MessageBox.Action.OK.toString()) {
             resolve(true);

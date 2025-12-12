@@ -1,0 +1,42 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+
+<TableSelectDialog 
+  class=" sapUiSizeCompact"
+  growing="true"
+  growingThreshold="20"
+  items="{
+    path: '/Trucks',
+    sorter: {
+      path: 'Code', 
+      descending: false
+    }
+  }"
+  rememberSelections="true"
+  title="Veiculos"
+>
+<columns>
+  <Column>
+    <header>
+      <Text text="Codigo" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Modelo" />
+    </header>
+  </Column>
+</columns>
+<ColumnListItem >
+  <cells>
+    <Text text="{Code}" />
+    <Text text="{Model}" />
+  </cells>
+</ColumnListItem>
+</TableSelectDialog>
+</core:FragmentDefinition>

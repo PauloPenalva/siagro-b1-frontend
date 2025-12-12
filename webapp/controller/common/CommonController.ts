@@ -57,6 +57,28 @@ export default abstract class CommonController extends BaseController {
     }
   }
 
+  openTruckDriversValueHelp(ev: Input$ValueHelpRequestEvent) {
+    DialogHelper.openTableSelectDialog(this, "TruckDriversSelectDialog", ['Code', 'Name'])
+      .then((oContext: Context) => {
+        const value = oContext.getProperty("Code") as string;
+        ev.getSource().setValue(value);
+      })
+      .catch(err => {
+        throw err;
+      });
+  }
+
+  openTrucksValueHelp(ev: Input$ValueHelpRequestEvent) {
+    DialogHelper.openTableSelectDialog(this, "TrucksSelectDialog", ['Code', 'Model'])
+      .then((oContext: Context) => {
+        const value = oContext.getProperty("Code") as string;
+        ev.getSource().setValue(value);
+      })
+      .catch(err => {
+        throw err;
+      });
+  }
+
   openSalesContractsDocTypesValueHelp(ev: Input$ValueHelpRequestEvent) {
     DialogHelper.openTableSelectDialog(this, "SalesContractsDocTypesSelectDialog", ['Code', 'Name', 'Serie'])
       .then((oContext: Context) => {

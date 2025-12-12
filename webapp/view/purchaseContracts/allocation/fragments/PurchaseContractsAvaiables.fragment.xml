@@ -1,0 +1,118 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+<Dialog id="purchaseContractsAvaiableDlg" title="Selecionar Contrato de Compra" contentHeight="480px" contentWidth="800px" >
+  <content>
+    <VBox class="sapUiSmallMargin">
+     <HBox>
+       <Label text="Fornecedor:" class="sapUiTinyMarginEnd" />
+       <Text text="{CardName} ({CardCode})" class="sapUiLargeMarginEnd"/>
+       <Label text="Produto:" class="sapUiTinyMarginEnd" />
+       <Text text="{ItemName} ({ItemCode})" class="sapUiLargeMarginEnd"/>
+     </HBox>
+     <HBox>
+       <Label text="Romaneio:" class="sapUiTinyMarginEnd" />
+       <Text text="{Code}" class="sapUiLargeMarginEnd"/>
+       <Label text="Saldo:" class="sapUiTinyMarginEnd" />
+       <ObjectNumber number="{AvaiableVolumeToAllocate} {UnitOfMeasureCode}" class="sapUiLargeMarginEnd"/>
+       <Label text="Nota Fiscal:" class="sapUiTinyMarginEnd" />
+       <Text text="{InvoiceNumber}" class="sapUiLargeMarginEnd"/>
+     </HBox>
+    </VBox>
+    <t:Table
+      id="purchaseContractsAvaiableTable"
+      busyIndicatorDelay="0"
+      selectionMode="Multi"
+      selectionBehavior="Row"
+      class="sapUiSizeCondensed"
+      visibleRowCountMode="Fixed"
+      enableBusyIndicator="true"
+      alternateRowColors="false"
+      rows="{viewModel>/}"
+    >
+      <t:extension>
+        <OverflowToolbar >
+          <Title text="Contratos Disponiveis" />
+          <ToolbarSpacer />
+        </OverflowToolbar>
+      </t:extension>
+      <t:columns>
+        <t:Column
+          label="Key"
+          visible="false"
+          width="10rem"
+          >
+          <t:template>
+            <Text text="{viewModel>Key}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column
+          label="Codigo"
+          sortProperty="Code"
+          width="10rem"
+          >
+          <t:template>
+            <Text text="{viewModel>Code}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column
+          label="Saldo"
+          sortProperty="AvaiableVolume"
+          hAlign="End"
+          width="10rem"
+          >
+          <t:template>
+          <Text
+            wrapping="false"
+            text="{
+              path: 'viewModel>AvaiableVolume',
+              type: 'sap.ui.model.type.Float',
+              formatOptions:{
+                decimals: 3,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+              }
+            }"
+          />
+          </t:template>
+        </t:Column>
+        <t:Column label="Un.Med." width="10rem">
+          <t:template>
+            <Text 
+              text="{viewModel>UnitOfMeasureCode}" 
+              wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Quantidade" width="10rem" hAlign="End">
+          <t:template>
+            <Input 
+              value="{
+                path: 'viewModel>Volume',
+                type: 'sap.ui.model.type.Float',
+                formatOptions:{
+                  decimals: 3,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }" 
+            />
+          </t:template>
+        </t:Column>
+      </t:columns>
+    </t:Table>
+  </content>
+  <footer>
+    <OverflowToolbar >
+      <ToolbarSpacer />
+      <Button text="Confirmar" type="Emphasized" press=".onConfirmDialog"/>
+      <Button text="Fechar" press=".onCloseDialog"/>
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>
