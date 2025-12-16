@@ -50,7 +50,6 @@ export default {
   },
 
   formatDate: (value: string) => {
-    console.log(value);
     if (!value) return "";
     const date = new Date(value); // o JS aceita micros sem problema
     return date.toLocaleDateString("pt-BR"); // 19/11/2025
@@ -198,6 +197,26 @@ export default {
     m.set("Confirmed", "Information");
     m.set("Invoiced", "Success");
     m.set("Cancelled", "Error");
+    
+    return m.get(value);
+  },
+
+  formatShipmentReleaseStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Pending", "Pendente");
+    m.set("Actived", "Ativo");
+    m.set("Cancelled", "Cancelado");
+    m.set("Paused", "Pausado");
+    
+    return m.get(value);
+  },
+
+  stateShipmentReleaseStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Pending", "None");
+    m.set("Actived", "Success");
+    m.set("Cancelled", "Error");
+    m.set("Paused", "Information");
     
     return m.get(value);
   },

@@ -260,6 +260,21 @@
           "target": "purchaseContractsAllocations"
         },
         {
+          "pattern": "purchaseContractsShipmentRelease",
+          "name": "purchaseContractsShipmentRelease",
+          "target": "purchaseContractsShipmentRelease"
+        },
+        {
+          "pattern": "purchaseContractsShipmentReleaseRequest/{purchaseContractId}",
+          "name": "purchaseContractsShipmentReleaseRequest",
+          "target": "purchaseContractsShipmentReleaseRequest"
+        },
+        {
+          "pattern": "shipmentReleases",
+          "name": "shipmentReleases",
+          "target": "shipmentReleases"
+        },
+        {
           "pattern": "salesContracts",
           "name": "salesContracts",
           "target": "salesContracts"
@@ -501,6 +516,24 @@
 					"id": "purchaseContractsAllocations",
           "level": 1,
 					"name": "siagrob1.view.purchaseContracts.allocation.Main",
+          "clearControlAggregation": true
+				},
+        "purchaseContractsShipmentRelease": {
+					"id": "purchaseContractsShipmentRelease",
+          "level": 1,
+					"name": "siagrob1.view.purchaseContracts.shipmentRelease.Main",
+          "clearControlAggregation": true
+				},
+        "purchaseContractsShipmentReleaseRequest": {
+					"id": "purchaseContractsShipmentReleaseRequest",
+          "level": 2,
+					"name": "siagrob1.view.purchaseContracts.shipmentRelease.Add",
+          "clearControlAggregation": true
+				},
+        "shipmentReleases": {
+					"id": "shipmentReleases",
+          "level": 1,
+					"name": "siagrob1.view.shipmentReleases.Main",
           "clearControlAggregation": true
 				},
         "salesContracts": {

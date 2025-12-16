@@ -147,7 +147,7 @@
             }" unit="{UnitOfMeasureCode}"  />
           </HBox>
         </VBox>
-        <!-- <VBox class="sapUiTinyMarginBottom sapUiMediumMarginEnd">
+        <VBox class="sapUiTinyMarginBottom sapUiMediumMarginEnd">
           <HBox class="sapUiTinyMarginBottom">
             <Text text="Aguardando Liberação:" class="sapUiMediumMarginEnd" />
             <ObjectNumber number="{
@@ -175,7 +175,7 @@
               }
             }" unit="{UnitOfMeasureCode}"  />
           </HBox>
-        </VBox> -->
+        </VBox>
         <VBox class="sapUiTinyMarginBottom sapUiMediumMarginEnd">
           <HBox class="sapUiTinyMarginBottom">
             <Text text="Saldo:" class="sapUiMediumMarginEnd" />

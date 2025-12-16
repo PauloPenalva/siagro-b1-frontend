@@ -1,0 +1,111 @@
+<mvc:View 
+	controllerName="siagrob1.controller.purchaseContracts.shipmentRelease.Add"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.f.semantic"
+  xmlns:uxap="sap.uxap"
+  xmlns:form="sap.ui.layout.form"
+  xmlns:l="sap.ui.layout"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+  <uxap:ObjectPageLayout
+    showFooter="true"
+    toggleHeaderOnTitleClick="true"
+		preserveHeaderStateOnScroll="false"
+    busy="{ui>/busy}"
+    busyIndicatorDelay="0"
+	>
+   	<uxap:headerTitle>
+			<uxap:ObjectPageDynamicHeaderTitle>
+        <uxap:expandedHeading>
+           <Title text="Solicitar Liberação de Entrega de Contrato de Compra"/>
+          </uxap:expandedHeading>
+          <uxap:snappedHeading>
+           <Title text="Solicitar Liberação de Entrega de Contrato de Compra"/>
+         </uxap:snappedHeading>
+      </uxap:ObjectPageDynamicHeaderTitle>
+		</uxap:headerTitle>
+    <uxap:headerContent>
+      
+    </uxap:headerContent>
+    <uxap:sections>
+      <uxap:ObjectPageSection titleUppercase="false" title="Dados da Liberação">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <form:SimpleForm
+                id="formPurchaseContractRequestShipmentRelease"
+                editable="true"
+                layout="ResponsiveGridLayout"
+                labelSpanXL="4"
+                labelSpanL="4"
+                labelSpanM="4"
+                labelSpanS="12"
+                adjustLabelSpan="false"
+                emptySpanXL="0"
+                emptySpanL="0"
+                emptySpanM="0"
+                emptySpanS="0"
+                columnsXL="3"
+                columnsL="2"
+                columnsM="2"
+                singleContainerFullSize="true"
+                busyIndicatorDelay="0">
+                <form:content>
+                  <core:Title />
+                  <Label text="Quantidade"/>
+                  <Input 
+                    required="true"
+                    editable="{ui>/editable}"
+                    value="{
+                      path: 'ReleasedQuantity',
+                      type: 'sap.ui.model.odata.type.Double',
+                      formatOptions: {
+                          decimals: 3,
+                          decimalSeparator: ',',
+                          groupingEnabled: true,
+                          groupingSeparator: '.'
+                      } 
+                    }"
+                  />
+                  <Label text="Local de entrega" />
+                  <Input 
+                    editable="{ui>/editable}"	
+                    required="true"
+                    value="{DeliveryLocationCode}" 
+                    showValueHelp="true" 
+                    valueHelpOnly="true" 
+                    valueHelpRequest=".openWarehouseValueHelp">
+                    <layoutData>
+                        <l:GridData span="XL3 L3 M3 S4" />
+                    </layoutData>
+                  </Input>
+                  <Input 
+                    value="{
+                      parts:['DeliveryLocationCode'],
+                      formatter: '.formatWarehouseName'
+                    }" 
+                    editable="false"
+                  />
+                  <core:Title />
+                </form:content>
+              </form:SimpleForm>
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+    </uxap:sections>
+    <uxap:footer>
+      <OverflowToolbar>
+				<ToolbarSpacer />
+				<Button text="Fechar" press=".onCancel"  />
+				<Button text="Confirmar" type="Emphasized" press=".onSave"/>
+			</OverflowToolbar>
+    </uxap:footer>
+  </uxap:ObjectPageLayout>
+</mvc:View>

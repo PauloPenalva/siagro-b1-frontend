@@ -1,0 +1,271 @@
+<mvc:View
+	controllerName="siagrob1.controller.purchaseContracts.shipmentRelease.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+  xmlns:f="sap.f"
+  xmlns:mdc="sap.ui.mdc"
+  xmlns:fb="sap.ui.comp.filterbar"
+  xmlns:vm="sap.ui.fl.variants"
+  xmlns:svm="sap.ui.comp.smartvariants"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Contratos de Compra - Liberação de entregas"/>
+        </f:heading>
+			</f:DynamicPageTitle>
+    </f:title>
+    <f:header>
+      <f:DynamicPageHeader>
+        <f:content>
+          <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractFilterbar" type="XML" />
+        </f:content>
+      </f:DynamicPageHeader>
+    </f:header>
+		<f:content>
+      <t:Table
+				id="tablePurchaseContractsShipmentRelease"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+        rows="{
+					path: '/PurchaseContractsGetShipmentReleasesAvailable',
+          sorter: [
+            { path: 'RowId' }
+          ]
+				}"
+			>
+				<t:extension>
+					<OverflowToolbar >
+            <Title text="Contratos de Compra a Liberar Entrega" />
+						<ToolbarSpacer />
+						<Button type="Transparent" text="Solicitar Liberação" press=".onRequest"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+          <t:Column
+						label="Key"
+            visible="false"
+            width="10rem"
+            >
+						<t:template>
+							<Text text="{Key}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <!-- <t:Column
+						label="Status"
+						sortProperty="Status"
+            hAlign="Center"
+            width="10rem"
+						>
+						<t:template>
+							<ObjectStatus 
+                inverted="true"
+                state="{
+                  path: 'Status', 
+                  targetType: 'any', 
+                  formatter: '.formatter.stateContractStatus'
+                }"
+                text="{
+                  path: 'Status', 
+                  targetType: 'any', 
+                  formatter: '.formatter.formatContractStatus' 
+                }"/>
+						</t:template>
+					</t:Column> -->
+          <!-- <t:Column
+						label="Tipo Doc"
+						sortProperty="DocType"
+            width="10rem"
+						>
+						<t:template>
+							<Text text="{DocTypeCode}" wrapping="false"/>
+						</t:template>
+					</t:Column> -->
+          <t:Column
+						label="Codigo"
+						sortProperty="Code"
+            width="10rem"
+						>
+						<t:template>
+							<Text text="{
+                  parts: ['DocType/Serie','Code']
+                }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <!-- <t:Column
+						label="Tipo de Contrato"
+						sortProperty="Code"
+            width="10rem"
+						>
+						<t:template>
+							<Text 
+                wrapping="false"
+                text="{
+                  path: 'Type',
+                  targetType: 'any',
+                  formatter: '.formatter.formatContractType'
+                }"/>
+						</t:template>
+					</t:Column> -->
+          <t:Column
+						label="Complemento"
+						sortProperty="Complement"
+            width="10rem"
+						>
+						<t:template>
+							<Text text="{Complement}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Limite Entrega"
+						sortProperty="DeliveryEndDate"
+            width="10rem"
+						>
+						<t:template>
+            <Text
+              wrapping="false"
+              text="{
+                path: 'DeliveryEndDate',
+                targetType: 'any',
+                formatter: '.formatter.formatDate'
+              }"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Prev.Pagto."
+						sortProperty="StandardCashFlowDate"
+            width="10rem"
+						>
+						<t:template>
+            <Text
+              wrapping="false"
+              text="{
+                path: 'StandardCashFlowDate',
+                targetType: 'any',
+                formatter: '.formatter.formatDate'
+              }"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Saldo a liberar"
+						hAlign="End"
+            width="10rem"
+						>
+						<t:template>
+            <ObjectNumber
+              textAlign="End"
+              number="{
+                path: 'TotalAvailableToRelease',
+                type: 'sap.ui.model.type.Float',
+                formatOptions:{
+                  decimals: 3,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }"
+              unit="{UnitOfMeasureCode}"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Cod.Fornecedor"
+						sortProperty="CardCode"
+            width="10rem"
+						>
+						<t:template>
+            <Text text="{CardCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Fornecedor"
+						sortProperty="CardName"
+            filterProperty="CardName"
+            filterOperator="Contains"
+            width="15rem"
+						>
+						<t:template>
+            <Text text="{CardName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Cod.Produto"
+						sortProperty="ItemCode"
+            width="10rem"
+						>
+						<t:template>
+            <Text text="{ItemCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Produto"
+						sortProperty="ItemName"
+            filterProperty="ItemName"
+            filterOperator="Contains"
+            width="10rem"
+						>
+						<t:template>
+            <Text text="{ItemName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Tipo Mercado"
+						sortProperty="MarketType"
+            width="10rem"
+						>
+						<t:template>
+							<Text
+                wrapping="false" 
+                text="{
+                  path: 'MarketType', 
+                  targetType: 'any', 
+                  formatter: '.formatter.formatMarketType' 
+                }" />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Quantidade"
+						sortProperty="TotalVolume"
+            hAlign="End"
+            width="10rem"
+						>
+						<t:template>
+            <ObjectNumber
+              textAlign="End"
+              number="{
+                path: 'TotalVolume',
+                type: 'sap.ui.model.type.Float',
+                formatOptions:{
+                  decimals: 3,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }"
+              unit="{UnitOfMeasureCode}"
+            />
+						</t:template>
+					</t:Column>
+			    
+				</t:columns>
+
+			</t:Table>
+
+    </f:content>
+  
+  </f:DynamicPage>
+
+</mvc:View>
