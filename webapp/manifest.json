@@ -338,6 +338,11 @@
           "pattern": "shippingTransaction/shippingTransactionCreate:?query:",
           "name": "shippingTransactionCreate",
           "target": "shippingTransactionCreate"
+        },
+        {
+          "pattern": "salesOrder",
+          "name": "salesOrder",
+          "target": "salesOrder"
         }
 			],
 			"targets": {
@@ -627,6 +632,12 @@
 					"id": "shippingTransactionCreate",
           "level": 2,
 					"name": "siagrob1.view.shippingTransaction.Create",
+          "clearControlAggregation": true
+				},
+        "salesOrder": {
+					"id": "salesOrder",
+          "level": 1,
+					"name": "siagrob1.view.salesOrder.Main",
           "clearControlAggregation": true
 				}
 			}
