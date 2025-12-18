@@ -6,104 +6,133 @@
     xmlns:core="sap.ui.core"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:fb="sap.ui.comp.filterbar"
+    xmlns:uxap="sap.uxap"
     core:require="{
       formatter: 'siagrob1/model/formatter'
     }">
-    <Page
-        showHeader="false"
-        class="sapUiResponsiveContentPadding"
+    <uxap:ObjectPageLayout
+        showFooter="true"
+        toggleHeaderOnTitleClick="true"
+        preserveHeaderStateOnScroll="false"
         busy="{ui>/busy}"
         busyIndicatorDelay="0"
     >
-        <content>
-            <Table
-                id="tableSelectShipmentRelease"
-                class="sapUiSizeCondensed"
-                alternateRowColors="true"
-                inset="false"
-                mode="SingleSelect"
-                items="{
-                  path: '/ShipmentReleases'
-                }">
-                <headerToolbar>
-                    <OverflowToolbar>
-                        <content>
-                            <Title
-                                text="Contratos"
-                                level="H2"
-                            />
-                            <ToolbarSpacer />
-                        </content>
-                    </OverflowToolbar>
-                </headerToolbar>
-                <columns>
-                    <Column width="10rem">
-                        <Text text="Contrato" />
-                    </Column>
-                    <Column width="10rem">
-                        <Text text="Item" />
-                    </Column>
-                    <Column>
-                        <Text text="Fornecedor" />
-                    </Column>
-                    <Column width="6rem">
-                        <Text text="Armazem" />
-                    </Column>
-                    <Column visible="false">
-                        <Text text="Cod.Prodto" />
-                    </Column>
-                    <Column>
-                        <Text text="Produto" />
-                    </Column>
-                    <Column>
-                        <Text text="Tipo" />
-                    </Column>
-                    <Column hAlign="End">
-                        <Text text="Saldo" />
-                    </Column>
-                </columns>
-                <items>
-                    <ColumnListItem>
-                        <cells>
-                            <ObjectIdentifier title="{PurchaseContract/Code}" />
-                            <Text text="{RowId}" />
-                            <Text text="{PurchaseContract/CardName}"/>
-                            <Text text="{DeliveryLocationCode}"/>
-                            <Text text="{PurchaseContract/ItemCode}"/>
-                            <Text text="{PurchaseContract/ItemName}"/>
-                            <Text text=".."/>
-                            <ObjectNumber
-                                number="{
-                                  path: 'AvailableQuantity',
-                                  type: 'sap.ui.model.type.Float',
-                                  formatOptions: {
-                                      decimals: 3,
-                                      decimalSeparator: ',',
-                                      groupingEnabled: true,
-                                      groupingSeparator: '.'
-                                    }
-																}"
-                                unit="{PurchaseContract/UnitOfMeasureCode}"
-                            />
-                        </cells>
-                    </ColumnListItem>
-                </items>
-            </Table>
-        </content>
-        <footer>
-            <Toolbar>
+        <uxap:headerTitle>
+            <uxap:ObjectPageDynamicHeaderTitle>
+              <uxap:breadcrumbs>
+                <Breadcrumbs separatorStyle="GreaterThan" currentLocationText="Seleção de Contrato">
+                  <Link text="Expedição de Grãos" press=".onCancel" />
+                </Breadcrumbs>
+              </uxap:breadcrumbs>
+              <uxap:expandedHeading>
+                  <Title text="Expedição de Grãos" />
+              </uxap:expandedHeading>
+              <uxap:snappedHeading>
+                  <Title text="Expedição de Grãos" />
+              </uxap:snappedHeading>
+            </uxap:ObjectPageDynamicHeaderTitle>
+        </uxap:headerTitle>
+        <uxap:sections>
+            <uxap:ObjectPageSection
+                titleUppercase="false"
+                title="Selecionar Contrato de Compra"
+            >
+                <uxap:subSections>
+                    <uxap:ObjectPageSubSection>
+                        <uxap:blocks>
+                           <Table
+                              id="tableSelectShipmentRelease"
+                              class="sapUiSizeCondensed"
+                              alternateRowColors="true"
+                              inset="false"
+                              mode="SingleSelect"
+                              items="{
+                                path: '/ShipmentReleases'
+                              }">
+                              <headerToolbar>
+                                  <OverflowToolbar>
+                                      <content>
+                                          <Title
+                                              text="Contratos"
+                                              level="H2"
+                                          />
+                                          <ToolbarSpacer />
+                                      </content>
+                                  </OverflowToolbar>
+                              </headerToolbar>
+                              <columns>
+                                  <Column width="10rem">
+                                      <Text text="Contrato" />
+                                  </Column>
+                                  <Column width="10rem">
+                                      <Text text="Item" />
+                                  </Column>
+                                  <Column>
+                                      <Text text="Fornecedor" />
+                                  </Column>
+                                  <Column width="6rem">
+                                      <Text text="Armazem" />
+                                  </Column>
+                                  <Column visible="false">
+                                      <Text text="Cod.Prodto" />
+                                  </Column>
+                                  <Column>
+                                      <Text text="Produto" />
+                                  </Column>
+                                  <Column>
+                                      <Text text="Tipo" />
+                                  </Column>
+                                  <Column hAlign="End">
+                                      <Text text="Saldo" />
+                                  </Column>
+                              </columns>
+                              <items>
+                                  <ColumnListItem>
+                                      <cells>
+                                          <ObjectIdentifier title="{PurchaseContract/Code}" />
+                                          <Text text="{RowId}" />
+                                          <Text text="{PurchaseContract/CardName}"/>
+                                          <Text text="{DeliveryLocationCode}"/>
+                                          <Text text="{PurchaseContract/ItemCode}"/>
+                                          <Text text="{PurchaseContract/ItemName}"/>
+                                          <Text text=".."/>
+                                          <ObjectNumber
+                                              number="{
+                                                path: 'AvailableQuantity',
+                                                type: 'sap.ui.model.type.Float',
+                                                formatOptions: {
+                                                    decimals: 3,
+                                                    decimalSeparator: ',',
+                                                    groupingEnabled: true,
+                                                    groupingSeparator: '.'
+                                                  }
+                                              }"
+                                              unit="{PurchaseContract/UnitOfMeasureCode}"
+                                          />
+                                      </cells>
+                                  </ColumnListItem>
+                              </items>
+                          </Table>
+                        </uxap:blocks>
+                    </uxap:ObjectPageSubSection>
+                </uxap:subSections>
+            </uxap:ObjectPageSection>
+        </uxap:sections>
+        <uxap:footer>
+            <OverflowToolbar>
                 <ToolbarSpacer />
                 <Button
+                    text="Voltar"
+                    press=".onCancel"
+                />
+               <Button
                     text="Incluir Expedicao"
                     icon="sap-icon://add"
                     press=".onCreateShippingTransaction"
                     type="Emphasized"
                 />
-                <Button
-                    text="Cancelar"
-                    press=".onCancel"
-                />
-            </Toolbar>
-        </footer>
-    </Page>
+            </OverflowToolbar>
+        </uxap:footer>
+    </uxap:ObjectPageLayout>
+   
 </mvc:View>

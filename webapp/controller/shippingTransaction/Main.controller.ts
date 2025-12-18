@@ -55,7 +55,7 @@ export default class Main extends BaseController {
 
 	onFilter(ev: SearchField$SearchEvent) {
 		const query = ev.getParameter("query");
-    const table = this.byId("table") as List;
+    const table = this.byId("tableShipmentReleasesBalance") as List;
     const bindingList = table.getBinding("items") as ODataListBinding
 		
 		const filter = new Filter({

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
-import Context from "sap/ui/model/odata/v4/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { BaseController } from "./BaseController";
 import RequestModel from "siagrob1/model/RequestModel";
@@ -19,6 +18,8 @@ type routeArgs = {
  * @namespace siagrob1.controller.shippingTransaction
  */
 export default class Create extends BaseController {
+
+  private _itemCode: string;
 
 	onInit(): void  {
 		this.getRouter().getRoute("shippingTransactionCreate").attachPatternMatched((ev) => this.routeMatched(ev));
@@ -77,8 +78,10 @@ export default class Create extends BaseController {
           QualityInspections: qualityAttribs?.value?.map((x: QualityAttrib) => { 
             return { QualityAttribCode: x.Code, Value: 0 }
           }),
-       }
+        }
       });
+
+      this._itemCode = data?.PurchaseContract?.ItemCode;
 
       return;
     }
@@ -86,7 +89,6 @@ export default class Create extends BaseController {
 	}
 
 	async onSave() {
-		
     if (!this.validateForm("shippingTransactionForm")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
@@ -113,6 +115,10 @@ export default class Create extends BaseController {
 	onCancel() {
     this.onNavBack();
 	}
+
+  onNavToShippingTransaction() {
+    this.navToShippingTransaction(this._itemCode);
+  }
 
   private navToShippingTransaction(itemCode: string) {
      this.navTo("shippingTransaction",{

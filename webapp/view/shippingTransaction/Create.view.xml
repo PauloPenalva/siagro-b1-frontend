@@ -20,11 +20,17 @@
 	>
    	<uxap:headerTitle>
 			<uxap:ObjectPageDynamicHeaderTitle>
+        <uxap:breadcrumbs>
+          <Breadcrumbs separatorStyle="GreaterThan" currentLocationText="Criar Embarque">
+            <Link text="Expedição de Grãos" press=".onNavToShippingTransaction" />
+            <Link text="Seleção de Contrato" press=".onCancel" />
+          </Breadcrumbs>
+        </uxap:breadcrumbs>
         <uxap:expandedHeading>
-           <Title text="Criar Embarque"/>
+           <Title text="Expedição de Grãos"/>
           </uxap:expandedHeading>
           <uxap:snappedHeading>
-           <Title text="Criar Embarque"/>
+           <Title text="Expedição de Grãos"/>
          </uxap:snappedHeading>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>
@@ -54,7 +60,7 @@
     <uxap:footer>
       <OverflowToolbar>
 				<ToolbarSpacer />
-				<Button text="Cancelar" press=".onCancel"  />
+				<Button text="Voltar" press=".onCancel"  />
 				<Button text="Salvar" type="Emphasized" press=".onSave"/>
 			</OverflowToolbar>
     </uxap:footer>
