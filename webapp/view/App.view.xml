@@ -44,6 +44,7 @@
                     <MenuItem text="Romaneios de Movimentação" key="storageTransactions" press=".onItemPressed"/>
                     <MenuItem text="Alocação de Romaneios de Compra" key="purchaseOrdersAllocations" press=".onItemPressed"/>
                     <MenuItem text="Entregas de Contratos de Compra" key="purchaseContractsAllocations" press=".onItemPressed"/>
+                    <MenuItem text="Expedição de Grãos" key="shipments" press=".onItemPressed"/>
                   </Menu>
                 </f:menu>
                 <f:profile>

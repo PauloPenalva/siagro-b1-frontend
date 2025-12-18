@@ -1,0 +1,138 @@
+<mvc:View
+  controllerName="siagrob1.controller.shipment.Main"
+  displayBlock="true"
+  xmlns="sap.m"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns:core="sap.ui.core"
+  xmlns:t="sap.ui.table"
+  xmlns:f="sap.f"
+  xmlns:mdc="sap.ui.mdc"
+  xmlns:fb="sap.ui.comp.filterbar"
+  xmlns:vm="sap.ui.fl.variants"
+  xmlns:svm="sap.ui.comp.smartvariants"
+  core:require="{
+  formatter: 'siagrob1/model/formatter'
+}">
+  <Page
+      showHeader="false"
+      class="sapUiResponsiveContentPadding"
+      busy="{ui>/busy}"
+      busyIndicatorDelay="0">
+        <content>
+            <fb:FilterBar
+                search="onSearch"
+                showRestoreButton="false"
+                filterBarExpanded="true"
+            >
+                <fb:filterGroupItems>
+                  <fb:FilterGroupItem name="items" label="Produto" groupName="GroupItem" visibleInFilterBar="true">
+                    <fb:control>
+                        <Input
+                          showClearIcon="true"
+                          showValueHelp="true"
+                          valueHelpRequest=".openItemValueHelp"
+                          value="{filter>/ItemCode}"
+                          >
+                        </Input>
+                    </fb:control>
+                  </fb:FilterGroupItem>
+                </fb:filterGroupItems>
+            </fb:FilterBar>
+
+            <Table
+                id="table"
+                class="sapUiSizeCondensed"
+                alternateRowColors="true"
+                inset="false"
+                items="{
+                  path: 'balance>/'
+                }"
+                mode="SingleSelect">
+                <headerToolbar>
+                    <OverflowToolbar>
+                        <content>
+                            <Title
+                                text="Expedicao de Grãos"
+                                level="H2"
+                            />
+                            <ToolbarSpacer />
+                            <ToolbarSpacer />
+                            <SearchField
+                                id="searchField"
+                                placeholder="Pesquisar..."
+                                width="30%"
+                                search="filter"
+                            />
+                        </content>
+                    </OverflowToolbar>
+                </headerToolbar>
+                <columns>
+                    <Column width="20rem">
+                        <Text text="Armazem" />
+                    </Column>
+                    <Column>
+                        <Text text="Codigo" />
+                    </Column>
+                    <Column>
+                        <Text text="Produto" />
+                    </Column>
+                    <Column>
+                        <Text text="Descricao" />
+                    </Column>
+                    <Column>
+                        <Text
+                            text="Cod.Variedade"
+                            visible="false"
+                        />
+                    </Column>
+                    <Column>
+                        <Text text="Variedade" />
+                    </Column>
+                    <Column hAlign="End">
+                        <Text text="Saldo" />
+                    </Column>
+                </columns>
+                <items>
+                    <ColumnListItem>
+                        <cells>
+                            <ObjectIdentifier
+                                title="{balance>DeliveryLocationName}"
+                            />
+                            <Text text="{balance>DeliveryLocationCode}" />
+                            <Text text="{balance>ItemCode}" />
+                            <Text text="{balance>ItemName}" />
+                            <Text
+                                text="{balance>codigoVariedade}"
+                                visible="false"
+                            />
+                            <Text text="{balance>descricaoVariedade}" />
+                            <ObjectNumber
+                                number="{
+                                path: 'balance>AvailableQuantity',
+                                type: 'sap.ui.model.type.Float',
+                                formatOptions: {
+                                  decimals: 3,
+                                  decimalSeparator: ',',
+                                  groupingEnabled: true,
+                                  groupingSeparator: '.'
+                                }
+                              }"
+                              unit="{balance>UnitOfMeasureCode}"
+                            />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </content>
+        <footer>
+            <Toolbar>
+                <ToolbarSpacer />
+                <Button
+                    text="Selecionar Contrato"
+                    icon="sap-icon://add"
+                    press=".selectShipmentRelease"
+                />
+            </Toolbar>
+        </footer>
+    </Page>
+</mvc:View>

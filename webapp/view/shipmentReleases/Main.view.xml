@@ -143,6 +143,28 @@
                 text="({PurchaseContract/ItemCode}) {PurchaseContract/ItemName}" />
           	</t:template>
 					</t:Column>
+           <t:Column
+						label="Saldo"
+						hAlign="End"
+            width="10rem"
+						>
+						<t:template>
+            <ObjectNumber
+              textAlign="End"
+              number="{
+                path: 'AvailableQuantity',
+                type: 'sap.ui.model.type.Float',
+                formatOptions:{
+                  decimals: 3,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }"
+              unit="{PurchaseContract/UnitOfMeasureCode}"
+            />
+						</t:template>
+					</t:Column>
 				</t:columns>
 
 			</t:Table>

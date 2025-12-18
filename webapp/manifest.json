@@ -323,6 +323,16 @@
           "pattern": "storageTransactionsDetail/{id}",
           "name": "storageTransactionsDetail",
           "target": "storageTransactionsDetail"
+        },
+        {
+          "pattern": "shipments:?query:",
+          "name": "shipments",
+          "target": "shipments"
+        },
+         {
+          "pattern": "shipments/selectStorageTransaction:?query:",
+          "name": "selectStorageTransaction",
+          "target": "selectStorageTransaction"
         }
 			],
 			"targets": {
@@ -594,6 +604,18 @@
 					"id": "storageTransactionsDetail",
           "level": 2,
 					"name": "siagrob1.view.storageTransactions.Detail",
+          "clearControlAggregation": true
+				},
+        "shipments": {
+					"id": "shipments",
+          "level": 1,
+					"name": "siagrob1.view.shipment.Main",
+          "clearControlAggregation": true
+				},
+        "selectStorageTransaction": {
+					"id": "selectStorageTransaction",
+          "level": 2,
+					"name": "siagrob1.view.shipment.SelectStorageTransaction",
           "clearControlAggregation": true
 				}
 			}

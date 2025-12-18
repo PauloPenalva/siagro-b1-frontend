@@ -1,0 +1,109 @@
+<mvc:View
+    controllerName="siagrob1.controller.shipment.SelectStorageTransaction"
+    displayBlock="true"
+    height="100%"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:fb="sap.ui.comp.filterbar"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }">
+    <Page
+        showHeader="false"
+        class="sapUiResponsiveContentPadding"
+        busy="{ui>/busy}"
+        busyIndicatorDelay="0"
+    >
+        <content>
+            <Table
+                id="tableSelect"
+                class="sapUiSizeCondensed"
+                alternateRowColors="true"
+                inset="false"
+                mode="SingleSelect"
+                items="{
+                  path: '/ShipmentReleases'
+                }">
+                <headerToolbar>
+                    <OverflowToolbar>
+                        <content>
+                            <Title
+                                text="Contratos"
+                                level="H2"
+                            />
+                            <ToolbarSpacer />
+                        </content>
+                    </OverflowToolbar>
+                </headerToolbar>
+                <columns>
+                    <Column width="10rem">
+                        <Text text="Contrato" />
+                    </Column>
+                    <Column width="10rem">
+                        <Text text="Item" />
+                    </Column>
+                    <Column>
+                        <Text text="Fornecedor" />
+                    </Column>
+                    <Column width="6rem">
+                        <Text text="Armazem" />
+                    </Column>
+                    <Column visible="false">
+                        <Text text="Cod.Prodto" />
+                    </Column>
+                    <Column>
+                        <Text text="Produto" />
+                    </Column>
+                    <Column>
+                        <Text text="Tipo" />
+                    </Column>
+                    <Column hAlign="End">
+                        <Text text="Saldo" />
+                    </Column>
+                </columns>
+                <items>
+                    <ColumnListItem>
+                        <cells>
+                            <ObjectIdentifier title="{PurchaseContract/Code}" />
+                            <Text text="{RowId}" />
+                            <Text text="{PurchaseContract/CardName}"/>
+                            <Text text="{DeliveryLocationCode}"/>
+                            <Text text="{PurchaseContract/ItemCode}"/>
+                            <Text text="{PurchaseContract/ItemName}"/>
+                            <Text text=".."/>
+                            <ObjectNumber
+                                number="{
+                                  path: 'AvailableQuantity',
+                                  type: 'sap.ui.model.type.Float',
+                                  formatOptions: {
+                                      decimals: 3,
+                                      decimalSeparator: ',',
+                                      groupingEnabled: true,
+                                      groupingSeparator: '.'
+                                    }
+																}"
+                                unit="{PurchaseContract/UnitOfMeasureCode}"
+                            />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </content>
+        <footer>
+            <Toolbar>
+                <ToolbarSpacer />
+                <Button
+                    text="Incluir Expedicao"
+                    icon="sap-icon://add"
+                    press="addExpedicao"
+                    type="Emphasized"
+                />
+                <Button
+                    text="Cancelar"
+                    press=".onCancel"
+                />
+            </Toolbar>
+        </footer>
+    </Page>
+</mvc:View>
