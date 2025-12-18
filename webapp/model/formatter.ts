@@ -56,6 +56,8 @@ export default {
   },
 
   formatTime: (value: string): string =>  {
+    if (!value) return "";
+    
     // Divide a string pelos dois pontos
     const partes = value.split(':');
     

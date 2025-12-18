@@ -56,12 +56,12 @@
 				</t:extension>
 				<t:columns>
           <t:Column
-						label="RowId"
+						label="Key"
             visible="false"
             width="10rem"
             >
 						<t:template>
-							<Text text="{RowId}" wrapping="false"/>
+							<Text text="{Key}" wrapping="false"/>
 						</t:template>
 					</t:Column>
           <t:Column

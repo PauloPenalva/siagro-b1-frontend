@@ -325,14 +325,19 @@
           "target": "storageTransactionsDetail"
         },
         {
-          "pattern": "shipments:?query:",
-          "name": "shipments",
-          "target": "shipments"
+          "pattern": "shippingTransaction:?query:",
+          "name": "shippingTransaction",
+          "target": "shippingTransaction"
         },
-         {
-          "pattern": "shipments/selectStorageTransaction:?query:",
-          "name": "selectStorageTransaction",
-          "target": "selectStorageTransaction"
+        {
+          "pattern": "shippingTransaction/selectShipmentRelease:?query:",
+          "name": "selectShipmentRelease",
+          "target": "selectShipmentRelease"
+        },
+        {
+          "pattern": "shippingTransaction/shippingTransactionCreate:?query:",
+          "name": "shippingTransactionCreate",
+          "target": "shippingTransactionCreate"
         }
 			],
 			"targets": {
@@ -606,16 +611,22 @@
 					"name": "siagrob1.view.storageTransactions.Detail",
           "clearControlAggregation": true
 				},
-        "shipments": {
-					"id": "shipments",
+        "shippingTransaction": {
+					"id": "shippingTransaction",
           "level": 1,
-					"name": "siagrob1.view.shipment.Main",
+					"name": "siagrob1.view.shippingTransaction.Main",
           "clearControlAggregation": true
 				},
-        "selectStorageTransaction": {
-					"id": "selectStorageTransaction",
+        "selectShipmentRelease": {
+					"id": "selectShipmentRelease",
           "level": 2,
-					"name": "siagrob1.view.shipment.SelectStorageTransaction",
+					"name": "siagrob1.view.shippingTransaction.SelectShipmentRelease",
+          "clearControlAggregation": true
+				},
+        "shippingTransactionCreate": {
+					"id": "shippingTransactionCreate",
+          "level": 2,
+					"name": "siagrob1.view.shippingTransaction.Create",
           "clearControlAggregation": true
 				}
 			}

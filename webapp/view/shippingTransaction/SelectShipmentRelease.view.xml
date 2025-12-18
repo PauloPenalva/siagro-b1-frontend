@@ -1,5 +1,5 @@
 <mvc:View
-    controllerName="siagrob1.controller.shipment.SelectStorageTransaction"
+    controllerName="siagrob1.controller.shippingTransaction.SelectShipmentRelease"
     displayBlock="true"
     height="100%"
     xmlns="sap.m"
@@ -17,7 +17,7 @@
     >
         <content>
             <Table
-                id="tableSelect"
+                id="tableSelectShipmentRelease"
                 class="sapUiSizeCondensed"
                 alternateRowColors="true"
                 inset="false"
@@ -96,7 +96,7 @@
                 <Button
                     text="Incluir Expedicao"
                     icon="sap-icon://add"
-                    press="addExpedicao"
+                    press=".onCreateShippingTransaction"
                     type="Emphasized"
                 />
                 <Button

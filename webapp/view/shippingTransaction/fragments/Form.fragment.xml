@@ -1,0 +1,219 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }"
+>
+ <f:SimpleForm
+      id="shippingTransactionForm"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0"
+    >
+        <f:content>
+            <core:Title
+                text="Dados do Embarque"
+                emphasized="true"
+            />
+            <Label text="Tipo Documento"/>
+            <Input
+              editable="{ui>/editable}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openDocTypesValueHelp"
+              required="true"
+              value="{viewModel>/StorageTransaction/DocTypeCode}"/>
+            <Label text="Tipo de romaneio"/>
+            <Select 
+              editable="false"
+              forceSelection="false"
+              required="true"
+              selectedKey="{
+                path: 'viewModel>/StorageTransaction/TransactionType',
+                targetType: 'any'
+              }"
+              >
+              <core:ListItem key="Purchase" text="Compra"/>
+              <core:ListItem key="PurchaseReturn" text="Dev.Compra"/>
+              <core:ListItem key="PurchaseQtyComplement" text="Compra - Compl.Qtd."/>
+              <core:ListItem key="PurchasePriceComplement" text="Compra - Compl.Preço"/>
+              <core:ListItem key="SalesShipment" text="Venda"/>
+              <core:ListItem key="SalesShipmentReturn" text="Dev.Venda"/>
+            </Select>
+            <Label text="Data" />
+            <DatePicker
+                value="{
+                  path: 'viewModel>/StorageTransaction/TransactionDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+                editable="{ui>/editable}"
+                required="true"
+                liveChange=".validateField"
+            />
+            <Label text="Hora" />
+            <Input
+              editable="false"
+              value="{
+                path: 'viewModel>/StorageTransaction/TransactionTime',  
+                formatter: 'formatter.formatTime'
+              }"
+            />
+            <Label text="Cli/For" />
+            <Input
+              editable="false"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openBusinessPartnersValueHelp"
+              required="true"
+              value="{viewModel>/StorageTransaction/CardCode}"
+              >
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts: ['viewModel>/StorageTransaction/CardCode'],
+                formatter: '.formatBusinessPartnerName'
+              }" 
+              editable="false"
+            />
+            <Label text="Observações" />
+            <TextArea 
+              editable="{ui>/editable}"
+              value="{viewModel>/StorageTransaction/Comments}"
+              rows="5"
+              cols="10"
+            />
+
+            <core:Title text="Produto" />
+            <Label text="Produto" />
+            <Input 
+							editable="false"	
+              required="true"
+              value="{viewModel>/StorageTransaction/ItemCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openItemValueHelp">
+              <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts:['viewModel>/StorageTransaction/ItemCode'],
+                formatter: '.formatItemName'
+              }" 
+              editable="false"
+            />
+            <Label text="Un.Med." />
+            <Input 
+              editable="false"
+              required="true"
+              value="{viewModel>/StorageTransaction/UnitOfMeasureCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openUnitsOfMeasureValueHelp">
+              <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts:['viewModel>/StorageTransaction/UnitOfMeasureCode'],
+                formatter: '.formatUnitOfMeasureDescription'
+              }" 
+              editable="false"
+            />
+            <Label text="Peso Bruto"/>
+            <Input 
+              required="true"
+              editable="{ui>/editable}"
+              value="{
+                path: 'viewModel>/StorageTransaction/GrossWeight',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions: {
+                    decimals: 3,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                } 
+              }"
+              description="{viewModel/StorageTransaction/UnitOfMeasureCode}"
+            />
+            <Label text="Armazem" />
+            <Input 
+							editable="true"
+              required="true"
+              value="{viewModel>/StorageTransaction/WarehouseCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openWarehouseValueHelp">
+              <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts:['viewModel>/StorageTransaction/WarehouseCode'],
+                formatter: '.formatWarehouseName'
+              }" 
+              editable="false"
+            />
+            <Label text="Motorista" />
+            <Input
+              editable="{ui>/editable}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openTruckDriversValueHelp"
+              required="true"
+              value="{viewModel>/StorageTransaction/TruckDriverCode}"
+              >
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts: ['viewModel>/StorageTransaction/TruckDriverCode'],
+                formatter: '.formatDriverName'
+              }" 
+              editable="false"
+            />
+            <Label text="Placa" />
+            <Input
+              editable="{ui>/editable}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openTrucksValueHelp"
+              required="true"
+              value="{viewModel>/StorageTransaction/TruckCode}"
+              >
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Input>
+          
+        </f:content>
+    </f:SimpleForm>
+</core:FragmentDefinition>

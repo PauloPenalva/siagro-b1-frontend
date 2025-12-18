@@ -10,6 +10,7 @@ export default {
   agents: '/odata/Agents',
   truckDrivers: '/odata/TruckDrivers',
   trucks: '/odata/Trucks',
+  shipmentReleases: 'odata/ShipmentReleases',
   
   purchaseContracts: '/odata/PurchaseContracts',
   purchaseContractsApproval: '/odata/PurchaseContractsApproval',

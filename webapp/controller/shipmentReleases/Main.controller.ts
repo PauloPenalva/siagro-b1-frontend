@@ -83,12 +83,12 @@ export default class Main extends BaseController {
 
     const oContext = oTable.getContextByIndex(i);
     if (oContext) {
-      const sId = oContext.getProperty("RowId") as string;
+      const sId = oContext.getProperty("Key") as string;
 
       if (await DialogHelper.confirmDialog("Ativar entrega ?")) {
         const model = this.getModel() as ODataModel;
         const action = model.bindContext("/ShipmentReleasesApprovation(...)")
-        action.setParameter("RowId", sId);
+        action.setParameter("Key", sId);
 
         this.setBusy(true);
         void action.invoke()
@@ -116,12 +116,12 @@ export default class Main extends BaseController {
 
     const oContext = oTable.getContextByIndex(i);
     if (oContext) {
-      const sId = oContext.getProperty("RowId") as string;
+      const sId = oContext.getProperty("Key") as string;
 
       if (await DialogHelper.confirmDialog("Cancelar entrega ?")) {
         const model = this.getModel() as ODataModel;
         const action = model.bindContext("/ShipmentReleasesCancelation(...)")
-        action.setParameter("RowId", sId);
+        action.setParameter("Key", sId);
 
         this.setBusy(true);
         void action.invoke()

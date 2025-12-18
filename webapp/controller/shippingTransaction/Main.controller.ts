@@ -19,7 +19,7 @@ type routeArgs = {
 }
 
 /**
- * @namespace siagrob1.controller.shipment
+ * @namespace siagrob1.controller.shippingTransaction
  */
 export default class Main extends BaseController {
 
@@ -29,7 +29,7 @@ export default class Main extends BaseController {
 		this.getView().setModel(jsonModel, "balance");
 
 		this.getRouter()
-			.getRoute("shipments")
+			.getRoute("shippingTransaction")
 			.attachPatternMatched((ev) => this.onRouteMatched(ev), this);
 	}
 
@@ -53,27 +53,19 @@ export default class Main extends BaseController {
     viewModel.setData([]);
 	}
 
-	filter(ev: SearchField$SearchEvent) {
+	onFilter(ev: SearchField$SearchEvent) {
 		const query = ev.getParameter("query");
-		const filterArmazem = new Filter(
-			"DeliveryLocationName",
-			FilterOperator.Contains,
-			query
-		);
-		//const filterVariedade = new Filter(
-		//	"descricaoVariedade",
-		//	FilterOperator.Contains,
-		//	query
-		//);
-
+    const table = this.byId("table") as List;
+    const bindingList = table.getBinding("items") as ODataListBinding
+		
 		const filter = new Filter({
-			//filters: [filterArmazem, filterVariedade],
-			filters: [filterArmazem],
+			filters: [
+        new Filter("DeliveryLocationName", FilterOperator.Contains, query)
+      ],
 			and: false,
 		})
 
-		const table = this.byId("table") as List;
-		(table.getBinding("items") as ODataListBinding).filter([filter]);
+		bindingList.filter([filter]);
 	}
 
 	async onSearch() {
@@ -92,9 +84,8 @@ export default class Main extends BaseController {
 	}
 
 	selectShipmentRelease() {
-		const oTable = this.byId("table") as List;
+		const oTable = this.byId("tableShipmentReleasesBalance") as List;
 		const oContext = oTable.getSelectedItem()?.getBindingContext("balance");
-    console.log(oContext);
     
     if (!oContext) {
       MessageBox.warning("Selecione um item na tabela.");
@@ -104,7 +95,7 @@ export default class Main extends BaseController {
 		const itemCode = oContext.getProperty("ItemCode") as string;
 		const warehouseCode = oContext.getProperty("DeliveryLocationCode") as string;
 		
-		this.navTo("selectStorageTransaction", {
+		this.navTo("selectShipmentRelease", {
       "?query": {
         itemCode,
         warehouseCode,

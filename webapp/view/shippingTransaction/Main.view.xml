@@ -1,5 +1,5 @@
 <mvc:View
-  controllerName="siagrob1.controller.shipment.Main"
+  controllerName="siagrob1.controller.shippingTransaction.Main"
   displayBlock="true"
   xmlns="sap.m"
   xmlns:mvc="sap.ui.core.mvc"
@@ -40,7 +40,7 @@
             </fb:FilterBar>
 
             <Table
-                id="table"
+                id="tableShipmentReleasesBalance"
                 class="sapUiSizeCondensed"
                 alternateRowColors="true"
                 inset="false"
@@ -58,10 +58,9 @@
                             <ToolbarSpacer />
                             <ToolbarSpacer />
                             <SearchField
-                                id="searchField"
                                 placeholder="Pesquisar..."
                                 width="30%"
-                                search="filter"
+                                search=".onFilter"
                             />
                         </content>
                     </OverflowToolbar>
