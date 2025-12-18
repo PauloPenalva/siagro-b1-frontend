@@ -5,7 +5,7 @@ import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 
 /**
- * @namespace siagrob1.controller.salesOrder
+ * @namespace siagrob1.controller.shipmentBilling
  */
 export default class Main extends BaseController {
 
@@ -14,18 +14,18 @@ export default class Main extends BaseController {
   private purchaseContractsAvaiableDialog: Dialog;
 
 	onInit(): void  {
-    this.getRouter().getRoute("salesOrder")
+    this.getRouter().getRoute("shipmentBilling")
        .attachPatternMatched(() => this.applyFilters());
 	}
 
  
   private applyFilters() {
-    const oBinding = this.getView().byId("salesOrderTable").getBinding("rows") as ODataListBinding;
+    const oBinding = this.getView().byId("shipmentBillingTable").getBinding("rows") as ODataListBinding;
     const filters: string[] = [];
     
     const typesFilter = `(${[
             `TransactionType eq 'SalesShipment'`,
-            `TransactionType eq 'SalesShipmentReturn'`,
+            //`TransactionType eq 'SalesShipmentReturn'`,
         ].join(' or ')})`;
     
     filters.push("TransactionStatus eq 'Confirmed'");
@@ -57,7 +57,7 @@ export default class Main extends BaseController {
 
  
   private refreshData() {
-    const oTable = this.byId("salesOrderTable") as Table;
+    const oTable = this.byId("shipmentBillingTable") as Table;
     (oTable.getBinding("rows") as ODataListBinding).refresh();
   }
  

@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.salesOrder.Main"
+	controllerName="siagrob1.controller.shipmentBilling.Main"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -17,7 +17,7 @@
     <f:title>
       <f:DynamicPageTitle>
         <f:heading>
-          <Title text="Faturamento de Romaneios de Venda"/>
+          <Title text="Faturamento de Expedição"/>
         </f:heading>
 			</f:DynamicPageTitle>
     </f:title>
@@ -30,7 +30,7 @@
     </f:header>
 		<f:content>
       <t:Table
-				id="salesOrderTable"
+				id="shipmentBillingTable"
 				busyIndicatorDelay="0"
 				selectionMode="Multi"
 				selectionBehavior="Row"
@@ -45,7 +45,7 @@
 			>
 				<t:extension>
 					<OverflowToolbar >
-            <Title text="Romaneios de Venda" />
+            <Title text="Romaneios de Embarque" />
 						<ToolbarSpacer />
 						<Button type="Emphasized" text="Faturar" press=""/>
 						<Button type="Transparent" text="Estornar Romaneio" press=""/>
@@ -100,7 +100,7 @@
 							<Text text="{Code}" wrapping="false"/>
 						</t:template>
 					</t:Column>
-          <t:Column
+          <!-- <t:Column
 						label="Tipo"
 						width="7rem"
 						>
@@ -113,7 +113,7 @@
                   formatter: '.formatter.formatStorageTransactionType'
                 }"/>
 						</t:template>
-					</t:Column>
+					</t:Column> -->
           <t:Column
 						label="Emissão"
 						sortProperty="TransactionDate"
@@ -175,7 +175,7 @@
           <t:Column
 						label="Origem"
 						sortProperty="CardCode"
-            width="15rem"
+            width="20rem"
 						>
 						<t:template>
             <Text text="({CardCode}) {CardName}" wrapping="false"/>
@@ -190,17 +190,6 @@
             <Text text="({ItemCode}) {ItemName}" wrapping="false"/>
 						</t:template>
 					</t:Column>
-          <!-- <t:Column
-						label="Produto"
-						sortProperty="ItemName"
-            filterProperty="ItemName"
-            filterOperator="Contains"
-            width="10rem"
-						>
-						<t:template>
-            <Text text="{ItemName}" wrapping="false"/>
-						</t:template>
-					</t:Column> -->
           
 				</t:columns>
 

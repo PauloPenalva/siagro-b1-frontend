@@ -340,9 +340,9 @@
           "target": "shippingTransactionCreate"
         },
         {
-          "pattern": "salesOrder",
-          "name": "salesOrder",
-          "target": "salesOrder"
+          "pattern": "shipmentBilling",
+          "name": "shipmentBilling",
+          "target": "shipmentBilling"
         }
 			],
 			"targets": {
@@ -634,10 +634,10 @@
 					"name": "siagrob1.view.shippingTransaction.Create",
           "clearControlAggregation": true
 				},
-        "salesOrder": {
-					"id": "salesOrder",
+        "shipmentBilling": {
+					"id": "shipmentBilling",
           "level": 1,
-					"name": "siagrob1.view.salesOrder.Main",
+					"name": "siagrob1.view.shipmentBilling.Main",
           "clearControlAggregation": true
 				}
 			}
