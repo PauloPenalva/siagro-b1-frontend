@@ -47,7 +47,7 @@
 					<OverflowToolbar >
             <Title text="Romaneios de Embarque" />
 						<ToolbarSpacer />
-						<Button type="Emphasized" text="Faturar" press=""/>
+						<Button type="Emphasized" text="Faturar" press=".openBillingDialog"/>
 						<Button type="Transparent" text="Estornar Romaneio" press=""/>
 					</OverflowToolbar>
 				</t:extension>
@@ -139,7 +139,14 @@
             <Text text="{TruckCode}" wrapping="false"/>
 						</t:template>
 					</t:Column>
-          
+          <t:Column
+						label="Motorista"
+						width="6rem"
+						>
+						<t:template>
+            <Text text="{TruckDriverCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
           <t:Column
 						label="Peso Bruto"
 						sortProperty="GrossWeight"

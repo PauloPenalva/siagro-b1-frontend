@@ -1,0 +1,323 @@
+
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:t="sap.ui.table"
+	xmlns:l="sap.ui.layout"
+>
+	<Dialog id="billingDialog" title="Faturamento" class="sapUiSizeCompact">
+		<f:SimpleForm
+			id="shipmentBillingSalesContractsForm"
+			busy="{ui>/busy}"
+			busyIndicatorDelay="0"
+			class="sapUiSizeCompact"
+			editable="true"
+			layout="GridLayout"
+			labelSpanXL="4"
+			labelSpanL="3"
+			labelSpanM="4"
+			labelSpanS="12"
+			adjustLabelSpan="false"
+			emptySpanXL="0"
+			emptySpanL="4"
+			emptySpanM="0"
+			emptySpanS="0"
+			columnsXL="2"
+			columnsL="1"
+			columnsM="1"
+			singleContainerFullSize="true"
+		>
+			<f:content>
+				<core:Title text="Dados do Embarque" />
+
+				<Label text="Produto" />
+				<Input
+					value="{viewModel>/ItemCode}"
+					editable="false"
+				>
+					<layoutData>
+						<l:GridData span="XL2 L1 M3 S4" />
+					</layoutData>
+				</Input>
+
+				<Label text="Descricao" />
+				<Input
+					value="{viewModel>/ItemName}"
+					editable="false"
+				>
+					<layoutData>
+						<l:GridData span="XL2 L1 M3 S4" />
+					</layoutData>
+				</Input>
+
+				<Label text="Qtd.Embarcada" />
+				<Input
+					value="{
+						path: 'viewModel>/Volume',
+						type: 'sap.ui.model.type.Float',
+						formatOptions: {
+								decimals: 3 ,
+								decimalSeparator: ',',
+								groupingEnabled: true,
+								groupingSeparator: '.'
+						}}"
+					editable="false"
+					textAlign="End"
+				>
+					<layoutData>
+						<l:GridData span="XL2 L1 M3 S4" />
+					</layoutData>
+				</Input>
+
+				<Label text="Peso Balanca" />
+				<Input id="grossWeightLimit"
+					value="{
+            path: 'viewModel>/GrossWeightLimit',
+            type: 'sap.ui.model.type.Float',
+            formatOptions: {
+                decimals: 3,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+            }}"
+					editable="true"
+					textAlign="End"
+					required="true"
+				>
+					<layoutData>
+						<l:GridData span="XL2 L1 M3 S4" />
+					</layoutData>
+				</Input>
+				<Label
+					text="Tipo Frete"
+					required="true"
+				/>
+				<Select
+					forceSelection="true"
+					selectedKey="{viewModel>/FreightTerms}"
+				>
+					<core:Item
+						key="Cif"
+						text="CIF"
+					/>
+					<core:Item
+						key="Fob"
+						text="FOB"
+					/>
+				</Select>
+
+				<!-- <Label text="Entrega Cod/Loja" />
+				<Input value="{fatura>/ClienteEntrega}" required="true" showValueHelp="true" valueHelpOnly="true"
+					valueHelpRequest="handleSearchClienteEntrega" />
+				<Input id="lojaCliente" value="{fatura>/LojaEntrega}" required="true" editable="false" /> -->
+
+				<Label text="Inf.Ad.Nota Fiscal" />
+				<TextArea value="{
+									path: 'viewModel>/Comments',
+									type: 'sap.ui.model.odata.type.String'
+							}" rows="8" cols="80" editable="true" />
+
+				<!-- -->
+				<core:Title />
+
+				<Label text="Motorista" />
+				<Input
+					value="{viewModel>/TruckDriverCode}"
+					editable="false"
+				>
+					<layoutData>
+						<l:GridData span="XL2 L1 M3 S4" />
+					</layoutData>
+				</Input>
+
+				<Label text="Placa" />
+				<Input
+					value="{viewModel>/TruckCode}"
+					editable="false"
+				>
+					<layoutData>
+						<l:GridData span="XL2 L1 M3 S4" />
+					</layoutData>
+				</Input>
+
+				<!-- <Label text="Placa Carreta 1" />
+				<Input
+					value="{fatura>/PlacaCarreta1}"
+					editable="true"
+				>
+					<layoutData>
+						<l:GridData span="XL2 L1 M3 S4" />
+					</layoutData>
+				</Input>
+
+				<Label text="Placa Carreta 2" />
+				<Input
+					value="{fatura>/PlacaCarreta2}"
+					editable="true"
+				>
+					<layoutData>
+						<l:GridData span="XL2 L1 M3 S4" />
+					</layoutData>
+				</Input> -->
+
+				<Label text="NF Bal+Compl ?" />
+				<Select
+					forceSelection="true"
+					selectedKey="{viewModel>/ComplementInvoice}"
+				>
+					<core:Item
+						key="No"
+						text="NAO"
+					/>
+					<core:Item
+						key="Yes"
+						text="SIM"
+					/>
+				</Select>
+
+				<Label text="Frete p/Tonelada"/>
+				<Input value="{
+          path: 'viewModel>/FreightCost',
+          type: 'sap.ui.model.type.Float',
+          formatOptions: {
+              decimals: 2,
+              decimalSeparator: ',',
+              groupingEnabled: true,
+              groupingSeparator: '.'
+          }}"  editable="true" textAlign="End" required="true">
+					<layoutData>
+						<l:GridData span="XL2 L1 M3 S4" />
+					</layoutData>
+				</Input>
+        
+        <core:Title />
+
+			</f:content>
+		</f:SimpleForm>
+
+		<t:Table
+			id="shipmentBillingSalesContractsTable"
+			busyIndicatorDelay="0"
+			selectionBehavior="Row"
+			class="sapUiSizeCondensed"
+			enableBusyIndicator="true"
+			alternateRowColors="true"
+			selectionMode="Single"
+			visibleRowCountMode="Fixed"
+			visibleRowCount="6"
+			rows="{
+				path: '/SalesContracts',
+        sorter: {
+					path: 'Code'
+				}
+			}"
+		>
+			<t:toolbar>
+				<Toolbar>
+					<Title text="Contratos de Venda" />
+					<ToolbarSpacer />
+				</Toolbar>
+			</t:toolbar>
+			<t:columns>
+				<t:Column 
+          filterProperty="Code"
+					width="6rem"
+					sortProperty="Code"
+				>
+					<Label text="Codigo" />
+					<t:template>
+						<Text
+							text="{Code}"
+							wrapping="false"
+						/>
+					</t:template>
+				</t:Column>
+				<t:Column 
+          filterProperty="CardCode"
+					sortProperty="CardCode"
+					width="5rem"
+				>
+					<Label text="Cliente" />
+					<t:template>
+						<Text
+							text="{CardCode}"
+							wrapping="false"
+						/>
+					</t:template>
+				</t:Column>
+				<t:Column sortProperty="CardName" filterProperty="CardName">
+					<Label text="Nome" />
+					<t:template>
+						<Text
+							text="{CardName}"
+							wrapping="false"
+						/>
+					</t:template>
+				</t:Column>
+				<t:Column sortProperty="LogisticRegionCode" filterProperty="LogisticRegionCode">
+					<Label text="Região" />
+					<t:template>
+						<Text
+							text="{LogisticRegionCode}"
+							wrapping="false"
+						/>
+					</t:template>
+				</t:Column>
+				<t:Column sortProperty="LogisticRegion/Name" filterProperty="LogisticRegion/Name">
+					<Label text="Região" />
+					<t:template>
+						<Text
+							text="{LogisticRegion/Name}"
+							wrapping="false"
+						/>
+					</t:template>
+				</t:Column>
+
+				<t:Column
+					width="8rem"
+					hAlign="End"
+					sortProperty="Saldo"
+				>
+					<Label text="Saldo" />
+					<t:template>
+						<Text
+							text="{
+							path: 'AvaiableVolume',
+              type: 'sap.ui.model.type.Float',
+							formatOptions: {
+								decimals: 3,
+								decimalSeparator: ',',
+								groupingEnabled: true,
+								groupingSeparator: '.'
+							}}"
+							wrapping="false"
+						/>
+					</t:template>
+				</t:Column>
+				<t:Column width="3rem">
+					<Label text="Um" />
+					<t:template>
+						<Text
+							text="{UnitOfMeasureCode}"
+							wrapping="false"
+						/>
+					</t:template>
+				</t:Column>
+			</t:columns>
+		</t:Table>
+
+		<buttons>
+			<Button
+				text="Fechar"
+				press=".closeBillingDialog"
+				type="Transparent"
+			/>
+			<Button
+				text="Confirmar"
+				press=".saveBillingDialog"
+				type="Emphasized"
+			/>
+		</buttons>
+	</Dialog>
+</core:FragmentDefinition>

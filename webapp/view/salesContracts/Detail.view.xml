@@ -55,7 +55,7 @@
           <HBox class="sapUiTinyMarginBottom">
             <Text text="Volume Negociado:" class="sapUiMediumMarginEnd" />
             <ObjectNumber number="{
-              path: 'viewModel>/TotalVolume',
+              path: 'TotalVolume',
               type: 'sap.ui.model.odata.type.Double',
               formatOptions:{
                 decimals: 3,
@@ -70,7 +70,7 @@
           <HBox class="sapUiTinyMarginBottom">
             <Text text="Total Fixado:" class="sapUiMediumMarginEnd" />
             <ObjectNumber number="{
-              path: 'viewModel>/TotalPrice',
+              path: 'TotalPrice',
               type: 'sap.ui.model.odata.type.Double',
               formatOptions:{
                 decimals: 2,
@@ -83,6 +83,23 @@
               targetType: 'any',
               formatter: '.formatter.formatCurrency'
             }"  />
+          </HBox>
+        </VBox>
+        <VBox class="sapUiTinyMarginBottom sapUiMediumMarginEnd">
+          <HBox class="sapUiTinyMarginBottom">
+            <Text text="Saldo" class="sapUiMediumMarginEnd" />
+            <ObjectNumber 
+              number="{
+                path: 'AvaiableVolume',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions:{
+                  decimals: 2,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }" 
+              unit="{UnitOfMeasureCode}" />
           </HBox>
         </VBox>
       </HBox> 
