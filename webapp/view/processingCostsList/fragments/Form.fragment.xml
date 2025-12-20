@@ -5,7 +5,7 @@
     xmlns:t="sap.ui.table"
    	xmlns:core="sap.ui.core">
 
-		<core:Fragment fragmentName="siagrob1.view.TabelaCusto.fragments.FormTabelaCusto" type="XML" />
+		<core:Fragment fragmentName="siagrob1.view.processingCostsList.fragments.FormTabelaCusto" type="XML" />
 
 		<IconTabBar
 			tabDensityMode="Compact"
@@ -16,16 +16,16 @@
 			class="sapUiResponsiveContentPadding">
 			 <items>
 				 	<IconTabFilter text="Desconto Secagem">
-						<core:Fragment fragmentName="siagrob1.view.TabelaCusto.fragments.TableDescontoSecagem" type="XML" />
+						<core:Fragment fragmentName="siagrob1.view.processingCostsList.fragments.TableDescontoSecagem" type="XML" />
 					</IconTabFilter>
 				 	<IconTabFilter text="Custo Secagem">
-						<core:Fragment fragmentName="siagrob1.view.TabelaCusto.fragments.TableValorSecagem" type="XML" />
+						<core:Fragment fragmentName="siagrob1.view.processingCostsList.fragments.TableValorSecagem" type="XML" />
 					</IconTabFilter>
 				 	<IconTabFilter text="Qualidade">
-						<core:Fragment fragmentName="siagrob1.view.TabelaCusto.fragments.TableQualidade" type="XML" />
+						<core:Fragment fragmentName="siagrob1.view.processingCostsList.fragments.TableQualidade" type="XML" />
 					</IconTabFilter>
 				 	<IconTabFilter text="Serviços">
-						<core:Fragment fragmentName="siagrob1.view.TabelaCusto.fragments.TableServico" type="XML" />
+						<core:Fragment fragmentName="siagrob1.view.processingCostsList.fragments.TableServico" type="XML" />
 					</IconTabFilter>
 			 </items>
 

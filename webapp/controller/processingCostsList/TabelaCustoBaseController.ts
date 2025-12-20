@@ -1,5 +1,4 @@
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
-import BaseController from "../BaseController";
 import Table from "sap/ui/table/Table";
 import MessageBox from "sap/m/MessageBox";
 import Context from "sap/ui/model/odata/v4/Context";
@@ -13,11 +12,12 @@ import models from "../../model/models";
 import { CaracteristcaQualidade } from "siagrob1/types/CaracteristcaQualidade";
 import { ServicoArmazenagem } from "siagrob1/types/ServicoArmazenagem";
 import Row from "sap/ui/table/Row";
+import CommonController from "../common/CommonController";
 
 /**
  * @namespace siagrob1.controller.TabelaCusto
  */
-export default class TabelaCustoBaseController extends BaseController {
+export default class TabelaCustoBaseController extends CommonController {
   formatter = { ...formatter };
 
   onAddDescontoSecagem() {
@@ -120,16 +120,7 @@ export default class TabelaCustoBaseController extends BaseController {
     void oContext.delete(oModel.getUpdateGroupId());
   }
 
-  async cqValueHelpRequest(ev: Input$ValueHelpRequestEvent) {
-    const obj = await CaracteristcaQualidadeValueHelp.open(
-      "cq",
-      this.getView()
-    );
-    if (obj) {
-      ev.getSource().setValue(obj.Key);
-    }
-  }
-
+ 
   async servicoValueHelpRequest(ev: Input$ValueHelpRequestEvent) {
     const obj = await ServicosArmazenagemValueHelp.open(
       "servico",
@@ -143,7 +134,7 @@ export default class TabelaCustoBaseController extends BaseController {
   async formatDescricaoCaracteristica(sId: string): Promise<string> {
       const oTable = <Table> this.byId("tableQualidade");
       if (sId) {
-        const sPath = `/odata/QualityAttribs(${sId})`;
+        const sPath = `/odata/QualityAttribs('${sId}')`;
         const cq = 
           await models.requestModel(sPath, oTable) as CaracteristcaQualidade
         
@@ -154,7 +145,7 @@ export default class TabelaCustoBaseController extends BaseController {
   async formatDescricaoServico(sId: string): Promise<string> {
     const oTable = <Table> this.byId("tableServicos");
     if (sId) {
-      const sPath = `/odata/ProcessingServices(${sId})`;
+      const sPath = `/odata/ProcessingServices('${sId}')`;
       const sv = await models.requestModel(sPath, oTable) as ServicoArmazenagem;
     
       return sv.Description;
@@ -235,7 +226,7 @@ export default class TabelaCustoBaseController extends BaseController {
       if (oRow instanceof Row) {
         const oContext = oRow.getBindingContext() as Context;
         if (oContext) {
-          const sId = <string> oContext.getProperty("QualityAttribKey");
+          const sId = <string> oContext.getProperty("QualityAttribCode");
           const nTolerancia = <number> oContext.getProperty("MaxLimitRate");
           const nDesconto = <number> oContext.getProperty("ExcessDiscountRate");
           if (sId == null || nTolerancia == null || nDesconto == null) {
@@ -256,7 +247,7 @@ export default class TabelaCustoBaseController extends BaseController {
       if (oRow instanceof Row) {
         const oContext = oRow.getBindingContext() as Context;
         if (oContext) {
-          const sId = <string> oContext.getProperty("ProcessingServiceKey");
+          const sId = <string> oContext.getProperty("ProcessingServiceCode");
           const nTolerancia = <number> oContext.getProperty("Price");
           if (sId == null || nTolerancia == null ) {
                bValid = false;

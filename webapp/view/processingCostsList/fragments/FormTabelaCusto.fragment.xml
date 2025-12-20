@@ -6,7 +6,7 @@
     xmlns:core="sap.ui.core"
 >
     <f:SimpleForm
-        id="formTabelaCusto"
+        id="processingCostsListForm"
         editable="true"
         layout="ResponsiveGridLayout"
         labelSpanXL="4"
@@ -31,9 +31,10 @@
             />
             <Label text="Codigo" />
             <Input
-                value="{Key}"
+                value="{Code}"
                 editable="true"
-                visible="false"
+                visible="true"
+                required="true"
             />
             <Label text="Descricao" />
             <Input
@@ -47,7 +48,7 @@
                 required="true"
                 value="{
                   path: 'StoragePrice',
-                  type: 'sap.ui.model.odata.type.Double',
+                  type: 'sap.ui.model.type.Float',
                   formatOptions: {
                       decimals: 8,
                       decimalSeparator: ',',
@@ -93,7 +94,7 @@
                 required="true"
                 value="{
                   path: 'FumigationPrice',
-                  type: 'sap.ui.model.odata.type.Double',
+                  type: 'sap.ui.model.type.Float',
                   formatOptions: {
                     decimals: 6,
                     decimalSeparator: ',',
@@ -152,7 +153,7 @@
                 required="true"
                 value="{
                   path: 'TechnicalLossRate',
-                  type: 'sap.ui.model.odata.type.Double',
+                  type: 'sap.ui.model.type.Float',
                   formatOptions: {
                     decimals: 6,
                     decimalSeparator: ',',

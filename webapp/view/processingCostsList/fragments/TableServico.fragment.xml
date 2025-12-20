@@ -7,7 +7,7 @@
 
 		<t:Table
 				class="sapUiSizeCondensed"
-				id="tableValorSecagem"
+				id="tableServicos"
 				alternateRowColors="true"
 				enableBusyIndicator="true"
 				enableSelectAll="false"
@@ -16,51 +16,43 @@
 				visibleRowCount="15"
 				visibleRowCountMode="Fixed"
 				busyIndicatorDelay="0"
-				rows="{DryingDetails}"
+				rows="{ServiceDetails}"
 				visible="true">
 				<t:extension>
 					<OverflowToolbar >
 						<content>
-							<Title text="Custos de Secagem"/>
+							<Title text="Serviços"/>
 							<ToolbarSpacer />
-							<Button text="Incluir" type="Emphasized" icon="sap-icon://add" press=".onAddValorSecagem" />
-							<Button text="Remover" icon="sap-icon://delete" press=".onRemoveValorSecagem" />
+							<Button text="Incluir" type="Emphasized" icon="sap-icon://add" press=".onAddServicos" />
+							<Button text="Remover" icon="sap-icon://delete" press=".onRemoveServicos" />
 						</content>
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>
 					<t:Column
-						label="% De"
+						label="Codigo"
 						width="10rem"
 						>
 						<t:template>
-							<Input value="{
-								path: 'InitialMoisture',
-								type: 'sap.ui.model.odata.type.Double',
-								formatOptions: {
-										decimals: 1,
-										decimalSeparator: ',',
-										groupingEnabled: true,
-										groupingSeparator: '.'
-									}
-								}" />
+							<Input 
+								value="{ProcessingServiceCode}" 
+								showValueHelp="true" 
+								valueHelpOnly="true" 
+								valueHelpRequest=".openProcessingServicesValueHelp"
+							/>
 						</t:template>
 					</t:Column>
 					<t:Column
-						label="% Até"
-						width="10rem"
+						label="Descrição"
+						width="20rem"
 						>
 						<t:template>
-							<Input value="{
-								path: 'FinalMoisture',
-								type: 'sap.ui.model.odata.type.Double',
-								formatOptions: {
-										decimals: 1,
-										decimalSeparator: ',',
-										groupingEnabled: true,
-										groupingSeparator: '.'
-									}
-								}" />
+							<Text 
+								text="{ 
+									parts:['ProcessingServiceCode'], 
+									formatter:'.formatDescricaoServico'
+								}" 
+							/>
 						</t:template>
 					</t:Column>
 					<t:Column
@@ -70,14 +62,14 @@
 						<t:template>
 							<Input value="{
 								path: 'Price',
-								type: 'sap.ui.model.odata.type.Double',
+								type: 'sap.ui.model.type.Float',
 								formatOptions: {
 										decimals: 8,
 										decimalSeparator: ',',
 										groupingEnabled: true,
 										groupingSeparator: '.'
-									}
-								}" />
+                }
+							}" />
 						</t:template>
 					</t:Column>
 				</t:columns>

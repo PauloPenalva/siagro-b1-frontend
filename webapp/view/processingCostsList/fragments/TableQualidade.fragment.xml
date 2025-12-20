@@ -31,14 +31,14 @@
 				<t:columns>
 					<t:Column
 						label="Codigo"
-						width="5rem"
+						width="10rem"
 						>
 						<t:template>
 							<Input 
-								value="{QualityAttribKey}"
+								value="{QualityAttribCode}"
 								showValueHelp="true" 
 								valueHelpOnly="true"
-								valueHelpRequest=".cqValueHelpRequest"/>
+								valueHelpRequest=".openQualityAttribsValueHelp"/>
 						</t:template>
 					</t:Column>
 					<t:Column
@@ -48,7 +48,7 @@
 						<t:template>
 							<Text 
 								text="{ 
-									parts: ['QualityAttribKey'], 	
+									parts: ['QualityAttribCode'], 	
 									formatter: '.formatDescricaoCaracteristica'
 								}"
 							/>	
@@ -61,7 +61,7 @@
 						<t:template>
 							<Input value="{
 								path: 'MaxLimitRate',
-								type: 'sap.ui.model.odata.type.Double',
+								type: 'sap.ui.model.type.Float',
 								formatOptions: {
 									decimals: 8,
 									decimalSeparator: ',',
@@ -78,7 +78,7 @@
 						<t:template>
 							<Input value="{
 								path: 'ExcessDiscountRate',
-								type: 'sap.ui.model.odata.type.Double',
+								type: 'sap.ui.model.type.Float',
 								formatOptions: {
 										decimals: 8,
 										decimalSeparator: ',',

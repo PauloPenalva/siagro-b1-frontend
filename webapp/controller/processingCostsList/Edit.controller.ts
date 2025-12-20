@@ -1,4 +1,5 @@
 import MessageToast from "sap/m/MessageToast";
+import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import TabelaCustoBaseController from "./TabelaCustoBaseController";
 import MessageBox from "sap/m/MessageBox";
@@ -6,52 +7,61 @@ import MessageBox from "sap/m/MessageBox";
 /**
  * @namespace siagrob1.controller.TabelaCusto
  */
-export default class Add extends TabelaCustoBaseController {
+export default class Edit extends TabelaCustoBaseController {
 
-	onInit(): void | undefined {
-		this.getRouter().getRoute("tabelaCustoNew").attachPatternMatched(() => this.newRouteMatched());
+	onInit(): void | undefined {	
+		this.getRouter().getRoute("processingCostsListEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
-	private newRouteMatched() {
-		
-    this.clearStates("formTabelaCusto");
+
+	private editRouteMatched(ev: Route$MatchedEvent) {
+		this.clearStates("processingCostsListForm");
     
-    const oView = this.getView();
-		const oModel = this.getModel() as ODataModel;
-		const oBinding = oModel.bindList("/ProcessingCosts")
+    const oModel = this.getView().getModel() as ODataModel;
+		const oView = this.getView();
 
 		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const oContext = oBinding.create({}, false, false, false);
+		const {id} = ev.getParameter("arguments") as {id: string | null};
+		if (id != null) {
+			const sPath = `/ProcessingCosts('${id}')`;
+			oView.bindElement({
+				path: sPath,
+				events: {
+					dataRequested: () => this.setBusy(true),
+					dataReceived: () => this.setBusy(false),
+				}
+			})
+			return;
+		}
 
-		oView.setBindingContext(oContext);
 	}
 
 	async onSave() {
-		
-    if (!this.validateForm("formTabelaCusto")) {
+		if (!this.validateForm("processingCostsListForm")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }
 
     if (!this.validateLineItems()) {
-      return; 
+      return;
     }
     
     const oModel = this.getView().getModel() as ODataModel;
-
 		try {
 			this.setBusy(true);
 			await oModel.submitBatch(oModel.getUpdateGroupId());
 			if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
-				MessageToast.show("Dados salvos com sucesso.", {
+				oModel.resetChanges(oModel.getUpdateGroupId())
+				MessageToast.show("Dados atualizados com sucesso.", {
 					closeOnBrowserNavigation: false
 				});
 			}
 		} finally {
 			this.setBusy(false);
 		}
+		
 	}
 
 	onCancel() {
@@ -63,5 +73,4 @@ export default class Add extends TabelaCustoBaseController {
 
 		this.onNavBack();
 	}
-
 }

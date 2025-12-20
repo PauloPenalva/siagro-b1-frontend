@@ -120,19 +120,19 @@
 					"target": "produtos"
 				},
 				{
-					"pattern": "tabelaCusto",
-					"name": "tabelaCusto",
-					"target": "tabelaCusto"
+					"pattern": "processingCostsList",
+					"name": "processingCostsList",
+					"target": "processingCostsList"
 				},
 				{
-					"pattern": "tabelaCustoNew",
-					"name": "tabelaCustoNew",
-					"target": "tabelaCustoNew"
+					"pattern": "processingCostsListNew",
+					"name": "processingCostsListNew",
+					"target": "processingCostsListNew"
 				},
 				{
-					"pattern": "tabelaCustoEdit/{id}",
-					"name": "tabelaCustoEdit",
-					"target": "tabelaCustoEdit"
+					"pattern": "processingCostsListEdit/{id}",
+					"name": "processingCostsListEdit",
+					"target": "processingCostsListEdit"
 				},
         {
           "pattern": "armazens",
@@ -448,24 +448,24 @@
 					"name": "siagrob1.view.produtos.Main",
           "clearControlAggregation": true
 				},
-				"tabelaCusto": {
-					"id": "tabelaCusto",
+				"processingCostsList": {
+					"id": "processingCostsList",
           "level": 1,
-					"name": "siagrob1.view.tabelaCusto.Main",
+					"name": "siagrob1.view.processingCostsList.Main",
           "clearControlAggregation": true
 				},
-				"tabelaCustoNew": {
-					"id": "tabelaCustoNew",
+				"processingCostsListNew": {
+					"id": "processingCostsListNew",
           "level": 2,
-					"name": "siagrob1.view.tabelaCusto.Add",
-          "targetParent": "tabelaCusto",
+					"name": "siagrob1.view.processingCostsList.Add",
+          "targetParent": "processingCostsList",
           "clearControlAggregation": true
 				},
-				"tabelaCustoEdit": {
-					"id": "tabelaCustoEdit",
+				"processingCostsListEdit": {
+					"id": "processingCostsListEdit",
           "level": 2,
-					"name": "siagrob1.view.tabelaCusto.Edit",
-          "targetParent": "tabelaCusto",
+					"name": "siagrob1.view.processingCostsList.Edit",
+          "targetParent": "processingCostsList",
           "clearControlAggregation": true
 				},
         "armazens": {

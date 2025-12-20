@@ -37,7 +37,7 @@
                     <MenuItem text="Armazéns" key="armazens" press=".onItemPressed"/>
                     <MenuItem text="Regiões Logistica" key="logisticRegions" press=".onItemPressed"/>
                     <MenuItem text="Tributos/Impostos" key="taxes" press=".onItemPressed"/>
-                    <MenuItem text="Tabela de Custos" key="tabelaCusto" press=".onItemPressed"/>
+                    <MenuItem text="Tabela de Custos de Beneficiamento" key="processingCostsList" press=".onItemPressed"/>
                     <MenuItem text="Lotes de Armazenagem" key="lotesArmazenagem" press=".onItemPressed"/>
                     <MenuItem text="Tickets de Pesagem" key="weighingTickets" press=".onItemPressed"/>
                     <MenuItem text="Contratos de Compra" key="purchaseContracts" press=".onItemPressed"/>

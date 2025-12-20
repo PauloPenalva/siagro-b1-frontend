@@ -10,12 +10,12 @@ import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
 
 /**
- * @namespace siagrob1.controller.tabelaCusto
+ * @namespace siagrob1.controller.processingCostsList
  */
 export default class Main extends BaseController {
 
 	onInit(): void | undefined {
-		this.getRouter().getRoute("tabelaCusto").attachPatternMatched(() => this.routeMatched())
+		this.getRouter().getRoute("processingCostsList").attachPatternMatched(() => this.routeMatched())
 	}
 
 	private routeMatched() {
@@ -23,7 +23,7 @@ export default class Main extends BaseController {
 	}
 
 	onRefresh(): void | undefined {
-		(this.getView().byId("tabelaCustoTable").getBinding("rows") as ODataListBinding).refresh();
+		(this.getView().byId("processingCostsListTable").getBinding("rows") as ODataListBinding).refresh();
 	}
 
 	onSearch(ev: SearchField$SearchEvent): void | undefined {
@@ -31,19 +31,20 @@ export default class Main extends BaseController {
 		const oFilters = new Filter({
 			filters: [
 				new Filter("Description", FilterOperator.Contains, query),
+				new Filter("Code", FilterOperator.Contains, query),
 			],
 			and: false,
 		});
 
-		(this.getView().byId("tabelaCustoTable").getBinding("rows") as ODataListBinding).filter([oFilters]);
+		(this.getView().byId("processingCostsListTable").getBinding("rows") as ODataListBinding).filter([oFilters]);
 	}
 
 	onCreate() {
-			this.navTo("tabelaCustoNew");
+			this.navTo("processingCostsListNew");
 	}
 
 	onEdit(): void {
-		const oTable = this.byId("tabelaCustoTable") as Table;
+		const oTable = this.byId("processingCostsListTable") as Table;
     const i = oTable.getSelectedIndex();
 
     if (i < 0) {
@@ -53,13 +54,13 @@ export default class Main extends BaseController {
     
     const oContext = oTable.getContextByIndex(i);
     
-		const sId = oContext.getProperty("Key") as string;
-		this.navTo("tabelaCustoEdit", {id: sId});
+		const sId = oContext.getProperty("Code") as string;
+		this.navTo("processingCostsListEdit", {id: sId});
 	}
 
 	async onDelete() {
 		const oModel = this.getView().getModel() as ODataModel;
-		const oTable = this.byId("tabelaCustoTable") as Table;
+		const oTable = this.byId("processingCostsListTable") as Table;
 		const i = oTable.getSelectedIndex();
 
     if (i < 0) {

@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.tabelaCusto.Main"
+	controllerName="siagrob1.controller.processingCostsList.Main"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -9,13 +9,10 @@
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-	<Page
-		showHeader="true"
-		title="Tabelas de Custos"
-		id="TabelaCustoMain">
+	<Page showHeader="true" title="Tabelas de Custos de Beneficiamento">
 		<content>
 			<t:Table
-				id="tabelaCustoTable"
+				id="processingCostsListTable"
 				busyIndicatorDelay="0"
 				selectionMode="Single"
 				selectionBehavior="Row"
@@ -25,10 +22,7 @@
 				alternateRowColors="true"
         busy="{ui>/isBusy}"
 				rows="{
-					path: '/ProcessingCosts',
-					parameters: {
-						$select: 'Key,Description'
-					}
+					path: '/ProcessingCosts'
 				}"
 			>
 				<t:extension>
@@ -40,12 +34,12 @@
 				<t:columns>
 					<t:Column
 						label="Codigo"
-						sortProperty="Key"
-						filterProperty="Key"
+						sortProperty="Code"
+						filterProperty="Code"
 						width="5rem"
             >
 						<t:template>
-							<Text text="{Key}" wrapping="false"/>
+							<Text text="{Code}" wrapping="false"/>
 						</t:template>
 					</t:Column>
 					<t:Column

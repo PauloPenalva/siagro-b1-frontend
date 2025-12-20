@@ -7,7 +7,7 @@
 
 		<t:Table
 				class="sapUiSizeCondensed"
-				id="tableServicos"
+				id="tableValorSecagem"
 				alternateRowColors="true"
 				enableBusyIndicator="true"
 				enableSelectAll="false"
@@ -16,43 +16,51 @@
 				visibleRowCount="15"
 				visibleRowCountMode="Fixed"
 				busyIndicatorDelay="0"
-				rows="{ServiceDetails}"
+				rows="{DryingDetails}"
 				visible="true">
 				<t:extension>
 					<OverflowToolbar >
 						<content>
-							<Title text="Serviços"/>
+							<Title text="Custos de Secagem"/>
 							<ToolbarSpacer />
-							<Button text="Incluir" type="Emphasized" icon="sap-icon://add" press=".onAddServicos" />
-							<Button text="Remover" icon="sap-icon://delete" press=".onRemoveServicos" />
+							<Button text="Incluir" type="Emphasized" icon="sap-icon://add" press=".onAddValorSecagem" />
+							<Button text="Remover" icon="sap-icon://delete" press=".onRemoveValorSecagem" />
 						</content>
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>
 					<t:Column
-						label="Codigo"
-						width="5rem"
+						label="% De"
+						width="10rem"
 						>
 						<t:template>
-							<Input 
-								value="{ProcessingServiceKey}" 
-								showValueHelp="true" 
-								valueHelpOnly="true" 
-								valueHelpRequest="servicoValueHelpRequest"
-							/>
+							<Input value="{
+								path: 'InitialMoisture',
+								type: 'sap.ui.model.type.Float',
+								formatOptions: {
+										decimals: 1,
+										decimalSeparator: ',',
+										groupingEnabled: true,
+										groupingSeparator: '.'
+									}
+								}" />
 						</t:template>
 					</t:Column>
 					<t:Column
-						label="Descrição"
-						width="20rem"
+						label="% Até"
+						width="10rem"
 						>
 						<t:template>
-							<Text 
-								text="{ 
-									parts:['ProcessingServiceKey'], 
-									formatter:'.formatDescricaoServico'
-								}" 
-							/>
+							<Input value="{
+								path: 'FinalMoisture',
+								type: 'sap.ui.model.type.Float',
+								formatOptions: {
+										decimals: 1,
+										decimalSeparator: ',',
+										groupingEnabled: true,
+										groupingSeparator: '.'
+									}
+								}" />
 						</t:template>
 					</t:Column>
 					<t:Column
@@ -62,14 +70,14 @@
 						<t:template>
 							<Input value="{
 								path: 'Price',
-								type: 'sap.ui.model.odata.type.Double',
+								type: 'sap.ui.model.type.Float',
 								formatOptions: {
 										decimals: 8,
 										decimalSeparator: ',',
 										groupingEnabled: true,
 										groupingSeparator: '.'
-                }
-							}" />
+									}
+								}" />
 						</t:template>
 					</t:Column>
 				</t:columns>

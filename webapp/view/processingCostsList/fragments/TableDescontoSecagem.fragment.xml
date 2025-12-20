@@ -48,7 +48,7 @@
                         required="true"
                         value="{
                         path: 'InitialMoisture',
-                        type: 'sap.ui.model.odata.type.Double',
+                        type: 'sap.ui.model.type.Float',
                         formatOptions: {
                             decimals: 1,
                             decimalSeparator: ',',
@@ -68,7 +68,7 @@
                         required="true"
                         value="{
                         path: 'FinalMoisture',
-                        type: 'sap.ui.model.odata.type.Double',
+                        type: 'sap.ui.model.type.Float',
                         formatOptions: {
                             decimals: 1,
                             decimalSeparator: ',',
@@ -88,7 +88,7 @@
                         required="true"
                         value="{
                           path: 'Rate',
-                          type: 'sap.ui.model.odata.type.Double',
+                          type: 'sap.ui.model.type.Float',
                           formatOptions: {
                             decimals: 8,
                             decimalSeparator: ',',
