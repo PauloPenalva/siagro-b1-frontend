@@ -181,6 +181,20 @@ export default class Main extends BaseController {
       return;
     }
 
+    const shipments: any[] = [];
+    const shipmentBillingTable = this.byId("shipmentBillingTable") as Table;
+    const selectedShipments = shipmentBillingTable.getSelectedIndices();
+
+    selectedShipments.forEach(i => {
+      const shipmentCtx = shipmentBillingTable.getContextByIndex(i);
+      const shipmentObj: any = shipmentCtx.getObject();
+
+      shipments.push({
+        Key: shipmentObj?.Key
+      });
+    });
+
+
     const contractsTable = this.byId("shipmentBillingSalesContractsTable") as Table;
     const selectedContract = contractsTable.getSelectedIndices();
     if (selectedContract.length < 1) {
@@ -215,9 +229,10 @@ export default class Main extends BaseController {
               UnitOfMeasureCode: contract?.UnitOfMeasureCode,
               SalesContractKey: contract?.Key
             }
-          ]
+          ],
+          SalesTransactions: shipments
         };
-
+ 
         this.closeBillingDialog();
 
         await this.createBusyDialog();
