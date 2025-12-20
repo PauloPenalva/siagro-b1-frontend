@@ -183,7 +183,17 @@
             width="10rem"
 						>
 						<t:template>
-							<Text text="{TaxDocumentNumber}/{TaxDocumentSeries}" />
+							<Text text="{TaxDocumentNumber}" />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Serie"
+						sortProperty="TaxDocumentSeries"
+            hAlign="Center"
+            width="5rem"
+						>
+						<t:template>
+							<Text text="{TaxDocumentSeries}" />
 						</t:template>
 					</t:Column>
           <t:Column

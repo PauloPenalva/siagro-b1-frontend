@@ -348,6 +348,81 @@
           "pattern": "salesInvoices",
           "name": "salesInvoices",
           "target": "salesInvoices"
+        },
+        {
+          "pattern": "agents",
+          "name": "agents",
+          "target": "agents"
+        },
+        {
+          "pattern": "agentsNew",
+          "name": "agentsNew",
+          "target": "agentsNew"
+        },
+        {
+          "pattern": "agentsEdit/{id}",
+          "name": "agentsEdit",
+          "target": "agentsEdit"
+        },
+        {
+          "pattern": "taxes",
+          "name": "taxes",
+          "target": "taxes"
+        },
+        {
+          "pattern": "taxesNew",
+          "name": "taxesNew",
+          "target": "taxesNew"
+        },
+        {
+          "pattern": "taxesEdit/{id}",
+          "name": "taxesEdit",
+          "target": "taxesEdit"
+        },
+        {
+          "pattern": "logisticRegions",
+          "name": "logisticRegions",
+          "target": "logisticRegions"
+        },
+        {
+          "pattern": "logisticRegionsNew",
+          "name": "logisticRegionsNew",
+          "target": "logisticRegionsNew"
+        },
+        {
+          "pattern": "logisticRegionsEdit/{id}",
+          "name": "logisticRegionsEdit",
+          "target": "logisticRegionsEdit"
+        },
+        {
+          "pattern": "states",
+          "name": "states",
+          "target": "states"
+        },
+        {
+          "pattern": "statesNew",
+          "name": "statesNew",
+          "target": "statesNew"
+        },
+        {
+          "pattern": "statesEdit/{id}",
+          "name": "statesEdit",
+          "target": "statesEdit"
+        },
+        {
+          "pattern": "branchs",
+          "name": "branchs",
+          "target": "branchs"
+        },
+        {
+          "pattern": "branchsNew",
+          "name": "branchsNew",
+          "target": "branchsNew"
+        },
+        {
+          "pattern": "branchsEdit/{id}",
+          "name": "branchsEdit",
+          "target": "branchsEdit"
         }
 			],
 			"targets": {
@@ -649,6 +724,96 @@
 					"id": "salesInvoices",
           "level": 1,
 					"name": "siagrob1.view.salesInvoices.Main",
+          "clearControlAggregation": true
+				},
+        "agents": {
+					"id": "agents",
+          "level": 1,
+					"name": "siagrob1.view.agents.Main",
+          "clearControlAggregation": true
+				},
+        "agentsNew": {
+					"id": "agentsNew",
+          "level": 2,
+					"name": "siagrob1.view.agents.Add",
+          "clearControlAggregation": true
+				},
+        "agentsEdit": {
+					"id": "agentsEdit",
+          "level": 2,
+					"name": "siagrob1.view.agents.Edit",
+          "clearControlAggregation": true
+				},
+        "taxes": {
+					"id": "taxes",
+          "level": 1,
+					"name": "siagrob1.view.taxes.Main",
+          "clearControlAggregation": true
+				},
+        "taxesNew": {
+					"id": "taxesNew",
+          "level": 2,
+					"name": "siagrob1.view.taxes.Add",
+          "clearControlAggregation": true
+				},
+        "taxesEdit": {
+					"id": "taxesEdit",
+          "level": 2,
+					"name": "siagrob1.view.taxes.Edit",
+          "clearControlAggregation": true
+				},
+         "logisticRegions": {
+					"id": "logisticRegions",
+          "level": 1,
+					"name": "siagrob1.view.logisticRegions.Main",
+          "clearControlAggregation": true
+				},
+        "logisticRegionsNew": {
+					"id": "logisticRegionsNew",
+          "level": 2,
+					"name": "siagrob1.view.logisticRegions.Add",
+          "clearControlAggregation": true
+				},
+        "logisticRegionsEdit": {
+					"id": "logisticRegionsEdit",
+          "level": 2,
+					"name": "siagrob1.view.logisticRegions.Edit",
+          "clearControlAggregation": true
+				},
+         "states": {
+					"id": "states",
+          "level": 1,
+					"name": "siagrob1.view.states.Main",
+          "clearControlAggregation": true
+				},
+        "statesNew": {
+					"id": "statesNew",
+          "level": 2,
+					"name": "siagrob1.view.states.Add",
+          "clearControlAggregation": true
+				},
+        "statesEdit": {
+					"id": "statesEdit",
+          "level": 2,
+					"name": "siagrob1.view.states.Edit",
+          "clearControlAggregation": true
+				},
+         "branchs": {
+					"id": "branchs",
+          "level": 1,
+					"name": "siagrob1.view.branchs.Main",
+          "clearControlAggregation": true
+				},
+        "branchsNew": {
+					"id": "branchsNew",
+          "level": 2,
+					"name": "siagrob1.view.branchs.Add",
+          "clearControlAggregation": true
+				},
+        "branchsEdit": {
+					"id": "branchsEdit",
+          "level": 2,
+					"name": "siagrob1.view.branchs.Edit",
           "clearControlAggregation": true
 				}
 			}

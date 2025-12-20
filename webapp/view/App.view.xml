@@ -26,12 +26,17 @@
                 menuButtonPressed=".onMenuButtonPress">
                 <f:menu>
                   <Menu>
+                    <MenuItem text="Estados" key="states" press=".onItemPressed"/>
+                    <MenuItem text="Filiais" key="branchs" press=".onItemPressed"/>
                     <MenuItem text="Parceiros de Negócio" key="parceirosNegocio" press=".onItemPressed"/>
+                    <MenuItem text="Representantes" key="agents" press=".onItemPressed"/>
                     <MenuItem text="Motoristas" key="motoristas" press=".onItemPressed"/>
                     <MenuItem text="Veiculos" key="veiculos" press=".onItemPressed"/>
                     <MenuItem text="Produtos" key="produtos" press=".onItemPressed"/>
                     <MenuItem text="Safras" key="safras" press=".onItemPressed"/>
                     <MenuItem text="Armazéns" key="armazens" press=".onItemPressed"/>
+                    <MenuItem text="Regiões Logistica" key="logisticRegions" press=".onItemPressed"/>
+                    <MenuItem text="Tributos/Impostos" key="taxes" press=".onItemPressed"/>
                     <MenuItem text="Tabela de Custos" key="tabelaCusto" press=".onItemPressed"/>
                     <MenuItem text="Lotes de Armazenagem" key="lotesArmazenagem" press=".onItemPressed"/>
                     <MenuItem text="Tickets de Pesagem" key="weighingTickets" press=".onItemPressed"/>
