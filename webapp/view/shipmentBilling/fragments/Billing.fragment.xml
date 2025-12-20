@@ -70,7 +70,7 @@
 					</layoutData>
 				</Input>
 
-				<Label text="Peso Balanca" />
+				<!-- <Label text="Peso Balanca" />
 				<Input id="grossWeightLimit"
 					value="{
             path: 'viewModel>/GrossWeightLimit',
@@ -88,7 +88,7 @@
 					<layoutData>
 						<l:GridData span="XL2 L1 M3 S4" />
 					</layoutData>
-				</Input>
+				</Input> -->
 				<Label
 					text="Tipo Frete"
 					required="true"
@@ -106,21 +106,59 @@
 						text="FOB"
 					/>
 				</Select>
+        
 
-				<!-- <Label text="Entrega Cod/Loja" />
-				<Input value="{fatura>/ClienteEntrega}" required="true" showValueHelp="true" valueHelpOnly="true"
-					valueHelpRequest="handleSearchClienteEntrega" />
-				<Input id="lojaCliente" value="{fatura>/LojaEntrega}" required="true" editable="false" /> -->
-
-				<Label text="Inf.Ad.Nota Fiscal" />
+        <Label text="Inf.Ad.Nota Fiscal" />
 				<TextArea value="{
-									path: 'viewModel>/Comments',
+									path: 'viewModel>/TaxPayerComments',
 									type: 'sap.ui.model.odata.type.String'
 							}" rows="8" cols="80" editable="true" />
 
-				<!-- -->
+
 				<core:Title />
 
+        <Label text="Endereço Entrega" />
+        <Input
+          editable="{ui>/editable}"
+          showValueHelp="true"
+          valueHelpOnly="true"
+          required="true"
+          valueHelpRequest=".openBusinessPartnersValueHelp"
+          value="{viewModel>/DeliveryCardCode}"
+          >
+          <layoutData>
+            <l:GridData span="XL3 L3 M3 S8" />
+          </layoutData>
+        </Input>
+        <Input 
+          value="{
+            parts: ['viewModel>/DeliveryCardCode'],
+            formatter: '.formatBusinessPartnerName'
+          }" 
+          editable="false"
+        />
+
+        <Label text="Transportadora" />
+        <Input
+          editable="{ui>/editable}"
+          showValueHelp="true"
+          valueHelpOnly="true"
+          valueHelpRequest=".openBusinessPartnersValueHelp"
+          value="{viewModel>/TruckingCompanyCode}"
+          >
+          <layoutData>
+            <l:GridData span="XL3 L3 M3 S8" />
+          </layoutData>
+        </Input>
+        <Input 
+          value="{
+            parts: ['viewModel>/TruckingCompanyCode'],
+            formatter: '.formatBusinessPartnerName'
+          }" 
+          editable="false"
+        />
+        
+        
 				<Label text="Motorista" />
 				<Input
 					value="{viewModel>/TruckDriverCode}"
@@ -161,7 +199,7 @@
 					</layoutData>
 				</Input> -->
 
-				<Label text="NF Bal+Compl ?" />
+				<!-- <Label text="NF Bal+Compl ?" />
 				<Select
 					forceSelection="true"
 					selectedKey="{viewModel>/ComplementInvoice}"
@@ -174,7 +212,7 @@
 						key="Yes"
 						text="SIM"
 					/>
-				</Select>
+				</Select> -->
 
 				<Label text="Frete p/Tonelada"/>
 				<Input value="{
@@ -185,14 +223,16 @@
               decimalSeparator: ',',
               groupingEnabled: true,
               groupingSeparator: '.'
-          }}"  editable="true" textAlign="End" required="true">
+          }}"  
+          editable="true" 
+          textAlign="End" 
+          required="{= ${path: 'viewModel>/FreightTerms', targetType: 'any'}==='Cif' ? true : false }">
 					<layoutData>
 						<l:GridData span="XL2 L1 M3 S4" />
 					</layoutData>
 				</Input>
         
-        <core:Title />
-
+       
 			</f:content>
 		</f:SimpleForm>
 
@@ -274,6 +314,32 @@
 					</t:template>
 				</t:Column>
 
+				<t:Column
+					width="8rem"
+					hAlign="End"
+					sortProperty="Price"
+				>
+					<Label text="Preço Unit." />
+					<t:template>
+						<ObjectNumber
+							number="{
+                path: 'Price',
+                type: 'sap.ui.model.type.Float',
+                formatOptions: {
+                  decimals: 8,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }"
+							unit="{
+                path: 'StandardCurrency',
+                targetType: 'any',
+                formatter: '.formatter.formatCurrency'
+              }"
+						/>
+					</t:template>
+				</t:Column>
 				<t:Column
 					width="8rem"
 					hAlign="End"
