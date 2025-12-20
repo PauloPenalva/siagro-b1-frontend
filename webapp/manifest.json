@@ -343,6 +343,11 @@
           "pattern": "shipmentBilling",
           "name": "shipmentBilling",
           "target": "shipmentBilling"
+        },
+        {
+          "pattern": "salesInvoices",
+          "name": "salesInvoices",
+          "target": "salesInvoices"
         }
 			],
 			"targets": {
@@ -638,6 +643,12 @@
 					"id": "shipmentBilling",
           "level": 1,
 					"name": "siagrob1.view.shipmentBilling.Main",
+          "clearControlAggregation": true
+				},
+        "salesInvoices": {
+					"id": "salesInvoices",
+          "level": 1,
+					"name": "siagrob1.view.salesInvoices.Main",
           "clearControlAggregation": true
 				}
 			}

@@ -48,7 +48,7 @@
             <Title text="Romaneios de Embarque" />
 						<ToolbarSpacer />
 						<Button type="Emphasized" text="Faturar" press=".openBillingDialog"/>
-						<Button type="Transparent" text="Estornar Romaneio" press=""/>
+						<Button type="Transparent" text="Estornar Romaneio de Embarque" press=".onDelete"/>
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>

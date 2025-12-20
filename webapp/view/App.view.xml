@@ -46,6 +46,7 @@
                     <MenuItem text="Entregas de Contratos de Compra" key="purchaseContractsAllocations" press=".onItemPressed"/>
                     <MenuItem text="Expedição de Grãos" key="shippingTransaction" press=".onItemPressed"/>
                     <MenuItem text="Faturamento de Expedição" key="shipmentBilling" press=".onItemPressed"/>
+                    <MenuItem text="Documentos de Saída" key="salesInvoices" press=".onItemPressed"/>
                   </Menu>
                 </f:menu>
                 <f:profile>

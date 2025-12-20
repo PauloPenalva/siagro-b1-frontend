@@ -145,7 +145,7 @@
 						</t:template>
 					</t:Column>
           <t:Column
-						label="Nota Fiscal"
+						label="Documento"
 						sortProperty="InvoiceNumber"
             width="7rem"
 						>
@@ -154,7 +154,7 @@
 						</t:template>
 					</t:Column>
           <t:Column
-						label="Qtd. Nota Fiscal"
+						label="Qtd.Documento"
 						sortProperty="InvoiceQty"
             hAlign="End"
             width="10rem"

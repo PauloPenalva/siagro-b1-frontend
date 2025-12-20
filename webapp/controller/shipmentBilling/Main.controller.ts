@@ -73,6 +73,35 @@ export default class Main extends BaseController {
     });
   }
 
+  async onDelete() {
+    const table = this.byId("shipmentBillingTable") as Table;
+    const selectedInvoices = table.getSelectedIndices();
+    if (selectedInvoices.length < 1){
+      MessageBox.warning("Selecione um registro.")
+      throw new Error("Selecione um registro");
+    }
+
+    if (selectedInvoices.length > 1){
+      MessageBox.warning("Selecione apenas um registro por vez.")
+      throw new Error("Selecione apenas um registro por vez.");
+    }
+
+    if (await DialogHelper.confirmDialog("Estornar Embarque ?")) {
+      const ctx = table.getContextByIndex(selectedInvoices[0]);
+      const oModel = this.getModel() as ODataModel;
+      const action = oModel.bindContext("/ShipmentBillingDeleteInvoice(...)");
+      action.setParameter("Key", ctx.getProperty("Key"));
+      
+      this.setBusy(true);
+      void action.invoke()
+        .then(() => {
+          this.refreshData();
+          MessageToast.show("Embarque estornado com sucesso.")
+        })
+        .finally(() => this.setBusy(false));
+    }
+  }
+
   private async createBillingDialog() {
     const name = "siagrob1.view.shipmentBilling.fragments.Billing";
     const oView = this.getView();

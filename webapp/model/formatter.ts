@@ -222,4 +222,23 @@ export default {
     
     return m.get(value);
   },
+
+  formatSalesInvoiceStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Pending", "Pendente");
+    m.set("Confirmed", "Confirmado");
+    m.set("Cancelled", "Cancelado");
+    
+    return m.get(value);
+  },
+
+  stateSalesInvoiceStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Pending", "None");
+    m.set("Confirmed", "Success");
+    m.set("Cancelled", "Error");
+    
+    return m.get(value);
+  },
+
 };

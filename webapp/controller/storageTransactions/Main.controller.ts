@@ -122,6 +122,8 @@ export default class Main extends CommonController {
             "PurchaseReturn": "Dev.Compra",
             "PurchaseQtyComplement": "Compl.Qtd.",
             "PurchasePriceComplement": "Compl.Preço",
+            "SalesShipment": "Saída para Venda",
+            "SalesShipmentReturn": "Dev.Venda"
           }
         });
 
@@ -138,19 +140,13 @@ export default class Main extends CommonController {
         });
 
         aCols.push({
-          label: "Nota Fiscal",
+          label: "Documento",
           property: "InvoiceNumber",
           type: EdmType.String
         });
   
         aCols.push({
-          label: "Serie",
-          property: "InvoiceSerie",
-          type: EdmType.String
-        });
-  
-        aCols.push({
-          label: "Qtd.Nota Fiscal",
+          label: "Qtd.Documento",
           property: "InvoiceQty",
           type: EdmType.Number,
           scale: 3,
@@ -162,7 +158,7 @@ export default class Main extends CommonController {
           property: "GrossWeight",
           type: EdmType.Number,
           scale: 3,
-          delimiter: true
+          delimiter: true,
         });
 
         aCols.push({

@@ -1,0 +1,208 @@
+<mvc:View
+	controllerName="siagrob1.controller.salesInvoices.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+  xmlns:f="sap.f"
+  xmlns:mdc="sap.ui.mdc"
+  xmlns:fb="sap.ui.comp.filterbar"
+  xmlns:vm="sap.ui.fl.variants"
+  xmlns:svm="sap.ui.comp.smartvariants"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Documentos de Saída"/>
+        </f:heading>
+			</f:DynamicPageTitle>
+    </f:title>
+    <f:header>
+      <f:DynamicPageHeader>
+        <f:content>
+          <core:Fragment fragmentName="siagrob1.view.salesInvoices.fragments.SalesInvoicesFilterbar" type="XML" />
+        </f:content>
+      </f:DynamicPageHeader>
+    </f:header>
+		<f:content>
+      <t:Table
+				id="tableSalesInvoices"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+        rows="{
+					path: '/SalesInvoices',
+          sorter: [
+            { path: 'RowId', descending: true }
+          ]
+				}"
+			>
+				<t:extension>
+					<OverflowToolbar >
+            <Title text="Documentos de Saída" />
+						<ToolbarSpacer />
+						<Button type="Transparent" text="Copiar" press=".onCopy"/>
+						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
+						<Button type="Transparent" text="Criar" press=".onCreate"/>
+						<Button type="Transparent" text="Cancelar" press=".onCancel"/>
+						<Button type="Transparent" text="Deletar" press=".onDelete"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+          <t:Column
+						label="Key"
+            visible="false"
+            width="10rem"
+            >
+						<t:template>
+							<Text text="{Key}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Numero"
+						sortProperty="InvoiceNumber"
+            hAlign="Center"
+            width="7rem"
+						>
+						<t:template>
+							<Text text="{InvoiceNumber}" />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Emissão"
+						sortProperty="InvoiceDate"
+            width="7rem"
+            hAlign="Center"
+						>
+						<t:template>
+            <Text
+              wrapping="false"
+              text="{
+                path: 'InvoiceDate',
+                targetType: 'any',
+                formatter: '.formatter.formatDate'
+              }"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Status"
+						sortProperty="InvoiceStatus"
+            width="10rem"
+            hAlign="Center"
+						>
+						<t:template>
+							<ObjectStatus 
+                inverted="true"
+                state="{
+                  path: 'InvoiceStatus',
+                  targetType: 'any',
+                  formatter: '.formatter.stateSalesInvoiceStatus'
+                }"
+                text="{
+                  path: 'InvoiceStatus',
+                  targetType: 'any',
+                  formatter: '.formatter.formatSalesInvoiceStatus'
+                }"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Fornecedor"
+						sortProperty="CardName"
+            width="25rem"
+						>
+						<t:template>
+							<Text text="({CardCode}) {CardName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Valor Produtos"
+						hAlign="End"
+            width="7rem"
+						>
+						<t:template>
+            <Text
+              wrapping="false"
+              text="{
+                path: 'TotalInvoiceItems',
+                type: 'sap.ui.model.type.Float',
+                formatOptions:{
+                  decimals: 2,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Placa"
+						sortProperty="TruckCode"
+            hAlign="Center"
+            width="7rem"
+						>
+						<t:template>
+							<Text text="{TruckCode}" />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Peso Bruto"
+						hAlign="End"
+            width="8rem"
+						>
+						<t:template>
+            <ObjectNumber
+              textAlign="End"
+              number="{
+                path: 'GrossWeight',
+                type: 'sap.ui.model.type.Float',
+                formatOptions:{
+                  decimals: 3,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }"
+              unit="KG"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Nota Fiscal"
+						sortProperty="TaxDocumentNumber"
+            hAlign="Center"
+            width="10rem"
+						>
+						<t:template>
+							<Text text="{TaxDocumentNumber}/{TaxDocumentSeries}" />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Chave NF-e"
+						sortProperty="ChaveNFe"
+            hAlign="Center"
+            width="25rem"
+            >
+						<t:template>
+							<Text text="{ChaveNFe}" />
+						</t:template>
+					</t:Column>
+          
+				</t:columns>
+
+			</t:Table>
+
+    </f:content>
+  
+  </f:DynamicPage>
+
+</mvc:View>
