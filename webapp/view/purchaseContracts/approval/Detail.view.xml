@@ -36,7 +36,7 @@
 
     <uxap:headerContent>
       <HBox class="sapUiTinyMarginBottom">
-        <ObjectIdentifier title="{DocType/Name} {Code}" class="sapUiMediumMarginEnd sapUiTinyMarginBottom"/>
+        <ObjectIdentifier title="{Code}" class="sapUiMediumMarginEnd sapUiTinyMarginBottom"/>
         <ObjectStatus
           state="{
             path: 'Status',

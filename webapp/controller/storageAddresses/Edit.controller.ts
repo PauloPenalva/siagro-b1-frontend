@@ -5,12 +5,12 @@ import MessageBox from "sap/m/MessageBox";
 import LoteArmazenagemBaseController from "./LoteArmazenagemBaseController";
 
 /**
- * @namespace siagrob1.controller.loteArmazenagem
+ * @namespace siagrob1.controller.storageAddresses
  */
 export default class Edit extends LoteArmazenagemBaseController {
 
 	onInit(): void | undefined {	
-		this.getRouter().getRoute("lotesArmazenagemEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
+		this.getRouter().getRoute("storageAddressesEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
@@ -25,7 +25,7 @@ export default class Edit extends LoteArmazenagemBaseController {
 
 		const {id} = ev.getParameter("arguments") as {id: string | null};
 		if (id != null) {
-			const sPath = `/StorageLots(${id})`;
+			const sPath = `/StorageAddresses(${id})`;
 			oView.bindElement({
 				path: sPath,
 				events: {

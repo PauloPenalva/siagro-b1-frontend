@@ -4,12 +4,12 @@ import MessageBox from "sap/m/MessageBox";
 import LoteArmazenagemBaseController from "./LoteArmazenagemBaseController";
 
 /**
- * @namespace siagrob1.controller.loteArmazenagem
+ * @namespace siagrob1.controller.storageAddresses
  */
 export default class Add extends LoteArmazenagemBaseController {
 
 	onInit(): void | undefined {
-		this.getRouter().getRoute("lotesArmazenagemNew").attachPatternMatched(() => this.newRouteMatched());
+		this.getRouter().getRoute("storageAddressesNew").attachPatternMatched(() => this.newRouteMatched());
 	}
 	private newRouteMatched() {
 		
@@ -17,7 +17,7 @@ export default class Add extends LoteArmazenagemBaseController {
     
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;
-		const oBinding = oModel.bindList("/StorageLots")
+		const oBinding = oModel.bindList("/StorageAddresses")
 
 		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 			oModel.resetChanges(oModel.getUpdateGroupId())

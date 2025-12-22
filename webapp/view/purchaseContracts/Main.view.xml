@@ -87,15 +87,6 @@
 						</t:template>
 					</t:Column>
           <t:Column
-						label="Tipo Doc"
-						sortProperty="DocType"
-            width="10rem"
-						>
-						<t:template>
-							<Text text="{DocTypeCode}" wrapping="false"/>
-						</t:template>
-					</t:Column>
-          <t:Column
 						label="Codigo"
 						sortProperty="Code"
             width="10rem"

@@ -1,0 +1,85 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+    <f:SimpleForm
+      id="docNumbersForm"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0"
+    >
+        <f:content>
+            <core:Title
+                text="Dados da Numeração de Documento"
+                emphasized="true"
+            />
+            <Label text="Documento" />
+            <Select
+                selectedKey="{
+                  path: 'TransactionCode',
+                  targetType: 'any'
+                }"
+                editable="true"
+                required="true"
+                forceSelection="false"
+            >
+              <core:ListItem key="PurchaseContract" text="Contrato de Compra"/>
+              <core:ListItem key="SalesContract" text="Contrato de Venda"/>
+              <core:ListItem key="SalesInvoice" text="Documento de Saída"/>
+              <core:ListItem key="WeighingTicket" text="Ticket de Pesagem"/>
+              <core:ListItem key="StorageAddress" text="Lote de Armazenagem"/>
+              <core:ListItem key="StorageTransaction" text="Romaneio"/>
+              <!-- <core:ListItem key="ShippingOrder" text="Ordem de Carregamento"/> -->
+            </Select>
+            <Label text="Nome" />
+            <Input
+                value="{Name}"
+                editable="true"
+                required="true"
+                liveChange=".validateField"
+            />
+            <Label text="Primeiro Numero" />
+            <Input 
+                type="Number"
+								required="true"
+                value="{FirstNumber}" />
+            <Label text="Próximo Numero" />
+            <Input 
+                type="Number"
+								required="true"
+                value="{NextNumber}" />
+
+            <core:Title  text=""/>
+            <Label text="Prefixo" />
+            <Input value="{Prefix}" />
+            <Label text="Sufixo" />
+            <Input value="{Suffix}" />
+            <Label text="Padrão"/>
+            <Label text="Qtd. Digitos" />
+            <Input type="Number" value="{NumberSize}" />
+            <Label text="Padrão ?"/>
+            <CheckBox selected="{Default}" />
+            <Label text="Inativo ?"/>
+            <CheckBox selected="{Inactive}" />
+            <!-- <Label text="Manual ?"/>
+            <CheckBox selected="{IsManual}" /> -->
+
+        </f:content>
+    </f:SimpleForm>
+</core:FragmentDefinition>

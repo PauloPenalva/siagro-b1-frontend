@@ -55,6 +55,26 @@ export default {
     return date.toLocaleDateString("pt-BR"); // 19/11/2025
   },
 
+  formatDateISO: (dataISO: string): string => {
+    if (!dataISO) return "";
+    
+    // Cria um objeto Date a partir da string ISO 8601
+    const data = new Date(dataISO);
+    
+    // Verifica se a data é válida
+    if (isNaN(data.getTime())) {
+      throw new Error('Data inválida');
+    }
+    
+    // Extrai dia, mês e ano
+    const dia = data.getDate().toString().padStart(2, '0');
+    const mes = (data.getMonth() + 1).toString().padStart(2, '0'); // Mês começa em 0
+    const ano = data.getFullYear();
+    
+    // Retorna no formato DD/MM/YYYY
+    return `${dia}/${mes}/${ano}`;
+  },
+
   formatTime: (value: string): string =>  {
     if (!value) return "";
     
@@ -232,11 +252,32 @@ export default {
     return m.get(value);
   },
 
+  formatCardType: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("C", "Cliente");
+    m.set("S", "Fornecedor");
+    
+    return m.get(value);
+  },
+
   stateSalesInvoiceStatus: (value: string) => {
     const m = new Map<string, string>();
     m.set("Pending", "None");
     m.set("Confirmed", "Success");
     m.set("Cancelled", "Error");
+    
+    return m.get(value);
+  },
+
+   formatTransactionCode: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("PurchaseContract", "Contrato de Compra");
+    m.set("WeighingTicket", "Ticket de Pesagem");
+    m.set("StorageAddress", "Lote de Armazenagem");
+    m.set("StorageTransaction", "Romaneio");
+    m.set("ShippingOrder", "Ordem de Carregamento");
+    m.set("SalesContract", "Contrato de Venda");
+    m.set("SalesInvoice", "Documento de Saída");
     
     return m.get(value);
   },

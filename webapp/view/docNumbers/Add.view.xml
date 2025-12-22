@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.loteArmazenagem.Edit"
+	controllerName="siagrob1.controller.docNumbers.Add"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -10,15 +10,9 @@
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-	<Page
-		showHeader="true"
-		title="Lote de Armazenagem"
-		id="loteArmazenagemEdit"
-		busy="{ui>/busy}">
+	<Page showHeader="true" title="Nova Numeração de Documentos">
 		<content>
-
-			<core:Fragment fragmentName="siagrob1.view.loteArmazenagem.fragments.Form" type="XML" />
-
+			<core:Fragment fragmentName="siagrob1.view.docNumbers.fragments.Form" type="XML" />
 		</content>
 		<footer>
 			<Toolbar>

@@ -29,14 +29,25 @@
                 text="Dados do Contrato"
                 emphasized="true"
             />
-            <Label text="Tipo Documento"/>
-            <Input
+            <Label text="Codigo"/>
+            <Select 
               editable="{ui>/editable}"
-              showValueHelp="true"
-              valueHelpOnly="true"
-              valueHelpRequest=".openSalesContractsDocTypesValueHelp"
+              forceSelection="false"
               required="true"
-              value="{DocTypeCode}"/>
+              selectedKey="{DocNumberKey}"
+              items="{
+                path: '/DocNumbers',
+                parameters:{
+                  $filter: 'TransactionCode eq \'SalesContract\''
+                }
+              }"
+              >
+              <core:ListItem key="{Key}" text="{Name}"/>
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Select>
+            <Input value="{Code}" editable="false" />
             <Label text="Moeda Standard"/>
             <Select 
               editable="{ui>/editable}"

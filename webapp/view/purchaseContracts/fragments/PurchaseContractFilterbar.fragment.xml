@@ -22,17 +22,6 @@
             </Select>
         </fb:control>
       </fb:FilterGroupItem>
-      <fb:FilterGroupItem name="docType" label="Tipo do Documento" groupName="GroupDocType" visibleInFilterBar="true">
-        <fb:control>
-           <Input
-              showClearIcon="true"
-              showValueHelp="true"
-              valueHelpRequest=".openDocTypesValueHelp"
-              value="{filter>/DocTypeCode}"
-              >
-            </Input>
-        </fb:control>
-      </fb:FilterGroupItem>
       <fb:FilterGroupItem name="code" label="Codigo" groupName="GroupCode" visibleInFilterBar="true">
         <fb:control>
             <Input showClearIcon="true" value="{filter>/Code}">

@@ -98,9 +98,7 @@
             width="10rem"
 						>
 						<t:template>
-							<Text text="{
-                  parts: ['DocType/Serie','Code']
-                }" wrapping="false"/>
+							<Text text="{Code}" wrapping="false"/>
 						</t:template>
 					</t:Column>
           <!-- <t:Column

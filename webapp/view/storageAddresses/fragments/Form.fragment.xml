@@ -31,22 +31,21 @@
             />
             <Label text="Codigo" />
             <Input
-                value="{Key}"
-                editable="true"
-                visible="false"
+                value="{Code}"
+                editable="false"
+                required="false"
             />
             <Label text="Data" />
             <DatePicker
                 value="{
                   path: 'CreationDate',
-                  type: 'sap.ui.model.odata.type.DateTimeOffset',
-                  formatOptions: {
-                    pattern: 'dd/MM/yyyy'
-                  }
+                  targetType: 'any',
+                  formatter: '.formatter.formatDateISO'
                 }"
                 editable="true"
                 required="true"
                 liveChange=".validateField"
+                displayFormat="dd/MM/yyyy"
             />
             <Label text="Descricao" />
             <Input
@@ -61,7 +60,7 @@
                 value="{ItemCode}" 
 								showValueHelp="true" 
 								valueHelpOnly="true" 
-								valueHelpRequest=".produtoValueHelpRequest">
+								valueHelpRequest=".openItemValueHelp">
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
@@ -78,7 +77,7 @@
                 value="{CardCode}" 
 								showValueHelp="true" 
 								valueHelpOnly="true" 
-								valueHelpRequest=".bpValueHelpRequest">
+								valueHelpRequest=".openBusinessPartnersValueHelp">
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
@@ -94,35 +93,18 @@
             <Label text="Armazém" />
             <Input 
 								required="true"
-                value="{WarehouseKey}" 
+                value="{WarehouseCode}" 
 								showValueHelp="true" 
 								valueHelpOnly="true" 
-								valueHelpRequest=".armazemValueHelpRequest">
+								valueHelpRequest=".openWarehouseValueHelp">
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
             <Input 
 								value="{
-                  parts:['WarehouseKey'],
+                  parts:['WarehouseCode'],
                   formatter: '.formatArmazemDescricao'
-                }" 
-								editable="false"/>
-            <Label text="Tabela de Custos" />
-            <Input 
-								required="true"
-                value="{ProcessingCostKey}" 
-								showValueHelp="true" 
-								valueHelpOnly="true" 
-								valueHelpRequest=".tabelaCustoValueHelpRequest">
-              <layoutData>
-                  <l:GridData span="XL3 L3 M3 S4" />
-              </layoutData>
-            </Input>
-            <Input 
-								value="{
-                  parts:['ProcessingCostKey'],
-                  formatter: '.formatTabelaCustoDescricao'
                 }" 
 								editable="false"/>
             <Label text="Saldo" />

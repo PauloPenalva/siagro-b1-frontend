@@ -17,6 +17,8 @@ export default class Add extends BaseController {
 	private newRouteMatched() {
 		
     const uiModel = this.getModel("ui") as JSONModel;
+   
+      
     uiModel.setProperty("/editable", true);
     
 		this.resetChanges();

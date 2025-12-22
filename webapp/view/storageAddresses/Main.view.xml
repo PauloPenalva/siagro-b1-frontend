@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.loteArmazenagem.Main"
+	controllerName="siagrob1.controller.storageAddresses.Main"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -24,7 +24,7 @@
 				enableBusyIndicator="true"
 				alternateRowColors="true"
 				rows="{
-					path: '/StorageLots'
+					path: '/StorageAddresses'
 				}"
 			>
 				<t:extension>
@@ -35,10 +35,10 @@
 				</t:extension>
 				<t:columns>
 					<t:Column
-						label="Codigo"
+						label="Key"
 						sortProperty="Key"
 						filterProperty="Key"
-            visible="true"
+            visible="false"
             width="5rem"
 						>
 						<t:template>
@@ -46,18 +46,42 @@
 						</t:template>
 					</t:Column>
 					<t:Column
+						label="Codigo"
+						sortProperty="Code"
+						filterProperty="Code"
+            visible="true"
+            width="10rem"
+						>
+						<t:template>
+							<Text text="{Code}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Tipo Propriedade"
+						sortProperty="OwnershipType"
+						filterProperty="OwnershipType"
+            visible="true"
+            width="10rem"
+						>
+						<t:template>
+							<Text text="{
+                path: 'OwnershipType',
+                targetType: 'any'
+              }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column
 						label="Data"
 						sortProperty="CreationDate"
 						filterProperty="CreationDate"
+            width="7rem"
 						>
 						<t:template>
 							<Text
                 text="{
                   path: 'CreationDate',
-                  type: 'sap.ui.model.odata.type.DateTimeOffset',
-                  formatOptions: {
-                    pattern: 'dd/MM/yyyy'
-                  }
+                  targetType: 'any',
+                  formatter: '.formatter.formatDateISO'
                 }"
             />
 						</t:template>
@@ -66,6 +90,7 @@
 						label="Descrição"
 						sortProperty="Description"
 						filterProperty="Description"
+            width="20rem"
 						>
 						<t:template>
 							<Text text="{Description}" wrapping="false"/>
@@ -75,6 +100,7 @@
 						label="Produto"
 						sortProperty="ItemCode"
 						filterProperty="ItemCode"
+            width="7rem"
 						>
 						<t:template>
 							<Text text="{ItemCode}" wrapping="false"/>
@@ -84,6 +110,7 @@
 						label="Cliente"
             sortProperty="CardCode"
 						filterProperty="CardCode"
+            width="7rem"
 						>
 						<t:template>
 							<Text text="{CardCode}" wrapping="false"/>
@@ -91,6 +118,7 @@
 					</t:Column>
           <t:Column
 						label="Saldo"
+            width="10rem"
             >
 						<t:template>
 							<Text 

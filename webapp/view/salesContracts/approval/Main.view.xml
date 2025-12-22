@@ -145,7 +145,7 @@
                       targetType: 'any', 
                       formatter: '.formatter.formatContractStatus' 
                     }"/>
-                  <ObjectIdentifier text="{DocType/Name} {Code}" title="{CardName} ({CardCode}) - {ItemName}" />
+                  <ObjectIdentifier text="{Code}" title="{CardName} ({CardCode}) - {ItemName}" />
                   <!-- <ObjectIdentifier text="{Code}"/> -->
                   <Text text="{Agent/Name}" />
                   <Text 

@@ -1,43 +1,45 @@
+import MessageToast from "sap/m/MessageToast";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
-import PurchaseContractsBaseController from "./PurchaseContractsBaseController";
-import Context from "sap/ui/model/odata/v4/Context";
-import JSONModel from "sap/ui/model/json/JSONModel";
+import { BaseController } from "./BaseController";
 
 /**
- * @namespace siagrob1.controller.purchaseContracts
+ * @namespace siagrob1.controller.docNumbers
  */
-export default class Edit extends PurchaseContractsBaseController {
+export default class Edit extends BaseController {
 
-	onInit(): void  {	
-		this.getRouter().getRoute("purchaseContractsEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
+	onInit(): void | undefined {	
+		this.getRouter().getRoute("docNumbersEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
-    const uiModel = this.getModel("ui") as JSONModel;
-    
-    uiModel.setProperty("/editable", true);
-        
-		this.clearStates("formPurchaseContracts");
+		this.clearStates("docNumbersForm");
     
     const oModel = this.getView().getModel() as ODataModel;
-		
+		const oView = this.getView();
+
 		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const {id} = ev.getParameter("arguments") as {id: string };
+		const {id} = ev.getParameter("arguments") as {id: string | null};
 		if (id != null) {
-			const sPath = `/PurchaseContracts(${id})`;
-			this.bindElement(sPath);
+			const sPath = `/DocNumbers(${id})`;
+			oView.bindElement({
+				path: sPath,
+				events: {
+					dataRequested: () => this.setBusy(true),
+					dataReceived: () => this.setBusy(false),
+				}
+			})
 			return;
 		}
 
 	}
 
 	async onSave() {
-		if (!this.validateForm("formPurchaseContracts")) {
+		if (!this.validateForm("docNumbersForm")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }
@@ -48,7 +50,9 @@ export default class Edit extends PurchaseContractsBaseController {
 			await oModel.submitBatch(oModel.getUpdateGroupId());
 			if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 				oModel.resetChanges(oModel.getUpdateGroupId())
-				this.navToDetail();
+				MessageToast.show("Dados atualizados com sucesso.", {
+					closeOnBrowserNavigation: false
+				});
 			}
 		} finally {
 			this.setBusy(false);
@@ -66,10 +70,5 @@ export default class Edit extends PurchaseContractsBaseController {
 		this.onNavBack();
 	}
 
-  private navToDetail() {
-    const oContext = this.getView().getBindingContext() as Context;
-    if (oContext) {
-      this.navTo("purchaseContractsDetail", {id: oContext.getProperty("Key") as string});
-    }
-  }
+
 }

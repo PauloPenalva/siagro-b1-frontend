@@ -150,19 +150,19 @@
           "target": "armazensEdit"
         },
         {
-          "pattern": "lotesArmazenagem",
-          "name": "lotesArmazenagem",
-          "target": "lotesArmazenagem"
+          "pattern": "storageAddresses",
+          "name": "storageAddresses",
+          "target": "storageAddresses"
         },
         {
-          "pattern": "lotesArmazenagemNew",
-          "name": "lotesArmazenagemNew",
-          "target": "lotesArmazenagemNew"
+          "pattern": "storageAddressesNew",
+          "name": "storageAddressesNew",
+          "target": "storageAddressesNew"
         },
         {
-          "pattern": "lotesArmazenagemEdit/{id}",
-          "name": "lotesArmazenagemEdit",
-          "target": "lotesArmazenagemEdit"
+          "pattern": "storageAddressesEdit/{id}",
+          "name": "storageAddressesEdit",
+          "target": "storageAddressesEdit"
         },
         {
           "pattern": "safras",
@@ -423,6 +423,21 @@
           "pattern": "branchsEdit/{id}",
           "name": "branchsEdit",
           "target": "branchsEdit"
+        },
+        {
+          "pattern": "docNumbers",
+          "name": "docNumbers",
+          "target": "docNumbers"
+        },
+        {
+          "pattern": "docNumbersNew",
+          "name": "docNumbersNew",
+          "target": "docNumbersNew"
+        },
+        {
+          "pattern": "docNumbersEdit/{id}",
+          "name": "docNumbersEdit",
+          "target": "docNumbersEdit"
         }
 			],
 			"targets": {
@@ -486,22 +501,22 @@
 					"name": "siagrob1.view.armazem.Edit",
           "clearControlAggregation": true
 				},
-        "lotesArmazenagem": {
-					"id": "lotesArmazenagem",
+        "storageAddresses": {
+					"id": "storageAddresses",
           "level": 1,
-					"name": "siagrob1.view.loteArmazenagem.Main",
+					"name": "siagrob1.view.storageAddresses.Main",
           "clearControlAggregation": true
 				},
-        "lotesArmazenagemNew": {
-					"id": "lotesArmazenagemNew",
+        "storageAddressesNew": {
+					"id": "storageAddressesNew",
           "level": 2,
-					"name": "siagrob1.view.loteArmazenagem.Add",
+					"name": "siagrob1.view.storageAddresses.Add",
           "clearControlAggregation": true
 				},
-        "lotesArmazenagemEdit": {
-					"id": "lotesArmazenagemEdit",
+        "storageAddressesEdit": {
+					"id": "storageAddressesEdit",
           "level": 2,
-					"name": "siagrob1.view.loteArmazenagem.Edit",
+					"name": "siagrob1.view.storageAddresses.Edit",
           "clearControlAggregation": true
 				},
         "safras": {
@@ -814,6 +829,24 @@
 					"id": "branchsEdit",
           "level": 2,
 					"name": "siagrob1.view.branchs.Edit",
+          "clearControlAggregation": true
+				},
+        "docNumbers": {
+					"id": "docNumbers",
+          "level": 1,
+					"name": "siagrob1.view.docNumbers.Main",
+          "clearControlAggregation": true
+				},
+        "docNumbersNew": {
+					"id": "docNumbersNew",
+          "level": 2,
+					"name": "siagrob1.view.docNumbers.Add",
+          "clearControlAggregation": true
+				},
+        "docNumbersEdit": {
+					"id": "docNumbersEdit",
+          "level": 2,
+					"name": "siagrob1.view.docNumbers.Edit",
           "clearControlAggregation": true
 				}
 			}
