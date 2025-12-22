@@ -49,11 +49,11 @@
 					<OverflowToolbar >
             <Title text="Documentos de Saída" />
 						<ToolbarSpacer />
-						<Button type="Transparent" text="Copiar" press=".onCopy"/>
+						<!-- <Button type="Transparent" text="Copiar" press=".onCopy"/>
 						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
-						<Button type="Transparent" text="Criar" press=".onCreate"/>
+						<Button type="Transparent" text="Criar" press=".onCreate"/> -->
 						<Button type="Transparent" text="Cancelar" press=".onCancel"/>
-						<Button type="Transparent" text="Deletar" press=".onDelete"/>
+						<!-- <Button type="Transparent" text="Deletar" press=".onDelete"/> -->
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>
@@ -66,6 +66,19 @@
 							<Text text="{Key}" wrapping="false"/>
 						</t:template>
 					</t:Column>
+          <t:Column 
+            filterProperty="BranchCode"
+            width="6rem"
+            sortProperty="Code"
+          >
+            <Label text="Filial" />
+            <t:template>
+              <Text
+                text="{BranchCode}"
+                wrapping="false"
+              />
+            </t:template>
+          </t:Column>
           <t:Column
 						label="Numero"
 						sortProperty="InvoiceNumber"

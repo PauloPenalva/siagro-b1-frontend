@@ -62,6 +62,15 @@
 							<Text text="{Key}" wrapping="false"/>
 						</t:template>
 					</t:Column>
+          <t:Column
+						label="Filial"
+						sortProperty="BranchCode"
+            width="5rem"
+						>
+						<t:template>
+							<Text text="{BranchCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
           <!-- <t:Column
 						label="Status"
 						sortProperty="Status"

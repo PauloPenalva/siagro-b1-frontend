@@ -9,8 +9,41 @@
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-	<Page title="Tickets de Pesagem">
+	<Page title="Tickets de Pesagem" busy="{ui>/busy}" busyIndicatorDelay="0">
 		<content>
+      <IconTabBar 
+        class="sapUiResponsiveContentPadding"
+        expanded="true"
+        expandable="false"
+        select=".onFilterSelect">
+        <items>
+          <IconTabFilter
+            icon="sap-icon://begin"
+            iconColor="Positive"
+            count="0"
+            text="1ª Pesagem"
+            key="FirstWeighing"
+            />
+          <IconTabFilter
+            icon="sap-icon://begin"
+            iconColor="Positive"
+            count="0"
+            text="2ª Pesagem"
+            key="SecondWeighing" />
+          <IconTabFilter
+            icon="sap-icon://compare"
+            iconColor="Critical"
+            count="0"
+            text="Classificar"
+            key="QualityDetails" />
+          <IconTabFilter
+            icon="sap-icon://inventory"
+            iconColor="Negative"
+            count="0"
+            text="Romaneio"
+            key="WarehouseMovement" />
+        </items>
+      </IconTabBar>
       <t:Table
 				id="tableWeighTickets"
 				busyIndicatorDelay="0"
@@ -26,8 +59,9 @@
 			>
 				<t:extension>
 					<OverflowToolbar >
+            <SearchField placeholder="Pesquisar..." width="30%" search=".onSearch"/>
+            <ToolbarSpacer />
             <Button text="Incluir" icon="sap-icon://add" type="Emphasized" press=".onCreate"/>
-            <Button text="Editar" icon="sap-icon://edit" press=".onEdit"/>
             <Button text="Deletar" icon="sap-icon://delete" press=".onDelete"/>
             <MenuButton text="Outras Ações" icon="sap-icon://manager-insight">
               <menu>
@@ -36,73 +70,42 @@
                   <MenuItem text="1ª Pesagem" icon="sap-icon://inventory" press=".openFirstWeighing"/>
                   <MenuItem text="2ª Pesagem" icon="sap-icon://inventory" press=".openSecondWeighing"/>
                   <MenuItem text="Classificar" icon="sap-icon://quality-issue" press=""/>
-                  <MenuItem startsSection="true" text="Gerar Romaneio" icon="sap-icon://add-document" press=""/>
+                  <MenuItem startsSection="true" text="Gerar Romaneio" icon="sap-icon://add-document" press=".onConfirm"/>
                 </Menu>
               </menu>
             </MenuButton>
-            <ToolbarSpacer />
-           	<SearchField placeholder="Pesquisar..." width="30%" search=".onSearch"/>
 					</OverflowToolbar>
-          <IconTabBar 
-            class="sapUiResponsiveContentPadding"
-            select=".onFilterSelect">
-            <items>
-              <IconTabFilter
-                icon="sap-icon://begin"
-                iconColor="Positive"
-                count="0"
-                text="1ª Pesagem"
-                key="FirstWeighing"
-                />
-              <IconTabFilter
-                icon="sap-icon://begin"
-                iconColor="Positive"
-                count="0"
-                text="2ª Pesagem"
-                key="SecondWeighing" />
-              <IconTabFilter
-                icon="sap-icon://compare"
-                iconColor="Critical"
-                count="0"
-                text="Classificar"
-                key="QualityDetails" />
-              <IconTabFilter
-                icon="sap-icon://inventory"
-                iconColor="Negative"
-                count="0"
-                text="Romaneio"
-                key="WarehouseMovement" />
-            </items>
-          </IconTabBar>
 				</t:extension>
 				<t:columns>
 					<t:Column
 						label="Filial"
-						sortProperty="BranchKey"
-						filterProperty="BranchKey"
+						sortProperty="BrancCode"
+						filterProperty="BrancCode"
+            width="5rem"
 						>
 						<t:template>
-							<Text text="{BranchKey}" />
+							<Text text="{BranchCode}" />
 						</t:template>
 					</t:Column>
 					<t:Column
 						label="Codigo"
-						sortProperty="Key"
-						filterProperty="Key"
-            width="5rem"
+						sortProperty="Code"
+						filterProperty="Code"
+            width="10rem"
 						>
 						<t:template>
-							<Text text="{Key}" wrapping="false"/>
+							<Text text="{Code}" wrapping="false"/>
 						</t:template>
 					</t:Column>
 					<t:Column
 						label="Operação"
-						sortProperty="Operation"
-						filterProperty="Operation"
+						sortProperty="Type"
+						filterProperty="Type"
 						>
 						<t:template>
 							<Text text="{
-                path: 'Operation',
+                path: 'Type',
+                targetType: 'any',
                 formatter: '.formatter.formatOperation'
               }" />
 						</t:template>
@@ -148,23 +151,23 @@
 					</t:Column>
 					<t:Column
 						label="Veiculo"
-						sortProperty="TruckKey"
-						filterProperty="TruckKey"
+						sortProperty="TruckCode"
+						filterProperty="TruckCode"
 						>
 						<t:template>
 							<Text
-                text="{TruckKey}"
+                text="{TruckCode}"
             />
 						</t:template>
 					</t:Column>
 					<t:Column
 						label="Motorista"
-						sortProperty="TruckDriverKey"
-						filterProperty="TruckDriverKey"
+						sortProperty="TruckDriverCode"
+						filterProperty="TruckDriverCode"
 						>
 						<t:template>
 							<Text
-                text="{TruckDriverKey}"
+                text="{TruckDriverCode}"
             />
 						</t:template>
 					</t:Column>
@@ -172,10 +175,11 @@
 						label="1ª Pesagem"
 						sortProperty="FirstWeighValue"
 						filterProperty="FirstWeighValue"
+            hAlign="End"
 						>
 						<t:template>
 							<Text
-                text="{FirstWeighValue}"
+                text="{FirstWeighValue} KG"
             />
 						</t:template>
 					</t:Column>
@@ -183,10 +187,11 @@
 						label="2ª Pesagem"
 						sortProperty="SecondWeighValue"
 						filterProperty="SecondWeighValue"
+            hAlign="End"
 						>
 						<t:template>
 							<Text
-                text="{SecondWeighValue}"
+                text="{SecondWeighValue} KG"
             />
 						</t:template>
 					</t:Column>
@@ -194,10 +199,11 @@
 						label="Peso Bruto"
 						sortProperty="GrossWeight"
 						filterProperty="GrossWeight"
+            hAlign="End"
 						>
 						<t:template>
 							<Text
-                text="{GrossWeight}"
+                text="{GrossWeight} KG"
             />
 						</t:template>
 					</t:Column>

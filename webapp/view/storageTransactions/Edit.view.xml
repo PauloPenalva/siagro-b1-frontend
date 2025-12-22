@@ -29,7 +29,7 @@
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>
     <uxap:headerContent>
-			<ObjectIdentifier title="{DocType/Serie} {Code}"/>
+			<ObjectIdentifier title="{Code}"/>
    	</uxap:headerContent> 
     <uxap:sections>
       <uxap:ObjectPageSection titleUppercase="false" title="Dados do Romaneio">

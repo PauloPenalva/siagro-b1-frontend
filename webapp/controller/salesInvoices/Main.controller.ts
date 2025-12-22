@@ -162,16 +162,21 @@ export default class Main extends BaseController {
     (oTable.getBinding("rows") as ODataListBinding).refresh();
   }
  
-  onCancel() {
+  async onCancel() {
     const table = this.byId("tableSalesInvoices") as Table;
-    const selectedInvoice = table.getSelectedIndex();
-    if (!selectedInvoice){
+    const selectedInvoice = table.getSelectedIndices();
+    if (selectedInvoice.length == 0){
       MessageBox.warning("Selecione um registro.")
       throw new Error("Selecione um registro");
     }
 
-    if (DialogHelper.confirmDialog("Cancelar Documento de Saída ?")) {
-      const ctx = table.getContextByIndex(selectedInvoice);
+    if (selectedInvoice.length > 1){
+      MessageBox.warning("Selecione apenas um registro.")
+      throw new Error("Selecione apenas um registro.");
+    }
+
+    if (await DialogHelper.confirmDialog("Cancelar Documento de Saída ?")) {
+      const ctx = table.getContextByIndex(selectedInvoice[0]);
       const oModel = this.getModel() as ODataModel;
       const action = oModel.bindContext("/SalesInvoicesCancel(...)");
       action.setParameter("Key", ctx.getProperty("Key"));

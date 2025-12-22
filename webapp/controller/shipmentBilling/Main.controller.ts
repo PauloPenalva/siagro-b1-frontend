@@ -9,7 +9,6 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import Fragment from "sap/ui/core/Fragment";
-import Input from "sap/m/Input";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageToast from "sap/m/MessageToast";
@@ -166,6 +165,13 @@ export default class Main extends BaseController {
       new Filter("ItemCode", FilterOperator.EQ, transactions[0]?.ItemCode)
     ]);
 
+    // const contexts = (contractsBinding.getContexts() as Context[]).map(ctx =>{
+    //   const availableVolume =  +ctx.getProperty("AvaiableVolume");
+    //   if (availableVolume > 0) {
+    //     return ctx;
+    //   }
+    // });
+    
     contractsBinding.refresh();
     this._billingDialog?.open();
   }
@@ -243,6 +249,7 @@ export default class Main extends BaseController {
       if (confirm) {
 
         const salesInvoice: any = {
+          BranchCode: contract?.BranchCode,
           CardCode: contract?.CardCode,
           GrossWeight: +billing?.Volume,
           NetWeight: +billing?.Volume,

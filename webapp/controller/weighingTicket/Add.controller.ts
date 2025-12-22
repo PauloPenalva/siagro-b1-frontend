@@ -2,6 +2,7 @@ import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import GenericController from "./GenericController";
+import JSONModel from "sap/ui/model/json/JSONModel";
 
 /**
  * @namespace siagrob1.controller.weighinTicket
@@ -15,6 +16,9 @@ export default class Add extends GenericController {
 		
     this.clearStates("formCreateWeighingTicket");
     
+    const uiModel = this.getModel("ui") as JSONModel;
+    uiModel.setProperty("/showField", false);
+
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;
 		const oBinding = oModel.bindList("/WeighingTickets")
@@ -23,7 +27,9 @@ export default class Add extends GenericController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const oContext = oBinding.create({}, false, false, false);
+		const oContext = oBinding.create({
+      "Type": ""
+    }, false, false, false);
 
 		oView.setBindingContext(oContext);
 	}

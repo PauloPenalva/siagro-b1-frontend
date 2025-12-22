@@ -48,6 +48,21 @@
               </layoutData>
             </Select>
             <Input value="{Code}" editable="false" />
+            <Label text="Filial"/>
+            <Select 
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{BranchCode}"
+              items="{
+                path: '/Branchs',
+                sorter: { 
+                  path: 'Code'
+                }
+              }"
+              >
+              <core:ListItem key="{Code}" text="{BranchName}" additionalText="{Code}"/>
+            </Select>
             <Label text="Moeda Standard"/>
             <Select 
               editable="{ui>/editable}"

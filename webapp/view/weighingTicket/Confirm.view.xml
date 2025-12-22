@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.veiculo.Edit"
+	controllerName="siagrob1.controller.weighingTicket.Confirm"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -10,10 +10,10 @@
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-	<Page title="Veiculo" busy="{ui>/busy}">
+	<Page title="Ticket de Pesagem - Criar Romaneio" busy="{ui>/busy}" busyIndicatorDelay="0">
 		<content>
 
-			<core:Fragment fragmentName="siagrob1.view.veiculo.fragments.Form" type="XML" />
+			<core:Fragment fragmentName="siagrob1.view.weighingTicket.fragments.Form" type="XML" />
 
 		</content>
 		<footer>

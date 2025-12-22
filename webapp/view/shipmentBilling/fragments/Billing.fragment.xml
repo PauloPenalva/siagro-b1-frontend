@@ -248,7 +248,10 @@
 				path: '/SalesContracts',
         sorter: {
 					path: 'Code'
-				}
+				},
+        parameters: {
+          $filter: 'Status eq \'Approved\''
+        }
 			}"
 		>
 			<t:toolbar>
@@ -258,6 +261,19 @@
 				</Toolbar>
 			</t:toolbar>
 			<t:columns>
+        <t:Column 
+          filterProperty="BranchCode"
+					width="6rem"
+					sortProperty="Code"
+				>
+					<Label text="Filial" />
+					<t:template>
+						<Text
+							text="{BranchCode}"
+							wrapping="false"
+						/>
+					</t:template>
+				</t:Column>
 				<t:Column 
           filterProperty="Code"
 					width="6rem"

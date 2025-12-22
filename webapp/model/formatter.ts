@@ -101,16 +101,11 @@ export default {
   },
   
   formatOperation: (value: string) => {
-    switch (value){
-      case "IN":
-        return "ENTRADA"
-      case "OUT":
-        return "SAIDA"
-      case "NONE":
-        return "PESAGEM"
-      default:
-        return ""
-    }
+   const m = new Map<string, string>();
+    m.set("Receipt", "Entrada");
+    m.set("Shipment", "Saída");
+    
+    return m.get(value);
   },
 
   formatWarehouseType: (value: string) => {

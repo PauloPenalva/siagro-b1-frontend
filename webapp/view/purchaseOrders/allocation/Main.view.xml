@@ -64,6 +64,15 @@
 						</t:template>
 					</t:Column>
           <t:Column
+						label="Filial"
+						sortProperty="BranchCode"
+            width="5rem"
+						>
+						<t:template>
+							<Text text="{BranchCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
 						label="Status"
 						sortProperty="TransactionStatus"
             hAlign="Center"
@@ -82,15 +91,6 @@
                   targetType: 'any', 
                   formatter: '.formatter.formatStorageTransactionStatus' 
                 }"/>
-						</t:template>
-					</t:Column>
-          <t:Column
-						label="Tipo Doc"
-						sortProperty="DocType"
-            width="10rem"
-						>
-						<t:template>
-							<Text text="{DocTypeCode}" wrapping="false"/>
 						</t:template>
 					</t:Column>
           <t:Column
@@ -142,7 +142,7 @@
 						</t:template>
 					</t:Column>
           <t:Column
-						label="Nota Fiscal"
+						label="Documento"
 						sortProperty="InvoiceNumber"
             width="7rem"
 						>
@@ -151,7 +151,7 @@
 						</t:template>
 					</t:Column>
           <t:Column
-						label="Qtd. Nota Fiscal"
+						label="Qtd. Documento"
 						sortProperty="InvoiceQty"
             hAlign="End"
             width="10rem"

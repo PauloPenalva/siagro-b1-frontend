@@ -58,7 +58,7 @@ export default abstract class CommonController extends BaseController {
   }
 
   openProcessingCostsListValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "ProcessingCostsListSelectDialog.", ['Code', 'Description'])
+    DialogHelper.openTableSelectDialog(this, "ProcessingCostsListSelectDialog", ['Code', 'Description'])
       .then((oContext: Context) => {
         const value = oContext.getProperty("Code") as string;
         ev.getSource().setValue(value);

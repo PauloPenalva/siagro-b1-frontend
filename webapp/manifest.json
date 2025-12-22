@@ -220,6 +220,11 @@
           "target": "weighingTicketsNew"
         },
         {
+          "pattern": "weighingTicketsConfirm/{id}",
+          "name": "weighingTicketsConfirm",
+          "target": "weighingTicketsConfirm"
+        },
+        {
           "pattern": "purchaseContracts",
           "name": "purchaseContracts",
           "target": "purchaseContracts"
@@ -583,6 +588,12 @@
 					"id": "weighingTicketsNew",
           "level": 2,
 					"name": "siagrob1.view.weighingTicket.Add",
+          "clearControlAggregation": true
+				},
+        "weighingTicketsConfirm": {
+					"id": "weighingTicketsConfirm",
+          "level": 2,
+					"name": "siagrob1.view.weighingTicket.Confirm",
           "clearControlAggregation": true
 				},
         "purchaseContracts": {

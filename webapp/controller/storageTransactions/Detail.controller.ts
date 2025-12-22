@@ -2,6 +2,9 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/odata/v4/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { BaseController } from "./BaseController";
+import ODataModel from "sap/ui/model/odata/v4/ODataModel";
+import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import MessageToast from "sap/m/MessageToast";
 
 /**
  * @namespace siagrob1.controller.storageTransactions
@@ -38,5 +41,29 @@ export default class Detail extends BaseController {
 
   navToStorageTransactionsList() {
     this.navTo("storageTransactions");
+  }
+
+  async onReject() {
+    const oContext = this.getView().getBindingContext() as Context;
+    if (!oContext) {
+      throw new Error("");
+    }
+
+    if (await DialogHelper.confirmDialog("Cancelar o romaneio ?")) {
+
+      const model = this.getModel() as ODataModel;
+      const action = model.bindContext("/StorageTransactionsCancel(...)");
+      action.setParameter("Key", oContext.getProperty("Key"));
+
+      this.setBusy(true);
+      void action.invoke()
+        .then(() => {
+          MessageToast.show("Romaneio cancelado com sucesso.");
+          this.navToStorageTransactionsList()
+        })
+        .finally(()=> this.setBusy(false))
+    }
+
+
   }
 }

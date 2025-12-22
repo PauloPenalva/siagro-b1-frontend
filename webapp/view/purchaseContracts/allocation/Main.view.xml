@@ -64,11 +64,12 @@
 						</t:template>
 					</t:Column>
           <t:Column
-						label="Tipo Doc."
-						width="10rem"
+						label="Filial Ctr."
+						sortProperty="PurchaseContract/BranchCode"
+            width="5rem"
 						>
 						<t:template>
-							<Text text="{PurchaseContract/DocType/Name}" wrapping="false"/>
+							<Text text="{PurchaseContract/BranchCode}" wrapping="false"/>
 						</t:template>
 					</t:Column>
           <t:Column
@@ -119,6 +120,15 @@
 						>
 						<t:template>
             <Text text="{PurchaseContract/ItemName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Filial Rom."
+						sortProperty="StorageTransaction/BranchCode"
+            width="5rem"
+						>
+						<t:template>
+							<Text text="{StorageTransaction/BranchCode}" wrapping="false"/>
 						</t:template>
 					</t:Column>
           <t:Column
@@ -205,7 +215,7 @@
 						</t:template>
 					</t:Column>
           <t:Column
-						label="Nota Fiscal"
+						label="Documento"
 						sortProperty="StorageTransaction/InvoiceNumber"
             width="10rem"
 						>
@@ -214,7 +224,7 @@
 						</t:template>
 					</t:Column>
           <t:Column
-						label="Qtd.Nota Fiscal"
+						label="Qtd.Documento"
 						width="10rem"
             hAlign="End"
 						>

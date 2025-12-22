@@ -32,14 +32,42 @@
                 text="Dados do Romaneio"
                 emphasized="true"
             />
-            <Label text="Tipo Documento"/>
-            <Input
+           <Label text="Codigo"/>
+            <Select 
               editable="{ui>/editable}"
-              showValueHelp="true"
-              valueHelpOnly="true"
-              valueHelpRequest=".openDocTypesValueHelp"
+              forceSelection="false"
               required="true"
-              value="{DocTypeCode}"/>
+              selectedKey="{DocNumberKey}"
+              items="{
+                path: '/DocNumbers',
+                parameters:{
+                  $filter: 'TransactionCode eq \'StorageTransaction\''
+                }
+              }"
+              >
+              <core:ListItem key="{Key}" text="{Name}"/>
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Select>
+            <Input value="{Code}" editable="false" />
+
+            <Label text="Filial"/>
+            <Select 
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{BranchCode}"
+              items="{
+                path: '/Branchs',
+                sorter: { 
+                  path: 'Code'
+                }
+              }"
+              >
+              <core:ListItem key="{Code}" text="{BranchName}" additionalText="{Code}"/>
+            </Select>
+            
             <Label text="Tipo de romaneio"/>
             <Select 
               editable="{ui>/editable}"

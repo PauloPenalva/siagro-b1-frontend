@@ -24,7 +24,7 @@
             id="inputFirstWeigh" 
             visible="{ui>/firstWeighValueVisible}"
             value="{
-              path: 'FirstWeighValue',
+              path: 'viewModel>/FirstWeighValue',
               type: 'sap.ui.model.odata.type.Int32'
             }" 
             textAlign="Center" />
@@ -41,7 +41,7 @@
             id="inputSecondWeigh" 
             visible="{ui>/secondWeighValueVisible}"
             value="{
-              path: 'SecondWeighValue',
+              path: 'viewModel>/SecondWeighValue',
               type: 'sap.ui.model.odata.type.Int32'
             }" 
             textAlign="Center" />
@@ -53,8 +53,9 @@
         </f:content>
       </f:SimpleForm>
       <buttons>
-        <Button text="Confirmar" type="Emphasized" press="onSaveDlg"/>
-        <Button text="Fechar" press="onCloseDlg" />
+        <Button text="Confirmar" type="Emphasized" visible="{ui>/firstWeighValueVisible}" press=".onSaveFirstWeighValue"/>
+        <Button text="Confirmar" type="Emphasized" visible="{ui>/secondWeighValueVisible}" press=".onSaveSecondWeighValue"/>
+        <Button text="Fechar" press=".onCloseDlg" />
       </buttons>
   </Dialog>
 </core:FragmentDefinition>

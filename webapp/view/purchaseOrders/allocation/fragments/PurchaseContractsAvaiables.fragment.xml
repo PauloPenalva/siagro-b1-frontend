@@ -60,6 +60,15 @@
           </t:template>
         </t:Column>
         <t:Column
+						label="Filial"
+						sortProperty="BranchCode"
+            width="5rem"
+						>
+						<t:template>
+							<Text text="{BranchCode}" wrapping="false"/>
+						</t:template>
+				</t:Column>
+        <t:Column
           label="Codigo"
           sortProperty="Code"
           width="10rem"

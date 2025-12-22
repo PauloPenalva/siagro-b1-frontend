@@ -67,6 +67,15 @@
 						</t:template>
 					</t:Column>
           <t:Column
+						label="Filial"
+						sortProperty="BranchCode"
+            width="5rem"
+						>
+						<t:template>
+							<Text text="{BranchCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
 						label="Status"
 						sortProperty="TransactionStatus"
             hAlign="Center"
@@ -85,15 +94,6 @@
                   targetType: 'any', 
                   formatter: '.formatter.formatStorageTransactionStatus' 
                 }"/>
-						</t:template>
-					</t:Column>
-          <t:Column
-						label="Tipo Doc"
-						sortProperty="DocType"
-            width="10rem"
-						>
-						<t:template>
-							<Text text="{DocTypeCode}" wrapping="false"/>
 						</t:template>
 					</t:Column>
           <t:Column
