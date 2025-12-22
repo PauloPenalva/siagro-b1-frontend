@@ -56,7 +56,7 @@
 							<Text text="{Code}" wrapping="false"/>
 						</t:template>
 					</t:Column>
-					<t:Column
+					<!-- <t:Column
 						label="Tipo Propriedade"
 						sortProperty="OwnershipType"
 						filterProperty="OwnershipType"
@@ -69,7 +69,7 @@
                 targetType: 'any'
               }" wrapping="false"/>
 						</t:template>
-					</t:Column>
+					</t:Column> -->
 					<t:Column
 						label="Data"
 						sortProperty="CreationDate"

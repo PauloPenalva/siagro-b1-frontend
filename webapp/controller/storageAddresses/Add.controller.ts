@@ -8,7 +8,7 @@ import LoteArmazenagemBaseController from "./LoteArmazenagemBaseController";
  */
 export default class Add extends LoteArmazenagemBaseController {
 
-	onInit(): void | undefined {
+	onInit(): void  {
 		this.getRouter().getRoute("storageAddressesNew").attachPatternMatched(() => this.newRouteMatched());
 	}
 	private newRouteMatched() {
@@ -23,7 +23,9 @@ export default class Add extends LoteArmazenagemBaseController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const oContext = oBinding.create({}, false, false, false);
+		const oContext = oBinding.create({
+      DocNumberKey: ""
+    }, false, false, false);
 
 		oView.setBindingContext(oContext);
 	}
