@@ -51,6 +51,27 @@
 							<Text text="{BranchName}" />
 						</t:template>
 					</t:Column>
+					<t:Column
+						label="Nome Curto"
+						sortProperty="ShortName"
+						filterProperty="ShortName"
+						>
+						<t:template>
+							<Text text="{ShortName}" />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="CNPJ"
+						sortProperty="TaxId"
+						filterProperty="TaxId"
+						>
+						<t:template>
+							<Text text="{
+                path: 'TaxId',
+                formatter: '.formatter.formatCnpj'
+              }" />
+						</t:template>
+					</t:Column>
 				</t:columns>
 
 			</t:Table>

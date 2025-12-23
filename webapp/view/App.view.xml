@@ -28,6 +28,7 @@
                   <Menu>
                     <MenuItem text="Estados" key="states" press=".onItemPressed"/>
                     <MenuItem text="Filiais" key="branchs" press=".onItemPressed"/>
+                    <MenuItem text="Unidades de Medida" key="unitMeasure" press=".onItemPressed"/>
                     <MenuItem text="Numeração de Documentos" key="docNumbers" press=".onItemPressed"/>
                     <MenuItem text="Parceiros de Negócio" key="parceirosNegocio" press=".onItemPressed"/>
                     <MenuItem text="Representantes" key="agents" press=".onItemPressed"/>
@@ -38,6 +39,8 @@
                     <MenuItem text="Armazéns" key="armazens" press=".onItemPressed"/>
                     <MenuItem text="Regiões Logistica" key="logisticRegions" press=".onItemPressed"/>
                     <MenuItem text="Tributos/Impostos" key="taxes" press=".onItemPressed"/>
+                    <MenuItem text="Serviços de Armazenagem" key="processingServices" press=".onItemPressed"/>
+                    <MenuItem text="Atributos Qualitativos" key="qualityAttribs" press=".onItemPressed"/>
                     <MenuItem text="Tabela de Custos de Beneficiamento" key="processingCostsList" press=".onItemPressed"/>
                     <MenuItem text="Lotes de Armazenagem" key="storageAddresses" press=".onItemPressed"/>
                     <MenuItem text="Tickets de Pesagem" key="weighingTickets" press=".onItemPressed"/>

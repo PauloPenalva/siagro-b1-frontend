@@ -65,11 +65,11 @@
 					</t:Column>
           <t:Column
 						label="Filial Ctr."
-						sortProperty="PurchaseContract/BranchCode"
+						sortProperty="PurchaseContract/Branch/ShortName"
             width="5rem"
 						>
 						<t:template>
-							<Text text="{PurchaseContract/BranchCode}" wrapping="false"/>
+							<Text text="{PurchaseContract/Branch/ShortName}" wrapping="false"/>
 						</t:template>
 					</t:Column>
           <t:Column
@@ -124,11 +124,11 @@
 					</t:Column>
           <t:Column
 						label="Filial Rom."
-						sortProperty="StorageTransaction/BranchCode"
+						sortProperty="StorageTransaction/Branch/ShortName"
             width="5rem"
 						>
 						<t:template>
-							<Text text="{StorageTransaction/BranchCode}" wrapping="false"/>
+							<Text text="{StorageTransaction/Branch/ShortName}" wrapping="false"/>
 						</t:template>
 					</t:Column>
           <t:Column

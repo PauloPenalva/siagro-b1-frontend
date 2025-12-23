@@ -67,11 +67,11 @@
 					</t:Column>
           <t:Column
 						label="Filial"
-						sortProperty="BranchCode"
+						sortProperty="Branch/ShortName"
             width="5rem"
 						>
 						<t:template>
-							<Text text="{BranchCode}" wrapping="false"/>
+							<Text text="{Branch/ShortName}" wrapping="false"/>
 						</t:template>
 					</t:Column>
           <t:Column

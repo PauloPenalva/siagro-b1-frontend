@@ -64,7 +64,7 @@
                 }
               }"
               >
-              <core:ListItem key="{Code}" text="{BranchName}" additionalText="{Code}"/>
+              <core:ListItem key="{Code}" text="{ShortName}" additionalText="{Code}"/>
             </Select>
             
             <Label text="Tipo de romaneio"/>

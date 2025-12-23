@@ -4,17 +4,13 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import GenericController from "./GenericController";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import { ui } from "sap/ushell/library";
-import Select from "sap/m/Select";
-import Filter from "sap/ui/model/Filter";
-import FilterOperator from "sap/ui/model/FilterOperator";
-import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
+import DialogHelper from "siagrob1/dialogs/DialogHelper";
 
 
 /**
  * @namespace siagrob1.controller.weighingTicket
  */
-export default class Edit extends GenericController {
+export default class Confirm extends GenericController {
 
 	onInit(): void | undefined {	
 		this.getRouter().getRoute("weighingTicketsConfirm").attachPatternMatched((ev) => this.routeMatched(ev));
@@ -35,33 +31,8 @@ export default class Edit extends GenericController {
 
 		const {id} = ev.getParameter("arguments") as {id: string | null};
 		if (id != null) {
-      
       const sPath = `/WeighingTickets(${id})`;
-      this.getView().bindElement({
-        path: sPath,
-        events: {
-          dataRequested: () => this.setBusy(true), 
-          dataReceived: () => { 
-            const context = this.getView().getBindingContext();
-			
-            const select = this.byId("selectStorageAddress") as Select;
-            const selectBinding = select.getBinding("items") as ODataListBinding;
-            const filter = new Filter({
-              filters: [
-                new Filter("CardCode", FilterOperator.EQ, context.getProperty("CardCode")),
-                new Filter("ItemCode", FilterOperator.EQ, context.getProperty("ItemCode")),
-              ]
-            });
-
-            selectBinding.filter([filter]); 
-            selectBinding.refresh();     
-            
-            this.setBusy(false) 
-          },
-        }
-      })
-      
-
+      this.bindElement(sPath);
 			return;
 		}
 
@@ -72,20 +43,40 @@ export default class Edit extends GenericController {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }
+
+    if (!await DialogHelper.confirmDialog("Criar romaneio ?")){
+      return;
+    }
     
-    const oModel = this.getView().getModel() as ODataModel;
-		try {
-			this.setBusy(true);
-			await oModel.submitBatch(oModel.getUpdateGroupId());
-			if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
-				oModel.resetChanges(oModel.getUpdateGroupId())
-				MessageToast.show("Dados atualizados com sucesso.", {
-					closeOnBrowserNavigation: false
-				});
-			}
-		} finally {
-			this.setBusy(false);
-		}
+    const context = this.getView().getBindingContext();
+
+    const payload = context.getObject() as any;
+    delete payload["@odata.context"];
+    delete payload["GrossWeight"];
+
+    const qualityInspections = payload.QualityInspections.map( (x: any) => { 
+      return {
+        Key: x.Key,
+        Value: +x.Value, 
+        QualityAttribCode: x.QualityAttribCode
+      } 
+    });
+    payload.QualityInspections = qualityInspections;
+
+    console.log(payload);
+    
+    const model = this.getModel() as ODataModel;
+    const action = model.bindContext("/WeighingTicketsCompleted(...)")
+    action.setParameter("Key", context.getProperty("Key"));
+    action.setParameter("WeighingTicket", payload);
+
+    this.setBusy(true);
+    void action.invoke()
+      .then(() => {
+          MessageToast.show("Romaneio criado com sucesso.");
+          this.onNavBack();
+      })
+      .finally(() => this.setBusy(false))
 		
 	}
 

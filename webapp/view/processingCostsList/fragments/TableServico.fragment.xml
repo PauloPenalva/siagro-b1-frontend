@@ -16,7 +16,14 @@
 				visibleRowCount="15"
 				visibleRowCountMode="Fixed"
 				busyIndicatorDelay="0"
-				rows="{ServiceDetails}"
+				rows="{
+          path: 'ServiceDetails',
+          sorter:[
+            {
+              path: 'ProcessingServiceCode'
+            }
+          ]
+        }"
 				visible="true">
 				<t:extension>
 					<OverflowToolbar >

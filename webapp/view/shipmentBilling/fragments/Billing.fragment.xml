@@ -262,14 +262,14 @@
 			</t:toolbar>
 			<t:columns>
         <t:Column 
-          filterProperty="BranchCode"
+          filterProperty="Branch/ShortName"
 					width="6rem"
-					sortProperty="Code"
+					sortProperty="Branch/ShortName"
 				>
 					<Label text="Filial" />
 					<t:template>
 						<Text
-							text="{BranchCode}"
+							text="{Branch/ShortName}"
 							wrapping="false"
 						/>
 					</t:template>

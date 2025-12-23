@@ -443,6 +443,52 @@
           "pattern": "docNumbersEdit/{id}",
           "name": "docNumbersEdit",
           "target": "docNumbersEdit"
+        },
+        {
+          "pattern": "processingServices",
+          "name": "processingServices",
+          "target": "processingServices"
+        },
+        {
+          "pattern": "processingServicesNew",
+          "name": "processingServicesNew",
+          "target": "processingServicesNew"
+        },
+        {
+          "pattern": "processingServicesEdit/{id}",
+          "name": "processingServicesEdit",
+          "target": "processingServicesEdit"
+        },
+        {
+          "pattern": "qualityAttribs",
+          "name": "qualityAttribs",
+          "target": "qualityAttribs"
+        },
+        {
+          "pattern": "qualityAttribsNew",
+          "name": "qualityAttribsNew",
+          "target": "qualityAttribsNew"
+        },
+        {
+          "pattern": "qualityAttribsEdit/{id}",
+          "name": "qualityAttribsEdit",
+          "target": "qualityAttribsEdit"
+        }
+        ,
+        {
+          "pattern": "unitMeasure",
+          "name": "unitMeasure",
+          "target": "unitMeasure"
+        },
+        {
+          "pattern": "unitMeasureNew",
+          "name": "unitMeasureNew",
+          "target": "unitMeasureNew"
+        },
+        {
+          "pattern": "unitMeasureEdit/{id}",
+          "name": "unitMeasureEdit",
+          "target": "unitMeasureEdit"
         }
 			],
 			"targets": {
@@ -858,6 +904,60 @@
 					"id": "docNumbersEdit",
           "level": 2,
 					"name": "siagrob1.view.docNumbers.Edit",
+          "clearControlAggregation": true
+				},
+        "processingServices": {
+					"id": "processingServices",
+          "level": 1,
+					"name": "siagrob1.view.processingServices.Main",
+          "clearControlAggregation": true
+				},
+        "processingServicesNew": {
+					"id": "processingServicesNew",
+          "level": 2,
+					"name": "siagrob1.view.processingServices.Add",
+          "clearControlAggregation": true
+				},
+        "processingServicesEdit": {
+					"id": "processingServicesEdit",
+          "level": 2,
+					"name": "siagrob1.view.processingServices.Edit",
+          "clearControlAggregation": true
+				},
+        "qualityAttribs": {
+					"id": "qualityAttribs",
+          "level": 1,
+					"name": "siagrob1.view.qualityAttribs.Main",
+          "clearControlAggregation": true
+				},
+        "qualityAttribsNew": {
+					"id": "qualityAttribsNew",
+          "level": 2,
+					"name": "siagrob1.view.qualityAttribs.Add",
+          "clearControlAggregation": true
+				},
+        "qualityAttribsEdit": {
+					"id": "qualityAttribsEdit",
+          "level": 2,
+					"name": "siagrob1.view.qualityAttribs.Edit",
+          "clearControlAggregation": true
+				},
+        "unitMeasure": {
+					"id": "unitMeasure",
+          "level": 1,
+					"name": "siagrob1.view.unitMeasure.Main",
+          "clearControlAggregation": true
+				},
+        "unitMeasureNew": {
+					"id": "qualityAttribsNew",
+          "level": 2,
+					"name": "siagrob1.view.unitMeasure.Add",
+          "clearControlAggregation": true
+				},
+        "unitMeasureEdit": {
+					"id": "qualityAttribsEdit",
+          "level": 2,
+					"name": "siagrob1.view.unitMeasure.Edit",
           "clearControlAggregation": true
 				}
 			}

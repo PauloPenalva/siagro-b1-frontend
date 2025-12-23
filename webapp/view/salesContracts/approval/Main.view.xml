@@ -103,6 +103,9 @@
             </headerToolbar>
             <columns>
               <Column>
+                <Text text="Filial"/>
+              </Column>
+              <Column>
                 <Text text="Status"/>
               </Column>
               <Column width="30%">
@@ -133,6 +136,7 @@
                 press=".onNavigateToDetail"
               >
                 <cells>
+                  <Text text="{Branch/ShortName}" />
                   <ObjectStatus 
                     inverted="true"
                     state="{

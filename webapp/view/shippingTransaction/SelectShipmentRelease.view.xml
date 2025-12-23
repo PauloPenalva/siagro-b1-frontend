@@ -62,6 +62,9 @@
                               </headerToolbar>
                               <columns>
                                   <Column width="10rem">
+                                      <Text text="Filial" />
+                                  </Column>
+                                  <Column width="10rem">
                                       <Text text="Contrato" />
                                   </Column>
                                   <Column width="10rem">
@@ -89,6 +92,7 @@
                               <items>
                                   <ColumnListItem>
                                       <cells>
+                                          <Text text="{Branch/ShortName}"/>
                                           <ObjectIdentifier title="{PurchaseContract/Code}" />
                                           <Text text="{RowId}" />
                                           <Text text="{PurchaseContract/CardName}"/>

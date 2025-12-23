@@ -34,7 +34,7 @@ export default class EstadoValueHelp {
 							cells: [
 								new Text({ text: "{Abbreviation}" }),
 								new Text({ text: "{Name}" }),
-								new Text({ text: "{Key}" }),
+								new Text({ text: "{Code}" }),
 							],
 						}),
 					},
@@ -43,7 +43,7 @@ export default class EstadoValueHelp {
 						const filters = new Filter({
 							filters: [
 								new Filter("Abbreviation", FilterOperator.Contains, value),
-								new Filter("Key", FilterOperator.Contains, value),
+								new Filter("Code", FilterOperator.Contains, value),
 								new Filter("Name", FilterOperator.Contains, value),
 							],
 							and: false,

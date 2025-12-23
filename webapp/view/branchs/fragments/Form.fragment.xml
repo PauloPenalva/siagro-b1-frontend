@@ -42,6 +42,20 @@
               liveChange=".validateField"
               maxLength="100"
           />
+          <Label text="Nome Curto" />
+          <Input
+              value="{ShortName}"
+              editable="true"
+              required="true"
+              liveChange=".validateField"
+              maxLength="100"
+          />
+          <Label text="CNPJ" />
+          <Input
+              value="{TaxId}"
+              editable="true"
+              maxLength="14"
+          />
         </f:content>
         <core:Title />
         <core:Title />

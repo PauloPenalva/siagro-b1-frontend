@@ -14,9 +14,9 @@ export default class VeiculoBaseController extends BaseController {
       const obj = await EstadoValueHelp.open(
         "estadoValueHelp",
         this.getView()
-      );
+      ) as any;
       if (obj) {
-        ev.getSource().setValue(obj.Key);
+        ev.getSource().setValue(obj?.Code);
       }
     }
 

@@ -61,7 +61,7 @@
                 }
               }"
               >
-              <core:ListItem key="{Code}" text="{BranchName}" additionalText="{Code}"/>
+              <core:ListItem key="{Code}" text="{ShortName}" additionalText="{Code}"/>
             </Select>
           <Label text="Data" />
             <DatePicker
@@ -209,7 +209,7 @@
           <Label visible="{ui>/showField}" text="Tabela de Custos" />
           <Input 
               visible="{ui>/showField}"
-              required="true"
+              required="{ui>/showField}"
               value="{ProcessingCostCode}" 
               showValueHelp="true" 
               valueHelpOnly="true" 
@@ -227,17 +227,25 @@
               editable="false">
           </Input>
           <Label visible="{ui>/showField}" text="Lote de Armazenagem" />
-          <ComboBox 
-              id="selectStorageAddress"
-              required="true"
+          <Input 
               visible="{ui>/showField}"
-              selectedKey="{StorageAddressKey}" 
-              showSecondaryValues="true"
-              items="{
-                path: '/StorageAddresses'
-              }">
-            <core:ListItem key="{Key}" text="({Code}) {Description}" additionalText="{CardName}" />
-          </ComboBox>
+              required="{ui>/showField}"
+              value="{StorageAddressCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openStorageAddressesValueHelp">
+            <layoutData>
+                <l:GridData span="XL3 L3 M3 S4" />
+            </layoutData>
+          </Input>
+          <Input 
+              visible="{ui>/showField}"
+              value="{
+                parts: ['StorageAddressCode'], 
+                formatter: '.formatStorageAddressDescription'
+              }" 
+              editable="false">
+          </Input>
          
           <Label visible="{ui>/showField}" text="Observações"/>
           <TextArea 

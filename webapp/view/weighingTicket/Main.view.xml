@@ -79,12 +79,12 @@
 				<t:columns>
 					<t:Column
 						label="Filial"
-						sortProperty="BrancCode"
-						filterProperty="BrancCode"
-            width="5rem"
+						sortProperty="Branch/ShortName"
+						filterProperty="Branch/ShortName"
+            width="10rem"
 						>
 						<t:template>
-							<Text text="{BranchCode}" />
+							<Text text="{Branch/ShortName}" />
 						</t:template>
 					</t:Column>
 					<t:Column

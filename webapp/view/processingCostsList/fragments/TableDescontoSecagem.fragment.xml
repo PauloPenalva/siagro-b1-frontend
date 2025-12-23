@@ -16,7 +16,14 @@
         visibleRowCount="15"
         visibleRowCountMode="Fixed"
         busyIndicatorDelay="0"
-        rows="{DryingParameters}"
+        rows="{
+          path: 'DryingParameters',
+          sorter:[
+            {
+              path: 'InitialMoisture'
+            }
+          ]
+        }"
         visible="true"
     >
         <t:extension>

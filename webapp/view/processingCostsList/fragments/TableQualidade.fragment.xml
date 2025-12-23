@@ -16,7 +16,14 @@
 				visibleRowCount="15"
 				visibleRowCountMode="Fixed"
 				busyIndicatorDelay="0"
-				rows="{QualityParameters}"
+				rows="{
+          path: 'QualityParameters',
+          sorter:[
+            {
+              path: 'QualityAttribCode'
+            }
+          ]
+        }"
 				visible="true">
 				<t:extension>
 					<OverflowToolbar >

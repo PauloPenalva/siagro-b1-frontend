@@ -35,14 +35,14 @@
 				</t:extension>
 				<t:columns>
 					<t:Column
-						label="Key"
-						sortProperty="Key"
-						filterProperty="Key"
-            visible="false"
-            width="5rem"
+						label="Filial"
+						sortProperty="Branch/ShortName"
+						filterProperty="Branch/ShortName"
+            visible="true"
+            width="10rem"
 						>
 						<t:template>
-							<Text text="{Key}" wrapping="false"/>
+							<Text text="{Branch/ShortName}" wrapping="false"/>
 						</t:template>
 					</t:Column>
 					<t:Column

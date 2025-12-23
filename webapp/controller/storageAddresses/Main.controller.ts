@@ -58,7 +58,7 @@ export default class Main extends BaseController {
     }
 
     const oContext = oTable.getContextByIndex(i)
-		const sId = oContext.getProperty("Key") as string;
+		const sId = oContext.getProperty("Code") as string;
     
 		this.navTo("storageAddressesEdit", {id: sId});
 	}

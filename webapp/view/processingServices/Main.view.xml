@@ -1,0 +1,69 @@
+<mvc:View
+	controllerName="siagrob1.controller.processingServices.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<Page title="Serviços de Armazenagem">
+		<content>
+      <t:Table
+				id="processingServicesTable"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+				rows="{
+					path: '/ProcessingServices'
+				}"
+			>
+				<t:extension>
+					<OverflowToolbar >
+            <ToolbarSpacer />
+						<SearchField placeholder="Pesquisar..." width="30%" search=".onSearch"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column
+						label="Codigo"
+						sortProperty="Code"
+						filterProperty="Code"
+            visible="true"
+            width="10rem"
+						>
+						<t:template>
+							<Text text="{Code}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Descrição"
+						sortProperty="Description"
+						filterProperty="Description"
+						>
+						<t:template>
+							<Text text="{Description}" />
+						</t:template>
+					</t:Column>
+				</t:columns>
+
+			</t:Table>
+		</content>
+    <footer>
+			<OverflowToolbar>
+				<Button text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
+				<ToolbarSpacer />
+				<Button text="Incluir" icon="sap-icon://add" type="Emphasized" press=".onCreate"/>
+				<Button text="Editar" icon="sap-icon://edit" press=".onEdit"/>
+				<Button text="Deletar" icon="sap-icon://delete" press=".onDelete"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

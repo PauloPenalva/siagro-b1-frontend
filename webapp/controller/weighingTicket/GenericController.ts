@@ -11,6 +11,7 @@ import Filter from 'sap/ui/model/Filter';
 import FilterOperator from 'sap/ui/model/FilterOperator';
 import ODataListBinding from 'sap/ui/model/odata/v4/ODataListBinding';
 import { Input$ValueHelpRequestEvent } from 'sap/m/Input';
+import { QualityAttrib } from 'siagrob1/types/QualityAttrib';
 
 /**
  * @namespace siagrob1.controller.weighingTicket
@@ -39,7 +40,7 @@ export default class GenericController extends CommonController {
                   .getParameter("selectedItem")
                   .getBindingContext() as Context;
       
-        e.getSource().setValue((oContext.getProperty("Key")));
+        e.getSource().setValue((oContext.getProperty("Code")));
     });
     this.storageAddressesSelectDialog.attachSearch(ev => {
         const value = ev.getParameter("value");
@@ -119,5 +120,32 @@ export default class GenericController extends CommonController {
 
   }
 
+   async formatStorageAddressDescription(key: string){
+    if (!key){
+      return null;
+    } 
+
+    try {
+      this.setBusy(true);
+      const data = await this
+        .getResource<any>(`${this.api.storageAddresses}('${key}')`)
+      
+      return data?.Description;
+    } finally {
+      this.setBusy(false);
+    }
+
+  }
+
+  async formatQualityAttribName(key: string) {
+      if (!key) {
+        return null;
+      }
+  
+      const data = await this.getResource<QualityAttrib>(
+        `${this.api.qualityAttrib}('${key}')`
+      );
+      return data?.Name;
+    }
 
 }

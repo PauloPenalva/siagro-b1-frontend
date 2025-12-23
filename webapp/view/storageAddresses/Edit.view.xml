@@ -10,7 +10,7 @@
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-	<Page showHeader="true" title="Lote de Armazenagem" busy="{ui>/busy}">
+	<Page showHeader="true" title="Lote de Armazenagem" busy="{ui>/busy}" busyIndicatorDelay="0">
 		<content>
 			<core:Fragment fragmentName="siagrob1.view.storageAddresses.fragments.Form" type="XML" />
 		</content>

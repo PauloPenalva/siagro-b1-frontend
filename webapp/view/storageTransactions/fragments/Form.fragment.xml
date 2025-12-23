@@ -32,7 +32,7 @@
                 text="Dados do Romaneio"
                 emphasized="true"
             />
-           <Label text="Codigo"/>
+            <Label text="Codigo"/>
             <Select 
               editable="{ui>/editable}"
               forceSelection="false"
@@ -65,7 +65,7 @@
                 }
               }"
               >
-              <core:ListItem key="{Code}" text="{BranchName}" additionalText="{Code}"/>
+              <core:ListItem key="{Code}" text="{ShortName}" additionalText="{Code}"/>
             </Select>
             
             <Label text="Tipo de romaneio"/>

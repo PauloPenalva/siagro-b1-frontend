@@ -25,7 +25,7 @@ export default class Edit extends LoteArmazenagemBaseController {
 
 		const {id} = ev.getParameter("arguments") as {id: string | null};
 		if (id != null) {
-			const sPath = `/StorageAddresses(${id})`;
+			const sPath = `/StorageAddresses('${id}')`;
 			oView.bindElement({
 				path: sPath,
 				events: {

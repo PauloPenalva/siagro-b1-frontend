@@ -103,6 +103,9 @@
             </headerToolbar>
             <columns>
               <Column>
+                <Text text="Filial"/>
+              </Column>
+              <Column>
                 <Text text="Status"/>
               </Column>
               <Column width="30%">
@@ -133,6 +136,7 @@
                 press=".onNavigateToDetail"
               >
                 <cells>
+                  <Text text="{Branch/ShortName}"/>
                   <ObjectStatus 
                     inverted="true"
                     state="{
@@ -146,7 +150,6 @@
                       formatter: '.formatter.formatContractStatus' 
                     }"/>
                   <ObjectIdentifier text="{Code}" title="{CardName} ({CardCode}) - {ItemName}" />
-                  <!-- <ObjectIdentifier text="{Code}"/> -->
                   <Text text="{Agent/Name}" />
                   <Text 
                     wrapping="false"
