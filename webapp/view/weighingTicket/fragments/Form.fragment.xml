@@ -29,8 +29,18 @@
             text="Dados da Pesagem"
             emphasized="true"
           />
-           <Label text="Codigo"/>
-            <Select 
+          
+          <Label text="RowId" />
+          <Input value="{RowId}" visible="false" />
+          <Label text="Stage" />
+          <Input value="{
+              path: 'Stage',
+              targetType: 'any'
+            }" 
+            visible="false" />
+          
+          <Label text="Codigo"/>
+          <Select 
               editable="{= ${ui>/showField}===true? false : true  }"
               forceSelection="false"
               required="true"

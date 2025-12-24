@@ -78,6 +78,9 @@
                 targetType: 'any'
               }"
               >
+              <core:ListItem key="Receipt" text="Entrada"/>
+              <core:ListItem key="Shipment" text="Saída"/>
+              <core:ListItem key="QualityLoss" text="Quebra Técnica"/>
               <core:ListItem key="Purchase" text="Compra"/>
               <core:ListItem key="PurchaseReturn" text="Dev.Compra"/>
               <core:ListItem key="PurchaseQtyComplement" text="Compra - Compl.Qtd."/>
