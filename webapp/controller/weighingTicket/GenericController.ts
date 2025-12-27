@@ -12,6 +12,9 @@ import FilterOperator from 'sap/ui/model/FilterOperator';
 import ODataListBinding from 'sap/ui/model/odata/v4/ODataListBinding';
 import { Input$ValueHelpRequestEvent } from 'sap/m/Input';
 import { QualityAttrib } from 'siagrob1/types/QualityAttrib';
+import Table from 'sap/ui/table/Table';
+import ODataModel from 'sap/ui/model/odata/v4/ODataModel';
+import MessageBox from 'sap/m/MessageBox';
 
 /**
  * @namespace siagrob1.controller.weighingTicket
@@ -19,6 +22,33 @@ import { QualityAttrib } from 'siagrob1/types/QualityAttrib';
 export default class GenericController extends CommonController {
   
   storageAddressesSelectDialog: TableSelectDialog;
+  
+   onAddQualityInspection() {
+    const oTable = this.byId(
+      "weighingTicketQualityInspectionTable"
+    ) as Table;
+    const oBinding = oTable.getBinding("rows") as ODataListBinding;
+    oBinding.create({}, false, true, false);
+  }
+
+  onRemoveQualityInspection() {
+    const oModel = this.getView().getModel() as ODataModel;
+    const oTable = this.byId(
+      "weighingTicketQualityInspectionTable"
+    ) as Table;
+    const aSelectedIndices = oTable.getSelectedIndices();
+
+    if (aSelectedIndices.length === 0) {
+      MessageBox.alert("Selecione um item para remover.");
+      return;
+    }
+
+    const index = aSelectedIndices[0];
+
+    const oContext = oTable.getContextByIndex(index) as Context;
+
+    void oContext.delete(oModel.getUpdateGroupId());
+  }
   
   async openStorageAddressesValueHelp(e: Input$ValueHelpRequestEvent) {
     this.storageAddressesSelectDialog ??= await Fragment.load({

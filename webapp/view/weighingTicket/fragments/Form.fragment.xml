@@ -29,19 +29,9 @@
             text="Dados da Pesagem"
             emphasized="true"
           />
-          
-          <Label text="RowId" />
-          <Input value="{RowId}" visible="false" />
-          <Label text="Stage" />
-          <Input value="{
-              path: 'Stage',
-              targetType: 'any'
-            }" 
-            visible="false" />
-          
           <Label text="Codigo"/>
           <Select 
-              editable="{= ${ui>/showField}===true? false : true  }"
+              editable="{ui>/editable}"
               forceSelection="false"
               required="true"
               selectedKey="{DocNumberKey}"
@@ -60,7 +50,7 @@
             <Input value="{Code}" editable="false" />
             <Label text="Filial"/>
             <Select 
-              editable="{= ${ui>/showField}===true? false : true  }"
+              editable="{ui>/editable}"
               forceSelection="false"
               required="true"
               selectedKey="{BranchCode}"
@@ -74,22 +64,22 @@
               <core:ListItem key="{Code}" text="{ShortName}" additionalText="{Code}"/>
             </Select>
           <Label text="Data" />
-            <DatePicker
-                value="{
-                  path: 'Date',
-                  type: 'sap.ui.model.odata.type.DateTimeOffset',
-                  formatOptions: {
-                    pattern: 'dd/MM/yyyy'
-                  }
-                }"
-                editable="{= ${ui>/showField}===true? false : true  }"
-                required="true"
-                liveChange=".validateField"
-            >
-            <layoutData>
-                <l:GridData span="XL3 L3 M3 S4" />
-            </layoutData>
-            </DatePicker>
+          <DatePicker
+              value="{
+                path: 'Date',
+                type: 'sap.ui.model.odata.type.DateTimeOffset',
+                formatOptions: {
+                  pattern: 'dd/MM/yyyy'
+                }
+              }"
+              editable="{ui>/editable}"
+              required="true"
+              liveChange=".validateField"
+          >
+          <layoutData>
+              <l:GridData span="XL3 L3 M3 S4" />
+          </layoutData>
+          </DatePicker>
           <Label text="Operação" />
           <Select
               selectedKey="{
@@ -97,7 +87,7 @@
                 targetType: 'any'
               }"
               required="true"
-              editable="{= ${ui>/showField}===true? false : true  }"
+              editable="{ui>/editable}"
               forceSelection="false">
               <layoutData>
                 <l:GridData span="XL3 L3 M3 S4" />
@@ -109,7 +99,7 @@
           <Label text="Veiculo" />
           <Input 
               required="true"
-              editable="{= ${ui>/showField}===true? false : true  }"
+              editable="{ui>/editable}"
               value="{TruckCode}" 
               showValueHelp="true" 
               valueHelpOnly="true" 
@@ -121,7 +111,7 @@
           <Label text="Motorista" />
           <Input 
               required="true"
-              editable="{= ${ui>/showField}===true? false : true  }"
+              editable="{ui>/editable}"
               value="{TruckDriverCode}" 
               showValueHelp="true" 
               valueHelpOnly="true" 
@@ -140,7 +130,7 @@
           <Label text="Cliente" />
           <Input 
               required="true"
-              editable="{= ${ui>/showField}===true? false : true  }"
+              editable="{ui>/editable}"
               value="{CardCode}" 
               showValueHelp="true" 
               valueHelpOnly="true" 
@@ -159,7 +149,7 @@
           <Label text="Produto" />
           <Input 
               required="true"
-              editable="{= ${ui>/showField}===true? false : true  }"
+              editable="{ui>/editable}"
               value="{ItemCode}" 
               showValueHelp="true" 
               valueHelpOnly="true" 
@@ -177,10 +167,10 @@
           </Input>
 
           <core:Title />
-          <Label visible="{ui>/showField}" text="Primeira Pesagem" />
+          <Label visible="{ui>/visible}" text="Primeira Pesagem" />
           <Input 
             description="KG"
-            visible="{ui>/showField}"
+            visible="{ui>/visible}"
             editable="false"
             value="{
               path: 'FirstWeighValue',
@@ -190,10 +180,10 @@
                 groupingSeparator: '.'
               } 
             }" />
-          <Label visible="{ui>/showField}" text="Segunda Pesagem" />
+          <Label visible="{ui>/visible}" text="Segunda Pesagem" />
           <Input 
             description="KG"
-            visible="{ui>/showField}"
+            visible="{ui>/visible}"
             editable="false"
             value="{
               path: 'SecondWeighValue',
@@ -203,9 +193,9 @@
                 groupingSeparator: '.'
               } 
             }" />
-          <Label visible="{ui>/showField}" text="Peso Bruto" />
+          <Label visible="{ui>/visible}" text="Peso Bruto" />
           <Input 
-            visible="{ui>/showField}"
+            visible="{ui>/visible}"
             editable="false"
             description="KG"
             value="{
@@ -216,10 +206,11 @@
                 groupingSeparator: '.'
               } 
             }" />
-          <Label visible="{ui>/showField}" text="Tabela de Custos" />
+          <Label visible="{ui>/visible}" text="Tabela de Custos" />
           <Input 
-              visible="{ui>/showField}"
-              required="{ui>/showField}"
+              visible="{ui>/visible}"
+              required="{ui>/required}"
+              editable="{ui>/editableProcessingCost}"
               value="{ProcessingCostCode}" 
               showValueHelp="true" 
               valueHelpOnly="true" 
@@ -229,17 +220,18 @@
             </layoutData>
           </Input>
           <Input 
-              visible="{ui>/showField}"
+              visible="{ui>/visible}"
               value="{
                 parts: ['ProcessingCostCode'], 
                 formatter: '.formatProcessingCostDescription'
               }" 
               editable="false">
           </Input>
-          <Label visible="{ui>/showField}" text="Lote de Armazenagem" />
+          <Label visible="{ui>/visible}" text="Lote de Armazenagem" />
           <Input 
-              visible="{ui>/showField}"
-              required="{ui>/showField}"
+              visible="{ui>/visible}"
+              required="{ui>/required}"
+              editable="{ui>/editableStorageAddress}"
               value="{StorageAddressCode}" 
               showValueHelp="true" 
               valueHelpOnly="true" 
@@ -249,7 +241,7 @@
             </layoutData>
           </Input>
           <Input 
-              visible="{ui>/showField}"
+              visible="{ui>/visible}"
               value="{
                 parts: ['StorageAddressCode'], 
                 formatter: '.formatStorageAddressDescription'
@@ -257,9 +249,10 @@
               editable="false">
           </Input>
          
-          <Label visible="{ui>/showField}" text="Observações"/>
+          <Label visible="{ui>/visible}" text="Observações"/>
           <TextArea 
-            visible="{ui>/showField}"
+            visible="{ui>/visible}"
+            editable="{ui>/editableComments}"
             value="{Comments}"
             rows="5"
             cols="20"

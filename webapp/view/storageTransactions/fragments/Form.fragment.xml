@@ -83,8 +83,8 @@
               <core:ListItem key="QualityLoss" text="Quebra Técnica"/>
               <core:ListItem key="Purchase" text="Compra"/>
               <core:ListItem key="PurchaseReturn" text="Dev.Compra"/>
-              <core:ListItem key="PurchaseQtyComplement" text="Compra - Compl.Qtd."/>
-              <core:ListItem key="PurchasePriceComplement" text="Compra - Compl.Preço"/>
+              <!-- <core:ListItem key="PurchaseQtyComplement" text="Compra - Compl.Qtd."/>
+              <core:ListItem key="PurchasePriceComplement" text="Compra - Compl.Preço"/> -->
               <core:ListItem key="SalesShipment" text="Venda"/>
               <core:ListItem key="SalesShipmentReturn" text="Dev.Venda"/>
             </Select>
@@ -259,12 +259,53 @@
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
             </Input>
+            <Label visible="true" text="Tabela de Custos" />
+            <Input 
+              visible="true"
+              required="false"
+              editable="{ui>/editable}"
+              value="{ProcessingCostCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openProcessingCostsListValueHelp">
+            <layoutData>
+                <l:GridData span="XL3 L3 M3 S4" />
+            </layoutData>
+          </Input>
+          <Input 
+              visible="true"
+              value="{
+                parts: ['ProcessingCostCode'], 
+                formatter: '.formatProcessingCostDescription'
+              }" 
+              editable="false">
+          </Input>
+          <Label visible="true" text="Lote de Armazenagem" />
+          <Input 
+              editable="{ui>/editable}"
+              required="false"
+              value="{StorageAddressCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openStorageAddressesValueHelp">
+            <layoutData>
+                <l:GridData span="XL3 L3 M3 S4" />
+            </layoutData>
+          </Input>
+          <Input 
+              visible="true"
+              value="{
+                parts: ['StorageAddressCode'], 
+                formatter: '.formatStorageAddressDescription'
+              }" 
+              editable="false">
+          </Input>
             
             <core:Title text="Documento Fiscal"/>
             <Label text="Numero"/>
-            <Input value="{InvoiceNumber}" maxLength="9"/>
+            <Input value="{InvoiceNumber}" maxLength="9" editable="{ui>/editable}"/>
             <Label text="Série"/>
-            <Input value="{InvoiceSerie}" maxLength="3"/>
+            <Input value="{InvoiceSerie}" maxLength="3" editable="{ui>/editable}"/>
             <Label text="Quantidade"/>
             <Input 
               editable="{ui>/editable}"
@@ -281,7 +322,7 @@
               description="{UnitOfMeasureCode}"
             />
             <Label text="Chave NF-e"/>
-            <Input value="{ChaveNFe}" maxLength="9"/>
+            <Input value="{ChaveNFe}" maxLength="9" editable="{ui>/editable}"/>
         </f:content>
     </f:SimpleForm>
 </core:FragmentDefinition>

@@ -1,0 +1,62 @@
+<mvc:View
+	controllerName="siagrob1.controller.weighingTicket.Edit"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.ui.layout.form"
+  xmlns:uxap="sap.uxap"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+  <uxap:ObjectPageLayout
+    showFooter="true"
+    toggleHeaderOnTitleClick="true"
+		preserveHeaderStateOnScroll="false"
+    busy="{ui>/busy}"
+    busyIndicatorDelay="0"
+	>
+  	<uxap:headerTitle>
+			<uxap:ObjectPageDynamicHeaderTitle>
+        <uxap:expandedHeading>
+           <Title text="Editar Ticket de Pesagem"/>
+          </uxap:expandedHeading>
+          <uxap:snappedHeading>
+           <Title text="Editar Ticket de Pesagem"/>
+         </uxap:snappedHeading>
+      </uxap:ObjectPageDynamicHeaderTitle>
+		</uxap:headerTitle>
+     <uxap:headerContent>
+			<ObjectIdentifier title="{Code}"/>
+   	</uxap:headerContent> 
+    <uxap:sections>
+      <uxap:ObjectPageSection titleUppercase="false" title="Dados do Ticket">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <core:Fragment fragmentName="siagrob1.view.weighingTicket.fragments.Form" type="XML" />
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+      </uxap:ObjectPageSection> 
+      <uxap:ObjectPageSection titleUppercase="false" title="Classificação">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <core:Fragment fragmentName="siagrob1.view.weighingTicket.fragments.QualityInspections" type="XML" />
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+    </uxap:sections>
+    <uxap:footer>
+      <OverflowToolbar>
+				<ToolbarSpacer />
+				<Button text="Cancelar" press=".onCancel"  />
+				<Button text="Salvar" type="Emphasized" press=".onSave"/>
+			</OverflowToolbar>
+    </uxap:footer>
+  </uxap:ObjectPageLayout>
+</mvc:View>

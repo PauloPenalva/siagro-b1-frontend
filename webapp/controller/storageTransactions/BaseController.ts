@@ -138,4 +138,38 @@ export abstract class BaseController extends CommonController {
     );
     return data?.Name;
   }
+
+  async formatProcessingCostDescription(key: string){
+    if (!key){
+      return null;
+    } 
+
+    try {
+      this.setBusy(true);
+      const data = await this
+        .getResource<any>(`${this.api.processingCosts}('${key}')`)
+      
+      return data?.Description;
+    } finally {
+      this.setBusy(false);
+    }
+
+  }
+
+   async formatStorageAddressDescription(key: string){
+    if (!key){
+      return null;
+    } 
+
+    try {
+      this.setBusy(true);
+      const data = await this
+        .getResource<any>(`${this.api.storageAddresses}('${key}')`)
+      
+      return data?.Description;
+    } finally {
+      this.setBusy(false);
+    }
+
+  }
 }

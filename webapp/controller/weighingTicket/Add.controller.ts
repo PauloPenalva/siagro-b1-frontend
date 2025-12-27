@@ -17,7 +17,11 @@ export default class Add extends GenericController {
     this.clearStates("formCreateWeighingTicket");
     
     const uiModel = this.getModel("ui") as JSONModel;
-    uiModel.setProperty("/showField", false);
+    uiModel.setData({});
+    uiModel.setProperty("/visible", false);
+    uiModel.setProperty("/required", false);
+    uiModel.setProperty("/editable", true);
+    uiModel.setProperty("/editableGrid", true);
 
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;

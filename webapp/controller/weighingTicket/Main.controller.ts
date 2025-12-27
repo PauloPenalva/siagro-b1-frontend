@@ -54,7 +54,7 @@ export default class Main extends BaseController {
 			this.navTo("weighingTicketsNew");
 	}
 
-  onConfirm(): void {
+  onEdit(): void {
 		const oTable = this.byId("tableWeighTickets") as Table;
     const i = oTable.getSelectedIndex();
 
@@ -66,7 +66,7 @@ export default class Main extends BaseController {
 		const oContext = oTable.getContextByIndex(i) as Context;
     
 		const sId = oContext.getProperty("Key") as string;
-		this.navTo("weighingTicketsConfirm", {id: sId});
+		this.navTo("weighingTicketsEdit", {id: sId});
 	}
 
 	async onDelete() {

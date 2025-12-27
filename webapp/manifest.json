@@ -220,6 +220,16 @@
           "target": "weighingTicketsNew"
         },
         {
+          "pattern": "weighingTicketsEdit/{id}",
+          "name": "weighingTicketsEdit",
+          "target": "weighingTicketsEdit"
+        },
+        {
+          "pattern": "weighingTicketsDetail/{id}",
+          "name": "weighingTicketsDetail",
+          "target": "weighingTicketsDetail"
+        },
+        {
           "pattern": "weighingTicketsConfirm/{id}",
           "name": "weighingTicketsConfirm",
           "target": "weighingTicketsConfirm"
@@ -634,6 +644,18 @@
 					"id": "weighingTicketsNew",
           "level": 2,
 					"name": "siagrob1.view.weighingTicket.Add",
+          "clearControlAggregation": true
+				},
+        "weighingTicketsEdit": {
+					"id": "weighingTicketsEdit",
+          "level": 2,
+					"name": "siagrob1.view.weighingTicket.Edit",
+          "clearControlAggregation": true
+				},
+        "weighingTicketsDetail": {
+					"id": "weighingTicketsDetail",
+          "level": 2,
+					"name": "siagrob1.view.weighingTicket.Detail",
           "clearControlAggregation": true
 				},
         "weighingTicketsConfirm": {

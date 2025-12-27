@@ -28,14 +28,14 @@
           <Title text="Classificação" />
           <ToolbarSpacer />
           <Button
-            visible="{ui>/editable}"
+            visible="{ui>/editableGrid}"
             text="Incluir"
             type="Transparent"
             icon="sap-icon://add"
             press=".onAddQualityInspection"
           />
           <Button
-            visible="{ui>/editable}"
+            visible="{ui>/editableGrid}"
             text="Remover"
             type="Transparent"
             icon="sap-icon://delete"
@@ -48,7 +48,7 @@
       <t:Column label="Codigo" width="10rem">
         <t:template>
           <Input
-            editable="{ui>/editable}"
+            editable="{ui>/editableGrid}"
             value="{QualityAttribCode}" 
             showValueHelp="true" 
             valueHelpOnly="true" 
@@ -70,7 +70,7 @@
       <t:Column label="%" width="10rem">
         <t:template>
           <Input 
-            editable="{ui>/editable}"
+            editable="{ui>/editableGrid}"
             value="{
               path: 'Value',
               type: 'sap.ui.model.odata.type.Double',
