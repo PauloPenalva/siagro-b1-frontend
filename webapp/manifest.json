@@ -18,8 +18,8 @@
 			"mainService": {
 				"uri": "/odata/",
 				"type": "OData",
-				"settings": {
-				"odataVersion": "4.0"
+        "settings": {
+				  "odataVersion": "4.0"
 				}
 			}
 		}
@@ -89,7 +89,7 @@
 				"type": "sap.ui.model.json.JSONModel",
 				"settings": {}
 			}
-		},
+   	},
 
 		"routing": {
 			"config": {
@@ -108,6 +108,11 @@
 					"pattern": "",
 					"name": "main",
 					"target": "main"
+				},
+				{
+					"pattern": "login",
+					"name": "login",
+					"target": "login"
 				},
 				{
 					"pattern": "parceirosNegocio",
@@ -510,6 +515,11 @@
 				"main": {
 					"id": "main",
 					"name": "siagrob1.view.Main",
+          "clearControlAggregation": true
+				},
+				"login": {
+					"id": "login",
+					"name": "siagrob1.view.login.Main",
           "clearControlAggregation": true
 				},
 				"parceirosNegocio": {

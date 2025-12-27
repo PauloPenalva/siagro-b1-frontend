@@ -8,10 +8,11 @@
     xmlns:core="sap.ui.core"
     height="100%"
 >
-    <tnt:ToolPage id="toolPage">
-        <tnt:header>
+    <tnt:ToolPage id="toolPage" >
+        <tnt:header >
             <f:ShellBar
                 id="shellBar"
+                visible="{ui>/logged}"
                 title="Siagro B1"
                 secondTitle="Originação de Grãos"
                 homeIcon="https://sdk.openui5.org/1.141.0/resources/sap/ui/documentation/sdk/images/logo_sap.png"
@@ -26,6 +27,7 @@
                 menuButtonPressed=".onMenuButtonPress">
                 <f:menu>
                   <Menu>
+                    <MenuItem text="Login" key="login" press=".onItemPressed"/>
                     <MenuItem text="Estados" key="states" press=".onItemPressed"/>
                     <MenuItem text="Filiais" key="branchs" press=".onItemPressed"/>
                     <MenuItem text="Unidades de Medida" key="unitMeasure" press=".onItemPressed"/>

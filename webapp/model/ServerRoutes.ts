@@ -1,4 +1,8 @@
 export default {
+  login: '/security/auth/login',
+  userInfo: '/security/auth/status',
+  logout: '/security/auth/logout',
+  
   businessPartners: '/odata/BusinessPartners',
   items: '/odata/Items',
   unitsOfMeasure: '/odata/UnitsOfMeasure',

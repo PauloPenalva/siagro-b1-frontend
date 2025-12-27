@@ -38,3 +38,13 @@ server:
       mountPath: /odata
       configuration:
         baseUri: "http://localhost:5246/odata"
+    - name: ui5-middleware-simpleproxy
+      afterMiddleware: compression
+      mountPath: /security
+      configuration:
+        baseUri: "http://localhost:5246/security"
+    - name: ui5-middleware-simpleproxy
+      afterMiddleware: compression
+      mountPath: /report
+      configuration:
+        baseUri: "http://localhost:5246/report"
