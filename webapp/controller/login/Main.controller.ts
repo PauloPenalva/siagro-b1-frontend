@@ -15,8 +15,12 @@ export default class Main extends BaseController {
 	}
 
 	private routeMatched() {
-    const uiModel = this.getModel("ui") as JSONModel;
-    uiModel.setProperty("/logged", false);
+
+    const oComponent = this.getOwnerComponent();
+    oComponent.stopSession();
+
+    const sessionModel = this.getModel("sessionModel") as JSONModel;
+    sessionModel.setProperty("/logged", false);
 
 		const authModel = new JSONModel();
     authModel.setProperty("/Username", "");
@@ -37,9 +41,12 @@ export default class Main extends BaseController {
     const requestModel = new RequestModel();
     requestModel.post(this.api.login, authData)
       .done(() => {
-        const uiModel = this.getModel("ui") as JSONModel;
-        uiModel.setProperty("/logged", true);
+        const sessionModel = this.getModel("sessionModel") as JSONModel;
+        sessionModel.setProperty("/logged", true);
         
+        const oComponent = this.getOwnerComponent();
+        oComponent.startSession();
+
         this.navTo("main");
       })
       .catch(err => {

@@ -8,6 +8,10 @@ import ListBinding from "sap/ui/model/ListBinding";
 import Message from "sap/ui/core/message/Message";
 import { Binding$ChangeEvent } from "sap/ui/model/Binding"
 import MessageBox from "sap/m/MessageBox";
+import SessionService from "./services/SessionService";
+import RequestModel from "./model/RequestModel";
+import ServerRoutes from "./model/ServerRoutes";
+import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 
 /**
  * @namespace siagrob1
@@ -32,8 +36,11 @@ export default class Component extends UIComponent {
 		// create the views based on the url/hash
 		this.getRouter().initialize();
 
+    this._attachMessageModelHandler();
+	}
 
-		// error handling
+  _attachMessageModelHandler(){
+    // error handling
     const oMessageModel = Messaging.getMessageModel();
     const oMessageModelBinding = oMessageModel.bindList(
       "/",
@@ -43,7 +50,28 @@ export default class Component extends UIComponent {
     );
 
     oMessageModelBinding.attachChange(this.onMessageBindingChange.bind(this), this);
-	}
+  }
+
+  public startSession(): void {
+    SessionService.start(this.onSessionExpired.bind(this));
+  }
+
+  public stopSession(): void {
+    SessionService.stop();
+  }
+
+  private onSessionExpired(): void {
+    const requestModel = new RequestModel();
+    requestModel.post(ServerRoutes.logout)
+      .done(() => this.getRouter().navTo("login", {}, true));
+    
+    // fetch("/service/auth/logout", {
+    //   method: "POST",
+    //   credentials: "include"
+    // }).finally(() => {
+    //   this.getRouter().navTo("login", {}, true);
+    // });
+  }
 
 	onMessageBindingChange(oEvent: Binding$ChangeEvent) {
     const aContexts = (oEvent.getSource() as ListBinding).getContexts();
@@ -64,6 +92,12 @@ export default class Component extends UIComponent {
 
     if (aMessages.length) this.bError = true;
 
+    const { httpStatus } = aMessages[0].getTechnicalDetails() as any;
+    if (httpStatus === 401){
+      this.getRouter().navTo("login", {}, true);
+      return;
+    }
+    
     MessageBox.error(aMessages[0].getMessage(), {
       id: "serviceErrorMessageBox",
       onClose: () => {

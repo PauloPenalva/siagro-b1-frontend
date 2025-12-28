@@ -8,6 +8,9 @@ import Device from "sap/ui/Device";
 import Button from "sap/m/Button";
 import { MenuItem$PressEvent } from "sap/m/MenuItem";
 import { ShellBar$ProductSwitcherPressedEvent } from "sap/f/ShellBar";
+import RequestModel from "siagrob1/model/RequestModel";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
+import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 
 /**
  * @namespace siagrob1.controller
@@ -47,10 +50,34 @@ export default class App extends BaseController {
         }
       }).then((oPopover) => this._pPopover = oPopover as Popover)
     }
+
+    this.getRouter().getRoute("main").attachPatternMatched(ev => this.patternMatched(ev));
 	}
 
+  patternMatched(ev: Route$PatternMatchedEvent){
+    const requestModel = new RequestModel();
+    
+    this.setBusy(true);
+    requestModel.get(ServerRoutes.userInfo)
+      .done(data => {
+        this.setBusy(false);
+        const { authenticated } = data;
+        if (!authenticated){
+           this.navToLogin();
+        }
+      })
+      .catch(() =>{ 
+        this.setBusy(false)
+        this.navToLogin();
+      });
+  }
+
+  private navToLogin(){
+    this.navTo("login", {}, true)
+  }
+
 	onHomePress(): void {
-		this.getRouter().navTo("main");
+		this.navTo("main");
 	}
 
 	onMenuButtonPress(): void {
@@ -74,5 +101,20 @@ export default class App extends BaseController {
     if (sKey) {
       this.navTo(sKey);
     }
+  }
+
+  onLogout(){
+    const requestModel = new RequestModel();
+    
+    this.setBusy(true);
+    requestModel.post(ServerRoutes.logout)
+      .done(() => {
+        this.setBusy(false);
+        this.navToLogin();
+      })
+      .catch(() => {
+        this.setBusy(false);
+        this.navToLogin();
+      })
   }
 }

@@ -27,7 +27,7 @@ export default class RequestModel extends JSONModel{
           dataType: typeData,
           async: asyncRequest,
           cache: aCache,
-          processData: aProcessDate
+          processData: aProcessDate,
       });
   }
 
