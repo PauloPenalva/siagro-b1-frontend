@@ -11,6 +11,8 @@ import { ShellBar$ProductSwitcherPressedEvent } from "sap/f/ShellBar";
 import RequestModel from "siagrob1/model/RequestModel";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
+import Avatar, { Avatar$PressEvent } from "sap/m/Avatar";
+import DialogHelper from "siagrob1/dialogs/DialogHelper";
 
 /**
  * @namespace siagrob1.controller
@@ -20,10 +22,14 @@ export default class App extends BaseController {
   private oProductSwitchModel: JSONModel
 
   private _pPopover: Popover;
+  private _avatar: Avatar;
+  private _avatarPopover: Popover;
 
 	public onInit(): void {
     const oView = this.getView()
 		oView.addStyleClass(this.getOwnerComponent().getContentDensityClass());
+
+    this._avatar = this.byId("avatar") as Avatar;
 
 		this.oModel = new JSONModel();
 		void this.oModel.loadData(sap.ui.require.toUrl("siagrob1/data/menu.json"))
@@ -49,6 +55,24 @@ export default class App extends BaseController {
           return oPopover;
         }
       }).then((oPopover) => this._pPopover = oPopover as Popover)
+    }
+
+    if (!this._avatarPopover) {
+      void Fragment.load({
+        id: oView.getId(),
+        name: "siagrob1.fragments.UserAvatar",
+        controller: this
+      }).then((oPopover) => {
+        if (oPopover) {
+          oView.addDependent(oPopover as Popover);
+          if (Device.system.phone) {
+            (oPopover as Popover).setEndButton(new Button({text: "Fechar", type: "Emphasized", press: () => {
+              this._avatarPopover.close();
+            }}));
+          }
+          return oPopover;
+        }
+      }).then((oPopover) => this._avatarPopover = oPopover as Popover)
     }
 
     this.getRouter().getRoute("main").attachPatternMatched(ev => this.patternMatched(ev));
@@ -103,18 +127,39 @@ export default class App extends BaseController {
     }
   }
 
-  onLogout(){
-    const requestModel = new RequestModel();
-    
+  onAvatarPress(oEvent: Avatar$PressEvent) {
+			const oEventSource = oEvent.getSource();
+			const bActive = this._avatar.getActive();
+
+			this._avatar.setActive(!bActive);
+
+			if (bActive) {
+				this._avatarPopover.close();
+			} else {
+				this._avatarPopover.openBy(oEventSource);
+			}
+		}
+
+  async onLogout(){
+    if (!await DialogHelper.confirmDialog("Encerrar a sessão ?", "Sair")){
+      return;
+    }
+
     this.setBusy(true);
-    requestModel.post(ServerRoutes.logout)
-      .done(() => {
-        this.setBusy(false);
-        this.navToLogin();
-      })
-      .catch(() => {
-        this.setBusy(false);
-        this.navToLogin();
-      })
+    setTimeout(() => {
+      const requestModel = new RequestModel();
+    
+     
+      requestModel.post(ServerRoutes.logout)
+        .done(() => {
+          this.setBusy(false);
+          this.navToLogin();
+        })
+        .catch(() => {
+          this.setBusy(false);
+          this.navToLogin();
+        })
+    }, 1000);
+    
   }
 }

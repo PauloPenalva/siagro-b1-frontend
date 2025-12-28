@@ -60,7 +60,7 @@
                   </Menu>
                 </f:menu>
                 <f:profile>
-                    <Avatar initials="YK" press=".onLogout" />
+                    <Avatar id="avatar" initials="YK" press=".onAvatarPress" />
                 </f:profile>
             </f:ShellBar>
         </tnt:header>
