@@ -100,7 +100,7 @@ class SessionService {
   }
 
   private renewSession(): void {
-    fetch("/ping", {
+    fetch("/security/auth/status", {
       method: "GET",
       credentials: "include"
     }).finally(() => this.resetTimers());

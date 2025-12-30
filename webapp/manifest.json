@@ -509,7 +509,17 @@
           "name": "unitMeasureEdit",
           "target": "unitMeasureEdit"
         },
-         {
+        {
+          "pattern": "weighingTicketsCompleted",
+          "name": "weighingTicketsCompleted",
+          "target": "weighingTicketsCompleted"
+        },
+        {
+          "pattern": "purchaseContractsReport",
+          "name": "purchaseContractsReport",
+          "target": "purchaseContractsReport"
+        },
+        {
           "pattern": "salesInvoicesReport",
           "name": "salesInvoicesReport",
           "target": "salesInvoicesReport"
@@ -1001,7 +1011,19 @@
 					"name": "siagrob1.view.unitMeasure.Edit",
           "clearControlAggregation": true
 				},
-         "salesInvoicesReport": {
+        "weighingTicketsCompleted": {
+					"id": "weighingTicketsCompleted",
+          "level": 1,
+					"name": "siagrob1.view.weighingTicket.completed.Main",
+          "clearControlAggregation": true
+				},
+        "purchaseContractsReport": {
+					"id": "purchaseContractsReport",
+          "level": 1,
+					"name": "siagrob1.view.reports.purchaseContracts.Main",
+          "clearControlAggregation": true
+				},
+        "salesInvoicesReport": {
 					"id": "salesInvoicesReport",
           "level": 1,
 					"name": "siagrob1.view.reports.salesInvoices.Main",

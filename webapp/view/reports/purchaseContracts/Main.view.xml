@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.reports.salesInvoices.Main"
+	controllerName="siagrob1.controller.reports.purchaseContracts.Main"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"

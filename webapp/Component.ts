@@ -77,13 +77,6 @@ export default class Component extends UIComponent {
     const requestModel = new RequestModel();
     requestModel.post(ServerRoutes.logout)
       .done(() => this.getRouter().navTo("login", {}, true));
-    
-    // fetch("/service/auth/logout", {
-    //   method: "POST",
-    //   credentials: "include"
-    // }).finally(() => {
-    //   this.getRouter().navTo("login", {}, true);
-    // });
   }
 
 	onMessageBindingChange(oEvent: Binding$ChangeEvent) {

@@ -1,0 +1,208 @@
+<mvc:View
+	controllerName="siagrob1.controller.weighingTicket.completed.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+  xmlns:f="sap.f"
+  xmlns:mdc="sap.ui.mdc"
+  xmlns:fb="sap.ui.comp.filterbar"
+  xmlns:vm="sap.ui.fl.variants"
+  xmlns:svm="sap.ui.comp.smartvariants"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Tickets de Pesagem"/>
+        </f:heading>
+			</f:DynamicPageTitle>
+    </f:title>
+    <f:header>
+      <f:DynamicPageHeader>
+        <f:content>
+          <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractFilterbar" type="XML" />
+        </f:content>
+      </f:DynamicPageHeader>
+    </f:header>
+		<f:content>
+      <t:Table
+				id="tableWeighingTicketsCompleted"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+        rows="{
+          path: '/WeighingTickets',
+          parameters: {
+            $filter: 'Stage eq \'Completed\'',
+            $count: true
+          },
+          sorter:[
+            {
+              path: 'RowId', descending: true
+            }
+          ]
+        }"
+			>
+				<t:extension>
+					<OverflowToolbar >
+            <Title text="Tickets de Pesagem" />
+						<ToolbarSpacer />
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+          <t:Column
+						label="Key"
+            visible="false"
+            width="10rem"
+            >
+						<t:template>
+							<Text text="{Key}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Filial"
+						sortProperty="Branch/ShortName"
+						filterProperty="Branch/ShortName"
+            width="10rem"
+						>
+						<t:template>
+							<Text text="{Branch/ShortName}" />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Codigo"
+						sortProperty="Code"
+						filterProperty="Code"
+            width="10rem"
+						>
+						<t:template>
+							<Text text="{Code}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Operação"
+						sortProperty="Type"
+						filterProperty="Type"
+						>
+						<t:template>
+							<Text text="{
+                path: 'Type',
+                targetType: 'any',
+                formatter: '.formatter.formatOperation'
+              }" />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Data"
+						sortProperty="Date"
+						filterProperty="Date"
+						>
+						<t:template>
+							<Text
+                text="{
+                  path: 'Date',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+            />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Produto"
+						sortProperty="ItemCode"
+						filterProperty="ItemCode"
+						>
+						<t:template>
+							<Text
+                text="{ItemCode}"
+            />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Cliente"
+						sortProperty="CardCode"
+						filterProperty="CardCode"
+						>
+						<t:template>
+							<Text
+                text="{CardCode}"
+            />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Veiculo"
+						sortProperty="TruckCode"
+						filterProperty="TruckCode"
+						>
+						<t:template>
+							<Text
+                text="{TruckCode}"
+            />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Motorista"
+						sortProperty="TruckDriverCode"
+						filterProperty="TruckDriverCode"
+						>
+						<t:template>
+							<Text
+                text="{TruckDriverCode}"
+            />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="1ª Pesagem"
+						sortProperty="FirstWeighValue"
+						filterProperty="FirstWeighValue"
+            hAlign="End"
+						>
+						<t:template>
+							<Text
+                text="{FirstWeighValue} KG"
+            />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="2ª Pesagem"
+						sortProperty="SecondWeighValue"
+						filterProperty="SecondWeighValue"
+            hAlign="End"
+						>
+						<t:template>
+							<Text
+                text="{SecondWeighValue} KG"
+            />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Peso Bruto"
+						sortProperty="GrossWeight"
+						filterProperty="GrossWeight"
+            hAlign="End"
+						>
+						<t:template>
+							<Text
+                text="{GrossWeight} KG"
+            />
+						</t:template>
+					</t:Column>
+				</t:columns>
+
+			</t:Table>
+
+    </f:content>
+  
+  </f:DynamicPage>
+
+</mvc:View>

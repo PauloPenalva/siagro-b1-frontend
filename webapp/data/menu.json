@@ -112,13 +112,13 @@
       ]
     },
     {
-      "title": "Armazenagem e Beneficiamento",
+      "title": "Armazenagem",
       "enabled": true,
       "expanded": false,
       "icon": "sap-icon://folder-blank",
       "items": [
         {
-          "title": "Tabela de Custos de Beneficiamento",
+          "title": "Tabela de Custos",
           "key": "processingCostsList",
           "enabled": true,
           "icon": "sap-icon://folder-blank"
@@ -130,8 +130,14 @@
           "icon": "sap-icon://folder-blank"
         },
         {
-          "title": "Tickets de Pesagem",
+          "title": "Pesagem",
           "key": "weighingTickets",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Tickets de Pesagem",
+          "key": "weighingTicketsCompleted",
           "enabled": true,
           "icon": "sap-icon://folder-blank"
         },
@@ -231,6 +237,12 @@
       "expanded": false,
       "icon": "sap-icon://folder-blank",
       "items": [
+        {
+          "title": "Contratos de Compras",
+          "key": "purchaseContractsReport",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
         {
           "title": "Documentos de Saída",
           "key": "salesInvoicesReport",

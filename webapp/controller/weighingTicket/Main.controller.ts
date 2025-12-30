@@ -1,4 +1,4 @@
-import { SearchField$SearchEvent } from "sap/m/SearchField";
+import SearchField, { SearchField$SearchEvent } from "sap/m/SearchField";
 import BaseController from "../BaseController";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import Filter from "sap/ui/model/Filter";
@@ -9,11 +9,10 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
 import formatter from "siagrob1/model/formatter";
-import Control from "sap/ui/core/Control";
 import Dialog from "sap/m/Dialog";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageToast from "sap/m/MessageToast";
-import { IconTabBar$SelectEvent } from "sap/m/IconTabBar";
+import IconTabBar, { IconTabBar$SelectEvent } from "sap/m/IconTabBar";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 
 /**
@@ -26,47 +25,73 @@ export default class Main extends BaseController {
   private oDialog: Dialog;
 
 	onInit(): void | undefined {
-		this.getRouter().getRoute("weighingTickets").attachPatternMatched(() => this.routeMatched())
+		this.getRouter().getRoute("weighingTickets")
+    .attachPatternMatched(() => this.onFilterSelect())
 	}
+
+  onFilterSelect(){
+      const searchField = this.byId('weighingTicketsSearch') as SearchField;
+      const value = searchField.getValue();
   
-	private routeMatched() {
-    this.onRefresh();
-	}
+      searchField.fireSearch({
+        query: value,
+      });
+  
+    }
+  
+  onSearch(ev: SearchField$SearchEvent): void {
+    const query = ev?.getParameter("query");
+    const table = this.byId("tableWeighTickets") as Table;
+    const binding = table.getBinding("items") as ODataListBinding;
+    const tab = this.byId("weighingTicketsIconTabBar") as IconTabBar;
+    const filterKey = tab.getSelectedKey();
 
-	onRefresh(): void | undefined {
-		(this.getView().byId("tableWeighTickets").getBinding("rows") as ODataListBinding).refresh();
-	}
+    let statusFilter;
+    
+    switch (filterKey) {
+      case "SecondWeighing":
+          statusFilter = "Stage eq 'ReadyForSecondWeighing'";
+          break;
+      case "WarehouseMovement":
+          statusFilter = "Stage eq 'ReadyForCompleting'";
+          break;
+      default:
+          statusFilter = "Stage eq 'ReadyForFirstWeighing'";
+          break;
+    }
 
-	onSearch(ev: SearchField$SearchEvent): void | undefined {
-		const query = ev.getParameter("query");
-		const oFilters = new Filter({
-			filters: [
-        new Filter("Key", FilterOperator.Contains, query),
-        new Filter("TruckKey", FilterOperator.Contains, query),
-      ],
-			and: false,
-		});
+    let filterString = statusFilter;
 
-		(this.getView().byId("tableWeighTickets").getBinding("rows") as ODataListBinding).filter([oFilters]);
-	}
+    // Adicionar filtros de busca se houver query
+    if (query && query.trim()) {
+        const searchQuery = query.trim();
+        const searchFilter = `(${[
+            `contains(ItemCode,'${searchQuery}')`,
+            `contains(CardCode,'${searchQuery}')`,
+            `contains(TruckCode,'${searchQuery}')`,
+            `contains(Code,'${searchQuery}')`
+        ].join(' or ')})`;
+        
+        filterString = `${statusFilter} and ${searchFilter}`;
+    }
+
+    console.log("Filter string:", filterString);
+    
+    // IMPORTANTE: Usar changeParameters para filtro OData string
+    binding.changeParameters({
+        "$filter": filterString
+    });
+  }
+
+	onRefresh() {
+      const list = this.byId("tableWeighTickets");
+      const binding = list?.getBinding("items") as ODataListBinding;
+  
+      binding?.refresh();
+    }
 
 	onCreate() {
 			this.navTo("weighingTicketsNew");
-	}
-
-  onEdit(): void {
-		const oTable = this.byId("tableWeighTickets") as Table;
-    const i = oTable.getSelectedIndex();
-
-    if (i < 0){
-      	MessageBox.alert("Selecione um registro.");
-      return;
-    }
-    
-		const oContext = oTable.getContextByIndex(i) as Context;
-    
-		const sId = oContext.getProperty("Key") as string;
-		this.navTo("weighingTicketsEdit", {id: sId});
 	}
 
 	async onDelete() {
@@ -190,41 +215,4 @@ export default class Main extends BaseController {
       .finally(() => this.setBusy(false));
   }
 
-  onFilterSelect(ev: IconTabBar$SelectEvent) {
-    const oTable = this.byId("tableWeighTickets") as Table
-    const oBinding = oTable.getBinding("rows") as ODataListBinding
-    const sKey = ev.getParameter("key");
-    const aFilters: Filter[] = [];
-
-    switch (sKey) {
-      case "FirstWeighing":
-        aFilters.push(new Filter([
-          new Filter("FirstWeighValue", FilterOperator.EQ, 0),
-          new Filter("SecondWeighValue", FilterOperator.EQ, 0)
-        ], true))
-        break;
-      case "SecondWeighing":
-        aFilters.push(new Filter([
-          new Filter("FirstWeighValue", FilterOperator.GT, 0),
-          new Filter("SecondWeighValue", FilterOperator.EQ, 0)
-        ], true))
-        break;
-      case "QualityDetails":
-        aFilters.push(new Filter([
-          new Filter("FirstWeighValue", FilterOperator.GT, 0),
-          new Filter("SecondWeighValue", FilterOperator.EQ, 0)
-        ], true))
-        break;
-      case "WarehouseMovement":
-        aFilters.push(new Filter([
-          new Filter("FirstWeighValue", FilterOperator.GT, 0),
-          new Filter("SecondWeighValue", FilterOperator.GT, 0)
-        ], true))
-        break;
-      default:
-        break;
-    }
-
-    oBinding.filter(aFilters);
-  }
 }

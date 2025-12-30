@@ -5,212 +5,166 @@
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:core="sap.ui.core"
 	xmlns:t="sap.ui.table"
+  xmlns:f="sap.f"
+  xmlns:mdc="sap.ui.mdc"
+  xmlns:fb="sap.ui.comp.filterbar"
 	core:require="{
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-	<Page title="Tickets de Pesagem" busy="{ui>/busy}" busyIndicatorDelay="0">
-		<content>
+  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Pesagem"/>
+        </f:heading>
+        <f:actions>
+          <OverflowToolbar >
+            <Button text="Incluir" icon="sap-icon://add" type="Transparent" press=".onCreate"/>
+            <Button text="Deletar" icon="sap-icon://delete" type="Transparent" press=".onDelete"/>
+            <MenuButton text="Outras Ações" type="Transparent" icon="sap-icon://manager-insight">
+              <menu>
+                <Menu>
+                  <MenuItem startsSection="true" text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
+                  <MenuItem text="1ª Pesagem" icon="sap-icon://inventory" press=".openFirstWeighing"/>
+                  <MenuItem text="2ª Pesagem" icon="sap-icon://inventory" press=".openSecondWeighing"/>
+                  <!-- <MenuItem text="Classificar" icon="sap-icon://quality-issue" press=""/> -->
+                  <MenuItem startsSection="true" text="Gerar Romaneio" icon="sap-icon://add-document" press=".onEdit"/>
+                </Menu>
+              </menu>
+            </MenuButton>
+					</OverflowToolbar>
+        </f:actions>
+			</f:DynamicPageTitle>
+    </f:title>
+		<f:content>
       <IconTabBar 
-        class="sapUiResponsiveContentPadding"
+        id="weighingTicketsIconTabBar"
         expanded="true"
         expandable="false"
         select=".onFilterSelect">
         <items>
           <IconTabFilter
             icon="sap-icon://begin"
-            iconColor="Positive"
-            count="0"
+            iconColor="Negative"
+            count="{
+              path: '/WeighingTickets/$count',
+              parameters: {
+                $filter: 'Stage eq \'ReadyForFirstWeighing\''
+              }
+            }"
             text="1ª Pesagem"
             key="FirstWeighing"
+            enabled="true"
             />
           <IconTabFilter
             icon="sap-icon://begin"
-            iconColor="Positive"
-            count="0"
+            iconColor="Critical"
+            count="{
+              path: '/WeighingTickets/$count',
+              parameters: {
+                $filter: 'Stage eq \'ReadyForSecondWeighing\''
+              }
+            }"
             text="2ª Pesagem"
             key="SecondWeighing" />
           <IconTabFilter
-            icon="sap-icon://compare"
-            iconColor="Critical"
-            count="0"
-            text="Classificar"
-            key="QualityDetails" />
-          <IconTabFilter
             icon="sap-icon://inventory"
-            iconColor="Negative"
-            count="0"
+            iconColor="Positive"
+            count="{
+              path: '/WeighingTickets/$count',
+              parameters: {
+                $filter: 'Stage eq \'ReadyForCompleting\''
+              }
+            }"
             text="Romaneio"
             key="WarehouseMovement" />
         </items>
+        <content>
+          <Table 
+            id="tableWeighTickets"
+            growing="true"
+            growingThreshold="20"
+            growingScrollToLoad="true"
+            alternateRowColors="true"
+            fixedLayout="Strict"
+            busyIndicatorDelay="0"
+            items="{
+              path: '/WeighingTickets',
+              parameters: {
+                $filter: 'Stage eq \'ReadyForFirstWeighing\'',
+                $count: true
+              }
+            }"
+            >
+            <headerToolbar>
+              <OverflowToolbar design="Transparent">
+                <Title text="Pesagens"/>
+                <ToolbarSpacer/>
+                <SearchField id="weighingTicketsSearch" width="30%" placeholder="Pesquisar pesagem..." search=".onSearch"/>
+                <Button tooltip="Refresh" icon="sap-icon://refresh" press=".onRefresh"/>
+              </OverflowToolbar>
+            </headerToolbar>
+            <columns>
+              <Column >
+                <Text text="Filial"/>
+              </Column>
+              <Column width="30%">
+                <Text text="Codigo"/>
+              </Column>
+              <Column>
+                <Text text="Produto"/>
+              </Column>
+              <Column>
+                <Text text="Cliente"/>
+              </Column>
+              <Column>
+                <Text text="1ª Pesagem"/>
+              </Column>
+              <Column>
+                <Text text="2ª Pesagem"/>
+              </Column>
+              <Column>
+                <Text text="Peso Bruto"/>
+              </Column>
+            </columns>
+            <items>
+              <ColumnListItem type="Navigation">
+                <cells>
+                  <Text text="{Branch/ShortName}"/>
+                  <ObjectIdentifier title="{Code}" 
+                    text="{
+                      path: 'Type',
+                      targetType: 'any',
+                      formatter: '.formatter.formatOperation'
+                    } - {
+                      path: 'Date',
+                      type: 'sap.ui.model.odata.type.DateTimeOffset',
+                      formatOptions: {
+                        pattern: 'dd/MM/yyyy'
+                      }
+                    } - {TruckCode}"/>
+                  <Text text="{ItemCode}"/>
+                  <Text text="{CardCode}"/>
+                  <ObjectNumber 
+                    number="{FirstWeighValue}"
+                    unit="KG"
+                  />
+                  <ObjectNumber 
+                    number="{SecondWeighValue}"
+                    unit="KG"
+                  />
+                  <ObjectNumber 
+                    number="{GrossWeight}"
+                    unit="KG"
+                  />
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </content>
       </IconTabBar>
-      <t:Table
-				id="tableWeighTickets"
-				busyIndicatorDelay="0"
-				selectionMode="Single"
-				selectionBehavior="Row"
-				class="sapUiSizeCondensed"
-				visibleRowCountMode="Auto"
-				enableBusyIndicator="true"
-				alternateRowColors="true"
-				rows="{
-					path: '/WeighingTickets'
-				}"
-			>
-				<t:extension>
-					<OverflowToolbar >
-            <SearchField placeholder="Pesquisar..." width="30%" search=".onSearch"/>
-            <ToolbarSpacer />
-            <Button text="Incluir" icon="sap-icon://add" type="Emphasized" press=".onCreate"/>
-            <Button text="Deletar" icon="sap-icon://delete" press=".onDelete"/>
-            <MenuButton text="Outras Ações" icon="sap-icon://manager-insight">
-              <menu>
-                <Menu>
-                  <MenuItem startsSection="true" text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
-                  <MenuItem text="1ª Pesagem" icon="sap-icon://inventory" press=".openFirstWeighing"/>
-                  <MenuItem text="2ª Pesagem" icon="sap-icon://inventory" press=".openSecondWeighing"/>
-                  <MenuItem text="Classificar" icon="sap-icon://quality-issue" press=""/>
-                  <MenuItem startsSection="true" text="Gerar Romaneio" icon="sap-icon://add-document" press=".onEdit"/>
-                </Menu>
-              </menu>
-            </MenuButton>
-					</OverflowToolbar>
-				</t:extension>
-				<t:columns>
-					<t:Column
-						label="Filial"
-						sortProperty="Branch/ShortName"
-						filterProperty="Branch/ShortName"
-            width="10rem"
-						>
-						<t:template>
-							<Text text="{Branch/ShortName}" />
-						</t:template>
-					</t:Column>
-					<t:Column
-						label="Codigo"
-						sortProperty="Code"
-						filterProperty="Code"
-            width="10rem"
-						>
-						<t:template>
-							<Text text="{Code}" wrapping="false"/>
-						</t:template>
-					</t:Column>
-					<t:Column
-						label="Operação"
-						sortProperty="Type"
-						filterProperty="Type"
-						>
-						<t:template>
-							<Text text="{
-                path: 'Type',
-                targetType: 'any',
-                formatter: '.formatter.formatOperation'
-              }" />
-						</t:template>
-					</t:Column>
-					<t:Column
-						label="Data"
-						sortProperty="Date"
-						filterProperty="Date"
-						>
-						<t:template>
-							<Text
-                text="{
-                  path: 'Date',
-                  type: 'sap.ui.model.odata.type.DateTimeOffset',
-                  formatOptions: {
-                    pattern: 'dd/MM/yyyy'
-                  }
-                }"
-            />
-						</t:template>
-					</t:Column>
-					<t:Column
-						label="Produto"
-						sortProperty="ItemCode"
-						filterProperty="ItemCode"
-						>
-						<t:template>
-							<Text
-                text="{ItemCode}"
-            />
-						</t:template>
-					</t:Column>
-					<t:Column
-						label="Cliente"
-						sortProperty="CardCode"
-						filterProperty="CardCode"
-						>
-						<t:template>
-							<Text
-                text="{CardCode}"
-            />
-						</t:template>
-					</t:Column>
-					<t:Column
-						label="Veiculo"
-						sortProperty="TruckCode"
-						filterProperty="TruckCode"
-						>
-						<t:template>
-							<Text
-                text="{TruckCode}"
-            />
-						</t:template>
-					</t:Column>
-					<t:Column
-						label="Motorista"
-						sortProperty="TruckDriverCode"
-						filterProperty="TruckDriverCode"
-						>
-						<t:template>
-							<Text
-                text="{TruckDriverCode}"
-            />
-						</t:template>
-					</t:Column>
-					<t:Column
-						label="1ª Pesagem"
-						sortProperty="FirstWeighValue"
-						filterProperty="FirstWeighValue"
-            hAlign="End"
-						>
-						<t:template>
-							<Text
-                text="{FirstWeighValue} KG"
-            />
-						</t:template>
-					</t:Column>
-					<t:Column
-						label="2ª Pesagem"
-						sortProperty="SecondWeighValue"
-						filterProperty="SecondWeighValue"
-            hAlign="End"
-						>
-						<t:template>
-							<Text
-                text="{SecondWeighValue} KG"
-            />
-						</t:template>
-					</t:Column>
-					<t:Column
-						label="Peso Bruto"
-						sortProperty="GrossWeight"
-						filterProperty="GrossWeight"
-            hAlign="End"
-						>
-						<t:template>
-							<Text
-                text="{GrossWeight} KG"
-            />
-						</t:template>
-					</t:Column>
-       	</t:columns>
-
-			</t:Table>
-		</content>
-	</Page>
+		</f:content>
+  </f:DynamicPage>
 
 </mvc:View>
