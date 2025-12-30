@@ -30,6 +30,21 @@
 		>
 			<f:content>
 				<core:Title text="Dados do Embarque" />
+        <Label text="Filial"/>
+        <Select 
+          editable="false"
+          forceSelection="false"
+          required="true"
+          selectedKey="{viewModel>/BranchCode}"
+          items="{
+            path: '/Branchs',
+            sorter: { 
+              path: 'Code'
+            }
+          }"
+          >
+          <core:ListItem key="{Code}" text="{ShortName}" additionalText="{Code}"/>
+        </Select>
 
 				<Label text="Produto" />
 				<Input

@@ -1,30 +1,244 @@
-[
-  {
-    "title": "Parceiros de Negócio",
-    "key": "parceirosNegocio"
-  },
-  {
-    "title": "Produtos",
-    "key": "produtos"
-  },
-  {
-    "title": "Safras",
-    "key": "safras"
-  },
-  {
-    "title": "Armazéns",
-    "key": "armazens"
-  },
-  {
-    "title": "Tabela de Custos",
-    "key": "tabelaCusto"
-  },
-  {
-    "title": "Lotes de Armazenagem",
-    "key": "lotesArmazenagem"
-  },
-  {
-    "title": "Contratos de Compra",
-    "key": "purchaseContracts"
-  }
-]
+{
+  "navigation": [
+    {
+      "title": "Home",
+      "key": "main",
+      "enabled": true,
+      "icon": "sap-icon://home"
+    },
+     {
+      "title": "Administração",
+      "enabled": true,
+      "expanded": false,
+      "icon": "sap-icon://folder-blank",
+      "items": [
+        {
+          "title": "Filiais",
+          "key": "branchs",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Numeração de Documentos",
+          "key": "docNumbers",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Estados",
+          "key": "states",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },{
+          "title": "Unidades de Medida",
+          "key": "unitMeasure",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        }
+      ]
+    },
+    {
+      "title": "Cadastros",
+      "enabled": true,
+      "expanded": false,
+      "icon": "sap-icon://folder-blank",
+      "items": [
+        {
+          "title": "Parceiros de Negócio",
+          "key": "parceirosNegocio",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Representantes",
+          "key": "agents",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Motoristas",
+          "key": "motoristas",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Veiculos",
+          "key": "veiculos",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Produtos",
+          "key": "produtos",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Safras",
+          "key": "safras",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Armazéns",
+          "key": "armazens",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Regiões Logistica",
+          "key": "logisticRegions",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Tributos/Impostos",
+          "key": "taxes",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Atributos Qualitativos",
+          "key": "qualityAttribs",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Serviços de Armazenagem",
+          "key": "processingServices",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        }
+      ]
+    },
+    {
+      "title": "Armazenagem e Beneficiamento",
+      "enabled": true,
+      "expanded": false,
+      "icon": "sap-icon://folder-blank",
+      "items": [
+        {
+          "title": "Tabela de Custos de Beneficiamento",
+          "key": "processingCostsList",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Lotes de Armazenagem",
+          "key": "storageAddresses",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Tickets de Pesagem",
+          "key": "weighingTickets",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Romaneios de Movimentação",
+          "key": "storageTransactions",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        }
+      ]
+    },
+    {
+      "title": "Compras",
+      "enabled": true,
+      "expanded": false,
+      "icon": "sap-icon://folder-blank",
+      "items": [
+        {
+          "title": "Contratos de Compra",
+          "key": "purchaseContracts",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Aprovação de Contratos de Compra",
+          "key": "purchaseContractsApproval",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Contratos de Compra - Liberação de entregas",
+          "key": "purchaseContractsShipmentRelease",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Liberações de Entrega de Contratos de Compras",
+          "key": "shipmentReleases",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Alocação de Romaneios de Compra",
+          "key": "purchaseOrdersAllocations",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Entregas de Contratos de Compra",
+          "key": "purchaseContractsAllocations",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        }
+      ]
+    },
+    {
+      "title": "Vendas",
+      "enabled": true,
+      "expanded": false,
+      "icon": "sap-icon://folder-blank",
+      "items": [
+        {
+          "title": "Contratos de Venda",
+          "key": "salesContracts",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Aprovação de Contratos de Venda",
+          "key": "salesContractsApproval",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Expedição de Grãos",
+          "key": "shippingTransaction",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Faturamento de Expedição",
+          "key": "shipmentBilling",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Documentos de Saída",
+          "key": "salesInvoices",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        }
+      ]
+    },
+     {
+      "title": "Relatórios",
+      "enabled": true,
+      "expanded": false,
+      "icon": "sap-icon://folder-blank",
+      "items": [
+        {
+          "title": "Documentos de Saída",
+          "key": "salesInvoicesReport",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        }
+      ]
+     }
+  ],
+  "fixedNavigation": []
+}

@@ -62,8 +62,8 @@
 				"type": "sap.ui.model.resource.ResourceModel",
 				"settings": {
 					"bundleName": "siagrob1.i18n.i18n",
-					"supportedLocales": ["en", "de"],
-					"fallbackLocale": "en",
+					"supportedLocales": ["en", "de", "pt-BR", ""],
+					"fallbackLocale": "pt-BR",
 					"async": true
 				}
 			},
@@ -508,6 +508,11 @@
           "pattern": "unitMeasureEdit/{id}",
           "name": "unitMeasureEdit",
           "target": "unitMeasureEdit"
+        },
+         {
+          "pattern": "salesInvoicesReport",
+          "name": "salesInvoicesReport",
+          "target": "salesInvoicesReport"
         }
 			],
 			"targets": {
@@ -994,6 +999,12 @@
 					"id": "qualityAttribsEdit",
           "level": 2,
 					"name": "siagrob1.view.unitMeasure.Edit",
+          "clearControlAggregation": true
+				},
+         "salesInvoicesReport": {
+					"id": "salesInvoicesReport",
+          "level": 1,
+					"name": "siagrob1.view.reports.salesInvoices.Main",
           "clearControlAggregation": true
 				}
 			}

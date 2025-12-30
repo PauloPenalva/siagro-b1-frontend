@@ -12,6 +12,7 @@ import SessionService from "./services/SessionService";
 import RequestModel from "./model/RequestModel";
 import ServerRoutes from "./model/ServerRoutes";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
+import JSONModel from "sap/ui/model/json/JSONModel";
 
 /**
  * @namespace siagrob1
@@ -35,6 +36,18 @@ export default class Component extends UIComponent {
 
 		// create the views based on the url/hash
 		this.getRouter().initialize();
+
+    const uiModel = this.getModel("ui") as JSONModel;
+
+    this.getRouter().attachBeforeRouteMatched(() => {
+        uiModel.setProperty("/busy", true);
+    });
+
+    this.getRouter().attachRouteMatched(function () {
+        setTimeout(() => {
+            uiModel.setProperty("/busy", false);
+        }, 200);
+    });
 
     this._attachMessageModelHandler();
 	}

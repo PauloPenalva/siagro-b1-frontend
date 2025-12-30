@@ -45,6 +45,6 @@ server:
         baseUri: "http://localhost:5246/security"
     - name: ui5-middleware-simpleproxy
       afterMiddleware: compression
-      mountPath: /report
+      mountPath: /reports
       configuration:
-        baseUri: "http://localhost:5246/report"
+        baseUri: "http://localhost:5246/reports"

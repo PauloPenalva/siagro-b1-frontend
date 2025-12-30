@@ -4,18 +4,58 @@
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:core="sap.ui.core"
-	xmlns:t="sap.ui.table"
+	xmlns:uxap="sap.uxap"
 	core:require="{
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-	<Page
-		showHeader="false"
-		title="{i18n>appTitle}"
-		id="page">
-		<content>
-			
-		</content>
-	</Page>
-
+<!--
+	<uxap:ObjectPageLayout
+    showFooter="true"
+    toggleHeaderOnTitleClick="true"
+		preserveHeaderStateOnScroll="false"
+    busy="{ui>/busy}"
+    busyIndicatorDelay="0">
+    <uxap:sections>
+      <uxap:ObjectPageSection titleUppercase="false" title="Beneficiamento e Armazenagem">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <HBox 
+                class="sapUiResponsiveContentPadding"
+                fitContainer="true"
+                justifyContent="Start"
+                alignItems="Start"
+                alignContent="Center"
+              >
+              <GenericTile header="Tabela de Custos" class="sapUiTinyMargin"/>
+              <GenericTile header="Romaneios de Movimentação"  class="sapUiTinyMargin" />
+              <GenericTile header="Numeração de Documentos" subheader="Numeração de Documentos" class="sapUiTinyMargin" />
+              
+              </HBox>
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Originação de Grãos">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <GenericTile header="Romaneios de Movimentação"  />
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Configurações">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <GenericTile header="Numeração de Documentos" subheader="Numeração de Documentos" />
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+    </uxap:sections>
+  </uxap:ObjectPageLayout>
+-->
 </mvc:View>

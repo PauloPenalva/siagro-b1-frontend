@@ -9,7 +9,7 @@
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-    <Page showHeader="false" class="sapUiResponsiveContentPadding">
+    <Page showHeader="false" class="sapUiResponsiveContentPadding" busy="{ui>/busy}" busyIndicatorDelay="0">
     <content>
       <VBox
         fitContainer="true"
@@ -51,7 +51,7 @@
         <ToolbarSeparator />
         <Text text="Versão: 1.0.0" />
         <ToolbarSpacer />
-        <Button icon="sap-icon://action-settings"/>
+        <!-- <Button icon="sap-icon://action-settings"/> -->
       </OverflowToolbar>
     </footer>
   </Page>

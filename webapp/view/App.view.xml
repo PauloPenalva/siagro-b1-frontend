@@ -8,7 +8,7 @@
     xmlns:core="sap.ui.core"
     height="100%"
 >
-    <tnt:ToolPage id="toolPage" busyIndicatorDelay="0" busy="{ui>/busy}" >
+    <tnt:ToolPage id="toolPage" busyIndicatorDelay="0" busy="{ui>/busy}" sideExpanded="true">
         <tnt:header >
             <f:ShellBar
                 id="shellBar"
@@ -17,13 +17,13 @@
                 secondTitle="Originação de Grãos"
                 homeIcon="https://sdk.openui5.org/1.141.0/resources/sap/ui/documentation/sdk/images/logo_sap.png"
                 showNavButton="true"
-                showMenuButton="false"
-                showSearch="true"
-				        showNotifications="true"
+                showMenuButton="true"
+                showSearch="false"
+				        showNotifications="false"
                 navButtonPressed=".onNavBack"
                 homeIconPressed=".onHomePress"
                 productSwitcherPressed=".onOpenProductSwitch"
-			          showProductSwitcher="true"
+			          showProductSwitcher="false"
                 menuButtonPressed=".onMenuButtonPress">
                 <f:menu>
                   <Menu>
@@ -64,11 +64,11 @@
                 </f:profile>
             </f:ShellBar>
         </tnt:header>
-        <!-- <tnt:sideContent >
+        <tnt:sideContent >
             <core:Fragment fragmentName="siagrob1.fragments.SideMenu" type="XML" />
-        </tnt:sideContent> -->
+        </tnt:sideContent>
         <tnt:mainContents>
-            <App id="app" />
+            <App id="app" busy="{ui>/busy}" busyIndicatorDelay="0" />
         </tnt:mainContents>
     </tnt:ToolPage>
 </mvc:View>

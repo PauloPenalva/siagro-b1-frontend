@@ -4,8 +4,8 @@
     <SideNavigation 
         xmlns="sap.tnt" 
         xmlns:core="sap.ui.core" 
-        expanded="false" 
-        selectedKey="{menu>/selectedKey}" 
+        selectedKey="{menu>/selectedKey}"
+        visible="{sessionModel>/logged}"  
         itemSelect=".onItemSelect">
         <NavigationList items="{path: 'menu>/navigation'}">
             <core:Fragment fragmentName="siagrob1.fragments.SideMenuList" type="XML" />

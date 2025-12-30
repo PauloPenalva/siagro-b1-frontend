@@ -3,10 +3,7 @@ import Table from "sap/ui/table/Table";
 import MessageBox from "sap/m/MessageBox";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
-import CaracteristcaQualidadeValueHelp from "siagrob1/valueHelpers/CaracteristicaQualidadeValueHelp";
 import formatter from "../../model/formatter";
-import { Input$ValueHelpRequestEvent } from "sap/m/Input";
-import ServicosArmazenagemValueHelp from "siagrob1/valueHelpers/ServicosArmazenagemValueHelp";
 import "jquery";
 import models from "../../model/models";
 import { CaracteristcaQualidade } from "siagrob1/types/CaracteristcaQualidade";
@@ -120,16 +117,6 @@ export default class TabelaCustoBaseController extends CommonController {
     void oContext.delete(oModel.getUpdateGroupId());
   }
 
- 
-  async servicoValueHelpRequest(ev: Input$ValueHelpRequestEvent) {
-    const obj = await ServicosArmazenagemValueHelp.open(
-      "servico",
-      this.getView()
-    );
-    if (obj) {
-      ev.getSource().setValue(obj.Key);
-    }
-  }
 
   async formatDescricaoCaracteristica(sId: string): Promise<string> {
       const oTable = <Table> this.byId("tableQualidade");

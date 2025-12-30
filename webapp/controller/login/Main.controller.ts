@@ -38,6 +38,7 @@ export default class Main extends BaseController {
       return;
     }
 
+    this.setBusy(true);
     const requestModel = new RequestModel();
     requestModel.post(this.api.login, authData)
       .done(() => {
@@ -47,11 +48,12 @@ export default class Main extends BaseController {
         const oComponent = this.getOwnerComponent();
         oComponent.startSession();
 
+        this.setBusy(false);
         this.navTo("main");
       })
       .catch(err => {
         console.log(err.responseJSON);
-        
+        this.setBusy(false);
         MessageBox.error("Falha ao efetuar login: \n" + err.responseJSON?.message);
       })
   }

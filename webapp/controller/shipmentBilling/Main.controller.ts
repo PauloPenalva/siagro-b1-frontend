@@ -18,6 +18,9 @@ type BillingData = {
   ItemName: string,
   TruckDriverCode: string,
   TruckCode: string,
+  Branch: {
+    Code: string,
+  }
 }
 
 /**
@@ -151,6 +154,8 @@ export default class Main extends BaseController {
       transactions.push(ctx.getObject());
     })
 
+    console.log(transactions);
+
     viewModel.setData({
       ItemCode: transactions[0]?.ItemCode,
       ItemName: transactions[0]?.ItemName,
@@ -158,7 +163,8 @@ export default class Main extends BaseController {
       GrossWeightLimit: 0,
       TruckDriverCode: transactions[0]?.TruckDriverCode,
       TruckCode: transactions[0]?.TruckCode,
-      FreightTerms: "Cif"
+      FreightTerms: "Cif",
+      BranchCode: transactions[0]?.Branch?.Code
     });
 
     contractsBinding.filter([
@@ -244,12 +250,12 @@ export default class Main extends BaseController {
       const viewModel = this.getModel("viewModel") as JSONModel;
       const contract = contractCtx.getObject();
       const billing = viewModel.getData();
-
+      
       const confirm = await DialogHelper.confirmDialog("Confirma emissão do(s) Documento(s) de Saída ?");
       if (confirm) {
 
         const salesInvoice: any = {
-          BranchCode: contract?.BranchCode,
+          BranchCode: billing?.BranchCode,
           CardCode: contract?.CardCode,
           GrossWeight: +billing?.Volume,
           NetWeight: +billing?.Volume,
