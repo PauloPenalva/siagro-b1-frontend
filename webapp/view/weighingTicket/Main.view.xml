@@ -18,24 +18,7 @@
         <f:heading>
           <Title text="Pesagem"/>
         </f:heading>
-        <f:actions>
-          <OverflowToolbar >
-            <Button text="Incluir" icon="sap-icon://add" type="Transparent" press=".onCreate"/>
-            <Button text="Deletar" icon="sap-icon://delete" type="Transparent" press=".onDelete"/>
-            <MenuButton text="Outras Ações" type="Transparent" icon="sap-icon://manager-insight">
-              <menu>
-                <Menu>
-                  <MenuItem startsSection="true" text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
-                  <MenuItem text="1ª Pesagem" icon="sap-icon://inventory" press=".openFirstWeighing"/>
-                  <MenuItem text="2ª Pesagem" icon="sap-icon://inventory" press=".openSecondWeighing"/>
-                  <!-- <MenuItem text="Classificar" icon="sap-icon://quality-issue" press=""/> -->
-                  <MenuItem startsSection="true" text="Gerar Romaneio" icon="sap-icon://add-document" press=".onEdit"/>
-                </Menu>
-              </menu>
-            </MenuButton>
-					</OverflowToolbar>
-        </f:actions>
-			</f:DynamicPageTitle>
+     	</f:DynamicPageTitle>
     </f:title>
 		<f:content>
       <IconTabBar 
@@ -101,8 +84,9 @@
               <OverflowToolbar design="Transparent">
                 <Title text="Pesagens"/>
                 <ToolbarSpacer/>
+                <Button text="Nova Pesagem" type="Transparent" press=".onCreate"/>
+                <Button text="Atualizar" type="Transparent" press=".onRefresh"/>
                 <SearchField id="weighingTicketsSearch" width="30%" placeholder="Pesquisar pesagem..." search=".onSearch"/>
-                <Button tooltip="Refresh" icon="sap-icon://refresh" press=".onRefresh"/>
               </OverflowToolbar>
             </headerToolbar>
             <columns>
@@ -129,7 +113,7 @@
               </Column>
             </columns>
             <items>
-              <ColumnListItem type="Navigation">
+              <ColumnListItem type="Navigation" press=".onEdit">
                 <cells>
                   <Text text="{Branch/ShortName}"/>
                   <ObjectIdentifier title="{Code}" 

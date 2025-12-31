@@ -14,6 +14,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageToast from "sap/m/MessageToast";
 import IconTabBar, { IconTabBar$SelectEvent } from "sap/m/IconTabBar";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import { ListBase$ItemPressEvent } from "sap/m/ListBase";
 
 /**
  * @namespace siagrob1.controller.weighingTicket
@@ -215,4 +216,32 @@ export default class Main extends BaseController {
       .finally(() => this.setBusy(false));
   }
 
+  onEdit(ev: ListBase$ItemPressEvent) {
+    const tab = this.byId("weighingTicketsIconTabBar") as IconTabBar  
+    const context = ev.getSource()?.getBindingContext() as Context;
+    const id = context?.getProperty("Key") as string;
+    
+    const tabSelected = tab.getSelectedKey();
+
+    let route: string;
+
+    switch (tabSelected) {
+      case "FirstWeighing":
+        route = "weighingTicketsFirstWeighing";
+        break;
+      case "SecondWeighing":
+        route = "weighingTicketsSecondWeighing";
+        break;
+      case "WarehouseMovement":
+        route = "weighingTicketsConfirm";
+        break;
+      default:
+        break;
+    }
+
+    if (id) {
+      this.navTo(route,{ id })
+    }
+  }
+    
 }

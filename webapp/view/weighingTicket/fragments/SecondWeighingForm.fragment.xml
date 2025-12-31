@@ -1,0 +1,197 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+    xmlns:custom="siagrob1.control"
+>
+    <f:SimpleForm
+      id="formCreateSecondWeighingTicket"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0">
+        <f:content>
+          <core:Title
+            text="Dados da Pesagem"
+            emphasized="true"
+          />
+          <Label text="Codigo"/>
+          <Select 
+              editable="false"
+              forceSelection="false"
+              required="true"
+              selectedKey="{DocNumberKey}"
+              items="{
+                path: '/DocNumbers',
+                parameters:{
+                  $filter: 'TransactionCode eq \'WeighingTicket\''
+                }
+              }"
+              >
+              <core:ListItem key="{Key}" text="{Name}"/>
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Select>
+            <Input value="{Code}" editable="false" />
+            <Label text="Filial"/>
+            <Select 
+              editable="false"
+              forceSelection="false"
+              required="true"
+              selectedKey="{BranchCode}"
+              items="{
+                path: '/Branchs',
+                sorter: { 
+                  path: 'Code'
+                }
+              }"
+              >
+              <core:ListItem key="{Code}" text="{ShortName}" additionalText="{Code}"/>
+            </Select>
+          <Label text="Data" />
+          <DatePicker
+              value="{
+                path: 'Date',
+                type: 'sap.ui.model.odata.type.DateTimeOffset',
+                formatOptions: {
+                  pattern: 'dd/MM/yyyy'
+                }
+              }"
+              editable="false"
+              required="true"
+              liveChange=".validateField"
+          >
+          <layoutData>
+              <l:GridData span="XL3 L3 M3 S4" />
+          </layoutData>
+          </DatePicker>
+          <Label text="Operação" />
+          <Select
+              selectedKey="{
+                path: 'Type',
+                targetType: 'any'
+              }"
+              required="true"
+              editable="false"
+              forceSelection="false">
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+              <core:ListItem key="Receipt" text="Entrada" />
+              <core:ListItem key="Shipment" text="Saída" />
+          </Select>
+          <Label text="Veiculo" />
+          <Input 
+              required="true"
+              editable="false"
+              value="{TruckCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openTrucksValueHelp">
+            <layoutData>
+                <l:GridData span="XL3 L3 M3 S4" />
+            </layoutData>
+          </Input>
+          <Label text="Motorista" />
+          <Input 
+              required="true"
+              editable="false"
+              value="{TruckDriverCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openTruckDriversValueHelp">
+            <layoutData>
+                <l:GridData span="XL3 L3 M3 S4" />
+            </layoutData>
+          </Input>
+          <Input 
+              value="{
+                parts: ['TruckDriverCode'], 
+                formatter: '.formatTruckDriverName'
+              }" 
+              editable="false">
+          </Input>
+          <Label text="Cliente" />
+          <Input 
+              required="true"
+              editable="false"
+              value="{CardCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openBusinessPartnersValueHelp">
+            <layoutData>
+                <l:GridData span="XL3 L3 M3 S4" />
+            </layoutData>
+          </Input>
+          <Input 
+              value="{
+                parts: ['CardCode'], 
+                formatter: '.formatCustomerName'
+              }" 
+              editable="false">
+          </Input>
+          <Label text="Produto" />
+          <Input 
+              required="true"
+              editable="false"
+              value="{ItemCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openItemValueHelp">
+            <layoutData>
+                <l:GridData span="XL3 L3 M3 S4" />
+            </layoutData>
+          </Input>
+          <Input 
+              value="{
+                parts: ['ItemCode'], 
+                formatter: '.formatItemName'
+              }" 
+              editable="false">
+          </Input>
+
+          <core:Title />
+          <Label text="Segunda Pesagem" />
+          <Input 
+            description="KG"
+            editable="true"
+            value="{
+              path: 'SecondWeighValue',
+              type: 'sap.ui.model.type.Integer',
+              formatOptions: {
+                groupingEnabled: true,
+                groupingSeparator: '.'
+              } 
+            }" />
+           <Button 
+            text="Capturar Peso" 
+            icon="sap-icon://action" 
+            type="Emphasized" />
+         
+          <Label text="Observações"/>
+          <TextArea 
+            editable="true"
+            value="{Comments}"
+            rows="5"
+            cols="20"
+          />
+
+        </f:content>
+        <core:Title />
+    </f:SimpleForm>
+</core:FragmentDefinition>

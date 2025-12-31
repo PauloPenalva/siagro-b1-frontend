@@ -24,7 +24,7 @@ export default class Edit extends GenericController {
     uiModel.setData({});
     uiModel.setProperty("/visible", true);
     uiModel.setProperty("/required", true);
-    uiModel.setProperty("/editable", false);
+    uiModel.setProperty("/editable", true);
     uiModel.setProperty("/editableProcessingCost", true)
     uiModel.setProperty("/editableStorageAddress", true)
     uiModel.setProperty("/editableComments", true)

@@ -51,12 +51,13 @@ export default class Add extends GenericController {
 			this.setBusy(true);
 			await oModel.submitBatch(oModel.getUpdateGroupId());
 			if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
-				MessageToast.show("Dados salvos com sucesso.", {
+      	MessageToast.show("Dados salvos com sucesso.", {
 					closeOnBrowserNavigation: false
 				});
 			}
 		} finally {
-			this.setBusy(false);
+      this.setBusy(false);
+      this.navToList();
 		}
 	}
 
@@ -67,7 +68,10 @@ export default class Add extends GenericController {
 			oModel.resetChanges(oModel.getUpdateGroupId());
 		}
 
-		this.onNavBack();
+		this.navToList();
 	}
 
+  navToList() {
+    this.navTo("weighingTickets");
+  }
 }

@@ -244,6 +244,16 @@
           "target": "weighingTicketsConfirm"
         },
         {
+          "pattern": "weighingTicketsFirstWeighing/{id}",
+          "name": "weighingTicketsFirstWeighing",
+          "target": "weighingTicketsFirstWeighing"
+        },
+        {
+          "pattern": "weighingTicketsSecondWeighing/{id}",
+          "name": "weighingTicketsSecondWeighing",
+          "target": "weighingTicketsSecondWeighing"
+        },
+        {
           "pattern": "purchaseContracts",
           "name": "purchaseContracts",
           "target": "purchaseContracts"
@@ -1015,6 +1025,18 @@
 					"id": "weighingTicketsCompleted",
           "level": 1,
 					"name": "siagrob1.view.weighingTicket.completed.Main",
+          "clearControlAggregation": true
+				},
+        "weighingTicketsFirstWeighing": {
+					"id": "weighingTicketsFirstWeighing",
+          "level": 1,
+					"name": "siagrob1.view.weighingTicket.FirstWeighing",
+          "clearControlAggregation": true
+				},
+        "weighingTicketsSecondWeighing": {
+					"id": "weighingTicketsSecondWeighing",
+          "level": 1,
+					"name": "siagrob1.view.weighingTicket.SecondWeighing",
           "clearControlAggregation": true
 				},
         "purchaseContractsReport": {

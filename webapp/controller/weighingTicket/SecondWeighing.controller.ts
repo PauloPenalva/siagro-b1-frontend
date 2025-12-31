@@ -3,37 +3,28 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import GenericController from "./GenericController";
-import JSONModel from "sap/ui/model/json/JSONModel";
-import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import Context from "sap/ui/model/odata/v4/Context";
+import JSONModel from "sap/ui/model/json/JSONModel";
 
 
 /**
  * @namespace siagrob1.controller.weighingTicket
  */
-export default class Confirm extends GenericController {
+export default class FirstWeighing extends GenericController {
 
 	onInit(): void | undefined {	
-		this.getRouter().getRoute("weighingTicketsConfirm").attachPatternMatched((ev) => this.routeMatched(ev));
+		this.getRouter().getRoute("weighingTicketsSecondWeighing").attachPatternMatched((ev) => this.routeMatched(ev));
 	}
 
 	private routeMatched(ev: Route$MatchedEvent) {
-		this.clearStates("formCreateWeighingTicket");
+		this.clearStates("formCreateSecondWeighingTicket");
     
     const oModel = this.getView().getModel() as ODataModel;
-    const uiModel = this.getModel("ui") as JSONModel;
+   	const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setData({});
-    uiModel.setProperty("/visible", true);
-    uiModel.setProperty("/required", true);
-    uiModel.setProperty("/editable", false);
-    uiModel.setProperty("/editableProcessingCost", true)
-    uiModel.setProperty("/editableStorageAddress", true)
-    uiModel.setProperty("/editableComments", true)
     uiModel.setProperty("/editableGrid", true);
-
-		const oView = this.getView();
-
-		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
+    
+    if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
@@ -41,38 +32,47 @@ export default class Confirm extends GenericController {
 		if (id != null) {
       const sPath = `/WeighingTickets(${id})`;
       this.bindElement(sPath);
+
+      const ctx = this.getView().getBindingContext() as Context;
+      if (ctx) {
+        ctx.setProperty("Stage", "ReadyForCompleting");
+      }
 			return;
 		}
 
 	}
 
-
-  async onSave() {
-		if (!this.validateForm("formCreateWeighingTicket")) {
+	async onSave() {
+		if (!this.validateForm("formCreateSecondWeighingTicket")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }
     
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) return;
+
+    const value = +ctx.getProperty("SecondWeighValue");
+    if (value < 1){
+      MessageBox.error("Pesagem não informada. Não é possivel processeguir.")
+      return;
+    }
+
     const oModel = this.getView().getModel() as ODataModel;
+
 		try {
 			this.setBusy(true);
 			await oModel.submitBatch(oModel.getUpdateGroupId());
 			if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
-				oModel.resetChanges(oModel.getUpdateGroupId())
-				this.navToDetail();
+				MessageToast.show("Dados salvos com sucesso.", {
+					closeOnBrowserNavigation: false
+				});
+
+        this.navToList();
 			}
 		} finally {
 			this.setBusy(false);
 		}
-		
 	}
-
-  private navToDetail() {
-    const oContext = this.getView().getBindingContext() as Context;
-    if (oContext) {
-      this.navTo("weighingTicketsDetail", {id: oContext.getProperty("Key") as string});
-    }
-  }
 
 	onCancel() {
 	 	const oModel = this.getView().getModel() as ODataModel;
@@ -83,7 +83,7 @@ export default class Confirm extends GenericController {
 
 		this.navToList();
 	}
-
+  
   private navToList() {
     this.navTo("weighingTickets");
   }
