@@ -12,6 +12,10 @@ import { Warehouse } from "siagrob1/types/Warehouse";
 import { QualityAttrib } from "siagrob1/types/QualityAttrib";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 
+import { Column, EdmType, SpreadsheetSettings } from "sap/ui/export/library";
+import Spreadsheet from "sap/ui/export/Spreadsheet";
+
+
 /**
  * @namespace siagrob1.controller.storageContracts
  */
@@ -172,4 +176,137 @@ export abstract class BaseController extends CommonController {
     }
 
   }
+
+  private createColumnConfig() {
+        const aCols: Column[] = [];
+
+        aCols.push({
+          label: "Status",
+          property: "TransactionStatus",
+          type: EdmType.Enumeration,
+        });
+
+        aCols.push({
+          label: "Codigo",
+          property: "Code",
+          type: EdmType.String,
+        });
+        
+        aCols.push({
+          label: "Tipo",
+          property: "TransactionType",
+          type: EdmType.Enumeration,
+          valueMap: {
+            "Purchase": "Compra",
+            "PurchaseReturn": "Dev.Compra",
+            "PurchaseQtyComplement": "Compl.Qtd.",
+            "PurchasePriceComplement": "Compl.Preço",
+            "SalesShipment": "Saída para Venda",
+            "SalesShipmentReturn": "Dev.Venda"
+          }
+        });
+
+        aCols.push({
+          label: "Emissão",
+          property: "TransactionDate",
+          type: EdmType.Date,
+        });
+
+        aCols.push({
+          label: "Placa",
+          property: "TruckCode",
+          type: EdmType.String
+        });
+
+        aCols.push({
+          label: "Documento",
+          property: "InvoiceNumber",
+          type: EdmType.String
+        });
+  
+        aCols.push({
+          label: "Qtd.Documento",
+          property: "InvoiceQty",
+          type: EdmType.Number,
+          scale: 3,
+          delimiter: true
+        });
+
+        aCols.push({
+          label: "Peso Bruto",
+          property: "GrossWeight",
+          type: EdmType.Number,
+          scale: 3,
+          delimiter: true,
+        });
+
+        aCols.push({
+          label: "Peso Liquido",
+          property: "NetWeight",
+          type: EdmType.Number,
+          scale: 3,
+          delimiter: true
+        });
+
+        aCols.push({
+          label: "Armazem",
+          property: "WarehouseCode",
+          type: EdmType.String
+        });
+
+        aCols.push({
+          label: "Cod.Fornecedor",
+          property: "CardCode",
+          type: EdmType.String,
+        });
+  
+        aCols.push({
+          label: "Fornecedor",
+          property: "CardName",
+          type: EdmType.String,
+        });
+  
+        aCols.push({
+          label: "Cod.Produto",
+          property: "ItemCode",
+          type: EdmType.String,
+        });
+  
+        aCols.push({
+          label: "Produto",
+          property: "ItemName",
+          type: EdmType.String,
+        });
+  
+        aCols.push({
+          label: "Chave NF-e",
+          property: "ChaveNFe",
+          type: EdmType.String,
+        });
+
+        return aCols;
+      }
+  
+    onExcel() {
+      const table = this.byId("storageTransactionsTable") as Table;
+      const binding = table.getBinding("rows") as ODataListBinding
+      const cols = this.createColumnConfig();
+     
+      const setting: SpreadsheetSettings = {
+        dataSource: binding,
+        fileName: 'Romaneios de Movimentação.xlsx',
+        workbook: {
+          columns: cols,
+          hierarchyLevel: "Level",
+          context: {
+            sheetName: 'Romaneios de Movimentação'
+          }
+        }
+      };
+  
+      const oSheet = new Spreadsheet(setting);
+      void oSheet.build().finally(function() {
+        oSheet.destroy();
+      });
+    }
 }

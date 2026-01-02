@@ -24,7 +24,7 @@
     <f:header>
       <f:DynamicPageHeader>
         <f:content>
-          <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractFilterbar" type="XML" />
+          <core:Fragment fragmentName="siagrob1.view.weighingTicket.fragments.Filterbar" type="XML" />
         </f:content>
       </f:DynamicPageHeader>
     </f:header>
@@ -55,6 +55,9 @@
 					<OverflowToolbar >
             <Title text="Tickets de Pesagem" />
 						<ToolbarSpacer />
+            <Button type="Transparent" text="Imprimir Ticket"/>
+            <Button type="Transparent" text="Exportar Excel" press=".onExcel"/>
+            <Button type="Transparent" text="Atualizar" press=".onRefresh"/>
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>

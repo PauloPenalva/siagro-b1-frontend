@@ -6,8 +6,7 @@ import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import CommonController from "../common/CommonController";
-import { Column, EdmType, SpreadsheetSettings } from "sap/ui/export/library";
-import Spreadsheet from "sap/ui/export/Spreadsheet";
+import JSONModel from "sap/ui/model/json/JSONModel";
 
 /**
  * @namespace siagrob1.controller.storageTransactions
@@ -15,8 +14,50 @@ import Spreadsheet from "sap/ui/export/Spreadsheet";
 export default class Main extends CommonController {
 
 	onInit(): void  {
-    
+    this.createFilterModel();
+    this.getRouter().getRoute("storageTransactions")
+    .attachPatternMatched(() => this.applyFilters())
 	}
+
+  onClearFilters() {
+    this.clearFilters();
+    this.applyFilters();
+  }
+
+  onSearch(): void {
+    this.applyFilters()
+	}
+
+  private applyFilters() {
+    const oBinding = this.getView().byId("storageTransactionsTable").getBinding("rows") as ODataListBinding;
+    const filterModel = this.getModel("filter") as JSONModel;
+    const filterData = filterModel.getData() as any;
+    const filters: string[] = [];
+
+    Object.keys(filterData).forEach((key: string) => {
+      const value = filterData[key];
+
+      if (!value) return;
+
+      if (key == "TransactionType" || key == "TransactionStatus") {
+        filters.push(`${key} eq '${value}'`)
+      } else if (key == "DateFrom") {
+        filters.push(`TransactionDate ge ${value}`)
+      } else if (key == "DateTo") {
+        filters.push(`TransactionDate le ${value}`)
+      } else {
+        filters.push(`contains(${key},'${value}')`)
+      }
+    });
+
+    const filterParam = filters.length > 0 ? filters.join(' and ') : undefined;
+
+    console.log(filterParam);
+    
+    oBinding.changeParameters({
+      $filter: filterParam
+    });
+  }
 
   onCreate() {
 		this.navTo("storageTransactionsNew");
@@ -98,136 +139,5 @@ export default class Main extends CommonController {
     (oTable.getBinding("rows") as ODataListBinding).refresh();
   }
  
-   private createColumnConfig() {
-        const aCols: Column[] = [];
-
-        aCols.push({
-          label: "Status",
-          property: "TransactionStatus",
-          type: EdmType.Enumeration,
-        });
-
-        aCols.push({
-          label: "Codigo",
-          property: "Code",
-          type: EdmType.String,
-        });
-        
-        aCols.push({
-          label: "Tipo",
-          property: "TransactionType",
-          type: EdmType.Enumeration,
-          valueMap: {
-            "Purchase": "Compra",
-            "PurchaseReturn": "Dev.Compra",
-            "PurchaseQtyComplement": "Compl.Qtd.",
-            "PurchasePriceComplement": "Compl.Preço",
-            "SalesShipment": "Saída para Venda",
-            "SalesShipmentReturn": "Dev.Venda"
-          }
-        });
-
-        aCols.push({
-          label: "Emissão",
-          property: "TransactionDate",
-          type: EdmType.Date,
-        });
-
-        aCols.push({
-          label: "Placa",
-          property: "TruckCode",
-          type: EdmType.String
-        });
-
-        aCols.push({
-          label: "Documento",
-          property: "InvoiceNumber",
-          type: EdmType.String
-        });
-  
-        aCols.push({
-          label: "Qtd.Documento",
-          property: "InvoiceQty",
-          type: EdmType.Number,
-          scale: 3,
-          delimiter: true
-        });
-
-        aCols.push({
-          label: "Peso Bruto",
-          property: "GrossWeight",
-          type: EdmType.Number,
-          scale: 3,
-          delimiter: true,
-        });
-
-        aCols.push({
-          label: "Peso Liquido",
-          property: "NetWeight",
-          type: EdmType.Number,
-          scale: 3,
-          delimiter: true
-        });
-
-        aCols.push({
-          label: "Armazem",
-          property: "WarehouseCode",
-          type: EdmType.String
-        });
-
-        aCols.push({
-          label: "Cod.Fornecedor",
-          property: "CardCode",
-          type: EdmType.String,
-        });
-  
-        aCols.push({
-          label: "Fornecedor",
-          property: "CardName",
-          type: EdmType.String,
-        });
-  
-        aCols.push({
-          label: "Cod.Produto",
-          property: "ItemCode",
-          type: EdmType.String,
-        });
-  
-        aCols.push({
-          label: "Produto",
-          property: "ItemName",
-          type: EdmType.String,
-        });
-  
-        aCols.push({
-          label: "Chave NF-e",
-          property: "ChaveNFe",
-          type: EdmType.String,
-        });
-
-        return aCols;
-      }
-  
-    onExcel() {
-      const table = this.byId("storageTransactionsTable") as Table;
-      const binding = table.getBinding("rows") as ODataListBinding
-      const cols = this.createColumnConfig();
-     
-      const setting: SpreadsheetSettings = {
-        dataSource: binding,
-        fileName: 'Romaneios de Movimentação.xlsx',
-        workbook: {
-          columns: cols,
-          hierarchyLevel: "Level",
-          context: {
-            sheetName: 'Romaneios de Movimentação'
-          }
-        }
-      };
-  
-      const oSheet = new Spreadsheet(setting);
-      void oSheet.build().finally(function() {
-        oSheet.destroy();
-      });
-    }
+   
 }

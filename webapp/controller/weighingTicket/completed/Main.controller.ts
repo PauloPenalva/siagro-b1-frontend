@@ -1,10 +1,7 @@
-import { SearchField$SearchEvent } from "sap/m/SearchField";
-import BaseController from "../../BaseController";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
-import Table from "sap/ui/table/Table";
-import Dialog from "sap/m/Dialog";
-import IconTabBar from "sap/m/IconTabBar";
 import formatter from "siagrob1/model/formatter";
+import { BaseController } from "./BaseController";
+import JSONModel from "sap/ui/model/json/JSONModel";
 
 /**
  * @namespace siagrob1.controller.weighingTicket.completed
@@ -13,68 +10,58 @@ export default class Main extends BaseController {
     
   formatter = formatter;
   
-	onInit(): void | undefined {
+	onInit() {
+    this.createFilterModel();
+
 		this.getRouter().getRoute("weighingTicketsCompleted")
-    .attachPatternMatched(() => this.onFilterSelect())
+    .attachPatternMatched(() => this.applyFilters())
 	}
 
-  onFilterSelect(){
-      // const searchField = this.byId('weighingTicketsSearch') as SearchField;
-      // const value = searchField.getValue();
-  
-      // searchField.fireSearch({
-      //   query: value,
-      // });
-  
-    }
-  
-  onSearch(ev: SearchField$SearchEvent): void {
-    const query = ev?.getParameter("query");
-    const table = this.byId("tableWeighTickets") as Table;
-    const binding = table.getBinding("items") as ODataListBinding;
-    const tab = this.byId("weighingTicketsIconTabBar") as IconTabBar;
-    const filterKey = tab.getSelectedKey();
-
-    let statusFilter;
-    
-    switch (filterKey) {
-      case "SecondWeighing":
-          statusFilter = "Stage eq 'ReadyForSecondWeighing'";
-          break;
-      case "WarehouseMovement":
-          statusFilter = "Stage eq 'ReadyForCompleting'";
-          break;
-      default:
-          statusFilter = "Stage eq 'ReadyForFirstWeighing'";
-          break;
-    }
-
-    let filterString = statusFilter;
-
-    // Adicionar filtros de busca se houver query
-    if (query && query.trim()) {
-        const searchQuery = query.trim();
-        const searchFilter = `(${[
-            `contains(ItemCode,'${searchQuery}')`,
-            `contains(CardCode,'${searchQuery}')`,
-            `contains(TruckCode,'${searchQuery}')`,
-            `contains(Code,'${searchQuery}')`
-        ].join(' or ')})`;
-        
-        filterString = `${statusFilter} and ${searchFilter}`;
-    }
-
-    console.log("Filter string:", filterString);
-    
-    // IMPORTANTE: Usar changeParameters para filtro OData string
-    binding.changeParameters({
-        "$filter": filterString
-    });
+  onClearFilters() {
+    this.clearFilters();
+    this.applyFilters();
   }
 
+  onSearch(): void {
+    this.applyFilters()
+	}
+
+
+  private applyFilters() {
+      const oBinding = this.getView().byId("tableWeighingTicketsCompleted").getBinding("rows") as ODataListBinding;
+      const filterModel = this.getModel("filter") as JSONModel;
+      const filterData = filterModel.getData() as any;
+      const filters: string[] = [];
+  
+      Object.keys(filterData).forEach((key: string) => {
+        const value = filterData[key];
+  
+        if (!value) return;
+  
+        if (key == "Type") {
+          filters.push(`${key} eq '${value}'`)
+        } else if (key == "DateFrom") {
+          filters.push(`Date ge ${value}`)
+        } else if (key == "DateTo") {
+          filters.push(`Date le ${value}`)
+        } else {
+          filters.push(`contains(${key},'${value}')`)
+        }
+      });
+  
+      const filterParam = filters.length > 0 ? filters.join(' and ') : undefined;
+  
+      console.log(filterParam);
+      
+      oBinding.changeParameters({
+        $filter: filterParam
+      });
+    }
+  
+
 	onRefresh() {
-      const list = this.byId("tableWeighTickets");
-      const binding = list?.getBinding("items") as ODataListBinding;
+      const list = this.byId("tableWeighingTicketsCompleted");
+      const binding = list?.getBinding("rows") as ODataListBinding;
   
       binding?.refresh();
     }
