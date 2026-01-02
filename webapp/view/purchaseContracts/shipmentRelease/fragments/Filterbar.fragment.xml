@@ -3,9 +3,9 @@
     xmlns:core="sap.ui.core"
     xmlns:fb="sap.ui.comp.filterbar"
 >
-<fb:FilterBar id="purchaseContractFb" search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+<fb:FilterBar search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
   <fb:filterGroupItems>
-       <fb:FilterGroupItem name="branch" label="Filial" groupName="GroupBranch" visibleInFilterBar="true">
+      <fb:FilterGroupItem name="branch" label="Filial" groupName="GroupBranch" visibleInFilterBar="true">
         <fb:control>
             <Select 
               forceSelection="false"
@@ -21,47 +21,64 @@
             </Select>
         </fb:control>
       </fb:FilterGroupItem>
-       <fb:FilterGroupItem name="status" label="Status" groupName="GroupStatus" visibleInFilterBar="true">
-        <fb:control>
-            <Select 
-              forceSelection="false"
-              selectedKey="{
-                path: 'filter>/Status',
-                type: 'sap.ui.model.type.String'
-              }"
-            >
-              <core:ListItem key="Draft" text="Rascunho"/>
-              <core:ListItem key="Approved" text="Aprovado"/>
-              <core:ListItem key="Finished" text="Finalizado"/>
-              <core:ListItem key="Canceled" text="Cancelado"/>
-              <core:ListItem key="InApproval" text="Em Aprovação"/>
-            </Select>
-        </fb:control>
-      </fb:FilterGroupItem>
       <fb:FilterGroupItem name="code" label="Codigo" groupName="GroupCode" visibleInFilterBar="true">
         <fb:control>
             <Input showClearIcon="true" value="{filter>/Code}">
             </Input>
         </fb:control>
       </fb:FilterGroupItem>
-       <fb:FilterGroupItem name="type" label="Tipo de Contrato" groupName="GroupType" visibleInFilterBar="true">
-        <fb:control>
-            <Select 
-              forceSelection="false"
-              selectedKey="{
-                path: 'filter>/Type',
-                type: 'sap.ui.model.type.String'
-              }"
-            >
-              <core:ListItem key="Fixed" text="FIX - Preço Fixo"/>
-              <core:ListItem key="ToBeDetermined" text="PAF - Preço a Fixar"/>
-            </Select>
-        </fb:control>
-      </fb:FilterGroupItem>
       <fb:FilterGroupItem name="complement" label="Complemento" groupName="GroupComplement" visibleInFilterBar="true">
         <fb:control>
             <Input showClearIcon="true" value="{filter>/Complement}">
             </Input>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="deliveryEndDateFrom" label="Limite Entrega de" groupName="GroupDeliveryEndDateFrom" visibleInFilterBar="true">
+        <fb:control>
+           <DatePicker 
+            value="{
+              path: 'filter>/DeliveryEndDateFrom',
+              type: 'sap.ui.model.type.String'
+            }"
+            displayFormat="dd/MM/yyyy"
+            valueFormat="yyyy-MM-dd"
+           />
+        </fb:control>
+      </fb:FilterGroupItem>
+       <fb:FilterGroupItem name="deliveryEndDateTo" label="Limite Entrega até" groupName="GroupDeliveryEndDateTo" visibleInFilterBar="true">
+        <fb:control>
+           <DatePicker 
+            value="{
+              path: 'filter>/DeliveryEndDateTo',
+              type: 'sap.ui.model.type.String'
+            }"
+            displayFormat="dd/MM/yyyy"
+            valueFormat="yyyy-MM-dd"
+           />
+        </fb:control>
+      </fb:FilterGroupItem>
+       <fb:FilterGroupItem name="standardCashFlowDateFrom" label="Prev. Pagto. de" groupName="GroupStandardCashFlowDateFrom" visibleInFilterBar="true">
+        <fb:control>
+           <DatePicker 
+            value="{
+              path: 'filter>/StandardCashFlowDateFrom',
+              type: 'sap.ui.model.type.String'
+            }"
+            displayFormat="dd/MM/yyyy"
+            valueFormat="yyyy-MM-dd"
+           />
+        </fb:control>
+      </fb:FilterGroupItem>
+       <fb:FilterGroupItem name="standardCashFlowDateTo" label="Prev. Pagto. até" groupName="GroupStandardCashFlowDateTo" visibleInFilterBar="true">
+        <fb:control>
+           <DatePicker 
+            value="{
+              path: 'filter>/StandardCashFlowDateTo',
+              type: 'sap.ui.model.type.String'
+            }"
+            displayFormat="dd/MM/yyyy"
+            valueFormat="yyyy-MM-dd"
+           />
         </fb:control>
       </fb:FilterGroupItem>
       <fb:FilterGroupItem name="businessPartners" label="Fornecedor" groupName="GroupFornecedor" visibleInFilterBar="true">

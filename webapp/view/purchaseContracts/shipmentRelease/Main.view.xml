@@ -24,7 +24,7 @@
     <f:header>
       <f:DynamicPageHeader>
         <f:content>
-          <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractFilterbar" type="XML" />
+          <core:Fragment fragmentName="siagrob1.view.purchaseContracts.shipmentRelease.fragments.Filterbar" type="XML" />
         </f:content>
       </f:DynamicPageHeader>
     </f:header>

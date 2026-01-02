@@ -12,17 +12,6 @@ import { BaseController } from "./BaseController";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import MessageToast from "sap/m/MessageToast";
 
-type FilterData = {
-  Code?: string,
-  CardCode?: string,
-  ItemCode?: string,
-  Status?: string,
-  Type?:string,
-  DocTypeCode?: string,
-  Complement?: string,
-  MarketType?: string,
-}
-
 /**
  * @namespace siagrob1.controller.shipmentReleases
  */
@@ -47,19 +36,39 @@ export default class Main extends BaseController {
 	}
 
   private applyFilters() {
-    const oBinding = this.getView().byId("shipmentReleases").getBinding("rows") as ODataListBinding;
+    const oBinding = this.getView().byId("tableShipmentReleases").getBinding("rows") as ODataListBinding;
     const filterModel = this.getModel("filter") as JSONModel;
-    const filterData = filterModel.getData() as FilterData;
+    const filterData = filterModel.getData() as any;
     const filters: string[] = [];
 
     Object.keys(filterData).forEach((key: string) => {
-      const filterKey = key as keyof FilterData;
+      const filterKey = key;
       const value = filterData[filterKey];
 
       if (!value) return;
 
-      if (filterKey == "Status" || filterKey == "Type" || filterKey == "MarketType") {
+      if (filterKey == "Status") {
         filters.push(`${filterKey} eq '${value}'`)
+      } else if (filterKey == "MarketType") {
+        filters.push(`PurchaseContract/MarketType eq '${value}'`)
+      } else if (filterKey == "ReleaseDateFrom"){
+        filters.push(`ReleaseDate ge ${value}`)
+      } else if (filterKey == "ReleaseDateTo"){
+        filters.push(`ReleaseDate le ${value}`)
+      } else if (filterKey == "DeliveryEndDateFrom"){
+        filters.push(`PurchaseContract/DeliveryEndDate ge ${value}`)
+      } else if (filterKey == "DeliveryEndDateTo"){
+        filters.push(`PurchaseContract/DeliveryEndDate le ${value}`)
+      } else if (filterKey == "StandardCashFlowDateFrom"){
+        filters.push(`PurchaseContract/StandardCashFlowDate ge ${value}`)
+      } else if (filterKey == "StandardCashFlowDateTo"){
+        filters.push(`PurchaseContract/StandardCashFlowDate le ${value}`)
+      } else if (filterKey == "Code"){
+        filters.push(`contains(PurchaseContract/Code,'${value}')`)
+      } else if (filterKey == "CardCode"){
+        filters.push(`contains(PurchaseContract/CardCode,'${value}')`)
+      } else if (filterKey == "ItemCode"){
+        filters.push(`contains(PurchaseContract/ItemCode,'${value}')`)
       } else {
         filters.push(`contains(${filterKey},'${value}')`)
       }

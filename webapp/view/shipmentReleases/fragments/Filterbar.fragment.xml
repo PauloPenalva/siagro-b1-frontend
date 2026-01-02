@@ -1,0 +1,168 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:fb="sap.ui.comp.filterbar"
+>
+<fb:FilterBar search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+  <fb:filterGroupItems>
+      <fb:FilterGroupItem name="branch" label="Filial" groupName="GroupBranch" visibleInFilterBar="true">
+        <fb:control>
+            <Select 
+              forceSelection="false"
+              selectedKey="{filter>/BranchCode}"
+              items="{
+                path: '/Branchs',
+                suspended: true,
+                sorter: { 
+                  path: 'Code'
+                }
+              }">
+              <core:ListItem key="{Code}" text="{ShortName}"/>
+            </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="status" label="Status" groupName="GroupStatus" visibleInFilterBar="true">
+        <fb:control>
+            <Select 
+              forceSelection="false"
+              selectedKey="{
+                path: 'filter>/Status',
+                type: 'sap.ui.model.type.String'
+              }"
+            >
+              <core:ListItem key="Pending" text="Pendente"/>
+              <core:ListItem key="Actived" text="Ativo"/>
+              <core:ListItem key="Cancelled" text="Cancelado"/>
+              <core:ListItem key="Paused" text="Pausado"/>
+            </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="releaseDateFrom" label="Dt.Liberação de" groupName="GroupReleaseDateFrom" visibleInFilterBar="true">
+        <fb:control>
+           <DatePicker 
+            value="{
+              path: 'filter>/ReleaseDateFrom',
+              type: 'sap.ui.model.type.String'
+            }"
+            displayFormat="dd/MM/yyyy"
+            valueFormat="yyyy-MM-dd"
+           />
+        </fb:control>
+      </fb:FilterGroupItem>
+       <fb:FilterGroupItem name="releaseDateTo" label="Dt.Liberação até" groupName="GroupReleaseDateTo" visibleInFilterBar="true">
+        <fb:control>
+           <DatePicker 
+            value="{
+              path: 'filter>/ReleaseDateTo',
+              type: 'sap.ui.model.type.String'
+            }"
+            displayFormat="dd/MM/yyyy"
+            valueFormat="yyyy-MM-dd"
+           />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="deliveryEndDateFrom" label="Limite Entrega de" groupName="GroupDeliveryEndDateFrom" visibleInFilterBar="true">
+        <fb:control>
+           <DatePicker 
+            value="{
+              path: 'filter>/DeliveryEndDateFrom',
+              type: 'sap.ui.model.type.String'
+            }"
+            displayFormat="dd/MM/yyyy"
+            valueFormat="yyyy-MM-dd"
+           />
+        </fb:control>
+      </fb:FilterGroupItem>
+       <fb:FilterGroupItem name="deliveryEndDateTo" label="Limite Entrega até" groupName="GroupDeliveryEndDateTo" visibleInFilterBar="true">
+        <fb:control>
+           <DatePicker 
+            value="{
+              path: 'filter>/DeliveryEndDateTo',
+              type: 'sap.ui.model.type.String'
+            }"
+            displayFormat="dd/MM/yyyy"
+            valueFormat="yyyy-MM-dd"
+           />
+        </fb:control>
+      </fb:FilterGroupItem>
+       <fb:FilterGroupItem name="standardCashFlowDateFrom" label="Prev. Pagto. de" groupName="GroupStandardCashFlowDateFrom" visibleInFilterBar="true">
+        <fb:control>
+           <DatePicker 
+            value="{
+              path: 'filter>/StandardCashFlowDateFrom',
+              type: 'sap.ui.model.type.String'
+            }"
+            displayFormat="dd/MM/yyyy"
+            valueFormat="yyyy-MM-dd"
+           />
+        </fb:control>
+      </fb:FilterGroupItem>
+       <fb:FilterGroupItem name="standardCashFlowDateTo" label="Prev. Pagto. até" groupName="GroupStandardCashFlowDateTo" visibleInFilterBar="true">
+        <fb:control>
+           <DatePicker 
+            value="{
+              path: 'filter>/StandardCashFlowDateTo',
+              type: 'sap.ui.model.type.String'
+            }"
+            displayFormat="dd/MM/yyyy"
+            valueFormat="yyyy-MM-dd"
+           />
+        </fb:control>
+      </fb:FilterGroupItem>
+       <fb:FilterGroupItem name="code" label="Contrato" groupName="GroupCode" visibleInFilterBar="true">
+        <fb:control>
+            <Input showClearIcon="true" value="{filter>/Code}">
+            </Input>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="deliveryLocation" label="Armazém" groupName="GroupDeliveryLocation" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openWarehouseValueHelp"
+              value="{filter>/DeliveryLocationCode}"
+              >
+            </Input>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="businessPartners" label="Fornecedor" groupName="GroupFornecedor" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openBusinessPartnersValueHelp"
+              value="{filter>/CardCode}"
+              >
+            </Input>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="items" label="Produto" groupName="GroupItem" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openItemValueHelp"
+              value="{filter>/ItemCode}"
+              >
+            </Input>
+        </fb:control>
+      </fb:FilterGroupItem>
+     
+      <fb:FilterGroupItem name="marketType" label="Tipo de Mercado" groupName="GroupMarketType" visibleInFilterBar="true">
+        <fb:control>
+            <Select 
+              forceSelection="false"
+              selectedKey="{
+                path: 'filter>/MarketType',
+                type: 'sap.ui.model.type.String'
+              }"
+            >
+              <core:ListItem key="Internal" text="Interno"/>
+              <core:ListItem key="External" text="Exportação"/>
+            </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
+    </fb:filterGroupItems>
+  </fb:FilterBar>
+</core:FragmentDefinition>

@@ -6,19 +6,8 @@ import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
-import BaseController from "../PurchaseContractsBaseController";
+import { BaseController } from "./BaseController";
 import JSONModel from "sap/ui/model/json/JSONModel";
-
-type FilterData = {
-  Code?: string,
-  CardCode?: string,
-  ItemCode?: string,
-  Status?: string,
-  Type?:string,
-  DocTypeCode?: string,
-  Complement?: string,
-  MarketType?: string,
-}
 
 /**
  * @namespace siagrob1.controller.purchaseContracts.shipmentRelease
@@ -44,19 +33,27 @@ export default class Main extends BaseController {
 	}
 
   private applyFilters() {
-    const oBinding = this.getView().byId("tablePurchaseContracts").getBinding("rows") as ODataListBinding;
+    const oBinding = this.getView().byId("tablePurchaseContractsShipmentRelease").getBinding("rows") as ODataListBinding;
     const filterModel = this.getModel("filter") as JSONModel;
-    const filterData = filterModel.getData() as FilterData;
+    const filterData = filterModel.getData() as any;
     const filters: string[] = [];
 
     Object.keys(filterData).forEach((key: string) => {
-      const filterKey = key as keyof FilterData;
+      const filterKey = key;
       const value = filterData[filterKey];
 
       if (!value) return;
 
-      if (filterKey == "Status" || filterKey == "Type" || filterKey == "MarketType") {
+      if (filterKey == "MarketType") {
         filters.push(`${filterKey} eq '${value}'`)
+      } else if (filterKey == "DeliveryEndDateFrom") { 
+        filters.push(`DeliveryEndDate ge ${value}`)
+      } else if (filterKey == "DeliveryEndDateTo") { 
+        filters.push(`DeliveryEndDate le ${value}`)
+      } else if (filterKey == "StandardCashFlowDateFrom") { 
+        filters.push(`StandardCashFlowDate ge ${value}`)
+      } else if (filterKey == "StandardCashFlowDateTo") { 
+        filters.push(`StandardCashFlowDate le ${value}`)
       } else {
         filters.push(`contains(${filterKey},'${value}')`)
       }

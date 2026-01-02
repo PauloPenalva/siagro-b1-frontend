@@ -24,7 +24,7 @@
     <f:header>
       <f:DynamicPageHeader>
         <f:content>
-          <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractFilterbar" type="XML" />
+          <core:Fragment fragmentName="siagrob1.view.shipmentReleases.fragments.Filterbar" type="XML" />
         </f:content>
       </f:DynamicPageHeader>
     </f:header>
@@ -49,8 +49,10 @@
 					<OverflowToolbar >
             <Title text="Liberações de Entrega" />
 						<ToolbarSpacer />
+						<Button type="Transparent" text="Exportar Excel" press=".onExcel"/>
 						<Button type="Transparent" text="Ativar" press=".onActivate"/>
-						<Button type="Transparent" text="Cancelar" press=".onCancel"/>
+						<Button type="Transparent" text="Pausar" press=".onPause"/>
+            <Button type="Transparent" text="Cancelar" press=".onCancel"/>
 						<Button type="Transparent" text="Deletar" press=".onDelete"/>
 					</OverflowToolbar>
 				</t:extension>
@@ -94,9 +96,8 @@
                 }"/>
 						</t:template>
 					</t:Column>
-          
           <t:Column
-						label="Emissão"
+						label="Dt.Liberação"
 						sortProperty="ReleaseDate"
             width="10rem"
 						>
@@ -105,6 +106,38 @@
               wrapping="false"
               text="{
                 path: 'ReleaseDate',
+                targetType: 'any',
+                formatter: '.formatter.formatDate'
+              }"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Limite Entrega"
+						sortProperty="PurchaseContract/DeliveryEndDate"
+            width="10rem"
+						>
+						<t:template>
+            <Text
+              wrapping="false"
+              text="{
+                path: 'PurchaseContract/DeliveryEndDate',
+                targetType: 'any',
+                formatter: '.formatter.formatDate'
+              }"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Prev.Pagto."
+						sortProperty="PurchaseContract/StandardCashFlowDate"
+            width="10rem"
+						>
+						<t:template>
+            <Text
+              wrapping="false"
+              text="{
+                path: 'PurchaseContract/StandardCashFlowDate',
                 targetType: 'any',
                 formatter: '.formatter.formatDate'
               }"
@@ -134,23 +167,38 @@
             />
 						</t:template>
 					</t:Column>
-					<t:Column label="Armazem" width="30%">
+					<t:Column label="Armazem" width="15rem">
 						<t:template>
               <Text 
                 text="({DeliveryLocationCode}) {DeliveryLocation/Name}" />
           	</t:template>
 					</t:Column>
-          <t:Column label="Contrato" width="30%">
+          <t:Column label="Contrato" width="25rem">
 						<t:template>
               <Text 
                 text="({PurchaseContract/Code}) {PurchaseContract/CardName}" />
           	</t:template>
 					</t:Column>
-          <t:Column label="Produto" width="20%">
+          <t:Column label="Produto" width="25rem">
 						<t:template>
               <Text 
                 text="({PurchaseContract/ItemCode}) {PurchaseContract/ItemName}" />
           	</t:template>
+					</t:Column>
+           <t:Column
+						label="Tipo Mercado"
+						sortProperty="PurchaseContract/MarketType"
+            width="10rem"
+						>
+						<t:template>
+							<Text
+                wrapping="false" 
+                text="{
+                  path: 'PurchaseContract/MarketType', 
+                  targetType: 'any', 
+                  formatter: '.formatter.formatMarketType' 
+                }" />
+						</t:template>
 					</t:Column>
            <t:Column
 						label="Saldo"
