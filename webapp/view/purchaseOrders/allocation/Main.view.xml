@@ -47,10 +47,8 @@
 					<OverflowToolbar >
             <Title text="Romaneios de Compra" />
 						<ToolbarSpacer />
-						<Button type="Emphasized" text="Alocar" press=".onAlocate"/>
-						<!-- <Button type="Transparent" text="Visualizar" press=".onDetail"/> -->
-						<!-- <Button type="Transparent" text="Criar" press=".onCreate"/> -->
-						<!-- <Button type="Transparent" text="Deletar" press=".onDelete"/> -->
+						<Button type="Transparent" text="Exportar Excel" press=".onExcel"/>
+						<Button type="Transparent" text="Alocar" press=".onAlocate"/>
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>
@@ -173,29 +171,6 @@
             />
 						</t:template>
 					</t:Column>
-          <!-- <t:Column
-						label="Peso Bruto"
-						sortProperty="GrossWeight"
-            hAlign="End"
-            width="10rem"
-						>
-						<t:template>
-            <ObjectNumber
-              textAlign="End"
-              number="{
-                path: 'GrossWeight',
-                type: 'sap.ui.model.type.Float',
-                formatOptions:{
-                  decimals: 3,
-                  decimalSeparator: ',',
-                  groupingEnabled: true,
-                  groupingSeparator: '.'
-                }
-              }"
-              unit="{UnitOfMeasureCode}"
-            />
-						</t:template>
-					</t:Column> -->
           <t:Column
 						label="Peso Liquido"
 						sortProperty="NetWeight"

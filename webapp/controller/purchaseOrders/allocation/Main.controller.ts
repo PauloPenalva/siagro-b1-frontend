@@ -20,9 +20,20 @@ export default class Main extends BaseController {
   private purchaseContractsAvaiableDialog: Dialog;
 
 	onInit(): void  {
+    this.createFilterModel();
+
     this.getRouter().getRoute("purchaseOrdersAllocations")
        .attachPatternMatched(() => this.applyFilters());
 	}
+
+  onSearch(): void {
+    this.applyFilters()
+	}
+
+  onClearFilters() {
+    this.clearFilters();
+    this.applyFilters();
+  }
 
   async onAlocate() {
     const table = this.byId("storageTransactionsAllocationTable") as Table;
@@ -66,7 +77,7 @@ export default class Main extends BaseController {
   async onConfirmDialog() {
     const dlgId = this.getView().getId() + "_siagrob1.view.purchaseOrders.allocation.fragments.PurchaseContractsAvaiables";
 
-    const dlgTable = sap.ui.core.Fragment.byId(dlgId,"purchaseContractsAvaiableTable") as Table;
+    const dlgTable = (sap.ui as any).core?.Fragment.byId(dlgId,"purchaseContractsAvaiableTable") as Table;
     const selected = dlgTable.getSelectedIndices();
     if (selected.length == 0 || selected.length > 1) {
       MessageBox.warning("Selecione um item na lista.");
@@ -77,7 +88,6 @@ export default class Main extends BaseController {
     const tableCtx = dlgTable.getContextByIndex(selected[0]);
 
     if (tableCtx) {
-      //const transactionType = context.getProperty("TransactionType") as string;
       const storageTransactionKey = context.getProperty("Key") as string;
       const avaiableVolumeToAlloc = +context.getProperty("AvaiableVolumeToAllocate");
       const avaiableVolume = +tableCtx.getProperty("AvaiableVolume");
@@ -126,6 +136,8 @@ export default class Main extends BaseController {
 
   private applyFilters() {
     const oBinding = this.getView().byId("storageTransactionsAllocationTable").getBinding("rows") as ODataListBinding;
+    const filterModel = this.getModel("filter") as JSONModel;
+    const filterData = filterModel.getData() as any;
     const filters: string[] = [];
     
     const typesFilter = `(${[
@@ -138,25 +150,29 @@ export default class Main extends BaseController {
     filters.push("TransactionStatus eq 'Confirmed'");
     filters.push("AvaiableVolumeToAllocate gt 0");
 
-    const filter = filters.join(' and ');
+    Object.keys(filterData).forEach((key: string) => {
+      const filterKey = key;
+      const value = filterData[filterKey];
 
-    // Object.keys(filterData).forEach((key: string) => {
-    //   const filterKey = key as keyof FilterData;
-    //   const value = filterData[filterKey];
+      if (!value) return;
 
-    //   if (!value) return;
+      if (filterKey == "TransactionStatus" || filterKey == "TransactionType" || filterKey == "MarketType") {
+        filters.push(`${filterKey} eq '${value}'`)
+      } else if (filterKey == "TransactionDateFrom") {
+        filters.push(`TransactionDate ge ${value}`)
+      } else if (filterKey == "TransactionDateTo") {
+        filters.push(`TransactionDate le ${value}`)
+      } else {
+        filters.push(`contains(${filterKey},'${value}')`)
+      }
+    });
 
-    //   if (filterKey == "Status" || filterKey == "Type" || filterKey == "MarketType") {
-    //     filters.push(`${filterKey} eq '${value}'`)
-    //   } else {
-    //     filters.push(`contains(${filterKey},'${value}')`)
-    //   }
-    // });
+    let filterParam = filters.length > 0 ? filters.join(' and ') : undefined;
 
-    //const filterParam = filters.length > 0 ? filters.join(' and ') : undefined;
+    filterParam = `${filterParam} and ${typesFilter}`
 
-    const filterParam = `${filter} and ${typesFilter}`
-
+    console.log(filterParam);
+    
 		oBinding.changeParameters({
       $filter: filterParam
     });

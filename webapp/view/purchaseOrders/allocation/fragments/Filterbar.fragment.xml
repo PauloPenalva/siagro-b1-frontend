@@ -21,47 +21,11 @@
             </Select>
         </fb:control>
       </fb:FilterGroupItem>
-       <fb:FilterGroupItem name="transactionStatus" label="Status" groupName="GroupTransactionStatus" visibleInFilterBar="true">
-        <fb:control>
-            <Select 
-              forceSelection="false"
-              selectedKey="{
-                path: 'filter>/TransactionStatus',
-                type: 'sap.ui.model.type.String'
-              }"
-            >
-              <core:ListItem key="Pending" text="Pendente"/>
-              <core:ListItem key="Confirmed" text="Confirmado"/>
-              <core:ListItem key="Cancelled" text="Cancelado"/>
-              <core:ListItem key="Invoiced" text="Faturado"/>
-            </Select>
-        </fb:control>
-      </fb:FilterGroupItem>
+      
        <fb:FilterGroupItem name="code" label="Codigo" groupName="GroupCode" visibleInFilterBar="true">
         <fb:control>
             <Input showClearIcon="true" value="{filter>/Code}">
             </Input>
-        </fb:control>
-      </fb:FilterGroupItem>
-      <fb:FilterGroupItem name="type" label="Tipo" groupName="GroupType" visibleInFilterBar="true">
-        <fb:control>
-            <Select 
-              forceSelection="false"
-              selectedKey="{
-                path: 'filter>/TransactionType',
-                type: 'sap.ui.model.type.String'
-              }"
-            >
-              <core:ListItem key="Receipt" text="Entrada"/>
-              <core:ListItem key="Shipment" text="Saída"/>
-              <core:ListItem key="QualityLoss" text="Quebra Técnica"/>
-              <core:ListItem key="SalesShipment" text="Venda"/>
-              <core:ListItem key="SalesShipmentReturn" text="Dev.Venda"/>
-              <core:ListItem key="Purchase" text="Compra"/>
-              <core:ListItem key="PurchaseReturn" text="Dev.Compra"/>
-              <core:ListItem key="PurchaseQtyComplement" text="Compl.Qtd."/>
-              <core:ListItem key="PurchasePriceComplement" text="Compl.Preço"/>
-            </Select>
         </fb:control>
       </fb:FilterGroupItem>
       <fb:FilterGroupItem name="transactionDateFrom" label="Emissão de" groupName="GroupTransactionDateFrom" visibleInFilterBar="true">
