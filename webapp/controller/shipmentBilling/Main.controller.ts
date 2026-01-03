@@ -12,6 +12,7 @@ import Fragment from "sap/ui/core/Fragment";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageToast from "sap/m/MessageToast";
+import { SearchField$SearchEvent } from "sap/m/SearchField";
 
 type BillingData = {
   ItemCode: string,
@@ -35,40 +36,26 @@ export default class Main extends BaseController {
 
   onInit(): void {
     this.getRouter().getRoute("shipmentBilling")
-      .attachPatternMatched(() => this.applyFilters());
+      .attachPatternMatched(() => this.applyFilters(null));
   }
 
+  onSearch(ev: SearchField$SearchEvent) {
+    this.applyFilters(ev);
+  }
 
-  private applyFilters() {
+  private applyFilters(ev: SearchField$SearchEvent) {
+    const query = ev?.getParameter("query");
     const oBinding = this.getView().byId("shipmentBillingTable").getBinding("rows") as ODataListBinding;
     const filters: string[] = [];
 
-    const typesFilter = `(${[
-      `TransactionType eq 'SalesShipment'`,
-      //`TransactionType eq 'SalesShipmentReturn'`,
-    ].join(' or ')})`;
-
+    filters.push("TransactionType eq 'SalesShipment'");
     filters.push("TransactionStatus eq 'Confirmed'");
-    //filters.push("AvaiableVolumeToAllocate gt 0");
 
-    const filter = filters.join(' and ');
-
-    // Object.keys(filterData).forEach((key: string) => {
-    //   const filterKey = key as keyof FilterData;
-    //   const value = filterData[filterKey];
-
-    //   if (!value) return;
-
-    //   if (filterKey == "Status" || filterKey == "Type" || filterKey == "MarketType") {
-    //     filters.push(`${filterKey} eq '${value}'`)
-    //   } else {
-    //     filters.push(`contains(${filterKey},'${value}')`)
-    //   }
-    // });
-
-    //const filterParam = filters.length > 0 ? filters.join(' and ') : undefined;
-
-    const filterParam = `${filter} and ${typesFilter}`
+    if (query) {
+      filters.push(`contains(TruckCode,'${query}')`);
+    }
+    
+    const filterParam = filters.length > 0 ? filters.join(' and ') : undefined;
 
     oBinding.changeParameters({
       $filter: filterParam

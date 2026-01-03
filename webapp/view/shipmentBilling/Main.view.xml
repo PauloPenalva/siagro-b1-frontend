@@ -21,13 +21,13 @@
         </f:heading>
 			</f:DynamicPageTitle>
     </f:title>
-    <f:header>
+    <!-- <f:header>
       <f:DynamicPageHeader>
         <f:content>
           <core:Fragment fragmentName="siagrob1.view.salesContracts.fragments.SalesContractFilterbar" type="XML" />
         </f:content>
       </f:DynamicPageHeader>
-    </f:header>
+    </f:header> -->
 		<f:content>
       <t:Table
 				id="shipmentBillingTable"
@@ -49,6 +49,7 @@
 						<ToolbarSpacer />
 						<Button type="Emphasized" text="Faturar" press=".openBillingDialog"/>
 						<Button type="Transparent" text="Estornar Romaneio de Embarque" press=".onDelete"/>
+            <SearchField width="30%" placeholder="Pesquisar placa..." search=".onSearch" />
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>
