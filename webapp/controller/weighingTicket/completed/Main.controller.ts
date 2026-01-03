@@ -50,8 +50,6 @@ export default class Main extends BaseController {
       });
   
       const filterParam = filters.length > 0 ? filters.join(' and ') : undefined;
-  
-      console.log(filterParam);
       
       oBinding.changeParameters({
         $filter: filterParam

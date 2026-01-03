@@ -2,14 +2,14 @@
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import formatter from "siagrob1/model/formatter";
 import Table from "sap/ui/table/Table";
-import BaseController from "../PurchaseContractsBaseController";
+import { BaseController } from "./BaseController";
 import Context from "sap/ui/model/odata/v4/Context";
 import MessageBox from "sap/m/MessageBox";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageToast from "sap/m/MessageToast";
-import { Column, EdmType, SpreadsheetSettings } from "sap/ui/export/library";
-import Spreadsheet from "sap/ui/export/Spreadsheet";
+import JSONModel from "sap/ui/model/json/JSONModel";
+
 
 /**
  * @namespace siagrob1.controller.purchaseContracts.allocation
@@ -19,138 +19,68 @@ export default class Main extends BaseController {
   formatter = formatter;
 
 	onInit(): void  {
-    
+    this.createFilterModel();
+
+    this.getRouter().getRoute("purchaseOrdersAllocations")
+       .attachPatternMatched(() => this.applyFilters());
 	}
 
-  private createColumnConfig() {
-			const aCols: Column[] = [];
+  onSearch(): void {
+    this.applyFilters()
+	}
 
-			aCols.push({
-				label: "Contrato",
-				property: "PurchaseContract/Code",
-				type: EdmType.String,
-			});
-
-			aCols.push({
-				label: "Cod.Fornecedor",
-				property: "PurchaseContract/CardCode",
-				type: EdmType.String,
-			});
-
-			aCols.push({
-				label: "Fornecedor",
-				property: "PurchaseContract/CardName",
-				type: EdmType.String,
-			});
-
-			aCols.push({
-				label: "Cod.Produto",
-				property: "PurchaseContract/ItemCode",
-				type: EdmType.String,
-			});
-
-			aCols.push({
-				label: "Produto",
-				property: "PurchaseContract/ItemName",
-				type: EdmType.String,
-			});
-
-			aCols.push({
-				label: "Romaneio",
-				property: "StorageTransaction/Code",
-				type: EdmType.String,
-			});
-
-			aCols.push({
-				label: "Emissão",
-				property: "StorageTransaction/TransactionDate",
-				type: EdmType.Date,
-     	});
-
-      aCols.push({
-				label: "Tipo",
-				property: "StorageTransaction/TransactionType",
-        type: EdmType.Enumeration,
-        valueMap: {
-          "Purchase": "Compra",
-          "PurchaseReturn": "Dev.Compra",
-          "PurchaseQtyComplement": "Compl.Qtd.",
-          "PurchasePriceComplement": "Compl.Preço",
-        }
-     	});
-
-      aCols.push({
-				label: "Quantidade",
-				property: "Volume",
-        type: EdmType.Number,
-				scale: 3,
-				delimiter: true
-			});
-			
-      aCols.push({
-				label: "Un.Med.",
-				property: "StorageTransaction/UnitOfMeasureCode",
-        type: EdmType.String
-			});
-
-      aCols.push({
-				label: "Un.Med.",
-				property: "StorageTransaction/WarehouseCode",
-        type: EdmType.String
-			});
-
-      aCols.push({
-				label: "Placa",
-				property: "StorageTransaction/TruckCode",
-        type: EdmType.String
-			});
-
-      aCols.push({
-				label: "Nota Fiscal",
-				property: "StorageTransaction/InvoiceNumber",
-        type: EdmType.String
-			});
-
-      aCols.push({
-				label: "Serie",
-				property: "StorageTransaction/InvoiceSerie",
-        type: EdmType.String
-			});
-
-      aCols.push({
-				label: "Qtd.Nota Fiscal",
-				property: "StorageTransaction/InvoiceQty",
-        type: EdmType.Number,
-				scale: 3,
-				delimiter: true
-			});
-
-			return aCols;
-		}
-
-  onExcel() {
-    const table = this.byId("tablePurchaseContractsAllocations") as Table;
-    const binding = table.getBinding("rows") as ODataListBinding
-    const cols = this.createColumnConfig();
-
-    const setting: SpreadsheetSettings = {
-      dataSource: binding,
-      fileName: 'Entregas de Contrato de Compra.xlsx',
-      workbook: {
-        columns: cols,
-        hierarchyLevel: "Level",
-        context: {
-          sheetName: 'Entregas de Contrato de Compra'
-        }
-      }
-    };
-
-    const oSheet = new Spreadsheet(setting);
-    void oSheet.build().finally(function() {
-      oSheet.destroy();
-    });
+  onClearFilters() {
+    this.clearFilters();
+    this.applyFilters();
   }
 
+  private applyFilters() {
+    const oBinding = this.getView().byId("tablePurchaseContractsAllocations").getBinding("rows") as ODataListBinding;
+    const filterModel = this.getModel("filter") as JSONModel;
+    const filterData = filterModel.getData() as any;
+    const filters: string[] = [];
+    
+    Object.keys(filterData).forEach((key: string) => {
+      const filterKey = key;
+      const value = filterData[filterKey];
+
+      if (!value) return;
+
+      if (filterKey == "TransactionStatus" || filterKey == "TransactionType" || filterKey == "MarketType") {
+        filters.push(`${filterKey} eq '${value}'`)
+      } else if (filterKey == "PurchaseContractBranchCode") {
+        filters.push(`contains(PurchaseContract/BranchCode, '${value}')`)
+      } else if (filterKey == "PurchaseContractCode") {
+        filters.push(`contains(PurchaseContract/Code, '${value}')`)
+      } else if (filterKey == "PurchaseContractCardCode") {
+        filters.push(`contains(PurchaseContract/CardCode, '${value}')`)
+      } else if (filterKey == "PurchaseContractItemCode") {
+        filters.push(`contains(PurchaseContract/ItemCode, '${value}')`)
+      } else if (filterKey == "StorageTransactionBranchCode") {
+        filters.push(`contains(StorageTransaction/BranchCode, '${value}')`)
+      } else if (filterKey == "StorageTransactionCode") {
+        filters.push(`contains(StorageTransaction/Code, '${value}')`)
+      } else if (filterKey == "WarehouseCode") {
+        filters.push(`contains(StorageTransaction/WarehouseCode, '${value}')`)
+      } else if (filterKey == "TruckCode") {
+        filters.push(`contains(StorageTransaction/TruckCode, '${value}')`)
+      } else if (filterKey == "InvoiceNumber") {
+        filters.push(`contains(StorageTransaction/InvoiceNumber, '${value}')`)
+      } else if (filterKey == "DateFrom") {
+        filters.push(`StorageTransaction/TransactionDate ge ${value}`)
+      } else if (filterKey == "DateTo") {
+        filters.push(`StorageTransaction/TransactionDate le ${value}`)
+      } else {
+        filters.push(`contains(${filterKey},'${value}')`)
+      }
+    });
+
+    const filterParam = filters.length > 0 ? filters.join(' and ') : undefined;
+  
+    oBinding.changeParameters({
+      $filter: filterParam
+    });
+  }
 
   async onDelete() {
     const table = this.byId("tablePurchaseContractsAllocations") as Table;
