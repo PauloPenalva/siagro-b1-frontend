@@ -24,7 +24,7 @@
     <f:header>
       <f:DynamicPageHeader>
         <f:content>
-          <core:Fragment fragmentName="siagrob1.view.salesInvoices.fragments.SalesInvoicesFilterbar" type="XML" />
+          <core:Fragment fragmentName="siagrob1.view.salesInvoices.fragments.Filterbar" type="XML" />
         </f:content>
       </f:DynamicPageHeader>
     </f:header>
@@ -49,11 +49,10 @@
 					<OverflowToolbar >
             <Title text="Documentos de Saída" />
 						<ToolbarSpacer />
-						<!-- <Button type="Transparent" text="Copiar" press=".onCopy"/>
-						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
-						<Button type="Transparent" text="Criar" press=".onCreate"/> -->
+						<Button type="Transparent" text="Exportar Excel" press=".onExcel"/>
 						<Button type="Transparent" text="Cancelar" press=".onCancel"/>
-						<!-- <Button type="Transparent" text="Deletar" press=".onDelete"/> -->
+            <ToolbarSeparator />
+						<Button type="Transparent" text="Atualizar" press=".refreshData"/>
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>
@@ -128,7 +127,7 @@
 						</t:template>
 					</t:Column>
           <t:Column
-						label="Fornecedor"
+						label="Cliente"
 						sortProperty="CardName"
             width="25rem"
 						>
