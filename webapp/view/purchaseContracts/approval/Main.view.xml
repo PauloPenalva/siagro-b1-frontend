@@ -150,7 +150,7 @@
                       formatter: '.formatter.formatContractStatus' 
                     }"/>
                   <ObjectIdentifier text="{Code}" title="{CardName} ({CardCode}) - {ItemName}" />
-                  <Text text="{Agent/Name}" />
+                  <Text text="{AgentName}" />
                   <Text 
                     wrapping="false"
                     text="{

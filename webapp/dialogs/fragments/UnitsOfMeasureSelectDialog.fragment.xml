@@ -12,6 +12,9 @@
   growingThreshold="20"
   items="{
     path: '/UnitsOfMeasure',
+    filters:[
+      { path: 'Locked', operator: 'EQ', value1: 'N' }
+    ],
     sorter: {
       path: 'Description', 
       descending: false

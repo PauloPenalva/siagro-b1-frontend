@@ -14,7 +14,7 @@
           filters: { 
             path: 'Inactive', 
             operator: 'EQ', 
-            value1: false 
+            value1: 'N' 
           },
           sorter: {
             path: 'Code', 

@@ -170,7 +170,7 @@
 					<t:Column label="Armazem" width="15rem">
 						<t:template>
               <Text 
-                text="({DeliveryLocationCode}) {DeliveryLocation/Name}" />
+                text="({DeliveryLocationCode}) {DeliveryLocationName}" />
           	</t:template>
 					</t:Column>
           <t:Column label="Contrato" width="25rem">

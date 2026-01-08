@@ -177,7 +177,7 @@
             width="15rem"
 						>
 						<t:template>
-            <Text text="({WarehouseCode}) {Warehouse/Name}" wrapping="false"/>
+            <Text text="({WarehouseCode}) {WarehouseName}" wrapping="false"/>
 						</t:template>
 					</t:Column>
           <t:Column

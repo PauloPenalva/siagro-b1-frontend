@@ -59,23 +59,12 @@
 						filterProperty="TaxId"
 						>
 						<t:template>
-							<Text text="{TaxId}" />
-						</t:template>
-					</t:Column>
-          <t:Column
-						label="Tipo"
-						sortProperty="Type"
-						filterProperty="Type"
-						>
-						<t:template>
 							<Text text="{
-                path: 'Type',
-                targetType: 'any',
-                formatter: '.formatter.formatWarehouseType'
+                parts: ['TaxId'],
+                formatter: '.formatter.formatCnpj'
               }" />
 						</t:template>
 					</t:Column>
-
 				</t:columns>
 
 			</t:Table>

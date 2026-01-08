@@ -8,6 +8,8 @@ import ServerRoutes from "siagrob1/model/ServerRoutes";
 import formatter from "siagrob1/model/formatter";
 import RequestModel from "siagrob1/model/RequestModel";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
 
 /**
  * @namespace siagrob1.controller
@@ -112,8 +114,24 @@ export default abstract class CommonController extends BaseController {
       });
   }
 
+   openStatesValueHelp(ev: Input$ValueHelpRequestEvent) {
+    DialogHelper.openTableSelectDialog(this, "StatesSelectDialog", ['Code', 'Name', 'Abbreviation'])
+      .then((oContext: Context) => {
+        const value = oContext.getProperty("Code") as string;
+        ev.getSource().setValue(value);
+      })
+      .catch(err => {
+        throw err;
+      });
+  }
+
   openAgentsValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "AgentsSelectDialog", ['Code', 'Name'])
+    DialogHelper.openTableSelectDialog(
+        this, 
+        "AgentsSelectDialog", 
+        ['Code', 'Name'],
+        [ new Filter("Inactive", FilterOperator.EQ, "N") ]
+      )
       .then((oContext: Context) => {
         const value = oContext.getProperty("Code") as string;
         ev.getSource().setValue(value);
@@ -157,7 +175,14 @@ export default abstract class CommonController extends BaseController {
   }
 
   openUnitsOfMeasureValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "UnitsOfMeasureSelectDialog", ["Code","Description"])
+    DialogHelper.openTableSelectDialog(
+        this, 
+        "UnitsOfMeasureSelectDialog", 
+        ["Code","Description"],
+        [ 
+          new Filter("Locked", FilterOperator.EQ, "N") 
+        ]
+      )
       .then((oContext: Context) => {
         const value = oContext.getProperty("Code") as string;
         ev.getSource().setValue(value);

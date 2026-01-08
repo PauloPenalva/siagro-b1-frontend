@@ -32,7 +32,7 @@ export default {
     return oDlg;
   },
   
-  openTableSelectDialog: (oController: Controller, name: string, filters: string[]): Promise<Context> => {
+  openTableSelectDialog: (oController: Controller, name: string, filters: string[], defaultFilters: Filter[] = []): Promise<Context> => {
     return new Promise(resolve => {
       const view = oController.getView();
       const id = view.getId() + "_" + name;
@@ -60,7 +60,7 @@ export default {
 
         oDlg.attachSearch(ev => {
           const value = ev.getParameter("value");
-          const aFilters: Filter[] = [];
+          let aFilters: Filter[] = [];
           filters.forEach(propertyName =>{
             aFilters.push(new Filter(propertyName, FilterOperator.Contains, value))
           })
@@ -70,7 +70,7 @@ export default {
             and: false,
           });
           
-          (ev.getSource().getBinding("items") as ODataListBinding).filter(oFilters);
+          (ev.getSource().getBinding("items") as ODataListBinding).filter([oFilters, ...defaultFilters]);
         });
 
         if (Device.system.desktop) {

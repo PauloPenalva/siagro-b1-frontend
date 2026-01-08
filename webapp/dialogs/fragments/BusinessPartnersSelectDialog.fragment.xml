@@ -36,6 +36,11 @@
       <Text text="Nome" />
     </header>
   </Column>
+  <Column>
+    <header>
+      <Text text="Cnpj/Cpf" />
+    </header>
+  </Column>
 </columns>
 <ColumnListItem >
   <cells>
@@ -45,6 +50,10 @@
       formatter: '.formatter.formatCardType'
     }" />
     <Text text="{CardName}" />
+     <Text text="{
+      parts: ['TaxId'],
+      formatter: '.formatter.formatCnpj'
+    }" />
   </cells>
 </ColumnListItem>
 </TableSelectDialog>

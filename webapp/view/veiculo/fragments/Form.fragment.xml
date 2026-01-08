@@ -54,7 +54,7 @@
               required="true"
               showValueHelp="true" 
               valueHelpOnly="true" 
-              valueHelpRequest=".openTrucksValueHelp"
+              valueHelpRequest=".openStatesValueHelp"
               liveChange=".validateField">
             <layoutData>
               <l:GridData span="XL2 L2 M3 S4" />

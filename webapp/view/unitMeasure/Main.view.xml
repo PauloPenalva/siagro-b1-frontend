@@ -51,6 +51,18 @@
 							<Text text="{Description}" />
 						</t:template>
 					</t:Column>
+          <t:Column
+						label="Inativo"
+						sortProperty="Locked"
+						filterProperty="Locked"
+						>
+						<t:template>
+							<Text text="{
+                path: 'Locked',
+                formatter: '.formatter.formatYesNo'
+              }" />
+						</t:template>
+					</t:Column>
 				</t:columns>
 
 			</t:Table>

@@ -52,6 +52,30 @@
 							<Text text="{CardName}" />
 						</t:template>
 					</t:Column>
+					<t:Column
+						label="Tipo"
+						sortProperty="CardType"
+						filterProperty="CardType"
+						>
+						<t:template>
+							<Text text="{
+                parts: ['CardType'],
+                formatter: '.formatter.formatCardType'
+              }" />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Cnpj/Cpf"
+						sortProperty="TaxId"
+						filterProperty="TaxId"
+						>
+						<t:template>
+							<Text text="{
+                parts: ['TaxId'],
+                formatter: '.formatter.formatCnpj'
+              }" />
+						</t:template>
+					</t:Column>
 				</t:columns>
 
 			</t:Table>

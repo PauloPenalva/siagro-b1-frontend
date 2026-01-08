@@ -122,7 +122,7 @@ export default abstract class SalesContractsBaseController extends CommonControl
     try {
       this.setBusy(true);
       const data = await this
-        .getResource<Agent>(`${this.api.agents}('${key}')`)
+        .getResource<Agent>(`${this.api.agents}(${key})`)
       
       return data?.Name;
     } finally {

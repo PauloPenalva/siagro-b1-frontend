@@ -5,6 +5,16 @@ export default {
 		return value?.toUpperCase();
 	},
 
+  formatYesNo: (value: string) => {
+    if (!value) return "" 
+
+    const m = new Map<string, string>();
+    m.set("Y", "Sim");
+    m.set("N", "Não");
+    
+    return m.get(value);
+  },
+
   formatDecimal: (
     number: number | string, 
     decimals: number = 4,

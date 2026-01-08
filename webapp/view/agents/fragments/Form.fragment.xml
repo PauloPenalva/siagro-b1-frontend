@@ -43,10 +43,15 @@
               maxLength="100"
           />
           <Label text="Inativo ?" />
-          <CheckBox 
-            selected="{Inactive}"
-            
-          />
+          <Select 
+            selectedKey="{Inactive}"
+            forceSelection="false"
+            required="true"
+            liveChange=".validateField"
+            >
+            <core:ListItem key="Y" text="Sim" />
+            <core:ListItem key="N" text="Não" />
+          </Select>
         </f:content>
         <core:Title />
         <core:Title />
