@@ -33,7 +33,6 @@ export default class Main extends BaseController {
 		const oFilters = new Filter({
 			filters: [
 				new Filter("Name", FilterOperator.Contains, query),
-				new Filter("Code", FilterOperator.Contains, query),
 			],
 			and: false,
 		});

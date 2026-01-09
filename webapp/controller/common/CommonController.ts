@@ -129,7 +129,7 @@ export default abstract class CommonController extends BaseController {
     DialogHelper.openTableSelectDialog(
         this, 
         "AgentsSelectDialog", 
-        ['Code', 'Name'],
+        ['Name'],
         [ new Filter("Inactive", FilterOperator.EQ, "N") ]
       )
       .then((oContext: Context) => {
