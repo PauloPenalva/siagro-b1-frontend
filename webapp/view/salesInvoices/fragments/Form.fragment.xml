@@ -1,0 +1,285 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+ <f:SimpleForm
+      id="formSalesInvoice"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0"
+    >
+        <f:content>
+            <core:Title
+                text="Dados do Documento de Saída"
+                emphasized="true"
+            />
+            <Label text="Codigo"/>
+            <Select 
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{DocNumberKey}"
+              items="{
+                path: '/DocNumbers',
+                parameters:{
+                  $filter: 'TransactionCode eq \'SalesInvoice\''
+                }
+              }"
+              >
+              <core:ListItem key="{Key}" text="{Name}"/>
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Select>
+            <Input value="{InvoiceNumber}" editable="false" />
+            <Label text="Filial"/>
+            <Select 
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{BranchCode}"
+              items="{
+                path: '/Branchs',
+                sorter: { 
+                  path: 'Code'
+                }
+              }"
+              >
+              <core:ListItem key="{Code}" text="{ShortName}" additionalText="{Code}"/>
+            </Select>
+            <Label text="Tipo"/>
+            <Select 
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{
+                path: 'InvoiceType',
+                targetType: 'any'
+              }"
+              >
+              <core:ListItem key="Normal" text="Normal" />
+              <core:ListItem key="Return" text="Retorno" />
+            </Select>
+            <Label text="Emissão" />
+            <DatePicker
+                value="{
+                  path: 'InvoiceDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+                editable="{ui>/editable}"
+                required="true"
+                liveChange=".validateField"
+            />
+            <Label text="Status"/>
+            <Select 
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{
+                path: 'InvoiceStatus',
+                targetType: 'any'
+              }"
+              >
+              <core:ListItem key="Pending" text="Pendente" />
+              <core:ListItem key="Confirmed" text="Confirmado" />
+              <core:ListItem key="Cancelled" text="Cancelado" />
+            </Select>
+            <Label text="Cliente" />
+            <Input
+              editable="{ui>/editable}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openBusinessPartnersValueHelp"
+              required="true"
+              value="{CardCode}"
+              >
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts: ['CardCode'],
+                formatter: '.formatBusinessPartnerName'
+              }" 
+              editable="false"
+            />
+            <Label text="Peso Bruto"/>
+            <Input 
+              required="true"
+              editable="{ui>/editable}"
+              value="{
+                path: 'GrossWeight',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions: {
+                    decimals: 3,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                } 
+              }"
+            />
+            <Label text="Peso Liquido"/>
+            <Input 
+              required="true"
+              editable="{ui>/editable}"
+              value="{
+                path: 'NetWeight',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions: {
+                    decimals: 3,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                } 
+              }"
+            />
+            
+            <core:Title text="Transporte" />
+            <Label text="Endereço Entrega" />
+            <Input
+              editable="{ui>/editable}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openBusinessPartnersValueHelp"
+              required="true"
+              value="{DeliveryCardCode}"
+              >
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts: ['DeliveryCardCode'],
+                formatter: '.formatBusinessPartnerName'
+              }" 
+              editable="false"
+            />
+            <Label text="Transportadora" />
+            <Input
+              editable="{ui>/editable}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openBusinessPartnersValueHelp"
+              required="true"
+              value="{TruckingCompanyCode}"
+              >
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts: ['TruckingCompanyCode'],
+                formatter: '.formatBusinessPartnerName'
+              }" 
+              editable="false"
+            />
+            <Label text="Placa" />
+            <Input
+              editable="{ui>/editable}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openTrucksValueHelp"
+              required="true"
+              value="{TruckCode}"
+              >
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Input>
+            <Label text="Tipo do Frete"/>
+            <Select 
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{
+                path: 'FreightTerms',
+                targetType: 'any'
+              }"
+              >
+              <core:ListItem key="Cif" text="CIF"/>
+              <core:ListItem key="Fob" text="FOB"/>
+              <core:ListItem key="None" text="SEM FRETE"/>
+            </Select>
+            <Label text="Valor do Frete"/>
+            <Input 
+              editable="{ui>/editable}"
+              required="true"
+              value="{
+                path: 'FreightCostStandard',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions: {
+                    decimals: 8,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                } 
+              }"
+            >
+            </Input>
+            <core:Title text="Dados da NF-e"/>
+            <Label text="Numero" />
+            <Input 
+              editable="{ui>/editable}"
+              value="{TaxDocumentNumber}"
+              maxLength="9"
+            />
+            <Label text="Série" />
+            <Input 
+              editable="{ui>/editable}"
+              value="{TaxDocumentSeries}"
+              maxLength="3"
+            />
+            <Label text="Chave de Acesso" />
+            <Input 
+              editable="{ui>/editable}"
+              value="{ChaveNFe}"
+              maxLength="44"
+            />
+            <core:Title text="Informações Complementares"/>
+            <Label text="Inf.Contribuinte" />
+            <TextArea 
+              editable="{ui>/editable}"
+              value="{TaxPayerComments}"
+              rows="5"
+              cols="20"
+            />
+            <Label text="Inf.Fisco" />
+            <TextArea 
+              editable="{ui>/editable}"
+              value="{TaxComments}"
+              rows="5"
+              cols="20"
+            />
+            <core:Title text="Outras Informações"/>
+            <Label text="Observações" />
+            <TextArea 
+              editable="{ui>/editable}"
+              value="{Comments}"
+              rows="5"
+              cols="20"
+            />         
+        </f:content>
+    </f:SimpleForm>
+</core:FragmentDefinition>

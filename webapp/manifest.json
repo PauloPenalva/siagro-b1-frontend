@@ -359,6 +359,11 @@
           "target": "storageTransactionsDetail"
         },
         {
+          "pattern": "storageTransactions/sales",
+          "name": "storageTransactionsSales",
+          "target": "storageTransactionsSales"
+        },
+        {
           "pattern": "shippingTransaction:?query:",
           "name": "shippingTransaction",
           "target": "shippingTransaction"
@@ -382,6 +387,16 @@
           "pattern": "salesInvoices",
           "name": "salesInvoices",
           "target": "salesInvoices"
+        },
+        {
+          "pattern": "salesInvoices/detail/{id}",
+          "name": "salesInvoicesDetail",
+          "target": "salesInvoicesDetail"
+        },
+        {
+          "pattern": "salesInvoices/edit/{id}",
+          "name": "salesInvoicesEdit",
+          "target": "salesInvoicesEdit"
         },
         {
           "pattern": "agents",
@@ -829,6 +844,12 @@
 					"name": "siagrob1.view.storageTransactions.Detail",
           "clearControlAggregation": true
 				},
+        "storageTransactionsSales": {
+					"id": "storageTransactionsSales",
+          "level": 1,
+					"name": "siagrob1.view.storageTransactions.sales.Main",
+          "clearControlAggregation": true
+				},
         "shippingTransaction": {
 					"id": "shippingTransaction",
           "level": 1,
@@ -857,6 +878,18 @@
 					"id": "salesInvoices",
           "level": 1,
 					"name": "siagrob1.view.salesInvoices.Main",
+          "clearControlAggregation": true
+				},
+        "salesInvoicesEdit": {
+					"id": "salesInvoicesEdit",
+          "level": 1,
+					"name": "siagrob1.view.salesInvoices.Edit",
+          "clearControlAggregation": true
+				},
+        "salesInvoicesDetail": {
+					"id": "salesInvoicesDetail",
+          "level": 1,
+					"name": "siagrob1.view.salesInvoices.Detail",
           "clearControlAggregation": true
 				},
         "agents": {

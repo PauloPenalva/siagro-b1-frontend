@@ -1,0 +1,72 @@
+<mvc:View
+	controllerName="siagrob1.controller.salesInvoices.Detail"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.ui.layout.form"
+  xmlns:uxap="sap.uxap"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+  <uxap:ObjectPageLayout
+    showFooter="true"
+    toggleHeaderOnTitleClick="true"
+		preserveHeaderStateOnScroll="false"
+    busy="{ui>/busy}"
+    busyIndicatorDelay="0"
+	>
+   	<uxap:headerTitle>
+      <uxap:ObjectPageDynamicHeaderTitle>
+         <uxap:expandedHeading>
+           <Title text="Documento de Saída"/>
+          </uxap:expandedHeading>
+          <uxap:snappedHeading>
+           <Title text="Documento de Saída"/>
+         </uxap:snappedHeading>
+        <uxap:actions>
+          <Button text="Editar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' ? true : false }" type="Emphasized" press=".onEdit"/>
+          <Button text="Confirmar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' ? true : false }" type="Success" press=".onConfirm"/>
+        </uxap:actions>
+      </uxap:ObjectPageDynamicHeaderTitle>
+		</uxap:headerTitle>
+
+    <uxap:headerContent>
+      <HBox class="sapUiTinyMarginBottom">
+        <ObjectIdentifier title="{InvoiceNumber}" class="sapUiMediumMarginEnd sapUiTinyMarginBottom"/>
+        <ObjectStatus
+          state="{
+            path: 'InvoiceStatus',
+            targetType: 'any',
+            formatter: '.formatter.stateSalesInvoiceStatus'
+          }"
+          inverted="true" 
+          text="{
+            path: 'InvoiceStatus',
+            formatter: '.formatter.formatSalesInvoiceStatus',
+            targetType: 'any'
+          }" />
+      </HBox> 
+   	</uxap:headerContent> 
+    
+    <uxap:sections>
+      <uxap:ObjectPageSection titleUppercase="false" title="Dados do Documento de Saída">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection title=" " titleUppercase="false">
+						<core:Fragment fragmentName="siagrob1.view.salesInvoices.fragments.Form" type="XML" />
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Itens do Documento de Saída">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection title=" " titleUppercase="false">
+						<core:Fragment fragmentName="siagrob1.view.salesInvoices.fragments.Items" type="XML" />
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+    </uxap:sections>
+  </uxap:ObjectPageLayout>
+
+</mvc:View>

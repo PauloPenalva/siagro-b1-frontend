@@ -1,0 +1,50 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+<Dialog id="salesInvoiceNotaFiscalDialog" title="Informar Nota Fiscal" busyIndicatorDelay="0" busy="{ui>/busy}">
+  <content>
+    <VBox class="sapUiSmallMargin" width="460px">
+      <f:SimpleForm 
+        id="salesInvoicesNotaFiscalForm"
+        layout="ResponsiveGridLayout"
+        singleContainerFullSize="true"
+		    busyIndicatorDelay="0"
+      >
+      <core:Title text="Dados da Nota Fiscal" />
+        <Label text="Numero" />
+        <Input 
+          required="true"
+          value="{viewModel>/TaxDocumentNumber}"
+          maxLength="9"
+          liveChange=".validateField"
+        />
+        <Label text="Série" />
+        <Input 
+          required="true"
+          value="{viewModel>/TaxDocumentSeries}"
+          maxLength="3"
+          liveChange=".validateField"
+        />
+        <Label text="Chave de Acesso" />
+        <Input 
+          value="{viewModel>/ChaveNFe}"
+          maxLength="44"
+          liveChange=".validateField"
+        />
+      </f:SimpleForm>
+    </VBox>
+  </content>
+  <footer>
+    <OverflowToolbar >
+      <ToolbarSpacer />
+      <Button text="Confirmar" type="Emphasized" press=".onNotaFiscalConfirm"/>
+      <Button text="Fechar" press=".onCloseNotaFiscalDialog" />
+    </OverflowToolbar>
+  </footer>
+
+</Dialog>
+</core:FragmentDefinition>

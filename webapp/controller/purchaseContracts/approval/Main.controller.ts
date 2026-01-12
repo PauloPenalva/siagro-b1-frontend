@@ -59,8 +59,6 @@ export default class Main extends CommonController {
         filterString = `${statusFilter} and ${searchFilter}`;
     }
 
-    console.log("Filter string:", filterString);
-    
     // IMPORTANTE: Usar changeParameters para filtro OData string
     binding.changeParameters({
         "$filter": filterString

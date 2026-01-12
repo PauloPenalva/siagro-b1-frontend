@@ -10,6 +10,15 @@ import RequestModel from "siagrob1/model/RequestModel";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
+import { Item } from "siagrob1/types/Items";
+import { Agent } from "siagrob1/types/Agent";
+import { BusinessPartner } from "siagrob1/types/BusinessPartner";
+import { HarvestSeason } from "siagrob1/types/HarvestSeason";
+import { LogisticRegion } from "siagrob1/types/LogisticRegion";
+import { QualityAttrib } from "siagrob1/types/QualityAttrib";
+import { Taxes } from "siagrob1/types/Taxes";
+import { UnitOfMeasure } from "siagrob1/types/UnitOfMeasure";
+import { Warehouse } from "siagrob1/types/Warehouse";
 
 /**
  * @namespace siagrob1.controller
@@ -246,4 +255,118 @@ export default abstract class CommonController extends BaseController {
         throw err;
       });
   }
+
+  async formatItemName(key: string){
+    if (!key){
+      return null;
+    }
+  
+    const data = await this.getResource<Item>(`${this.api.items}('${key}')`)
+    return data?.ItemName;
+  }
+
+   async formatAgentName(key: string){
+      if (!key){
+        return null;
+      } 
+  
+      try {
+        this.setBusy(true);
+        const data = await this
+          .getResource<Agent>(`${this.api.agents}(${key})`)
+        
+        return data?.Name;
+      } finally {
+        this.setBusy(false);
+      }
+  
+    }
+  
+    async formatLogisticRegionName(key: string){
+      if (!key){
+        return null;
+      } 
+  
+      try {
+        this.setBusy(true);
+        const data = await this
+          .getResource<LogisticRegion>(`${this.api.logisticRegions}('${key}')`)
+        
+        return data?.Name;
+      } finally {
+        this.setBusy(false);
+      }
+  
+    }
+  
+    async formatBusinessPartnerName(key: string){
+      if (!key){
+        return null;
+      } 
+  
+      try {
+        this.setBusy(true);
+        const data = await this
+          .getResource<BusinessPartner>(`${this.api.businessPartners}('${key}')`)
+        
+        return data?.CardName;
+      } finally {
+        this.setBusy(false);
+      }
+  
+    }
+  
+    async formatUnitOfMeasureDescription(key: string) {
+       if (!key){
+        return null;
+      }
+  
+      const data = await this.getResource<UnitOfMeasure>(`${this.api.unitsOfMeasure}('${key}')`)
+      return data?.Description;
+    }
+  
+    async formatHarvestSeasonName(key: string) {
+       if (!key){
+        return null;
+      }
+  
+      const data = await this.getResource<HarvestSeason>(`${this.api.harvestSeasons}('${key}')`)
+      return data?.Name;
+    }
+  
+    async formatWarehouseName(key: string) {
+       if (!key){
+        return null;
+      }
+  
+      const data = await this.getResource<Warehouse>(`${this.api.warehouses}('${key}')`)
+      return data?.Name;
+    }
+  
+    async formatTaxName(key: string) {
+       if (!key){
+        return null;
+      }
+  
+      const data = await this.getResource<Taxes>(`${this.api.taxes}('${key}')`)
+      return data?.Name;
+    }
+  
+    async formatTaxRate(key: string) {
+       if (!key){
+        return null;
+      }
+  
+      const data = await this.getResource<Taxes>(`${this.api.taxes}('${key}')`)
+      return this.formatter.formatDecimal(data?.Rate);
+    }
+  
+     async formatQualityAttribName(key: string) {
+       if (!key){
+        return null;
+      }
+  
+      const data = await this.getResource<QualityAttrib>(`${this.api.qualityAttrib}('${key}')`)
+      return data?.Name;
+    }
 } 

@@ -10,6 +10,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import { BaseController } from "./BaseController";
 import MessageToast from "sap/m/MessageToast";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import Dialog from "sap/m/Dialog";
 
 
 /**
@@ -18,6 +19,8 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 export default class Main extends BaseController {
 
   formatter = formatter;
+
+  private _notaFiscalDialog: Dialog;
 
 	onInit(): void  {
     this.createFilterModel();
@@ -77,7 +80,7 @@ export default class Main extends BaseController {
     const oContext = oTable.getContextByIndex(i)
 		const sId = oContext.getProperty("Key") as string;
     
-		this.navTo("salesContractsDetail", {id: sId});
+		this.navTo("salesInvoicesDetail", {id: sId});
 	}
 
   private refreshData() {
@@ -112,5 +115,99 @@ export default class Main extends BaseController {
         })
         .finally(() => this.setBusy(false));
     }
+  }
+
+  async onNotaFiscal() {
+    const table = this.byId("tableSalesInvoices") as Table;
+    const selectedInvoice = table.getSelectedIndices();
+    if (selectedInvoice.length == 0){
+      MessageBox.warning("Selecione um registro.")
+      throw new Error("Selecione um registro");
+    }
+
+    this._notaFiscalDialog ??= await DialogHelper.createDialog(
+      this, 
+      "siagrob1.view.salesInvoices.fragments.NotaFiscalDialog"
+    );
+
+    const ctx = table.getContextByIndex(selectedInvoice[0]);
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    viewModel.setData({
+      TaxDocumentNumber: ctx.getProperty("TaxDocumentNumber"),
+      TaxDocumentSeries: ctx.getProperty("TaxDocumentSeries"),
+      ChaveNFe: ctx.getProperty("ChaveNFe"),
+
+    });
+
+    this.openNotaFiscalDialog();
+  }
+
+  private async openNotaFiscalDialog(){
+    this._notaFiscalDialog?.open();
+  }
+
+  onCloseNotaFiscalDialog() {
+    this._notaFiscalDialog?.close();
+  }
+
+  async onNotaFiscalConfirm() {
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    const notaFiscal = viewModel.getProperty("/TaxDocumentNumber");
+    const serie = viewModel.getProperty("/TaxDocumentSeries");
+    const chaveNfe = viewModel.getProperty("/ChaveNFe");
+
+    if (!notaFiscal || !serie) {
+      MessageBox.warning("Preencha corretamente o formulário.");
+      throw new Error("Preencha corretamente o formulário.");
+    }
+
+    const table = this.byId("tableSalesInvoices") as Table;
+    const selectedInvoice = table.getSelectedIndices();
+
+    const ctx = table.getContextByIndex(selectedInvoice[0]) as Context;
+    ctx.setProperty("TaxDocumentNumber", notaFiscal);
+    ctx.setProperty("TaxDocumentSeries", serie);
+    ctx.setProperty("ChaveNFe", chaveNfe);
+
+    const oModel = ctx.getModel() as ODataModel;
+    try {
+			this.setBusy(true);
+			await oModel.submitBatch(oModel.getUpdateGroupId());
+			if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
+      	this.onCloseNotaFiscalDialog();
+        viewModel.setData({});
+        MessageToast.show("Documento de saída atualizado com sucesso.");
+        this.refreshData();
+			}
+		} finally {
+			this.setBusy(false);
+		}
+
+  }
+
+  async onReturn() {
+    const table = this.byId("tableSalesInvoices") as Table;
+    const selectedInvoice = table.getSelectedIndices();
+    if (selectedInvoice.length == 0){
+      MessageBox.warning("Selecione um registro.")
+      throw new Error("Selecione um registro");
+    }
+
+    const ctx = table.getContextByIndex(selectedInvoice[0]) as Context;
+
+    if (await DialogHelper.confirmDialog("Confirma o retorno deste documento ?")) {
+      this.actionReturn(ctx)
+    }
+  }
+
+  private actionReturn(ctx: Context){
+    const action = (this.getModel() as ODataModel).bindContext("/SalesInvoicesReturn(...)");
+    action.setParameter("Key", ctx.getProperty("Key"));
+    this.setBusy(true);
+    action.invoke()
+      .then(() => {
+        this.refreshData();
+      })
+      .finally(() => this.setBusy(false))
   }
 }

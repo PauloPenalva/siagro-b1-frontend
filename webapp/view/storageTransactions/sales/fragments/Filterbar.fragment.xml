@@ -1,0 +1,128 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:fb="sap.ui.comp.filterbar"
+>
+<fb:FilterBar search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+  <fb:filterGroupItems>
+      <fb:FilterGroupItem name="branch" label="Filial" groupName="GroupBranch" visibleInFilterBar="true">
+        <fb:control>
+            <Select 
+              forceSelection="false"
+              selectedKey="{filter>/BranchCode}"
+              items="{
+                path: '/Branchs',
+                suspended: true,
+                sorter: { 
+                  path: 'Code'
+                }
+              }">
+              <core:ListItem key="{Code}" text="{ShortName}"/>
+            </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="transactionStatus" label="Status" groupName="GroupTransactionStatus" visibleInFilterBar="true">
+        <fb:control>
+            <Select 
+              forceSelection="false"
+              selectedKey="{
+                path: 'filter>/TransactionStatus',
+                type: 'sap.ui.model.type.String'
+              }"
+            >
+              <core:ListItem key="Pending" text="Pendente"/>
+              <core:ListItem key="Confirmed" text="Confirmado"/>
+              <core:ListItem key="Cancelled" text="Cancelado"/>
+              <core:ListItem key="Invoiced" text="Faturado"/>
+            </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="code" label="Codigo" groupName="GroupCode" visibleInFilterBar="true">
+        <fb:control>
+            <Input showClearIcon="true" value="{filter>/Code}">
+            </Input>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="dateFrom" label="Emissão de" groupName="GroupDateFrom" visibleInFilterBar="true">
+        <fb:control>
+           <DatePicker 
+            value="{
+              path: 'filter>/DateFrom',
+              type: 'sap.ui.model.type.String'
+            }"
+            displayFormat="dd/MM/yyyy"
+            valueFormat="yyyy-MM-dd"
+           />
+        </fb:control>
+      </fb:FilterGroupItem>
+       <fb:FilterGroupItem name="dateTo" label="Emissão até" groupName="GroupDateTo" visibleInFilterBar="true">
+        <fb:control>
+           <DatePicker 
+            value="{
+              path: 'filter>/DateTo',
+              type: 'sap.ui.model.type.String'
+            }"
+            displayFormat="dd/MM/yyyy"
+            valueFormat="yyyy-MM-dd"
+           />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="truck" label="Veiculo" groupName="GroupTruck" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openTrucksValueHelp"
+              value="{filter>/TruckCode}"
+              >
+            </Input>
+        </fb:control>
+      </fb:FilterGroupItem>
+       <fb:FilterGroupItem name="invoiceNumber" label="Documento" groupName="GroupInvoiceNumber" visibleInFilterBar="true">
+        <fb:control>
+            <Input showClearIcon="true" value="{filter>/InvoiceNumber}">
+            </Input>
+        </fb:control>
+      </fb:FilterGroupItem>
+       <fb:FilterGroupItem name="warehouse" label="Armazém" groupName="GroupWarehouse" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openWarehouseValueHelp"
+              value="{filter>/WarehouseCode}"
+              >
+            </Input>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="businessPartners" label="Cliente" groupName="GroupBusinessPartner" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openBusinessPartnersValueHelp"
+              value="{filter>/CardCode}"
+              >
+            </Input>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="items" label="Produto" groupName="GroupItem" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openItemValueHelp"
+              value="{filter>/ItemCode}"
+              >
+            </Input>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="chaveNFe" label="Chave NFe" groupName="GroupChaveNFe" visibleInFilterBar="true">
+        <fb:control>
+            <Input showClearIcon="true" value="{filter>/ChaveNFe}">
+            </Input>
+        </fb:control>
+      </fb:FilterGroupItem>
+    </fb:filterGroupItems>
+  </fb:FilterBar>
+</core:FragmentDefinition>

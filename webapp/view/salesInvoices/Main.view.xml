@@ -50,7 +50,11 @@
             <Title text="Documentos de Saída" />
 						<ToolbarSpacer />
 						<Button type="Transparent" text="Exportar Excel" press=".onExcel"/>
-						<Button type="Transparent" text="Cancelar" press=".onCancel"/>
+						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
+            <Button type="Transparent" text="Informar Nota Fiscal" press=".onNotaFiscal"/>
+            <Button type="Transparent" text="Retornar" press=".onReturn"/>
+            <ToolbarSeparator />
+          	<Button type="Transparent" text="Cancelar Doc." press=".onCancel"/>
             <ToolbarSeparator />
 						<Button type="Transparent" text="Atualizar" press=".refreshData"/>
 					</OverflowToolbar>
@@ -86,6 +90,19 @@
 						>
 						<t:template>
 							<Text text="{InvoiceNumber}" />
+						</t:template>
+					</t:Column>
+           <t:Column
+						label="Tipo"
+						hAlign="Center"
+            width="5rem"
+						>
+						<t:template>
+							<Text text="{
+                path: 'InvoiceType',
+                targetType: 'any',
+                formatter: '.formatter.formatSalesInvoiceType'
+              }" />
 						</t:template>
 					</t:Column>
           <t:Column
@@ -218,7 +235,15 @@
 							<Text text="{ChaveNFe}" />
 						</t:template>
 					</t:Column>
-          
+          <t:Column
+						label="Observações"
+					  hAlign="Center"
+            width="25rem"
+            >
+						<t:template>
+							<Text text="{Comments}" />
+						</t:template>
+					</t:Column>
 				</t:columns>
 
 			</t:Table>

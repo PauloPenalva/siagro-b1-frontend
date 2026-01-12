@@ -109,6 +109,12 @@ export abstract class BaseController extends CommonController {
         type: EdmType.String,
       });
 
+      aCols.push({
+        label: "Observações",
+        property: "Comments",
+        type: EdmType.String,
+      });
+
       return aCols;
     }
       

@@ -98,8 +98,8 @@ export default class Component extends UIComponent {
 
     if (aMessages.length) this.bError = true;
 
-    const { httpStatus } = aMessages[0].getTechnicalDetails() as any;
-    if (httpStatus === 401){
+    const { httpStatus } = aMessages[0]?.getTechnicalDetails() as any ?? {};
+    if (httpStatus && httpStatus === 401){
       this.getRouter().navTo("login", {}, true);
       return;
     }

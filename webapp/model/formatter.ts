@@ -257,14 +257,6 @@ export default {
     return m.get(value);
   },
 
-  formatCardType: (value: string) => {
-    const m = new Map<string, string>();
-    m.set("C", "Cliente");
-    m.set("S", "Fornecedor");
-    
-    return m.get(value);
-  },
-
   stateSalesInvoiceStatus: (value: string) => {
     const m = new Map<string, string>();
     m.set("Pending", "None");
@@ -274,7 +266,23 @@ export default {
     return m.get(value);
   },
 
-   formatTransactionCode: (value: string) => {
+   formatSalesInvoiceType: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Normal", "Normal");
+    m.set("Return", "Retorno");
+    
+    return m.get(value);
+  },
+
+  formatCardType: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("C", "Cliente");
+    m.set("S", "Fornecedor");
+    
+    return m.get(value);
+  },
+
+  formatTransactionCode: (value: string) => {
     const m = new Map<string, string>();
     m.set("PurchaseContract", "Contrato de Compra");
     m.set("WeighingTicket", "Ticket de Pesagem");
