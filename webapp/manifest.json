@@ -399,6 +399,16 @@
           "target": "salesInvoicesEdit"
         },
         {
+          "pattern": "salesInvoices/reconciliation",
+          "name": "salesInvoicesReconciliation",
+          "target": "salesInvoicesReconciliation"
+        },
+        {
+          "pattern": "salesInvoices/reconciliation/open",
+          "name": "salesInvoicesOpenReconciliation",
+          "target": "salesInvoicesOpenReconciliation"
+        },
+        {
           "pattern": "agents",
           "name": "agents",
           "target": "agents"
@@ -890,6 +900,18 @@
 					"id": "salesInvoicesDetail",
           "level": 1,
 					"name": "siagrob1.view.salesInvoices.Detail",
+          "clearControlAggregation": true
+				},
+        "salesInvoicesReconciliation": {
+					"id": "salesInvoicesReconciliation",
+          "level": 1,
+					"name": "siagrob1.view.salesInvoices.reconciliation.Main",
+          "clearControlAggregation": true
+				},
+        "salesInvoicesOpenReconciliation": {
+					"id": "salesInvoicesOpenReconciliation",
+          "level": 1,
+					"name": "siagrob1.view.salesInvoices.openReconciliation.Main",
           "clearControlAggregation": true
 				},
         "agents": {

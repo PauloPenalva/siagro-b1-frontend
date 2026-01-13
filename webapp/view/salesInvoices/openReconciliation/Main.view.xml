@@ -1,0 +1,235 @@
+<mvc:View
+	controllerName="siagrob1.controller.salesInvoices.openReconciliation.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+  xmlns:f="sap.f"
+  xmlns:mdc="sap.ui.mdc"
+  xmlns:fb="sap.ui.comp.filterbar"
+  xmlns:vm="sap.ui.fl.variants"
+  xmlns:svm="sap.ui.comp.smartvariants"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Conferencia de entregas"/>
+        </f:heading>
+			</f:DynamicPageTitle>
+    </f:title>
+		<f:content>
+      <t:Table
+				id="tableSalesInvoicesOpenReconciliation"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+        rows="{
+					path: '/SalesInvoicesItems',
+          sorter: [
+            { path: 'SalesInvoice/RowId' }
+          ],
+          parameters:{
+            $filter: 'DeliveryStatus eq \'Closed\' and SalesInvoice/InvoiceType eq \'Normal\' and SalesInvoice/InvoiceStatus eq \'Confirmed\''
+          }
+				}"
+			>
+				<t:extension>
+					<OverflowToolbar >
+            <Title text="Itens do Documento de Saída (Encerrados)" />
+						<ToolbarSpacer />
+						<Button type="Emphasized" text="Salvar" press=".onSave"/>
+            <Button type="Transparent" text="Cancelar Digitação" press=".onCancel"/>
+						<!-- <Button type="Transparent" text="Exportar Excel" press=".onExcel"/> -->
+            <SearchField placeholder="Pesquisar Nota Fiscal" width="30%" search=".onSearch" />
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+          <t:Column
+						label="Key"
+            visible="false"
+            width="10rem"
+            >
+						<t:template>
+							<Text text="{Key}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column 
+            filterProperty="SalesInvoice/Branch/ShortName"
+            width="6rem"
+            sortProperty="SalesInvoice/Branch/ShortName"
+          >
+            <Label text="Filial" />
+            <t:template>
+              <Text
+                text="{SalesInvoice/Branch/ShortName}"
+                wrapping="false"
+              />
+            </t:template>
+          </t:Column>
+          <t:Column
+						label="Numero"
+						sortProperty="SalesInvoice/InvoiceNumber"
+            hAlign="Center"
+            width="7rem"
+						>
+						<t:template>
+							<Text text="{SalesInvoice/InvoiceNumber}" />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Emissão"
+						sortProperty="SalesInvoice/InvoiceDate"
+            hAlign="Center"
+            width="7rem"
+						>
+						<t:template>
+							<Text text="{
+                path: 'SalesInvoice/InvoiceDate',
+                targetType: 'any',
+                formatter: '.formatter.formatDate'
+              }" />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Nota Fiscal"
+						sortProperty=""
+            hAlign="Center"
+            width="7rem"
+						>
+						<t:template>
+							<Text text="{SalesInvoice/TaxDocumentNumber}" />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Placa"
+						sortProperty=""
+            hAlign="Center"
+            width="7rem"
+						>
+						<t:template>
+							<Text text="{SalesInvoice/TruckCode}" />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Nome Cliente"
+						sortProperty="SalesInvoice/CardName"
+            hAlign="Center"
+            width="10rem"
+            >
+						<t:template>
+							<Text text="{SalesInvoice/CardName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Contrato"
+						sortProperty="SalesContract/Code"
+            hAlign="Center"
+            width="8rem"
+            >
+						<t:template>
+							<Text text="{SalesContract/Code}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Produto"
+						sortProperty="ItemName"
+            hAlign="Center"
+            width="10rem"
+						>
+						<t:template>
+							<Text text="{ItemName}" />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Quantidade"
+						hAlign="Center"
+            width="7rem"
+						>
+						<t:template>
+							<Text text="{Quantity}" />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Un.Med"
+						hAlign="Center"
+            width="5rem"
+						>
+						<t:template>
+							<Text text="{UnitOfMeasureCode}" />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Qtd.Entregue"
+						hAlign="Center"
+            width="7rem"
+						>
+						<t:template>
+							<Input 
+                type="Number" 
+                value="{
+                  path: 'DeliveredQuantity',
+                  type: 'sap.ui.model.type.Integer',
+                  formatOptions:{
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                  }
+                }" 
+                textAlign="End"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Desconto"
+						hAlign="Center"
+            width="7rem"
+						>
+						<t:template>
+							<Input 
+                type="Number" 
+                value="{
+                  path: 'QuantityLoss',
+                  type: 'sap.ui.model.type.Integer',
+                  formatOptions:{
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                  }
+                }" 
+                textAlign="End"
+              />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Status"
+						hAlign="Center"
+            width="7rem"
+						>
+						<t:template>
+							<Select 
+                forceSelection="false"
+                selectedKey="{
+                  path: 'DeliveryStatus',
+                  targetType: 'any'
+                }"
+              >
+                <core:ListItem key="Open" text="Aberto" />
+                <core:ListItem key="Closed" text="Encerrado" />
+              </Select>
+						</t:template>
+					</t:Column>
+
+				</t:columns>
+
+			</t:Table>
+
+    </f:content>
+  
+  </f:DynamicPage>
+
+</mvc:View>

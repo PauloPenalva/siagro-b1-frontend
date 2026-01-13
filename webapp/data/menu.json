@@ -228,6 +228,18 @@
           "key": "salesInvoices",
           "enabled": true,
           "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Conferencia de entregas",
+          "key": "salesInvoicesReconciliation",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Estornar Conferencia de entrega",
+          "key": "salesInvoicesOpenReconciliation",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
         }
       ]
     },
