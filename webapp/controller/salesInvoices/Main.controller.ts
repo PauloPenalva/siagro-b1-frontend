@@ -165,24 +165,23 @@ export default class Main extends BaseController {
     const selectedInvoice = table.getSelectedIndices();
 
     const ctx = table.getContextByIndex(selectedInvoice[0]) as Context;
-    ctx.setProperty("TaxDocumentNumber", notaFiscal);
-    ctx.setProperty("TaxDocumentSeries", serie);
-    ctx.setProperty("ChaveNFe", chaveNfe);
-
+    
     const oModel = ctx.getModel() as ODataModel;
-    try {
-			this.setBusy(true);
-			await oModel.submitBatch(oModel.getUpdateGroupId());
-			if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
-      	this.onCloseNotaFiscalDialog();
+    const action = oModel.bindContext("/SalesInvoicesSetDocumentNumber(...)")
+    action.setParameter("Key", ctx.getProperty("Key"));
+    action.setParameter("DocumentNumber", notaFiscal );
+    action.setParameter("DocumentSeries", serie );
+    action.setParameter("ChaveNFe", chaveNfe );
+
+    this.setBusy(true);
+    action.invoke()
+      .then(() => {
+        this.onCloseNotaFiscalDialog();
         viewModel.setData({});
         MessageToast.show("Documento de saída atualizado com sucesso.");
         this.refreshData();
-			}
-		} finally {
-			this.setBusy(false);
-		}
-
+      })
+      .finally(() => this.setBusy(false));
   }
 
   async onReturn() {
