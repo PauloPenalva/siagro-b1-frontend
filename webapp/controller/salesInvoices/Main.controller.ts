@@ -3,7 +3,6 @@ import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import formatter from "siagrob1/model/formatter";
 import MessageBox from "sap/m/MessageBox";
 import Table from "sap/ui/table/Table";
-import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import JSONModel from "sap/ui/model/json/JSONModel";
