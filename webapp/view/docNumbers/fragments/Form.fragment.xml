@@ -45,6 +45,7 @@
               <core:ListItem key="WeighingTicket" text="Ticket de Pesagem"/>
               <core:ListItem key="StorageAddress" text="Lote de Armazenagem"/>
               <core:ListItem key="StorageTransaction" text="Romaneio"/>
+              <core:ListItem key="OwnershipTransfer" text="Transferencia Propriedade"/>
               <!-- <core:ListItem key="ShippingOrder" text="Ordem de Carregamento"/> -->
             </Select>
             <Label text="Nome" />

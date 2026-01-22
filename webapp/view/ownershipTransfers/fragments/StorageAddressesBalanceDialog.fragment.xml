@@ -1,0 +1,59 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+    <TableSelectDialog
+        class=" sapUiSizeCompact"
+        growing="true"
+        growingThreshold="20"
+        items="{viewModel>/}"
+        rememberSelections="true"
+        title="Lotes de Armazenagem"
+    >
+        <columns>
+            <Column>
+                <header>
+                    <Text text="Codigo" />
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="Descrição" />
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="Cliente" />
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="Produto" />
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="Armazem" />
+                </header>
+            </Column>
+            <Column hAlign="End">
+                <header>
+                    <Text text="Saldo" />
+                </header>
+            </Column>
+        </columns>
+        <ColumnListItem>
+            <cells>
+                <Text text="{viewModel>Code}" />
+                <Text text="{viewModel>Description}" />
+                <Text text="({viewModel>CardCode}) {viewModel>CardName}" />
+                <Text text="({viewModel>ItemCode}) {viewModel>ItemName}" />
+                <Text text="{viewModel>WarehouseCode}" />
+                <ObjectNumber number="{viewModel>Balance}" unit="KG" />
+            </cells>
+        </ColumnListItem>
+    </TableSelectDialog>
+</core:FragmentDefinition>

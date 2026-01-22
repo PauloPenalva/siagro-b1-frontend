@@ -291,6 +291,7 @@ export default {
     m.set("ShippingOrder", "Ordem de Carregamento");
     m.set("SalesContract", "Contrato de Venda");
     m.set("SalesInvoice", "Documento de Saída");
+    m.set("OwnershipTransfer", "Transferencia Propriedade");
     
     return m.get(value);
   },

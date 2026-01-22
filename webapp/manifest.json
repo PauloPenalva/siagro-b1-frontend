@@ -364,6 +364,26 @@
           "target": "storageTransactionsSales"
         },
         {
+          "pattern": "ownershipTransfers",
+          "name": "ownershipTransfers",
+          "target": "ownershipTransfers"
+        },
+        {
+          "pattern": "ownershipTransfers/new",
+          "name": "ownershipTransfersNew",
+          "target": "ownershipTransfersNew"
+        },
+        {
+          "pattern": "ownershipTransfers/edit/{id}",
+          "name": "ownershipTransfersEdit",
+          "target": "ownershipTransfersEdit"
+        },
+        {
+          "pattern": "ownershipTransfers/detail/{id}",
+          "name": "ownershipTransfersDetail",
+          "target": "ownershipTransfersDetail"
+        },
+        {
           "pattern": "shippingTransaction:?query:",
           "name": "shippingTransaction",
           "target": "shippingTransaction"
@@ -830,6 +850,30 @@
 					"name": "siagrob1.view.salesContracts.approval.Detail",
           "clearControlAggregation": true
 				},
+        "ownershipTransfers": {
+					"id": "ownershipTransfers",
+          "level": 1,
+					"name": "siagrob1.view.ownershipTransfers.Main",
+          "clearControlAggregation": true
+				},
+        "ownershipTransfersNew": {
+					"id": "ownershipTransfersNew",
+          "level": 2,
+					"name": "siagrob1.view.ownershipTransfers.Add",
+          "clearControlAggregation": true
+				},
+        "ownershipTransfersEdit": {
+					"id": "ownershipTransfersEdit",
+          "level": 2,
+					"name": "siagrob1.view.ownershipTransfers.Edit",
+          "clearControlAggregation": true
+				},
+        "ownershipTransfersDetail": {
+					"id": "ownershipTransfersDetail",
+          "level": 2,
+					"name": "siagrob1.view.ownershipTransfers.Detail",
+          "clearControlAggregation": true
+				},
         "storageTransactions": {
 					"id": "storageTransactions",
           "level": 1,
@@ -854,6 +898,7 @@
 					"name": "siagrob1.view.storageTransactions.Detail",
           "clearControlAggregation": true
 				},
+
         "storageTransactionsSales": {
 					"id": "storageTransactionsSales",
           "level": 1,

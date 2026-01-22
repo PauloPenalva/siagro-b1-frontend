@@ -1,0 +1,185 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }"
+>
+ <f:SimpleForm
+      id="ownershipTransferForm"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0"
+    >
+        <f:content>
+            <core:Title
+                text="Dados da transferencia"
+                emphasized="true"
+            />
+            <Label text="Codigo"/>
+            <Select 
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{DocNumberKey}"
+              items="{
+                path: '/DocNumbers',
+                parameters:{
+                  $filter: 'TransactionCode eq \'OwnershipTransfer\''
+                }
+              }"
+              >
+              <core:ListItem key="{Key}" text="{Name}"/>
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Select>
+            <Input value="{TransferCode}" editable="false" />
+
+            <Label text="Filial"/>
+            <Select 
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{BranchCode}"
+              items="{
+                path: '/Branchs',
+                sorter: { 
+                  path: 'Code'
+                }
+              }"
+              >
+              <core:ListItem key="{Code}" text="{ShortName}" additionalText="{Code}"/>
+            </Select>
+            <Label text="Data" />
+            <DatePicker
+                value="{
+                  path: 'Date',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+                editable="{ui>/editable}"
+                required="true"
+                liveChange=".validateField"
+            />
+            <Label text="Status"/>
+            <Select 
+              editable="false"
+              forceSelection="false"
+              selectedKey="{
+                path: 'TransferStatus',
+                targetType: 'any'
+              }"
+              >
+              <core:ListItem key="Open" text="Aberto"/>
+              <core:ListItem key="Closed" text="Encerrado"/>
+              <core:ListItem key="Cancelled" text="Cancelado"/>
+            </Select>
+            <Label text="Produto" />
+            <Input 
+							editable="{ui>/editable}"	
+              required="true"
+              value="{ItemCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openItemValueHelp">
+              <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts:['ItemCode'],
+                formatter: '.formatItemName'
+              }" 
+              editable="false"
+            />
+            <Label text="Un.Med." />
+            <Input 
+              editable="{ui>/editable}"
+              required="true"
+              value="{UomCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openUnitsOfMeasureValueHelp">
+              <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts:['UomCode'],
+                formatter: '.formatUnitOfMeasureDescription'
+              }" 
+              editable="false"
+            />
+            <core:Title text="Lotes" />
+            <Label text="Lote de Origem" />
+            <Input 
+							editable="{ui>/editable}"	
+              required="true"
+              value="{StorageAddressOriginCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openStorageAddressesListValueHelp">
+              <!-- <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData> -->
+            </Input>
+            <Label text="Lote de Destino" />
+            <Input 
+							editable="{ui>/editable}"	
+              required="true"
+              value="{StorageAddressDestinationCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openStorageAddressesListValueHelp">
+              <!-- <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData> -->
+            </Input>
+            <Label text="Quantidade"/>
+            <Input 
+              required="true"
+              editable="{ui>/editable}"
+              value="{
+                path: 'Quantity',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions: {
+                    decimals: 3,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                } 
+              }"
+              description="{UomCode}"
+            />
+            <core:Title text="Informações"/>
+            <Label text="Observações" />
+            <TextArea 
+              editable="{ui>/editable}"
+              value="{Comments}"
+              rows="5"
+              cols="10"
+            />
+        </f:content>
+    </f:SimpleForm>
+</core:FragmentDefinition>

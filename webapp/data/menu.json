@@ -146,6 +146,12 @@
           "key": "storageTransactions",
           "enabled": true,
           "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Transferencia de Propriedade",
+          "key": "ownershipTransfers",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
         }
       ]
     },
