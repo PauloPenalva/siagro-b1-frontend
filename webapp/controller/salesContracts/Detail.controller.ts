@@ -25,6 +25,7 @@ export default class Detail extends SalesContractsBaseController {
       
 			const sPath = `/SalesContracts(${id})`;
 			this.bindElement(sPath);
+      this.getInvoices(id);
 
       const requestModel = new RequestModel({Key: id});
       requestModel.get(this.api.salesContractsGetTotals.replace("$", id))

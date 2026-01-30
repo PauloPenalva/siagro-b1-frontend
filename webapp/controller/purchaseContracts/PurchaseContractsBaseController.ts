@@ -304,8 +304,6 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
     funcImport.invoke()
       .then(() => {
         const resultContext = funcImport.getBoundContext();
-        console.log(resultContext.getObject());
-        
         const viewModel = this.getModel("allocationModel") as JSONModel
         viewModel.setData(resultContext.getObject() as object);
       })

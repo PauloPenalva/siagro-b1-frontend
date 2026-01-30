@@ -30,6 +30,7 @@ export default class Edit extends SalesContractsBaseController {
 		if (id != null) {
 			const sPath = `/SalesContracts(${id})`;
 			this.bindElement(sPath);
+      this.getInvoices(id);
 			return;
 		}
 

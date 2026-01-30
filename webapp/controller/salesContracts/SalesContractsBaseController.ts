@@ -14,6 +14,7 @@ import { QualityAttrib } from "siagrob1/types/QualityAttrib";
 import { LogisticRegion } from "siagrob1/types/LogisticRegion";
 import { Agent } from "siagrob1/types/Agent";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import JSONModel from "sap/ui/model/json/JSONModel";
 
 /**
  * @namespace siagrob1.controller.salesContracts
@@ -290,4 +291,22 @@ export default abstract class SalesContractsBaseController extends CommonControl
     }
   }
 
+   getInvoices(key: string){
+      const oView = this.getView();
+      const invoicesModel = new JSONModel();
+      const oModel = this.getModel() as ODataModel;
+      const funcImport = oModel.bindContext("/SalesContractsGetAllocationsByContract(...)");
+      funcImport.setParameter("SalesContractKey", key);
+  
+      oView.setModel(invoicesModel, "invoicesModel");
+  
+      this.setBusy(true);
+      funcImport.invoke()
+        .then(() => {
+          const resultContext = funcImport.getBoundContext();
+          const viewModel = this.getModel("invoicesModel") as JSONModel
+          viewModel.setData(resultContext.getObject() as object);
+        })
+        .finally(() => this.setBusy(false))
+    }
 }

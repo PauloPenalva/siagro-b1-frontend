@@ -113,22 +113,13 @@
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
-      <!-- <uxap:ObjectPageSection titleUppercase="false" title="Parametros de Qualidade">
+      <uxap:ObjectPageSection titleUppercase="false" title="Entregas">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection titleUppercase="false">
-						 <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractQualityParameters" type="XML" />
+						 <core:Fragment fragmentName="siagrob1.view.salesContracts.fragments.SalesContractAllocations" type="XML" />
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
-      <uxap:ObjectPageSection titleUppercase="false" title="Corretores">
-				<uxap:subSections>
-					<uxap:ObjectPageSubSection>
-            <uxap:blocks>
-              <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractBrokers" type="XML" />
-            </uxap:blocks>
-					</uxap:ObjectPageSubSection>
-				</uxap:subSections>
-			</uxap:ObjectPageSection> -->
     </uxap:sections>
   </uxap:ObjectPageLayout>
 

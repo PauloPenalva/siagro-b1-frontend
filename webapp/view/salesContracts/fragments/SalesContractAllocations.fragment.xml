@@ -6,7 +6,7 @@
     xmlns:core="sap.ui.core"
 >
   <t:Table
-    id="purchaseContractsAllocationsTable"
+    id="salesContractsInvoicesTable"
     class="sapUiSizeCondensed"
     alternateRowColors="true"
     enableBusyIndicator="true"
@@ -14,13 +14,13 @@
     selectionBehavior="Row"
     selectionMode="Single"
     busyIndicatorDelay="0"
-    rows="{allocationModel>/allocations}"
+    rows="{invoicesModel>/invoices}"
     visible="true"
     >
     <t:extension>
       <OverflowToolbar>
         <content>
-          <Title text="Entregas do Contrato de Compra" />
+          <Title text="Entregas do Contrato de Venda" />
           <ToolbarSpacer />
         </content>
       </OverflowToolbar>
@@ -28,31 +28,31 @@
     <t:columns>
       <t:Column label="Filial">
         <t:template>
-          <Text text="{allocationModel>BranchName}" />
+          <Text text="{invoicesModel>BranchName}" />
         </t:template>
       </t:Column>
-      <t:Column label="Romaneio">
+      <t:Column label="Documento">
         <t:template>
-          <Text text="{allocationModel>StorageTransactionCode}" />
+          <Text text="{invoicesModel>InvoiceNumber}" />
         </t:template>
       </t:Column>
       <t:Column label="Data">
         <t:template>
           <Text text="{
-            path: 'allocationModel>StorageTransactionDate',
+            path: 'invoicesModel>InvoiceDate',
             formatter: '.formatter.formatDate'
           }" />
         </t:template>
       </t:Column>
       <t:Column label="Tipo">
         <t:template>
-          <Text text="{allocationModel>StorageTransactionTypeName}" />
+          <Text text="{invoicesModel>Type}" />
         </t:template>
       </t:Column>
       <t:Column label="Quantidade" hAlign="End">
         <t:template>
           <Text text="{
-            path: 'allocationModel>Volume',
+            path: 'invoicesModel>Quantity',
             type: 'sap.ui.model.type.Float',
             formatOptions: {
                 decimals: 3,
@@ -65,27 +65,50 @@
       </t:Column>
       <t:Column label="Un.Med.">
         <t:template>
-          <Text text="{allocationModel>UnitOfMeasureCode}" />
-        </t:template>
-      </t:Column>
-      <t:Column label="Armazem">
-        <t:template>
-          <Text text="{allocationModel>WarehouseCode}" />
-        </t:template>
-      </t:Column>
-      <t:Column label="Nome" width="15rem">
-        <t:template>
-          <Text text="{allocationModel>WarehouseName}" wrapping="false" />
+          <Text text="{invoicesModel>UnitOfMeasureCode}" />
         </t:template>
       </t:Column>
       <t:Column label="Placa">
         <t:template>
-          <Text text="{allocationModel>TruckCode}" />
+          <Text text="{invoicesModel>TruckCode}" />
         </t:template>
       </t:Column>
-      <t:Column label="Nota Fiscal Venda">
+      <t:Column label="Nota Fiscal">
         <t:template>
-          <Text text="{allocationModel>NotaFiscalVenda}" />
+          <Text text="{invoicesModel>NotaFiscal}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Qtd.Entregue" hAlign="End">
+        <t:template>
+          <Text text="{
+            path: 'invoicesModel>DeliveredQuantity',
+            type: 'sap.ui.model.type.Float',
+            formatOptions: {
+                decimals: 3,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+            } 
+          }" />   
+        </t:template>
+      </t:Column>
+      <t:Column label="Qtd.Desc." hAlign="End">
+        <t:template>
+          <Text text="{
+            path: 'invoicesModel>QuantityLoss',
+            type: 'sap.ui.model.type.Float',
+            formatOptions: {
+                decimals: 3,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+            } 
+          }" />   
+        </t:template>
+      </t:Column>
+      <t:Column label="Sts.Entrega">
+        <t:template>
+          <Text text="{invoicesModel>DeliveryStatus}" />
         </t:template>
       </t:Column>
     </t:columns>
