@@ -1,0 +1,93 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <t:Table
+    id="purchaseContractsAllocationsTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    busyIndicatorDelay="0"
+    rows="{allocationModel>/allocations}"
+    visible="true"
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Entregas do Contrato de Compra" />
+          <ToolbarSpacer />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Filial">
+        <t:template>
+          <Text text="{allocationModel>BranchName}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Romaneio">
+        <t:template>
+          <Text text="{allocationModel>StorageTransactionCode}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Data">
+        <t:template>
+          <Text text="{
+            path: 'allocationModel>StorageTransactionDate',
+            formatter: '.formatter.formatDate'
+          }" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Tipo">
+        <t:template>
+          <Text text="{allocationModel>StorageTransactionTypeName}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Quantidade" hAlign="End">
+        <t:template>
+          <Text text="{
+            path: 'allocationModel>Volume',
+            type: 'sap.ui.model.type.Float',
+            formatOptions: {
+                decimals: 3,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+            } 
+          }" />   
+        </t:template>
+      </t:Column>
+      <t:Column label="Un.Med.">
+        <t:template>
+          <Text text="{allocationModel>UnitOfMeasureCode}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Armazem">
+        <t:template>
+          <Text text="{allocationModel>WarehouseCode}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Nome">
+        <t:template>
+          <Text text="{allocationModel>WarehouseName}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Placa">
+        <t:template>
+          <Text text="{allocationModel>TruckCode}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Nota Fiscal Venda">
+        <t:template>
+          <Text text="{allocationModel>NotaFiscalVenda}" />
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

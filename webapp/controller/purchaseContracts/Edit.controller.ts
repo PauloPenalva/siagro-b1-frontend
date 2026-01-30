@@ -31,6 +31,8 @@ export default class Edit extends PurchaseContractsBaseController {
 		if (id != null) {
 			const sPath = `/PurchaseContracts(${id})`;
 			this.bindElement(sPath);
+
+      this.getAllocations(id);
 			return;
 		}
 

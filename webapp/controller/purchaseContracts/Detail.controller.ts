@@ -27,6 +27,8 @@ export default class Detail extends PurchaseContractsBaseController {
 			const sPath = `/PurchaseContracts(${id})`;
 			this.bindElement(sPath);
 
+      this.getAllocations(id);
+
       const requestModel = new RequestModel({Key: id});
       requestModel.post(this.api.purchaseContractsTotals)
         .then((data: PurchaseContractsTotals) => {

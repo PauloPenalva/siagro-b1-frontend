@@ -14,6 +14,7 @@ import { QualityAttrib } from "siagrob1/types/QualityAttrib";
 import { LogisticRegion } from "siagrob1/types/LogisticRegion";
 import { Agent } from "siagrob1/types/Agent";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import JSONModel from "sap/ui/model/json/JSONModel";
 
 /**
  * @namespace siagrob1.controller.purchaseContracts
@@ -288,6 +289,27 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
       })
       .done(() => this.setBusy(false))
     }
+  }
+
+  getAllocations(key: string){
+    const oView = this.getView();
+    const allocationModel = new JSONModel();
+    const oModel = this.getModel() as ODataModel;
+    const funcImport = oModel.bindContext("/PurchaseContractsGetAllocationsByContract(...)");
+    funcImport.setParameter("PurchaseContractKey", key);
+
+    oView.setModel(allocationModel, "allocationModel");
+
+    this.setBusy(true);
+    funcImport.invoke()
+      .then(() => {
+        const resultContext = funcImport.getBoundContext();
+        console.log(resultContext.getObject());
+        
+        const viewModel = this.getModel("allocationModel") as JSONModel
+        viewModel.setData(resultContext.getObject() as object);
+      })
+      .finally(() => this.setBusy(false))
   }
 
 }
