@@ -232,11 +232,20 @@
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
-       <uxap:ObjectPageSection titleUppercase="false" title="Entregas">
+      <uxap:ObjectPageSection titleUppercase="false" title="Entregas">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection>
             <uxap:blocks>
               <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractAllocations" type="XML" />
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Anexos">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractAttachments" type="XML" />
             </uxap:blocks>
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>

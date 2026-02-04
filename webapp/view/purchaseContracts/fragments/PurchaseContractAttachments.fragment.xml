@@ -1,0 +1,61 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <t:Table
+    id="purchaseContractAttachmentsTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    busyIndicatorDelay="0"
+    rows="{attachmentsModel>/value}"
+    visible="true"
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Anexos" />
+          <ToolbarSpacer />
+          <Button
+            text="Anexar"
+            type="Transparent"
+            icon="sap-icon://attachment"
+          />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Key" visible="false">
+        <t:template>
+          <Text text="{attachmentsModel>Key}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Descrição">
+        <t:template>
+          <Text text="{attachmentsModel>Description}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Arquivo">
+        <t:template>
+          <Text text="{attachmentsModel>FileName}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Enviado por">
+        <t:template>
+          <Text text="{attachmentsModel>CreatedBy}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Enviado em">
+        <t:template>
+          <Text text="{attachmentsModel>CreatedAt}" />
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

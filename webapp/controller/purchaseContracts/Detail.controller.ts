@@ -28,6 +28,7 @@ export default class Detail extends PurchaseContractsBaseController {
 			this.bindElement(sPath);
 
       this.getAllocations(id);
+      this.getAttachments(id);
 
       const requestModel = new RequestModel({Key: id});
       requestModel.post(this.api.purchaseContractsTotals)

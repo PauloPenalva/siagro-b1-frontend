@@ -310,4 +310,22 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
       .finally(() => this.setBusy(false))
   }
 
+  getAttachments(key: string){
+    const oView = this.getView();
+    const attachmentsModel = new JSONModel();
+    const oModel = this.getModel() as ODataModel;
+    const funcImport = oModel.bindContext("/PurchaseContractsAttachmentsListByContract(...)");
+    funcImport.setParameter("ContractKey", key);
+
+    oView.setModel(attachmentsModel, "attachmentsModel");
+
+    this.setBusy(true);
+    funcImport.invoke()
+      .then(() => {
+        const resultContext = funcImport.getBoundContext();
+        const viewModel = this.getModel("attachmentsModel") as JSONModel
+        viewModel.setData(resultContext.getObject() as object);
+      })
+      .finally(() => this.setBusy(false))
+  }
 }
