@@ -100,7 +100,7 @@
             <Input
               showClearIcon="true"
               showValueHelp="true"
-              valueHelpRequest=".openBusinessPartnersValueHelp"
+              valueHelpRequest=".openCostumersValueHelp"
               value="{filter>/CardCode}"
               >
             </Input>

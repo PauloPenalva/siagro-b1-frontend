@@ -48,7 +48,7 @@
             value="{CardCode}" 
             showValueHelp="true" 
             valueHelpOnly="true" 
-            valueHelpRequest=".openBusinessPartnersValueHelp">
+            valueHelpRequest=".openSuppliersValueHelp">
           </Input>
         </t:template>
       </t:Column>

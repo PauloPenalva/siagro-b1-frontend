@@ -134,7 +134,7 @@
               value="{CardCode}" 
               showValueHelp="true" 
               valueHelpOnly="true" 
-              valueHelpRequest=".openBusinessPartnersValueHelp">
+              valueHelpRequest=".openCostumersValueHelp">
             <layoutData>
                 <l:GridData span="XL3 L3 M3 S4" />
             </layoutData>

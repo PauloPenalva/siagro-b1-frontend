@@ -27,12 +27,12 @@
             </Input>
         </fb:control>
       </fb:FilterGroupItem>
-      <fb:FilterGroupItem name="businessPartners" label="Fornecedor" groupName="GroupBusinessPartner" visibleInFilterBar="true">
+      <fb:FilterGroupItem name="businessPartners" label="Fornecedor" groupName="GroupSupplier" visibleInFilterBar="true">
         <fb:control>
             <Input
               showClearIcon="true"
               showValueHelp="true"
-              valueHelpRequest=".openBusinessPartnersValueHelp"
+              valueHelpRequest=".openSuppliersValueHelp"
               value="{filter>/PurchaseContractCardCode}"
               >
             </Input>

@@ -116,7 +116,7 @@
             </Input>
         </fb:control>
       </fb:FilterGroupItem>
-      <fb:FilterGroupItem name="businessPartners" label="Cliente" groupName="GroupBusinessPartner" visibleInFilterBar="true">
+      <fb:FilterGroupItem name="businessPartners" label="Cli/For" groupName="GroupBusinessPartner" visibleInFilterBar="true">
         <fb:control>
             <Input
               showClearIcon="true"

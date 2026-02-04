@@ -16,22 +16,20 @@
       path: 'CardName', 
       descending: false
     },
+    filters:[
+      { path: 'CardType', operator: 'EQ', value1: 'C'}
+    ],
     parameters: {
       $expand: 'Addresses($filter=AdresType eq \'S\')'
     }
   }"
   rememberSelections="true"
-  title="Cli/For"
+  title="Clientes"
 >
 <columns>
   <Column>
     <header>
       <Text text="Codigo" />
-    </header>
-  </Column>
-  <Column>
-    <header>
-      <Text text="Tipo" />
     </header>
   </Column>
   <Column>
@@ -63,10 +61,6 @@
 <ColumnListItem >
   <cells>
     <Text text="{CardCode}" />
-    <Text text="{
-      parts: ['CardType'],
-      formatter: '.formatter.formatCardType'
-    }" />
     <Text text="{CardName}" />
     <Text text="{CardFName}" />
     <Text text="{

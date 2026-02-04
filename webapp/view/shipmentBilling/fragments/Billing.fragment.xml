@@ -303,6 +303,19 @@
 					</t:template>
 				</t:Column>
 				<t:Column 
+          filterProperty="Complement"
+					width="10rem"
+					sortProperty="Complement"
+				>
+					<Label text="Compl." />
+					<t:template>
+						<Text
+							text="{Complement}"
+							wrapping="false"
+						/>
+					</t:template>
+				</t:Column>
+				<t:Column 
           filterProperty="CardCode"
 					sortProperty="CardCode"
 					width="5rem"
@@ -315,7 +328,7 @@
 						/>
 					</t:template>
 				</t:Column>
-				<t:Column sortProperty="CardName" filterProperty="CardName">
+				<t:Column sortProperty="CardName" filterProperty="CardName" width="25rem">
 					<Label text="Nome" />
 					<t:template>
 						<Text
@@ -324,7 +337,7 @@
 						/>
 					</t:template>
 				</t:Column>
-				<t:Column sortProperty="LogisticRegionCode" filterProperty="LogisticRegionCode">
+				<t:Column sortProperty="LogisticRegionCode" filterProperty="LogisticRegionCode" width="5rem">
 					<Label text="Região" />
 					<t:template>
 						<Text
@@ -333,7 +346,7 @@
 						/>
 					</t:template>
 				</t:Column>
-				<t:Column sortProperty="LogisticRegion/Name" filterProperty="LogisticRegion/Name">
+				<t:Column sortProperty="LogisticRegion/Name" filterProperty="LogisticRegion/Name" width="10rem">
 					<Label text="Região" />
 					<t:template>
 						<Text
@@ -395,6 +408,15 @@
 					<t:template>
 						<Text
 							text="{UnitOfMeasureCode}"
+							wrapping="false"
+						/>
+					</t:template>
+				</t:Column>
+				<t:Column width="25rem">
+					<Label text="Obs." />
+					<t:template>
+						<Text
+							text="{Comments}"
 							wrapping="false"
 						/>
 					</t:template>

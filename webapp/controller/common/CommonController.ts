@@ -162,7 +162,39 @@ export default abstract class CommonController extends BaseController {
   }
 
   openBusinessPartnersValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "BusinessPartnersSelectDialog", ['CardCode', 'CardName'])
+    DialogHelper.openTableSelectDialog(this, "BusinessPartnersSelectDialog", ['CardCode', 'CardName', 'CardFName'])
+      .then((oContext: Context) => {
+        const value = oContext.getProperty("CardCode") as string;
+        ev.getSource().setValue(value);
+      })
+      .catch(err => {
+        throw err;
+      });
+  }
+
+  openSuppliersValueHelp(ev: Input$ValueHelpRequestEvent) {
+    DialogHelper.openTableSelectDialog(
+        this, 
+        "SuppliersSelectDialog", 
+        ['CardCode', 'CardName', 'CardFName'],
+        [ new Filter("CardType", FilterOperator.EQ, 'S')]
+      )
+      .then((oContext: Context) => {
+        const value = oContext.getProperty("CardCode") as string;
+        ev.getSource().setValue(value);
+      })
+      .catch(err => {
+        throw err;
+      });
+  }
+  
+  openCostumersValueHelp(ev: Input$ValueHelpRequestEvent) {
+    DialogHelper.openTableSelectDialog(
+        this, 
+        "CostumersSelectDialog", 
+        ['CardCode', 'CardName', 'CardFName'],
+        [ new Filter("CardType", FilterOperator.EQ, 'C')]
+      )
       .then((oContext: Context) => {
         const value = oContext.getProperty("CardCode") as string;
         ev.getSource().setValue(value);
