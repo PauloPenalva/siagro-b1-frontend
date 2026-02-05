@@ -15,44 +15,119 @@ import { LogisticRegion } from "siagrob1/types/LogisticRegion";
 import { Agent } from "siagrob1/types/Agent";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import MessageToast from "sap/m/MessageToast";
+import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import RequestModel from "siagrob1/model/RequestModel";
 
 /**
  * @namespace siagrob1.controller.salesContracts
  */
 export default abstract class SalesContractsBaseController extends CommonController {
   
+  onUpload() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) {
+      throw new Error("Contexto não encontrado.");
+    }
+
+    const key = ctx.getProperty("Key");
+    this.navTo("salesContractsUpload", { id: key });
+  }
+
+  onDownload() {
+    const table = this.byId("salesContractAttachmentsTable") as Table;
+    const selected = table.getSelectedIndex();
+    
+    if (selected < 0) {
+      MessageBox.alert("Selecione um item na tabela.");
+      return;
+    }
+
+    const ctx = table.getContextByIndex(selected);
+    const attachmentKey = ctx.getProperty("Key");
+    const fileName = ctx.getProperty("FileName");
+
+    const url =
+            `/odata/SalesContractsAttachmentsDownload(Key=${attachmentKey})`;
+
+        // Força download binário (sem OData serialization)
+        fetch(url, {
+            method: "GET"
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Erro ao baixar arquivo");
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+
+            link.href = downloadUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+
+            link.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+        })
+        .catch(() => {
+            MessageToast.show("Erro ao baixar o anexo");
+        });
+  }
+
+  async onDeleteAttachment() {
+   
+    const table = this.byId("salesContractAttachmentsTable") as Table;
+    const selected = table.getSelectedIndex();
+    
+    if (selected < 0) {
+      MessageBox.alert("Selecione um item na tabela.");
+      return;
+    }
+
+    const ctx = table.getContextByIndex(selected);
+    const attachmentKey = ctx.getProperty("Key");
+
+    const confirm = await DialogHelper.confirmDialog("Essa operação não podera ser desfeita.", "Deletar anexo",   )
+    if (!confirm) {
+      return;
+    }
+
+    await this.onDeleteAttachmentAction(attachmentKey);
+  }
+
+  async onDeleteAttachmentAction(attachmentKey: string) {
+    const bindingContext = this.getView().getBindingContext() as Context;
+    if (!bindingContext) {
+      throw new Error("Contexto não encontrado.");
+    }
+
+    const key = bindingContext.getProperty("Key");
+    const requestModel = new RequestModel();
+
+    try {
+      this.setBusy(true);
+      await requestModel.delete(`/odata/SalesContractsAttachments(${attachmentKey})`);
+      this.getAttachments(key);
+    } catch (e) {
+      const err = e as Error;
+      MessageBox.error(err.message);
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
   onAddBroker() {
-    const oTable = this.byId("purchaseContractsBrokersTable") as Table;
+    const oTable = this.byId("salesContractsBrokersTable") as Table;
     const oBinding = oTable.getBinding("rows") as ODataListBinding;
     oBinding.create({}, false, true, false);
   }
 
   onRemoveBroker() {
     const oModel = this.getView().getModel() as ODataModel;
-    const oTable = this.byId("purchaseContractsBrokersTable") as Table;
-    const aSelectedIndices = oTable.getSelectedIndices();
-
-    if (aSelectedIndices.length === 0) {
-      MessageBox.alert("Selecione um item para remover.");
-      return;
-    }
-
-    const index = aSelectedIndices[0];
-
-    const oContext = oTable.getContextByIndex(index) as Context;
-
-    void oContext.delete(oModel.getUpdateGroupId());
-  }
-  
-  onAddTax() {
-    const oTable = this.byId("purchaseContractsTaxesTable") as Table;
-    const oBinding = oTable.getBinding("rows") as ODataListBinding;
-    oBinding.create({}, false, true, false);
-  }
-
-  onRemoveTax() {
-    const oModel = this.getView().getModel() as ODataModel;
-    const oTable = this.byId("purchaseContractsTaxesTable") as Table;
+    const oTable = this.byId("salesContractsBrokersTable") as Table;
     const aSelectedIndices = oTable.getSelectedIndices();
 
     if (aSelectedIndices.length === 0) {
@@ -68,7 +143,7 @@ export default abstract class SalesContractsBaseController extends CommonControl
   }
 
   onAddPriceFixation() {
-    const oTable = this.byId("purchaseContractPriceFixationsTable") as Table;
+    const oTable = this.byId("salesContractPriceFixationsTable") as Table;
     const oBinding = oTable.getBinding("rows") as ODataListBinding;
     oBinding.create({
       "Status": "Pending"
@@ -77,7 +152,7 @@ export default abstract class SalesContractsBaseController extends CommonControl
 
   onRemovePriceFixation() {
     const oModel = this.getView().getModel() as ODataModel;
-    const oTable = this.byId("purchaseContractPriceFixationsTable") as Table;
+    const oTable = this.byId("salesContractPriceFixationsTable") as Table;
     const aSelectedIndices = oTable.getSelectedIndices();
 
     if (aSelectedIndices.length === 0) {
@@ -93,14 +168,14 @@ export default abstract class SalesContractsBaseController extends CommonControl
   }
 
   onAddQualityParameter() {
-    const oTable = this.byId("purchaseContractQualityParameterTable") as Table;
+    const oTable = this.byId("salesContractQualityParameterTable") as Table;
     const oBinding = oTable.getBinding("rows") as ODataListBinding;
     oBinding.create({}, false, true, false);
   }
 
   onRemoveQualityParameter() {
     const oModel = this.getView().getModel() as ODataModel;
-    const oTable = this.byId("purchaseContractQualityParameterTable") as Table;
+    const oTable = this.byId("salesContractQualityParameterTable") as Table;
     const aSelectedIndices = oTable.getSelectedIndices();
 
     if (aSelectedIndices.length === 0) {
@@ -309,4 +384,23 @@ export default abstract class SalesContractsBaseController extends CommonControl
         })
         .finally(() => this.setBusy(false))
     }
+
+    getAttachments(key: string){
+        const oView = this.getView();
+        const attachmentsModel = new JSONModel();
+        const oModel = this.getModel() as ODataModel;
+        const funcImport = oModel.bindContext("/SalesContractsAttachmentsListByContract(...)");
+        funcImport.setParameter("ContractKey", key);
+    
+        oView.setModel(attachmentsModel, "attachmentsModel");
+    
+        this.setBusy(true);
+        funcImport.invoke()
+          .then(() => {
+            const resultContext = funcImport.getBoundContext();
+            const viewModel = this.getModel("attachmentsModel") as JSONModel
+            viewModel.setData(resultContext.getObject() as object);
+          })
+          .finally(() => this.setBusy(false))
+      }
 }

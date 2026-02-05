@@ -274,6 +274,11 @@
           "target": "purchaseContractsDetail"
         },
         {
+          "pattern": "purchaseContractsUpload/{id}",
+          "name": "purchaseContractsUpload",
+          "target": "purchaseContractsUpload"
+        },
+        {
           "pattern": "purchaseContractsApproval",
           "name": "purchaseContractsApproval",
           "target": "purchaseContractsApproval"
@@ -327,6 +332,11 @@
           "pattern": "salesContractsDetail/{id}",
           "name": "salesContractsDetail",
           "target": "salesContractsDetail"
+        },
+         {
+          "pattern": "salesContractsUpload/{id}",
+          "name": "salesContractsUpload",
+          "target": "salesContractsUpload"
         },
         {
           "pattern": "salesContractsApproval",
@@ -772,6 +782,12 @@
 					"name": "siagrob1.view.purchaseContracts.Detail",
           "clearControlAggregation": true
 				},
+        "purchaseContractsUpload": {
+					"id": "purchaseContractsUpload",
+          "level": 2,
+					"name": "siagrob1.view.purchaseContracts.Upload",
+          "clearControlAggregation": true
+				},
         "purchaseContractsApproval": {
 					"id": "purchaseContractsApproval",
           "level": 1,
@@ -836,6 +852,12 @@
 					"id": "salesContractsDetail",
           "level": 2,
 					"name": "siagrob1.view.salesContracts.Detail",
+          "clearControlAggregation": true
+				},
+        "salesContractsUpload": {
+					"id": "salesContractsUpload",
+          "level": 2,
+					"name": "siagrob1.view.salesContracts.Upload",
           "clearControlAggregation": true
 				},
         "salesContractsApproval": {

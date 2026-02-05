@@ -1,0 +1,87 @@
+<mvc:View 
+  controllerName="siagrob1.controller.salesContracts.Upload"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.ui.layout.form"
+  xmlns:uxap="sap.uxap"
+  xmlns:u="sap.ui.unified"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+  <uxap:ObjectPageLayout
+    showFooter="true"
+    toggleHeaderOnTitleClick="true"
+		preserveHeaderStateOnScroll="false"
+    busy="{ui>/busy}"
+    busyIndicatorDelay="0"
+	>
+   	<uxap:headerTitle>
+			<uxap:ObjectPageDynamicHeaderTitle>
+        <uxap:expandedHeading>
+           <Title text="Contrato de Venda - Upload de Anexo"/>
+          </uxap:expandedHeading>
+          <uxap:snappedHeading>
+           <Title text="Contrato de Venda - Upload de Anexo"/>
+         </uxap:snappedHeading>
+      </uxap:ObjectPageDynamicHeaderTitle>
+		</uxap:headerTitle>
+    <uxap:headerContent>
+			<ObjectIdentifier title="{Code}"/>
+   	</uxap:headerContent> 
+    <uxap:sections>
+      <uxap:ObjectPageSection titleUppercase="false" title="Arquivo">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection title=" " titleUppercase="false">
+						<f:SimpleForm 
+              id="formSalesContractsAttachmentsUpload"
+              editable="true"
+              layout="ResponsiveGridLayout"
+              labelSpanXL="4"
+              labelSpanL="4"
+              labelSpanM="4"
+              labelSpanS="12"
+              adjustLabelSpan="false"
+              emptySpanXL="0"
+              emptySpanL="0"
+              emptySpanM="0"
+              emptySpanS="0"
+              columnsXL="3"
+              columnsL="2"
+              columnsM="2"
+              singleContainerFullSize="true"
+              busyIndicatorDelay="0"
+            >
+              <core:Title text=""/>
+              <Label text="Descrição" />
+              <Input id="salesContractAttachmentDescription" maxLength="100" required="true"/>
+              <Label text="Arquivo" required="true"/>
+              <u:FileUploader
+                id="salesContractAttachmentFileUploader"
+                name="salesContractAttachmentFileUploader"
+                change="handleValueChange"
+                typeMissmatch="handleTypeMissmatch"
+                style="Emphasized"
+                width="20rem"
+                placeholder="Selecione o arquivo para anexar...">
+                
+              </u:FileUploader>
+              <core:Title text=""/>
+            </f:SimpleForm>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+    </uxap:sections>
+    <uxap:footer>
+      <OverflowToolbar>
+				<ToolbarSpacer />
+				<Button text="Cancelar" press=".onCancel"  />
+				<Button text="Enviar" type="Emphasized" press=".onSend"/>
+			</OverflowToolbar>
+    </uxap:footer>
+  </uxap:ObjectPageLayout>
+
+</mvc:View>

@@ -15,12 +15,111 @@ import { LogisticRegion } from "siagrob1/types/LogisticRegion";
 import { Agent } from "siagrob1/types/Agent";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import MessageToast from "sap/m/MessageToast";
+import RequestModel from "siagrob1/model/RequestModel";
+import DialogHelper from "siagrob1/dialogs/DialogHelper";
 
 /**
  * @namespace siagrob1.controller.purchaseContracts
  */
 export default abstract class PurchaseContractsBaseController extends CommonController {
   
+  onUpload() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) {
+      throw new Error("Contexto não encontrado.");
+    }
+
+    const key = ctx.getProperty("Key");
+    this.navTo("purchaseContractsUpload", { id: key });
+  }
+
+  onDownload() {
+    const table = this.byId("purchaseContractAttachmentsTable") as Table;
+    const selected = table.getSelectedIndex();
+    
+    if (selected < 0) {
+      MessageBox.alert("Selecione um item na tabela.");
+      return;
+    }
+
+    const ctx = table.getContextByIndex(selected);
+    const attachmentKey = ctx.getProperty("Key");
+    const fileName = ctx.getProperty("FileName");
+
+    const url =
+            `/odata/PurchaseContractsAttachmentsDownload(Key=${attachmentKey})`;
+
+        // Força download binário (sem OData serialization)
+        fetch(url, {
+            method: "GET"
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Erro ao baixar arquivo");
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+
+            link.href = downloadUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+
+            link.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+        })
+        .catch(() => {
+            MessageToast.show("Erro ao baixar o anexo");
+        });
+  }
+
+  async onDeleteAttachment() {
+   
+    const table = this.byId("purchaseContractAttachmentsTable") as Table;
+    const selected = table.getSelectedIndex();
+    
+    if (selected < 0) {
+      MessageBox.alert("Selecione um item na tabela.");
+      return;
+    }
+
+    const ctx = table.getContextByIndex(selected);
+    const attachmentKey = ctx.getProperty("Key");
+
+    const confirm = await DialogHelper.confirmDialog("Essa operação não podera ser desfeita.", "Deletar anexo",   )
+    if (!confirm) {
+      return;
+    }
+
+    await this.onDeleteAttachmentAction(attachmentKey);
+  }
+
+  async onDeleteAttachmentAction(attachmentKey: string) {
+    const bindingContext = this.getView().getBindingContext() as Context;
+    if (!bindingContext) {
+      throw new Error("Contexto não encontrado.");
+    }
+
+    const key = bindingContext.getProperty("Key");
+    const requestModel = new RequestModel();
+
+    try {
+      this.setBusy(true);
+      await requestModel.delete(`/odata/PurchaseContractsAttachments(${attachmentKey})`);
+      this.getAttachments(key);
+    } catch (e) {
+      const err = e as Error;
+      MessageBox.error(err.message);
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+
   onAddBroker() {
     const oTable = this.byId("purchaseContractsBrokersTable") as Table;
     const oBinding = oTable.getBinding("rows") as ODataListBinding;

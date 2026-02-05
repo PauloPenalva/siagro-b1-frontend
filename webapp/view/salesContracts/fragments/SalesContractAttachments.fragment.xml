@@ -6,7 +6,7 @@
     xmlns:core="sap.ui.core"
 >
   <t:Table
-    id="purchaseContractAttachmentsTable"
+    id="salesContractAttachmentsTable"
     class="sapUiSizeCondensed"
     alternateRowColors="true"
     enableBusyIndicator="true"
@@ -14,7 +14,7 @@
     selectionBehavior="Row"
     selectionMode="Single"
     busyIndicatorDelay="0"
-    rows="{attachmentsModel>/value}"
+    rows="{attachmentsModel>/}"
     visible="true"
     >
     <t:extension>
