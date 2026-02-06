@@ -19,5 +19,22 @@ export abstract class BaseController extends CommonController {
       }
   
     }
+
+    async formatCustomerTaxId(key: string){
+      if (!key){
+        return null;
+      } 
+  
+      try {
+        this.setBusy(true);
+        const data = await this
+          .getResource<BusinessPartner>(`${this.api.businessPartners}('${key}')`)
+        
+        return data?.TaxId;
+      } finally {
+        this.setBusy(false);
+      }
+  
+    }
     
 }

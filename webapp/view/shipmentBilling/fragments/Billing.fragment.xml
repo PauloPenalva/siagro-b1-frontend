@@ -337,6 +337,18 @@
 						/>
 					</t:template>
 				</t:Column>
+				<t:Column width="15rem">
+					<Label text="Cnpj" />
+					<t:template>
+						<Text
+							text="{
+                parts: ['CardCode'],
+                formatter: '.formatCustomerTaxId'
+              }"
+							wrapping="false"
+						/>
+					</t:template>
+				</t:Column>
 				<t:Column sortProperty="LogisticRegionCode" filterProperty="LogisticRegionCode" width="5rem">
 					<Label text="Região" />
 					<t:template>
