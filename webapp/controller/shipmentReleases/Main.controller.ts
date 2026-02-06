@@ -114,6 +114,39 @@ export default class Main extends BaseController {
     MessageBox.warning("Selecione um registro.");
   }
 
+  async onPause() {
+    const oTable = this.byId("tableShipmentReleases") as Table;
+    const i = oTable.getSelectedIndex()
+
+    if (i < 0) {
+      MessageBox.warning("Selecione um registro.")
+      return;
+    }
+
+    const oContext = oTable.getContextByIndex(i);
+    if (oContext) {
+      const sId = oContext.getProperty("Key") as string;
+
+      if (await DialogHelper.confirmDialog("Pausar entrega ?")) {
+        const model = this.getModel() as ODataModel;
+        const action = model.bindContext("/ShipmentReleasesPause(...)")
+        action.setParameter("Key", sId);
+
+        this.setBusy(true);
+        void action.invoke()
+          .then(() => {
+            MessageToast.show("Liberação pausada com sucesso.")
+            this.refreshData();
+          })
+          .finally(() => this.setBusy(false));
+
+      }
+      return;
+    }
+
+    MessageBox.warning("Selecione um registro.");
+  }
+
   async onCancel() {
     const oTable = this.byId("tableShipmentReleases") as Table;
     const i = oTable.getSelectedIndex()
