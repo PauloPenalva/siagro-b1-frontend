@@ -74,6 +74,19 @@ export default class Detail extends SalesContractsBaseController {
     this._approvalDialog?.open();
   }
 
+  async onCancel() {
+    this._approvalDialog ??= await DialogHelper.createDialog(
+      this, 
+      "siagrob1.view.salesContracts.approval.fragments.ApprovalDialog"
+    );
+
+    this.viewModel.setProperty("/dialogTitle", "Cancelar Contrato ?");
+    this.viewModel.setProperty("/dialogConfirmButtonText", "Cancelar");
+    this.viewModel.setProperty("/dialogAction", "Cancel");
+
+    this._approvalDialog?.open();
+  }
+
   onApproveRejectAction() {
     const dlgAction = this.viewModel.getProperty("/dialogAction") as string;
     const context = this.getView().getBindingContext() as Context;
@@ -84,6 +97,9 @@ export default class Detail extends SalesContractsBaseController {
         break;
       case "Reject":
         this.contractRejected(context);
+        break;
+      case "Cancel":
+        this.contractCancel(context);
         break;
       default:
         break;
@@ -139,6 +155,33 @@ export default class Detail extends SalesContractsBaseController {
       },
       error: (err) => {
         MessageBox.error(err.responseJSON?.error?.message as string  || "Erro ao rejeitar contrato.")
+        this.setBusy(false);
+      }
+    })  
+  }
+
+  private contractCancel(context: Context) {
+    this.onCloseApprovalDialog();
+    this.setBusy(true)
+    
+    const key = context.getProperty("Key") as string;
+    const code = context.getProperty("Code") as string;
+    const comments = context.getProperty("ApprovalComments") as string;
+
+    void jQuery.ajax(this.api.salesContractsCancel, {
+      method: 'POST',
+      contentType: "application/json",
+      data: JSON.stringify({
+        Key: key,
+        Comments: comments,
+      }),
+      success: () => {
+        this.setBusy(false);
+        MessageToast.show(`Contrato ${code} cancelado com sucesso.`)
+        this.navToSalesContractsApprovalList();
+      },
+      error: (err) => {
+        MessageBox.error(err.responseJSON?.error?.message as string  || "Erro ao cancelar contrato.")
         this.setBusy(false);
       }
     })  
