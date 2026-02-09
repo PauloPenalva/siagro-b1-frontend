@@ -251,8 +251,9 @@ export default {
   formatSalesInvoiceStatus: (value: string) => {
     const m = new Map<string, string>();
     m.set("Pending", "Pendente");
-    m.set("Confirmed", "Confirmado");
-    m.set("Cancelled", "Cancelado");
+    m.set("Confirmed", "Confirmada");
+    m.set("Cancelled", "Cancelada");
+    m.set("Returned", "Retornada");
     
     return m.get(value);
   },
@@ -262,11 +263,12 @@ export default {
     m.set("Pending", "None");
     m.set("Confirmed", "Success");
     m.set("Cancelled", "Error");
+    m.set("Returned", "Warning");
     
     return m.get(value);
   },
 
-   formatSalesInvoiceType: (value: string) => {
+  formatSalesInvoiceType: (value: string) => {
     const m = new Map<string, string>();
     m.set("Normal", "Normal");
     m.set("Return", "Retorno");
