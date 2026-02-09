@@ -297,6 +297,23 @@ export default abstract class CommonController extends BaseController {
     return data?.ItemName;
   }
 
+   async formartCustomerFName(key: string){
+      if (!key){
+        return null;
+      } 
+  
+      try {
+        this.setBusy(true);
+        const data = await this
+          .getResource<BusinessPartner>(`${this.api.businessPartners}('${key}')`)
+        
+        return data?.CardFName;
+      } finally {
+        this.setBusy(false);
+      }
+  
+    }
+
    async formatAgentName(key: string){
       if (!key){
         return null;

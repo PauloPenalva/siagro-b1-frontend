@@ -137,7 +137,7 @@
           showValueHelp="true"
           valueHelpOnly="true"
           required="true"
-          valueHelpRequest=".openBusinessPartnersValueHelp"
+          valueHelpRequest=".openSuppliersValueHelp"
           value="{viewModel>/DeliveryCardCode}"
           >
           <layoutData>
@@ -156,7 +156,7 @@
         <Input
           showValueHelp="true"
           valueHelpOnly="true"
-          valueHelpRequest=".openBusinessPartnersValueHelp"
+          valueHelpRequest=".openSuppliersValueHelp"
           value="{viewModel>/TruckingCompanyCode}"
           >
           <layoutData>
@@ -329,10 +329,22 @@
 					</t:template>
 				</t:Column>
 				<t:Column sortProperty="CardName" filterProperty="CardName" width="25rem">
-					<Label text="Nome" />
+					<Label text="Razao Social" />
 					<t:template>
 						<Text
 							text="{CardName}"
+							wrapping="false"
+						/>
+					</t:template>
+				</t:Column>
+				<t:Column width="25rem">
+					<Label text="Nome Fantasia" />
+					<t:template>
+						<Text
+							text="{
+                parts: ['CardCode'],
+                formatter: '.formartCustomerFName'
+              }"
 							wrapping="false"
 						/>
 					</t:template>
