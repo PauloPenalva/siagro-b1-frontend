@@ -64,6 +64,7 @@
               <core:ListItem key="Pending" text="Pendente"/>
               <core:ListItem key="Confirmed" text="Confirmado"/>
               <core:ListItem key="Cancelled" text="Cancelado"/>
+              <core:ListItem key="Returned" text="Retornado"/>
             </Select>
         </fb:control>
       </fb:FilterGroupItem>
