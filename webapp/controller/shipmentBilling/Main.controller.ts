@@ -150,7 +150,7 @@ export default class Main extends BaseController {
       GrossWeightLimit: 0,
       TruckDriverCode: transactions[0]?.TruckDriverCode,
       TruckCode: transactions[0]?.TruckCode,
-      FreightTerms: "Cif",
+      FreightTerms: "",
       BranchCode: transactions[0]?.Branch?.Code
     });
 

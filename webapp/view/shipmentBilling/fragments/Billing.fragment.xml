@@ -106,10 +106,10 @@
 				</Input> -->
 				<Label
 					text="Tipo Frete"
-					required="true"
 				/>
 				<Select
-					forceSelection="true"
+					forceSelection="false"
+          required="true"
 					selectedKey="{viewModel>/FreightTerms}"
 				>
 					<core:Item
