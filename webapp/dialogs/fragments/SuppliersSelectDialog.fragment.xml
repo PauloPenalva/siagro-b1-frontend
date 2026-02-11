@@ -29,6 +29,11 @@
 <columns>
   <Column>
     <header>
+      <Text />
+    </header>
+  </Column>
+  <Column>
+    <header>
       <Text text="Codigo" />
     </header>
   </Column>
@@ -60,6 +65,7 @@
 </columns>
 <ColumnListItem >
   <cells>
+    <core:Icon tooltip="{Notes}" src="sap-icon://information" noTabStop="true"/>
     <Text text="{CardCode}" />
     <Text text="{CardName}" />
     <Text text="{CardFName}" />

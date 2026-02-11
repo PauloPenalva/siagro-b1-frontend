@@ -137,7 +137,7 @@
           showValueHelp="true"
           valueHelpOnly="true"
           required="true"
-          valueHelpRequest=".openSuppliersValueHelp"
+          valueHelpRequest=".openCostumersValueHelp"
           value="{viewModel>/DeliveryCardCode}"
           >
           <layoutData>

@@ -95,17 +95,26 @@
                                     </OverflowToolbar>
                                 </headerToolbar>
                                 <columns>
+                                    <Column width="3rem">
+                                        <Text />
+                                    </Column>
                                     <Column width="20rem">
                                         <Text text="Armazem" />
+                                    </Column>
+                                    <Column width="20rem">
+                                        <Text text="Nome Fantasia" />
                                     </Column>
                                     <Column>
                                         <Text text="Codigo" />
                                     </Column>
                                     <Column>
-                                        <Text text="Produto" />
+                                        <Text text="CNPJ" />
                                     </Column>
                                     <Column>
-                                        <Text text="Descricao" />
+                                        <Text text="Municipio" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="Estado" />
                                     </Column>
                                     <Column>
                                         <Text
@@ -113,9 +122,9 @@
                                             visible="false"
                                         />
                                     </Column>
-                                    <Column>
+                                    <!-- <Column>
                                         <Text text="Variedade" />
-                                    </Column>
+                                    </Column> -->
                                     <Column hAlign="End">
                                         <Text text="Saldo" />
                                     </Column>
@@ -123,21 +132,28 @@
                                 <items>
                                     <ColumnListItem>
                                         <cells>
+                                            <core:Icon tooltip="{balance>Notes}" src="sap-icon://information" />
                                             <ObjectIdentifier
                                                 title="{balance>DeliveryLocationName}"
                                             />
                                             <Text
+                                                text="{balance>FName}"
+                                            />
+                                            <Text
                                                 text="{balance>DeliveryLocationCode}"
                                             />
-                                            <Text text="{balance>ItemCode}" />
-                                            <Text text="{balance>ItemName}" />
+                                             <Text
+                                                text="{balance>TaxId}"
+                                            />
+                                            <Text text="{balance>City}" />
+                                            <Text text="{balance>State}" />
                                             <Text
                                                 text="{balance>codigoVariedade}"
                                                 visible="false"
                                             />
-                                            <Text
+                                            <!-- <Text
                                                 text="{balance>descricaoVariedade}"
-                                            />
+                                            /> -->
                                             <ObjectNumber
                                                 number="{
                                                   path: 'balance>AvailableQuantity',

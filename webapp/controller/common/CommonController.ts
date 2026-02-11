@@ -245,7 +245,7 @@ export default abstract class CommonController extends BaseController {
   }
 
   openWarehouseValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "WarehousesSelectDialog", ["Code","Name", "TaxId"])
+    DialogHelper.openTableSelectDialog(this, "WarehousesSelectDialog", ["Code","Name", "TaxId", "FName"])
       .then((oContext: Context) => {
         const value = oContext.getProperty("Code") as string;
         ev.getSource().setValue(value);

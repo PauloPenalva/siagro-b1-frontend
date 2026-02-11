@@ -23,12 +23,22 @@
 <columns>
   <Column>
     <header>
+      <Text text="" />
+    </header>
+  </Column>
+  <Column>
+    <header>
       <Text text="Codigo" />
     </header>
   </Column>
   <Column>
     <header>
-      <Text text="Nome" />
+      <Text text="Razão Social" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Nome Fantasia" />
     </header>
   </Column>
   <Column>
@@ -36,16 +46,30 @@
       <Text text="CNPJ" />
     </header>
   </Column>
+   <Column>
+    <header>
+      <Text text="Municipio" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Uf" />
+    </header>
+  </Column>
 </columns>
 <ColumnListItem >
   <cells>
+    <core:Icon tooltip="{Notes}" src="sap-icon://information" noTabStop="true"/>
     <Text text="{Code}" />
     <Text text="{Name}" />
+    <Text text="{FName}" />
     <Text text="{
       path: 'TaxId',
       targetType: 'any',
       formatter: '.formatter.formatCnpj'
     }" />
+    <Text text="{City}" />
+    <Text text="{State}" />
   </cells>
 </ColumnListItem>
 </TableSelectDialog>
