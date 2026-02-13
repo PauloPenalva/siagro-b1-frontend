@@ -11,10 +11,8 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import TableSelectDialog from "sap/m/TableSelectDialog";
 import Fragment from "sap/ui/core/Fragment";
 import MessageBox from "sap/m/MessageBox";
-import Filter from "sap/ui/model/Filter";
-import ListBinding from "sap/ui/model/ListBinding";
-import FilterOperator from "sap/ui/model/FilterOperator";
 import { Input$ValueHelpRequestEvent } from "sap/m/Input";
+import RequestModel from "siagrob1/model/RequestModel";
 
 
 /**
@@ -43,8 +41,8 @@ export abstract class BaseController extends CommonController {
 
   async openStorageAddressesListValueHelp(ev: Input$ValueHelpRequestEvent) {
     this._openStorageAddressesList()
-      .then((oContext: Context) => {
-        const value = oContext?.getProperty("/Code") as string;
+      .then((aContexts: any) => {
+        const value = aContexts[0]?.getObject()?.Code as string;
         ev.getSource().setValue(value);
       })
       .catch(err => {
@@ -52,62 +50,50 @@ export abstract class BaseController extends CommonController {
       });
   }
 
-  private async _openStorageAddressesList(): Promise<Context> {
+  private async _openStorageAddressesList(): Promise<object[]> {
     return new Promise(async (resolve) => {
       const view = this.getView();
       const ctx = view.getBindingContext();
-      if (ctx) {
-        const itemCode = ctx.getProperty("ItemCode");
-        if (!itemCode){
-          MessageBox.warning("Selecione o produto.");
-          throw new Error("Selecione o produto.")
-        }
 
-        this._dialog ??= await Fragment.load({
-            name: "siagrob1.view.ownershipTransfers.fragments.StorageAddressesBalanceDialog",
-            controller: this,
-            id: view.getId(),
-          }) as TableSelectDialog;
-      
-        if (this.getView().indexOfDependent(this._dialog) < 0) {
-          this._dialog.attachConfirm(ev => {
-            const oContext = ev
-              .getParameter("selectedItem")
-              .getBindingContext() as Context;
-  
-            resolve(oContext);
-          });
+      if (!ctx) return;
 
-          this._dialog.attachSearch(ev => {
-            const value = ev.getParameter("value");
-            const oFilters = new Filter({
-              filters: [
-                new Filter("Description", FilterOperator.Contains, value),
-              ],
-              and: false,
-            });
-            
-            (ev.getSource().getBinding("items") as ListBinding).filter([oFilters]);  
-          });
-          
-          this.getView().addDependent(this._dialog);
-        }
+      const itemCode = ctx.getProperty("ItemCode");
 
-        this._dialog.open("");
-
-        const model = this.getModel() as ODataModel;
-        const func = model.bindContext("/StorageAddressesListOpenedByItem(...)");
-        func.setParameter("Code", itemCode);
-        
-        this.setBusy(true);
-        func.invoke()
-          .then(() => {
-            const resultContext = func.getBoundContext();
-            const viewModel = this.getModel("viewModel") as JSONModel
-            viewModel.setData(resultContext.getObject() as object);
-          })
-          .finally(() => this.setBusy(false));
+      if (!itemCode) {
+        MessageBox.warning("Selecione o produto.");
+        throw new Error("Selecione o produto.");
       }
+
+      this._dialog ??= await Fragment.load({
+        name: "siagrob1.view.ownershipTransfers.fragments.StorageAddressesBalanceDialog",
+        controller: this,
+        id: view.getId(),
+      }) as TableSelectDialog;
+
+      if (view.indexOfDependent(this._dialog) < 0) {
+        view.addDependent(this._dialog);
+      }
+
+      const fnConfirm = (ev: any) => {
+        const aContext = ev.getParameter("selectedContexts");
+        this._dialog.detachConfirm(fnConfirm);
+        resolve(aContext);
+      };
+
+      this._dialog.attachConfirm(fnConfirm);
+
+      const requestModel = new RequestModel();
+
+      this.setBusy(true);
+      const results = await requestModel.get(
+        `${this.api.storageAddressesBalance}(Code='${itemCode}')`
+      );
+
+      const viewModel = this.getModel("viewModel") as JSONModel;
+      viewModel.setData(results);
+      this.setBusy(false);
+
+      this._dialog.open(undefined);
     });
   }
 

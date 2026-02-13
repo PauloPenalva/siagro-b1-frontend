@@ -39,15 +39,17 @@ export default class Main extends BaseController {
         if (!value) return;
   
         if (key == "Type") {
-          filters.push(`${key} eq '${value}'`)
+          filters.push(`${key} eq '${value}'`);
         } else if (key == "DateFrom") {
-          filters.push(`Date ge ${value}`)
+          filters.push(`Date ge ${value}`);
         } else if (key == "DateTo") {
-          filters.push(`Date le ${value}`)
+          filters.push(`Date le ${value}`);
         } else {
-          filters.push(`contains(${key},'${value}')`)
+          filters.push(`contains(${key},'${value}')`);
         }
       });
+
+      filters.push('Stage eq \'Completed\'');
   
       const filterParam = filters.length > 0 ? filters.join(' and ') : undefined;
       

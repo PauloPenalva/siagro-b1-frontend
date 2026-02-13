@@ -134,27 +134,23 @@
             <core:Title text="Lotes" />
             <Label text="Lote de Origem" />
             <Input 
+              name="storageAddressOriginCode"
 							editable="{ui>/editable}"	
               required="true"
               value="{StorageAddressOriginCode}" 
               showValueHelp="true" 
               valueHelpOnly="true" 
               valueHelpRequest=".openStorageAddressesListValueHelp">
-              <!-- <layoutData>
-                  <l:GridData span="XL3 L3 M3 S4" />
-              </layoutData> -->
-            </Input>
+             </Input>
             <Label text="Lote de Destino" />
             <Input 
+              name="storageAddressDestinationCode"
 							editable="{ui>/editable}"	
               required="true"
               value="{StorageAddressDestinationCode}" 
               showValueHelp="true" 
               valueHelpOnly="true" 
               valueHelpRequest=".openStorageAddressesListValueHelp">
-              <!-- <layoutData>
-                  <l:GridData span="XL3 L3 M3 S4" />
-              </layoutData> -->
             </Input>
             <Label text="Quantidade"/>
             <Input 

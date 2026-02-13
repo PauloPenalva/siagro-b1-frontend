@@ -288,6 +288,17 @@ export default abstract class CommonController extends BaseController {
       });
   }
 
+   async openStorageAddressesValueHelp(ev: Input$ValueHelpRequestEvent) {
+    DialogHelper.openTableSelectDialog(this, "StorageAddressesSelectDialog", ["Description"])
+      .then((oContext: Context) => {
+        const value = oContext.getProperty("Code") as string;
+        ev.getSource().setValue(value);
+      })
+      .catch(err => {
+        throw err;
+      });
+  }
+
   async formatItemName(key: string){
     if (!key){
       return null;
