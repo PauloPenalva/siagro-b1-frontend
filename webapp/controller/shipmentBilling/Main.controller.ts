@@ -259,7 +259,9 @@ export default class Main extends BaseController {
               SalesContractKey: contract?.Key
             }
           ],
-          SalesTransactions: shipments
+          SalesTransactions: shipments,
+          FreightTerms: billing?.FreightTerms,
+          FreightCostStandard: billing?.FreightCost
         };
  
         this.closeBillingDialog();
