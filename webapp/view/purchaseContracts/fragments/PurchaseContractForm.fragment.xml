@@ -208,6 +208,20 @@
               }" 
               editable="false"
             />
+            <Label text="Tipo Tecnologia"/>
+            <Select 
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{
+                path: 'TechnologyType',
+                targetType: 'any'
+              }"
+              >
+              <core:ListItem key="None" text="Não se aplica"/>
+              <core:ListItem key="Intacta" text="Intacta"/>
+              <core:ListItem key="Conventinal" text="Convencional"/>
+            </Select>
             <Label text="Safra" />
             <Input 
 							editable="{ui>/editable}"	

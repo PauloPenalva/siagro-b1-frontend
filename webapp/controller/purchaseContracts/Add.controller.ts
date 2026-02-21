@@ -34,7 +34,8 @@ export default class Add extends BaseController {
       "Status": "Draft",
       "FreightTerms": "None",
       "StandardCurrency": "Brl",
-      "MarketType": ""
+      "MarketType": "",
+      "TechnologyType": ""
     }, false, false, false);
 
 		oView.setBindingContext(oContext);
