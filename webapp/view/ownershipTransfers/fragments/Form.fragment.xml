@@ -95,7 +95,7 @@
             </Select>
             <Label text="Produto" />
             <Input 
-							editable="{ui>/editable}"	
+							editable="false"	
               required="true"
               value="{ItemCode}" 
               showValueHelp="true" 
@@ -114,7 +114,7 @@
             />
             <Label text="Un.Med." />
             <Input 
-              editable="{ui>/editable}"
+              editable="false"
               required="true"
               value="{UomCode}" 
               showValueHelp="true" 
@@ -135,7 +135,7 @@
             <Label text="Lote de Origem" />
             <Input 
               name="storageAddressOriginCode"
-							editable="{ui>/editable}"	
+							editable="false"	
               required="true"
               value="{StorageAddressOriginCode}" 
               showValueHelp="true" 
@@ -145,7 +145,7 @@
             <Label text="Lote de Destino" />
             <Input 
               name="storageAddressDestinationCode"
-							editable="{ui>/editable}"	
+							editable="false"	
               required="true"
               value="{StorageAddressDestinationCode}" 
               showValueHelp="true" 

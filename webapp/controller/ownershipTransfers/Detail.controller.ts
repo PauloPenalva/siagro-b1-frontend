@@ -7,12 +7,12 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import MessageToast from "sap/m/MessageToast";
 
 /**
- * @namespace siagrob1.controller.storageTransactions
+ * @namespace siagrob1.controller.ownershipTransfers
  */
 export default class Detail extends BaseController {
 
 	onInit(): void  {	
-		this.getRouter().getRoute("storageTransactionsDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
+		this.getRouter().getRoute("ownershipTransfersDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
 	}
 
 	private detailRouteMatched(ev: Route$MatchedEvent) {
@@ -23,7 +23,7 @@ export default class Detail extends BaseController {
 
       uiModel.setProperty("/editable", false);
       
-			const sPath = `/StorageTransactions(${id})`;
+			const sPath = `/OwnershipTransfers(${id})`;
 			this.bindElement(sPath);
 
 			return;
@@ -34,13 +34,34 @@ export default class Detail extends BaseController {
 	onEdit() {
     const oContext = this.getView().getBindingContext() as Context
     if (oContext) {
-      this.navTo("storageTransactionsEdit", {id: oContext.getProperty("Key") as string });
+      this.navTo("ownershipTransfersEdit", {id: oContext.getProperty("Key") as string });
     }
   }
 
+  navToOwnershipTransfersList() {
+    this.navTo("ownershipTransfers");
+  }
 
-  navToStorageTransactionsList() {
-    this.navTo("storageTransactions");
+  async onConfirm() {
+    const oContext = this.getView().getBindingContext() as Context;
+    if (!oContext) {
+      throw new Error("");
+    }
+
+    if (await DialogHelper.confirmDialog("Confirmar transferencia de propriedade ?")) {
+
+      const model = this.getModel() as ODataModel;
+      const action = model.bindContext("/OwnershipTransfersConfirm(...)");
+      action.setParameter("Key", oContext.getProperty("Key"));
+
+      this.setBusy(true);
+      void action.invoke()
+        .then(() => {
+          MessageToast.show("Transferencia confirmada com sucesso.");
+          this.navToOwnershipTransfersList()
+        })
+        .finally(()=> this.setBusy(false))
+    }
   }
 
   async onReject() {
@@ -59,11 +80,9 @@ export default class Detail extends BaseController {
       void action.invoke()
         .then(() => {
           MessageToast.show("Romaneio cancelado com sucesso.");
-          this.navToStorageTransactionsList()
+          this.navToOwnershipTransfersList()
         })
         .finally(()=> this.setBusy(false))
     }
-
-
   }
 }

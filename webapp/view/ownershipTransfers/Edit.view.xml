@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.storageTransactions.Edit"
+	controllerName="siagrob1.controller.ownershipTransfers.Edit"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -21,31 +21,22 @@
    	<uxap:headerTitle>
 			<uxap:ObjectPageDynamicHeaderTitle>
         <uxap:expandedHeading>
-           <Title text="Editar Romaneio"/>
+           <Title text="Editar Transferencia de Propriedade"/>
           </uxap:expandedHeading>
           <uxap:snappedHeading>
-           <Title text="Editar Romaneio"/>
+           <Title text="Editar Transferencia de Propriedade"/>
          </uxap:snappedHeading>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>
     <uxap:headerContent>
-			<ObjectIdentifier title="{Code}"/>
+			<ObjectIdentifier title="{TransferCode}"/>
    	</uxap:headerContent> 
     <uxap:sections>
-      <uxap:ObjectPageSection titleUppercase="false" title="Dados do Romaneio">
+      <uxap:ObjectPageSection titleUppercase="false" title="Dados da Transferencia">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection>
             <uxap:blocks>
-              <core:Fragment fragmentName="siagrob1.view.storageTransactions.fragments.Form" type="XML" />
-            </uxap:blocks>
-					</uxap:ObjectPageSubSection>
-				</uxap:subSections>
-			</uxap:ObjectPageSection>
-      <uxap:ObjectPageSection titleUppercase="false" title="Classificação">
-				<uxap:subSections>
-					<uxap:ObjectPageSubSection>
-            <uxap:blocks>
-              <core:Fragment fragmentName="siagrob1.view.storageTransactions.fragments.QualityInspections" type="XML" />
+              <core:Fragment fragmentName="siagrob1.view.ownershipTransfers.fragments.Form" type="XML" />
             </uxap:blocks>
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>

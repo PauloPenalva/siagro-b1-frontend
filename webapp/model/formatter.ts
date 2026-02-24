@@ -228,12 +228,30 @@ export default {
     return m.get(value);
   },
 
-  formatShipmentReleaseStatus: (value: string) => {
+  formatOwnershipTransferStatus: (value: string) => {
     const m = new Map<string, string>();
     m.set("Pending", "Pendente");
-    m.set("Actived", "Ativo");
+    m.set("Confirmed", "Confirmado");
     m.set("Cancelled", "Cancelado");
-    m.set("Paused", "Pausado");
+    m.set("Invoiced", "Faturado");
+    
+    return m.get(value);
+  },
+
+  stateOwnershipTransferStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Open", "None");
+    m.set("Closed", "Information");
+    m.set("Cancelled", "Error");
+    
+    return m.get(value);
+  },
+
+  formatShipmentReleaseStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Open", "Em Aberto");
+    m.set("Closed", "Encerrado");
+    m.set("Cancelled", "Cancelado");
     
     return m.get(value);
   },

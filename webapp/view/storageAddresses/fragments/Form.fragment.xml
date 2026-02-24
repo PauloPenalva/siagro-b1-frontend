@@ -99,6 +99,25 @@
                   formatter: '.formatProdutoDescricao'
                 }" 
 								editable="false"/>
+            <Label text="Un.Med." />
+            <Input 
+              editable="{ui>/editable}"
+              required="true"
+              value="{UoM}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openUnitsOfMeasureValueHelp">
+              <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+              value="{
+                parts:['UoM'],
+                formatter: '.formatUnitOfMeasureDescription'
+              }" 
+              editable="false"
+            />
             <Label text="Cliente" />
             <Input 
 								required="true"

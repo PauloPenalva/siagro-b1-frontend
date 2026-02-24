@@ -1,54 +1,384 @@
-<mvc:View 
-	controllerName="siagrob1.controller.ownershipTransfers.Add"
-	displayBlock="true"
-	xmlns="sap.m"
-	xmlns:mvc="sap.ui.core.mvc"
-	xmlns:core="sap.ui.core"
-	xmlns:t="sap.ui.table"
-	xmlns:f="sap.f.semantic"
-  xmlns:uxap="sap.uxap"
-	core:require="{
-		formatter: 'siagrob1/model/formatter'
-	}">
+<mvc:View
+    controllerName="siagrob1.controller.ownershipTransfers.Add"
+    displayBlock="true"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    xmlns:t="sap.ui.table"
+    xmlns:f="sap.f"
+    xmlns:mdc="sap.ui.mdc"
+    xmlns:fb="sap.ui.comp.filterbar"
+    xmlns:vm="sap.ui.fl.variants"
+    xmlns:svm="sap.ui.comp.smartvariants"
+    xmlns:uxap="sap.uxap"
+    core:require="{
+    formatter: 'siagrob1/model/formatter'
+  }"
+>
+    <NavContainer
+      id="navCon"
+      navigationFinished=".onNavigationFinished"
+      class="navContainerControl sapUiSmallMarginBottom"
+    >
+      <uxap:ObjectPageLayout
+        id="ownershipTransferOriginPage"
+        showFooter="true"
+        toggleHeaderOnTitleClick="true"
+        preserveHeaderStateOnScroll="false"
+        busy="{ui>/busy}"
+        busyIndicatorDelay="0"
+      >
+        <uxap:headerTitle>
+            <uxap:ObjectPageDynamicHeaderTitle>
+              <uxap:breadcrumbs>
+                <Breadcrumbs separatorStyle="GreaterThan" currentLocationText="Nova Transferencia de Propriedade"/>
+              </uxap:breadcrumbs>
+              <uxap:expandedHeading>
+                  <Title text="Nova Transferencia de Propriedade" />
+              </uxap:expandedHeading>
+              <uxap:snappedHeading>
+                  <Title text="Nova Transferencia de Propriedade" />
+              </uxap:snappedHeading>
+            </uxap:ObjectPageDynamicHeaderTitle>
+        </uxap:headerTitle>
+        <uxap:headerContent>
+            <fb:FilterBar
+                search=".onSearch"
+                showRestoreButton="false"
+                filterBarExpanded="true"
+            >
+                <fb:filterGroupItems>
+                    <fb:FilterGroupItem
+                        name="items"
+                        label="Produto"
+                        groupName="GroupItem"
+                        visibleInFilterBar="true"
+                    >
+                        <fb:control>
+                            <Input
+                                showClearIcon="true"
+                                showValueHelp="true"
+                                valueHelpRequest=".openItemValueHelp"
+                                value="{filter>/ItemCode}"
+                            />
+                        </fb:control>
+                    </fb:FilterGroupItem>
+                </fb:filterGroupItems>
+            </fb:FilterBar>
+        </uxap:headerContent>
+        <uxap:sections>
+            <uxap:ObjectPageSection
+                titleUppercase="false"
+                title="Seleção de Lote de Origem"
+            >
+                <uxap:subSections>
+                    <uxap:ObjectPageSubSection>
+                        <uxap:blocks>
+                            <Table
+                                id="tableStorageAddressesBalance"
+                                class="sapUiSizeCondensed"
+                                alternateRowColors="true"
+                                inset="false"
+                                items="{
+                                  path: 'balance>/'
+                                }"
+                                mode="SingleSelect"
+                            >
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <content>
+                                            <Title
+                                                text="Lotes de Armazenagem"
+                                                level="H2"
+                                            />
+                                            <ToolbarSpacer />
+                                            <SearchField
+                                                placeholder="Pesquisar..."
+                                                width="30%"
+                                                search=".onFilter"
+                                            />
+                                        </content>
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column >
+                                        <Text text="Filial" />
+                                    </Column>
+                                    <Column >
+                                        <Text text="Código" />
+                                    </Column>
+                                    <Column >
+                                        <Text text="Produto" />
+                                    </Column>
+                                    <Column >
+                                        <Text text="Descrição" />
+                                    </Column>
+                                    <Column >
+                                        <Text text="Cliente" />
+                                    </Column>
+                                    <Column >
+                                        <Text text="Armazém" />
+                                    </Column>
+                                    <Column hAlign="End" width="15rem">
+                                        <Text text="Saldo" />
+                                    </Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text
+                                                text="{balance>BranchName}"
+                                            />
+                                            <Text
+                                                text="{balance>Code}"
+                                            />
+                                             <ObjectIdentifier
+                                              title="{balance>ItemName}"
+                                              text="{balance>ItemCode}"
+                                            />
+                                            <Text
+                                                text="{balance>Description}"
+                                            />
+                                            <ObjectIdentifier
+                                              title="{balance>CardName}"
+                                              text="{balance>CardCode}"
+                                            />
+                                            <ObjectIdentifier
+                                              title="{balance>WarehouseName}"
+                                              text="{balance>WarehouseCode}"
+                                            />
+                                            <ObjectNumber
+                                                number="{
+                                                  path: 'balance>Balance',
+                                                  type: 'sap.ui.model.type.Float',
+                                                  formatOptions: {
+                                                    decimals: 3,
+                                                    decimalSeparator: ',',
+                                                    groupingEnabled: true,
+                                                    groupingSeparator: '.'
+                                                  }
+                                                }"
+                                                unit="{balance>UoM}"
+                                            />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </uxap:blocks>
+                    </uxap:ObjectPageSubSection>
+                </uxap:subSections>
+            </uxap:ObjectPageSection>
+        </uxap:sections>
+        <uxap:footer>
+            <OverflowToolbar>
+                <ToolbarSpacer />
+                <Button
+                    text="Próximo"
+                    icon="sap-icon://step"
+                    press=".handleNav"
+                    type="Emphasized"
+                >
+                  <customData>
+                    <core:CustomData
+                      key="target"
+                      value="ownershipTransferDestinationPage" />
+                  </customData>
+                </Button>
+            </OverflowToolbar>
+        </uxap:footer>
+      </uxap:ObjectPageLayout>
 
-  <uxap:ObjectPageLayout
-    showFooter="true"
-    toggleHeaderOnTitleClick="true"
-		preserveHeaderStateOnScroll="false"
-    busy="{ui>/busy}"
-    busyIndicatorDelay="0"
-	>
-   	<uxap:headerTitle>
-			<uxap:ObjectPageDynamicHeaderTitle>
-        <uxap:expandedHeading>
-           <Title text="Nova Transferencia de Propriedade"/>
-          </uxap:expandedHeading>
-          <uxap:snappedHeading>
-           <Title text="Nova Transferencia de Propriedade"/>
-         </uxap:snappedHeading>
-      </uxap:ObjectPageDynamicHeaderTitle>
-		</uxap:headerTitle>
-    <uxap:headerContent>
-    </uxap:headerContent>
-    <uxap:sections>
-      <uxap:ObjectPageSection titleUppercase="false" title="Dados da Transferencia">
-				<uxap:subSections>
-					<uxap:ObjectPageSubSection>
-            <uxap:blocks>
-              <core:Fragment fragmentName="siagrob1.view.ownershipTransfers.fragments.Form" type="XML" />
-            </uxap:blocks>
-					</uxap:ObjectPageSubSection>
-				</uxap:subSections>
-			</uxap:ObjectPageSection>
-    </uxap:sections>
-    <uxap:footer>
-      <OverflowToolbar>
-				<ToolbarSpacer />
-				<Button text="Cancelar" press=".onCancel"  />
-				<Button text="Salvar" type="Emphasized" press=".onSave"/>
-				<Button text="Teste" press=".openStorageAddressesList"/>
-        
-			</OverflowToolbar>
-    </uxap:footer>
-  </uxap:ObjectPageLayout>
+      <uxap:ObjectPageLayout
+        id="ownershipTransferDestinationPage"
+        showFooter="true"
+        toggleHeaderOnTitleClick="true"
+        preserveHeaderStateOnScroll="false"
+        busy="{ui>/busy}"
+        busyIndicatorDelay="0"
+      >
+        <uxap:headerTitle>
+            <uxap:ObjectPageDynamicHeaderTitle>
+              <uxap:breadcrumbs>
+                <Breadcrumbs separatorStyle="GreaterThan" currentLocationText="Nova Transferencia de Propriedade"/>
+              </uxap:breadcrumbs>
+              <uxap:expandedHeading>
+                  <Title text="Nova Transferencia de Propriedade" />
+              </uxap:expandedHeading>
+              <uxap:snappedHeading>
+                  <Title text="Nova Transferencia de Propriedade" />
+              </uxap:snappedHeading>
+            </uxap:ObjectPageDynamicHeaderTitle>
+        </uxap:headerTitle>
+        <uxap:sections>
+            <uxap:ObjectPageSection
+                titleUppercase="false"
+                title="Seleção de Lote de Destino"
+            >
+                <uxap:subSections>
+                    <uxap:ObjectPageSubSection>
+                        <uxap:blocks>
+                            <Table
+                                id="tableStorageAddressesDestination"
+                                class="sapUiSizeCondensed"
+                                alternateRowColors="true"
+                                inset="false"
+                                items="{
+                                  path: 'destination>/'
+                                }"
+                                mode="SingleSelect"
+                            >
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <content>
+                                            <Title
+                                                text="Lotes de Armazenagem"
+                                                level="H2"
+                                            />
+                                            <ToolbarSpacer />
+                                            <SearchField
+                                                placeholder="Pesquisar..."
+                                                width="30%"
+                                                search=".onFilter"
+                                            />
+                                        </content>
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column >
+                                        <Text text="Filial" />
+                                    </Column>
+                                    <Column >
+                                        <Text text="Código" />
+                                    </Column>
+                                    <Column >
+                                        <Text text="Produto" />
+                                    </Column>
+                                    <Column >
+                                        <Text text="Descrição" />
+                                    </Column>
+                                    <Column >
+                                        <Text text="Cliente" />
+                                    </Column>
+                                    <Column >
+                                        <Text text="Armazém" />
+                                    </Column>
+                                    <Column hAlign="End" width="15rem">
+                                        <Text text="Saldo" />
+                                    </Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text
+                                                text="{destination>BranchName}"
+                                            />
+                                            <Text
+                                                text="{destination>Code}"
+                                            />
+                                             <ObjectIdentifier
+                                              title="{destination>ItemName}"
+                                              text="{destination>ItemCode}"
+                                            />
+                                            <Text
+                                                text="{destination>Description}"
+                                            />
+                                            <ObjectIdentifier
+                                              title="{destination>CardName}"
+                                              text="{destination>CardCode}"
+                                            />
+                                            <ObjectIdentifier
+                                              title="{destination>WarehouseName}"
+                                              text="{destination>WarehouseCode}"
+                                            />
+                                            <ObjectNumber
+                                                number="{
+                                                  path: 'destination>Balance',
+                                                  type: 'sap.ui.model.type.Float',
+                                                  formatOptions: {
+                                                    decimals: 3,
+                                                    decimalSeparator: ',',
+                                                    groupingEnabled: true,
+                                                    groupingSeparator: '.'
+                                                  }
+                                                }"
+                                                unit="{destination>UoM}"
+                                            />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </uxap:blocks>
+                    </uxap:ObjectPageSubSection>
+                </uxap:subSections>
+            </uxap:ObjectPageSection>
+        </uxap:sections>
+        <uxap:footer>
+            <OverflowToolbar>
+
+                <ToolbarSpacer />
+                 <Button
+                    text="Voltar"
+                    icon="sap-icon://nav-back"
+                    press=".navBack"
+                    type="Emphasized"
+                >
+                </Button>
+                <Button
+                    text="Próximo"
+                    icon="sap-icon://step"
+                    press=".handleNav"
+                    type="Emphasized"
+                >
+                  <customData>
+                    <core:CustomData
+                      key="target"
+                      value="ownershipTransferConfirmPage" />
+                  </customData>
+                </Button>
+            </OverflowToolbar>
+        </uxap:footer>
+      </uxap:ObjectPageLayout>
+
+      <uxap:ObjectPageLayout
+        id="ownershipTransferConfirmPage"
+        showFooter="true"
+        toggleHeaderOnTitleClick="true"
+        preserveHeaderStateOnScroll="false"
+        busy="{ui>/busy}"
+        busyIndicatorDelay="0"
+      >
+        <uxap:headerTitle>
+          <uxap:ObjectPageDynamicHeaderTitle>
+            <uxap:expandedHeading>
+              <Title text="Nova Transferencia de Propriedade"/>
+              </uxap:expandedHeading>
+              <uxap:snappedHeading>
+              <Title text="Nova Transferencia de Propriedade"/>
+            </uxap:snappedHeading>
+          </uxap:ObjectPageDynamicHeaderTitle>
+        </uxap:headerTitle>
+        <uxap:headerContent>
+        </uxap:headerContent>
+        <uxap:sections>
+          <uxap:ObjectPageSection titleUppercase="false" title="Dados da Transferencia">
+            <uxap:subSections>
+              <uxap:ObjectPageSubSection>
+                <uxap:blocks>
+                  <core:Fragment fragmentName="siagrob1.view.ownershipTransfers.fragments.Form" type="XML" />
+                </uxap:blocks>
+              </uxap:ObjectPageSubSection>
+            </uxap:subSections>
+          </uxap:ObjectPageSection>
+        </uxap:sections>
+        <uxap:footer>
+          <OverflowToolbar>
+            <ToolbarSpacer />
+            <Button text="Cancelar" press=".onCancel"  />
+            <Button text="Salvar" type="Emphasized" press=".onSave"/>
+          </OverflowToolbar>
+        </uxap:footer>
+      </uxap:ObjectPageLayout>
+
+    </NavContainer>
+    
 </mvc:View>

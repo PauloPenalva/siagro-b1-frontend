@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.storageTransactions.Detail"
+	controllerName="siagrob1.controller.ownershipTransfers.Detail"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -21,53 +21,44 @@
    	<uxap:headerTitle>
       <uxap:ObjectPageDynamicHeaderTitle>
          <uxap:expandedHeading>
-           <Title text="Romaneio"/>
+           <Title text="Transferencia de Propriedade"/>
           </uxap:expandedHeading>
           <uxap:snappedHeading>
-           <Title text="Romaneio"/>
+           <Title text="Transferencia de Propriedade"/>
          </uxap:snappedHeading>
         <uxap:actions>
-          <Button text="Voltar para Lista de Romaneios" type="Transparent" press=".navToStorageTransactionsList"/>
-          <Button enabled="{= ${path: 'TransactionStatus', targetType: 'any'}==='Pending' ? true : false }" text="Editar" type="Emphasized" press=".onEdit"/>
-          <Button enabled="{= ${path: 'TransactionStatus', targetType: 'any'}==='Pending' ? true : false }" text="Confirmar" type="Accept" press=".onConfirm"/>
-          <Button enabled="{= ${path: 'TransactionStatus', targetType: 'any'}==='Pending' ? true : false }" text="Cancelar" type="Reject" press=".onReject"/>
+          <Button text="Voltar para Lista de Transferenciar" type="Transparent" press=".navToOwnershipTransfersList"/>
+          <Button enabled="{= ${path: 'TransferStatus', targetType: 'any'}==='Open' ? true : false }" text="Editar" type="Emphasized" press=".onEdit"/>
+          <Button enabled="{= ${path: 'TransferStatus', targetType: 'any'}==='Open' ? true : false }" text="Confirmar" type="Accept" press=".onConfirm"/>
+          <Button enabled="{= ${path: 'TransferStatus', targetType: 'any'}==='Open' ? true : false }" text="Cancelar" type="Reject" press=".onReject"/>
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>
 
     <uxap:headerContent>
       <HBox class="sapUiTinyMarginBottom">
-        <ObjectIdentifier title="{Code}" class="sapUiMediumMarginEnd sapUiTinyMarginBottom"/>
+        <ObjectIdentifier title="{TransferCode}" class="sapUiMediumMarginEnd sapUiTinyMarginBottom"/>
         <ObjectStatus
           state="{
-            path: 'TransactionStatus',
+            path: 'TransferStatus',
             targetType: 'any',
-            formatter: '.formatter.stateStorageTransactionStatus'
+            formatter: '.formatter.stateOwnershipTransferStatus'
           }"
           inverted="true" 
           text="{
-            path: 'TransactionStatus',
-            formatter: '.formatter.formatStorageTransactionStatus',
+            path: 'TransferStatus',
+            formatter: '.formatter.formatOwnershipTransferStatus',
             targetType: 'any'
           }" />
       </HBox>
    	</uxap:headerContent> 
     
-    <uxap:sections>
-      <uxap:ObjectPageSection titleUppercase="false" title="Dados do Romaneio">
+     <uxap:sections>
+      <uxap:ObjectPageSection titleUppercase="false" title="Dados da Transferencia">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection>
             <uxap:blocks>
-              <core:Fragment fragmentName="siagrob1.view.storageTransactions.fragments.Form" type="XML" />
-            </uxap:blocks>
-					</uxap:ObjectPageSubSection>
-				</uxap:subSections>
-			</uxap:ObjectPageSection>
-      <uxap:ObjectPageSection titleUppercase="false" title="Classificação">
-				<uxap:subSections>
-					<uxap:ObjectPageSubSection>
-            <uxap:blocks>
-              <core:Fragment fragmentName="siagrob1.view.storageTransactions.fragments.QualityInspections" type="XML" />
+              <core:Fragment fragmentName="siagrob1.view.ownershipTransfers.fragments.Form" type="XML" />
             </uxap:blocks>
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>

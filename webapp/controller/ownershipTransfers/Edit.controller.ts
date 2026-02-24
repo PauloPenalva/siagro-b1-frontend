@@ -6,19 +6,19 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import { BaseController } from "./BaseController";
 
 /**
- * @namespace siagrob1.controller.storageTransactions
+ * @namespace siagrob1.controller.ownershipTransfers
  */
 export default class Edit extends BaseController {
 
 	onInit(): void  {	
-		this.getRouter().getRoute("storageTransactionsEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
+		this.getRouter().getRoute("ownershipTransfersEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setProperty("/editable", true);
         
-		this.clearStates("storageTransactionForm");
+		this.clearStates("ownershipTransferForm");
     
     const oModel = this.getView().getModel() as ODataModel;
 		
@@ -28,7 +28,7 @@ export default class Edit extends BaseController {
 
 		const {id} = ev.getParameter("arguments") as {id: string };
 		if (id != null) {
-			const sPath = `/StorageTransactions(${id})`;
+			const sPath = `/OwnershipTransfers(${id})`;
 			this.bindElement(sPath);
 			return;
 		}
@@ -36,7 +36,7 @@ export default class Edit extends BaseController {
 	}
 
 	async onSave() {
-		if (!this.validateForm("storageTransactionForm")) {
+		if (!this.validateForm("ownershipTransferForm")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }
@@ -68,7 +68,7 @@ export default class Edit extends BaseController {
   private navToDetail() {
     const oContext = this.getView().getBindingContext() as Context;
     if (oContext) {
-      this.navTo("storageTransactionsDetail", {id: oContext.getProperty("Key") as string});
+      this.navTo("ownershipTransfersDetail", {id: oContext.getProperty("Key") as string});
     }
   }
 }
