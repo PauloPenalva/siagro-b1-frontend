@@ -21,47 +21,25 @@
             </Select>
         </fb:control>
       </fb:FilterGroupItem>
-      <fb:FilterGroupItem name="transactionStatus" label="Status" groupName="GroupTransactionStatus" visibleInFilterBar="true">
+      <fb:FilterGroupItem name="status" label="Status" groupName="GroupStatus" visibleInFilterBar="true">
         <fb:control>
             <Select 
               forceSelection="false"
               selectedKey="{
-                path: 'filter>/TransactionStatus',
+                path: 'filter>/TransferStatus',
                 type: 'sap.ui.model.type.String'
               }"
             >
-              <core:ListItem key="Pending" text="Pendente"/>
-              <core:ListItem key="Confirmed" text="Confirmado"/>
+              <core:ListItem key="Open" text="Em aberto"/>
+              <core:ListItem key="Closed" text="Encerrado"/>
               <core:ListItem key="Cancelled" text="Cancelado"/>
-              <core:ListItem key="Invoiced" text="Faturado"/>
             </Select>
         </fb:control>
       </fb:FilterGroupItem>
       <fb:FilterGroupItem name="code" label="Codigo" groupName="GroupCode" visibleInFilterBar="true">
         <fb:control>
-            <Input showClearIcon="true" value="{filter>/Code}">
+            <Input showClearIcon="true" value="{filter>/TransferCode}">
             </Input>
-        </fb:control>
-      </fb:FilterGroupItem>
-      <fb:FilterGroupItem name="type" label="Tipo" groupName="GroupType" visibleInFilterBar="true">
-        <fb:control>
-            <Select 
-              forceSelection="false"
-              selectedKey="{
-                path: 'filter>/TransactionType',
-                type: 'sap.ui.model.type.String'
-              }"
-            >
-              <core:ListItem key="Receipt" text="Entrada"/>
-              <core:ListItem key="Shipment" text="Saída"/>
-              <core:ListItem key="QualityLoss" text="Quebra Técnica"/>
-              <core:ListItem key="SalesShipment" text="Venda"/>
-              <core:ListItem key="SalesShipmentReturn" text="Dev.Venda"/>
-              <core:ListItem key="Purchase" text="Compra"/>
-              <core:ListItem key="PurchaseReturn" text="Dev.Compra"/>
-              <core:ListItem key="PurchaseQtyComplement" text="Compl.Qtd."/>
-              <core:ListItem key="PurchasePriceComplement" text="Compl.Preço"/>
-            </Select>
         </fb:control>
       </fb:FilterGroupItem>
       <fb:FilterGroupItem name="dateFrom" label="Emissão de" groupName="GroupDateFrom" visibleInFilterBar="true">
@@ -88,41 +66,24 @@
            />
         </fb:control>
       </fb:FilterGroupItem>
-      <fb:FilterGroupItem name="truck" label="Veiculo" groupName="GroupTruck" visibleInFilterBar="true">
+      <fb:FilterGroupItem name="customerOrigin" label="Cliente Origem" groupName="GroupCustomerOrigin" visibleInFilterBar="true">
         <fb:control>
             <Input
               showClearIcon="true"
               showValueHelp="true"
-              valueHelpRequest=".openTrucksValueHelp"
-              value="{filter>/TruckCode}"
+              valueHelpRequest=".openCostumersValueHelp"
+              value="{filter>/CustomerOriginCode}"
               >
             </Input>
         </fb:control>
       </fb:FilterGroupItem>
-       <fb:FilterGroupItem name="invoiceNumber" label="Documento" groupName="GroupInvoiceNumber" visibleInFilterBar="true">
-        <fb:control>
-            <Input showClearIcon="true" value="{filter>/InvoiceNumber}">
-            </Input>
-        </fb:control>
-      </fb:FilterGroupItem>
-       <fb:FilterGroupItem name="warehouse" label="Armazém" groupName="GroupWarehouse" visibleInFilterBar="true">
+      <fb:FilterGroupItem name="customerDestination" label="Cliente Destino" groupName="GroupCustomerDestination" visibleInFilterBar="true">
         <fb:control>
             <Input
               showClearIcon="true"
               showValueHelp="true"
-              valueHelpRequest=".openWarehouseValueHelp"
-              value="{filter>/WarehouseCode}"
-              >
-            </Input>
-        </fb:control>
-      </fb:FilterGroupItem>
-      <fb:FilterGroupItem name="businessPartners" label="Cliente" groupName="GroupBusinessPartner" visibleInFilterBar="true">
-        <fb:control>
-            <Input
-              showClearIcon="true"
-              showValueHelp="true"
-              valueHelpRequest=".openBusinessPartnersValueHelp"
-              value="{filter>/CardCode}"
+              valueHelpRequest=".openCostumersValueHelp"
+              value="{filter>/CustomerDestinationCode}"
               >
             </Input>
         </fb:control>
@@ -135,12 +96,6 @@
               valueHelpRequest=".openItemValueHelp"
               value="{filter>/ItemCode}"
               >
-            </Input>
-        </fb:control>
-      </fb:FilterGroupItem>
-      <fb:FilterGroupItem name="chaveNFe" label="Chave NFe" groupName="GroupChaveNFe" visibleInFilterBar="true">
-        <fb:control>
-            <Input showClearIcon="true" value="{filter>/ChaveNFe}">
             </Input>
         </fb:control>
       </fb:FilterGroupItem>

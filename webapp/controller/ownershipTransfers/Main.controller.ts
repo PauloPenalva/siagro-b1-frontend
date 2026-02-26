@@ -39,22 +39,26 @@ export default class Main extends CommonController {
 
       if (!value) return;
 
-      // if (key == "TransactionType" || key == "TransactionStatus") {
-      //   filters.push(`${key} eq '${value}'`)
-      // } else if (key == "DateFrom") {
-      //   filters.push(`TransactionDate ge ${value}`)
-      // } else if (key == "DateTo") {
-      //   filters.push(`TransactionDate le ${value}`)
-      // } else {
-      //   filters.push(`contains(${key},'${value}')`)
-      // }
+      if (key == "TransferStatus") {
+        filters.push(`${key} eq '${value}'`)
+      } else if (key == "CustomerOriginCode") {
+        filters.push(`StorageAddressOrigin/CardCode eq '${value}'`)
+      } else if (key == "CustomerDestinationCode") {
+        filters.push(`StorageAddressDestination/CardCode eq '${value}'`)
+      } else if (key == "DateFrom") {
+        filters.push(`Date ge ${value}`)
+      } else if (key == "DateTo") {
+        filters.push(`Date le ${value}`)
+      } else {
+        filters.push(`contains(${key},'${value}')`)
+      }
     });
 
     const filterParam = filters.length > 0 ? filters.join(' and ') : undefined;
   
-    // oBinding.changeParameters({
-    //   $filter: filterParam
-    // });
+    oBinding.changeParameters({
+      $filter: filterParam
+    });
   }
 
   onCreate() {

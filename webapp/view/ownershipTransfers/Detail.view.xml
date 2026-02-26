@@ -30,7 +30,7 @@
           <Button text="Voltar para Lista de Transferenciar" type="Transparent" press=".navToOwnershipTransfersList"/>
           <Button enabled="{= ${path: 'TransferStatus', targetType: 'any'}==='Open' ? true : false }" text="Editar" type="Emphasized" press=".onEdit"/>
           <Button enabled="{= ${path: 'TransferStatus', targetType: 'any'}==='Open' ? true : false }" text="Confirmar" type="Accept" press=".onConfirm"/>
-          <Button enabled="{= ${path: 'TransferStatus', targetType: 'any'}==='Open' ? true : false }" text="Cancelar" type="Reject" press=".onReject"/>
+          <Button enabled="{= ${path: 'TransferStatus', targetType: 'any'}==='Open' ? true : ${path: 'TransferStatus', targetType: 'any'}==='Closed' ? true : false }" text="Cancelar" type="Reject" press=".onReject"/>
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>

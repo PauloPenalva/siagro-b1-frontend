@@ -87,12 +87,12 @@
                 state="{
                   path: 'TransferStatus', 
                   targetType: 'any', 
-                  formatter: '.formatter.stateStorageTransactionStatus'
+                  formatter: '.formatter.stateOwnershipTransferStatus'
                 }"
                 text="{
                   path: 'TransferStatus', 
                   targetType: 'any', 
-                  formatter: '.formatter.formatStorageTransactionStatus' 
+                  formatter: '.formatter.formatOwnershipTransferStatus' 
                 }"/>
 						</t:template>
 					</t:Column>
@@ -123,6 +123,24 @@
 						</t:template>
 					</t:Column>
           <t:Column
+						label="Produto"
+						sortProperty="ItemCode"
+            width="7rem"
+						>
+						<t:template>
+							<Text text="{ItemCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Descrição"
+						sortProperty="ItemName"
+            width="10rem"
+						>
+						<t:template>
+							<Text text="{ItemName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
 						label="Quantidade"
 						sortProperty="Quantity"
             hAlign="End"
@@ -143,6 +161,46 @@
               }"
               unit="{UomCode}"
             />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Lote Origem"
+						width="7rem"
+						>
+						<t:template>
+							<Text text="{StorageAddressOriginCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Cliente Origem"
+						width="25rem"
+						>
+						<t:template>
+							<Text text="{StorageAddressOrigin/CardName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Lote Destino"
+						width="7rem"
+						>
+						<t:template>
+							<Text text="{StorageAddressDestinationCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Cliente Destino"
+						width="25rem"
+						>
+						<t:template>
+							<Text text="{StorageAddressDestination/CardName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Observações"
+						width="25rem"
+						>
+						<t:template>
+							<Text text="{Comments}" wrapping="false"/>
 						</t:template>
 					</t:Column>
        	</t:columns>

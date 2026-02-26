@@ -70,16 +70,16 @@ export default class Detail extends BaseController {
       throw new Error("");
     }
 
-    if (await DialogHelper.confirmDialog("Cancelar o romaneio ?")) {
+    if (await DialogHelper.confirmDialog("Cancelar a transferencia ?")) {
 
       const model = this.getModel() as ODataModel;
-      const action = model.bindContext("/StorageTransactionsCancel(...)");
+      const action = model.bindContext("/OwnershipTransfersCancel(...)");
       action.setParameter("Key", oContext.getProperty("Key"));
 
       this.setBusy(true);
       void action.invoke()
         .then(() => {
-          MessageToast.show("Romaneio cancelado com sucesso.");
+          MessageToast.show("Transferencia cancelada com sucesso.");
           this.navToOwnershipTransfersList()
         })
         .finally(()=> this.setBusy(false))
