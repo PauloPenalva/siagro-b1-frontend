@@ -42,6 +42,19 @@
               liveChange=".validateField"
               maxLength="100"
           />
+          <Label text="Tipo"/>
+          <Select 
+            required="true"
+            selectedKey="{
+              path: 'Type',
+              targetType: 'any'
+            }"
+            forceSelection="false"
+          >
+            <core:ListItem key="Drying" text="Secagem" />
+            <core:ListItem key="Cleaning" text="Limpeza" />
+            <core:ListItem key="Quality" text="Qualidade" />
+          </Select>
           <Label text="Inativo ?" />
           <CheckBox 
             selected="{Disabled}"
