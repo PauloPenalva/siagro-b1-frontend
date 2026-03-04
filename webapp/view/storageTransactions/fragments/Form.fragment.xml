@@ -323,6 +323,115 @@
             />
             <Label text="Chave NF-e"/>
             <Input value="{ChaveNFe}" maxLength="9" editable="{ui>/editable}"/>
+
+          <core:Title text="Descontos"/>
+          <Label text="Secagem"/>
+          <Input 
+            editable="{ui>/editable}"
+            value="{
+              path: 'DryingDiscount',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions: {
+                  decimals: 0,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+              } 
+            }"
+            description="{UnitOfMeasureCode}"
+          />
+          <Label text="Limpeza"/>
+          <Input 
+            editable="{ui>/editable}"
+            value="{
+              path: 'CleaningDiscount',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions: {
+                  decimals: 0,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+              } 
+            }"
+            description="{UnitOfMeasureCode}"
+          />
+          <Label text="Outros"/>
+          <Input 
+            editable="{ui>/editable}"
+            value="{
+              path: 'OthersDicount',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions: {
+                  decimals: 0,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+              } 
+            }"
+            description="{UnitOfMeasureCode}"
+          />
+         
+          <core:Title text="Valores"/>
+          <Label text="Secagem"/>
+          <Input 
+            editable="{ui>/editable}"
+            value="{
+              path: 'DryingServicePrice',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions: {
+                  decimals: 2,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+              } 
+            }"
+            description="R$"
+          />
+          <Label text="Limpeza"/>
+          <Input 
+            editable="{ui>/editable}"
+            value="{
+              path: 'CleaningServicePrice',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions: {
+                  decimals: 2,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+              } 
+            }"
+            description="R$"
+          />
+          <Label text="Recepção"/>
+          <Input 
+            editable="{ui>/editable}"
+            value="{
+              path: 'ReceiptServicePrice',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions: {
+                  decimals: 2,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+              } 
+            }"
+            description="R$"
+          />
+          <Label text="Expedição"/>
+          <Input 
+            editable="{ui>/editable}"
+            value="{
+              path: 'ShipmentPrice',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions: {
+                  decimals: 2,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+              } 
+            }"
+            description="R$"
+          />
         </f:content>
     </f:SimpleForm>
 </core:FragmentDefinition>

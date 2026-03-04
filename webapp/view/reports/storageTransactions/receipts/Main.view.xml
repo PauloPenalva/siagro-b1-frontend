@@ -1,0 +1,171 @@
+<mvc:View
+	controllerName="siagrob1.controller.reports.storageTransactions.receipts.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+  <Page title="Relatório de Romaneios de Entrada." >
+    <f:SimpleForm
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0">
+        <f:content>
+          <core:Title
+              text="Parametros"
+              emphasized="true"
+          />
+          <Label text="Filial de" />
+          <Input
+              value="{params>/BranchCodeFrom}"
+              maxLength="11"
+              showValueHelp="true"
+              valueHelpRequest=".openBranchsValueHelp"
+          />
+          <Label text="Filial até" />
+          <Input
+              value="{params>/BranchCodeTo}"
+              maxLength="11"
+              required="true"
+              showValueHelp="true"
+              valueHelpRequest=".openBranchsValueHelp"
+          />
+          <Label text="Emissão de"/>
+          <DatePicker
+                value="{
+                  path: 'params>/TransactionDateFrom',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+                editable="{ui>/editable}"
+                liveChange=".validateField"
+                required="true"
+            />
+          <Label text="Emissão até"/>
+          <DatePicker
+                value="{
+                  path: 'params>/TransactionDateTo',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+                editable="{ui>/editable}"
+                liveChange=".validateField"
+                required="true"
+            />
+          <Label text="Cli/For de" />
+          <Input
+            editable="{ui>/editable}"
+            showValueHelp="true"
+            valueHelpRequest=".openBusinessPartnersValueHelp"
+            value="{params>/CardCodeFrom}"
+            >
+          </Input>
+          <Label text="Cli/For até" />
+          <Input
+            editable="{ui>/editable}"
+            showValueHelp="true"
+            valueHelpRequest=".openBusinessPartnersValueHelp"
+            value="{params>/CardCodeTo}"
+            required="true"
+            >
+          </Input>
+          <Label text="Lote de" />
+          <Input
+            editable="{ui>/editable}"
+            showValueHelp="true"
+            valueHelpRequest=".openStorageAddressesValueHelp"
+            value="{params>/StorageAddressCodeFrom}"
+            >
+          </Input>
+          <Label text="Lote até" />
+          <Input
+            editable="{ui>/editable}"
+            showValueHelp="true"
+            valueHelpRequest=".openStorageAddressesValueHelp"
+            value="{params>/StorageAddressCodeTo}"
+            required="true"
+            >
+          </Input>
+          <Label text="Produto de" />
+          <Input
+            editable="{ui>/editable}"
+            showValueHelp="true"
+            valueHelpRequest=".openItemValueHelp"
+            value="{params>/ItemCodeFrom}"
+            >
+          </Input>
+          <Label text="Produto até" />
+          <Input
+            editable="{ui>/editable}"
+            showValueHelp="true"
+            valueHelpRequest=".openItemValueHelp"
+            value="{params>/ItemCodeTo}"
+            required="true"
+            >
+          </Input>
+          <Label text="Armazem de" />
+          <Input
+            editable="{ui>/editable}"
+            showValueHelp="true"
+            valueHelpRequest=".openWarehouseValueHelp"
+            value="{params>/WarehouseCodeFrom}"
+            >
+          </Input>
+          <Label text="Armazem até" />
+          <Input
+            editable="{ui>/editable}"
+            showValueHelp="true"
+            valueHelpRequest=".openWarehouseValueHelp"
+            value="{params>/WarehouseCodeTo}"
+            required="true"
+            >
+          </Input>
+          <Label text="Veiculo de" />
+          <Input
+            editable="{ui>/editable}"
+            showValueHelp="true"
+            valueHelpRequest=".openTrucksValueHelp"
+            value="{params>/TruckCodeFrom}"
+            >
+          </Input>
+          <Label text="Veiculo até" />
+          <Input
+            editable="{ui>/editable}"
+            showValueHelp="true"
+            valueHelpRequest=".openTrucksValueHelp"
+            value="{params>/TruckCodeTo}"
+            required="true"
+            >
+          </Input>
+        </f:content>
+        <core:Title />
+        <core:Title />
+    </f:SimpleForm>
+    <footer>
+      <OverflowToolbar >
+        <ToolbarSpacer/>
+        <Button text="Imprimir" type="Emphasized" press=".onPrintReport"/>
+      </OverflowToolbar>
+    </footer>
+  </Page>
+</mvc:View>

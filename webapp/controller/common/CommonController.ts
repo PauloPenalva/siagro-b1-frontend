@@ -19,6 +19,7 @@ import { QualityAttrib } from "siagrob1/types/QualityAttrib";
 import { Taxes } from "siagrob1/types/Taxes";
 import { UnitOfMeasure } from "siagrob1/types/UnitOfMeasure";
 import { Warehouse } from "siagrob1/types/Warehouse";
+import Dialog from "sap/m/Dialog";
 
 /**
  * @namespace siagrob1.controller
@@ -28,6 +29,8 @@ export default abstract class CommonController extends BaseController {
   api = { ...ServerRoutes }
 
   formatter = { ...formatter };
+
+  reportDialog: Dialog;
 
   createFilterModel() {
     const filterModel = new JSONModel();
@@ -68,6 +71,15 @@ export default abstract class CommonController extends BaseController {
     }
   }
 
+  async onOpenReportReportViewerDialog() {
+    this.reportDialog ??= await DialogHelper.createDialog(this, "siagrob1.view.reports.fragments.ReportViewer");
+    this.reportDialog?.open();
+  }
+
+  onCloseReportViewerDialog() {
+    this.reportDialog?.close();
+  }
+
   openProcessingCostsListValueHelp(ev: Input$ValueHelpRequestEvent) {
     DialogHelper.openTableSelectDialog(this, "ProcessingCostsListSelectDialog", ['Code', 'Description'])
       .then((oContext: Context) => {
@@ -92,6 +104,17 @@ export default abstract class CommonController extends BaseController {
 
   openTrucksValueHelp(ev: Input$ValueHelpRequestEvent) {
     DialogHelper.openTableSelectDialog(this, "TrucksSelectDialog", ['Code', 'Model'])
+      .then((oContext: Context) => {
+        const value = oContext.getProperty("Code") as string;
+        ev.getSource().setValue(value);
+      })
+      .catch(err => {
+        throw err;
+      });
+  }
+
+  openBranchsValueHelp(ev: Input$ValueHelpRequestEvent) {
+    DialogHelper.openTableSelectDialog(this, "BranchsSelectDialog", ['Code', 'BranchName', 'ShortName', 'TaxId'])
       .then((oContext: Context) => {
         const value = oContext.getProperty("Code") as string;
         ev.getSource().setValue(value);

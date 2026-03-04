@@ -10,14 +10,14 @@
         growing="true"
         growingThreshold="20"
         items="{
-          path: '/StorageAddresses',
+          path: '/Branchs',
           sorter: {
             path: 'Code', 
             descending: false
           }
         }"
         rememberSelections="true"
-        title="Lotes de Armazenagem"
+        title="Filiais"
     >
         <columns>
             <Column>
@@ -27,38 +27,26 @@
             </Column>
             <Column>
                 <header>
-                    <Text text="Descrição" />
+                    <Text text="Nome" />
                 </header>
             </Column>
             <Column>
                 <header>
-                    <Text text="Cliente" />
+                    <Text text="Nome Curto" />
                 </header>
             </Column>
             <Column>
                 <header>
-                    <Text text="Produto" />
-                </header>
-            </Column>
-            <Column>
-                <header>
-                    <Text text="Armazem" />
-                </header>
-            </Column>
-            <Column hAlign="End">
-                <header>
-                    <Text text="Saldo" />
+                    <Text text="CNPJ" />
                 </header>
             </Column>
         </columns>
         <ColumnListItem>
             <cells>
                 <Text text="{Code}" />
-                <Text text="{Description}" />
-                <Text text="({CardCode}) {CardName}" />
-                <Text text="({ItemCode}) {ItemName}" />
-                <Text text="{WarehouseCode}" />
-                <ObjectNumber number="{Balance}" unit="KG" />
+                <Text text="{BranchName}" />
+                <Text text="{ShortName}" />
+                <Text text="{TaxId}" />
             </cells>
         </ColumnListItem>
     </TableSelectDialog>

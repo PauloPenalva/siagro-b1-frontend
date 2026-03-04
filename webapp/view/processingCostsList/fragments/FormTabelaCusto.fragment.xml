@@ -43,7 +43,60 @@
                 required="true"
                 liveChange=".validateField"
             />
-            <Label text="Preço Armaz. R$/KG" />
+            <Label text="Taxa Recepção" />
+            <Input
+                required="true"
+                value="{
+                  path: 'ReceiptPrice',
+                  type: 'sap.ui.model.type.Float',
+                  formatOptions: {
+                    decimals: 8,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                  }
+                }"
+                editable="true"
+                liveChange=".validateField"
+                description="por KG"
+            />
+            <Label text="Taxa Expedição" />
+            <Input
+                required="true"
+                value="{
+                  path: 'ShipmentPrice',
+                  type: 'sap.ui.model.type.Float',
+                  formatOptions: {
+                    decimals: 8,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                  }
+                }"
+                editable="true"
+                liveChange=".validateField"
+                description="por KG"
+            />
+            <Label text="Taxa Pré-Limpeza" />
+            <Input
+                required="true"
+                value="{
+                  path: 'CleaningPrice',
+                  type: 'sap.ui.model.type.Float',
+                  formatOptions: {
+                    decimals: 8,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                  }
+                }"
+                editable="true"
+                liveChange=".validateField"
+                description="por KG"
+            />
+
+            <core:Title text="Armazenagem"/>
+            <Label text="Taxa" />
             <Input
                 required="true"
                 value="{
@@ -58,8 +111,9 @@
                 }"
                 editable="true"
                 liveChange=".validateField"
+                description="por KG"
             />
-            <Label text="Carencia Armaz. (em dias)" />
+            <Label text="Carencia" />
             <Input
                 required="true"
                 value="{
@@ -72,8 +126,9 @@
                 }"
                 editable="true"
                 liveChange=".validateField"
+                description="dia(s)"
             />
-            <Label text="Venc. Armaz. (em dias)" />
+            <Label text="Vencimento" />
             <Input
                 required="true"
                 value="{
@@ -86,10 +141,11 @@
                 }"
                 editable="true"
                 liveChange=".validateField"
+                description="dia(s)"
             />
 
-            <core:Title />
-            <Label text="Preço Expurgo (R$/KG)" />
+            <core:Title text="Expurgo" />
+            <Label text="Taxa" />
             <Input
                 required="true"
                 value="{
@@ -104,8 +160,9 @@
                 }"
                 editable="true"
                 liveChange=".validateField"
+                description="por KG"
             />
-            <Label text="Venc. Expurgo (em dias)" />
+            <Label text="Vencimento" />
             <Input
                 required="true"
                 value="{
@@ -118,8 +175,11 @@
                 }"
                 editable="true"
                 liveChange=".validateField"
+                description="dia(s)"
             />
-            <Label text="Carencia Q.Téc. (em dias)" />
+
+            <core:Title text="Quebra Técnica"/>
+            <Label text="Carencia" />
             <Input
                 required="true"
                 value="{
@@ -132,8 +192,9 @@
                 }"
                 editable="true"
                 liveChange=".validateField"
+                description="dia(s)"
             />
-            <Label text="Venc. Q.Téc. (em dias)" />
+            <Label text="Vencimento" />
             <Input
                 required="true"
                 value="{
@@ -146,9 +207,10 @@
                 }"
                 editable="true"
                 liveChange=".validateField"
+                description="dia(s)"
             />
 
-            <Label text="Desconto Q.Téc. (%)" />
+            <Label text="Desconto" />
             <Input
                 required="true"
                 value="{
@@ -163,8 +225,8 @@
                 }"
                 editable="true"
                 liveChange=".validateField"
+                description="%"
             />
-            <core:Title />
         </f:content>
     </f:SimpleForm>
 </core:FragmentDefinition>

@@ -266,6 +266,12 @@
           "key": "salesInvoicesReport",
           "enabled": true,
           "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Romaneios de Entrada",
+          "key": "storageTransactionsReceiptsReport",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
         }
       ]
      }

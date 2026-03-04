@@ -155,10 +155,10 @@ export default class TabelaCustoBaseController extends CommonController {
       return false;
     }
     
-    if (!this.validateServicos()) {
-      MessageBox.alert("Preencha corretamente o(s) serviço(s).")
-      return false;
-    }
+    // if (!this.validateServicos()) {
+    //   MessageBox.alert("Preencha corretamente o(s) serviço(s).")
+    //   return false;
+    // }
 
     return true;
   }

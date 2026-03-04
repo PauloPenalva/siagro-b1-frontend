@@ -588,6 +588,11 @@
           "pattern": "salesInvoicesReport",
           "name": "salesInvoicesReport",
           "target": "salesInvoicesReport"
+        },
+        {
+          "pattern": "storageTransactionsReceiptsReport",
+          "name": "storageTransactionsReceiptsReport",
+          "target": "storageTransactionsReceiptsReport"
         }
 			],
 			"targets": {
@@ -1171,6 +1176,12 @@
 					"id": "salesInvoicesReport",
           "level": 1,
 					"name": "siagrob1.view.reports.salesInvoices.Main",
+          "clearControlAggregation": true
+				},
+        "storageTransactionsReceiptsReport": {
+					"id": "storageTransactionsReceiptsReport",
+          "level": 1,
+					"name": "siagrob1.view.reports.storageTransactions.receipts.Main",
           "clearControlAggregation": true
 				}
 			}

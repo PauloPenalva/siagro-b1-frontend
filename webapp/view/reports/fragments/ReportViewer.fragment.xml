@@ -1,0 +1,35 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+
+>
+  <Dialog id="reportViewDialog" title="{viewModel>/dialogTitle}" contentWidth="120rem" contentHeight="80rem">
+    <content>
+      <ScrollContainer
+      height="100%"
+      width="100%"
+      horizontal="true"
+      vertical="true">
+      <FlexBox direction="Column" renderType="Div" class="sapUiSmallMargin">
+        <!-- <PDFViewer id="pdfViewer" showDownloadButton="false" source="{viewModel>/Source}" isTrustedSource="true" title="{viewModel>/Title}" height="{viewModel>/Height}">
+          <layoutData>
+            <FlexItemData growFactor="1" />
+          </layoutData>
+        </PDFViewer> -->
+        <core:HTML id="htmlReportViewer">
+          
+        </core:HTML>
+      </FlexBox>
+    </ScrollContainer>
+    </content>
+    <footer>
+      <OverflowToolbar >
+        <ToolbarSpacer />
+        <Button text="Fechar" press=".onCloseReportViewerDialog" />
+      </OverflowToolbar>
+    </footer>
+  </Dialog>
+</core:FragmentDefinition>

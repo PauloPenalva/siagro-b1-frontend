@@ -24,9 +24,9 @@
 				 	<IconTabFilter text="Qualidade">
 						<core:Fragment fragmentName="siagrob1.view.processingCostsList.fragments.TableQualidade" type="XML" />
 					</IconTabFilter>
-				 	<IconTabFilter text="Serviços">
+				 	<!-- <IconTabFilter text="Serviços">
 						<core:Fragment fragmentName="siagrob1.view.processingCostsList.fragments.TableServico" type="XML" />
-					</IconTabFilter>
+					</IconTabFilter> -->
 			 </items>
 
 		</IconTabBar>
