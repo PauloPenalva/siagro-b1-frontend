@@ -227,6 +227,46 @@
                 liveChange=".validateField"
                 description="%"
             />
+
+            <core:Title text="Cálculos" />
+            <Label text="Cálcular secagem"/>
+            <Select 
+              forceSelection="false"
+              required="true"
+              liveChange=".validateField"
+              selectedKey="{
+                path: 'DryingCalculationMethod',
+                targetType: 'any'
+              }"
+            >
+              <core:ListItem key="BeforeCleaning" text="1-Antes da limpeza"/>
+              <core:ListItem key="AfterCleaning" text="2-Após limpeza"/>
+              <layoutData>
+                <l:GridData span="XL6 L6 M6 S8" />
+              </layoutData>
+            </Select>
+            <core:Icon tooltip="1) Calculo sobre o peso bruto. 2) Calculo sobre o peso limpo (menor)." src="sap-icon://information" >
+              <core:layoutData>
+                <l:GridData span="XL1 L1 M1 S1" />
+              </core:layoutData>
+            </core:Icon>
+
+            <Label text="Cálcular armazenagem"/>
+            <Select 
+              forceSelection="false"
+              required="true"
+              liveChange=".validateField"
+              selectedKey="{
+                path: 'StoragePriceCalculationMethod',
+                targetType: 'any'
+              }"
+            >
+              <core:ListItem key="AfterFirstReceipting" text="1-Após a primeira entrada no lote"/>
+              <core:ListItem key="AfterLastReceipting" text="2-Após a ultima entrada no lote"/>
+              <layoutData>
+                <l:GridData span="XL6 L6 M6 S8" />
+              </layoutData>
+            </Select>
         </f:content>
     </f:SimpleForm>
 </core:FragmentDefinition>

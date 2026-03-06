@@ -206,27 +206,7 @@
                 groupingSeparator: '.'
               } 
             }" />
-          <Label visible="{ui>/visible}" text="Tabela de Custos" />
-          <Input 
-              visible="{ui>/visible}"
-              required="{ui>/required}"
-              editable="{ui>/editableProcessingCost}"
-              value="{ProcessingCostCode}" 
-              showValueHelp="true" 
-              valueHelpOnly="true" 
-              valueHelpRequest=".openProcessingCostsListValueHelp">
-            <layoutData>
-                <l:GridData span="XL3 L3 M3 S4" />
-            </layoutData>
-          </Input>
-          <Input 
-              visible="{ui>/visible}"
-              value="{
-                parts: ['ProcessingCostCode'], 
-                formatter: '.formatProcessingCostDescription'
-              }" 
-              editable="false">
-          </Input>
+         
           <Label visible="{ui>/visible}" text="Lote de Armazenagem" />
           <Input 
               visible="{ui>/visible}"

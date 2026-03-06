@@ -154,6 +154,26 @@
                   formatter: '.formatArmazemDescricao'
                 }" 
 								editable="false"/>
+            <Label visible="true" text="Tabela de Custos" />
+            <Input 
+              visible="true"
+              required="true"
+              value="{ProcessingCostCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openProcessingCostsListValueHelp">
+              <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+              visible="true"
+              value="{
+                parts: ['ProcessingCostCode'], 
+                formatter: '.formatProcessingCostDescription'
+              }" 
+              editable="false">
+            </Input>
             <Label text="Saldo" />
             <Input
                 value="{ 

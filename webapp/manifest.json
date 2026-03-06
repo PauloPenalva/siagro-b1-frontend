@@ -593,6 +593,11 @@
           "pattern": "storageTransactionsReceiptsReport",
           "name": "storageTransactionsReceiptsReport",
           "target": "storageTransactionsReceiptsReport"
+        },
+        {
+          "pattern": "storageTransactionsShipmentsReport",
+          "name": "storageTransactionsShipmentsReport",
+          "target": "storageTransactionsShipmentsReport"
         }
 			],
 			"targets": {
@@ -1182,6 +1187,12 @@
 					"id": "storageTransactionsReceiptsReport",
           "level": 1,
 					"name": "siagrob1.view.reports.storageTransactions.receipts.Main",
+          "clearControlAggregation": true
+				},
+        "storageTransactionsShipmentsReport": {
+					"id": "storageTransactionsShipmentsReport",
+          "level": 1,
+					"name": "siagrob1.view.reports.storageTransactions.shipments.Main",
           "clearControlAggregation": true
 				}
 			}

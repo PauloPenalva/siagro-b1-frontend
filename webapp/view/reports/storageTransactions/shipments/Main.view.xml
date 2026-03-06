@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.reports.storageTransactions.receipts.Main"
+	controllerName="siagrob1.controller.reports.storageTransactions.shipments.Main"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -8,7 +8,7 @@
 	core:require="{
 		formatter: 'siagrob1/model/formatter'
 	}">
-  <Page title="Relatório de Romaneios de Entrada." >
+  <Page title="Relatório de Romaneios de Saída." >
     <f:SimpleForm
       editable="true"
       layout="ResponsiveGridLayout"

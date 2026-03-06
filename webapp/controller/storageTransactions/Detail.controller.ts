@@ -21,15 +21,20 @@ export default class Detail extends BaseController {
 
 		if (id != null) {
 
-      uiModel.setProperty("/editable", false);
-      
-			const sPath = `/StorageTransactions(${id})`;
-			this.bindElement(sPath);
+      this.setData(id);
 
 			return;
 		}
 
 	}
+
+  private setData(id: string){
+    const uiModel = this.getModel("ui") as JSONModel;
+    uiModel.setProperty("/editable", false);
+      
+		const sPath = `/StorageTransactions(${id})`;
+		this.bindElement(sPath);
+  }
 
 	onEdit() {
     const oContext = this.getView().getBindingContext() as Context
@@ -60,6 +65,31 @@ export default class Detail extends BaseController {
         .then(() => {
           MessageToast.show("Romaneio cancelado com sucesso.");
           this.navToStorageTransactionsList()
+        })
+        .finally(()=> this.setBusy(false))
+    }
+
+
+  }
+
+  async onReverse() {
+    const oContext = this.getView().getBindingContext() as Context;
+    if (!oContext) {
+      throw new Error("");
+    }
+
+    if (await DialogHelper.confirmDialog("Estornar o romaneio ?")) {
+
+      const model = this.getModel() as ODataModel;
+      const action = model.bindContext("/StorageTransactionsReverse(...)");
+      const key = oContext.getProperty("Key");
+      action.setParameter("Key", key);
+
+      this.setBusy(true);
+      void action.invoke()
+        .then(() => {
+          MessageToast.show("Romaneio estornado com sucesso.");
+          this.setData(key)
         })
         .finally(()=> this.setBusy(false))
     }

@@ -256,20 +256,14 @@
       "icon": "sap-icon://folder-blank",
       "items": [
         {
-          "title": "Contratos de Compras",
-          "key": "purchaseContractsReport",
-          "enabled": true,
-          "icon": "sap-icon://folder-blank"
-        },
-        {
-          "title": "Documentos de Saída",
-          "key": "salesInvoicesReport",
-          "enabled": true,
-          "icon": "sap-icon://folder-blank"
-        },
-        {
           "title": "Romaneios de Entrada",
           "key": "storageTransactionsReceiptsReport",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Romaneios de Saída",
+          "key": "storageTransactionsShipmentsReport",
           "enabled": true,
           "icon": "sap-icon://folder-blank"
         }

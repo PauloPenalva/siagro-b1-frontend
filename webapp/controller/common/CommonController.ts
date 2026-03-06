@@ -444,12 +444,30 @@ export default abstract class CommonController extends BaseController {
       return this.formatter.formatDecimal(data?.Rate);
     }
   
-     async formatQualityAttribName(key: string) {
-       if (!key){
+    async formatQualityAttribName(key: string) {
+      if (!key){
         return null;
       }
   
       const data = await this.getResource<QualityAttrib>(`${this.api.qualityAttrib}('${key}')`)
       return data?.Name;
     }
+
+    async formatProcessingCostDescription(key: string){
+    if (!key){
+      return null;
+    } 
+
+    try {
+      this.setBusy(true);
+      const data = await this
+        .getResource<any>(`${this.api.processingCosts}('${key}')`)
+      
+      return data?.Description;
+    } finally {
+      this.setBusy(false);
+    }
+
+  }
+
 } 
