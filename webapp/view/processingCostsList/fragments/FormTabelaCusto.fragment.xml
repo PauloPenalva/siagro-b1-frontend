@@ -58,7 +58,7 @@
                 }"
                 editable="true"
                 liveChange=".validateField"
-                description="por KG"
+                description="R$ por KG"
             />
             <Label text="Taxa Expedição" />
             <Input
@@ -75,7 +75,7 @@
                 }"
                 editable="true"
                 liveChange=".validateField"
-                description="por KG"
+                description="R$ por KG"
             />
             <Label text="Taxa Pré-Limpeza" />
             <Input
@@ -92,7 +92,7 @@
                 }"
                 editable="true"
                 liveChange=".validateField"
-                description="por KG"
+                description="R$ por KG"
             />
 
             <core:Title text="Armazenagem"/>
@@ -111,7 +111,7 @@
                 }"
                 editable="true"
                 liveChange=".validateField"
-                description="por KG"
+                description="R$ por KG"
             />
             <Label text="Carencia" />
             <Input
@@ -160,7 +160,7 @@
                 }"
                 editable="true"
                 liveChange=".validateField"
-                description="por KG"
+                description="R$ por KG"
             />
             <Label text="Vencimento" />
             <Input
@@ -217,7 +217,7 @@
                   path: 'TechnicalLossRate',
                   type: 'sap.ui.model.type.Float',
                   formatOptions: {
-                    decimals: 6,
+                    decimals: 12,
                     decimalSeparator: ',',
                     groupingEnabled: true,
                     groupingSeparator: '.'
@@ -225,7 +225,7 @@
                 }"
                 editable="true"
                 liveChange=".validateField"
-                description="%"
+                description="% por KG"
             />
 
             <core:Title text="Cálculos" />

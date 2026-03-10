@@ -197,7 +197,7 @@ export default {
     const m = new Map<string, string>();
     m.set("Receipt", "Entrada");
     m.set("Shipment", "Saída");
-    m.set("QualityLoss", "Quebra Técnica");
+    m.set("TechnicalLoss", "Quebra Técnica");
     m.set("SalesShipment", "Venda");
     m.set("SalesShipmentReturn", "Dev.Venda");
     m.set("Purchase", "Compra");
