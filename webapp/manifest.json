@@ -598,6 +598,11 @@
           "pattern": "storageTransactionsShipmentsReport",
           "name": "storageTransactionsShipmentsReport",
           "target": "storageTransactionsShipmentsReport"
+        },
+        {
+          "pattern": "storageDailyBalanceReport",
+          "name": "storageDailyBalanceReport",
+          "target": "storageDailyBalanceReport"
         }
 			],
 			"targets": {
@@ -1193,6 +1198,12 @@
 					"id": "storageTransactionsShipmentsReport",
           "level": 1,
 					"name": "siagrob1.view.reports.storageTransactions.shipments.Main",
+          "clearControlAggregation": true
+				},
+        "storageDailyBalanceReport": {
+					"id": "storageDailyBalanceReport",
+          "level": 1,
+					"name": "siagrob1.view.reports.storageDailyBalance.Main",
           "clearControlAggregation": true
 				}
 			}

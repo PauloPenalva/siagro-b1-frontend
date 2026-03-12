@@ -48,3 +48,8 @@ server:
       mountPath: /reports
       configuration:
         baseUri: "http://localhost:5246/reports"
+    - name: ui5-middleware-simpleproxy
+      afterMiddleware: compression
+      mountPath: /hangfire
+      configuration:
+        baseUri: "http://localhost:5246/hangfire"

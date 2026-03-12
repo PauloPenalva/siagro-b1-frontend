@@ -55,7 +55,7 @@
 					<OverflowToolbar >
             <Title text="Tickets de Pesagem" />
 						<ToolbarSpacer />
-            <Button type="Transparent" text="Imprimir Ticket"/>
+            <Button type="Transparent" text="Imprimir Ticket" press=".printTicket"/>
             <Button type="Transparent" text="Exportar Excel" press=".onExcel"/>
             <Button type="Transparent" text="Atualizar" press=".onRefresh"/>
 					</OverflowToolbar>

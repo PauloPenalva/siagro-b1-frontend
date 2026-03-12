@@ -1,0 +1,76 @@
+<mvc:View
+	controllerName="siagrob1.controller.reports.storageDailyBalance.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+  <Page title="Relatório de Saldo Diário por Lote." >
+    <f:SimpleForm
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0">
+        <f:content>
+          <core:Title
+              text="Parametros"
+              emphasized="true"
+          />
+          <Label text="Lote" />
+          <Input
+            showValueHelp="true"
+            valueHelpRequest=".openStorageAddressesValueHelp"
+            value="{params>/Code}"
+            >
+          </Input>
+          <Label text="Emissão de"/>
+          <DatePicker
+                value="{
+                  path: 'params>/FromDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+                liveChange=".validateField"
+                required="true"
+            />
+          <Label text="Emissão até"/>
+          <DatePicker
+                value="{
+                  path: 'params>/ToDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+                liveChange=".validateField"
+                required="true"
+            />
+        </f:content>
+        <core:Title />
+        <core:Title />
+    </f:SimpleForm>
+    <footer>
+      <OverflowToolbar >
+        <ToolbarSpacer/>
+        <Button text="Imprimir" type="Emphasized" press=".onPrintReport"/>
+      </OverflowToolbar>
+    </footer>
+  </Page>
+</mvc:View>

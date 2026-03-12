@@ -2,6 +2,9 @@ import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import Table from "sap/ui/table/Table";
+import MessageBox from "sap/m/MessageBox";
+import Context from "sap/ui/model/odata/v4/Context";
 
 /**
  * @namespace siagrob1.controller.weighingTicket.completed
@@ -65,4 +68,51 @@ export default class Main extends BaseController {
   
       binding?.refresh();
     }
+
+  async printTicket(): Promise<void> {
+		const oTable = this.byId("tableWeighingTicketsCompleted") as Table;
+    const i = oTable.getSelectedIndex();
+
+    if (i < 0){
+      	MessageBox.alert("Selecione um item para imprimir.");
+      return;
+    }
+    
+		const oContext = oTable.getContextByIndex(i) as Context;
+    
+		const key = oContext.getProperty("Key") as string;
+
+    try {
+
+        this.setBusy(true);
+
+        const response = await fetch(`/reports/WeighingTicket/${key}/print`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error("Falha ao gerar relatório.");
+        }
+
+        const blob = await response.blob();
+        const fileURL = URL.createObjectURL(blob);
+
+        // abre em nova aba
+        window.open(fileURL, "_blank");
+
+        // opcional: liberar memória depois de um tempo
+        setTimeout(() => URL.revokeObjectURL(fileURL), 60000);
+
+    } catch (error) {
+        const err = error as Error;
+        MessageBox.error(err?.message);
+    } finally {
+      this.setBusy(false);
+    }
+	}
+
+
 }

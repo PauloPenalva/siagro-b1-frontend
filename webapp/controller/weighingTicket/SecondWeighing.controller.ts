@@ -61,6 +61,23 @@ export default class FirstWeighing extends GenericController {
 
 		try {
 			this.setBusy(true);
+      
+      const action = oModel.bindContext("/WeighingTicketsSecondWeighing(...)");
+      action.setParameter("Key", ctx.getProperty("Key"));
+      action.setParameter("Value", value);
+      action.setParameter("Comments", ctx.getProperty("Comments"));
+
+      await action.invoke();
+
+      MessageToast.show("Dados salvos com sucesso.", {
+        closeOnBrowserNavigation: false
+      });
+
+      this.navToList();
+
+      return;
+      
+
 			await oModel.submitBatch(oModel.getUpdateGroupId());
 			if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 				MessageToast.show("Dados salvos com sucesso.", {

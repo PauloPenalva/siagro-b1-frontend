@@ -54,7 +54,7 @@
             >
               <core:ListItem key="Receipt" text="Entrada"/>
               <core:ListItem key="Shipment" text="Saída"/>
-              <core:ListItem key="QualityLoss" text="Quebra Técnica"/>
+              <core:ListItem key="TechnicalLoss" text="Quebra Técnica"/>
               <core:ListItem key="SalesShipment" text="Venda"/>
               <core:ListItem key="SalesShipmentReturn" text="Dev.Venda"/>
               <core:ListItem key="Purchase" text="Compra"/>

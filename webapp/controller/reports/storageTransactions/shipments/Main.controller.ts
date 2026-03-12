@@ -26,7 +26,7 @@ export default class Main extends BaseController {
     const payload = paramsModel.getData();
 
     try {
-
+        this.setBusy(true);
         const response = await fetch("/reports/StorageTransactions/Shipments", {
             method: "POST",
             headers: {
@@ -51,6 +51,8 @@ export default class Main extends BaseController {
     } catch (error) {
         const err = error as Error;
         MessageBox.error(err?.message);
+    } finally {
+      this.setBusy(false);
     }
   }
 

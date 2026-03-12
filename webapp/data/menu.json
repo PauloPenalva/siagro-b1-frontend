@@ -266,6 +266,12 @@
           "key": "storageTransactionsShipmentsReport",
           "enabled": true,
           "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Saldo Diário por Lote",
+          "key": "storageDailyBalanceReport",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
         }
       ]
      }

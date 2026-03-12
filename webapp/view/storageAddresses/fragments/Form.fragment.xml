@@ -180,7 +180,7 @@
                   path: 'Balance', 
                   type: 'sap.ui.model.odata.type.Double',
                     formatOptions: {
-                      decimals: 3,
+                      decimals: 0,
                       decimalSeparator: ',',
                       groupingEnabled: true,
                       groupingSeparator: '.'

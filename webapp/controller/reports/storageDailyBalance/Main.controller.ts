@@ -1,10 +1,9 @@
 import JSONModel from "sap/ui/model/json/JSONModel";
 import BaseController from "./BaseController";
 import MessageBox from "sap/m/MessageBox";
-import HTML from "sap/ui/core/HTML";
 
 /**
- * @namespace siagrob1.controller.reports.storageTransactions.receipts
+ * @namespace siagrob1.controller.reports.storageDailyBalance
  */
 export default class Main extends BaseController {
 
@@ -13,7 +12,7 @@ export default class Main extends BaseController {
     const view = this.getView();
     view.setModel(paramsModel, "params");
 
-    this.getRouter().getRoute("storageTransactionsReceiptsReport").attachPatternMatched(() => this.routeMatched())
+    this.getRouter().getRoute("storageDailyBalanceReport").attachPatternMatched(() => this.routeMatched())
 	}
 
 	private routeMatched() {
@@ -27,8 +26,10 @@ export default class Main extends BaseController {
     const payload = paramsModel.getData();
 
     try {
+        
         this.setBusy(true);
-        const response = await fetch("/reports/StorageTransactions/Receipts", {
+
+        const response = await fetch("/reports/StorageDailyBalance", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
