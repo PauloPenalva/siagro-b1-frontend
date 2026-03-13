@@ -46,7 +46,7 @@
               <core:ListItem key="StorageAddress" text="Lote de Armazenagem"/>
               <core:ListItem key="StorageTransaction" text="Romaneio"/>
               <core:ListItem key="OwnershipTransfer" text="Transferencia Propriedade"/>
-              <!-- <core:ListItem key="ShippingOrder" text="Ordem de Carregamento"/> -->
+              <core:ListItem key="StorageInvoice" text="Fatura de Serviço"/>
             </Select>
             <Label text="Nome" />
             <Input

@@ -312,6 +312,7 @@ export default {
     m.set("SalesContract", "Contrato de Venda");
     m.set("SalesInvoice", "Documento de Saída");
     m.set("OwnershipTransfer", "Transferencia Propriedade");
+    m.set("StorageInvoice", "Fatura de Serviço");
     
     return m.get(value);
   },
