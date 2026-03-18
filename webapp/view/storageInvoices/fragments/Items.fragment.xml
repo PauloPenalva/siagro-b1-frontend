@@ -1,0 +1,89 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <t:Table
+    id="storageInvoiceItemsTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    busyIndicatorDelay="0"
+    rows="{
+      path: 'Items'
+    }"
+    visible="true"
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Itens da fatura" />
+          <ToolbarSpacer />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Descrição" width="25rem">
+        <t:template>
+          <Text text="{Description}"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Quantidade" width="10rem">
+        <t:template>
+          <ObjectNumber 
+            number="{
+              path: 'Quantity',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions: {
+                  decimals: 0,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+              }
+            }" 
+            unit="KG"
+          />
+        </t:template>
+      </t:Column>
+      <t:Column label="Vr.Unit." width="10rem">
+        <t:template>
+          <ObjectNumber 
+            number="{
+              path: 'UnitPriceOrRate',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions: {
+                  decimals: 8,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+              }
+            }"
+            unit="R$" 
+          />
+        </t:template>
+      </t:Column>
+      <t:Column label="Vr.Total." width="10rem">
+        <t:template>
+          <ObjectNumber 
+            number="{
+              path: 'TotalAmount',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions: {
+                  decimals: 2,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+              }
+            }" 
+            unit="R$"
+          />
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

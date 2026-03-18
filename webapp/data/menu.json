@@ -152,6 +152,12 @@
           "key": "ownershipTransfers",
           "enabled": true,
           "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Faturas de Serviço",
+          "key": "storageInvoices",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
         }
       ]
     },

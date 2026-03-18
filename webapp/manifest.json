@@ -603,6 +603,21 @@
           "pattern": "storageDailyBalanceReport",
           "name": "storageDailyBalanceReport",
           "target": "storageDailyBalanceReport"
+        },
+        {
+          "pattern": "storageInvoices",
+          "name": "storageInvoices",
+          "target": "storageInvoices"
+        },
+        {
+          "pattern": "storageInvoices/{id}/detail",
+          "name": "storageInvoicesDetail",
+          "target": "storageInvoicesDetail"
+        },
+        {
+          "pattern": "storageInvoices/add",
+          "name": "storageInvoicesAdd",
+          "target": "storageInvoicesAdd"
         }
 			],
 			"targets": {
@@ -1204,6 +1219,24 @@
 					"id": "storageDailyBalanceReport",
           "level": 1,
 					"name": "siagrob1.view.reports.storageDailyBalance.Main",
+          "clearControlAggregation": true
+				},
+        "storageInvoices": {
+					"id": "storageInvoices",
+          "level": 1,
+					"name": "siagrob1.view.storageInvoices.Main",
+          "clearControlAggregation": true
+				},
+        "storageInvoicesDetail": {
+					"id": "storageInvoicesDetail",
+          "level": 2,
+					"name": "siagrob1.view.storageInvoices.Detail",
+          "clearControlAggregation": true
+				},
+        "storageInvoicesAdd": {
+					"id": "storageInvoicesAdd",
+          "level": 2,
+					"name": "siagrob1.view.storageInvoices.Add",
           "clearControlAggregation": true
 				}
 			}

@@ -1,0 +1,98 @@
+<mvc:View
+	controllerName="siagrob1.controller.storageInvoices.Detail"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.ui.layout.form"
+  xmlns:uxap="sap.uxap"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+  <uxap:ObjectPageLayout
+    showFooter="true"
+    toggleHeaderOnTitleClick="true"
+		preserveHeaderStateOnScroll="false"
+    busy="{ui>/busy}"
+    busyIndicatorDelay="0"
+	>
+   	<uxap:headerTitle>
+      <uxap:ObjectPageDynamicHeaderTitle>
+         <uxap:expandedHeading>
+           <Title text="Fatura de serviços"/>
+          </uxap:expandedHeading>
+          <uxap:snappedHeading>
+           <Title text="Fatura de serviços"/>
+         </uxap:snappedHeading>
+        <uxap:actions>
+          <Button text="Voltar para Lista de Faturas" type="Transparent" press=".navToStorageInvoicesList"/>
+          <Button enabled="{= ${path: 'Status', targetType: 'any'}==='Open' ? true : false }" text="Encerrar" type="Transparent" press=".onClose"/>
+          <Button enabled="{= ${path: 'Status', targetType: 'any'}==='Closed' ? true : false }" text="Reabrir" type="Transparent" press=".onReopen"/>
+          <Button enabled="{= ${path: 'Status', targetType: 'any'}==='Open' ? true : ${path: 'Status', targetType: 'any'}==='Closed' ? true : false }" text="Cancelar" type="Transparent" press=".onReject"/>
+        </uxap:actions>
+      </uxap:ObjectPageDynamicHeaderTitle>
+		</uxap:headerTitle>
+
+    <uxap:headerContent>
+      <HBox class="sapUiTinyMarginBottom sapUiMediumMarginEnd">
+        <HBox class="sapUiTinyMarginBottom">
+          <ObjectIdentifier title="{Code}" class="sapUiMediumMarginEnd sapUiTinyMarginBottom"/>
+          <ObjectStatus
+            class="sapUiMediumMarginEnd sapUiTinyMarginBottom"
+            state="{
+              path: 'Status',
+              targetType: 'any',
+              formatter: '.formatter.stateStorageInvoiceStatus'
+            }"
+            inverted="true" 
+            text="{
+              path: 'Status',
+              formatter: '.formatter.formatStorageInvoiceStatus',
+              targetType: 'any'
+            }" />
+        </HBox>
+        <HBox class="sapUiTinyMarginBottom">
+          <Title level="H5" text="Total:" class="sapUiMediumMarginEnd sapUiTinyMarginBottom" />
+          <ObjectNumber 
+              class="sapUiMediumMarginEnd sapUiTinyMarginBottom"
+              number="{
+                path: 'TotalAmount',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions: {
+                    decimals: 2,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                } 
+              }"
+              unit="R$"
+            />  
+        </HBox>
+      </HBox>
+   	</uxap:headerContent> 
+    
+    <uxap:sections>
+      <uxap:ObjectPageSection titleUppercase="false" title="Dados da Fatura">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <core:Fragment fragmentName="siagrob1.view.storageInvoices.fragments.Form" type="XML" />
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Itens">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <core:Fragment fragmentName="siagrob1.view.storageInvoices.fragments.Items" type="XML" />
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+    </uxap:sections>
+  </uxap:ObjectPageLayout>
+
+</mvc:View>

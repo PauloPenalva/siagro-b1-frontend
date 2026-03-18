@@ -1,0 +1,182 @@
+<mvc:View
+	controllerName="siagrob1.controller.storageInvoices.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+  xmlns:f="sap.f"
+  xmlns:mdc="sap.ui.mdc"
+  xmlns:fb="sap.ui.comp.filterbar"
+  xmlns:vm="sap.ui.fl.variants"
+  xmlns:svm="sap.ui.comp.smartvariants"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Faturas de Serviços"/>
+        </f:heading>
+			</f:DynamicPageTitle>
+    </f:title>
+    <f:header>
+      <f:DynamicPageHeader>
+        <f:content>
+          <core:Fragment fragmentName="siagrob1.view.storageInvoices.fragments.Filterbar" type="XML" />
+        </f:content>
+      </f:DynamicPageHeader>
+    </f:header>
+		<f:content>
+      <t:Table
+				id="storageInvoicesTable"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+        rows="{
+					path: '/StorageInvoices',
+          sorter: [
+            { path: 'RowId', descending: true }
+          ]
+				}"
+			>
+				<t:extension>
+					<OverflowToolbar >
+            <Title text="Faturas de serviço" />
+						<ToolbarSpacer />
+            <Button type="Transparent" text="Exportar Excel" icon="sap-icon://excel-attachment" press=".onExcel"/>
+						<Button type="Transparent" text="Imprimir" press=".onPrint" icon="sap-icon://print"/>
+						<Button type="Transparent" text="Criar" press=".onCreate"/>
+						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+          <t:Column
+						label="Key"
+            visible="false"
+            width="10rem"
+            >
+						<t:template>
+							<Text text="{Key}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Filial"
+						sortProperty="Branch/ShortName"
+            width="5rem"
+						>
+						<t:template>
+							<Text text="{Branch/ShortName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Status"
+						sortProperty="Status"
+            hAlign="Center"
+            width="10rem"
+						>
+						<t:template>
+							<ObjectStatus 
+                inverted="true"
+                state="{
+                  path: 'Status', 
+                  targetType: 'any', 
+                  formatter: '.formatter.stateStorageInvoiceStatus'
+                }"
+                text="{
+                  path: 'Status', 
+                  targetType: 'any', 
+                  formatter: '.formatter.formatStorageInvoiceStatus' 
+                }"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Codigo"
+						sortProperty="Code"
+            width="10rem"
+						>
+						<t:template>
+							<Text text="{Code}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Emissão"
+						sortProperty="ClosingDate"
+            width="10rem"
+						>
+						<t:template>
+            <Text
+              wrapping="false"
+              text="{
+                path: 'ClosingDate',
+                targetType: 'any',
+                formatter: '.formatter.formatDate'
+              }"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Cliente"
+						sortProperty="CardCode"
+            width="10rem"
+						>
+						<t:template>
+            <Text text="{CardCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Nome"
+						sortProperty="CardName"
+            width="35rem"
+						>
+						<t:template>
+            <Text text="{CardName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Lote"
+						sortProperty="StorageAddressCode"
+            width="10rem"
+						>
+						<t:template>
+            <Text text="{StorageAddressCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Valor Total"
+						sortProperty="TotalAmount"
+            hAlign="End"
+            width="10rem"
+						>
+						<t:template>
+            <ObjectNumber
+              textAlign="End"
+              number="{
+                path: 'TotalAmount',
+                type: 'sap.ui.model.type.Float',
+                formatOptions:{
+                  decimals: 2,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }"
+              unit="R$"
+            />
+						</t:template>
+					</t:Column>
+        
+				</t:columns>
+
+			</t:Table>
+
+    </f:content>
+  
+  </f:DynamicPage>
+
+</mvc:View>

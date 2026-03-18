@@ -1,0 +1,171 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }"
+>
+ <f:SimpleForm
+      id="storageInvoicesForm"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0"
+    >
+        <f:content>
+            <core:Title
+                text="Dados da Fatura"
+                emphasized="true"
+            />
+            <Label text="Codigo"/>
+            <Select 
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{DocNumberKey}"
+              items="{
+                path: '/DocNumbers',
+                parameters:{
+                  $filter: 'TransactionCode eq \'StorageInvoice\''
+                }
+              }"
+              >
+              <core:ListItem key="{Key}" text="{Name}"/>
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Select>
+            <Input value="{Code}" editable="false" />
+
+            <!-- <Label text="Filial"/>
+            <Select 
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{BranchCode}"
+              items="{
+                path: '/Branchs',
+                sorter: { 
+                  path: 'Code'
+                }
+              }"
+              >
+              <core:ListItem key="{Code}" text="{ShortName}" additionalText="{Code}"/>
+            </Select> -->
+            
+            <Label text="Emissão" />
+            <DatePicker
+                value="{
+                  path: 'ClosingDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+                editable="{ui>/editable}"
+                required="true"
+                liveChange=".validateField"
+            />
+            <Label text="Periodo de" />
+            <DatePicker
+                value="{
+                  path: 'PeriodStart',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+                editable="{ui>/editable}"
+                required="true"
+                liveChange=".validateField"
+            />
+            <Label text="Até"/>
+            <DatePicker
+                value="{
+                  path: 'PeriodEnd',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+                editable="{ui>/editable}"
+                required="true"
+                liveChange=".validateField"
+           />
+           <Label visible="true" text="Lote de Armazenagem" />
+           <Input 
+              editable="{ui>/editable}"
+              required="true"
+              value="{StorageAddressCode}" 
+              showValueHelp="true" 
+              valueHelpOnly="true" 
+              valueHelpRequest=".openStorageAddressesValueHelp"
+              liveChange=".validateField">
+              <layoutData>
+                  <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input 
+              visible="true"
+              value="{
+                parts: ['StorageAddressCode'], 
+                formatter: '.formatStorageAddressDescription'
+              }" 
+              editable="false">
+            </Input>
+            <Label text="Cliente" />
+            <Input
+              editable="false"
+              visible="{= ${ui>/editable} ? false : true }"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openCostumersValueHelp"
+              value="{CardCode}"
+              >
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Input>
+            <Input 
+              visible="{= ${ui>/editable} ? false : true }"
+              value="{
+                parts: ['CardCode'],
+                formatter: '.formatBusinessPartnerName'
+              }" 
+              editable="false"
+            />
+            
+            <core:Title text="Observações"/>
+            <Label text="Observações" />
+            <TextArea 
+              editable="{ui>/editable}"
+              value="{Notes}"
+              rows="5"
+              cols="10"
+            />
+            <!-- <Label text="Motivo de Cancelamento" />
+            <TextArea 
+              editable="false"
+              value="{CancellationReason}"
+              rows="5"
+              cols="10"
+            /> -->
+            
+        </f:content>
+    </f:SimpleForm>
+</core:FragmentDefinition>

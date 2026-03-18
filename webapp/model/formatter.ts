@@ -317,4 +317,21 @@ export default {
     return m.get(value);
   },
 
+   formatStorageInvoiceStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Open", "Em Aberto");
+    m.set("Closed", "Encerrado");
+    m.set("Cancelled", "Cancelado");
+    
+    return m.get(value);
+  },
+
+  stateStorageInvoiceStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Closed", "Error");
+    m.set("Open", "Success");
+    m.set("Cancelled", "None");
+    
+    return m.get(value);
+  },
 };
