@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.reports.storageDailyBalance.Main"
+	controllerName="siagrob1.controller.storageAddresses.DailyCalculation"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -8,9 +8,9 @@
 	core:require="{
 		formatter: 'siagrob1/model/formatter'
 	}">
-  <Page title="Relatório de Saldo Diário por Lote." >
+  <Page title="Reprocessar Calculo Diário" >
     <f:SimpleForm
-      id="storageDailyBalanceForm"
+      id="storageAddressesDailyCalculationForm"
       editable="true"
       layout="ResponsiveGridLayout"
       labelSpanXL="4"
@@ -32,38 +32,17 @@
               text="Parametros"
               emphasized="true"
           />
-          <Label text="Lote" />
-          <Input
-            showValueHelp="true"
-            valueHelpRequest=".openStorageAddressesValueHelp"
-            value="{params>/Code}"
-            required="true"
-            liveChange=".validateField"
-            >
-          </Input>
-          <Label text="Emissão de"/>
+          <Label text="Database"/>
           <DatePicker
                 value="{
-                  path: 'params>/FromDate',
+                  path: 'params>/ProcessingDate',
                   type: 'sap.ui.model.odata.type.DateTimeOffset',
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }
                 }"
-                liveChange=".validateField"
                 required="true"
-            />
-          <Label text="Emissão até"/>
-          <DatePicker
-                value="{
-                  path: 'params>/ToDate',
-                  type: 'sap.ui.model.odata.type.DateTimeOffset',
-                  formatOptions: {
-                    pattern: 'dd/MM/yyyy'
-                  }
-                }"
                 liveChange=".validateField"
-                required="true"
             />
         </f:content>
         <core:Title />
@@ -72,7 +51,7 @@
     <footer>
       <OverflowToolbar >
         <ToolbarSpacer/>
-        <Button text="Imprimir" type="Emphasized" press=".onPrintReport"/>
+        <Button text="Processar" type="Emphasized" press=".onReprocessing"/>
       </OverflowToolbar>
     </footer>
   </Page>

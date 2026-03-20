@@ -158,6 +158,18 @@
           "key": "storageInvoices",
           "enabled": true,
           "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Reprocessar Saldo por Lote",
+          "key": "storageAddressesReprocessing",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Reprocessar Calculo Diário",
+          "key": "storageAddressesDailyCalculation",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
         }
       ]
     },

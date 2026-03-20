@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.reports.storageDailyBalance.Main"
+	controllerName="siagrob1.controller.storageAddresses.Reprocessing"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -8,9 +8,9 @@
 	core:require="{
 		formatter: 'siagrob1/model/formatter'
 	}">
-  <Page title="Relatório de Saldo Diário por Lote." >
+  <Page title="Reprocessar Saldo por Lote" >
     <f:SimpleForm
-      id="storageDailyBalanceForm"
+      id="storageAddressesReprocessingForm"
       editable="true"
       layout="ResponsiveGridLayout"
       labelSpanXL="4"
@@ -41,7 +41,7 @@
             liveChange=".validateField"
             >
           </Input>
-          <Label text="Emissão de"/>
+          <Label text="De"/>
           <DatePicker
                 value="{
                   path: 'params>/FromDate',
@@ -53,7 +53,7 @@
                 liveChange=".validateField"
                 required="true"
             />
-          <Label text="Emissão até"/>
+          <Label text="Até"/>
           <DatePicker
                 value="{
                   path: 'params>/ToDate',
@@ -72,7 +72,7 @@
     <footer>
       <OverflowToolbar >
         <ToolbarSpacer/>
-        <Button text="Imprimir" type="Emphasized" press=".onPrintReport"/>
+        <Button text="Processar" type="Emphasized" press=".onReprocessing"/>
       </OverflowToolbar>
     </footer>
   </Page>

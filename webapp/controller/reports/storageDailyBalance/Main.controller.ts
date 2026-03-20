@@ -16,12 +16,21 @@ export default class Main extends BaseController {
 	}
 
 	private routeMatched() {
+
+    this.clearStates("storageDailyBalanceForm");
+    
 		const paramsModel = this.getModel("params") as JSONModel;
     paramsModel.setData({});
 	}
 
 
   async onPrintReport() {
+    
+    if (!this.validateForm("storageDailyBalanceForm")) {
+      MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
+      return;
+    }
+    
     const paramsModel = this.getModel("params") as JSONModel;
     const payload = paramsModel.getData();
 
