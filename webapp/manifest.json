@@ -119,332 +119,332 @@
 					"target": "login"
 				},
 				{
-					"pattern": "parceirosNegocio",
+					"pattern": "business-partners",
 					"name": "parceirosNegocio",
 					"target": "parceirosNegocio"
 				},
 				{
-					"pattern": "produtos",
+					"pattern": "items",
 					"name": "produtos",
 					"target": "produtos"
 				},
 				{
-					"pattern": "processingCostsList",
+					"pattern": "processing-costs",
 					"name": "processingCostsList",
 					"target": "processingCostsList"
 				},
 				{
-					"pattern": "processingCostsListNew",
+					"pattern": "processing-costs/new",
 					"name": "processingCostsListNew",
 					"target": "processingCostsListNew"
 				},
 				{
-					"pattern": "processingCostsListEdit/{id}",
+					"pattern": "processing-costs/{id}/edit",
 					"name": "processingCostsListEdit",
 					"target": "processingCostsListEdit"
 				},
         {
-          "pattern": "armazens",
+          "pattern": "warehouses",
           "name": "armazens",
           "target": "armazens"
         },
         {
-          "pattern": "armazensNew",
+          "pattern": "warehouses/net",
           "name": "armazensNew",
           "target": "armazensNew"
         },
         {
-          "pattern": "armazensEdit/{id}",
+          "pattern": "warehouses/{id}/edit",
           "name": "armazensEdit",
           "target": "armazensEdit"
         },
         {
-          "pattern": "storageAddresses",
+          "pattern": "storage-addresses",
           "name": "storageAddresses",
           "target": "storageAddresses"
         },
         {
-          "pattern": "storageAddressesNew",
+          "pattern": "storage-addresses/new",
           "name": "storageAddressesNew",
           "target": "storageAddressesNew"
         },
         {
-          "pattern": "storageAddressesEdit/{id}",
+          "pattern": "storage-addresses/{id}/edit",
           "name": "storageAddressesEdit",
           "target": "storageAddressesEdit"
         },
         {
-          "pattern": "storageAddresses/reprocessing",
+          "pattern": "storage-addresses/reprocessing",
           "name": "storageAddressesReprocessing",
           "target": "storageAddressesReprocessing"
         },
         {
-          "pattern": "storageAddresses/dailyCalculation",
+          "pattern": "storage-addresses/daily-calculation",
           "name": "storageAddressesDailyCalculation",
           "target": "storageAddressesDailyCalculation"
         },
         {
-          "pattern": "safras",
+          "pattern": "harvest-seasons",
           "name": "safras",
           "target": "safras"
         },
         {
-          "pattern": "safrasNew",
+          "pattern": "harvest-seasons/new",
           "name": "safrasNew",
           "target": "safrasNew"
         },
         {
-          "pattern": "safrasEdit/{id}",
+          "pattern": "harvest-seasons/{id}/edit",
           "name": "safrasEdit",
           "target": "safrasEdit"
         }, 
         {
-          "pattern": "motoristas",
+          "pattern": "drivers",
           "name": "motoristas",
           "target": "motoristas"
         },
         {
-          "pattern": "motoristasNew",
+          "pattern": "drivers/new",
           "name": "motoristasNew",
           "target": "motoristasNew"
         },
         {
-          "pattern": "motoristasEdit/{id}",
+          "pattern": "drivers/{id}/edit",
           "name": "motoristasEdit",
           "target": "motoristasEdit"
         },
         {
-          "pattern": "veiculos",
+          "pattern": "vehicles",
           "name": "veiculos",
           "target": "veiculos"
         },
         {
-          "pattern": "veiculosNew",
+          "pattern": "vehicles/new",
           "name": "veiculosNew",
           "target": "veiculosNew"
         },
         {
-          "pattern": "veiculosEdit/{id}",
+          "pattern": "vehicles/{id}/edit",
           "name": "veiculosEdit",
           "target": "veiculosEdit"
         },
         {
-          "pattern": "weighingTickets",
+          "pattern": "weighing-tickets",
           "name": "weighingTickets",
           "target": "weighingTickets"
         },
         {
-          "pattern": "weighingTicketsNew",
+          "pattern": "weighing-tickets/new",
           "name": "weighingTicketsNew",
           "target": "weighingTicketsNew"
         },
         {
-          "pattern": "weighingTicketsEdit/{id}",
+          "pattern": "weighing-tickets/{id}/edit",
           "name": "weighingTicketsEdit",
           "target": "weighingTicketsEdit"
         },
         {
-          "pattern": "weighingTicketsDetail/{id}",
+          "pattern": "weighing-tickets/{id}/detail",
           "name": "weighingTicketsDetail",
           "target": "weighingTicketsDetail"
         },
         {
-          "pattern": "weighingTicketsConfirm/{id}",
+          "pattern": "weighing-tickets/{id}/confirm",
           "name": "weighingTicketsConfirm",
           "target": "weighingTicketsConfirm"
         },
         {
-          "pattern": "weighingTicketsFirstWeighing/{id}",
+          "pattern": "weighing-tickets/{id}/first-weighing",
           "name": "weighingTicketsFirstWeighing",
           "target": "weighingTicketsFirstWeighing"
         },
         {
-          "pattern": "weighingTicketsSecondWeighing/{id}",
+          "pattern": "weighing-tickets/{id}/second-weighing",
           "name": "weighingTicketsSecondWeighing",
           "target": "weighingTicketsSecondWeighing"
         },
         {
-          "pattern": "purchaseContracts",
+          "pattern": "purchase-contracts",
           "name": "purchaseContracts",
           "target": "purchaseContracts"
         },
         {
-          "pattern": "purchaseContractsNew",
+          "pattern": "purchase-contracts/new",
           "name": "purchaseContractsNew",
           "target": "purchaseContractsNew"
         },
         {
-          "pattern": "purchaseContractsEdit/{id}",
+          "pattern": "purchase-contracts/{id}/edit",
           "name": "purchaseContractsEdit",
           "target": "purchaseContractsEdit"
         },
         {
-          "pattern": "purchaseContractsDetail/{id}",
+          "pattern": "purchase-contracts/{id}/detail",
           "name": "purchaseContractsDetail",
           "target": "purchaseContractsDetail"
         },
         {
-          "pattern": "purchaseContractsUpload/{id}",
+          "pattern": "purchase-contracts/{id}/upload",
           "name": "purchaseContractsUpload",
           "target": "purchaseContractsUpload"
         },
         {
-          "pattern": "purchaseContractsApproval",
+          "pattern": "purchase-contracts/approval",
           "name": "purchaseContractsApproval",
           "target": "purchaseContractsApproval"
         },
         {
-          "pattern": "purchaseContractsApprovalDetail/{id}",
+          "pattern": "purchase-contracts/{id}/approval/detail",
           "name": "purchaseContractsApprovalDetail",
           "target": "purchaseContractsApprovalDetail"
         },
         {
-          "pattern": "purchaseOrdersAllocations",
+          "pattern": "purchase-orders/allocations",
           "name": "purchaseOrdersAllocations",
           "target": "purchaseOrdersAllocations"
         },
         {
-          "pattern": "purchaseContractsAllocations",
+          "pattern": "purchase-contracts/allocations",
           "name": "purchaseContractsAllocations",
           "target": "purchaseContractsAllocations"
         },
         {
-          "pattern": "purchaseContractsShipmentRelease",
+          "pattern": "purchase-contracts/shipment-release",
           "name": "purchaseContractsShipmentRelease",
           "target": "purchaseContractsShipmentRelease"
         },
         {
-          "pattern": "purchaseContractsShipmentReleaseRequest/{purchaseContractId}",
+          "pattern": "purchase-contracts/{purchaseContractId}/shipment-release/request",
           "name": "purchaseContractsShipmentReleaseRequest",
           "target": "purchaseContractsShipmentReleaseRequest"
         },
         {
-          "pattern": "shipmentReleases",
+          "pattern": "shipment-releases",
           "name": "shipmentReleases",
           "target": "shipmentReleases"
         },
         {
-          "pattern": "salesContracts",
+          "pattern": "sales-contracts",
           "name": "salesContracts",
           "target": "salesContracts"
         },
         {
-          "pattern": "salesContractsNew",
+          "pattern": "sales-contracts/new",
           "name": "salesContractsNew",
           "target": "salesContractsNew"
         },
         {
-          "pattern": "salesContractsEdit/{id}",
+          "pattern": "sales-contracts/{id}/edit",
           "name": "salesContractsEdit",
           "target": "salesContractsEdit"
         },
         {
-          "pattern": "salesContractsDetail/{id}",
+          "pattern": "sales-contracts/{id}/detail",
           "name": "salesContractsDetail",
           "target": "salesContractsDetail"
         },
          {
-          "pattern": "salesContractsUpload/{id}",
+          "pattern": "sales-contracts/{id}/upload",
           "name": "salesContractsUpload",
           "target": "salesContractsUpload"
         },
         {
-          "pattern": "salesContractsApproval",
+          "pattern": "sales-contracts/approval",
           "name": "salesContractsApproval",
           "target": "salesContractsApproval"
         },
         {
-          "pattern": "salesContractsApprovalDetail/{id}",
+          "pattern": "sales-contracts/{id}/approval/detail",
           "name": "salesContractsApprovalDetail",
           "target": "salesContractsApprovalDetail"
         },
         {
-          "pattern": "storageTransactions",
+          "pattern": "storage-transactions",
           "name": "storageTransactions",
           "target": "storageTransactions"
         },
         {
-          "pattern": "storageTransactionsNew",
+          "pattern": "storage-transactions/new",
           "name": "storageTransactionsNew",
           "target": "storageTransactionsNew"
         },
         {
-          "pattern": "storageTransactionsEdit/{id}",
+          "pattern": "storage-transactions/{id}/edit",
           "name": "storageTransactionsEdit",
           "target": "storageTransactionsEdit"
         },
         {
-          "pattern": "storageTransactionsDetail/{id}",
+          "pattern": "storage-transactions/{id}/detail",
           "name": "storageTransactionsDetail",
           "target": "storageTransactionsDetail"
         },
         {
-          "pattern": "storageTransactions/sales",
+          "pattern": "storage-transactions/sales",
           "name": "storageTransactionsSales",
           "target": "storageTransactionsSales"
         },
         {
-          "pattern": "ownershipTransfers",
+          "pattern": "ownership-transfers",
           "name": "ownershipTransfers",
           "target": "ownershipTransfers"
         },
         {
-          "pattern": "ownershipTransfers/new",
+          "pattern": "ownership-transfers/new",
           "name": "ownershipTransfersNew",
           "target": "ownershipTransfersNew"
         },
         {
-          "pattern": "ownershipTransfers/edit/{id}",
+          "pattern": "ownership-transfers/{id}/edit",
           "name": "ownershipTransfersEdit",
           "target": "ownershipTransfersEdit"
         },
         {
-          "pattern": "ownershipTransfers/detail/{id}",
+          "pattern": "ownership-transfers/{id}/detail",
           "name": "ownershipTransfersDetail",
           "target": "ownershipTransfersDetail"
         },
         {
-          "pattern": "shippingTransaction:?query:",
+          "pattern": "shipping-transaction:?query:",
           "name": "shippingTransaction",
           "target": "shippingTransaction"
         },
         {
-          "pattern": "shippingTransaction/selectShipmentRelease:?query:",
+          "pattern": "shipping-transaction/select-shipment-release:?query:",
           "name": "selectShipmentRelease",
           "target": "selectShipmentRelease"
         },
         {
-          "pattern": "shippingTransaction/shippingTransactionCreate:?query:",
+          "pattern": "shipping-transaction/create:?query:",
           "name": "shippingTransactionCreate",
           "target": "shippingTransactionCreate"
         },
         {
-          "pattern": "shipmentBilling",
+          "pattern": "shipment-billing",
           "name": "shipmentBilling",
           "target": "shipmentBilling"
         },
         {
-          "pattern": "salesInvoices",
+          "pattern": "sales-invoices",
           "name": "salesInvoices",
           "target": "salesInvoices"
         },
         {
-          "pattern": "salesInvoices/detail/{id}",
+          "pattern": "sales-invoices/{id}/detail",
           "name": "salesInvoicesDetail",
           "target": "salesInvoicesDetail"
         },
         {
-          "pattern": "salesInvoices/edit/{id}",
+          "pattern": "sales-invoices/{id}/edit",
           "name": "salesInvoicesEdit",
           "target": "salesInvoicesEdit"
         },
         {
-          "pattern": "salesInvoices/reconciliation",
+          "pattern": "sales-invoices/reconciliation",
           "name": "salesInvoicesReconciliation",
           "target": "salesInvoicesReconciliation"
         },
         {
-          "pattern": "salesInvoices/reconciliation/open",
+          "pattern": "sales-invoices/reconciliation/open",
           "name": "salesInvoicesOpenReconciliation",
           "target": "salesInvoicesOpenReconciliation"
         },
@@ -454,12 +454,12 @@
           "target": "agents"
         },
         {
-          "pattern": "agentsNew",
+          "pattern": "agents/new",
           "name": "agentsNew",
           "target": "agentsNew"
         },
         {
-          "pattern": "agentsEdit/{id}",
+          "pattern": "agents/{id}/edit",
           "name": "agentsEdit",
           "target": "agentsEdit"
         },
@@ -469,27 +469,27 @@
           "target": "taxes"
         },
         {
-          "pattern": "taxesNew",
+          "pattern": "taxes/new",
           "name": "taxesNew",
           "target": "taxesNew"
         },
         {
-          "pattern": "taxesEdit/{id}",
+          "pattern": "taxes/{id}/edit",
           "name": "taxesEdit",
           "target": "taxesEdit"
         },
         {
-          "pattern": "logisticRegions",
+          "pattern": "logistic-regions",
           "name": "logisticRegions",
           "target": "logisticRegions"
         },
         {
-          "pattern": "logisticRegionsNew",
+          "pattern": "logistic-regions/new",
           "name": "logisticRegionsNew",
           "target": "logisticRegionsNew"
         },
         {
-          "pattern": "logisticRegionsEdit/{id}",
+          "pattern": "logistic-regions/{id}/edit",
           "name": "logisticRegionsEdit",
           "target": "logisticRegionsEdit"
         },
@@ -499,12 +499,12 @@
           "target": "states"
         },
         {
-          "pattern": "statesNew",
+          "pattern": "states/new",
           "name": "statesNew",
           "target": "statesNew"
         },
         {
-          "pattern": "statesEdit/{id}",
+          "pattern": "states/{id}/edit",
           "name": "statesEdit",
           "target": "statesEdit"
         },
@@ -514,118 +514,118 @@
           "target": "branchs"
         },
         {
-          "pattern": "branchsNew",
+          "pattern": "branchs/new",
           "name": "branchsNew",
           "target": "branchsNew"
         },
         {
-          "pattern": "branchsEdit/{id}",
+          "pattern": "branchs/{id}/edit",
           "name": "branchsEdit",
           "target": "branchsEdit"
         },
         {
-          "pattern": "docNumbers",
+          "pattern": "doc-numbers",
           "name": "docNumbers",
           "target": "docNumbers"
         },
         {
-          "pattern": "docNumbersNew",
+          "pattern": "doc-numbers/new",
           "name": "docNumbersNew",
           "target": "docNumbersNew"
         },
         {
-          "pattern": "docNumbersEdit/{id}",
+          "pattern": "doc-numbers/{id}/edit",
           "name": "docNumbersEdit",
           "target": "docNumbersEdit"
         },
         {
-          "pattern": "processingServices",
+          "pattern": "processing-services",
           "name": "processingServices",
           "target": "processingServices"
         },
         {
-          "pattern": "processingServicesNew",
+          "pattern": "processing-services/new",
           "name": "processingServicesNew",
           "target": "processingServicesNew"
         },
         {
-          "pattern": "processingServicesEdit/{id}",
+          "pattern": "processing-services/{id}/edit",
           "name": "processingServicesEdit",
           "target": "processingServicesEdit"
         },
         {
-          "pattern": "qualityAttribs",
+          "pattern": "quality-attribs",
           "name": "qualityAttribs",
           "target": "qualityAttribs"
         },
         {
-          "pattern": "qualityAttribsNew",
+          "pattern": "quality-attribs/new",
           "name": "qualityAttribsNew",
           "target": "qualityAttribsNew"
         },
         {
-          "pattern": "qualityAttribsEdit/{id}",
+          "pattern": "quality-attribs/{id}/edit",
           "name": "qualityAttribsEdit",
           "target": "qualityAttribsEdit"
         }
         ,
         {
-          "pattern": "unitMeasure",
+          "pattern": "unit-measure",
           "name": "unitMeasure",
           "target": "unitMeasure"
         },
         {
-          "pattern": "unitMeasureNew",
+          "pattern": "unit-measure/new",
           "name": "unitMeasureNew",
           "target": "unitMeasureNew"
         },
         {
-          "pattern": "unitMeasureEdit/{id}",
+          "pattern": "unit-measure/{id}/edit",
           "name": "unitMeasureEdit",
           "target": "unitMeasureEdit"
         },
         {
-          "pattern": "weighingTicketsCompleted",
+          "pattern": "weighing-tickets/completed",
           "name": "weighingTicketsCompleted",
           "target": "weighingTicketsCompleted"
         },
         {
-          "pattern": "purchaseContractsReport",
+          "pattern": "purchase-contracts/report",
           "name": "purchaseContractsReport",
           "target": "purchaseContractsReport"
         },
         {
-          "pattern": "salesInvoicesReport",
+          "pattern": "sales-invoices/report",
           "name": "salesInvoicesReport",
           "target": "salesInvoicesReport"
         },
         {
-          "pattern": "storageTransactionsReceiptsReport",
+          "pattern": "storage-transactions/receipts-report",
           "name": "storageTransactionsReceiptsReport",
           "target": "storageTransactionsReceiptsReport"
         },
         {
-          "pattern": "storageTransactionsShipmentsReport",
+          "pattern": "storage-transactions/shipments-report",
           "name": "storageTransactionsShipmentsReport",
           "target": "storageTransactionsShipmentsReport"
         },
         {
-          "pattern": "storageDailyBalanceReport",
+          "pattern": "storage-daily-balance/report",
           "name": "storageDailyBalanceReport",
           "target": "storageDailyBalanceReport"
         },
         {
-          "pattern": "storageInvoices",
+          "pattern": "storage-invoices",
           "name": "storageInvoices",
           "target": "storageInvoices"
         },
         {
-          "pattern": "storageInvoices/{id}/detail",
+          "pattern": "storage-invoices/{id}/detail",
           "name": "storageInvoicesDetail",
           "target": "storageInvoicesDetail"
         },
         {
-          "pattern": "storageInvoices/add",
+          "pattern": "storage-invoices/add",
           "name": "storageInvoicesAdd",
           "target": "storageInvoicesAdd"
         }
