@@ -40,15 +40,21 @@
                 <uxap:subSections>
                     <uxap:ObjectPageSubSection>
                         <uxap:blocks>
+                           <ScrollContainer
+                            width="100%"
+                            horizontal="true"
+                            vertical="false">
                            <Table
                               id="tableSelectShipmentRelease"
                               class="sapUiSizeCondensed"
                               alternateRowColors="true"
                               inset="false"
+                              
                               mode="SingleSelect"
-                              items="{
-                                path: '/ShipmentReleases'
-                              }">
+                               items="{
+                                  path: 'contracts>/'
+                                }"
+                             >
                               <headerToolbar>
                                   <OverflowToolbar>
                                       <content>
@@ -61,48 +67,64 @@
                                   </OverflowToolbar>
                               </headerToolbar>
                               <columns>
-                                  <Column width="10rem">
-                                      <Text text="Filial" />
+                                  <Column visible="false" width="3rem">
+                                    <Text text="Key" />
+                                  </Column>
+                                  <Column width="3rem">
+                                    <Text />
                                   </Column>
                                   <Column width="10rem">
-                                      <Text text="Contrato" />
+                                      <Text text="Filial" wrapping="false"/>
+                                  </Column>
+                                  <Column width="8rem">
+                                      <Text text="Contrato" wrapping="false"/>
+                                  </Column>
+                                  <Column width="3rem">
+                                      <Text text="Item" wrapping="false"/>
+                                  </Column>
+                                  <Column width="25rem">
+                                      <Text text="Fornecedor" wrapping="false"/>
                                   </Column>
                                   <Column width="10rem">
-                                      <Text text="Item" />
+                                      <Text text="CNPJ" wrapping="false"/>
                                   </Column>
-                                  <Column>
-                                      <Text text="Fornecedor" />
+                                  <Column width="10rem">
+                                      <Text text="Municipio" wrapping="false"/>
+                                  </Column>
+                                  <Column width="3rem">
+                                      <Text text="Uf" wrapping="false"/>
                                   </Column>
                                   <Column width="6rem">
-                                      <Text text="Armazem" />
+                                      <Text text="Armazem" wrapping="false"/>
                                   </Column>
-                                  <Column visible="false">
+                                  <Column visible="false" width="3rem">
                                       <Text text="Cod.Prodto" />
                                   </Column>
-                                  <Column>
-                                      <Text text="Produto" />
+                                  <Column width="8rem">
+                                      <Text text="Produto" wrapping="false" />
                                   </Column>
-                                  <Column>
-                                      <Text text="Tipo" />
-                                  </Column>
-                                  <Column hAlign="End">
+                                  <Column hAlign="End" width="10rem">
                                       <Text text="Saldo" />
                                   </Column>
                               </columns>
                               <items>
                                   <ColumnListItem>
                                       <cells>
-                                          <Text text="{Branch/ShortName}"/>
-                                          <ObjectIdentifier title="{PurchaseContract/Code}" />
-                                          <Text text="{RowId}" />
-                                          <Text text="{PurchaseContract/CardName}"/>
-                                          <Text text="{DeliveryLocationCode}"/>
-                                          <Text text="{PurchaseContract/ItemCode}"/>
-                                          <Text text="{PurchaseContract/ItemName}"/>
-                                          <Text text=".."/>
+                                          <Text text="{contracts>ShipmentReleaseKey}" wrapping="false"/>
+                                          <core:Icon tooltip="{contracts>Notes}" src="sap-icon://information" />
+                                          <Text text="{contracts>BranchShortName}" wrapping="false"/>
+                                          <ObjectIdentifier title="{contracts>PurchaseContractCode}" />
+                                          <Text text="{contracts>RowId}" wrapping="false"/>
+                                          <Text text="{contracts>FName}" wrapping="false"/>
+                                          <Text text="{contracts>TaxId}" wrapping="false"/>
+                                          <Text text="{contracts>City}" wrapping="false"/>
+                                          <Text text="{contracts>State}" wrapping="false"/>
+                                          <Text text="{contracts>DeliveryLocationCode}" wrapping="false"/>
+                                          <Text text="{contracts>ItemCode}" wrapping="false"/>
+                                          <Text text="{contracts>ItemName}" wrapping="false"/>
                                           <ObjectNumber
                                               number="{
-                                                path: 'AvailableQuantity',
+                                                path: 'contracts>AvailableQuantity',
                                                 type: 'sap.ui.model.type.Float',
                                                 formatOptions: {
                                                     decimals: 3,
@@ -111,12 +133,13 @@
                                                     groupingSeparator: '.'
                                                   }
                                               }"
-                                              unit="{PurchaseContract/UnitOfMeasureCode}"
+                                              unit="{contracts>UnitOfMeasureCode}"
                                           />
                                       </cells>
                                   </ColumnListItem>
                               </items>
                           </Table>
+                          </ScrollContainer>
                         </uxap:blocks>
                     </uxap:ObjectPageSubSection>
                 </uxap:subSections>

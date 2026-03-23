@@ -348,6 +348,57 @@ export default abstract class CommonController extends BaseController {
   
     }
 
+    async formartCustomerTaxId(key: string){
+      if (!key){
+        return null;
+      } 
+  
+      try {
+        this.setBusy(true);
+        const data = await this
+          .getResource<BusinessPartner>(`${this.api.businessPartners}('${key}')`)
+        
+        return data?.TaxId;
+      } finally {
+        this.setBusy(false);
+      }
+  
+    }
+
+    async formartCustomerCity(key: string){
+      if (!key){
+        return null;
+      } 
+  
+      try {
+        this.setBusy(true);
+        const data = await this
+          .getResource<BusinessPartner>(`${this.api.businessPartners}('${key}')?$expand=Addresses($filter=AdresType eq \'S\')`)
+        
+        return data?.Addresses[0]?.City
+      } finally {
+        this.setBusy(false);
+      }
+  
+    }
+
+     async formartCustomerState(key: string){
+      if (!key){
+        return null;
+      } 
+  
+      try {
+        this.setBusy(true);
+        const data = await this
+          .getResource<BusinessPartner>(`${this.api.businessPartners}('${key}')?$expand=Addresses($filter=AdresType eq \'S\')`)
+        
+        return data?.Addresses[0]?.State
+      } finally {
+        this.setBusy(false);
+      }
+  
+    }
+
    async formatAgentName(key: string){
       if (!key){
         return null;

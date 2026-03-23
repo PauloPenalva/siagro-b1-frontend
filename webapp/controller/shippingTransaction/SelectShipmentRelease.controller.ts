@@ -1,13 +1,12 @@
 
-import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 
 import { BaseController } from "./BaseController";
 
 import List from 'sap/m/List';
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
-import Filter from 'sap/ui/model/Filter';
-import FilterOperator from 'sap/ui/model/FilterOperator';
 import MessageBox from "sap/m/MessageBox";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 
 type routeArgs = {
   "?query": { 
@@ -22,8 +21,12 @@ type routeArgs = {
 export default class SelectShipmentRelease extends BaseController {
 
   private _itemCode: string;
-
+  
 	onInit(): void  {
+
+    const jsonModel = new JSONModel();
+    this.getView().setModel(jsonModel, "contracts");
+
     this.getRouter()
 			.getRoute("selectShipmentRelease")
 			.attachPatternMatched((ev) => this.onRouteMatched(ev), this);
@@ -39,40 +42,25 @@ export default class SelectShipmentRelease extends BaseController {
       const warehouseCode = query?.warehouseCode;
       
       this._itemCode = itemCode;
-
-      this.filter(itemCode, warehouseCode)
+      
+      if (itemCode) {
+        this.getPurchaseContracts(itemCode, warehouseCode)	
+      }
 
       return;
     }
-
-    this.filter(null, null);
-	}
-
-	private filter(itemCode: string, warehouseCode: string) {
-		const filter = new Filter({
-			filters: [
-        new Filter("PurchaseContract/ItemCode", FilterOperator.EQ, itemCode),
-        new Filter("DeliveryLocationCode", FilterOperator.EQ, warehouseCode),
-      ],
-      and: true
-		})
-
-		const table = this.byId("tableSelectShipmentRelease") as List;
-    const bindingItems = table.getBinding("items") as ODataListBinding;
-
-		bindingItems.filter([filter]);
 	}
 
   onCreateShippingTransaction() {
     const oTable = this.byId("tableSelectShipmentRelease") as List;
-		const oContext = oTable.getSelectedItem()?.getBindingContext();
+		const oContext = oTable.getSelectedItem()?.getBindingContext("contracts");
     
     if (!oContext) {
       MessageBox.warning("Selecione um item na tabela.");
       return;
     }
 
-		const key = oContext.getProperty("Key") as string;
+		const key = oContext.getProperty("ShipmentReleaseKey") as string;
 
     this.navTo("shippingTransactionCreate",{
         "?query":{ shipmentReleaseKey: key }
@@ -89,4 +77,20 @@ export default class SelectShipmentRelease extends BaseController {
 
     this.onNavBack();
   }
+
+  private async getPurchaseContracts(itemCode: string, warehouseCode: string) {
+      const model = this.getModel() as ODataModel;
+      const func = model.bindContext("/ShipmentReleasesGetPurchaseContracts(...)");
+      func.setParameter("ItemCode", itemCode);
+      func.setParameter("WarehouseCode", warehouseCode);
+  
+      this.setBusy(true);
+      
+      await func.invoke();
+      const resultContext = func.getBoundContext();
+      const viewModel = this.getModel("contracts") as JSONModel
+      viewModel.setData(resultContext.getObject() as object);
+  
+      this.setBusy(false);   
+    }
 }
