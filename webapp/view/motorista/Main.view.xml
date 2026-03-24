@@ -51,8 +51,23 @@
 							<Text text="{Name}" />
 						</t:template>
 					</t:Column>
+					<t:Column
+						label="Documento"
+						filterProperty="Document"
+						>
+						<t:template>
+							<Text text="{Document}" />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Telefone"
+					  filterProperty="Phone"
+						>
+						<t:template>
+							<Text text="{Phone}" />
+						</t:template>
+					</t:Column>
 				</t:columns>
-
 			</t:Table>
 		</content>
     <footer>

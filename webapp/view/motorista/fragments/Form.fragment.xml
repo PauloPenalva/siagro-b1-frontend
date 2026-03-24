@@ -42,6 +42,18 @@
               liveChange=".validateField"
               maxLength="100"
           />
+          <Label text="Documento" />
+          <Input
+              value="{Document}"
+              editable="true"
+              maxLength="100"
+          />
+          <Label text="Telefone" />
+          <Input
+              value="{Phone}"
+              editable="true"
+              maxLength="100"
+          />
         </f:content>
         <core:Title />
         <core:Title />
