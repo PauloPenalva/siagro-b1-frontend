@@ -41,7 +41,7 @@
         rows="{
           path: '/WeighingTickets',
           parameters: {
-            $filter: 'Stage eq \'Completed\'',
+            $filter: 'Stage eq \'Completed\' and Stage eq \'ReadyForCompleting\'',
             $count: true
           },
           sorter:[
@@ -57,8 +57,9 @@
 						<ToolbarSpacer />
             <Button type="Transparent" text="Imprimir Ticket" press=".printTicket"/>
             <Button type="Transparent" text="Exportar Excel" press=".onExcel"/>
+            <Button type="Transparent" text="Visualizar" press=".onDetail"/>
             <Button type="Transparent" text="Atualizar" press=".onRefresh"/>
-					</OverflowToolbar>
+         	</OverflowToolbar>
 				</t:extension>
 				<t:columns>
           <t:Column
@@ -80,6 +81,22 @@
 							<Text text="{Branch/ShortName}" />
 						</t:template>
 					</t:Column>
+					<t:Column label="Status" width="6rem" hAlign="Center">
+            <t:template>
+              <ObjectStatus 
+                  inverted="true"
+                  state="{
+                    path: 'Status', 
+                    targetType: 'any', 
+                    formatter: '.formatter.stateWeighTicketStatus'
+                  }"
+                  text="{
+                    path: 'Status', 
+                    targetType: 'any', 
+                    formatter: '.formatter.formatWeighTicketStatus' 
+                  }"/>
+            </t:template>
+          </t:Column>
 					<t:Column
 						label="Codigo"
 						sortProperty="Code"

@@ -590,6 +590,16 @@
           "target": "weighingTicketsCompleted"
         },
         {
+          "pattern": "weighing-tickets/completed/{id}/detail",
+          "name": "weighingTicketsCompletedDetail",
+          "target": "weighingTicketsCompletedDetail"
+        },
+        {
+          "pattern": "weighing-tickets/completed/{id}/edit",
+          "name": "weighingTicketsCompletedEdit",
+          "target": "weighingTicketsCompletedEdit"
+        },
+        {
           "pattern": "purchase-contracts/report",
           "name": "purchaseContractsReport",
           "target": "purchaseContractsReport"
@@ -613,6 +623,11 @@
           "pattern": "storage-daily-balance/report",
           "name": "storageDailyBalanceReport",
           "target": "storageDailyBalanceReport"
+        },
+        {
+          "pattern": "storage-addresses-balance/report",
+          "name": "storageAddressesBalanceReport",
+          "target": "storageAddressesBalanceReport"
         },
         {
           "pattern": "storage-invoices",
@@ -1201,6 +1216,18 @@
 					"name": "siagrob1.view.weighingTicket.completed.Main",
           "clearControlAggregation": true
 				},
+        "weighingTicketsCompletedDetail": {
+					"id": "weighingTicketsCompletedDetail",
+          "level": 2,
+					"name": "siagrob1.view.weighingTicket.completed.Detail",
+          "clearControlAggregation": true
+				},
+        "weighingTicketsCompletedEdit": {
+					"id": "weighingTicketsCompletedEdit",
+          "level": 2,
+					"name": "siagrob1.view.weighingTicket.completed.Edit",
+          "clearControlAggregation": true
+				},
         "weighingTicketsFirstWeighing": {
 					"id": "weighingTicketsFirstWeighing",
           "level": 1,
@@ -1241,6 +1268,12 @@
 					"id": "storageDailyBalanceReport",
           "level": 1,
 					"name": "siagrob1.view.reports.storageDailyBalance.Main",
+          "clearControlAggregation": true
+				},
+        "storageAddressesBalanceReport": {
+					"id": "storageAddressesBalanceReport",
+          "level": 1,
+					"name": "siagrob1.view.reports.storageAddressesBalance.Main",
           "clearControlAggregation": true
 				},
         "storageInvoices": {

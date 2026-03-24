@@ -22,10 +22,13 @@
 			<uxap:ObjectPageDynamicHeaderTitle>
         <uxap:expandedHeading>
            <Title text="Segunda Pesagem"/>
-          </uxap:expandedHeading>
-          <uxap:snappedHeading>
+        </uxap:expandedHeading>
+        <uxap:snappedHeading>
            <Title text="Segunda Pesagem"/>
-         </uxap:snappedHeading>
+        </uxap:snappedHeading>
+        <uxap:actions>
+          <Button text="Cancelar Ticket" type="Transparent" press=".onCancel"/>
+        </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>
      <uxap:headerContent>
@@ -54,7 +57,7 @@
     <uxap:footer>
       <OverflowToolbar>
 				<ToolbarSpacer />
-				<Button text="Cancelar" press=".onCancel"  />
+				<Button text="Cancelar" press=".onNavToTicketList"  />
 				<Button text="Salvar" type="Emphasized" press=".onSave"/>
 			</OverflowToolbar>
     </uxap:footer>

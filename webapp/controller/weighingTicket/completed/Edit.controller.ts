@@ -2,18 +2,18 @@ import MessageToast from "sap/m/MessageToast";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
-import GenericController from "./GenericController";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Context from "sap/ui/model/odata/v4/Context";
+import { BaseController } from "./BaseController";
 
 
 /**
- * @namespace siagrob1.controller.weighingTicket
+ * @namespace siagrob1.controller.weighingTicket.completed
  */
-export default class Edit extends GenericController {
+export default class Edit extends BaseController {
 
 	onInit(): void | undefined {	
-		this.getRouter().getRoute("weighingTicketsEdit").attachPatternMatched((ev) => this.routeMatched(ev));
+		this.getRouter().getRoute("weighingTicketsCompletedEdit").attachPatternMatched((ev) => this.routeMatched(ev));
 	}
 
 	private routeMatched(ev: Route$MatchedEvent) {
@@ -29,8 +29,8 @@ export default class Edit extends GenericController {
     uiModel.setProperty("/editableStorageAddress", true)
     uiModel.setProperty("/editableComments", true)
     uiModel.setProperty("/editableGrid", true);
-    uiModel.setProperty("/editableFirstWeighing", false);
-    uiModel.setProperty("/editableSecondWeighing", false);
+    uiModel.setProperty("/editableFirstWeighing", true);
+    uiModel.setProperty("/editableSecondWeighing", true);
 
 		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 			oModel.resetChanges(oModel.getUpdateGroupId())
@@ -81,7 +81,7 @@ export default class Edit extends GenericController {
   private navToDetail() {
     const oContext = this.getView().getBindingContext() as Context;
     if (oContext) {
-      this.navTo("weighingTicketsDetail", {id: oContext.getProperty("Key") as string});
+      this.navTo("weighingTicketsCompletedDetail", {id: oContext.getProperty("Key") as string});
     }
   }
 }

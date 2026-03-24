@@ -4,6 +4,8 @@ import MessageBox from "sap/m/MessageBox";
 import Context from "sap/ui/model/odata/v4/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { BaseController } from "./BaseController";
+import RequestModel from "siagrob1/model/RequestModel";
+import MessageToast from "sap/m/MessageToast";
 
 /**
  * @namespace siagrob1.controller.storageTransactions
@@ -28,12 +30,41 @@ export default class Edit extends BaseController {
 
 		const {id} = ev.getParameter("arguments") as {id: string };
 		if (id != null) {
-			const sPath = `/StorageTransactions(${id})`;
-			this.bindElement(sPath);
+
+      //beforeEdit
+      this.setBusy(true);
+      this.beforeEdit(id)
+         .done(data => {
+            
+          this.setBusy(false);
+            const { TransactionOrigin } = data;
+            if (TransactionOrigin !== 'StorageTransaction'){
+              MessageBox.warning("Este romaneio não pode ser editado por essa rotina, pois foi criado por outro processo.");
+              this.onNavBack();
+            };
+
+            const sPath = `/StorageTransactions(${id})`;
+			      this.bindElement(sPath);
+
+          })
+          .catch(() =>{ 
+            console.log();
+            
+            this.setBusy(false)
+            this.onNavBack();
+          });
+
 			return;
 		}
 
 	}
+
+
+  private beforeEdit(id: string): JQuery.jqXHR {
+    const requestModel = new RequestModel();
+
+    return requestModel.get(this.api.storageTransactions + `(${id})?$select=TransactionOrigin`);     
+  }
 
 	async onSave() {
 		if (!this.validateForm("storageTransactionForm")) {

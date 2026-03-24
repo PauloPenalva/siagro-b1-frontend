@@ -16,6 +16,7 @@ export default {
   trucks: '/odata/Trucks',
   shipmentReleases: 'odata/ShipmentReleases',
   processingCosts: 'odata/ProcessingCosts',
+  storageTransactions: 'odata/StorageTransactions',
   
   storageAddresses: 'odata/StorageAddresses',
   storageAddressesBalance: 'odata/StorageAddressesListOpenedByItem',

@@ -1,10 +1,8 @@
-import MessageToast from "sap/m/MessageToast";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import GenericController from "./GenericController";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import Context from "sap/ui/model/odata/v4/Context";
 
 
@@ -30,6 +28,8 @@ export default class Confirm extends GenericController {
     uiModel.setProperty("/editableStorageAddress", true)
     uiModel.setProperty("/editableComments", true)
     uiModel.setProperty("/editableGrid", true);
+    uiModel.setProperty("/editableFirstWeighing", false);
+    uiModel.setProperty("/editableSecondWeighing", false);
 
 		const oView = this.getView();
 
@@ -74,17 +74,4 @@ export default class Confirm extends GenericController {
     }
   }
 
-	onCancel() {
-	 	const oModel = this.getView().getModel() as ODataModel;
-
-		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
-			oModel.resetChanges(oModel.getUpdateGroupId());
-		}
-
-		this.navToList();
-	}
-
-  private navToList() {
-    this.navTo("weighingTickets");
-  }
 }

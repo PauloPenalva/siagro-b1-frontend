@@ -1,18 +1,18 @@
 import MessageToast from "sap/m/MessageToast";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
-import GenericController from "./GenericController";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import { BaseController } from "./BaseController";
 
 
 /**
- * @namespace siagrob1.controller.weighingTicket
+ * @namespace siagrob1.controller.weighingTicket.completed
  */
-export default class Detail extends GenericController {
-
-	onInit(): void | undefined {	
-		this.getRouter().getRoute("weighingTicketsDetail").attachPatternMatched((ev) => this.routeMatched(ev));
+export default class Detail extends BaseController {
+	
+  onInit(): void | undefined {	
+		this.getRouter().getRoute("weighingTicketsCompletedDetail").attachPatternMatched((ev) => this.routeMatched(ev));
 	}
 
 	private routeMatched(ev: Route$MatchedEvent) {
@@ -48,9 +48,38 @@ export default class Detail extends GenericController {
 		const oContext = this.getView().getBindingContext();
     
 		const sId = oContext.getProperty("Key") as string;
-		this.navTo("weighingTicketsEdit", {id: sId});
+		this.navTo("weighingTicketsCompletedEdit", {id: sId});
 	}
 
+  async onReopen() {
+     if(!await DialogHelper.confirmDialog("Confirma Reabrir Ticket de Pesagem ?"))
+      return;
+
+    const context = this.getView().getBindingContext();
+    if (context) {
+      const model = this.getModel() as ODataModel;
+      const action = model.bindContext("/WeighingTicketsReOpen(...)");
+      action.setParameter("Key", context.getProperty("Key"));
+
+      this.setBusy(true);
+      void action.invoke()
+        .then(() => {
+          MessageToast.show("Ticket reaberto com sucesso.");
+          this.navToEdit();
+        })
+        .finally(() => this.setBusy(false));
+    }
+  }
+
+  private navToEdit(): void {
+    const oContext = this.getView().getBindingContext();
+
+    if (oContext){
+      const sId = oContext.getProperty("Key") as string;
+  
+      this.navTo("weighingTicketsCompletedEdit", { id: sId });
+    }
+  }
 
   async onConfirm() {
     if(!await DialogHelper.confirmDialog("Confirma criar romaneio ?"))

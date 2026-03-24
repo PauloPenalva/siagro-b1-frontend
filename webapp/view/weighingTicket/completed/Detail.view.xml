@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.weighingTicket.Edit"
+	controllerName="siagrob1.controller.weighingTicket.completed.Detail"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -21,11 +21,18 @@
   	<uxap:headerTitle>
 			<uxap:ObjectPageDynamicHeaderTitle>
         <uxap:expandedHeading>
-           <Title text="Editar Ticket de Pesagem"/>
+           <Title text="Ticket de Pesagem"/>
           </uxap:expandedHeading>
           <uxap:snappedHeading>
-           <Title text="Editar Ticket de Pesagem"/>
+           <Title text="Ticket de Pesagem"/>
          </uxap:snappedHeading>
+        <uxap:actions>
+          <Button text="Voltar para Lista de Tickets" type="Transparent" press=".navToTicketsList"/>
+          <Button enabled="{= ${path: 'Status', targetType: 'any'}==='Complete' ? true : false }" text="Reabrir Ticket" type="Emphasized" press=".onReopen"/>
+          <Button enabled="{= ${path: 'Status', targetType: 'any'}==='Processing' ? true : false }" text="Editar" type="Transparent" press=".onEdit"/>
+          <Button enabled="{= ${path: 'Status', targetType: 'any'}==='Processing' ? true : false }" text="Criar Romaneio" type="Transparent" press=".onConfirm"/>
+          <Button text="Cancelar" type="Transparent" press=".onCancel"/>
+        </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>
      <uxap:headerContent>
@@ -51,12 +58,5 @@
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
     </uxap:sections>
-    <uxap:footer>
-      <OverflowToolbar>
-				<ToolbarSpacer />
-				<Button text="Cancelar" press=".onNavToDetail"  />
-				<Button text="Salvar" type="Emphasized" press=".onSave"/>
-			</OverflowToolbar>
-    </uxap:footer>
   </uxap:ObjectPageLayout>
 </mvc:View>

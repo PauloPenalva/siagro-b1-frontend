@@ -334,4 +334,24 @@ export default {
     
     return m.get(value);
   },
+
+  formatWeighTicketStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Waiting", "Aguardando");
+    m.set("Processing", "Em Processo");
+    m.set("Complete", "Completo");
+    m.set("Cancelled", "Cancelado");
+    
+    return m.get(value);
+  },
+
+  stateWeighTicketStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Waiting"   , "None");
+    m.set("Canceled"  , "Error");
+    m.set("Complete"  , "Success");
+    m.set("Processing", "Information");
+    
+    return m.get(value);
+  },
 };

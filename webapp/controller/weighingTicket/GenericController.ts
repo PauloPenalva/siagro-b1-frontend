@@ -1,7 +1,6 @@
 import * as $ from 'jquery';
 import { TruckDriver } from "siagrob1/types/TruckDriver";
 import { BusinessPartner } from "siagrob1/types/BusinessPartner";
-import { Item } from "siagrob1/types/Items";
 import CommonController from "../common/CommonController";
 import Fragment from 'sap/ui/core/Fragment';
 import TableSelectDialog from 'sap/m/TableSelectDialog';
@@ -15,6 +14,8 @@ import { QualityAttrib } from 'siagrob1/types/QualityAttrib';
 import Table from 'sap/ui/table/Table';
 import ODataModel from 'sap/ui/model/odata/v4/ODataModel';
 import MessageBox from 'sap/m/MessageBox';
+import DialogHelper from 'siagrob1/dialogs/DialogHelper';
+import MessageToast from 'sap/m/MessageToast';
 
 /**
  * @namespace siagrob1.controller.weighingTicket
@@ -23,7 +24,40 @@ export default class GenericController extends CommonController {
   
   storageAddressesSelectDialog: TableSelectDialog;
   
-   onAddQualityInspection() {
+  async onCancel() {
+     if(!await DialogHelper.confirmDialog("Confirma cancelar ticket ?"))
+      return;
+
+    const context = this.getView().getBindingContext();
+    if (context) {
+      const model = this.getModel() as ODataModel;
+      const action = model.bindContext("/WeighingTicketsCancel(...)");
+      action.setParameter("Key", context.getProperty("Key"));
+
+      this.setBusy(true);
+      void action.invoke()
+        .then(() => {
+          MessageToast.show("Romaneio criado com sucesso.");
+          this.navToTicketsList();
+        })
+        .finally(() => this.setBusy(false));
+    }
+  }
+  
+  navToTicketsList() {
+    this.navTo("weighingTickets");
+  }
+
+  onNavToTicketList(){
+    const oModel = this.getView().getModel() as ODataModel;
+    if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
+			oModel.resetChanges(oModel.getUpdateGroupId())
+		}
+
+    this.navToTicketsList();
+  }
+
+  onAddQualityInspection() {
     const oTable = this.byId(
       "weighingTicketQualityInspectionTable"
     ) as Table;
@@ -114,20 +148,6 @@ export default class GenericController extends CommonController {
         method: 'GET',
         contentType: 'application/json',
         success: ((data: BusinessPartner) => resolve(data.CardName)),
-        error: (err => reject(new Error(err.responseText)))
-      });
-    });
-  }
-
-  async formatItemName(sKey: string) {
-    if (!sKey) 
-      return new Promise(resolve => resolve(""));
-    
-    return new Promise((resolve, reject) => {
-      $.ajax(`/odata/Items('${sKey}')?$select=ItemName`,{
-        method: 'GET',
-        contentType: 'application/json',
-        success: ((data: Item) => resolve(data.ItemName)),
         error: (err => reject(new Error(err.responseText)))
       });
     });

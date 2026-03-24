@@ -1,0 +1,100 @@
+<mvc:View
+	controllerName="siagrob1.controller.reports.storageAddressesBalance.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+  <Page title="Relatório de Saldos por Lote." >
+    <f:SimpleForm
+      id="storageAddressesBalanceForm"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0">
+        <f:content>
+          <core:Title
+              text="Parametros"
+              emphasized="true"
+          />
+          <Label text="Filial de" />
+          <Input
+              value="{params>/BranchCode}"
+              maxLength="11"
+              showValueHelp="true"
+              valueHelpRequest=".openBranchsValueHelp"
+          />
+          <Label text="Emissão de"/>
+          <DatePicker
+                value="{
+                  path: 'params>/CreationDateFrom',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+                liveChange=".validateField"
+            />
+          <Label text="Emissão até"/>
+          <DatePicker
+                value="{
+                  path: 'params>/CreationDateTo',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  formatOptions: {
+                    pattern: 'dd/MM/yyyy'
+                  }
+                }"
+                liveChange=".validateField"
+            />
+          <Label text="Cliente" />
+          <Input
+            showValueHelp="true"
+            valueHelpRequest=".openCostumersValueHelp"
+            value="{params>/CardCode}"
+            >
+          </Input>
+          <Label text="Produto" />
+          <Input
+            showValueHelp="true"
+            valueHelpRequest=".openItemValueHelp"
+            value="{params>/ItemCode}"
+            >
+          </Input>
+          <Label text="Armazem" />
+          <Input
+            showValueHelp="true"
+            valueHelpRequest=".openWarehouseValueHelp"
+            value="{params>/WarehouseCode}"
+            >
+          </Input>
+          <Label text="Somente com Saldo ?"/>
+          <CheckBox 
+            selected="{params>/OnlyWithBalance}"
+          />
+        </f:content>
+        <core:Title />
+        <core:Title />
+    </f:SimpleForm>
+    <footer>
+      <OverflowToolbar >
+        <ToolbarSpacer/>
+        <Button text="Imprimir" type="Emphasized" press=".onPrintReport"/>
+      </OverflowToolbar>
+    </footer>
+  </Page>
+</mvc:View>

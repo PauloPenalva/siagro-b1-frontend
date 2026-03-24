@@ -171,7 +171,7 @@
           <Input 
             description="KG"
             visible="{ui>/visible}"
-            editable="false"
+            editable="{ui>/editableFirstWeighing}"
             value="{
               path: 'FirstWeighValue',
               type: 'sap.ui.model.type.Integer',
@@ -184,7 +184,7 @@
           <Input 
             description="KG"
             visible="{ui>/visible}"
-            editable="false"
+            editable="{ui>/editableSecondWeighing}"
             value="{
               path: 'SecondWeighValue',
               type: 'sap.ui.model.type.Integer',

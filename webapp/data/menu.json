@@ -290,6 +290,12 @@
           "key": "storageDailyBalanceReport",
           "enabled": true,
           "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Saldos por Lote",
+          "key": "storageAddressesBalanceReport",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
         }
       ]
      }

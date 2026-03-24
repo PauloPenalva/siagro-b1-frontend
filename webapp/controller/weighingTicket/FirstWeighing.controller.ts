@@ -23,6 +23,8 @@ export default class FirstWeighing extends GenericController {
    	const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setData({});
     uiModel.setProperty("/editableGrid", true);
+    uiModel.setProperty("/editableFirstWeighing", true);
+    uiModel.setProperty("/editableSecondWeighing", false);
 
     if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 			oModel.resetChanges(oModel.getUpdateGroupId())
@@ -73,34 +75,14 @@ export default class FirstWeighing extends GenericController {
         closeOnBrowserNavigation: false
       });
 
-      this.navToList();
+      this.navToTicketsList();
 
       return;
-
-			await oModel.submitBatch(oModel.getUpdateGroupId());
-			if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
-				MessageToast.show("Dados salvos com sucesso.", {
-					closeOnBrowserNavigation: false
-				});
-
-        this.navToList();
-			}
+      
 		} finally {
 			this.setBusy(false);
 		}
 	}
 
-	onCancel() {
-	 	const oModel = this.getView().getModel() as ODataModel;
 
-		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
-			oModel.resetChanges(oModel.getUpdateGroupId());
-		}
-
-		this.navToList();
-	}
-  
-  private navToList() {
-    this.navTo("weighingTickets");
-  }
 }

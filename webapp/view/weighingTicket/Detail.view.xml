@@ -30,7 +30,7 @@
           <Button text="Voltar para Lista de Tickets" type="Transparent" press=".navToTicketsList"/>
           <Button text="Editar" type="Emphasized" press=".onEdit"/>
           <Button text="Criar Romaneio" type="Accept" press=".onConfirm"/>
-          <Button text="Cancelar" type="Reject" press=".onReject"/>
+          <Button text="Cancelar" type="Reject" press=".onCancel"/>
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>
