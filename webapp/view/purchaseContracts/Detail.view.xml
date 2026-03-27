@@ -29,6 +29,7 @@
         <uxap:actions>
           <Button enabled="{= ${path: 'Status', targetType: 'any'}==='Draft' ? true : false }" text="Editar" type="Emphasized" press=".onEdit"/>
           <Button visible="{= ${path: 'Status', targetType: 'any'}==='InApproval' ? true : false }" text="Retirar da Aprovação" type="Transparent" press=".onWithdrawApproval"/>
+          <Button visible="{= ${path: 'Status', targetType: 'any'}==='Approved' ? true : false }" text="Retirar da Aprovação" type="Transparent" press=".onWithdrawApproval"/>
           <Button visible="{= ${path: 'Status', targetType: 'any'}==='Draft' ? true : false }" text="Enviar para Aprovação" type="Transparent" press=".onSendToApproval"/>
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
