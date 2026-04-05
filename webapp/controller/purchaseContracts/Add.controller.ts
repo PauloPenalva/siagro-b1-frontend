@@ -18,7 +18,6 @@ export default class Add extends BaseController {
 		
     const uiModel = this.getModel("ui") as JSONModel;
    
-      
     uiModel.setProperty("/editable", true);
     
 		this.resetChanges();
@@ -29,16 +28,25 @@ export default class Add extends BaseController {
 		const oModel = this.getView().getModel() as ODataModel;
 		const oBinding = oModel.bindList("/PurchaseContracts")
 
-		const oContext = oBinding.create({
-      "Type": "Fixed",
-      "Status": "Draft",
-      "FreightTerms": "None",
-      "StandardCurrency": "Brl",
-      "MarketType": "",
-      "TechnologyType": ""
-    }, false, false, false);
+    this.setBusy(true);
+    this.getDocNumberInfoByTransaction("PurchaseContract")
+      .then(results => {
 
-		oView.setBindingContext(oContext);
+        const docNumberInfo = results.filter(x => x.Default)[0];
+
+        const oContext = oBinding.create({
+          "Type": "Fixed",
+          "Status": "Draft",
+          "FreightTerms": "None",
+          "StandardCurrency": "Brl",
+          "MarketType": "",
+          "TechnologyType": "",
+          "DocNumberKey": docNumberInfo.Key,
+        }, false, false, false);
+
+        oView.setBindingContext(oContext);
+      })
+      .finally(() => this.setBusy(false))
 	}
 
 	async onSave() {

@@ -26,14 +26,23 @@ export default class Add extends BaseController {
     const oView = this.getView();
 		const oModel = this.getView().getModel() as ODataModel;
 		const oBinding = oModel.bindList("/StorageTransactions")
+    
+    this.setBusy(true);
+    this.getDocNumberInfoByTransaction("StorageTransaction")
+      .then(results => {
 
-		const oContext = oBinding.create({
-      "TransactionType": "",
-      "NetWeight": 0,
-      "InvoiceQty": 0,
-    }, false, false, false);
+        const docNumberInfo = results.filter(x => x.Default)[0];
 
-		oView.setBindingContext(oContext);
+        const oContext = oBinding.create({
+          "TransactionType": "",
+          "NetWeight": 0,
+          "InvoiceQty": 0,
+          "DocNumberKey": docNumberInfo.Key,
+        }, false, false, false);
+
+        oView.setBindingContext(oContext);
+      })
+      .finally(() => this.setBusy(false))
 	}
 
 	async onSave() {

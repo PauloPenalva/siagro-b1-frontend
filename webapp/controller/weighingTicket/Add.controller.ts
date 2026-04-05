@@ -31,11 +31,20 @@ export default class Add extends GenericController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const oContext = oBinding.create({
-      "Type": ""
-    }, false, false, false);
+    this.setBusy(true);
+    this.getDocNumberInfoByTransaction("WeighingTicket")
+      .then(results => {
 
-		oView.setBindingContext(oContext);
+        const docNumberInfo = results.filter(x => x.Default)[0];
+
+        const oContext = oBinding.create({
+          "Type": "",
+          "DocNumberKey": docNumberInfo.Key,
+        }, false, false, false);
+
+        oView.setBindingContext(oContext);
+      })
+      .finally(() => this.setBusy(false))
 	}
 
 	async onSave() {

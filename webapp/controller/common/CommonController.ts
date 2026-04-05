@@ -20,6 +20,8 @@ import { Taxes } from "siagrob1/types/Taxes";
 import { UnitOfMeasure } from "siagrob1/types/UnitOfMeasure";
 import { Warehouse } from "siagrob1/types/Warehouse";
 import Dialog from "sap/m/Dialog";
+import ODataModel from "sap/ui/model/odata/v4/ODataModel";
+import { DocNumberInfo } from "siagrob1/types/DocNumberInfo";
 
 /**
  * @namespace siagrob1.controller
@@ -50,6 +52,17 @@ export default abstract class CommonController extends BaseController {
         dataReceived: () => this.setBusy(false),
       }
     })
+  }
+
+  async getDocNumberInfoByTransaction(transaction: string): Promise<DocNumberInfo[]>{
+    const oModel = this.getModel() as ODataModel;
+    const func = oModel.bindContext("/DocNumberGetInfoByTransaction(...)");
+    func.setParameter("Transaction", transaction);
+
+    await func.invoke();
+    const resultContext = func.getBoundContext();
+    
+    return resultContext.getObject() as DocNumberInfo[];
   }
 
   async getResource<T>(resourceUrl: string) {

@@ -32,10 +32,19 @@ export default class Add extends BaseController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const oContext = oBinding.create({
-    }, false, false, false);
+    this.setBusy(true);
+    this.getDocNumberInfoByTransaction("StorageInvoice")
+      .then(results => {
 
-		oView.setBindingContext(oContext);
+        const docNumberInfo = results.filter(x => x.Default)[0];
+
+        const oContext = oBinding.create({
+          "DocNumberKey": docNumberInfo.Key,
+        }, false, false, false);
+
+        oView.setBindingContext(oContext);
+      })
+      .finally(() => this.setBusy(false))
 	}
 
 	async onSave() {

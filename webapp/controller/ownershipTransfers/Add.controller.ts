@@ -102,16 +102,25 @@ export default class Add extends BaseController {
 		const oModel = this.getView().getModel() as ODataModel;
 		const oBinding = oModel.bindList("/OwnershipTransfers")
 
-		const oContext = oBinding.create({
-      "TransferStatus": "Open",
-      "Quantity": 0,
-      "StorageAddressOriginCode": originCode,
-      "StorageAddressDestinationCode": destinationCode,
-      "ItemCode": itemCode,
-      "UomCode": "KG"
-    }, false, false, false);
+    this.setBusy(true);
+    this.getDocNumberInfoByTransaction("OwnershipTransfer")
+      .then(results => {
 
-		oView.setBindingContext(oContext);
+        const docNumberInfo = results.filter(x => x.Default)[0];
+
+        const oContext = oBinding.create({
+          "TransferStatus": "Open",
+          "Quantity": 0,
+          "StorageAddressOriginCode": originCode,
+          "StorageAddressDestinationCode": destinationCode,
+          "ItemCode": itemCode,
+          "UomCode": "KG",
+          "DocNumberKey": docNumberInfo.Key,
+        }, false, false, false);
+
+        oView.setBindingContext(oContext);
+      })
+      .finally(() => this.setBusy(false))
   }
 
   private getDestinationData(){

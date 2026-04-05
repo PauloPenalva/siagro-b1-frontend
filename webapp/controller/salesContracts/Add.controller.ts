@@ -27,15 +27,24 @@ export default class Add extends BaseController {
 		const oModel = this.getView().getModel() as ODataModel;
 		const oBinding = oModel.bindList("/SalesContracts")
 
-		const oContext = oBinding.create({
-      "Type": "Fixed",
-      "Status": "Draft",
-      "FreightTerms": "None",
-      "StandardCurrency": "Brl",
-      "MarketType": ""
-    }, false, false, false);
+	  this.setBusy(true);
+    this.getDocNumberInfoByTransaction("SalesContract")
+      .then(results => {
 
-		oView.setBindingContext(oContext);
+        const docNumberInfo = results.filter(x => x.Default)[0];
+
+        const oContext = oBinding.create({
+          "Type": "Fixed",
+          "Status": "Draft",
+          "FreightTerms": "None",
+          "StandardCurrency": "Brl",
+          "MarketType": "",
+          "DocNumberKey": docNumberInfo.Key,
+        }, false, false, false);
+
+        oView.setBindingContext(oContext);
+      })
+      .finally(() => this.setBusy(false))
 	}
 
 	async onSave() {
