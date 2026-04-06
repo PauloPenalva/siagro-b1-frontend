@@ -13,6 +13,7 @@ import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import Avatar, { Avatar$PressEvent } from "sap/m/Avatar";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import formatter from "siagrob1/model/formatter";
 
 /**
  * @namespace siagrob1.controller
@@ -25,7 +26,9 @@ export default class App extends BaseController {
   private _avatar: Avatar;
   private _avatarPopover: Popover;
 
-	public onInit(): void {
+  formatter = formatter;
+
+	public async onInit(): Promise<void> {
     const oView = this.getView()
 		oView.addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
@@ -74,26 +77,61 @@ export default class App extends BaseController {
         }
       }).then((oPopover) => this._avatarPopover = oPopover as Popover)
     }
-
-    this.getRouter().getRoute("main").attachPatternMatched(ev => this.patternMatched(ev));
+    
+    await this.displayBranchInfo();
+    
+    this.getRouter().getRoute("main").attachPatternMatched(async (ev) => await this.patternMatched(ev));
 	}
 
-  patternMatched(ev: Route$PatternMatchedEvent){
+  async patternMatched(ev: Route$PatternMatchedEvent){
+    try {
+      this.setBusy(true);
+      
+      await this.setSystemSetup();
+      
+      const data = await this.getUserInfo();
+      const { authenticated } = data;
+      if (!authenticated){
+          this.navToLogin();
+      }
+
+      const { code } = await this.getBranchInfo();
+      if (!code){
+        await this.setDefaultBranch();
+      }
+      
+      await this.displayBranchInfo();
+      
+    } catch (error) {
+      const err = error as Error;  
+      console.log(err);
+      this.navToLogin();
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  async onChangeBranch() {
+    await this.setDefaultBranch();
+    await this.displayBranchInfo();
+  }
+
+  private async displayBranchInfo() {
     const requestModel = new RequestModel();
+    const branchInfo = await requestModel.get(ServerRoutes.getBranchInfo);
+    (this.getModel("sessionModel") as JSONModel)?.setProperty("/branchInfo", ` - ${branchInfo.shortName} / ${this.formatter.formatCnpj(branchInfo.taxId)}`);
+  }
+
+  private async setDefaultBranch() {
+    const branchsCtx = await DialogHelper.openTableSelectDialog(this, "BranchsSelectDialog", []);
+    const branchCode = branchsCtx?.getObject()?.Code;
     
-    this.setBusy(true);
-    requestModel.get(ServerRoutes.userInfo)
-      .done(data => {
-        this.setBusy(false);
-        const { authenticated } = data;
-        if (!authenticated){
-           this.navToLogin();
-        }
-      })
-      .catch(() =>{ 
-        this.setBusy(false)
-        this.navToLogin();
-      });
+    await $.ajax({
+      url: ServerRoutes.setDefaultBranch,
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ BranchCode: branchCode }),
+    });
   }
 
   private navToLogin(){

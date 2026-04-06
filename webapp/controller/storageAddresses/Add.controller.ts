@@ -9,9 +9,9 @@ import LoteArmazenagemBaseController from "./LoteArmazenagemBaseController";
 export default class Add extends LoteArmazenagemBaseController {
 
 	onInit(): void  {
-		this.getRouter().getRoute("storageAddressesNew").attachPatternMatched(() => this.newRouteMatched());
+		this.getRouter().getRoute("storageAddressesNew").attachPatternMatched(async () => this.newRouteMatched());
 	}
-	private newRouteMatched() {
+	private async newRouteMatched() {
 		
     this.clearStates("formLoteArmazenagem");
     
@@ -24,18 +24,19 @@ export default class Add extends LoteArmazenagemBaseController {
 		}
 
 	  this.setBusy(true);
-    this.getDocNumberInfoByTransaction("StorageAddress")
-      .then(results => {
+    const systemSetup = this.getSystemSetup();
+    const branchInfo = await this.getBranchInfo();
+    const results = await this.getDocNumberInfoByTransaction("StorageAddress")
+    const docNumberInfo = results.filter(x => x.Default)[0];
 
-        const docNumberInfo = results.filter(x => x.Default)[0];
+    const oContext = oBinding.create({
+      "DocNumberKey": docNumberInfo.Key,
+      "BranchCode": branchInfo.code,
+      "UoM": systemSetup.DefaultUoM,
+    }, false, false, false);
 
-        const oContext = oBinding.create({
-          "DocNumberKey": docNumberInfo.Key,
-        }, false, false, false);
-
-        oView.setBindingContext(oContext);
-      })
-      .finally(() => this.setBusy(false))
+    oView.setBindingContext(oContext);
+    this.setBusy(false);
 	}
 
 	async onSave() {

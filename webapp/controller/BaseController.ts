@@ -17,6 +17,10 @@ import DatePicker from "sap/m/DatePicker";
 import Table from "sap/ui/table/Table";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
+import RequestModel from "siagrob1/model/RequestModel";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
+import { BranchInfo } from "siagrob1/types/BranchInfo";
+import { SystemSetup } from "siagrob1/types/SystemSetup";
 
 /**
  * @namespace siagrob1.controller
@@ -237,4 +241,29 @@ export default abstract class BaseController extends Controller {
 			oModel.resetChanges(oModel.getUpdateGroupId());
 		}
   }
+
+  async getBranchInfo(): Promise<BranchInfo> {
+    const requestModel = new RequestModel();
+    return await requestModel.get(ServerRoutes.getBranchInfo)
+  }
+
+  async getUserInfo() {
+     const requestModel = new RequestModel();
+     return await requestModel.get(ServerRoutes.userInfo)
+  }
+
+  async setSystemSetup() {
+    const model = this.getModel() as ODataModel;
+    const func = model.bindContext("/SystemSetupGetActive(...)");
+    
+    await func.invoke();
+    const boundContext = func.getBoundContext();
+    
+    localStorage.setItem("SYSTEM_SETUP", JSON.stringify(boundContext.getObject()))
+  }
+
+  getSystemSetup(): SystemSetup {
+    return JSON.parse(localStorage.getItem("SYSTEM_SETUP")) ?? {}
+  }
+
 }

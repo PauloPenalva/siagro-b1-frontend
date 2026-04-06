@@ -21,6 +21,7 @@ export default class Main extends BaseController {
 
     const sessionModel = this.getModel("sessionModel") as JSONModel;
     sessionModel.setProperty("/logged", false);
+    sessionModel.setProperty("/branchInfo", null);
 
 		const authModel = new JSONModel();
     authModel.setProperty("/Username", "");

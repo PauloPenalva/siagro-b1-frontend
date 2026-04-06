@@ -14,7 +14,7 @@
                 id="shellBar"
                 visible="{sessionModel>/logged}"
                 title="Siagro B1"
-                secondTitle="Originação de Grãos"
+                secondTitle="Originação de Grãos {sessionModel>/branchInfo}"
                 homeIcon="https://sdk.openui5.org/1.141.0/resources/sap/ui/documentation/sdk/images/logo_sap.png"
                 showNavButton="true"
                 showMenuButton="true"

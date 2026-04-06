@@ -2,6 +2,9 @@ export default {
   login: '/security/auth/login',
   userInfo: '/security/auth/status',
   logout: '/security/auth/logout',
+
+  getBranchInfo: '/security/auth/GetBranchInfo',
+  setDefaultBranch: '/security/auth/SetDefaultBranch',
   
   businessPartners: '/odata/BusinessPartners',
   items: '/odata/Items',

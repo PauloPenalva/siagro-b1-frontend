@@ -11,10 +11,10 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 export default class Add extends BaseController {
 
 	onInit(): void  {
-		this.getRouter().getRoute("purchaseContractsNew").attachPatternMatched(() => this.newRouteMatched());
+		this.getRouter().getRoute("purchaseContractsNew").attachPatternMatched(async () => this.newRouteMatched());
 	}
 
-	private newRouteMatched() {
+	private async newRouteMatched() {
 		
     const uiModel = this.getModel("ui") as JSONModel;
    
@@ -29,24 +29,26 @@ export default class Add extends BaseController {
 		const oBinding = oModel.bindList("/PurchaseContracts")
 
     this.setBusy(true);
-    this.getDocNumberInfoByTransaction("PurchaseContract")
-      .then(results => {
 
-        const docNumberInfo = results.filter(x => x.Default)[0];
+    const systemSetup = this.getSystemSetup();
+    const branchInfo = await this.getBranchInfo();
+    const results = await this.getDocNumberInfoByTransaction("PurchaseContract");
+    const docNumberInfo = results.filter(x => x.Default)[0];
+    const oContext = oBinding.create({
+      "Type": "Fixed",
+      "Status": "Draft",
+      "FreightTerms": "None",
+      "StandardCurrency": systemSetup.DefaultCurrency,
+      "MarketType": "",
+      "TechnologyType": "",
+      "DocNumberKey": docNumberInfo.Key,
+      "BranchCode": branchInfo.code,
+      "FreightUmCode": systemSetup.DefaultFreightUoM,
+      "UnitOfMeasureCode": systemSetup.DefaultUoM,
+    }, false, false, false);
 
-        const oContext = oBinding.create({
-          "Type": "Fixed",
-          "Status": "Draft",
-          "FreightTerms": "None",
-          "StandardCurrency": "Brl",
-          "MarketType": "",
-          "TechnologyType": "",
-          "DocNumberKey": docNumberInfo.Key,
-        }, false, false, false);
-
-        oView.setBindingContext(oContext);
-      })
-      .finally(() => this.setBusy(false))
+    oView.setBindingContext(oContext);
+    this.setBusy(false);
 	}
 
 	async onSave() {

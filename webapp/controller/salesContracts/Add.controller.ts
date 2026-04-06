@@ -11,10 +11,10 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 export default class Add extends BaseController {
 
 	onInit(): void  {
-		this.getRouter().getRoute("salesContractsNew").attachPatternMatched(() => this.newRouteMatched());
+		this.getRouter().getRoute("salesContractsNew").attachPatternMatched(async () => this.newRouteMatched());
 	}
 
-	private newRouteMatched() {
+	private async newRouteMatched() {
 		
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setProperty("/editable", true);
@@ -28,23 +28,24 @@ export default class Add extends BaseController {
 		const oBinding = oModel.bindList("/SalesContracts")
 
 	  this.setBusy(true);
-    this.getDocNumberInfoByTransaction("SalesContract")
-      .then(results => {
+    const systemSetup = this.getSystemSetup();
+    const branchInfo = await this.getBranchInfo();
+    const results = await this.getDocNumberInfoByTransaction("SalesContract")
+    const docNumberInfo = results.filter(x => x.Default)[0];
 
-        const docNumberInfo = results.filter(x => x.Default)[0];
+    const oContext = oBinding.create({
+      "Type": "Fixed",
+      "Status": "Draft",
+      "FreightTerms": "None",
+      "StandardCurrency": systemSetup.DefaultCurrency,
+      "MarketType": "",
+      "DocNumberKey": docNumberInfo.Key,
+      "BranchCode": branchInfo.code,
+      "UnitOfMeasureCode": systemSetup.DefaultUoM,
+    }, false, false, false);
 
-        const oContext = oBinding.create({
-          "Type": "Fixed",
-          "Status": "Draft",
-          "FreightTerms": "None",
-          "StandardCurrency": "Brl",
-          "MarketType": "",
-          "DocNumberKey": docNumberInfo.Key,
-        }, false, false, false);
-
-        oView.setBindingContext(oContext);
-      })
-      .finally(() => this.setBusy(false))
+    oView.setBindingContext(oContext);
+    this.setBusy(false)
 	}
 
 	async onSave() {

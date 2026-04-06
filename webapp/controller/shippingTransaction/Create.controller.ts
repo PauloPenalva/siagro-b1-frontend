@@ -42,7 +42,8 @@ export default class Create extends BaseController {
         data = await requestModel.get(shipmentServerUrl);
       } catch (error) {
         const err = error as JQueryXHR;
-        MessageBox.error(err.responseJSON?.error?.message)
+        MessageBox.error(err.responseJSON?.error?.message);
+        return;
       } finally {
         this.setBusy(false);
       }
@@ -54,7 +55,8 @@ export default class Create extends BaseController {
         qualityAttribs = await requestModel.get(qualityAttribServerUrl)
       } catch (error) {
         const err = error as JQueryXHR;
-        MessageBox.error(err.responseJSON?.error?.message)
+        MessageBox.error(err.responseJSON?.error?.message);
+        return;
       } finally {
         this.setBusy(false);
       }
@@ -66,24 +68,34 @@ export default class Create extends BaseController {
 
       const viewModel = this.getModel("viewModel") as JSONModel;
 
-      viewModel.setData({
-        PurchaseContractKey: data?.PurchaseContractKey,
-        StorageTransaction: {
-          TransactionType: "Purchase",
-          CardCode: data?.PurchaseContract?.CardCode,
-          ItemCode: data?.PurchaseContract?.ItemCode,
-          UnitOfMeasureCode: data?.PurchaseContract?.UnitOfMeasureCode,
-          WarehouseCode: data?.DeliveryLocationCode,
-          ShipmentReleaseKey: key,
-          QualityInspections: qualityAttribs?.value?.map((x: QualityAttrib) => { 
-            return { QualityAttribCode: x.Code, Value: 0 }
-          }),
-        }
-      });
+      this.setBusy(true);
+      try {
+        const results = await this.getDocNumberInfoByTransaction("StorageTransaction")
+        const docNumberInfo = results.filter(x => x.Default)[0];
 
-      this._itemCode = data?.PurchaseContract?.ItemCode;
+        viewModel.setData({
+          PurchaseContractKey: data?.PurchaseContractKey,
+          StorageTransaction: {
+            DocNumberKey: docNumberInfo.Key,
+            TransactionType: "Purchase",
+            CardCode: data?.PurchaseContract?.CardCode,
+            ItemCode: data?.PurchaseContract?.ItemCode,
+            UnitOfMeasureCode: data?.PurchaseContract?.UnitOfMeasureCode,
+            WarehouseCode: data?.DeliveryLocationCode,
+            ShipmentReleaseKey: key,
+            QualityInspections: qualityAttribs?.value?.map((x: QualityAttrib) => { 
+              return { QualityAttribCode: x.Code, Value: 0 }
+            }),
+          }
+        });
+        
+        this._itemCode = data?.PurchaseContract?.ItemCode;
 
-      return;
+        return;
+      } finally {
+        this.setBusy(false);
+      }
+     
     }
 	
 	}
