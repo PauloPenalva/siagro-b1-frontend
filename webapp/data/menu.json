@@ -19,6 +19,12 @@
           "icon": "sap-icon://folder-blank"
         },
         {
+          "title": "Configuração",
+          "key": "systemSetup",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
           "title": "Numeração de Documentos",
           "key": "docNumbers",
           "enabled": true,
@@ -29,7 +35,8 @@
           "key": "states",
           "enabled": true,
           "icon": "sap-icon://folder-blank"
-        },{
+        },
+        {
           "title": "Unidades de Medida",
           "key": "unitMeasure",
           "enabled": true,

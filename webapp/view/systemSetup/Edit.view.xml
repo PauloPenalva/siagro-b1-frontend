@@ -1,0 +1,26 @@
+<mvc:View
+	controllerName="siagrob1.controller.systemSetup.Edit"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.ui.layout.form"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<Page showHeader="true" title="Editar Configuração" busy="{ui>/busy}">
+		<content>
+			<core:Fragment fragmentName="siagrob1.view.systemSetup.fragments.Form" type="XML" />
+		</content>
+		<footer>
+			<Toolbar>
+				<ToolbarSpacer />
+				<Button text="Cancelar" press=".onCancel"  />
+				<Button text="Salvar" type="Emphasized" press=".onSave"/>
+			</Toolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

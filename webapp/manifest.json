@@ -643,6 +643,26 @@
           "pattern": "storage-invoices/add",
           "name": "storageInvoicesAdd",
           "target": "storageInvoicesAdd"
+        },
+        {
+          "pattern": "setup",
+          "name": "systemSetup",
+          "target": "systemSetup"
+        },
+        {
+          "pattern": "setup/add",
+          "name": "systemSetupAdd",
+          "target": "systemSetupAdd"
+        },
+        {
+          "pattern": "setup/{id}/edit",
+          "name": "systemSetupEdit",
+          "target": "systemSetupEdit"
+        },
+        {
+          "pattern": "setup/{id}/detail",
+          "name": "systemSetupDetail",
+          "target": "systemSetupDetail"
         }
 			],
 			"targets": {
@@ -1292,6 +1312,30 @@
 					"id": "storageInvoicesAdd",
           "level": 2,
 					"name": "siagrob1.view.storageInvoices.Add",
+          "clearControlAggregation": true
+				},
+        "systemSetup": {
+					"id": "systemSetup",
+          "level": 1,
+					"name": "siagrob1.view.systemSetup.Main",
+          "clearControlAggregation": true
+				},
+        "systemSetupAdd": {
+					"id": "systemSetupAdd",
+          "level": 2,
+					"name": "siagrob1.view.systemSetup.Add",
+          "clearControlAggregation": true
+				},
+        "systemSetupEdit": {
+					"id": "systemSetupEdit",
+          "level": 2,
+					"name": "siagrob1.view.systemSetup.Edit",
+          "clearControlAggregation": true
+				},
+        "systemSetupDetail": {
+					"id": "systemSetupDetail",
+          "level": 2,
+					"name": "siagrob1.view.systemSetup.Detail",
           "clearControlAggregation": true
 				}
 			}
