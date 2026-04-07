@@ -385,7 +385,7 @@
                   groupingSeparator: '.'
               } 
             }"
-            description="R$"
+            description="{ui>/currency}"
           />
           <Label text="Limpeza"/>
           <Input 
@@ -400,7 +400,7 @@
                   groupingSeparator: '.'
               } 
             }"
-            description="R$"
+            description="{ui>/currency}"
           />
           <Label text="Recepção"/>
           <Input 
@@ -415,7 +415,7 @@
                   groupingSeparator: '.'
               } 
             }"
-            description="R$"
+            description="{ui>/currency}"
           />
           <Label text="Expedição"/>
           <Input 
@@ -430,7 +430,7 @@
                   groupingSeparator: '.'
               } 
             }"
-            description="R$"
+            description="{ui>/currency}"
           />
         </f:content>
     </f:SimpleForm>

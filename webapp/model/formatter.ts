@@ -185,6 +185,14 @@ export default {
     return m.get(value);
   },
 
+  formatCurrencySymbol: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Brl" , "R$");
+    m.set("Usd" , "$");
+    
+    return m.get(value);
+  },
+
   formatMarketType: (value: string) => {
     const m = new Map<string, string>();
     m.set("Internal" , "Interno");

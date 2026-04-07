@@ -5,7 +5,6 @@ import Context from "sap/ui/model/odata/v4/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { BaseController } from "./BaseController";
 import RequestModel from "siagrob1/model/RequestModel";
-import MessageToast from "sap/m/MessageToast";
 
 /**
  * @namespace siagrob1.controller.storageTransactions
@@ -17,8 +16,10 @@ export default class Edit extends BaseController {
 	}
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
+    const systemSetup = this.getSystemSetup();  
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setProperty("/editable", true);
+    uiModel.setProperty("/currency", this.formatter.formatCurrencySymbol(systemSetup.DefaultCurrency));
         
 		this.clearStates("storageTransactionForm");
     

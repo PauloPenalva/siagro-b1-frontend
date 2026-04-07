@@ -70,6 +70,7 @@ export default class Create extends BaseController {
 
       this.setBusy(true);
       try {
+        const branchInfo = await this.getBranchInfo();
         const results = await this.getDocNumberInfoByTransaction("StorageTransaction")
         const docNumberInfo = results.filter(x => x.Default)[0];
 
@@ -77,6 +78,7 @@ export default class Create extends BaseController {
           PurchaseContractKey: data?.PurchaseContractKey,
           StorageTransaction: {
             DocNumberKey: docNumberInfo.Key,
+            BranchCode: branchInfo.code,
             TransactionType: "Purchase",
             CardCode: data?.PurchaseContract?.CardCode,
             ItemCode: data?.PurchaseContract?.ItemCode,

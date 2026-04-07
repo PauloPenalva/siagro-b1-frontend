@@ -45,7 +45,7 @@
     <uxap:footer>
       <OverflowToolbar>
 				<ToolbarSpacer />
-				<Button text="Cancelar" press=".onCancel"  />
+				<Button text="Cancelar" press=".onBackToList"  />
 				<Button text="Salvar" type="Emphasized" press=".onSave"/>
 			</OverflowToolbar>
     </uxap:footer>

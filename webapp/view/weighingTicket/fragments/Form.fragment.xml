@@ -169,7 +169,7 @@
           <core:Title />
           <Label visible="{ui>/visible}" text="Primeira Pesagem" />
           <Input 
-            description="KG"
+            description="{ui>/UoM}"
             visible="{ui>/visible}"
             editable="{ui>/editableFirstWeighing}"
             value="{
@@ -182,7 +182,7 @@
             }" />
           <Label visible="{ui>/visible}" text="Segunda Pesagem" />
           <Input 
-            description="KG"
+            description="{ui>/UoM}"
             visible="{ui>/visible}"
             editable="{ui>/editableSecondWeighing}"
             value="{
@@ -197,7 +197,7 @@
           <Input 
             visible="{ui>/visible}"
             editable="false"
-            description="KG"
+            description="{ui>/UoM}"
             value="{
               path: 'GrossWeight',
               type: 'sap.ui.model.type.Integer',

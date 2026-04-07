@@ -10,18 +10,20 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 export default class Add extends GenericController {
 
 	onInit(): void | undefined {
-		this.getRouter().getRoute("weighingTicketsNew").attachPatternMatched(() => this.newRouteMatched());
+		this.getRouter().getRoute("weighingTicketsNew").attachPatternMatched(async () => this.newRouteMatched());
 	}
-	private newRouteMatched() {
+	private async newRouteMatched() {
 		
     this.clearStates("formCreateWeighingTicket");
     
+    const systemSetup = this.getSystemSetup();
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setData({});
     uiModel.setProperty("/visible", false);
     uiModel.setProperty("/required", false);
     uiModel.setProperty("/editable", true);
     uiModel.setProperty("/editableGrid", true);
+    uiModel.setProperty("/UoM", systemSetup.DefaultUoM);
 
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;
@@ -32,19 +34,20 @@ export default class Add extends GenericController {
 		}
 
     this.setBusy(true);
-    this.getDocNumberInfoByTransaction("WeighingTicket")
-      .then(results => {
+    
+    const branchInfo = await this.getBranchInfo();
+    const results = await this.getDocNumberInfoByTransaction("WeighingTicket")
+    const docNumberInfo = results.filter(x => x.Default)[0];
 
-        const docNumberInfo = results.filter(x => x.Default)[0];
+    const oContext = oBinding.create({
+      "Type": "",
+      "DocNumberKey": docNumberInfo.Key,
+      "BranchCode": branchInfo.code,
+    }, false, false, false);
 
-        const oContext = oBinding.create({
-          "Type": "",
-          "DocNumberKey": docNumberInfo.Key,
-        }, false, false, false);
-
-        oView.setBindingContext(oContext);
-      })
-      .finally(() => this.setBusy(false))
+    oView.setBindingContext(oContext);
+    
+    this.setBusy(false);
 	}
 
 	async onSave() {
@@ -70,7 +73,7 @@ export default class Add extends GenericController {
 		}
 	}
 
-	onCancel() {
+	onBackToList() {
 	 	const oModel = this.getView().getModel() as ODataModel;
 
 		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {

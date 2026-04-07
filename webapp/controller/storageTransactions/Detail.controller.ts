@@ -17,8 +17,7 @@ export default class Detail extends BaseController {
 
 	private detailRouteMatched(ev: Route$MatchedEvent) {
 		const {id} = ev.getParameter("arguments") as {id: string };
-    const uiModel = this.getModel("ui") as JSONModel;
-
+    
 		if (id != null) {
 
       this.setData(id);
@@ -29,8 +28,10 @@ export default class Detail extends BaseController {
 	}
 
   private setData(id: string){
+    const systemSetup = this.getSystemSetup();
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setProperty("/editable", false);
+    uiModel.setProperty("/currency", this.formatter.formatCurrencySymbol(systemSetup.DefaultCurrency));
       
 		const sPath = `/StorageTransactions(${id})`;
 		this.bindElement(sPath);

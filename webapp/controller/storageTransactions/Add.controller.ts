@@ -11,13 +11,14 @@ import { BaseController } from "./BaseController";
 export default class Add extends BaseController {
 
 	onInit(): void  {
-		this.getRouter().getRoute("storageTransactionsNew").attachPatternMatched(() => this.newRouteMatched());
+		this.getRouter().getRoute("storageTransactionsNew").attachPatternMatched(async () => this.newRouteMatched());
 	}
 
-	private newRouteMatched() {
-		
+	private async newRouteMatched() {
+		const systemSetup = this.getSystemSetup();
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setProperty("/editable", true);
+    uiModel.setProperty("/currency", this.formatter.formatCurrencySymbol(systemSetup.DefaultCurrency));
     
 		this.resetChanges();
 
@@ -28,21 +29,23 @@ export default class Add extends BaseController {
 		const oBinding = oModel.bindList("/StorageTransactions")
     
     this.setBusy(true);
-    this.getDocNumberInfoByTransaction("StorageTransaction")
-      .then(results => {
+    
+    const branchInfo = await this.getBranchInfo();
+    const results = await this.getDocNumberInfoByTransaction("StorageTransaction")
+    const docNumberInfo = results.filter(x => x.Default)[0];
 
-        const docNumberInfo = results.filter(x => x.Default)[0];
+    const oContext = oBinding.create({
+      "TransactionType": "",
+      "NetWeight": 0,
+      "InvoiceQty": 0,
+      "DocNumberKey": docNumberInfo.Key,
+      "BranchCode": branchInfo.code,
+      "UnitOfMeasureCode": systemSetup.DefaultUoM,
+    }, false, false, false);
 
-        const oContext = oBinding.create({
-          "TransactionType": "",
-          "NetWeight": 0,
-          "InvoiceQty": 0,
-          "DocNumberKey": docNumberInfo.Key,
-        }, false, false, false);
-
-        oView.setBindingContext(oContext);
-      })
-      .finally(() => this.setBusy(false))
+    oView.setBindingContext(oContext);
+      
+    this.setBusy(false)
 	}
 
 	async onSave() {

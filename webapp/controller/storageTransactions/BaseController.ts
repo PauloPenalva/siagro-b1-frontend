@@ -14,12 +14,15 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 
 import { Column, EdmType, SpreadsheetSettings } from "sap/ui/export/library";
 import Spreadsheet from "sap/ui/export/Spreadsheet";
+import formatter from "siagrob1/model/formatter";
 
 
 /**
  * @namespace siagrob1.controller.storageContracts
  */
 export abstract class BaseController extends CommonController {
+  
+  formatter = formatter;
 
   async onConfirm() {
     const view = this.getView();

@@ -18,6 +18,7 @@ export default class Confirm extends GenericController {
 	private routeMatched(ev: Route$MatchedEvent) {
 		this.clearStates("formCreateWeighingTicket");
     
+    const systemSetup = this.getSystemSetup();
     const oModel = this.getView().getModel() as ODataModel;
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setData({});
@@ -30,8 +31,7 @@ export default class Confirm extends GenericController {
     uiModel.setProperty("/editableGrid", true);
     uiModel.setProperty("/editableFirstWeighing", false);
     uiModel.setProperty("/editableSecondWeighing", false);
-
-		const oView = this.getView();
+    uiModel.setProperty("/UoM", systemSetup.DefaultUoM);
 
 		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 			oModel.resetChanges(oModel.getUpdateGroupId())
@@ -43,9 +43,7 @@ export default class Confirm extends GenericController {
       this.bindElement(sPath);
 			return;
 		}
-
 	}
-
 
   async onSave() {
 		if (!this.validateForm("formCreateWeighingTicket")) {

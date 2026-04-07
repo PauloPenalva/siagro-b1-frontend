@@ -28,10 +28,10 @@ export default class Add extends BaseController {
     this.getView().setModel(new JSONModel(), "balance");
     this.getView().setModel(new JSONModel(), "destination");
     
-		this.getRouter().getRoute("ownershipTransfersNew").attachPatternMatched((ev) => this.newRouteMatched(ev));
+		this.getRouter().getRoute("ownershipTransfersNew").attachPatternMatched(async (ev) => this.newRouteMatched(ev));
 	}
 
-  private newRouteMatched(ev: Route$PatternMatchedEvent) {
+  private async newRouteMatched(ev: Route$PatternMatchedEvent) {
     const navCon = this.byId("navCon") as NavContainer;
     navCon.to(this.byId("ownershipTransferOriginPage") as ObjectPageLayout);
 
@@ -74,7 +74,7 @@ export default class Add extends BaseController {
     }
 	}
 
-  newOwnershipTransfer() {
+  async newOwnershipTransfer() {
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setProperty("/editable", true);
     
@@ -103,24 +103,24 @@ export default class Add extends BaseController {
 		const oBinding = oModel.bindList("/OwnershipTransfers")
 
     this.setBusy(true);
-    this.getDocNumberInfoByTransaction("OwnershipTransfer")
-      .then(results => {
+    const systemSetup = this.getSystemSetup();
+    const branchInfo = await this.getBranchInfo();
+    const results = await this.getDocNumberInfoByTransaction("OwnershipTransfer")
+    const docNumberInfo = results.filter(x => x.Default)[0];
+    const oContext = oBinding.create({
+      "TransferStatus": "Open",
+      "Quantity": 0,
+      "StorageAddressOriginCode": originCode,
+      "StorageAddressDestinationCode": destinationCode,
+      "ItemCode": itemCode,
+      "DocNumberKey": docNumberInfo.Key,
+      "BranchCode": branchInfo.code,
+      "UomCode": systemSetup.Code,
+    }, false, false, false);
 
-        const docNumberInfo = results.filter(x => x.Default)[0];
-
-        const oContext = oBinding.create({
-          "TransferStatus": "Open",
-          "Quantity": 0,
-          "StorageAddressOriginCode": originCode,
-          "StorageAddressDestinationCode": destinationCode,
-          "ItemCode": itemCode,
-          "UomCode": "KG",
-          "DocNumberKey": docNumberInfo.Key,
-        }, false, false, false);
-
-        oView.setBindingContext(oContext);
-      })
-      .finally(() => this.setBusy(false))
+    oView.setBindingContext(oContext);
+      
+    this.setBusy(false);
   }
 
   private getDestinationData(){
