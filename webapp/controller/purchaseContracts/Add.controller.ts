@@ -45,6 +45,7 @@ export default class Add extends BaseController {
       "BranchCode": branchInfo.code,
       "FreightUmCode": systemSetup.DefaultFreightUoM,
       "UnitOfMeasureCode": systemSetup.DefaultUoM,
+      "FunruralType": "",
     }, false, false, false);
 
     oView.setBindingContext(oContext);

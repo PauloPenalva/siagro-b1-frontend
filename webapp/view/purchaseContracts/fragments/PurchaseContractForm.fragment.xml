@@ -271,6 +271,19 @@
                 } 
               }"
             />
+            <Label text="Funrural"/>
+            <Select 
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{
+                path: 'FunruralType',
+                targetType: 'any'
+              }"
+              >
+              <core:ListItem key="Livre" text="Livre"/>
+              <core:ListItem key="Bruto" text="Bruto"/>
+            </Select>
             <Label text="Frete Standard"/>
             <Input 
               editable="{ui>/editable}"
