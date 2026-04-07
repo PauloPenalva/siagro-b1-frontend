@@ -191,7 +191,7 @@
             />
             <Label text="Un.Med." />
             <Input 
-              editable="{ui>/editable}"
+              editable="false"
               required="true"
               value="{UnitOfMeasureCode}" 
               showValueHelp="true" 
@@ -289,7 +289,7 @@
             </Input>
             <Label text="UM. Frete"/>
             <Input 
-              editable="{ui>/editable}"
+              editable="false"
               required="true"
               value="{FreightUmCode}" 
               showValueHelp="true" 

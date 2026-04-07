@@ -191,7 +191,7 @@
             />
             <Label text="Un.Med." />
             <Input 
-              editable="{ui>/editable}"
+              editable="false"
               required="true"
               value="{UnitOfMeasureCode}" 
               showValueHelp="true" 
