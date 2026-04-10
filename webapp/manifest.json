@@ -124,9 +124,29 @@
 					"target": "parceirosNegocio"
 				},
 				{
+					"pattern": "business-partners/new",
+					"name": "parceirosNegocioAdd",
+					"target": "parceirosNegocioAdd"
+				},
+				{
+					"pattern": "business-partners/{id}/edit",
+					"name": "parceirosNegocioEdit",
+					"target": "parceirosNegocioEdit"
+				},
+				{
 					"pattern": "items",
 					"name": "produtos",
 					"target": "produtos"
+				},
+				{
+					"pattern": "items/add",
+					"name": "produtosAdd",
+					"target": "produtosAdd"
+				},
+				{
+					"pattern": "items/{id}/edit",
+					"name": "produtosEdit",
+					"target": "produtosEdit"
 				},
 				{
 					"pattern": "processing-costs",
@@ -149,7 +169,7 @@
           "target": "armazens"
         },
         {
-          "pattern": "warehouses/net",
+          "pattern": "warehouses/add",
           "name": "armazensNew",
           "target": "armazensNew"
         },
@@ -687,10 +707,34 @@
 					"name": "siagrob1.view.parceirosNegocio.Main",
           "clearControlAggregation": true
 				},
+				"parceirosNegocioAdd": {
+					"id": "parceirosNegocioAdd",
+          "level": 2,
+					"name": "siagrob1.view.parceirosNegocio.Add",
+          "clearControlAggregation": true
+				},
+				"parceirosNegocioEdit": {
+					"id": "parceirosNegocioEdit",
+          "level": 2,
+					"name": "siagrob1.view.parceirosNegocio.Edit",
+          "clearControlAggregation": true
+				},
 				"produtos": {
 					"id": "produtos",
           "level": 1,
 					"name": "siagrob1.view.produtos.Main",
+          "clearControlAggregation": true
+				},
+				"produtosAdd": {
+					"id": "produtosAdd",
+          "level": 2,
+					"name": "siagrob1.view.produtos.Add",
+          "clearControlAggregation": true
+				},
+				"produtosEdit": {
+					"id": "produtosEdit",
+          "level": 2,
+					"name": "siagrob1.view.produtos.Edit",
           "clearControlAggregation": true
 				},
 				"processingCostsList": {

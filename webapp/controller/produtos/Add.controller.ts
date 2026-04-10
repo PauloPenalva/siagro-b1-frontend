@@ -1,36 +1,39 @@
 import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
-import BaseController from "../BaseController";
+import { BaseController } from "./BaseController";
 
 /**
- * @namespace siagrob1.controller.armazem
+ * @namespace siagrob1.controller.produtos
  */
 export default class Add extends BaseController {
 
 	onInit(): void | undefined {
-		this.getRouter().getRoute("armazensNew").attachPatternMatched(() => this.newRouteMatched());
+		this.getRouter().getRoute("produtosAdd").attachPatternMatched(() => this.newRouteMatched());
 	}
 	private newRouteMatched() {
 		
-    this.clearStates("formArmazem");
+    this.clearStates("itemForm");
     
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;
-		const oBinding = oModel.bindList("/Warehouses")
+		const oBinding = oModel.bindList("/Items")
 
 		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const oContext = oBinding.create({}, false, false, false);
+    const oContext = oBinding.create({
+      "ItmsGrpCod": 105,
+      "Enabled": "SIM",
+    }, false, false, false);
 
 		oView.setBindingContext(oContext);
 	}
 
 	async onSave() {
 		
-    if (!this.validateForm("formArmazem")) {
+    if (!this.validateForm("itemForm")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }

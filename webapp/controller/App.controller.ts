@@ -87,7 +87,7 @@ export default class App extends BaseController {
     try {
       this.setBusy(true);
       
-      await this.setSystemSetup();
+      //await this.setSystemSetup();
       
       const data = await this.getUserInfo();
       const { authenticated } = data;
@@ -95,12 +95,12 @@ export default class App extends BaseController {
           this.navToLogin();
       }
 
-      const { code } = await this.getBranchInfo();
-      if (!code){
-        await this.setDefaultBranch();
-      }
+      // const { code } = await this.getBranchInfo();
+      // if (!code){
+      //   await this.setDefaultBranch();
+      // }
       
-      await this.displayBranchInfo();
+      // await this.displayBranchInfo();
       
     } catch (error) {
       const err = error as Error;  

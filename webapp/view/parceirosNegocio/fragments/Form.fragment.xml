@@ -1,0 +1,82 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+    <f:SimpleForm
+      id="businessPartnerForm"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0">
+        <f:content>
+          <core:Title
+              text="Dados do Parceiro de Negócio"
+              emphasized="true"
+          />
+          <Label text="Codigo" />
+          <Input
+              value="{CardCode}"
+              required="true"
+              maxLength="15"
+              liveChange=".validateField"
+          />
+          <Label text="Razão Social" />
+          <Input
+              value="{CardName}"
+              editable="true"
+              required="true"
+              liveChange=".validateField"
+              maxLength="200"
+          />
+          <Label text="Nome Fantasia" />
+          <Input
+              value="{CardFName}"
+              editable="true"
+              maxLength="200"
+          />
+          <Label text="Tipo" />
+          <Select
+              selectedKey="{CardType}"
+              forceSelection="false"
+              editable="true"
+              required="true"
+              liveChange=".validateField"
+          >
+            <core:ListItem key="C" text="Cliente" />
+            <core:ListItem key="S" text="Fornecedor" />
+          </Select>
+          <Label text="CNPJ/CPF" />
+          <Input
+              value="{TaxId}"
+              editable="true"
+              maxLength="14"
+          />
+          <core:Title text="Observações"/>
+          <Label text="Observações" />
+          <TextArea
+              value="{Notes}"
+              editable="true"
+              maxLength="100"
+              rows="5"
+              cols="20"
+          />
+        </f:content>
+        <core:Title />
+        <core:Title />
+    </f:SimpleForm>
+</core:FragmentDefinition>

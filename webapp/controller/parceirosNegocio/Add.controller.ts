@@ -1,36 +1,40 @@
 import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
-import BaseController from "../BaseController";
+import { BaseController } from "./BaseController";
 
 /**
- * @namespace siagrob1.controller.armazem
+ * @namespace siagrob1.controller.parceirosNegocio
  */
 export default class Add extends BaseController {
 
 	onInit(): void | undefined {
-		this.getRouter().getRoute("armazensNew").attachPatternMatched(() => this.newRouteMatched());
+		this.getRouter().getRoute("parceirosNegocioAdd").attachPatternMatched(() => this.newRouteMatched());
 	}
 	private newRouteMatched() {
 		
-    this.clearStates("formArmazem");
+    this.clearStates("businessPartnerForm");
     
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;
-		const oBinding = oModel.bindList("/Warehouses")
+		const oBinding = oModel.bindList("/BusinessPartners")
 
 		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const oContext = oBinding.create({}, false, false, false);
+    //QryGroup23 = Y --> Cadastro de Armazem
+		const oContext = oBinding.create({
+      "QryGroup23": "N",
+      "Addresses": [],
+    }, false, false, false);
 
 		oView.setBindingContext(oContext);
 	}
 
 	async onSave() {
 		
-    if (!this.validateForm("formArmazem")) {
+    if (!this.validateForm("businessPartnerForm")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }
