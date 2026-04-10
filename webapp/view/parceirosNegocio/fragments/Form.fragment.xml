@@ -76,7 +76,5 @@
               cols="20"
           />
         </f:content>
-        <core:Title />
-        <core:Title />
     </f:SimpleForm>
 </core:FragmentDefinition>

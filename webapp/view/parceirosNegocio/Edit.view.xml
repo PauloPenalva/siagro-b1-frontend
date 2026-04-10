@@ -5,24 +5,58 @@
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:core="sap.ui.core"
 	xmlns:t="sap.ui.table"
-	xmlns:f="sap.ui.layout.form"
+	xmlns:f="sap.f.semantic"
+  xmlns:uxap="sap.uxap"
 	core:require="{
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-	<Page title="Editar Parceiro de Negocio" busy="{ui>/busy}" busyIndicatorDelay="0">
-		<content>
-
-			<core:Fragment fragmentName="siagrob1.view.parceirosNegocio.fragments.Form" type="XML" />
-
-		</content>
-		<footer>
-			<Toolbar>
+   <uxap:ObjectPageLayout
+    showFooter="true"
+    toggleHeaderOnTitleClick="true"
+		preserveHeaderStateOnScroll="false"
+    busy="{ui>/busy}"
+    busyIndicatorDelay="0"
+	>
+   	<uxap:headerTitle>
+			<uxap:ObjectPageDynamicHeaderTitle>
+        <uxap:expandedHeading>
+           <Title text="Editar Parceiro de Negocio"/>
+          </uxap:expandedHeading>
+          <uxap:snappedHeading>
+           <Title text="Editar Parceiro de Negocio"/>
+         </uxap:snappedHeading>
+      </uxap:ObjectPageDynamicHeaderTitle>
+		</uxap:headerTitle>
+    <uxap:headerContent>
+      
+    </uxap:headerContent>
+    <uxap:sections>
+      <uxap:ObjectPageSection titleUppercase="false" title="Dados do Parceiro de Negócio">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+            <uxap:blocks>
+             <core:Fragment fragmentName="siagrob1.view.parceirosNegocio.fragments.Form" type="XML" />
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Endereços">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <core:Fragment fragmentName="siagrob1.view.parceirosNegocio.fragments.Addresses" type="XML" />
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+    </uxap:sections>
+    <uxap:footer>
+      <OverflowToolbar>
 				<ToolbarSpacer />
 				<Button text="Cancelar" press=".onCancel"  />
 				<Button text="Salvar" type="Emphasized" press=".onSave"/>
-			</Toolbar>
-		</footer>
-	</Page>
-
+			</OverflowToolbar>
+    </uxap:footer>
+  </uxap:ObjectPageLayout>
 </mvc:View>
