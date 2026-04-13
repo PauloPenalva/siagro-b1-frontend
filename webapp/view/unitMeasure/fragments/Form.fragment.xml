@@ -42,6 +42,20 @@
               liveChange=".validateField"
               maxLength="100"
           />
+          <Label text="Inativo ?"/>
+          <Select 
+            forceSelection="false"
+            selectedKey="{
+              path: 'Locked',
+              targetType: 'any'
+            }"
+            editable="true"
+            required="true"
+            liveChange=".validateField"
+          >
+          <core:ListItem key="N" text="Não" />
+          <core:ListItem key="Y" text="Sim" />
+          </Select>
         </f:content>
         <core:Title />
         <core:Title />
