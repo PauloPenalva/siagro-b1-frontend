@@ -75,7 +75,7 @@
               path: 'Value',
               type: 'sap.ui.model.odata.type.Double',
               formatOptions: {
-                  decimals: 1,
+                  decimals: 2,
                   decimalSeparator: ',',
                   groupingEnabled: true,
                   groupingSeparator: '.'
