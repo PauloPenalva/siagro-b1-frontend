@@ -23,7 +23,10 @@ export default class Add extends TabelaCustoBaseController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const oContext = oBinding.create({}, false, false, false);
+		const oContext = oBinding.create({
+      "DryingCalculationMethod": "",
+      "StoragePriceCalculationMethod": "",
+    }, false, false, false);
 
 		oView.setBindingContext(oContext);
 	}
