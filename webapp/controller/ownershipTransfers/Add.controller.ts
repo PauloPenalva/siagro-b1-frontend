@@ -115,7 +115,7 @@ export default class Add extends BaseController {
       "ItemCode": itemCode,
       "DocNumberKey": docNumberInfo.Key,
       "BranchCode": branchInfo.code,
-      "UomCode": systemSetup.Code,
+      "UomCode": systemSetup.DefaultUoM,
     }, false, false, false);
 
     oView.setBindingContext(oContext);
