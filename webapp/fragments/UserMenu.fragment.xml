@@ -12,7 +12,7 @@
 			<StandardListItem icon="sap-icon://email" title="Contact Support" type="Active" press="onListItemPress" />
 			<StandardListItem icon="sap-icon://hint" title="About" type="Active" press="onListItemPress" /> -->
 			<StandardListItem title="Trocar Filial" type="Active" press=".onChangeBranch" />
-      <StandardListItem title="v.1.0.120" type="Active" />
+      <StandardListItem title="v.1.0.121" type="Active" />
 			<StandardListItem icon="sap-icon://log" title="Sign Out" type="Active" press=".onLogout" />
 		</items>
 	</List>

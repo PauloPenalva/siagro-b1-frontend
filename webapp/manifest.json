@@ -179,6 +179,21 @@
           "target": "armazensEdit"
         },
         {
+          "pattern": "truck-scales",
+          "name": "truckScales",
+          "target": "truckScales"
+        },
+        {
+          "pattern": "truck-scales/add",
+          "name": "truckScalesNew",
+          "target": "truckScalesNew"
+        },
+        {
+          "pattern": "truck-scales/{id}/edit",
+          "name": "truckScalesEdit",
+          "target": "truckScalesEdit"
+        },
+        {
           "pattern": "storage-addresses",
           "name": "storageAddresses",
           "target": "storageAddresses"
@@ -1380,6 +1395,24 @@
 					"id": "systemSetupDetail",
           "level": 2,
 					"name": "siagrob1.view.systemSetup.Detail",
+          "clearControlAggregation": true
+				},
+        "truckScales": {
+					"id": "truckScales",
+          "level": 1,
+					"name": "siagrob1.view.truckScales.Main",
+          "clearControlAggregation": true
+				},
+        "truckScalesNew": {
+					"id": "truckScalesNew",
+          "level": 2,
+					"name": "siagrob1.view.truckScales.Add",
+          "clearControlAggregation": true
+				},
+        "truckScalesEdit": {
+					"id": "truckScalesEdit",
+          "level": 2,
+					"name": "siagrob1.view.truckScales.Edit",
           "clearControlAggregation": true
 				}
 			}

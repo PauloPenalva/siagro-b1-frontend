@@ -41,6 +41,7 @@ export default class Add extends BaseController {
       "DocNumberKey": docNumberInfo.Key,
       "BranchCode": branchInfo.code,
       "UnitOfMeasureCode": systemSetup.DefaultUoM,
+      "FreightPrice": 0,
     }, false, false, false);
 
     oView.setBindingContext(oContext);

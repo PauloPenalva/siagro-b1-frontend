@@ -1,0 +1,57 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+    <f:SimpleForm
+      id="formTruckScales"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0">
+        <f:content>
+          <core:Title
+              text="Dados da Balança"
+              emphasized="true"
+          />
+          <Label text="Codigo" />
+          <Input
+              value="{Code}"
+              required="true"
+              maxLength="11"
+          />
+          <Label text="Nome" />
+          <Input
+              value="{Name}"
+              editable="true"
+              required="true"
+              liveChange=".validateField"
+              maxLength="100"
+          />
+          <Label text="Localização" />
+          <Input
+              value="{Localization}"
+              editable="true"
+              required="true"
+              liveChange=".validateField"
+              maxLength="100"
+          />
+        <core:Title />
+        <core:Title />
+        </f:content>
+    </f:SimpleForm>
+</core:FragmentDefinition>

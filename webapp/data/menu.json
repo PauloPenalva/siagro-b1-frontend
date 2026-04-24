@@ -31,6 +31,12 @@
           "icon": "sap-icon://folder-blank"
         },
         {
+          "title": "Balanças",
+          "key": "truckScales",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
           "title": "Estados",
           "key": "states",
           "enabled": true,
