@@ -311,32 +311,6 @@
           "icon": "sap-icon://folder-blank"
         }
       ]
-    },
-    {
-    "title": "Configuração",
-    "enabled": true,
-    "expanded": false,
-    "icon": "sap-icon://folder-blank",
-    "items": [
-      {
-        "title": "Função",
-        "key": "roles",
-        "enabled": true,
-        "icon": "sap-icon://folder-blank"
-      },
-      {
-        "title": "Menus",
-        "key": "menus",
-        "enabled": true,
-        "icon": "sap-icon://folder-blank"
-      },
-      {
-        "title": "Usuários",
-        "key": "users",
-        "enabled": true,
-        "icon": "sap-icon://folder-blank"
-      }
-    ]
     }
   ],
   "fixedNavigation": []
