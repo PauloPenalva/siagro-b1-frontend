@@ -78,8 +78,6 @@ export default class App extends BaseController {
       }).then((oPopover) => this._avatarPopover = oPopover as Popover)
     }
     
-    await this.displayBranchInfo();
-    
     this.getRouter().getRoute("main").attachPatternMatched(async (ev) => await this.patternMatched(ev));
 	}
 
@@ -100,7 +98,7 @@ export default class App extends BaseController {
       //   await this.setDefaultBranch();
       // }
       
-      // await this.displayBranchInfo();
+      //await this.displayBranchInfo();
       
     } catch (error) {
       const err = error as Error;  
@@ -119,12 +117,17 @@ export default class App extends BaseController {
   private async displayBranchInfo() {
     const requestModel = new RequestModel();
     const branchInfo = await requestModel.get(ServerRoutes.getBranchInfo);
+    
+    console.log(branchInfo);
+    
     (this.getModel("sessionModel") as JSONModel)?.setProperty("/branchInfo", ` - ${branchInfo.shortName} / ${this.formatter.formatCnpj(branchInfo.taxId)}`);
   }
 
   private async setDefaultBranch() {
     const branchsCtx = await DialogHelper.openTableSelectDialog(this, "BranchsSelectDialog", []);
     const branchCode = branchsCtx?.getObject()?.Code;
+    
+    console.log(branchCode);
     
     await $.ajax({
       url: ServerRoutes.setDefaultBranch,
