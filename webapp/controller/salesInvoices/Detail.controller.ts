@@ -64,6 +64,31 @@ export default class Detail extends BaseController {
       .finally(() => this.setBusy(false));
   }
 
+  async onReverse() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) {
+      MessageBox.error("Contexto inválido.")
+      return;
+    }
+
+    if (await DialogHelper.confirmDialog("Estornar documento de saída ?")) {
+      this.reverseAction(ctx);
+    }
+  }
+
+  private reverseAction(ctx:Context) {
+    const action = (ctx.getModel() as ODataModel).bindContext("/SalesInvoicesReverseConfirm(...)");
+    action.setParameter("Key", ctx.getProperty("Key"));
+
+    this.setBusy(false);
+    action.invoke()
+      .then(() => {
+        MessageToast.show("Documento de saída estornado com sucesso.");
+        this.navToSalesInvoices();
+      })
+      .finally(() => this.setBusy(false));
+  }
+
   private navToSalesInvoices(){
     this.navTo("salesInvoices");
   }
