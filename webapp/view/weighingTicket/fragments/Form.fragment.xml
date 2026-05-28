@@ -228,7 +228,30 @@
               }" 
               editable="false">
           </Input>
-         
+          
+          <Label visible="{ui>/visible}" text="Frete/Remoção" />
+          <Input
+            visible="{ui>/visible}"
+            editable="{ui>/editable}"
+            required="{ui>/required}"
+            liveChange=".validateField"
+            value="{
+              path: 'FreightPrice',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions: {
+                  decimals: 2,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+              } 
+            }"
+          />
+          <core:Icon visible="{ui>/visible}" tooltip="Informar o valor total do serviço de frete/remoção" src="sap-icon://information" >
+            <core:layoutData>
+              <l:GridData span="XL1 L1 M1 S1" />
+            </core:layoutData>
+          </core:Icon>
+
           <Label visible="{ui>/visible}" text="Observações"/>
           <TextArea 
             visible="{ui>/visible}"
