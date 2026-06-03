@@ -232,7 +232,7 @@
           <Label visible="{ui>/visible}" text="Frete/Remoção" />
           <Input
             visible="{ui>/visible}"
-            editable="{ui>/editable}"
+            editable="{ui>/editableStorageAddress}"
             required="{ui>/required}"
             liveChange=".validateField"
             value="{
