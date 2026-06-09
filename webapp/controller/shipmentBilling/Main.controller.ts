@@ -242,6 +242,7 @@ export default class Main extends BaseController {
       if (confirm) {
 
         const salesInvoice: any = {
+          InvoiceDate: billing?.InvoiceDate,
           BranchCode: billing?.BranchCode,
           CardCode: contract?.CardCode,
           GrossWeight: +billing?.Volume,

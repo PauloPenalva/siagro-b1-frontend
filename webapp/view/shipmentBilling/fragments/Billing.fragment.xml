@@ -45,7 +45,19 @@
           >
           <core:ListItem key="{Code}" text="{ShortName}" additionalText="{Code}"/>
         </Select>
-
+        <Label text="Emissao" />
+        <DatePicker
+            value="{
+              path: 'viewModel>/InvoiceDate',
+              type: 'sap.ui.model.odata.type.DateTimeOffset',
+              formatOptions: {
+                pattern: 'dd/MM/yyyy'
+              }
+            }"
+            editable="{ui>/editable}"
+            required="true"
+            liveChange=".validateField"
+        />
 				<Label text="Produto" />
 				<Input
 					value="{viewModel>/ItemCode}"
