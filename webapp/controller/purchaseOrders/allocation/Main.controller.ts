@@ -110,8 +110,8 @@ export default class Main extends BaseController {
         return;
       }
 
-      const confirm = await DialogHelper.confirmDialog("Confirma alocação do romaneio ?");
-      if (confirm) {
+      const confirmed = await DialogHelper.confirmDialog("Confirma alocação do romaneio ?");
+      if (confirmed) {
         this.purchaseContractsAvaiableDialog?.close();
 
         const action = (this.getModel() as ODataModel).bindContext(this.api.purchaseContractsAllocationsCreate);
@@ -171,8 +171,6 @@ export default class Main extends BaseController {
 
     filterParam = `${filterParam} and ${typesFilter}`
 
-    console.log(filterParam);
-    
 		oBinding.changeParameters({
       $filter: filterParam
     });

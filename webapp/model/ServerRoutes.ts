@@ -20,6 +20,7 @@ export default {
   shipmentReleases: 'odata/ShipmentReleases',
   processingCosts: 'odata/ProcessingCosts',
   storageTransactions: 'odata/StorageTransactions',
+  menuItems: 'odata/MenuItems',
   
   storageAddresses: 'odata/StorageAddresses',
   storageAddressesBalance: 'odata/StorageAddressesListOpenedByItem',

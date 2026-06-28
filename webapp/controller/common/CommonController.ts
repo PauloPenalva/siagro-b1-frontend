@@ -335,6 +335,17 @@ export default abstract class CommonController extends BaseController {
       });
   }
 
+  async openMenuItemsValueHelp(ev: Input$ValueHelpRequestEvent) {
+    DialogHelper.openTableSelectDialog(this, "MenuItemsSelectDialog", ["Title"])
+      .then((oContext: Context) => {
+        const value = oContext.getProperty("Id") as string;
+        ev.getSource().setValue(value);
+      })
+      .catch(err => {
+        throw err;
+      });
+  }
+
   async formatItemName(key: string){
     if (!key){
       return null;
@@ -518,6 +529,22 @@ export default abstract class CommonController extends BaseController {
     }
 
     async formatProcessingCostDescription(key: string){
+      if (!key){
+        return null;
+      } 
+
+      try {
+        this.setBusy(true);
+        const data = await this
+          .getResource<any>(`${this.api.processingCosts}('${key}')`)
+        
+        return data?.Description;
+      } finally {
+        this.setBusy(false);
+      }
+  }
+
+  async formatParentMenuTitle(key: string){
     if (!key){
       return null;
     } 
@@ -525,13 +552,12 @@ export default abstract class CommonController extends BaseController {
     try {
       this.setBusy(true);
       const data = await this
-        .getResource<any>(`${this.api.processingCosts}('${key}')`)
+        .getResource<any>(`${this.api.menuItems}(${key})`)
       
-      return data?.Description;
+      return data?.Title;
     } finally {
       this.setBusy(false);
     }
-
   }
 
 } 

@@ -1,0 +1,41 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+    <TableSelectDialog
+        class=" sapUiSizeCompact"
+        growing="true"
+        growingThreshold="20"
+        items="{
+          path: '/MenuItems',
+          sorter: {
+            path: 'Key', 
+            descending: false
+          }
+        }"
+        rememberSelections="true"
+        title="Menus"
+    >
+        <columns>
+            <Column>
+                <header>
+                    <Text text="Codigo" />
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="Titulo" />
+                </header>
+            </Column>
+        </columns>
+        <ColumnListItem>
+            <cells>
+                <Text text="{Key}" />
+                <Text text="{Title}" />
+            </cells>
+        </ColumnListItem>
+    </TableSelectDialog>
+</core:FragmentDefinition>

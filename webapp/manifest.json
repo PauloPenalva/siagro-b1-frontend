@@ -698,6 +698,51 @@
           "pattern": "setup/{id}/detail",
           "name": "systemSetupDetail",
           "target": "systemSetupDetail"
+        },
+        {
+          "pattern": "permissions",
+          "name": "permissions",
+          "target": "permissions"
+        },
+        {
+          "pattern": "permissions/new",
+          "name": "permissionsNew",
+          "target": "permissionsNew"
+        },
+        {
+          "pattern": "permissions/{id}/edit",
+          "name": "permissionsEdit",
+          "target": "permissionsEdit"
+        },
+        {
+          "pattern": "roles",
+          "name": "roles",
+          "target": "roles"
+        },
+        {
+          "pattern": "roles/new",
+          "name": "rolesNew",
+          "target": "rolesNew"
+        },
+        {
+          "pattern": "roles/{id}/edit",
+          "name": "rolesEdit",
+          "target": "rolesEdit"
+        },
+        {
+          "pattern": "menus",
+          "name": "menus",
+          "target": "menus"
+        },
+        {
+          "pattern": "menus/new",
+          "name": "menusNew",
+          "target": "menusNew"
+        },
+        {
+          "pattern": "menus/{id}/edit",
+          "name": "menusEdit",
+          "target": "menusEdit"
         }
 			],
 			"targets": {
@@ -1414,7 +1459,61 @@
           "level": 2,
 					"name": "siagrob1.view.truckScales.Edit",
           "clearControlAggregation": true
-				}
+				},
+        "permissions": {
+					"id": "permissions",
+          "level": 1,
+					"name": "siagrob1.view.permissions.Main",
+          "clearControlAggregation": true
+				},
+        "permissionsNew": {
+					"id": "permissionsNew",
+          "level": 2,
+					"name": "siagrob1.view.permissions.Add",
+          "clearControlAggregation": true
+				},
+        "permissionsEdit": {
+					"id": "permissionsEdit",
+          "level": 2,
+					"name": "siagrob1.view.permissions.Edit",
+          "clearControlAggregation": true
+				},
+        "roles": {
+          "id": "roles",
+          "level": 1,
+          "name": "siagrob1.view.roles.Main",
+          "clearControlAggregation": true
+        },
+        "rolesNew": {
+          "id": "rolesNew",
+          "level": 2,
+          "name": "siagrob1.view.roles.Add",
+          "clearControlAggregation": true
+        },
+        "rolesEdit": {
+          "id": "rolesEdit",
+          "level": 2,
+          "name": "siagrob1.view.roles.Edit",
+          "clearControlAggregation": true
+        },
+        "menus": {
+          "id": "menus",
+          "level": 1,
+          "name": "siagrob1.view.menus.Main",
+          "clearControlAggregation": true
+        },
+        "menusNew": {
+          "id": "menusNew",
+          "level": 2,
+          "name": "siagrob1.view.menus.Add",
+          "clearControlAggregation": true
+        },
+        "menusEdit": {
+          "id": "menusEdit",
+          "level": 2,
+          "name": "siagrob1.view.menus.Edit",
+          "clearControlAggregation": true
+        }
 			}
 		}
 	}

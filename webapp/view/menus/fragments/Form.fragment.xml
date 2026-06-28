@@ -1,0 +1,94 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+    <f:SimpleForm
+      id="menuForm"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0"
+    >
+        <f:content>
+            <core:Title
+                text="Dados do Menu"
+                emphasized="true"
+            />
+            <Label text="Codigo" />
+            <Input
+                value="{Key}"
+                editable="true"
+                maxLength="10"
+                required="true"
+            />
+            <Label text="Titulo" />
+            <Input
+                value="{Title}"
+                editable="true"
+                required="true"
+                maxLength="100"
+                liveChange=".validateField"
+            />
+            <Label text="Icone" />
+            <Input
+                value="{Icon}"
+                editable="true"
+                required="true"
+                maxLength="100"
+                liveChange=".validateField"
+            />
+            <Label text="Ativo ?" />
+            <CheckBox
+                selected="{Enabled}"
+                editable="true"
+            />
+            <Label text="Expandido ?" />
+            <CheckBox
+                selected="{Expanded}"
+                editable="true"
+            />
+            <Label text="Ordem" />
+            <Input
+                value="{Order}"
+                editable="true"
+                type="Number"
+            />
+            <Label text="Menu ID" />
+            <Input
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openMenuItemsValueHelp"
+              value="{ParentId}"
+              >
+              <!-- <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData> -->
+            </Input>
+            <Label text="Menu Titulo" />
+            <Input 
+              value="{
+                parts: ['ParentId'],
+                formatter: '.formatParentMenuTitle'
+              }" 
+              editable="false"
+            />
+        </f:content>
+        <core:Title />
+        <core:Title />
+    </f:SimpleForm>
+</core:FragmentDefinition>
