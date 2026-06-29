@@ -33,7 +33,7 @@
             <Input
                 value="{Key}"
                 editable="true"
-                maxLength="10"
+                maxLength="50"
                 required="true"
             />
             <Label text="Titulo" />
@@ -48,9 +48,7 @@
             <Input
                 value="{Icon}"
                 editable="true"
-                required="true"
                 maxLength="100"
-                liveChange=".validateField"
             />
             <Label text="Ativo ?" />
             <CheckBox
@@ -68,21 +66,20 @@
                 editable="true"
                 type="Number"
             />
-            <Label text="Menu ID" />
+            <Label text="Menu Superior" />
             <Input
               showValueHelp="true"
               valueHelpOnly="true"
               valueHelpRequest=".openMenuItemsValueHelp"
-              value="{ParentId}"
+              value="{ParentKey}"
               >
-              <!-- <layoutData>
+              <layoutData>
                 <l:GridData span="XL3 L3 M3 S8" />
-              </layoutData> -->
+              </layoutData>
             </Input>
-            <Label text="Menu Titulo" />
             <Input 
               value="{
-                parts: ['ParentId'],
+                parts: ['ParentKey'],
                 formatter: '.formatParentMenuTitle'
               }" 
               editable="false"

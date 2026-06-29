@@ -336,9 +336,9 @@ export default abstract class CommonController extends BaseController {
   }
 
   async openMenuItemsValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "MenuItemsSelectDialog", ["Title"])
+    DialogHelper.openTableSelectDialog(this, "MenuItemsSelectDialog", ["Title", "Key"])
       .then((oContext: Context) => {
-        const value = oContext.getProperty("Id") as string;
+        const value = oContext.getProperty("Key") as string;
         ev.getSource().setValue(value);
       })
       .catch(err => {
@@ -552,7 +552,7 @@ export default abstract class CommonController extends BaseController {
     try {
       this.setBusy(true);
       const data = await this
-        .getResource<any>(`${this.api.menuItems}(${key})`)
+        .getResource<any>(`${this.api.menuItems}('${key}')`)
       
       return data?.Title;
     } finally {

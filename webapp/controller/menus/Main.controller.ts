@@ -54,7 +54,7 @@ export default class Main extends BaseController {
     
 		const oContext = oTable.getContextByIndex(i) as Context;
     
-		const sId = oContext.getProperty("Id") as string;
+		const sId = oContext.getProperty("Key") as string;
 		this.navTo("menusEdit", {id: sId});
 	}
 

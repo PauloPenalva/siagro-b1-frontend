@@ -49,6 +49,12 @@
           "icon": "sap-icon://folder-blank"
         },
         {
+          "title": "Menus",
+          "key": "menus",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
           "title": "Permissões",
           "key": "permissions",
           "enabled": true,
@@ -57,12 +63,6 @@
         {
           "title": "Funções",
           "key": "roles",
-          "enabled": true,
-          "icon": "sap-icon://folder-blank"
-        },
-        {
-          "title": "Menus",
-          "key": "menus",
           "enabled": true,
           "icon": "sap-icon://folder-blank"
         }
