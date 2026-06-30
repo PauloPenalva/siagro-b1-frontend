@@ -1,0 +1,66 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <t:Table
+    id="permissionsTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    busyIndicatorDelay="0"
+    rows="{Permissions}"
+    visible="true"
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Permissões" />
+          <ToolbarSpacer />
+          <Button
+            text="Incluir"
+            type="Transparent"
+            icon="sap-icon://add"
+            press=".onAddPermission"
+          />
+          <Button
+            text="Remover"
+            type="Transparent"
+            icon="sap-icon://delete"
+            press=".onRemovePermission"
+          />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Codigo">
+        <t:template>
+          <Input
+            width="10rem"
+            required="true"
+            value="{PermissionCode}" 
+            showValueHelp="true" 
+            valueHelpOnly="true" 
+            valueHelpRequest=".openPermissionsValueHelp">
+          </Input>
+        </t:template>
+      </t:Column>
+      <t:Column label="Descricao">
+        <t:template>
+          <Text 
+            text="{
+              parts: ['PermissionCode'],
+              formatter: '.formatPermissionName'
+            }" 
+            >
+          </Text>
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

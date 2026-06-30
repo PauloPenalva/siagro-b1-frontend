@@ -1,7 +1,7 @@
 import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
-import BaseController from "../BaseController";
+import { BaseController } from "./BaseController";
 
 /**
  * @namespace siagrob1.controller.roles

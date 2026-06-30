@@ -12,9 +12,21 @@
 
 	<Page title="Função" busy="{ui>/busy}">
 		<content>
-
 			<core:Fragment fragmentName="siagrob1.view.roles.fragments.Form" type="XML" />
-
+      <IconTabBar expandable="false">
+        <items>
+          <IconTabFilter text="Menus" >
+            <content>
+              <core:Fragment fragmentName="siagrob1.view.roles.fragments.Menus" type="XML" />
+            </content>
+          </IconTabFilter>
+          <IconTabFilter text="Permissões" >
+            <content>
+              <core:Fragment fragmentName="siagrob1.view.roles.fragments.Permissions" type="XML" />
+            </content>
+          </IconTabFilter>
+        </items>
+      </IconTabBar>
 		</content>
 		<footer>
 			<Toolbar>

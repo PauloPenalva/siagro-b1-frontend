@@ -345,6 +345,17 @@ export default abstract class CommonController extends BaseController {
         throw err;
       });
   }
+  
+  async openPermissionsValueHelp(ev: Input$ValueHelpRequestEvent) {
+    DialogHelper.openTableSelectDialog(this, "PermissionsSelectDialog", ["Description", "Code"])
+      .then((oContext: Context) => {
+        const value = oContext.getProperty("Code") as string;
+        ev.getSource().setValue(value);
+      })
+      .catch(err => {
+        throw err;
+      });
+  }
 
   async formatItemName(key: string){
     if (!key){
@@ -555,6 +566,22 @@ export default abstract class CommonController extends BaseController {
         .getResource<any>(`${this.api.menuItems}('${key}')`)
       
       return data?.Title;
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  async formatPermissionName(key: string){
+    if (!key){
+      return null;
+    } 
+
+    try {
+      this.setBusy(true);
+      const data = await this
+        .getResource<any>(`${this.api.permissions}('${key}')`)
+      
+      return data?.Description;
     } finally {
       this.setBusy(false);
     }

@@ -21,6 +21,7 @@ export default {
   processingCosts: 'odata/ProcessingCosts',
   storageTransactions: 'odata/StorageTransactions',
   menuItems: 'odata/MenuItems',
+  permissions: 'odata/Permissions',
   
   storageAddresses: 'odata/StorageAddresses',
   storageAddressesBalance: 'odata/StorageAddressesListOpenedByItem',
