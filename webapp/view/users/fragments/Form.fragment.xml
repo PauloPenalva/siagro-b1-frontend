@@ -1,0 +1,64 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+    <f:SimpleForm
+      id="userForm"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0">
+        <f:content>
+          <core:Title
+              text="Dados do Usuário"
+              emphasized="true"
+          />
+          <Label text="Código" />
+          <Input
+              value="{Username}"
+              required="true"
+              maxLength="50"
+              liveChange=".validateField"
+              editable="{ui>/editable}"
+          />
+          <Label text="Nome" />
+          <Input
+              value="{FullName}"
+              editable="true"
+              required="true"
+              liveChange=".validateField"
+              maxLength="100"
+          />
+          <Label text="Email" />
+          <Input
+              value="{Email}"
+              editable="true"
+              required="true"
+              liveChange=".validateField"
+              maxLength="100"
+          />
+          <Label text="Ativo ?" />
+          <CheckBox
+              selected="{IsActive}"
+              required="true"
+          />
+        </f:content>
+        <core:Title />
+        <core:Title />
+    </f:SimpleForm>
+</core:FragmentDefinition>

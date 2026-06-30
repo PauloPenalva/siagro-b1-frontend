@@ -71,6 +71,12 @@
           "key": "profiles",
           "enabled": true,
           "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Usuários",
+          "key": "users",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
         }
       ]
     },
