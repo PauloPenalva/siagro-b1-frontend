@@ -12,9 +12,16 @@
 
 	<Page title="Perfil" busy="{ui>/busy}">
 		<content>
-
 			<core:Fragment fragmentName="siagrob1.view.profiles.fragments.Form" type="XML" />
-
+      <IconTabBar>
+        <items>
+          <IconTabFilter text="Funções">
+            <content>
+              <core:Fragment fragmentName="siagrob1.view.profiles.fragments.Roles" type="XML" />
+            </content>
+          </IconTabFilter>
+        </items>
+      </IconTabBar>
 		</content>
 		<footer>
 			<Toolbar>

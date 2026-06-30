@@ -22,6 +22,7 @@ export default {
   storageTransactions: 'odata/StorageTransactions',
   menuItems: 'odata/MenuItems',
   permissions: 'odata/Permissions',
+  roles: 'odata/Roles',
   
   storageAddresses: 'odata/StorageAddresses',
   storageAddressesBalance: 'odata/StorageAddressesListOpenedByItem',

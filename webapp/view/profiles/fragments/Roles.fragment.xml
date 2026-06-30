@@ -1,0 +1,66 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <t:Table
+    id="rolesTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    busyIndicatorDelay="0"
+    rows="{Roles}"
+    visible="true"
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Funções" />
+          <ToolbarSpacer />
+          <Button
+            text="Incluir"
+            type="Transparent"
+            icon="sap-icon://add"
+            press=".onAddRole"
+          />
+          <Button
+            text="Remover"
+            type="Transparent"
+            icon="sap-icon://delete"
+            press=".onRemoveRole"
+          />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Codigo">
+        <t:template>
+          <Input
+            width="10rem"
+            required="true"
+            value="{RoleCode}" 
+            showValueHelp="true" 
+            valueHelpOnly="true" 
+            valueHelpRequest=".openRolesValueHelp">
+          </Input>
+        </t:template>
+      </t:Column>
+      <t:Column label="Descricao">
+        <t:template>
+          <Text 
+            text="{
+              parts: ['RoleCode'],
+              formatter: '.formatRoleDescription'
+            }" 
+            >
+          </Text>
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

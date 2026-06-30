@@ -357,6 +357,17 @@ export default abstract class CommonController extends BaseController {
       });
   }
 
+  async openRolesValueHelp(ev: Input$ValueHelpRequestEvent) {
+    DialogHelper.openTableSelectDialog(this, "RolesSelectDialog", ["Description", "Code"])
+      .then((oContext: Context) => {
+        const value = oContext.getProperty("Code") as string;
+        ev.getSource().setValue(value);
+      })
+      .catch(err => {
+        throw err;
+      });
+  }
+
   async formatItemName(key: string){
     if (!key){
       return null;
@@ -580,6 +591,22 @@ export default abstract class CommonController extends BaseController {
       this.setBusy(true);
       const data = await this
         .getResource<any>(`${this.api.permissions}('${key}')`)
+      
+      return data?.Description;
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  async formatRoleDescription(key: string){
+    if (!key){
+      return null;
+    } 
+
+    try {
+      this.setBusy(true);
+      const data = await this
+        .getResource<any>(`${this.api.roles}('${key}')`)
       
       return data?.Description;
     } finally {
