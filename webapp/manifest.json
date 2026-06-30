@@ -743,6 +743,21 @@
           "pattern": "menus/{id}/edit",
           "name": "menusEdit",
           "target": "menusEdit"
+        },
+        {
+          "pattern": "profiles",
+          "name": "profiles",
+          "target": "profiles"
+        },
+        {
+          "pattern": "profiles/new",
+          "name": "profilesNew",
+          "target": "profilesNew"
+        },
+        {
+          "pattern": "profiles/{id}/edit",
+          "name": "profilesEdit",
+          "target": "profilesEdit"
         }
 			],
 			"targets": {
@@ -1512,6 +1527,24 @@
           "id": "menusEdit",
           "level": 2,
           "name": "siagrob1.view.menus.Edit",
+          "clearControlAggregation": true
+        },
+         "profiles": {
+          "id": "profiles",
+          "level": 1,
+          "name": "siagrob1.view.profiles.Main",
+          "clearControlAggregation": true
+        },
+        "profilesNew": {
+          "id": "profilesNew",
+          "level": 2,
+          "name": "siagrob1.view.profiles.Add",
+          "clearControlAggregation": true
+        },
+        "profilesEdit": {
+          "id": "profilesEdit",
+          "level": 2,
+          "name": "siagrob1.view.profiles.Edit",
           "clearControlAggregation": true
         }
 			}

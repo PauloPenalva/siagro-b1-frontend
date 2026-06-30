@@ -65,6 +65,12 @@
           "key": "roles",
           "enabled": true,
           "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Perfis",
+          "key": "profiles",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
         }
       ]
     },
