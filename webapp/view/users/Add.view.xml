@@ -12,7 +12,7 @@
 
 	<Page title="Usuário">
 		<content>
-      <core:Fragment fragmentName="siagrob1.view.users.fragments.Form" type="XML" />
+      <core:Fragment fragmentName="siagrob1.view.users.fragments.CreateUserForm" type="XML" />
 		</content>
 		<footer>
 			<Toolbar>

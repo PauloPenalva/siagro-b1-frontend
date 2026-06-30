@@ -13,7 +13,7 @@ export default class Add extends BaseController {
 	}
 	private newRouteMatched() {
 		
-    this.clearStates("userForm");
+    this.clearStates("createUserForm");
     
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;
@@ -30,7 +30,7 @@ export default class Add extends BaseController {
 
 	async onSave() {
 		
-    if (!this.validateForm("profileForm")) {
+    if (!this.validateForm("createUserForm")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }
@@ -44,6 +44,7 @@ export default class Add extends BaseController {
 				MessageToast.show("Dados salvos com sucesso.", {
 					closeOnBrowserNavigation: false
 				});
+        this.navTo("users", {}, true);
 			}
 		} finally {
 			this.setBusy(false);

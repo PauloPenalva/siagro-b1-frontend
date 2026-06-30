@@ -6,7 +6,7 @@
     xmlns:core="sap.ui.core"
 >
     <f:SimpleForm
-      id="userForm"
+      id="createUserForm"
       editable="true"
       layout="ResponsiveGridLayout"
       labelSpanXL="4"
@@ -25,7 +25,7 @@
 		  busyIndicatorDelay="0">
         <f:content>
           <core:Title
-              text="Dados do Usuário"
+              text="Criar Novo Usuário"
               emphasized="true"
           />
           <Label text="Usuário" />
@@ -34,7 +34,6 @@
               required="true"
               maxLength="50"
               liveChange=".validateField"
-              editable="false"
           />
           <Label text="Nome" />
           <Input
@@ -50,6 +49,15 @@
               editable="true"
               required="true"
               liveChange=".validateField"
+              maxLength="100"
+          />
+          <Label text="Senha" />
+          <Input
+              value="{Password}"
+              editable="true"
+              required="true"
+              liveChange=".validateField"
+              type="Password"
               maxLength="100"
           />
           <Label text="Ativo ?" />
