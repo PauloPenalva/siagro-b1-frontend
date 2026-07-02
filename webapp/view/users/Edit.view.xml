@@ -14,7 +14,15 @@
 		<content>
 
 			<core:Fragment fragmentName="siagrob1.view.users.fragments.Form" type="XML" />
-
+       <IconTabBar expandable="false">
+        <items>
+          <IconTabFilter text="Perfis">
+            <content>
+              <core:Fragment fragmentName="siagrob1.view.users.fragments.Profiles" type="XML" />
+            </content>
+          </IconTabFilter>
+        </items>
+      </IconTabBar>
 		</content>
 		<footer>
 			<Toolbar>

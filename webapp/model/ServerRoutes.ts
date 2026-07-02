@@ -23,6 +23,7 @@ export default {
   menuItems: 'odata/MenuItems',
   permissions: 'odata/Permissions',
   roles: 'odata/Roles',
+  profiles: 'odata/Profiles',
   
   storageAddresses: 'odata/StorageAddresses',
   storageAddressesBalance: 'odata/StorageAddressesListOpenedByItem',

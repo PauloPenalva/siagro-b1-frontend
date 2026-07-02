@@ -1,0 +1,66 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <t:Table
+    id="usersProfilesTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    busyIndicatorDelay="0"
+    rows="{Profiles}"
+    visible="true"
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Perfis" />
+          <ToolbarSpacer />
+          <Button
+            text="Incluir"
+            type="Transparent"
+            icon="sap-icon://add"
+            press=".onAddProfile"
+          />
+          <Button
+            text="Remover"
+            type="Transparent"
+            icon="sap-icon://delete"
+            press=".onRemoveProfile"
+          />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Codigo">
+        <t:template>
+          <Input
+            width="10rem"
+            required="true"
+            value="{ProfileCode}" 
+            showValueHelp="true" 
+            valueHelpOnly="true" 
+            valueHelpRequest=".openProfilesValueHelp">
+          </Input>
+        </t:template>
+      </t:Column>
+      <t:Column label="Descricao">
+        <t:template>
+          <Text 
+            text="{
+              parts: ['ProfileCode'],
+              formatter: '.formatProfileDescription'
+            }" 
+            >
+          </Text>
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

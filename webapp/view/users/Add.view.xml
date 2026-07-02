@@ -13,6 +13,15 @@
 	<Page title="Usuário">
 		<content>
       <core:Fragment fragmentName="siagrob1.view.users.fragments.CreateUserForm" type="XML" />
+       <IconTabBar>
+        <items>
+          <IconTabFilter text="Perfis">
+            <content>
+              <core:Fragment fragmentName="siagrob1.view.users.fragments.Profiles" type="XML" />
+            </content>
+          </IconTabFilter>
+        </items>
+      </IconTabBar>
 		</content>
 		<footer>
 			<Toolbar>
