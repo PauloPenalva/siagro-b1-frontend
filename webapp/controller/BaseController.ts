@@ -252,6 +252,11 @@ export default abstract class BaseController extends Controller {
      return await requestModel.get(ServerRoutes.userInfo)
   }
 
+  async getUserMenu() {
+     const requestModel = new RequestModel();
+     return await requestModel.get(ServerRoutes.userMenu)
+  }
+
   async setSystemSetup() {
     const model = this.getModel() as ODataModel;
     const func = model.bindContext("/SystemSetupGetActive(...)");

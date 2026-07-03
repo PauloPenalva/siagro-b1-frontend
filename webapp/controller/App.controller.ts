@@ -29,14 +29,22 @@ export default class App extends BaseController {
   formatter = formatter;
 
 	public async onInit(): Promise<void> {
-    const oView = this.getView()
+    const oView = this.getView();
 		oView.addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
     this._avatar = this.byId("avatar") as Avatar;
 
 		this.oModel = new JSONModel();
-		void this.oModel.loadData(sap.ui.require.toUrl("siagrob1/data/menu.json"))
+    oView.setModel(this.oModel,"menu");
+
+    void this.oModel.loadData(sap.ui.require.toUrl("siagrob1/data/menu.json"))
 			.then(() => oView.setModel(this.oModel,"menu"));
+
+    /** MENU DINAMICO */
+    // const menu = window.localStorage.getItem("USER_MENU");
+    // if (menu) {
+    //   (this.getModel("menu") as JSONModel)?.setData(JSON.parse(menu));
+    // }
 
     this.oProductSwitchModel = new JSONModel();
     void this.oProductSwitchModel.loadData(sap.ui.require.toUrl("siagrob1/data/productSwitch/data.json"))
@@ -82,6 +90,8 @@ export default class App extends BaseController {
 	}
 
   async patternMatched(ev: Route$PatternMatchedEvent){
+    const oView = this.getView();
+
     try {
       this.setBusy(true);
       
@@ -177,6 +187,8 @@ export default class App extends BaseController {
       return;
     }
 
+    const oView = this.getView();
+
     this.setBusy(true);
     setTimeout(() => {
       const requestModel = new RequestModel();
@@ -184,6 +196,10 @@ export default class App extends BaseController {
      
       requestModel.post(ServerRoutes.logout)
         .done(() => {
+          window.localStorage.setItem("USER_MENU", JSON.stringify({}));
+          
+          (this.getModel("menu") as JSONModel)?.setData({});
+          
           this.setBusy(false);
           this.navToLogin();
         })

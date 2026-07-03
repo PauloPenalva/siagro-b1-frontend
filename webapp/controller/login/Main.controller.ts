@@ -3,6 +3,7 @@ import { BaseController } from "./BaseController";
 import formatter from "siagrob1/model/formatter";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageBox from "sap/m/MessageBox";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
 
 /**
  * @namespace siagrob1.controller.login
@@ -30,7 +31,7 @@ export default class Main extends BaseController {
     this.getView().setModel(authModel, "auth");
 	}
 
-  onLogin() {
+  async onLogin() {
     const authModel = this.getView().getModel("auth") as JSONModel;
     const authData = authModel.getData() as any;
 
@@ -39,23 +40,39 @@ export default class Main extends BaseController {
       return;
     }
 
-    this.setBusy(true);
-    const requestModel = new RequestModel();
-    requestModel.post(this.api.login, authData)
-      .done(() => {
-        const sessionModel = this.getModel("sessionModel") as JSONModel;
-        sessionModel.setProperty("/logged", true);
+    try {
+      this.setBusy(true);
+      await this.login(authData);
+      
+      const sessionModel = this.getModel("sessionModel") as JSONModel;
+      sessionModel.setProperty("/logged", true);
         
-        const oComponent = this.getOwnerComponent();
-        oComponent.startSession();
+      const oComponent = this.getOwnerComponent();
+      oComponent.startSession();
 
-        this.setBusy(false);
-        this.navTo("main");
-      })
-      .catch(err => {
-        console.log(err.responseJSON);
-        this.setBusy(false);
-        MessageBox.error("Falha ao efetuar login: \n" + err.responseJSON?.message);
-      })
+      /** MENU DINAMICO */
+      // const userMenu = await this.getUserMenu();
+
+      // window.localStorage.setItem("USER_MENU", JSON.stringify(userMenu));
+
+      // (this.getModel("menu") as JSONModel)?.setData(userMenu);
+
+      this.navTo("main");
+    } catch (error) {
+      const err = error as JQuery.jqXHR;
+      MessageBox.error("Falha ao efetuar login: \n" + err.responseJSON?.message);
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  async login(authData: any) {
+    const requestModel = new RequestModel();
+    return await requestModel.post(this.api.login, authData);
+  }
+
+  async getUserMenu() {
+    const requestModel = new RequestModel();
+    return await requestModel.get(ServerRoutes.userMenu);
   }
 }
