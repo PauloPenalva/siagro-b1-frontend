@@ -51,11 +51,11 @@ export default class Main extends BaseController {
       oComponent.startSession();
 
       /** MENU DINAMICO */
-      // const userMenu = await this.getUserMenu();
+      const userMenu = await this.getUserMenu();
 
-      // window.localStorage.setItem("USER_MENU", JSON.stringify(userMenu));
+      window.localStorage.setItem("USER_MENU", JSON.stringify(userMenu));
 
-      // (this.getModel("menu") as JSONModel)?.setData(userMenu);
+      (this.getModel("menu") as JSONModel)?.setData(userMenu);
 
       this.navTo("main");
     } catch (error) {

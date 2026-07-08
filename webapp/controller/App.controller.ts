@@ -33,18 +33,30 @@ export default class App extends BaseController {
 		oView.addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
     this._avatar = this.byId("avatar") as Avatar;
+    
+    /************************************************* */
+    /** MENU FIXO - Utilizar apenas em desenvolvimento */
+    /************************************************* */
+		// this.oModel = new JSONModel();
+    // oView.setModel(this.oModel,"menu");
+    
+    // void this.oModel.loadData(sap.ui.require.toUrl("siagrob1/data/menu.json"))
+		// 	.then(() => oView.setModel(this.oModel,"menu"));
+    /************************************************* */
+    /** MENU FIXO - FIM                                */
+    /************************************************* */
 
-		this.oModel = new JSONModel();
-    oView.setModel(this.oModel,"menu");
 
-    void this.oModel.loadData(sap.ui.require.toUrl("siagrob1/data/menu.json"))
-			.then(() => oView.setModel(this.oModel,"menu"));
-
-    /** MENU DINAMICO */
-    // const menu = window.localStorage.getItem("USER_MENU");
-    // if (menu) {
-    //   (this.getModel("menu") as JSONModel)?.setData(JSON.parse(menu));
-    // }
+    /************************************************* */
+    /** MENU DINAMICO                                  */
+    /************************************************* */
+    const menu = window.localStorage.getItem("USER_MENU");
+    if (menu) {
+      (this.getModel("menu") as JSONModel)?.setData(JSON.parse(menu));
+    }
+    /************************************************* */
+    /** MENU DINAMICO - FIM                            */
+    /************************************************* */
 
     this.oProductSwitchModel = new JSONModel();
     void this.oProductSwitchModel.loadData(sap.ui.require.toUrl("siagrob1/data/productSwitch/data.json"))
