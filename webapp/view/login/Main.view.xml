@@ -25,7 +25,7 @@
             <items>
               <Image 
                 class="sapUiSmallMarginBottom"
-                src="https://sdk.openui5.org/1.141.0/resources/sap/ui/documentation/sdk/images/logo_sap.png"
+                src="/assets/logo_siagro_principal.png"
                 height="40px"
                 width="80px"
               />

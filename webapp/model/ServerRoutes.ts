@@ -1,6 +1,7 @@
 export default {
   login: '/security/auth/login',
   userInfo: '/security/auth/status',
+  systemInfo: '/security/auth/info',
   logout: '/security/auth/logout',
   userMenu: '/security/auth/GetUserMenu',
 

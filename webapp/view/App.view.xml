@@ -13,9 +13,9 @@
             <f:ShellBar
                 id="shellBar"
                 visible="{sessionModel>/logged}"
-                title="Siagro B1"
-                secondTitle="Originação de Grãos {sessionModel>/branchInfo}"
-                homeIcon="https://sdk.openui5.org/1.141.0/resources/sap/ui/documentation/sdk/images/logo_sap.png"
+                title="{sessionModel>/systemInfo}"
+                secondTitle="{sessionModel>/branchInfo}"
+                homeIcon="/assets/logo_siagro_principal.png"
                 showNavButton="true"
                 showMenuButton="true"
                 showSearch="false"

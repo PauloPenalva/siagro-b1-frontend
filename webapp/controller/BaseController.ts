@@ -21,6 +21,7 @@ import RequestModel from "siagrob1/model/RequestModel";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { BranchInfo } from "siagrob1/types/BranchInfo";
 import { SystemSetup } from "siagrob1/types/SystemSetup";
+import { SystemInfo } from "siagrob1/types/SystemInfo";
 
 /**
  * @namespace siagrob1.controller
@@ -242,19 +243,24 @@ export default abstract class BaseController extends Controller {
 		}
   }
 
+  async getSystemInfo(): Promise<SystemInfo> {
+    const requestModel = new RequestModel();
+    return await requestModel.get(ServerRoutes.systemInfo);
+  }
+
   async getBranchInfo(): Promise<BranchInfo> {
     const requestModel = new RequestModel();
-    return await requestModel.get(ServerRoutes.getBranchInfo)
+    return await requestModel.get(ServerRoutes.getBranchInfo);
   }
 
   async getUserInfo() {
      const requestModel = new RequestModel();
-     return await requestModel.get(ServerRoutes.userInfo)
+     return await requestModel.get(ServerRoutes.userInfo);
   }
 
   async getUserMenu() {
      const requestModel = new RequestModel();
-     return await requestModel.get(ServerRoutes.userMenu)
+     return await requestModel.get(ServerRoutes.userMenu);
   }
 
   async setSystemSetup() {

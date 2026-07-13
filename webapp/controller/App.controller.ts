@@ -14,6 +14,7 @@ import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import Avatar, { Avatar$PressEvent } from "sap/m/Avatar";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import formatter from "siagrob1/model/formatter";
+import { SystemInfo } from "siagrob1/types/SystemInfo";
 
 /**
  * @namespace siagrob1.controller
@@ -98,6 +99,8 @@ export default class App extends BaseController {
       }).then((oPopover) => this._avatarPopover = oPopover as Popover)
     }
     
+    await this.setCompanyName();
+
     this.getRouter().getRoute("main").attachPatternMatched(async (ev) => await this.patternMatched(ev));
 	}
 
@@ -148,6 +151,11 @@ export default class App extends BaseController {
       contentType: 'application/json',
       data: JSON.stringify({ BranchCode: branchCode }),
     });
+  }
+
+  private async setCompanyName() {
+     const systemInfo = await this.getSystemInfo() as SystemInfo;
+    (this.getModel("sessionModel") as JSONModel)?.setProperty("/systemInfo", systemInfo?.companyName);
   }
 
   private navToLogin(){
