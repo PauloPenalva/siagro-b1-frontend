@@ -20,8 +20,7 @@ import { SystemInfo } from "siagrob1/types/SystemInfo";
  * @namespace siagrob1.controller
  */
 export default class App extends BaseController {
-	private oModel: JSONModel;
-  private oProductSwitchModel: JSONModel
+	private oProductSwitchModel: JSONModel
 
   private _pPopover: Popover;
   private _avatar: Avatar;
@@ -133,17 +132,13 @@ export default class App extends BaseController {
   private async displayBranchInfo() {
     const requestModel = new RequestModel();
     const branchInfo = await requestModel.get(ServerRoutes.getBranchInfo);
-    
-    console.log(branchInfo);
-    
+      
     (this.getModel("sessionModel") as JSONModel)?.setProperty("/branchInfo", ` - ${branchInfo.shortName} / ${this.formatter.formatCnpj(branchInfo.taxId)}`);
   }
 
   private async setDefaultBranch() {
     const branchsCtx = await DialogHelper.openTableSelectDialog(this, "BranchsSelectDialog", []);
     const branchCode = branchsCtx?.getObject()?.Code;
-    
-    console.log(branchCode);
     
     await $.ajax({
       url: ServerRoutes.setDefaultBranch,
@@ -207,12 +202,9 @@ export default class App extends BaseController {
       return;
     }
 
-    const oView = this.getView();
-
     this.setBusy(true);
     setTimeout(() => {
-      const requestModel = new RequestModel();
-    
+      const requestModel = new RequestModel();    
      
       requestModel.post(ServerRoutes.logout)
         .done(() => {
