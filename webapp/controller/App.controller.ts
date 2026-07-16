@@ -28,7 +28,7 @@ export default class App extends BaseController {
 
   formatter = formatter;
 
-	public async onInit(): Promise<void> {
+	public onInit() {
     const oView = this.getView();
 		oView.addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
@@ -51,8 +51,9 @@ export default class App extends BaseController {
     /** MENU DINAMICO                                  */
     /************************************************* */
     const menu = window.localStorage.getItem("USER_MENU");
+    
     if (menu) {
-      (this.getModel("menu") as JSONModel)?.setData(JSON.parse(menu));
+      (this.getOwnerComponent().getModel("menu") as JSONModel)?.setData(JSON.parse(menu));
     }
     /************************************************* */
     /** MENU DINAMICO - FIM                            */
@@ -98,7 +99,8 @@ export default class App extends BaseController {
       }).then((oPopover) => this._avatarPopover = oPopover as Popover)
     }
     
-    await this.setCompanyName();
+    this.setCompanyName().then(() => console.info("Company name setted."));
+    this.displayBranchInfo().then(() => console.info("Branch info displayed."));
 
     this.getRouter().getRoute("main").attachPatternMatched(async (ev) => await this.patternMatched(ev));
 	}
@@ -133,7 +135,7 @@ export default class App extends BaseController {
     const requestModel = new RequestModel();
     const branchInfo = await requestModel.get(ServerRoutes.getBranchInfo);
       
-    (this.getModel("sessionModel") as JSONModel)?.setProperty("/branchInfo", ` - ${branchInfo.shortName} / ${this.formatter.formatCnpj(branchInfo.taxId)}`);
+    (this.getOwnerComponent().getModel("sessionModel") as JSONModel).setProperty("/branchInfo", ` - ${branchInfo.shortName} / ${this.formatter.formatCnpj(branchInfo.taxId)}`);
   }
 
   private async setDefaultBranch() {
@@ -150,7 +152,7 @@ export default class App extends BaseController {
 
   private async setCompanyName() {
      const systemInfo = await this.getSystemInfo() as SystemInfo;
-    (this.getModel("sessionModel") as JSONModel)?.setProperty("/systemInfo", systemInfo?.companyName);
+    (this.getOwnerComponent().getModel("sessionModel") as JSONModel)?.setProperty("/systemInfo", systemInfo?.companyName);
   }
 
   private navToLogin(){
@@ -210,7 +212,7 @@ export default class App extends BaseController {
         .done(() => {
           window.localStorage.setItem("USER_MENU", JSON.stringify({}));
           
-          (this.getModel("menu") as JSONModel)?.setData({});
+          (this.getOwnerComponent().getModel("menu") as JSONModel)?.setData({});
           
           this.setBusy(false);
           this.navToLogin();
