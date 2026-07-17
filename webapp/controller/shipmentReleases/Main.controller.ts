@@ -181,6 +181,132 @@ export default class Main extends BaseController {
   }
 
 
+  async onFinalize() {
+    const oTable = this.byId("tableShipmentReleases") as Table;
+    const i = oTable.getSelectedIndex();
+
+    if (i < 0) {
+      MessageBox.warning("Selecione um registro.");
+      return;
+    }
+
+    const oContext = oTable.getContextByIndex(i);
+    if (!oContext) {
+      MessageBox.warning("Selecione um registro.");
+      return;
+    }
+
+    const sId = oContext.getProperty("Key") as string;
+
+    if (await DialogHelper.confirmDialog("Finalizar entrega ? Após finalizada não será possível romanear.")) {
+      const model = this.getModel() as ODataModel;
+      const action = model.bindContext("/ShipmentReleasesClose(...)");
+      action.setParameter("Key", sId);
+
+      this.setBusy(true);
+      void action.invoke()
+        .then(() => {
+          MessageToast.show("Liberação finalizada com sucesso.");
+          this.refreshData();
+        })
+        .finally(() => this.setBusy(false));
+    }
+  }
+
+  async onReopen() {
+    const oTable = this.byId("tableShipmentReleases") as Table;
+    const i = oTable.getSelectedIndex();
+
+    if (i < 0) {
+      MessageBox.warning("Selecione um registro.");
+      return;
+    }
+
+    const oContext = oTable.getContextByIndex(i);
+    if (!oContext) {
+      MessageBox.warning("Selecione um registro.");
+      return;
+    }
+
+    const sId = oContext.getProperty("Key") as string;
+
+    if (await DialogHelper.confirmDialog("Reabrir entrega ? Ela voltará a aceitar romaneios.")) {
+      const model = this.getModel() as ODataModel;
+      const action = model.bindContext("/ShipmentReleasesReopen(...)");
+      action.setParameter("Key", sId);
+
+      this.setBusy(true);
+      void action.invoke()
+        .then(() => {
+          MessageToast.show("Liberação reaberta com sucesso.");
+          this.refreshData();
+        })
+        .finally(() => this.setBusy(false));
+    }
+  }
+
+  async onRecalculate() {
+    const oTable = this.byId("tableShipmentReleases") as Table;
+    const i = oTable.getSelectedIndex();
+
+    if (i < 0) {
+      MessageBox.warning("Selecione um registro.");
+      return;
+    }
+
+    const oContext = oTable.getContextByIndex(i);
+    if (!oContext) {
+      MessageBox.warning("Selecione um registro.");
+      return;
+    }
+
+    const sId = oContext.getProperty("Key") as string;
+
+    if (await DialogHelper.confirmDialog("Recalcular o saldo desta liberação a partir dos romaneios ?")) {
+      const model = this.getModel() as ODataModel;
+      const action = model.bindContext("/ShipmentReleasesRecalculateBalance(...)");
+      action.setParameter("Key", sId);
+
+      this.setBusy(true);
+      void action.invoke()
+        .then(() => {
+          const result = action.getBoundContext().getObject() as {
+            Changed?: boolean; PreviousAvailableQuantity?: number; NewAvailableQuantity?: number;
+          };
+          const fmt = (v?: number) =>
+            Number(v ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+
+          if (result?.Changed) {
+            MessageBox.information(
+              `Saldo recalculado.\n\nDisponível: ${fmt(result.PreviousAvailableQuantity)} → ${fmt(result.NewAvailableQuantity)}`
+            );
+          } else {
+            MessageToast.show("Saldo já estava correto.");
+          }
+          this.refreshData();
+        })
+        .finally(() => this.setBusy(false));
+    }
+  }
+
+  async onRecalculateAll() {
+    if (await DialogHelper.confirmDialog("Recalcular o saldo de todas as liberações não finalizadas ?")) {
+      const model = this.getModel() as ODataModel;
+      const action = model.bindContext("/ShipmentReleasesRecalculateAllBalances(...)");
+
+      this.setBusy(true);
+      void action.invoke()
+        .then(() => {
+          const result = action.getBoundContext().getObject() as { Scanned?: number; Changed?: number };
+          MessageBox.information(
+            `Recálculo concluído.\n\nAvaliadas: ${result?.Scanned ?? 0}\nCorrigidas: ${result?.Changed ?? 0}`
+          );
+          this.refreshData();
+        })
+        .finally(() => this.setBusy(false));
+    }
+  }
+
 	async onDelete() {
 		const oModel = this.getView().getModel() as ODataModel;
 		const oTable = this.byId("tableShipmentReleases") as Table;

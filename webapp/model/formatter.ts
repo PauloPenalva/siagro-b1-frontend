@@ -258,9 +258,10 @@ export default {
     const m = new Map<string, string>();
     m.set("Pending", "Pendente");
     m.set("Actived", "Ativo");
+    m.set("Completed", "Finalizado");
     m.set("Cancelled", "Cancelado");
     m.set("Paused", "Pausado")
-    
+
     return m.get(value);
   },
 
@@ -268,9 +269,10 @@ export default {
     const m = new Map<string, string>();
     m.set("Pending", "None");
     m.set("Actived", "Success");
+    m.set("Completed", "Information");
     m.set("Cancelled", "Error");
     m.set("Paused", "Information");
-    
+
     return m.get(value);
   },
 

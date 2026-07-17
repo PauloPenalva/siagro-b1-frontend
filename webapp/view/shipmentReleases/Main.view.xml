@@ -53,6 +53,10 @@
 						<Button type="Transparent" text="Ativar" press=".onActivate"/>
 						<Button type="Transparent" text="Pausar" press=".onPause"/>
             <Button type="Transparent" text="Cancelar" press=".onCancel"/>
+						<Button type="Transparent" text="Finalizar" press=".onFinalize"/>
+						<Button type="Transparent" text="Reabrir" press=".onReopen"/>
+						<Button type="Transparent" text="Recalcular Saldo" press=".onRecalculate"/>
+						<Button type="Transparent" text="Recalcular Todos" press=".onRecalculateAll"/>
 						<Button type="Transparent" text="Deletar" press=".onDelete"/>
 					</OverflowToolbar>
 				</t:extension>
