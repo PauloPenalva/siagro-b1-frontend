@@ -38,6 +38,9 @@ export default {
   purchaseContractsWithdrawApproval: '/odata/PurchaseContractsWithdrawApproval',
   purchaseContractsSendToApproval: '/odata/PurchaseContractsSendApproval',
   purchaseContractsCopy: '/odata/PurchaseContractsCopy',
+  purchaseContractsClose: '/odata/PurchaseContractsClose',
+  purchaseContractsReopen: '/odata/PurchaseContractsReopen',
+  purchaseContractsRecalculateBalance: '/odata/PurchaseContractsRecalculateBalance',
   
   purchaseContractsAllocationsCreate: '/PurchaseContractsCreateAllocation(...)',
   purchaseContractsAllocationsDelete: '/PurchaseContractsDeleteAllocation(...)',

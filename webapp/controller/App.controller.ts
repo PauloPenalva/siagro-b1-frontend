@@ -28,37 +28,48 @@ export default class App extends BaseController {
 
   formatter = formatter;
 
-	public onInit() {
+	public async onInit() {
+    const oComponent = this.getOwnerComponent();
+    const sessionModel = oComponent.getModel("sessionModel") as JSONModel;
     const oView = this.getView();
-		oView.addStyleClass(this.getOwnerComponent().getContentDensityClass());
+    
+		oView.addStyleClass(oComponent.getContentDensityClass());
 
     this._avatar = this.byId("avatar") as Avatar;
-    
-    /************************************************* */
-    /** MENU FIXO - Utilizar apenas em desenvolvimento */
-    /************************************************* */
-		// this.oModel = new JSONModel();
-    // oView.setModel(this.oModel,"menu");
-    
-    // void this.oModel.loadData(sap.ui.require.toUrl("siagrob1/data/menu.json"))
-		// 	.then(() => oView.setModel(this.oModel,"menu"));
-    /************************************************* */
-    /** MENU FIXO - FIM                                */
-    /************************************************* */
 
+    await this.getUserInfo().then((data) => {
+      const { authenticated } = data;
+      if (!authenticated){
+        oComponent.stopSession();
 
+        sessionModel.setProperty("/logged", false);
+        sessionModel.setProperty("/branchInfo", null);
+        this.navToLogin();
+        return;
+      }
+
+      
+      sessionModel.setProperty("/logged", authenticated);
+      
+      oComponent.startSession();
+    }).catch((error) => {
+      console.log(error);
+      oComponent.stopSession();
+
+      sessionModel.setProperty("/logged", false);
+      sessionModel.setProperty("/branchInfo", null);
+      this.navToLogin();
+      return;
+    });
+    
     /************************************************* */
     /** MENU DINAMICO                                  */
     /************************************************* */
     const menu = window.localStorage.getItem("USER_MENU");
-    
     if (menu) {
-      (this.getOwnerComponent().getModel("menu") as JSONModel)?.setData(JSON.parse(menu));
+      (oComponent.getModel("menu") as JSONModel)?.setData(JSON.parse(menu));
     }
-    /************************************************* */
-    /** MENU DINAMICO - FIM                            */
-    /************************************************* */
-
+    
     this.oProductSwitchModel = new JSONModel();
     void this.oProductSwitchModel.loadData(sap.ui.require.toUrl("siagrob1/data/productSwitch/data.json"))
       .then(() => oView.setModel(this.oProductSwitchModel, "productSwitch"));
@@ -132,10 +143,11 @@ export default class App extends BaseController {
   }
 
   private async displayBranchInfo() {
+    const oComponent = this.getOwnerComponent();
     const requestModel = new RequestModel();
     const branchInfo = await requestModel.get(ServerRoutes.getBranchInfo);
       
-    (this.getOwnerComponent().getModel("sessionModel") as JSONModel).setProperty("/branchInfo", ` - ${branchInfo.shortName} / ${this.formatter.formatCnpj(branchInfo.taxId)}`);
+    (oComponent.getModel("sessionModel") as JSONModel).setProperty("/branchInfo", ` - ${branchInfo.shortName} / ${this.formatter.formatCnpj(branchInfo.taxId)}`);
   }
 
   private async setDefaultBranch() {

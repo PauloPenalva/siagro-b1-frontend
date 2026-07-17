@@ -18,9 +18,15 @@ export default class Main extends BaseController {
 	private routeMatched() {
 
     const oComponent = this.getOwnerComponent();
+    const sessionModel = oComponent.getModel("sessionModel") as JSONModel;
+    
+    if (sessionModel.getProperty("/logged")) {
+      this.navTo("main");
+      return;
+    }
+
     oComponent.stopSession();
 
-    const sessionModel = this.getModel("sessionModel") as JSONModel;
     sessionModel.setProperty("/logged", false);
     sessionModel.setProperty("/branchInfo", null);
 
@@ -34,6 +40,7 @@ export default class Main extends BaseController {
   async onLogin() {
     const authModel = this.getView().getModel("auth") as JSONModel;
     const authData = authModel.getData() as any;
+    const oComponent = this.getOwnerComponent();
 
     if (!authData.Username || !authData.Password){
       MessageBox.warning("Informe seu usuário e senha.")
@@ -44,18 +51,15 @@ export default class Main extends BaseController {
       this.setBusy(true);
       await this.login(authData);
       
-      const sessionModel = this.getModel("sessionModel") as JSONModel;
+      const sessionModel = oComponent.getModel("sessionModel") as JSONModel;
       sessionModel.setProperty("/logged", true);
         
-      const oComponent = this.getOwnerComponent();
       oComponent.startSession();
 
       /** MENU DINAMICO */
       const userMenu = await this.getUserMenu();
-
       window.localStorage.setItem("USER_MENU", JSON.stringify(userMenu));
-
-      (this.getModel("menu") as JSONModel)?.setData(userMenu);
+      (oComponent.getModel("menu") as JSONModel)?.setData(userMenu);
 
       this.navTo("main");
     } catch (error) {

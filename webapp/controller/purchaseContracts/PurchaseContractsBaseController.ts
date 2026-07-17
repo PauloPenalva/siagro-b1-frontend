@@ -390,6 +390,70 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
     }
   }
 
+  async onCloseContract() {
+    const oView = this.getView();
+    const oContext = oView.getBindingContext() as Context;
+    if (!oContext) {
+      return;
+    }
+    const bConfirm = await confirmDialog("Encerrar o contrato ? Após encerrado não será possível movimentá-lo.");
+    if (bConfirm) {
+
+      const key = oContext.getProperty("Key") as string;
+      const sUrl = `${this.api.purchaseContractsClose}`
+
+      this.setBusy(true);
+
+      void jQuery.ajax({
+        url: sUrl,
+        method: 'POST',
+        data: JSON.stringify({Key: key}),
+        contentType: 'application/json',
+        success: () => {
+          oContext.refresh();
+        },
+        error: err => {
+          this.setBusy(false);
+          const message = (err.responseJSON as { error?: { message?: string } })?.error?.message;
+          MessageBox.error(message ?? "Erro ao encerrar o contrato.");
+        },
+      })
+      .done(() => this.setBusy(false))
+    }
+  }
+
+  async onReopenContract() {
+    const oView = this.getView();
+    const oContext = oView.getBindingContext() as Context;
+    if (!oContext) {
+      return;
+    }
+    const bConfirm = await confirmDialog("Reabrir o contrato ? Ele voltará a aceitar movimentação.");
+    if (bConfirm) {
+
+      const key = oContext.getProperty("Key") as string;
+      const sUrl = `${this.api.purchaseContractsReopen}`
+
+      this.setBusy(true);
+
+      void jQuery.ajax({
+        url: sUrl,
+        method: 'POST',
+        data: JSON.stringify({Key: key}),
+        contentType: 'application/json',
+        success: () => {
+          oContext.refresh();
+        },
+        error: err => {
+          this.setBusy(false);
+          const message = (err.responseJSON as { error?: { message?: string } })?.error?.message;
+          MessageBox.error(message ?? "Erro ao reabrir o contrato.");
+        },
+      })
+      .done(() => this.setBusy(false))
+    }
+  }
+
   getAllocations(key: string){
     const oView = this.getView();
     const allocationModel = new JSONModel();

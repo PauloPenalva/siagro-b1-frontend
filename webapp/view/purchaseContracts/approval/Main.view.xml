@@ -63,6 +63,17 @@
             key="Rejected" />
           <IconTabFilter
             icon="sap-icon://document-text"
+            iconColor="Neutral"
+            count="{
+              path: '/PurchaseContracts/$count',
+              parameters: {
+                $filter: 'Status eq \'Finished\''
+              }
+            }"
+            text="Finalizados"
+            key="Finished" />
+          <IconTabFilter
+            icon="sap-icon://document-text"
             iconColor="Negative"
             count="{
               path: '/PurchaseContracts/$count',

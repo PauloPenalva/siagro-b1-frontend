@@ -38,6 +38,9 @@ export default class Main extends CommonController {
       case "Canceled":
           statusFilter = "Status eq 'Canceled'";
           break;
+      case "Finished":
+          statusFilter = "Status eq 'Finished'";
+          break;
       default:
           statusFilter = "Status eq 'InApproval'";
           break;
