@@ -42,7 +42,10 @@
 					path: '/StorageTransactions',
           sorter: [
             { path: 'RowId', descending: true }
-          ]
+          ],
+          parameters: {
+            $filter: 'TransactionType eq \'Receipt\' and TransactionType eq \'Shipment\' and TransactionType eq \'TechnicalLoss\''
+          }
 				}"
 			>
 				<t:extension>

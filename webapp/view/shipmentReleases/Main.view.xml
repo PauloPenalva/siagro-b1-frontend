@@ -34,6 +34,7 @@
 				busyIndicatorDelay="0"
 				selectionMode="Single"
 				selectionBehavior="Row"
+				rowSelectionChange=".onRowSelectionChange"
 				class="sapUiSizeCondensed"
 				visibleRowCountMode="Auto"
 				enableBusyIndicator="true"
@@ -50,9 +51,15 @@
             <Title text="Liberações de Entrega" />
 						<ToolbarSpacer />
 						<Button type="Transparent" text="Exportar Excel" press=".onExcel"/>
+						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
 						<Button type="Transparent" text="Ativar" press=".onActivate"/>
 						<Button type="Transparent" text="Pausar" press=".onPause"/>
-            <Button type="Transparent" text="Cancelar" press=".onCancel"/>
+            <Button
+            type="Transparent"
+            text="Cancelar"
+            press=".onCancel"
+            enabled="{selection>/canCancel}"
+            tooltip="Liberação sem saldo deve ser finalizada, não cancelada."/>
 						<Button type="Transparent" text="Finalizar" press=".onFinalize"/>
 						<Button type="Transparent" text="Reabrir" press=".onReopen"/>
 						<Button type="Transparent" text="Recalcular Saldo" press=".onRecalculate"/>

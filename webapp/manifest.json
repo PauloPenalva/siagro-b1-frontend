@@ -363,6 +363,11 @@
           "target": "shipmentReleases"
         },
         {
+          "pattern": "shipment-releases/{id}/detail",
+          "name": "shipmentReleasesDetail",
+          "target": "shipmentReleasesDetail"
+        },
+        {
           "pattern": "sales-contracts",
           "name": "salesContracts",
           "target": "salesContracts"
@@ -1053,6 +1058,12 @@
 					"id": "shipmentReleases",
           "level": 1,
 					"name": "siagrob1.view.shipmentReleases.Main",
+          "clearControlAggregation": true
+				},
+        "shipmentReleasesDetail": {
+					"id": "shipmentReleasesDetail",
+          "level": 2,
+					"name": "siagrob1.view.shipmentReleases.Detail",
           "clearControlAggregation": true
 				},
         "salesContracts": {

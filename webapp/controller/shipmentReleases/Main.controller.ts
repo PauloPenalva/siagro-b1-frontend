@@ -2,7 +2,7 @@
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import formatter from "siagrob1/model/formatter";
 import MessageBox from "sap/m/MessageBox";
-import Table from "sap/ui/table/Table";
+import Table, { Table$RowSelectionChangeEvent } from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
@@ -21,10 +21,41 @@ export default class Main extends BaseController {
 
 	onInit(): void  {
     this.createFilterModel();
+    this.getView().setModel(new JSONModel({ canCancel: false }), "selection");
 
     this.getRouter().getRoute("shipmentReleases")
       .attachPatternMatched(() => this.applyFilters());
 	}
+
+  /**
+   * Só permite cancelar quando a liberação ainda tem saldo a devolver ao contrato.
+   * Sem saldo, a ação correta é Finalizar (o backend também recusa).
+   */
+  onRowSelectionChange(oEvent: Table$RowSelectionChangeEvent): void {
+    const oContext = oEvent.getParameter("rowContext") as Context;
+    const balance = oContext ? Number(oContext.getProperty("AvailableQuantity")) : 0;
+
+    this.setCanCancel(balance > 0);
+  }
+
+  private setCanCancel(value: boolean): void {
+    (this.getView().getModel("selection") as JSONModel).setProperty("/canCancel", value);
+  }
+
+  onDetail(): void {
+    const oTable = this.byId("tableShipmentReleases") as Table;
+    const i = oTable.getSelectedIndex();
+
+    if (i < 0) {
+      MessageBox.warning("Selecione um registro.");
+      return;
+    }
+
+    const oContext = oTable.getContextByIndex(i);
+    if (oContext) {
+      this.navTo("shipmentReleasesDetail", { id: oContext.getProperty("Key") as string });
+    }
+  }
 
   onClearFilters() {
     this.clearFilters();
@@ -160,15 +191,23 @@ export default class Main extends BaseController {
     if (oContext) {
       const sId = oContext.getProperty("Key") as string;
 
-      if (await DialogHelper.confirmDialog("Cancelar entrega ?")) {
+      const sReason = await DialogHelper.promptDialog(
+        "Cancelar liberação de embarque",
+        "Informe o motivo do cancelamento",
+        "Ex.: troca de armazém de entrega"
+      );
+
+      if (sReason) {
         const model = this.getModel() as ODataModel;
         const action = model.bindContext("/ShipmentReleasesCancelation(...)")
         action.setParameter("Key", sId);
+        action.setParameter("CancellationReason", sReason);
 
         this.setBusy(true);
         void action.invoke()
           .then(() => {
             MessageToast.show("Liberação cancelada com sucesso.")
+            this.setCanCancel(false);
             this.refreshData();
           })
           .finally(() => this.setBusy(false));

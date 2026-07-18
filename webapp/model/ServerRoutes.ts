@@ -41,7 +41,8 @@ export default {
   purchaseContractsClose: '/odata/PurchaseContractsClose',
   purchaseContractsReopen: '/odata/PurchaseContractsReopen',
   purchaseContractsRecalculateBalance: '/odata/PurchaseContractsRecalculateBalance',
-  
+  prePurchaseContractReport: '/reports/PrePurchaseContract',
+
   purchaseContractsAllocationsCreate: '/PurchaseContractsCreateAllocation(...)',
   purchaseContractsAllocationsDelete: '/PurchaseContractsDeleteAllocation(...)',
 

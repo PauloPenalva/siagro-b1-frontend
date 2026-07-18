@@ -109,4 +109,38 @@ export default class Detail extends PurchaseContractsBaseController {
     .done(() => this.setBusy(false));
   }
 
+  /**
+   * Gera o pré-contrato de compra em PDF, documento preliminar encaminhado ao
+   * departamento jurídico para a confecção do contrato definitivo.
+   */
+  async onPrintPreContract() {
+    const oContext = this.getView().getBindingContext() as Context;
+    if (!oContext) {
+      return;
+    }
+
+    const key = oContext.getProperty("Key") as string;
+
+    try {
+      this.setBusy(true);
+
+      const response = await fetch(`${this.api.prePurchaseContractReport}/${key}/print`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text() || "Falha ao gerar o pré-contrato.");
+      }
+
+      const blob = await response.blob();
+      const fileURL = URL.createObjectURL(blob);
+      window.open(fileURL, "_blank");
+      setTimeout(() => URL.revokeObjectURL(fileURL), 60000);
+    } catch (error) {
+      MessageBox.error((error as Error)?.message ?? "Falha ao gerar o pré-contrato.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
 }

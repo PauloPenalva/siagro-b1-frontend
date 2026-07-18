@@ -34,6 +34,8 @@ export default class Main extends CommonController {
     const filterData = filterModel.getData() as any;
     const filters: string[] = [];
 
+    filters.push(`TransactionType eq 'Receipt' or TransactionType eq 'Shipment' or TransactionType eq 'TechnicalLoss'`);
+    
     Object.keys(filterData).forEach((key: string) => {
       const value = filterData[key];
 
@@ -52,8 +54,6 @@ export default class Main extends CommonController {
 
     const filterParam = filters.length > 0 ? filters.join(' and ') : undefined;
 
-    console.log(filterParam);
-    
     oBinding.changeParameters({
       $filter: filterParam
     });

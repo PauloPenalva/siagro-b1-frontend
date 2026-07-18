@@ -1,0 +1,86 @@
+<mvc:View
+	controllerName="siagrob1.controller.shipmentReleases.Detail"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:uxap="sap.uxap"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+	<uxap:ObjectPageLayout
+		busy="{ui>/busy}"
+		busyIndicatorDelay="0"
+		showTitleInHeaderContent="true"
+		toggleHeaderOnTitleClick="true"
+		preserveHeaderStateOnScroll="false">
+		<uxap:headerTitle>
+			<uxap:ObjectPageDynamicHeaderTitle>
+				<uxap:expandedHeading>
+					<Title text="Liberação de Entrega"/>
+				</uxap:expandedHeading>
+				<uxap:snappedHeading>
+					<Title text="Liberação de Entrega"/>
+				</uxap:snappedHeading>
+				<uxap:actions>
+					<Button text="Voltar" type="Transparent" press=".onNavBack"/>
+				</uxap:actions>
+			</uxap:ObjectPageDynamicHeaderTitle>
+		</uxap:headerTitle>
+		<uxap:headerContent>
+			<HBox>
+				<ObjectIdentifier title="{PurchaseContract/Code}" text="{PurchaseContract/CardName}"/>
+				<ObjectStatus
+					class="sapUiMediumMarginBegin"
+					inverted="true"
+					state="{
+						path: 'Status',
+						targetType: 'any',
+						formatter: '.formatter.stateShipmentReleaseStatus'
+					}"
+					text="{
+						path: 'Status',
+						targetType: 'any',
+						formatter: '.formatter.formatShipmentReleaseStatus'
+					}"/>
+				<ObjectNumber
+					class="sapUiMediumMarginBegin"
+					number="{
+						path: 'AvailableQuantity',
+						type: 'sap.ui.model.type.Float',
+						formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+					}"
+					unit="{PurchaseContract/UnitOfMeasureCode}"/>
+			</HBox>
+		</uxap:headerContent>
+		<uxap:sections>
+			<uxap:ObjectPageSection titleUppercase="false" title="Dados">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<uxap:blocks>
+							<core:Fragment fragmentName="siagrob1.view.shipmentReleases.fragments.Form" type="XML"/>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+			<uxap:ObjectPageSection titleUppercase="false" title="Auditoria">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<uxap:blocks>
+							<core:Fragment fragmentName="siagrob1.view.shipmentReleases.fragments.Audit" type="XML"/>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+			<uxap:ObjectPageSection titleUppercase="false" title="Romaneios">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<uxap:blocks>
+							<core:Fragment fragmentName="siagrob1.view.shipmentReleases.fragments.Transactions" type="XML"/>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+		</uxap:sections>
+	</uxap:ObjectPageLayout>
+</mvc:View>

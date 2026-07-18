@@ -1,7 +1,12 @@
+import Button from "sap/m/Button";
 import Dialog from "sap/m/Dialog";
+import Label from "sap/m/Label";
+import { ButtonType } from "sap/m/library";
 import MessageBox from "sap/m/MessageBox";
 import TableSelectDialog from "sap/m/TableSelectDialog";
+import TextArea from "sap/m/TextArea";
 import Fragment from "sap/ui/core/Fragment";
+import { ValueState } from "sap/ui/core/library";
 import Controller from "sap/ui/core/mvc/Controller";
 import Device from "sap/ui/Device";
 import Filter from "sap/ui/model/Filter";
@@ -101,6 +106,63 @@ export default {
         }
       });
     })
+  },
+
+  /**
+   * Pede um texto obrigatório ao usuário (ex.: motivo de cancelamento).
+   * Resolve com o texto informado, ou string vazia se o usuário desistir.
+   */
+  async promptDialog(title: string, label: string, placeholder = ""): Promise<string> {
+    return new Promise<string>(resolve => {
+      const oTextArea = new TextArea({
+        width: "100%",
+        rows: 3,
+        placeholder,
+        required: true,
+        liveChange: () => oTextArea.setValueState(ValueState.None),
+      });
+
+      let confirmed = false;
+
+      const oDialog = new Dialog({
+        title,
+        contentWidth: "30rem",
+        content: [
+          new Label({ text: label, labelFor: oTextArea }),
+          oTextArea,
+        ],
+        beginButton: new Button({
+          type: ButtonType.Emphasized,
+          text: "Confirmar",
+          press: () => {
+            if (!oTextArea.getValue().trim()) {
+              oTextArea.setValueState(ValueState.Error);
+              oTextArea.setValueStateText("Campo obrigatório");
+              return;
+            }
+
+            confirmed = true;
+            oDialog.close();
+          },
+        }),
+        endButton: new Button({
+          text: "Cancelar",
+          press: () => oDialog.close(),
+        }),
+        afterClose: () => {
+          const value = oTextArea.getValue().trim();
+          oDialog.destroy();
+          resolve(confirmed ? value : "");
+        },
+      });
+
+      if (Device.system.desktop) {
+        oDialog.addStyleClass("sapUiSizeCompact");
+      }
+
+      oDialog.addStyleClass("sapUiContentPadding");
+      oDialog.open();
+    });
   }
 
 }

@@ -65,6 +65,18 @@ export default {
     return date.toLocaleDateString("pt-BR"); // 19/11/2025
   },
 
+  formatDateTime: (value: string) => {
+    if (!value) return "";
+    // Mesma razão do formatDate: o datetime2 do SQL Server serializa 7 casas de
+    // fração de segundo, que o sap.ui.model.odata.type.DateTimeOffset rejeita sem
+    // a faceta Precision. O Date do JS aceita.
+    const date = new Date(value);
+    return `${date.toLocaleDateString("pt-BR")} ${date.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`; // 19/11/2025 15:34
+  },
+
   formatDateISO: (dataISO: string): string => {
     if (!dataISO) return "";
     

@@ -1,0 +1,52 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<f:SimpleForm
+		editable="true"
+		layout="ResponsiveGridLayout"
+		columnsXL="2" columnsL="2" columnsM="1"
+		labelSpanXL="4" labelSpanL="4" labelSpanM="4">
+		<f:content>
+      <core:Title text=""/>
+			<Label text="Criado por"/>
+			<Input editable="false" value="{CreatedBy}"/>
+
+			<Label text="Criado em"/>
+			<Input editable="false" value="{
+				path: 'CreatedAt',
+				targetType: 'any',
+				formatter: '.formatter.formatDateTime'
+			}"/>
+
+			<Label text="Aprovado por"/>
+			<Input editable="false" value="{ApprovedBy}"/>
+
+			<Label text="Aprovado em"/>
+			<Input editable="false" value="{
+				path: 'ApprovedAt',
+				targetType: 'any',
+				formatter: '.formatter.formatDateTime'
+			}"/>
+
+			<Label text="Cancelado por" visible="{= ${path: 'Status', targetType: 'any'} === 'Cancelled' }"/>
+			<Input editable="false" value="{CanceledBy}" visible="{= ${path: 'Status', targetType: 'any'} === 'Cancelled' }"/>
+
+			<Label text="Cancelado em" visible="{= ${path: 'Status', targetType: 'any'} === 'Cancelled' }"/>
+			<Input editable="false" visible="{= ${path: 'Status', targetType: 'any'} === 'Cancelled' }" value="{
+				path: 'CanceledAt',
+				targetType: 'any',
+				formatter: '.formatter.formatDateTime'
+			}"/>
+
+			<Label text="Motivo do cancelamento" visible="{= ${path: 'Status', targetType: 'any'} === 'Cancelled' }"/>
+			<TextArea
+				editable="false"
+				rows="3"
+				width="100%"
+				value="{CancellationReason}"
+				visible="{= ${path: 'Status', targetType: 'any'} === 'Cancelled' }"/>
+      <core:Title text=""/>
+		</f:content>
+	</f:SimpleForm>
+</core:FragmentDefinition>

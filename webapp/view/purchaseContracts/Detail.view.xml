@@ -34,6 +34,7 @@
           <Button visible="{= ${path: 'Status', targetType: 'any'}==='Approved' ? true : false }" text="Recalcular Saldo" type="Transparent" press=".onRecalculateBalance"/>
           <Button visible="{= ${path: 'Status', targetType: 'any'}==='Approved' ? true : false }" text="Encerrar" type="Transparent" press=".onCloseContract"/>
           <Button visible="{= ${path: 'Status', targetType: 'any'}==='Finished' ? true : false }" text="Reabrir" type="Transparent" press=".onReopenContract"/>
+          <Button text="Imprimir Pré-Contrato" type="Transparent" icon="sap-icon://print" press=".onPrintPreContract"/>
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>
@@ -236,6 +237,15 @@
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Liberações de Entrega">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractShipmentReleases" type="XML" />
+            </uxap:blocks>
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
       <uxap:ObjectPageSection titleUppercase="false" title="Entregas">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection>
