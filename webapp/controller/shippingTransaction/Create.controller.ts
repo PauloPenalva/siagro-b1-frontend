@@ -18,9 +18,12 @@ type routeArgs = {
 type ShipmentReleaseWithContract = {
   PurchaseContractKey?: string,
   DeliveryLocationCode?: string,
+  DeliveryLocationName?: string,
   PurchaseContract?: {
     CardCode?: string,
+    CardName?: string,
     ItemCode?: string,
+    ItemName?: string,
     UnitOfMeasureCode?: string,
   },
 }
@@ -38,11 +41,16 @@ type ShippingTransactionForm = {
     BranchCode?: string,
     TransactionType?: string,
     CardCode?: string,
+    CardName?: string,
     ItemCode?: string,
+    ItemName?: string,
     UnitOfMeasureCode?: string,
     WarehouseCode?: string,
+    WarehouseName?: string,
+    TruckDriverCode?: string,
+    TruckDriverName?: string,
     ShipmentReleaseKey?: string,
-    QualityInspections?: { QualityAttribCode?: string, Value: number }[],
+    QualityInspections?: { QualityAttribCode?: string, QualityAttribName?: string, Value: number }[],
   },
 }
 
@@ -113,12 +121,17 @@ export default class Create extends BaseController {
             BranchCode: branchInfo.code,
             TransactionType: "Purchase",
             CardCode: data?.PurchaseContract?.CardCode,
+            // Descrições desnormalizadas já vêm no $expand: exibi-las direto evita
+            // uma requisição por campo ao abrir a tela.
+            CardName: data?.PurchaseContract?.CardName,
             ItemCode: data?.PurchaseContract?.ItemCode,
+            ItemName: data?.PurchaseContract?.ItemName,
             UnitOfMeasureCode: data?.PurchaseContract?.UnitOfMeasureCode,
             WarehouseCode: data?.DeliveryLocationCode,
+            WarehouseName: data?.DeliveryLocationName,
             ShipmentReleaseKey: key,
             QualityInspections: qualityAttribs?.value?.map((x) => {
-              return { QualityAttribCode: x.Code, Value: 0 }
+              return { QualityAttribCode: x.Code, QualityAttribName: x.Name, Value: 0 }
             }),
           }
         });
@@ -134,6 +147,31 @@ export default class Create extends BaseController {
 	
 	}
 
+  /**
+   * Tira do payload os campos que existem só para exibição.
+   *
+   * `ShippingTransactionsCreate` recebe um `EntityParameter<StorageTransaction>`, e
+   * o OData rejeita propriedade não declarada na entidade. `TruckDriverName` e
+   * `QualityAttribName` alimentam os campos de descrição da tela mas não existem
+   * no backend — `CardName`, `ItemName` e `WarehouseName` existem e podem ir.
+   */
+  private toPayload(oStorageTransaction: ShippingTransactionForm["StorageTransaction"]) {
+    if (!oStorageTransaction) {
+      return oStorageTransaction;
+    }
+
+    const oPayload = { ...oStorageTransaction };
+    delete oPayload.TruckDriverName;
+
+    oPayload.QualityInspections = oPayload.QualityInspections?.map((oInspection) => {
+      const oCopy = { ...oInspection };
+      delete oCopy.QualityAttribName;
+      return oCopy;
+    });
+
+    return oPayload;
+  }
+
 	async onSave() {
     if (!this.validateForm("shippingTransactionForm")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
@@ -145,7 +183,7 @@ export default class Create extends BaseController {
     const viewData = viewModel.getData() as ShippingTransactionForm;
 
     const action = oModel.bindContext("/ShippingTransactionsCreate(...)");
-    action.setParameter("StorageTransaction", viewData?.StorageTransaction);
+    action.setParameter("StorageTransaction", this.toPayload(viewData?.StorageTransaction));
     action.setParameter("PurchaseContractKey", viewData?.PurchaseContractKey);
 
 		try {

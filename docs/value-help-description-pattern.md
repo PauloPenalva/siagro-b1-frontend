@@ -1,6 +1,7 @@
 # Substituição dos formatters que buscam descrição no backend
 
-Documento de trabalho. Registra o padrão validado, o que já foi convertido e o que falta.
+Registra o padrão validado e os bloqueios encontrados. A migração está concluída: os 67
+bindings que usavam formatter `async` para buscar descrição no backend foram convertidos.
 
 ## O problema
 
@@ -169,16 +170,17 @@ Solução: declarar o caminho da descrição no Input do código, via `CustomDat
 
 ## Já convertido
 
-| Arquivo | Tier | Campos | Ganho medido |
-|---|---|---|---|
-**48 dos 67 bindings** originais convertidos, em 24 arquivos. Requisições avulsas medidas no
-navegador:
+**Todos os 67 bindings** convertidos. Requisições avulsas medidas no navegador:
 
 | Tela | Antes | Depois |
 |---|---|---|
 | `weighingTicket/Form` (romaneio de pesagem) | 4 | **0** |
-| `storageTransactions/Form` (movimentação) | 7 | 1 (só UoM) |
+| `storageTransactions/Form` (movimentação) | 7 | **0** |
 | `menus/Form` | 1 | **0** |
+| `shippingTransaction/Create` (JSON model) | 5 | **0** |
+| `shipmentBilling/Billing` (diálogo, JSON model) | 2 | **0** |
+| `shipmentBilling/Billing` (tabela de contratos, 6 linhas) | 12 | **0** |
+| `shippingTransaction/SelectShipmentRelease` (10 linhas) | 10 | **0** |
 | `purchaseContracts/PurchaseContractForm` | 6 | 1 (só UoM) |
 | `storageAddresses/Form` | 5 | 1 (só UoM) |
 | `salesContracts/SalesContractForm` | 6 | 1 (só UoM) |
@@ -228,9 +230,10 @@ grep): `formatTaxName`, `formatTaxRate`, `formatAgentName`, `formatHarvestSeason
 
 ## O que falta
 
-**9 bindings** com formatter de busca (eram 67 no início da migração), depois da exclusão do
-`SalesContractBrokers`. Praticamente todos estão em telas montadas sobre JSON model, onde o
-padrão não se aplica sem trocar o binding para contexto OData:
+**Nada.** Os 67 bindings foram convertidos.
+
+O que segue é o histórico dos bloqueios encontrados e como cada um foi resolvido — vale
+ler antes de introduzir um campo de descrição novo.
 
 ### 1. Entidades servidas pelo SAP — RESOLVIDO com colunas desnormalizadas
 
@@ -298,21 +301,57 @@ justificava — teria evitado a migration, o backfill de ~6.400 linhas e o desca
 Nota: `SalesContract.cs` declarava `[ForeignKey("UnitOfMeasureModel")]` apontando para uma
 propriedade de navegação inexistente. Removido.
 
-### 2. Telas em JSON model — 10 bindings
+### 2. Telas em JSON model — RESOLVIDO com a variante de JSON
 
-`shippingTransaction/Form` (5), `shippingTransaction/QualityInspections`,
-`shipmentBilling/Billing` (2) e `SelectShipmentRelease`.
+`applyValueHelpDescriptionToJsonModel` cobre o caso: quando o Input do código binda um JSON
+model (`viewModel>/StorageTransaction/WarehouseCode`) não há contexto OData, então a
+descrição é gravada no **irmão** do caminho do código no mesmo model —
+`/StorageTransaction/WarehouseName`. Mesma ideia do caso OData, onde o caminho é relativo à
+linha; o `descriptionProperty` (inclusive a forma `destino:origem`) funciona igual.
 
-Os bindings apontam para `viewModel>/...`, não para contexto OData.
-`applyValueHelpDescription` exige `sap.ui.model.odata.v4.Context` e sai sem fazer nada.
-Para essas o padrão **não se aplica**: ou a tela passa a usar contexto OData, ou o controller
-popula a descrição junto ao montar o JSON (que é o que o backend já devolve no `$expand` —
-`shippingTransaction/Create` lê a liberação com `$expand=PurchaseContract`).
+Aplicado em `shippingTransaction/Create` (fragmentos `Form` e `QualityInspections`): a
+abertura caiu de **5 requisições avulsas para 0**, e os value helps editáveis (Armazém,
+Motorista, Atributo de Qualidade) atualizam a descrição sem ir ao servidor. Os valores
+iniciais vêm do `$expand=PurchaseContract` que a tela já fazia — só não estavam sendo lidos.
 
-### 3. Caso à parte — 1 binding
+⚠️ **Campo só de exibição não pode entrar no payload.** `ShippingTransactionsCreate` recebe
+um `EntityParameter<StorageTransaction>`, e o OData rejeita propriedade não declarada.
+`CardName`, `ItemName` e `WarehouseName` existem na entidade e podem ir; `TruckDriverName` e
+`QualityAttribName` **não existem** e são retirados em `Create.controller.ts` (`toPayload`).
+Ao adicionar um campo de descrição numa tela JSON, verifique se a propriedade existe na
+entidade de destino — se não existir, tire-a do payload.
 
-`shipmentBilling/Billing` usa `formatCustomerTaxId`, que busca o CNPJ do parceiro, não um
-nome. Além de cair no grupo 1 (parceiro vem do SAP), não é uma descrição de value help.
+Também aplicado em `shipmentBilling/Billing` (Endereço de Entrega e Transportadora do diálogo
+de faturamento). Ali o payload é montado por seleção explícita de campos em
+`saveBillingDialog`, então os nomes não vazam e não foi preciso um `toPayload`.
+
+### 2b. O dado às vezes já está no payload
+
+`shippingTransaction/SelectShipmentRelease` não precisou de padrão nenhum: o endpoint
+`ShipmentReleasesGetPurchaseContracts` **já devolvia** o nome do fornecedor em `FName`
+(`ShipmentReleasesPurchaseContractsService.MapToDto`: `FName = wh?.CardName`), e a view
+chamava o formatter em `FCode` mesmo assim. A correção foi trocar por `{contracts>FName}` —
+uma linha, de 10 requisições (uma por linha, repetidas no scroll) para **zero**.
+
+Antes de assumir que falta dado, **leia o payload**.
+
+### 3. Tabela de contratos do faturamento — RESOLVIDO
+
+Na tabela de contratos do diálogo de `shipmentBilling/Billing`, duas colunas buscavam o
+**mesmo** parceiro separadamente, uma vez por linha: Nome Fantasia
+(`formartCustomerFName` — o typo é real) e Cnpj (`formatCustomerTaxId`). Medido: **12
+requisições** para 6 linhas.
+
+Resolvido com o desenho do grupo 1 —
+`20260719213404_AddSalesContractCardFNameAndTaxId` adicionou `CardFName` VARCHAR(200) e
+`CardTaxId` VARCHAR(20) em `SALES_CONTRACTS`, preenchidas no create e no update.
+`SalesContractsCreateService`/`UpdateService` agora fazem **uma leitura só** do parceiro para
+as três colunas (`CardName`, `CardFName`, `CardTaxId`), em vez de uma por campo. Backfill de
+556 contratos via API. Resultado: **12 → 0**.
+
+⚠️ **Cuidado ao inventariar:** `formartCustomerFName` tem typo no nome. Uma regex ancorada em
+`format[A-Za-z]+` **não o encontra** — foi o que mascarou esse binding em contagens
+anteriores. Use `formatter:\s*'\.([A-Za-z]+)'` e filtre pela lista de formatters remotos.
 
 ### Corretores de contrato de venda — feature inexistente, fragmento removido
 

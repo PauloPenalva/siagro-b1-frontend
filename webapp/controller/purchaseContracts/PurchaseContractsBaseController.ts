@@ -4,10 +4,6 @@ import Table from "sap/ui/table/Table";
 import MessageBox from "sap/m/MessageBox";
 import Context from "sap/ui/model/odata/v4/Context";
 import CommonController from "../common/CommonController";
-import { BusinessPartner } from "siagrob1/types/BusinessPartner";
-import { Item } from "siagrob1/types/Items";
-import { Warehouse } from "siagrob1/types/Warehouse";
-import { QualityAttrib } from "siagrob1/types/QualityAttrib";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageToast from "sap/m/MessageToast";
@@ -207,50 +203,6 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
     const oContext = oTable.getContextByIndex(index) as Context;
 
     void oContext.delete(oModel.getUpdateGroupId());
-  }
-
-  async formatBusinessPartnerName(key: string){
-    if (!key){
-      return null;
-    } 
-
-    try {
-      this.setBusy(true);
-      const data = await this
-        .getResource<BusinessPartner>(`${this.api.businessPartners}('${key}')`)
-      
-      return data?.CardName;
-    } finally {
-      this.setBusy(false);
-    }
-
-  }
-
-  async formatItemName(key: string){
-    if (!key){
-      return null;
-    }
-
-    const data = await this.getResource<Item>(`${this.api.items}('${key}')`)
-    return data?.ItemName;
-  }
-
-  async formatWarehouseName(key: string) {
-     if (!key){
-      return null;
-    }
-
-    const data = await this.getResource<Warehouse>(`${this.api.warehouses}('${key}')`)
-    return data?.Name;
-  }
-
-   async formatQualityAttribName(key: string) {
-     if (!key){
-      return null;
-    }
-
-    const data = await this.getResource<QualityAttrib>(`${this.api.qualityAttrib}('${key}')`)
-    return data?.Name;
   }
 
   async onWithdrawApproval() {

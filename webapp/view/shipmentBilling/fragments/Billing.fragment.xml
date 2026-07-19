@@ -155,14 +155,11 @@
           <layoutData>
             <l:GridData span="XL3 L3 M3 S8" />
           </layoutData>
+          <customData>
+            <core:CustomData key="descriptionProperty" value="DeliveryCardName:CardName" />
+          </customData>
         </Input>
-        <Input 
-          value="{
-            parts: ['viewModel>/DeliveryCardCode'],
-            formatter: '.formatBusinessPartnerName'
-          }" 
-          editable="false"
-        />
+        <Input value="{viewModel>/DeliveryCardName}" editable="false" />
 
         <Label text="Transportadora" />
         <Input
@@ -174,14 +171,11 @@
           <layoutData>
             <l:GridData span="XL3 L3 M3 S8" />
           </layoutData>
+          <customData>
+            <core:CustomData key="descriptionProperty" value="TruckingCompanyName:CardName" />
+          </customData>
         </Input>
-        <Input 
-          value="{
-            parts: ['viewModel>/TruckingCompanyCode'],
-            formatter: '.formatBusinessPartnerName'
-          }" 
-          editable="false"
-        />
+        <Input value="{viewModel>/TruckingCompanyName}" editable="false" />
         
         
 				<Label text="Motorista" />
@@ -352,25 +346,13 @@
 				<t:Column width="25rem">
 					<Label text="Nome Fantasia" />
 					<t:template>
-						<Text
-							text="{
-                parts: ['CardCode'],
-                formatter: '.formartCustomerFName'
-              }"
-							wrapping="false"
-						/>
+						<Text text="{CardFName}" wrapping="false" />
 					</t:template>
 				</t:Column>
 				<t:Column width="15rem">
 					<Label text="Cnpj" />
 					<t:template>
-						<Text
-							text="{
-                parts: ['CardCode'],
-                formatter: '.formatCustomerTaxId'
-              }"
-							wrapping="false"
-						/>
+						<Text text="{CardTaxId}" wrapping="false" />
 					</t:template>
 				</t:Column>
 				<t:Column sortProperty="LogisticRegionCode" filterProperty="LogisticRegionCode" width="5rem">

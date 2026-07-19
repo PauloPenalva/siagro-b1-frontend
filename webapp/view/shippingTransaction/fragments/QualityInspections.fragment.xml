@@ -35,22 +35,19 @@
         <t:template>
           <Input
             editable="{ui>/editable}"
-            value="{viewModel>QualityAttribCode}" 
-            showValueHelp="true" 
-            valueHelpOnly="true" 
-            valueHelpRequest=".openQualityAttribsValueHelp"
-          />
+            value="{viewModel>QualityAttribCode}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openQualityAttribsValueHelp">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="QualityAttribName:Name" />
+            </customData>
+          </Input>
         </t:template>
       </t:Column>
       <t:Column label="Nome" width="10rem">
         <t:template>
-          <Text 
-            text="{ 
-              parts: ['viewModel>QualityAttribCode'],
-              formatter: '.formatQualityAttribName'
-            }" 
-            
-          />
+          <Text text="{viewModel>QualityAttribName}" />
         </t:template>
       </t:Column>
       <t:Column label="%" width="10rem">

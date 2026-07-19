@@ -7,7 +7,6 @@ import Filter from 'sap/ui/model/Filter';
 import FilterOperator from 'sap/ui/model/FilterOperator';
 import ODataListBinding from 'sap/ui/model/odata/v4/ODataListBinding';
 import { Input$ValueHelpRequestEvent } from 'sap/m/Input';
-import { QualityAttrib } from 'siagrob1/types/QualityAttrib';
 import Table from 'sap/ui/table/Table';
 import ODataModel from 'sap/ui/model/odata/v4/ODataModel';
 import MessageBox from 'sap/m/MessageBox';
@@ -127,16 +126,5 @@ export default class GenericController extends CommonController {
       this.storageAddressesSelectDialog.open("");
   }
 
-
-  async formatQualityAttribName(key: string) {
-      if (!key) {
-        return null;
-      }
-  
-      const data = await this.getResource<QualityAttrib>(
-        `${this.api.qualityAttrib}('${key}')`
-      );
-      return data?.Name;
-    }
 
 }

@@ -118,13 +118,7 @@
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
             </Input>
-            <Input 
-              value="{
-                parts: ['viewModel>/StorageTransaction/CardCode'],
-                formatter: '.formatBusinessPartnerName'
-              }" 
-              editable="false"
-            />
+            <Input value="{viewModel>/StorageTransaction/CardName}" editable="false" />
             <Label text="Observações" />
             <TextArea 
               editable="{ui>/editable}"
@@ -146,13 +140,7 @@
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
-            <Input 
-              value="{
-                parts:['viewModel>/StorageTransaction/ItemCode'],
-                formatter: '.formatItemName'
-              }" 
-              editable="false"
-            />
+            <Input value="{viewModel>/StorageTransaction/ItemName}" editable="false" />
             <Label text="Un.Med." />
             <Input 
               editable="false"
@@ -192,14 +180,11 @@
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="WarehouseName:Name" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts:['viewModel>/StorageTransaction/WarehouseCode'],
-                formatter: '.formatWarehouseName'
-              }" 
-              editable="false"
-            />
+            <Input value="{viewModel>/StorageTransaction/WarehouseName}" editable="false" />
             <Label text="Motorista" />
             <Input
               editable="{ui>/editable}"
@@ -212,14 +197,11 @@
               <layoutData>
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="TruckDriverName:Name" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts: ['viewModel>/StorageTransaction/TruckDriverCode'],
-                formatter: '.formatDriverName'
-              }" 
-              editable="false"
-            />
+            <Input value="{viewModel>/StorageTransaction/TruckDriverName}" editable="false" />
             <Label text="Placa" />
             <Input
               editable="{ui>/editable}"

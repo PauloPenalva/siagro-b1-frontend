@@ -3,12 +3,7 @@ import CommonController from "../common/CommonController";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Context from "sap/ui/model/odata/v4/Context";
-import { TruckDriver } from "siagrob1/types/TruckDriver";
 import MessageBox from "sap/m/MessageBox";
-import { BusinessPartner } from "siagrob1/types/BusinessPartner";
-import { Item } from "siagrob1/types/Items";
-import { Warehouse } from "siagrob1/types/Warehouse";
-import { QualityAttrib } from "siagrob1/types/QualityAttrib";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 
 import { Column, EdmType, SpreadsheetSettings } from "sap/ui/export/library";
@@ -67,71 +62,6 @@ export abstract class BaseController extends CommonController {
     const oContext = oTable.getContextByIndex(index) as Context;
 
     void oContext.delete(oModel.getUpdateGroupId());
-  }
-
-  async formatDriverName(key: string) {
-    if (!key) {
-      return null;
-    }
-
-    try {
-      this.setBusy(true);
-      const data = await this.getResource<TruckDriver>(
-        `${this.api.truckDrivers}('${key}')`
-      );
-
-      return data?.Name;
-    } finally {
-      this.setBusy(false);
-    }
-  }
-
-  async formatBusinessPartnerName(key: string) {
-    if (!key) {
-      return null;
-    }
-
-    try {
-      this.setBusy(true);
-      const data = await this.getResource<BusinessPartner>(
-        `${this.api.businessPartners}('${key}')`
-      );
-
-      return data?.CardName;
-    } finally {
-      this.setBusy(false);
-    }
-  }
-
-  async formatItemName(key: string) {
-    if (!key) {
-      return null;
-    }
-
-    const data = await this.getResource<Item>(`${this.api.items}('${key}')`);
-    return data?.ItemName;
-  }
-
-  async formatWarehouseName(key: string) {
-    if (!key) {
-      return null;
-    }
-
-    const data = await this.getResource<Warehouse>(
-      `${this.api.warehouses}('${key}')`
-    );
-    return data?.Name;
-  }
-
-  async formatQualityAttribName(key: string) {
-    if (!key) {
-      return null;
-    }
-
-    const data = await this.getResource<QualityAttrib>(
-      `${this.api.qualityAttrib}('${key}')`
-    );
-    return data?.Name;
   }
 
   private createColumnConfig() {

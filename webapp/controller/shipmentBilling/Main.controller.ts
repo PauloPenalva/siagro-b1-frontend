@@ -30,9 +30,13 @@ type BillingForm = {
   BranchCode?: string,
   Volume?: string | number,
   TruckingCompanyCode?: string,
+  /** Só exibição — preenchido pelo value help, não vai no payload. */
+  TruckingCompanyName?: string,
   TruckCode?: string,
   TaxPayerComments?: string,
   DeliveryCardCode?: string,
+  /** Só exibição — preenchido pelo value help, não vai no payload. */
+  DeliveryCardName?: string,
   ItemCode?: string,
   FreightTerms?: string,
   FreightCost?: number,

@@ -10,10 +10,7 @@ import RequestModel from "siagrob1/model/RequestModel";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
-import { Item } from "siagrob1/types/Items";
 import { BusinessPartner } from "siagrob1/types/BusinessPartner";
-import { QualityAttrib } from "siagrob1/types/QualityAttrib";
-import { Warehouse } from "siagrob1/types/Warehouse";
 import Dialog from "sap/m/Dialog";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { DocNumberInfo } from "siagrob1/types/DocNumberInfo";
@@ -137,6 +134,11 @@ export default abstract class CommonController extends BaseController {
    *
    * Aceita mais de um caminho separado por vírgula (`Tax/Name,Tax/Rate`), para
    * quando a mesma escolha alimenta várias colunas da tela.
+   *
+   * Telas montadas sobre JSON model (o Input do código binda algo como
+   * `viewModel>/StorageTransaction/WarehouseCode`) não têm contexto OData; nesse
+   * caso a gravação vai para o **irmão** do caminho do código no mesmo model —
+   * a mesma ideia do caso OData, onde o caminho é relativo à linha.
    */
   private async applyValueHelpDescription(oInput: Input, oSelected: Context) {
     const sDescriptionPaths = oInput.data("descriptionProperty") as string;
@@ -148,6 +150,7 @@ export default abstract class CommonController extends BaseController {
     const oTarget = oInput.getBindingContext();
 
     if (!oTarget?.isA("sap.ui.model.odata.v4.Context")) {
+      this.applyValueHelpDescriptionToJsonModel(oInput, oSelected, sDescriptionPaths);
       return;
     }
 
@@ -167,6 +170,42 @@ export default abstract class CommonController extends BaseController {
           );
         })
     );
+  }
+
+  /**
+   * Variante para telas em JSON model, onde não há contexto OData.
+   *
+   * O caminho do Input do código é absoluto (`/StorageTransaction/WarehouseCode`);
+   * a descrição é gravada no irmão dele (`/StorageTransaction/WarehouseName`).
+   */
+  private applyValueHelpDescriptionToJsonModel(
+    oInput: Input,
+    oSelected: Context,
+    sDescriptionPaths: string
+  ) {
+    const oValueBinding = oInput.getBinding("value");
+    const oModel = oValueBinding?.getModel() as JSONModel;
+
+    if (!oModel?.isA("sap.ui.model.json.JSONModel")) {
+      return;
+    }
+
+    const sCodePath = oValueBinding.getPath();
+    const sParentPath = sCodePath.slice(0, sCodePath.lastIndexOf("/"));
+
+    sDescriptionPaths
+      .split(",")
+      .map((sEntry) => sEntry.trim())
+      .filter(Boolean)
+      .forEach((sEntry) => {
+        const [sPath, sSource] = sEntry.split(":").map((s) => s.trim());
+        const sSourceProperty = sSource || sPath.split("/").pop();
+
+        oModel.setProperty(
+          `${sParentPath}/${sPath}`,
+          oSelected.getProperty(sSourceProperty)
+        );
+      });
   }
 
   openProcessingCostsListValueHelp(ev: Input$ValueHelpRequestEvent) {
@@ -269,32 +308,6 @@ export default abstract class CommonController extends BaseController {
     void this.applyValueHelp(ev, "ProfilesSelectDialog", ["Description", "Code"], "Code");
   }
 
-  async formatItemName(key: string){
-    if (!key){
-      return null;
-    }
-  
-    const data = await this.getResource<Item>(`${this.api.items}('${key}')`)
-    return data?.ItemName;
-  }
-
-   async formartCustomerFName(key: string){
-      if (!key){
-        return null;
-      } 
-  
-      try {
-        this.setBusy(true);
-        const data = await this
-          .getResource<BusinessPartner>(`${this.api.businessPartners}('${key}')`)
-        
-        return data?.CardFName;
-      } finally {
-        this.setBusy(false);
-      }
-  
-    }
-
     async formartCustomerTaxId(key: string){
       if (!key){
         return null;
@@ -344,41 +357,6 @@ export default abstract class CommonController extends BaseController {
         this.setBusy(false);
       }
   
-    }
-
-    async formatBusinessPartnerName(key: string){
-      if (!key){
-        return null;
-      } 
-  
-      try {
-        this.setBusy(true);
-        const data = await this
-          .getResource<BusinessPartner>(`${this.api.businessPartners}('${key}')`)
-        
-        return data?.CardName;
-      } finally {
-        this.setBusy(false);
-      }
-  
-    }
-  
-    async formatWarehouseName(key: string) {
-       if (!key){
-        return null;
-      }
-  
-      const data = await this.getResource<Warehouse>(`${this.api.warehouses}('${key}')`)
-      return data?.Name;
-    }
-  
-    async formatQualityAttribName(key: string) {
-      if (!key){
-        return null;
-      }
-  
-      const data = await this.getResource<QualityAttrib>(`${this.api.qualityAttrib}('${key}')`)
-      return data?.Name;
     }
 
 } 
