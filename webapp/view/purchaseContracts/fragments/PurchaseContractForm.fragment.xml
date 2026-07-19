@@ -153,12 +153,12 @@
               <layoutData>
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="CardName" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts: ['CardCode'],
-                formatter: '.formatBusinessPartnerName'
-              }" 
+            <Input
+              value="{CardName}"
               editable="false"
             />
             <Label text="Observações" />
@@ -171,22 +171,22 @@
 
             <core:Title text="Produto e Preços" />
             <Label text="Produto" />
-            <Input 
-							editable="{ui>/editable}"	
+            <Input
+							editable="{ui>/editable}"
               required="true"
-              value="{ItemCode}" 
-              showValueHelp="true" 
-              valueHelpOnly="true" 
+              value="{ItemCode}"
+              showValueHelp="true"
+              valueHelpOnly="true"
               valueHelpRequest=".openItemValueHelp">
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="ItemName" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts:['ItemCode'],
-                formatter: '.formatItemName'
-              }" 
+            <Input
+              value="{ItemName}"
               editable="false"
             />
             <Label text="Un.Med." />

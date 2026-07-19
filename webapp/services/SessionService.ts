@@ -1,75 +1,250 @@
 import Dialog from "sap/m/Dialog";
 import Text from "sap/m/Text";
 import Button from "sap/m/Button";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import ODataModel from "sap/ui/model/odata/v4/ODataModel";
+import UIComponent from "sap/ui/core/UIComponent";
+import RequestModel from "siagrob1/model/RequestModel";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
+import formatter from "siagrob1/model/formatter";
+import { BranchInfo } from "siagrob1/types/BranchInfo";
+import { SystemInfo } from "siagrob1/types/SystemInfo";
 
-type ExpireCallback = () => void;
+export const USER_MENU_KEY = "USER_MENU";
+export const SYSTEM_SETUP_KEY = "SYSTEM_SETUP";
 
+export type Credentials = {
+  Username: string;
+  Password: string;
+};
+
+/**
+ * Dono único do estado de sessão do usuário.
+ *
+ * Concentra as chamadas REST de autenticação, a escrita no `sessionModel`,
+ * a limpeza do storage local e o controle de inatividade. Controllers e o
+ * Component apenas consomem esta API - não manipulam o estado diretamente.
+ */
 class SessionService {
-  private idleTimer?: number;
-  private warningTimer?: number;
-  private active = false;
-
   private readonly IDLE_TIMEOUT = 30 * 60 * 1000;   // 30 min
   private readonly WARNING_TIME = 28 * 60 * 1000;   // aviso com 2 min
 
-  private onExpireCallback?: ExpireCallback;
+  private component: UIComponent;
+  private idleTimer?: number;
+  private warningTimer?: number;
+  private watching = false;
+  private listenersAttached = false;
 
-  public start(callback: ExpireCallback): void {
-    this.onExpireCallback = callback;
-    this.active = true;
+  /** Cache do status vindo do servidor. `undefined` = ainda não consultado. */
+  private authenticated?: boolean;
 
-    this.attachListeners();
+  /** Última filial conhecida - evita reconsultar o servidor na shell. */
+  private branchInfo?: BranchInfo;
+
+  private markReady: () => void;
+  private readonly ready = new Promise<void>(resolve => this.markReady = resolve);
+
+  /** Notificados sempre que a sessão termina de carregar (boot e login). */
+  private readonly sessionReadyHandlers: (() => void)[] = [];
+
+  private readonly activityEvents = ["click", "keydown", "mousemove", "scroll", "touchstart"];
+
+  /** Referência única e estável - permite remover os listeners depois. */
+  private readonly onActivity = (): void => this.resetTimers();
+
+  /**
+   * Liga o serviço ao Component. Deve ser chamado uma única vez, no
+   * `Component.init()`, antes da inicialização do router.
+   */
+  public init(component: UIComponent): void {
+    this.component = component;
+    this.attachActivityListeners();
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Autenticação                                                        */
+  /* ------------------------------------------------------------------ */
+
+  public async login(credentials: Credentials): Promise<void> {
+    await new RequestModel().post(ServerRoutes.login, credentials);
+
+    this.authenticated = true;
+    this.getSessionModel().setProperty("/logged", true);
+
+    // Uma falha ao carregar menu/filial não invalida o login já concedido.
+    try {
+      await this.hydrate();
+    } catch (error) {
+      console.warn("Falha ao carregar os dados da sessão.", error);
+    }
+
+    this.startIdleWatch();
+  }
+
+  /**
+   * Encerra a sessão no servidor e limpa o estado local. A limpeza e o
+   * redirecionamento acontecem mesmo que o POST falhe - caso contrário o
+   * usuário ficaria preso numa sessão inválida.
+   */
+  public async logout(): Promise<void> {
+    try {
+      await this.postWithoutBody(ServerRoutes.logout);
+    } catch (error) {
+      console.warn("Falha ao encerrar a sessão no servidor.", error);
+    } finally {
+      this.clearSessionState();
+      this.navToLogin();
+    }
+  }
+
+  /** Consulta `/security/auth/status` e atualiza o cache. */
+  public async refreshStatus(): Promise<boolean> {
+    try {
+      const status = await new RequestModel().get(ServerRoutes.userInfo) as { authenticated?: boolean };
+      this.authenticated = !!status?.authenticated;
+    } catch (error) {
+      console.warn("Falha ao consultar o status da sessão.", error);
+      this.authenticated = false;
+    }
+
+    this.getSessionModel().setProperty("/logged", this.authenticated);
+    return this.authenticated;
+  }
+
+  /**
+   * Leitura síncrona do cache - usada pelo guard de rota, que não pode
+   * aguardar uma requisição. O cache é preenchido no boot e revalidado
+   * no login, no aviso de inatividade e em respostas 401.
+   */
+  public isAuthenticated(): boolean {
+    return this.authenticated === true;
+  }
+
+  /**
+   * Resolve quando o boot da sessão terminou (status consultado e, se houver
+   * sessão, dados carregados). A shell usa isso para não competir com o boot.
+   */
+  public whenReady(): Promise<void> {
+    return this.ready;
+  }
+
+  /** Sinaliza o fim do boot. Chamado apenas pelo Component. */
+  public notifyReady(): void {
+    this.markReady();
+  }
+
+  /** Assina o fim de cada carga de sessão (boot com sessão válida e login). */
+  public attachSessionReady(handler: () => void): void {
+    this.sessionReadyHandlers.push(handler);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Estado da sessão                                                    */
+  /* ------------------------------------------------------------------ */
+
+  /**
+   * Carrega tudo que a shell precisa depois de autenticado: menu do usuário,
+   * nome da empresa, filial padrão e configuração do sistema.
+   */
+  public async hydrate(): Promise<void> {
+    this.applyCachedMenu();
+
+    await Promise.all([
+      this.loadUserMenu(),
+      this.loadSystemInfo(),
+      this.loadBranchInfo(),
+      this.loadSystemSetup()
+    ]);
+
+    this.sessionReadyHandlers.forEach(handler => handler());
+  }
+
+  /** Filial corrente já carregada, sem ida ao servidor. */
+  public getBranchInfo(): BranchInfo {
+    return this.branchInfo;
+  }
+
+  public async loadBranchInfo(): Promise<BranchInfo> {
+    const branchInfo = await new RequestModel().get(ServerRoutes.getBranchInfo) as BranchInfo;
+
+    this.branchInfo = branchInfo;
+
+    this.getSessionModel().setProperty(
+      "/branchInfo",
+      branchInfo?.code ? ` - ${branchInfo.shortName} / ${formatter.formatCnpj(branchInfo.taxId)}` : null
+    );
+
+    return branchInfo;
+  }
+
+  public async setDefaultBranch(branchCode: string): Promise<void> {
+    // Estes endpoints respondem 200 com corpo vazio - pedir "json" faria o
+    // jQuery falhar no parse e rejeitar uma requisição bem sucedida.
+    await this.postWithoutBody(ServerRoutes.setDefaultBranch, { BranchCode: branchCode });
+  }
+
+  /** Zera tudo que identifica o usuário: modelos, storage, timers e cache. */
+  public clearSessionState(): void {
+    this.stopIdleWatch();
+
+    this.authenticated = false;
+    this.branchInfo = undefined;
+
+    const sessionModel = this.getSessionModel();
+    sessionModel.setProperty("/logged", false);
+    sessionModel.setProperty("/branchInfo", null);
+    sessionModel.setProperty("/systemInfo", null);
+
+    this.getMenuModel()?.setData({});
+
+    window.localStorage.removeItem(USER_MENU_KEY);
+    window.localStorage.removeItem(SYSTEM_SETUP_KEY);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Inatividade                                                         */
+  /* ------------------------------------------------------------------ */
+
+  public startIdleWatch(): void {
+    this.watching = true;
     this.resetTimers();
   }
 
-  public stop(): void {
-    this.active = false;
-
-    if (this.idleTimer) {
-      window.clearTimeout(this.idleTimer);
-    }
-
-    if (this.warningTimer) {
-      window.clearTimeout(this.warningTimer);
-    }
+  public stopIdleWatch(): void {
+    this.watching = false;
+    this.clearTimers();
   }
 
-  private attachListeners(): void {
-    const events: string[] = [
-      "click",
-      "keydown",
-      "mousemove",
-      "scroll",
-      "touchstart"
-    ];
-
-    events.forEach(event =>
-      document.addEventListener(event, this.resetTimers.bind(this))
-    );
-  }
-
-  private resetTimers(): void {
-    if (!this.active) {
+  private attachActivityListeners(): void {
+    if (this.listenersAttached) {
       return;
     }
 
+    this.activityEvents.forEach(event => document.addEventListener(event, this.onActivity));
+    this.listenersAttached = true;
+  }
+
+  private clearTimers(): void {
     if (this.idleTimer) {
       window.clearTimeout(this.idleTimer);
+      this.idleTimer = undefined;
     }
 
     if (this.warningTimer) {
       window.clearTimeout(this.warningTimer);
+      this.warningTimer = undefined;
+    }
+  }
+
+  private resetTimers(): void {
+    if (!this.watching) {
+      return;
     }
 
-    this.warningTimer = window.setTimeout(
-      () => this.showWarning(),
-      this.WARNING_TIME
-    );
+    this.clearTimers();
 
-    this.idleTimer = window.setTimeout(
-      () => this.expireSession(),
-      this.IDLE_TIMEOUT
-    );
+    this.warningTimer = window.setTimeout(() => this.showWarning(), this.WARNING_TIME);
+    this.idleTimer = window.setTimeout((): void => { void this.expireSession(); }, this.IDLE_TIMEOUT);
   }
 
   private showWarning(): void {
@@ -83,14 +258,14 @@ class SessionService {
         text: "Continuar sessão",
         press: () => {
           dialog.close();
-          this.renewSession();
+          void this.renewSession();
         }
       }),
       endButton: new Button({
         text: "Sair",
         press: () => {
           dialog.close();
-          this.expireSession();
+          void this.expireSession();
         }
       }),
       afterClose: () => dialog.destroy()
@@ -99,16 +274,76 @@ class SessionService {
     dialog.open();
   }
 
-  private renewSession(): void {
-    fetch("/security/auth/status", {
-      method: "GET",
-      credentials: "include"
-    }).finally(() => this.resetTimers());
+  /**
+   * Só renova se o servidor confirmar que a sessão ainda vale - antes, um 401
+   * aqui reiniciava os timers silenciosamente.
+   */
+  private async renewSession(): Promise<void> {
+    if (await this.refreshStatus()) {
+      this.resetTimers();
+      return;
+    }
+
+    await this.expireSession();
   }
 
-  private expireSession(): void {
-    this.stop();
-    this.onExpireCallback?.();
+  private async expireSession(): Promise<void> {
+    this.stopIdleWatch();
+    await this.logout();
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Auxiliares                                                          */
+  /* ------------------------------------------------------------------ */
+
+  private applyCachedMenu(): void {
+    const cached = window.localStorage.getItem(USER_MENU_KEY);
+    if (cached) {
+      this.getMenuModel()?.setData(JSON.parse(cached) as object);
+    }
+  }
+
+  private async loadUserMenu(): Promise<void> {
+    const userMenu = await new RequestModel().get(ServerRoutes.userMenu) as object;
+
+    window.localStorage.setItem(USER_MENU_KEY, JSON.stringify(userMenu));
+    this.getMenuModel()?.setData(userMenu);
+  }
+
+  private async loadSystemInfo(): Promise<void> {
+    const systemInfo = await new RequestModel().get(ServerRoutes.systemInfo) as SystemInfo;
+    this.getSessionModel().setProperty("/systemInfo", systemInfo?.companyName);
+  }
+
+  private async loadSystemSetup(): Promise<void> {
+    const func = (this.component.getModel() as ODataModel).bindContext("/SystemSetupGetActive(...)");
+
+    await func.invoke();
+
+    window.localStorage.setItem(SYSTEM_SETUP_KEY, JSON.stringify(func.getBoundContext().getObject()));
+  }
+
+  /** POST cuja resposta não é JSON (corpo vazio). */
+  private postWithoutBody(url: string, payload?: object): JQuery.jqXHR {
+    return new RequestModel().request(
+      url,
+      "POST",
+      payload ? JSON.stringify(payload) : "",
+      "application/json",
+      "text"
+    );
+  }
+
+  private navToLogin(): void {
+    this.component.getRouter().navTo("login", {}, undefined, true);
+  }
+
+  private getSessionModel(): JSONModel {
+    return this.component.getModel("sessionModel") as JSONModel;
+  }
+
+  private getMenuModel(): JSONModel {
+    return this.component.getModel("menu") as JSONModel;
   }
 }
 

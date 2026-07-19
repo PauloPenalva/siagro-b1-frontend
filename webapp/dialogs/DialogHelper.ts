@@ -3,7 +3,7 @@ import Dialog from "sap/m/Dialog";
 import Label from "sap/m/Label";
 import { ButtonType } from "sap/m/library";
 import MessageBox from "sap/m/MessageBox";
-import TableSelectDialog from "sap/m/TableSelectDialog";
+import TableSelectDialog, { TableSelectDialog$ConfirmEvent } from "sap/m/TableSelectDialog";
 import TextArea from "sap/m/TextArea";
 import Fragment from "sap/ui/core/Fragment";
 import { ValueState } from "sap/ui/core/library";
@@ -14,6 +14,63 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import formatter from "siagrob1/model/formatter";
+
+/**
+ * Um TableSelectDialog por (view, fragmento).
+ *
+ * O reaproveitamento antigo era código morto: o id era montado como
+ * `view.getId() + "_" + name` e procurado com `view.byId(id)`, que prefixa o id
+ * da view outra vez - a busca nunca casava. Resultado: cada abertura criava um
+ * diálogo novo e o deixava pendurado como dependent da view para sempre.
+ */
+const selectDialogCache = new Map<string, TableSelectDialog>();
+
+async function getSelectDialog(
+  oController: Controller,
+  name: string,
+  filters: string[],
+  defaultFilters: Filter[]
+): Promise<TableSelectDialog> {
+  const view = oController.getView();
+  const key = `${view.getId()}_${name}`;
+  const oCached = selectDialogCache.get(key);
+
+  // A view é destruída ao navegar (clearControlAggregation), levando junto os
+  // seus dependents - por isso o cache precisa validar antes de reaproveitar.
+  if (oCached && !oCached.isDestroyed()) {
+    return oCached;
+  }
+
+  const oDlg = await Fragment.load({
+    name: "siagrob1.dialogs.fragments." + name,
+    controller: oController,
+    id: key
+  }) as TableSelectDialog;
+
+  // A busca não depende da abertura, então é ligada uma única vez.
+  oDlg.attachSearch(ev => {
+    const value = ev.getParameter("value");
+    const aFilters = filters.map(propertyName =>
+      new Filter(propertyName, FilterOperator.Contains, value)
+    );
+
+    const oFilters = new Filter({
+      filters: aFilters,
+      and: false,
+    });
+
+    (ev.getSource().getBinding("items") as ODataListBinding).filter([oFilters, ...defaultFilters]);
+  });
+
+  if (Device.system.desktop) {
+    oDlg.addStyleClass("sapUiSizeCompact");
+  }
+
+  view.addDependent(oDlg);
+  selectDialogCache.set(key, oDlg);
+
+  return oDlg;
+}
 
 export default {
 
@@ -37,59 +94,42 @@ export default {
     return oDlg;
   },
   
-  openTableSelectDialog: (oController: Controller, name: string, filters: string[], defaultFilters: Filter[] = []): Promise<Context> => {
-    return new Promise(resolve => {
-      const view = oController.getView();
-      const id = view.getId() + "_" + name;
-      let oDlg = view.byId(id) as TableSelectDialog;
-    
-      if (oDlg) {
-        oDlg.open("");
-        return;
-      }
+  /**
+   * Abre um TableSelectDialog e resolve com o contexto escolhido.
+   *
+   * Resolve com `undefined` quando o usuário cancela (botão Cancelar, Esc ou
+   * clique fora) - antes disso a Promise simplesmente nunca era resolvida, e
+   * todo cancelamento deixava um `await` pendurado para sempre.
+   */
+  openTableSelectDialog: async (
+    oController: Controller,
+    name: string,
+    filters: string[],
+    defaultFilters: Filter[] = []
+  ): Promise<Context | undefined> => {
+    const oDlg = await getSelectDialog(oController, name, filters, defaultFilters);
 
-      Fragment.load({
-        name: "siagrob1.dialogs.fragments." + name,
-        controller: oController,
-        id,
-      })
-      .then((oControl) => {
-        oDlg = oControl as TableSelectDialog;
-        oDlg.attachConfirm(ev => {
-          const oContext = ev
-            .getParameter("selectedItem")
-            .getBindingContext() as Context;
+    return new Promise<Context | undefined>(resolve => {
+      // Os handlers são ligados por abertura e desligados no primeiro disparo:
+      // como o diálogo é reaproveitado, deixá-los presos resolveria a Promise
+      // de uma abertura anterior.
+      const finish = (oContext?: Context) => {
+        oDlg.detachConfirm(onConfirm);
+        oDlg.detachCancel(onCancel);
+        resolve(oContext);
+      };
 
-          resolve(oContext);
-        })
+      const onConfirm = (ev: TableSelectDialog$ConfirmEvent) => {
+        finish(ev.getParameter("selectedItem")?.getBindingContext() as Context);
+      };
 
-        oDlg.attachSearch(ev => {
-          const value = ev.getParameter("value");
-          let aFilters: Filter[] = [];
-          filters.forEach(propertyName =>{
-            aFilters.push(new Filter(propertyName, FilterOperator.Contains, value))
-          })
+      const onCancel = () => finish(undefined);
 
-          const oFilters = new Filter({
-            filters: aFilters,
-            and: false,
-          });
-          
-          (ev.getSource().getBinding("items") as ODataListBinding).filter([oFilters, ...defaultFilters]);
-        });
+      oDlg.attachConfirm(onConfirm);
+      oDlg.attachCancel(onCancel);
 
-        if (Device.system.desktop) {
-          oDlg.addStyleClass("sapUiSizeCompact");
-        }
-
-        view.addDependent(oDlg);
-        oDlg.open("");
-      })
-      .catch((err) => {
-        throw err;
-      });
-    })
-    
+      oDlg.open("");
+    });
   },
 
   async confirmDialog(title: string, message?: string) {

@@ -1,0 +1,68 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+    <!--
+        Seleção obrigatória de filial: sem botão Cancelar e imune a Esc/clique fora.
+        A única saída sem escolher uma filial é sair do sistema.
+    -->
+    <Dialog
+        class="sapUiSizeCompact"
+        title="Selecione a filial de trabalho"
+        contentWidth="40rem"
+        escapeHandler=".onRequiredBranchEscape"
+    >
+        <content>
+            <MessageStrip
+                class="sapUiSmallMargin"
+                text="É necessário escolher uma filial para utilizar o sistema."
+                type="Information"
+                showIcon="true"
+            />
+            <Table
+                id="requiredBranchTable"
+                items="{
+                    path: '/Branchs',
+                    sorter: {
+                        path: 'Code',
+                        descending: false
+                    }
+                }"
+            >
+                <columns>
+                    <Column>
+                        <header>
+                            <Text text="Codigo" />
+                        </header>
+                    </Column>
+                    <Column>
+                        <header>
+                            <Text text="Nome" />
+                        </header>
+                    </Column>
+                    <Column>
+                        <header>
+                            <Text text="Nome Curto" />
+                        </header>
+                    </Column>
+                    <Column>
+                        <header>
+                            <Text text="CNPJ" />
+                        </header>
+                    </Column>
+                </columns>
+                <ColumnListItem type="Active" press=".onRequiredBranchPress">
+                    <cells>
+                        <Text text="{Code}" />
+                        <Text text="{BranchName}" />
+                        <Text text="{ShortName}" />
+                        <Text text="{TaxId}" />
+                    </cells>
+                </ColumnListItem>
+            </Table>
+        </content>
+        <endButton>
+            <Button text="Sair" press=".onRequiredBranchExit" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

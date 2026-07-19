@@ -8,13 +8,13 @@ import Device from "sap/ui/Device";
 import Button from "sap/m/Button";
 import { MenuItem$PressEvent } from "sap/m/MenuItem";
 import { ShellBar$ProductSwitcherPressedEvent } from "sap/f/ShellBar";
-import RequestModel from "siagrob1/model/RequestModel";
-import ServerRoutes from "siagrob1/model/ServerRoutes";
-import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import Avatar, { Avatar$PressEvent } from "sap/m/Avatar";
+import Dialog from "sap/m/Dialog";
+import MessageBox from "sap/m/MessageBox";
+import { ListItemBase$PressEvent } from "sap/m/ListItemBase";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import formatter from "siagrob1/model/formatter";
-import { SystemInfo } from "siagrob1/types/SystemInfo";
+import SessionService from "siagrob1/services/SessionService";
 
 /**
  * @namespace siagrob1.controller
@@ -25,51 +25,19 @@ export default class App extends BaseController {
   private _pPopover: Popover;
   private _avatar: Avatar;
   private _avatarPopover: Popover;
+  private _requiredBranchDialog: Dialog;
+  private _selectingBranch = false;
 
   formatter = formatter;
 
-	public async onInit() {
+	public onInit(): void {
     const oComponent = this.getOwnerComponent();
-    const sessionModel = oComponent.getModel("sessionModel") as JSONModel;
     const oView = this.getView();
-    
+
 		oView.addStyleClass(oComponent.getContentDensityClass());
 
     this._avatar = this.byId("avatar") as Avatar;
 
-    await this.getUserInfo().then((data) => {
-      const { authenticated } = data;
-      if (!authenticated){
-        oComponent.stopSession();
-
-        sessionModel.setProperty("/logged", false);
-        sessionModel.setProperty("/branchInfo", null);
-        this.navToLogin();
-        return;
-      }
-
-      
-      sessionModel.setProperty("/logged", authenticated);
-      
-      oComponent.startSession();
-    }).catch((error) => {
-      console.log(error);
-      oComponent.stopSession();
-
-      sessionModel.setProperty("/logged", false);
-      sessionModel.setProperty("/branchInfo", null);
-      this.navToLogin();
-      return;
-    });
-    
-    /************************************************* */
-    /** MENU DINAMICO                                  */
-    /************************************************* */
-    const menu = window.localStorage.getItem("USER_MENU");
-    if (menu) {
-      (oComponent.getModel("menu") as JSONModel)?.setData(JSON.parse(menu));
-    }
-    
     this.oProductSwitchModel = new JSONModel();
     void this.oProductSwitchModel.loadData(sap.ui.require.toUrl("siagrob1/data/productSwitch/data.json"))
       .then(() => oView.setModel(this.oProductSwitchModel, "productSwitch"));
@@ -110,65 +78,93 @@ export default class App extends BaseController {
       }).then((oPopover) => this._avatarPopover = oPopover as Popover)
     }
     
-    this.setCompanyName().then(() => console.info("Company name setted."));
-    this.displayBranchInfo().then(() => console.info("Branch info displayed."));
-
-    this.getRouter().getRoute("main").attachPatternMatched(async (ev) => await this.patternMatched(ev));
+    this.watchSession();
 	}
 
-  async patternMatched(ev: Route$PatternMatchedEvent){
-    const oView = this.getView();
+  /**
+   * A shell reage à sessão: no boot com sessão válida e a cada login, garante
+   * que exista uma filial padrão. Antes isso rodava a cada navegação para "main".
+   */
+  private watchSession(): void {
+    SessionService.attachSessionReady(() => void this.ensureBranchSelected());
+
+    // O boot pode ter terminado antes deste controller existir.
+    void SessionService.whenReady().then(() => this.ensureBranchSelected());
+  }
+
+  /**
+   * Sem filial não há como operar o sistema, então este diálogo é obrigatório:
+   * não fecha por Esc nem por clique fora, e a única alternativa a escolher uma
+   * filial é sair. Por isso ele não reaproveita o `BranchsSelectDialog`, que é
+   * livremente cancelável.
+   */
+  private async ensureBranchSelected(): Promise<void> {
+    if (this._selectingBranch || !SessionService.isAuthenticated() || SessionService.getBranchInfo()?.code) {
+      return;
+    }
+
+    this._selectingBranch = true;
+
+    try {
+      const oDialog = await this.getRequiredBranchDialog();
+      oDialog.open();
+    } catch (error) {
+      this._selectingBranch = false;
+      console.error("Falha ao abrir a seleção de filial.", error);
+    }
+  }
+
+  private async getRequiredBranchDialog(): Promise<Dialog> {
+    this._requiredBranchDialog ??= await DialogHelper.createDialog(this, "siagrob1.dialogs.fragments.RequiredBranchDialog");
+
+    return this._requiredBranchDialog;
+  }
+
+  /** Bloqueia o fechamento por Esc. */
+  onRequiredBranchEscape(oPromise: { reject: () => void }): void {
+    oPromise.reject();
+  }
+
+  async onRequiredBranchPress(ev: ListItemBase$PressEvent): Promise<void> {
+    const branchCode = ev.getSource().getBindingContext().getProperty("Code") as string;
+
+    if (!branchCode) {
+      return;
+    }
 
     try {
       this.setBusy(true);
-      
-      const data = await this.getUserInfo();
-      const { authenticated } = data;
-      if (!authenticated){
-          this.navToLogin();
-      }
 
+      await SessionService.setDefaultBranch(branchCode);
+      await SessionService.loadBranchInfo();
+
+      this._requiredBranchDialog.close();
+      this._selectingBranch = false;
     } catch (error) {
-      const err = error as Error;  
-      console.log(err);
-      this.navToLogin();
+      MessageBox.error("Não foi possível definir a filial de trabalho.");
+      console.error(error);
     } finally {
       this.setBusy(false);
     }
   }
 
+  async onRequiredBranchExit(): Promise<void> {
+    this._requiredBranchDialog.close();
+    this._selectingBranch = false;
+
+    await SessionService.logout();
+  }
+
   async onChangeBranch() {
-    await this.setDefaultBranch();
-    await this.displayBranchInfo();
-  }
-
-  private async displayBranchInfo() {
-    const oComponent = this.getOwnerComponent();
-    const requestModel = new RequestModel();
-    const branchInfo = await requestModel.get(ServerRoutes.getBranchInfo);
-      
-    (oComponent.getModel("sessionModel") as JSONModel).setProperty("/branchInfo", ` - ${branchInfo.shortName} / ${this.formatter.formatCnpj(branchInfo.taxId)}`);
-  }
-
-  private async setDefaultBranch() {
     const branchsCtx = await DialogHelper.openTableSelectDialog(this, "BranchsSelectDialog", []);
-    const branchCode = branchsCtx?.getObject()?.Code;
-    
-    await $.ajax({
-      url: ServerRoutes.setDefaultBranch,
-      method: 'POST',
-      contentType: 'application/json',
-      data: JSON.stringify({ BranchCode: branchCode }),
-    });
-  }
+    const branchCode = (branchsCtx?.getObject() as { Code?: string })?.Code;
 
-  private async setCompanyName() {
-     const systemInfo = await this.getSystemInfo() as SystemInfo;
-    (this.getOwnerComponent().getModel("sessionModel") as JSONModel)?.setProperty("/systemInfo", systemInfo?.companyName);
-  }
+    if (!branchCode) {
+      return;
+    }
 
-  private navToLogin(){
-    this.navTo("login", {}, true)
+    await SessionService.setDefaultBranch(branchCode);
+    await SessionService.loadBranchInfo();
   }
 
 	onHomePress(): void {
@@ -216,24 +212,11 @@ export default class App extends BaseController {
       return;
     }
 
-    this.setBusy(true);
-    setTimeout(() => {
-      const requestModel = new RequestModel();    
-     
-      requestModel.post(ServerRoutes.logout)
-        .done(() => {
-          window.localStorage.setItem("USER_MENU", JSON.stringify({}));
-          
-          (this.getOwnerComponent().getModel("menu") as JSONModel)?.setData({});
-          
-          this.setBusy(false);
-          this.navToLogin();
-        })
-        .catch(() => {
-          this.setBusy(false);
-          this.navToLogin();
-        })
-    }, 1000);
-    
+    try {
+      this.setBusy(true);
+      await SessionService.logout();
+    } finally {
+      this.setBusy(false);
+    }
   }
 }

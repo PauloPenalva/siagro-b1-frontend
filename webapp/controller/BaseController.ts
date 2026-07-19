@@ -22,6 +22,7 @@ import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { BranchInfo } from "siagrob1/types/BranchInfo";
 import { SystemSetup } from "siagrob1/types/SystemSetup";
 import { SystemInfo } from "siagrob1/types/SystemInfo";
+import { SYSTEM_SETUP_KEY } from "siagrob1/services/SessionService";
 
 /**
  * @namespace siagrob1.controller
@@ -270,11 +271,11 @@ export default abstract class BaseController extends Controller {
     await func.invoke();
     const boundContext = func.getBoundContext();
     
-    localStorage.setItem("SYSTEM_SETUP", JSON.stringify(boundContext.getObject()))
+    localStorage.setItem(SYSTEM_SETUP_KEY, JSON.stringify(boundContext.getObject()))
   }
 
   getSystemSetup(): SystemSetup {
-    return JSON.parse(localStorage.getItem("SYSTEM_SETUP")) ?? {}
+    return JSON.parse(localStorage.getItem(SYSTEM_SETUP_KEY)) ?? {}
   }
 
 }

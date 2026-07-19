@@ -1,5 +1,5 @@
 import BaseController from "../BaseController";
-import { Input$ValueHelpRequestEvent } from "sap/m/Input";
+import Input, { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import Context from "sap/ui/model/odata/v4/Context";
 
 import MessageBox from "sap/m/MessageBox";
@@ -93,290 +93,166 @@ export default abstract class CommonController extends BaseController {
     this.reportDialog?.close();
   }
 
+  /**
+   * Abre um value help e aplica a propriedade escolhida ao Input de origem.
+   *
+   * Cancelar resolve com `undefined`, e nesse caso o valor atual é preservado.
+   *
+   * Quando o Input declara `<core:CustomData key="descriptionProperty" .../>`, a
+   * descrição correspondente também é gravada na entidade - assim o campo de nome
+   * ao lado acompanha a troca sem precisar de um formatter que vai ao servidor.
+   */
+  private async applyValueHelp(
+    ev: Input$ValueHelpRequestEvent,
+    name: string,
+    filters: string[],
+    property: string,
+    defaultFilters: Filter[] = []
+  ) {
+    const oContext = await DialogHelper.openTableSelectDialog(this, name, filters, defaultFilters);
+
+    if (!oContext) {
+      return;
+    }
+
+    const oInput = ev.getSource();
+    oInput.setValue(oContext.getProperty(property) as string);
+
+    await this.applyValueHelpDescription(oInput, oContext);
+  }
+
+  /**
+   * Copia a descrição do registro selecionado para a entidade bound.
+   *
+   * A gravação usa `null` como group ID: a descrição é desnormalizada
+   * (`CardName`) ou vem de uma propriedade de navegação (`QualityAttrib/Name`),
+   * e em ambos os casos quem manda é o servidor - `null` impede que ela entre
+   * no PATCH e mantém a tela coerente até a próxima leitura.
+   *
+   * O caminho declarado é relativo à linha; o último segmento é o nome da
+   * propriedade no registro escolhido no diálogo. Assim `CardName` lê `CardName`
+   * e `QualityAttrib/Name` lê `Name`.
+   */
+  private async applyValueHelpDescription(oInput: Input, oSelected: Context) {
+    const sDescriptionPath = oInput.data("descriptionProperty") as string;
+
+    if (!sDescriptionPath) {
+      return;
+    }
+
+    const oTarget = oInput.getBindingContext();
+
+    if (!oTarget?.isA("sap.ui.model.odata.v4.Context")) {
+      return;
+    }
+
+    const sSourceProperty = sDescriptionPath.split("/").pop();
+
+    await (oTarget as Context).setProperty(
+      sDescriptionPath,
+      oSelected.getProperty(sSourceProperty),
+      null
+    );
+  }
+
   openProcessingCostsListValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "ProcessingCostsListSelectDialog", ['Code', 'Description'])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "ProcessingCostsListSelectDialog", ['Code', 'Description'], "Code");
   }
 
   openTruckDriversValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "TruckDriversSelectDialog", ['Code', 'Name'])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "TruckDriversSelectDialog", ['Code', 'Name'], "Code");
   }
 
   openTrucksValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "TrucksSelectDialog", ['Code', 'Model'])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "TrucksSelectDialog", ['Code', 'Model'], "Code");
   }
 
   openBranchsValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "BranchsSelectDialog", ['Code', 'BranchName', 'ShortName', 'TaxId'])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "BranchsSelectDialog", ['Code', 'BranchName', 'ShortName', 'TaxId'], "Code");
   }
 
   openSalesContractsDocTypesValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "SalesContractsDocTypesSelectDialog", ['Code', 'Name', 'Serie'])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "SalesContractsDocTypesSelectDialog", ['Code', 'Name', 'Serie'], "Code");
   }
 
   openDocTypesValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "DocTypesSelectDialog", ['Code', 'Name', 'Serie'])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "DocTypesSelectDialog", ['Code', 'Name', 'Serie'], "Code");
   }
 
-   openStatesValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "StatesSelectDialog", ['Code', 'Name', 'Abbreviation'])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+  openStatesValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "StatesSelectDialog", ['Code', 'Name', 'Abbreviation'], "Code");
   }
 
   openAgentsValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(
-        this, 
-        "AgentsSelectDialog", 
-        ['Name'],
-        [ new Filter("Inactive", FilterOperator.EQ, "N") ]
-      )
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "AgentsSelectDialog", ['Name'], "Code",
+      [ new Filter("Inactive", FilterOperator.EQ, "N") ]);
   }
 
   openLogisticRegionsValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "LogisticRegionsSelectDialog", ['Code', 'Name'])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "LogisticRegionsSelectDialog", ['Code', 'Name'], "Code");
   }
 
   openBusinessPartnersValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "BusinessPartnersSelectDialog", ['CardCode', 'CardName', 'CardFName'])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("CardCode") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "BusinessPartnersSelectDialog", ['CardCode', 'CardName', 'CardFName'], "CardCode");
   }
 
   openSuppliersValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(
-        this, 
-        "SuppliersSelectDialog", 
-        ['CardCode', 'CardName', 'CardFName'],
-        [ new Filter("CardType", FilterOperator.EQ, 'S')]
-      )
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("CardCode") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "SuppliersSelectDialog", ['CardCode', 'CardName', 'CardFName'], "CardCode",
+      [ new Filter("CardType", FilterOperator.EQ, 'S') ]);
   }
-  
+
   openCostumersValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(
-        this, 
-        "CostumersSelectDialog", 
-        ['CardCode', 'CardName', 'CardFName'],
-        [ new Filter("CardType", FilterOperator.EQ, 'C')]
-      )
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("CardCode") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "CostumersSelectDialog", ['CardCode', 'CardName', 'CardFName'], "CardCode",
+      [ new Filter("CardType", FilterOperator.EQ, 'C') ]);
   }
 
   openItemValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "ItemsSelectDialog", ["ItemCode","ItemName"])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("ItemCode") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "ItemsSelectDialog", ["ItemCode", "ItemName"], "ItemCode");
   }
 
   openUnitsOfMeasureValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(
-        this, 
-        "UnitsOfMeasureSelectDialog", 
-        ["Code","Description"],
-        [ 
-          new Filter("Locked", FilterOperator.EQ, "N") 
-        ]
-      )
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "UnitsOfMeasureSelectDialog", ["Code", "Description"], "Code",
+      [ new Filter("Locked", FilterOperator.EQ, "N") ]);
   }
 
   openHarvestSeasonsValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "HarvestSeasonsSelectDialog", ["Code","Name"])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "HarvestSeasonsSelectDialog", ["Code", "Name"], "Code");
   }
 
   openWarehouseValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "WarehousesSelectDialog", ["Code","Name", "TaxId", "FName"])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "WarehousesSelectDialog", ["Code", "Name", "TaxId", "FName"], "Code");
   }
 
   openTaxesValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "TaxesSelectDialog", ["Code","Name"])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "TaxesSelectDialog", ["Code", "Name"], "Code");
   }
 
   openQualityAttribsValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "QualityAttribsSelectDialog", ["Code","Name"])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "QualityAttribsSelectDialog", ["Code", "Name"], "Code");
   }
 
   openProcessingServicesValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "ProcessingServicesSelectDialog", ["Code","Description"])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    void this.applyValueHelp(ev, "ProcessingServicesSelectDialog", ["Code", "Description"], "Code");
   }
 
-   async openStorageAddressesValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "StorageAddressesSelectDialog", ["Description"])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+  openStorageAddressesValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "StorageAddressesSelectDialog", ["Description"], "Code");
   }
 
-  async openMenuItemsValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "MenuItemsSelectDialog", ["Title", "Key"])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Key") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
-  }
-  
-  async openPermissionsValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "PermissionsSelectDialog", ["Description", "Code"])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+  openMenuItemsValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "MenuItemsSelectDialog", ["Title", "Key"], "Key");
   }
 
-  async openRolesValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "RolesSelectDialog", ["Description", "Code"])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+  openPermissionsValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "PermissionsSelectDialog", ["Description", "Code"], "Code");
   }
-  
-  async openProfilesValueHelp(ev: Input$ValueHelpRequestEvent) {
-    DialogHelper.openTableSelectDialog(this, "ProfilesSelectDialog", ["Description", "Code"])
-      .then((oContext: Context) => {
-        const value = oContext.getProperty("Code") as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+
+  openRolesValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "RolesSelectDialog", ["Description", "Code"], "Code");
+  }
+
+  openProfilesValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "ProfilesSelectDialog", ["Description", "Code"], "Code");
   }
 
   async formatItemName(key: string){

@@ -49,22 +49,20 @@
         <t:template>
           <Input
             editable="{ui>/editable}"
-            value="{QualityAttribCode}" 
-            showValueHelp="true" 
-            valueHelpOnly="true" 
+            value="{QualityAttribCode}"
+            showValueHelp="true"
+            valueHelpOnly="true"
             valueHelpRequest=".openQualityAttribsValueHelp"
-          />
+          >
+            <customData>
+              <core:CustomData key="descriptionProperty" value="QualityAttrib/Name" />
+            </customData>
+          </Input>
         </t:template>
       </t:Column>
       <t:Column label="Nome" width="10rem">
         <t:template>
-          <Text 
-            text="{ 
-              parts: ['QualityAttribCode'],
-              formatter: '.formatQualityAttribName'
-            }" 
-            
-          />
+          <Text text="{QualityAttrib/Name}" />
         </t:template>
       </t:Column>
       <t:Column label="Limite %" width="10rem">
