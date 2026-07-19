@@ -47,18 +47,15 @@
             showValueHelp="true" 
             valueHelpOnly="true" 
             valueHelpRequest=".openMenuItemsValueHelp">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="MenuItem/Key,MenuItem/Title" />
+            </customData>
           </Input>
         </t:template>
       </t:Column>
       <t:Column label="Descricao">
         <t:template>
-          <Text 
-            text="{
-              parts: ['MenuItemKey'],
-              formatter: '.formatParentMenuTitle'
-            }" 
-            >
-          </Text>
+          <Text text="{MenuItem/Title}" />
         </t:template>
       </t:Column>
     </t:columns>

@@ -11,7 +11,7 @@ import Context from "sap/ui/model/odata/v4/Context";
  */
 export default class Confirm extends GenericController {
 
-	onInit(): void | undefined {	
+	onInit(): void {	
 		this.getRouter().getRoute("weighingTicketsConfirm").attachPatternMatched((ev) => this.routeMatched(ev));
 	}
 
@@ -37,7 +37,7 @@ export default class Confirm extends GenericController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const {id} = ev.getParameter("arguments") as {id: string | null};
+		const {id} = ev.getParameter("arguments") as {id: string};
 		if (id != null) {
       const sPath = `/WeighingTickets(${id})`;
       this.bindElement(sPath);

@@ -10,7 +10,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
  */
 export default class Edit extends BaseController {
 
-	onInit(): void | undefined {	
+	onInit(): void {	
 		this.getRouter().getRoute("systemSetupEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 
@@ -28,7 +28,7 @@ export default class Edit extends BaseController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const {id} = ev.getParameter("arguments") as {id: string | null};
+		const {id} = ev.getParameter("arguments") as {id: string};
 		if (id != null) {
 			const sPath = `/SystemSetup('${id}')`;
 			oView.bindElement({

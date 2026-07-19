@@ -46,35 +46,36 @@
             editable="{ui>/editable}"
             width="10rem"
             required="true"
-            value="{TaxCode}" 
-            showValueHelp="true" 
-            valueHelpOnly="true" 
+            value="{TaxCode}"
+            showValueHelp="true"
+            valueHelpOnly="true"
             valueHelpRequest=".openTaxesValueHelp">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="Tax/Code,Tax/Name,Tax/Rate" />
+            </customData>
           </Input>
         </t:template>
       </t:Column>
       <t:Column label="Descricao">
         <t:template>
-          <Text 
-            width="10rem"
-            text="{
-              parts: ['TaxCode'],
-              formatter: '.formatTaxName'
-            }" 
-            >
-          </Text>
+          <Text width="10rem" text="{Tax/Name}" />
         </t:template>
       </t:Column>
        <t:Column label="Aliquota %">
         <t:template>
-          <Text 
+          <Text
             width="10rem"
             text="{
-              parts: ['TaxCode'],
-              formatter: '.formatTaxRate'
-            }" 
-            >
-          </Text>
+              path: 'Tax/Rate',
+              type: 'sap.ui.model.odata.type.Decimal',
+              formatOptions: {
+                  decimals: 4,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+              }
+            }"
+          />
         </t:template>
       </t:Column>
     </t:columns>

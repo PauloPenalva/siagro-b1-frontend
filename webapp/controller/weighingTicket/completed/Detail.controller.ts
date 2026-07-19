@@ -11,7 +11,7 @@ import { BaseController } from "./BaseController";
  */
 export default class Detail extends BaseController {
 	
-  onInit(): void | undefined {	
+  onInit(): void {	
 		this.getRouter().getRoute("weighingTicketsCompletedDetail").attachPatternMatched((ev) => this.routeMatched(ev));
 	}
 
@@ -35,7 +35,7 @@ export default class Detail extends BaseController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const {id} = ev.getParameter("arguments") as {id: string | null};
+		const {id} = ev.getParameter("arguments") as {id: string};
 		if (id != null) {
       const sPath = `/WeighingTickets(${id})`;
       this.bindElement(sPath);

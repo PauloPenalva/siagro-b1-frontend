@@ -9,7 +9,7 @@ import { BaseController } from "./BaseController";
  */
 export default class Edit extends BaseController {
 
-	onInit(): void | undefined {	
+	onInit(): void {	
 		this.getRouter().getRoute("profilesEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 
@@ -23,7 +23,7 @@ export default class Edit extends BaseController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const {id} = ev.getParameter("arguments") as {id: string | null};
+		const {id} = ev.getParameter("arguments") as {id: string};
 		if (id != null) {
 			const sPath = `/Profiles('${id}')`;
 			oView.bindElement({

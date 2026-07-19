@@ -47,18 +47,15 @@
             showValueHelp="true" 
             valueHelpOnly="true" 
             valueHelpRequest=".openPermissionsValueHelp">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="Permission/Code,Permission/Description" />
+            </customData>
           </Input>
         </t:template>
       </t:Column>
       <t:Column label="Descricao">
         <t:template>
-          <Text 
-            text="{
-              parts: ['PermissionCode'],
-              formatter: '.formatPermissionName'
-            }" 
-            >
-          </Text>
+          <Text text="{Permission/Description}" />
         </t:template>
       </t:Column>
     </t:columns>

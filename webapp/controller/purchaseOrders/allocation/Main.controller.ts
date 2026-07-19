@@ -1,4 +1,5 @@
 import Dialog from "sap/m/Dialog";
+import Fragment from "sap/ui/core/Fragment";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import JSONModel from "sap/ui/model/json/JSONModel";
@@ -77,7 +78,7 @@ export default class Main extends BaseController {
   async onConfirmDialog() {
     const dlgId = this.getView().getId() + "_siagrob1.view.purchaseOrders.allocation.fragments.PurchaseContractsAvaiables";
 
-    const dlgTable = (sap.ui as any).core?.Fragment.byId(dlgId,"purchaseContractsAvaiableTable") as Table;
+    const dlgTable = Fragment.byId(dlgId, "purchaseContractsAvaiableTable") as Table;
     const selected = dlgTable.getSelectedIndices();
     if (selected.length == 0 || selected.length > 1) {
       MessageBox.warning("Selecione um item na lista.");
@@ -137,7 +138,7 @@ export default class Main extends BaseController {
   private applyFilters() {
     const oBinding = this.getView().byId("storageTransactionsAllocationTable").getBinding("rows") as ODataListBinding;
     const filterModel = this.getModel("filter") as JSONModel;
-    const filterData = filterModel.getData() as any;
+    const filterData = filterModel.getData() as Record<string, string>;
     const filters: string[] = [];
     
     const typesFilter = `(${[

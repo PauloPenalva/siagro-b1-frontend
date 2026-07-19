@@ -100,7 +100,7 @@ class SessionService {
   /** Consulta `/security/auth/status` e atualiza o cache. */
   public async refreshStatus(): Promise<boolean> {
     try {
-      const status = await new RequestModel().get(ServerRoutes.userInfo) as { authenticated?: boolean };
+      const status = await new RequestModel().get<{ authenticated?: boolean }>(ServerRoutes.userInfo);
       this.authenticated = !!status?.authenticated;
     } catch (error) {
       console.warn("Falha ao consultar o status da sessão.", error);
@@ -165,7 +165,7 @@ class SessionService {
   }
 
   public async loadBranchInfo(): Promise<BranchInfo> {
-    const branchInfo = await new RequestModel().get(ServerRoutes.getBranchInfo) as BranchInfo;
+    const branchInfo = await new RequestModel().get<BranchInfo>(ServerRoutes.getBranchInfo);
 
     this.branchInfo = branchInfo;
 
@@ -304,14 +304,14 @@ class SessionService {
   }
 
   private async loadUserMenu(): Promise<void> {
-    const userMenu = await new RequestModel().get(ServerRoutes.userMenu) as object;
+    const userMenu = await new RequestModel().get<object>(ServerRoutes.userMenu);
 
     window.localStorage.setItem(USER_MENU_KEY, JSON.stringify(userMenu));
     this.getMenuModel()?.setData(userMenu);
   }
 
   private async loadSystemInfo(): Promise<void> {
-    const systemInfo = await new RequestModel().get(ServerRoutes.systemInfo) as SystemInfo;
+    const systemInfo = await new RequestModel().get<SystemInfo>(ServerRoutes.systemInfo);
     this.getSessionModel().setProperty("/systemInfo", systemInfo?.companyName);
   }
 

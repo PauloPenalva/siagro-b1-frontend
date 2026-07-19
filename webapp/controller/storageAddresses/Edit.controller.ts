@@ -9,7 +9,7 @@ import LoteArmazenagemBaseController from "./LoteArmazenagemBaseController";
  */
 export default class Edit extends LoteArmazenagemBaseController {
 
-	onInit(): void | undefined {	
+	onInit(): void {	
 		this.getRouter().getRoute("storageAddressesEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 
@@ -23,7 +23,7 @@ export default class Edit extends LoteArmazenagemBaseController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const {id} = ev.getParameter("arguments") as {id: string | null};
+		const {id} = ev.getParameter("arguments") as {id: string};
 		if (id != null) {
 			const sPath = `/StorageAddresses('${id}')`;
 			oView.bindElement({

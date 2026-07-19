@@ -31,8 +31,12 @@ export default class RequestModel extends JSONModel{
       });
   }
 
-  get(serverUrl: string) {
-    return jQuery.get(serverUrl);
+  /**
+   * O default é `unknown` de propósito: obriga quem chama a declarar o formato
+   * esperado, em vez de espalhar `any` pelo código.
+   */
+  get<T = unknown>(serverUrl: string) {
+    return jQuery.get(serverUrl) as JQuery.jqXHR<T>;
   }
 
   post(serverUrl: string, oDataBody?: object | string) {

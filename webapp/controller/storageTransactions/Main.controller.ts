@@ -31,7 +31,7 @@ export default class Main extends CommonController {
   private applyFilters() {
     const oBinding = this.getView().byId("storageTransactionsTable").getBinding("rows") as ODataListBinding;
     const filterModel = this.getModel("filter") as JSONModel;
-    const filterData = filterModel.getData() as any;
+    const filterData = filterModel.getData() as Record<string, string>;
     const filters: string[] = [];
 
     filters.push(`TransactionType eq 'Receipt' or TransactionType eq 'Shipment' or TransactionType eq 'TechnicalLoss'`);

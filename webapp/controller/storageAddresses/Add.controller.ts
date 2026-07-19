@@ -9,7 +9,7 @@ import LoteArmazenagemBaseController from "./LoteArmazenagemBaseController";
 export default class Add extends LoteArmazenagemBaseController {
 
 	onInit(): void  {
-		this.getRouter().getRoute("storageAddressesNew").attachPatternMatched(async () => this.newRouteMatched());
+		this.getRouter().getRoute("storageAddressesNew").attachPatternMatched(() => void this.newRouteMatched());
 	}
 	private async newRouteMatched() {
 		

@@ -165,13 +165,6 @@
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
-            <Input 
-              value="{
-                parts:['viewModel>/StorageTransaction/UnitOfMeasureCode'],
-                formatter: '.formatUnitOfMeasureDescription'
-              }" 
-              editable="false"
-            />
             <Label text="Peso Bruto"/>
             <Input 
               required="true"

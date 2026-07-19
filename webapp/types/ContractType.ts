@@ -1,13 +1,21 @@
 import StringType  from "sap/ui/model/odata/type/String";
 import ValidateException from "sap/ui/model/ValidateException";
 
+/**
+ * Tipo OData para o enum `ContractType` do backend (`Fixed` / `ToBeDetermined`).
+ *
+ * Faz a tradução nos dois sentidos: exibe o texto de negócio e devolve ao modelo o
+ * valor do enum. Os textos são os mesmos de `formatter.formatContractType` - se um
+ * mudar, mude o outro.
+ */
 export class ContractType extends StringType {
-  private _mStatusMap: Map<string, string>;
+  private _mValueToText: Map<string, string>;
+  private _mTextToValue: Map<string, string>;
 
   constructor(
         oFormatOptions?: {
           parseKeepsEmptyString?: boolean;
-        }, 
+        },
         oConstraints?: {
           isDigitSequence?: string | boolean;
           maxLength?: string | number;
@@ -16,10 +24,14 @@ export class ContractType extends StringType {
     ) {
       super(oFormatOptions, oConstraints);
 
-      this._mStatusMap = new Map<string, string>([
-        ['Fixed', '0'],
-        ['ToBeDetermined','1']
+      this._mValueToText = new Map<string, string>([
+        ['Fixed', 'FIX - Preço Fixo'],
+        ['ToBeDetermined', 'PAF - Preço a Fixar']
       ]);
+
+      this._mTextToValue = new Map<string, string>(
+        Array.from(this._mValueToText, ([sValue, sText]) => [sText, sValue])
+      );
   }
 
   override formatValue(sValue: string, sTargetType: string): string {
@@ -29,35 +41,24 @@ export class ContractType extends StringType {
       return super.formatValue(sValue, sTargetType) as string;
     }
 
-    this._mStatusMap[sValue];
-
-    return (this._mStatusMap[sValue] || sValue) as string;
+    return this._mValueToText.get(sValue) ?? sValue;
   }
 
   override parseValue(sValue: string, sSourceType: string): string {
     if (!sValue) return sValue;
 
-    return this._mTextToValue.get(sValue) || sValue;
+    return this._mTextToValue.get(sValue) ?? (super.parseValue(sValue, sSourceType));
   }
 
   override validateValue(sValue: string): void {
     super.validateValue(sValue);
 
     if (sValue && !this._mValueToText.has(sValue)) {
-      const validValues = Array.from(this._mValueToText.keys());
+      const aValidValues = Array.from(this._mValueToText.keys());
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw new ValidateException(
-        `Tipo de contrato "${sValue}" inválido. Valores: ${validValues.join(", ")}`
+        `Tipo de contrato "${sValue}" inválido. Valores permitidos: ${aValidValues.join(", ")}`
       );
     }
-  }
-   
-  override validateValue(sValue: string): void {
-     const validValues = Array.from(this._mStatusMap.keys());
-      if (sValue && !validValues.includes(sValue)) {
-          // eslint-disable-next-line @typescript-eslint/only-throw-error
-          throw new ValidateException(
-              `Status "${sValue}" não é válido. Valores permitidos: ${validValues.join(", ")}`
-          );
-      }
   }
 }

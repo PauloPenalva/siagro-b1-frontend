@@ -6,13 +6,8 @@ import Context from "sap/ui/model/odata/v4/Context";
 import CommonController from "../common/CommonController";
 import { BusinessPartner } from "siagrob1/types/BusinessPartner";
 import { Item } from "siagrob1/types/Items";
-import { UnitOfMeasure } from "siagrob1/types/UnitOfMeasure";
-import { HarvestSeason } from "siagrob1/types/HarvestSeason";
 import { Warehouse } from "siagrob1/types/Warehouse";
-import { Taxes } from "siagrob1/types/Taxes";
 import { QualityAttrib } from "siagrob1/types/QualityAttrib";
-import { LogisticRegion } from "siagrob1/types/LogisticRegion";
-import { Agent } from "siagrob1/types/Agent";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageToast from "sap/m/MessageToast";
@@ -30,7 +25,7 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
       throw new Error("Contexto não encontrado.");
     }
 
-    const key = ctx.getProperty("Key");
+    const key = ctx.getProperty("Key") as string;
     this.navTo("purchaseContractsUpload", { id: key });
   }
 
@@ -44,8 +39,8 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
     }
 
     const ctx = table.getContextByIndex(selected);
-    const attachmentKey = ctx.getProperty("Key");
-    const fileName = ctx.getProperty("FileName");
+    const attachmentKey = ctx.getProperty("Key") as string;
+    const fileName = ctx.getProperty("FileName") as string;
 
     const url =
             `/odata/PurchaseContractsAttachmentsDownload(Key=${attachmentKey})`;
@@ -88,7 +83,7 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
     }
 
     const ctx = table.getContextByIndex(selected);
-    const attachmentKey = ctx.getProperty("Key");
+    const attachmentKey = ctx.getProperty("Key") as string;
 
     const confirm = await DialogHelper.confirmDialog("Essa operação não podera ser desfeita.", "Deletar anexo",   )
     if (!confirm) {
@@ -104,7 +99,7 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
       throw new Error("Contexto não encontrado.");
     }
 
-    const key = bindingContext.getProperty("Key");
+    const key = bindingContext.getProperty("Key") as string;
     const requestModel = new RequestModel();
 
     try {
@@ -214,40 +209,6 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
     void oContext.delete(oModel.getUpdateGroupId());
   }
 
-  async formatAgentName(key: string){
-    if (!key){
-      return null;
-    } 
-
-    try {
-      this.setBusy(true);
-      const data = await this
-        .getResource<Agent>(`${this.api.agents}(${key})`)
-      
-      return data?.Name;
-    } finally {
-      this.setBusy(false);
-    }
-
-  }
-
-  async formatLogisticRegionName(key: string){
-    if (!key){
-      return null;
-    } 
-
-    try {
-      this.setBusy(true);
-      const data = await this
-        .getResource<LogisticRegion>(`${this.api.logisticRegions}('${key}')`)
-      
-      return data?.Name;
-    } finally {
-      this.setBusy(false);
-    }
-
-  }
-
   async formatBusinessPartnerName(key: string){
     if (!key){
       return null;
@@ -274,24 +235,6 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
     return data?.ItemName;
   }
 
-  async formatUnitOfMeasureDescription(key: string) {
-     if (!key){
-      return null;
-    }
-
-    const data = await this.getResource<UnitOfMeasure>(`${this.api.unitsOfMeasure}('${key}')`)
-    return data?.Description;
-  }
-
-  async formatHarvestSeasonName(key: string) {
-     if (!key){
-      return null;
-    }
-
-    const data = await this.getResource<HarvestSeason>(`${this.api.harvestSeasons}('${key}')`)
-    return data?.Name;
-  }
-
   async formatWarehouseName(key: string) {
      if (!key){
       return null;
@@ -299,24 +242,6 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
 
     const data = await this.getResource<Warehouse>(`${this.api.warehouses}('${key}')`)
     return data?.Name;
-  }
-
-  async formatTaxName(key: string) {
-     if (!key){
-      return null;
-    }
-
-    const data = await this.getResource<Taxes>(`${this.api.taxes}('${key}')`)
-    return data?.Name;
-  }
-
-  async formatTaxRate(key: string) {
-     if (!key){
-      return null;
-    }
-
-    const data = await this.getResource<Taxes>(`${this.api.taxes}('${key}')`)
-    return this.formatter.formatDecimal(data?.Rate);
   }
 
    async formatQualityAttribName(key: string) {
@@ -352,7 +277,7 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
         },
         error: err => {
           this.setBusy(false);
-          MessageBox.error(err.responseJSON?.error?.message);
+          MessageBox.error((err.responseJSON as { error?: { message?: string } })?.error?.message);
         },
       })
       .done(() => this.setBusy(false))
@@ -383,7 +308,7 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
         },
         error: err => {
           this.setBusy(false);
-          MessageBox.error(err.responseJSON?.error?.message);
+          MessageBox.error((err.responseJSON as { error?: { message?: string } })?.error?.message);
         },
       })
       .done(() => this.setBusy(false))
@@ -464,7 +389,7 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
     oView.setModel(allocationModel, "allocationModel");
 
     this.setBusy(true);
-    funcImport.invoke()
+    void funcImport.invoke()
       .then(() => {
         const resultContext = funcImport.getBoundContext();
         const viewModel = this.getModel("allocationModel") as JSONModel
@@ -483,7 +408,7 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
     oView.setModel(attachmentsModel, "attachmentsModel");
 
     this.setBusy(true);
-    funcImport.invoke()
+    void funcImport.invoke()
       .then(() => {
         const resultContext = funcImport.getBoundContext();
         const viewModel = this.getModel("attachmentsModel") as JSONModel

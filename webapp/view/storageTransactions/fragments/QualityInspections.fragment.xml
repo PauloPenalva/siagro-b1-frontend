@@ -49,22 +49,19 @@
         <t:template>
           <Input
             editable="{ui>/editable}"
-            value="{QualityAttribCode}" 
-            showValueHelp="true" 
-            valueHelpOnly="true" 
-            valueHelpRequest=".openQualityAttribsValueHelp"
-          />
+            value="{QualityAttribCode}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openQualityAttribsValueHelp">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="QualityAttrib/Code,QualityAttrib/Name" />
+            </customData>
+          </Input>
         </t:template>
       </t:Column>
       <t:Column label="Nome" width="10rem">
         <t:template>
-          <Text 
-            text="{ 
-              parts: ['QualityAttribCode'],
-              formatter: '.formatQualityAttribName'
-            }" 
-            
-          />
+          <Text text="{QualityAttrib/Name}" />
         </t:template>
       </t:Column>
       <t:Column label="%" width="10rem">

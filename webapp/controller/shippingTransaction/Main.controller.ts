@@ -43,7 +43,7 @@ export default class Main extends BaseController {
       filterModel.setData({ItemCode: key});
       
       if (key) {
-        this.getSaldosEstoque(key)	
+        void this.getSaldosEstoque(key)	
       }
 
       return;
@@ -68,7 +68,7 @@ export default class Main extends BaseController {
 		bindingList.filter([filter]);
 	}
 
-	async onSearch() {
+	onSearch() {
   
     const filterModel = this.getModel("filter") as JSONModel;
     const filterData = filterModel.getData() as { ItemCode: string };
@@ -79,7 +79,7 @@ export default class Main extends BaseController {
 
       if (!value) return;
 
-      this.getSaldosEstoque(value);
+      void this.getSaldosEstoque(value);
     });
 	}
 

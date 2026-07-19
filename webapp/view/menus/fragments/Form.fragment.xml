@@ -76,14 +76,11 @@
               <layoutData>
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="Parent/Key,Parent/Title" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts: ['ParentKey'],
-                formatter: '.formatParentMenuTitle'
-              }" 
-              editable="false"
-            />
+            <Input value="{Parent/Title}" editable="false" />
         </f:content>
         <core:Title />
         <core:Title />

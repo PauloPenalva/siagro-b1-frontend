@@ -133,14 +133,11 @@
               <layoutData>
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="AgentName:Name" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts: ['AgentCode'],
-                formatter: '.formatAgentName'
-              }" 
-              editable="false"
-            />
+            <Input value="{AgentName}" editable="false" />
             <Label text="Fornecedor" />
             <Input
               editable="{ui>/editable}"
@@ -201,13 +198,6 @@
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
-            <Input 
-              value="{
-                parts:['UnitOfMeasureCode'],
-                formatter: '.formatUnitOfMeasureDescription'
-              }" 
-              editable="false"
-            />
             <Label text="Tipo Tecnologia"/>
             <Select 
               editable="{ui>/editable}"
@@ -233,14 +223,11 @@
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="HarvestSeason/Code,HarvestSeason/Name" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts:['HarvestSeasonCode'],
-                formatter: '.formatHarvestSeasonName'
-              }" 
-              editable="false"
-            />
+            <Input value="{HarvestSeason/Name}" editable="false" />
             <Label text="Quantidade"/>
             <Input 
               required="true"
@@ -355,14 +342,11 @@
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="LogisticRegion/Code,LogisticRegion/Name" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts:['LogisticRegionCode'],
-                formatter: '.formatLogisticRegionName'
-              }" 
-              editable="false"
-            />
+            <Input value="{LogisticRegion/Name}" editable="false" />
             <Label text="Inicio entrega" />
             <DatePicker
                 value="{
@@ -401,14 +385,11 @@
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="DeliveryLocationName:Name" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts:['DeliveryLocationCode'],
-                formatter: '.formatWarehouseName'
-              }" 
-              editable="false"
-            />
+            <Input value="{DeliveryLocationName}" editable="false" />
            
         </f:content>
     </f:SimpleForm>

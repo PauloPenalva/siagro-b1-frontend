@@ -61,10 +61,10 @@ export default class Edit extends BaseController {
 	}
 
 
-  private beforeEdit(id: string): JQuery.jqXHR {
+  private beforeEdit(id: string): JQuery.jqXHR<{ TransactionOrigin?: string }> {
     const requestModel = new RequestModel();
 
-    return requestModel.get(this.api.storageTransactions + `(${id})?$select=TransactionOrigin`);     
+    return requestModel.get<{ TransactionOrigin?: string }>(this.api.storageTransactions + `(${id})?$select=TransactionOrigin`);     
   }
 
 	async onSave() {

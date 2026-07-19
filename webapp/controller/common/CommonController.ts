@@ -11,13 +11,8 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import { Item } from "siagrob1/types/Items";
-import { Agent } from "siagrob1/types/Agent";
 import { BusinessPartner } from "siagrob1/types/BusinessPartner";
-import { HarvestSeason } from "siagrob1/types/HarvestSeason";
-import { LogisticRegion } from "siagrob1/types/LogisticRegion";
 import { QualityAttrib } from "siagrob1/types/QualityAttrib";
-import { Taxes } from "siagrob1/types/Taxes";
-import { UnitOfMeasure } from "siagrob1/types/UnitOfMeasure";
 import { Warehouse } from "siagrob1/types/Warehouse";
 import Dialog from "sap/m/Dialog";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
@@ -129,14 +124,24 @@ export default abstract class CommonController extends BaseController {
    * e em ambos os casos quem manda é o servidor - `null` impede que ela entre
    * no PATCH e mantém a tela coerente até a próxima leitura.
    *
-   * O caminho declarado é relativo à linha; o último segmento é o nome da
-   * propriedade no registro escolhido no diálogo. Assim `CardName` lê `CardName`
-   * e `QualityAttrib/Name` lê `Name`.
+   * O caminho declarado é relativo à linha. Por padrão a origem no diálogo é o
+   * **último segmento** do caminho: `CardName` lê `CardName` e `QualityAttrib/Name`
+   * lê `Name`.
+   *
+   * Quando o nome da coluna de destino difere do nome no registro escolhido,
+   * declare a origem depois de `:` — `destino:origem`. É o caso das colunas que
+   * renomeiam o campo: `AgentName:Name` grava em `AgentName` lendo `Name` do
+   * `Agent`, e `DeliveryLocationName:Name` faz o mesmo a partir do `Warehouse`.
+   * Sem isso a leitura devolve `undefined` e o campo fica em branco em registro
+   * novo (não há valor do servidor para mascarar o erro).
+   *
+   * Aceita mais de um caminho separado por vírgula (`Tax/Name,Tax/Rate`), para
+   * quando a mesma escolha alimenta várias colunas da tela.
    */
   private async applyValueHelpDescription(oInput: Input, oSelected: Context) {
-    const sDescriptionPath = oInput.data("descriptionProperty") as string;
+    const sDescriptionPaths = oInput.data("descriptionProperty") as string;
 
-    if (!sDescriptionPath) {
+    if (!sDescriptionPaths) {
       return;
     }
 
@@ -146,12 +151,21 @@ export default abstract class CommonController extends BaseController {
       return;
     }
 
-    const sSourceProperty = sDescriptionPath.split("/").pop();
+    await Promise.all(
+      sDescriptionPaths
+        .split(",")
+        .map((sEntry) => sEntry.trim())
+        .filter(Boolean)
+        .map((sEntry) => {
+          const [sPath, sSource] = sEntry.split(":").map((s) => s.trim());
+          const sSourceProperty = sSource || sPath.split("/").pop();
 
-    await (oTarget as Context).setProperty(
-      sDescriptionPath,
-      oSelected.getProperty(sSourceProperty),
-      null
+          return (oTarget as Context).setProperty(
+            sPath,
+            oSelected.getProperty(sSourceProperty),
+            null
+          );
+        })
     );
   }
 
@@ -306,7 +320,7 @@ export default abstract class CommonController extends BaseController {
       try {
         this.setBusy(true);
         const data = await this
-          .getResource<BusinessPartner>(`${this.api.businessPartners}('${key}')?$expand=Addresses($filter=AdresType eq \'S\')`)
+          .getResource<BusinessPartner>(`${this.api.businessPartners}('${key}')?$expand=Addresses($filter=AdresType eq 'S')`)
         
         return data?.Addresses[0]?.City
       } finally {
@@ -323,7 +337,7 @@ export default abstract class CommonController extends BaseController {
       try {
         this.setBusy(true);
         const data = await this
-          .getResource<BusinessPartner>(`${this.api.businessPartners}('${key}')?$expand=Addresses($filter=AdresType eq \'S\')`)
+          .getResource<BusinessPartner>(`${this.api.businessPartners}('${key}')?$expand=Addresses($filter=AdresType eq 'S')`)
         
         return data?.Addresses[0]?.State
       } finally {
@@ -332,40 +346,6 @@ export default abstract class CommonController extends BaseController {
   
     }
 
-   async formatAgentName(key: string){
-      if (!key){
-        return null;
-      } 
-  
-      try {
-        this.setBusy(true);
-        const data = await this
-          .getResource<Agent>(`${this.api.agents}(${key})`)
-        
-        return data?.Name;
-      } finally {
-        this.setBusy(false);
-      }
-  
-    }
-  
-    async formatLogisticRegionName(key: string){
-      if (!key){
-        return null;
-      } 
-  
-      try {
-        this.setBusy(true);
-        const data = await this
-          .getResource<LogisticRegion>(`${this.api.logisticRegions}('${key}')`)
-        
-        return data?.Name;
-      } finally {
-        this.setBusy(false);
-      }
-  
-    }
-  
     async formatBusinessPartnerName(key: string){
       if (!key){
         return null;
@@ -383,24 +363,6 @@ export default abstract class CommonController extends BaseController {
   
     }
   
-    async formatUnitOfMeasureDescription(key: string) {
-       if (!key){
-        return null;
-      }
-  
-      const data = await this.getResource<UnitOfMeasure>(`${this.api.unitsOfMeasure}('${key}')`)
-      return data?.Description;
-    }
-  
-    async formatHarvestSeasonName(key: string) {
-       if (!key){
-        return null;
-      }
-  
-      const data = await this.getResource<HarvestSeason>(`${this.api.harvestSeasons}('${key}')`)
-      return data?.Name;
-    }
-  
     async formatWarehouseName(key: string) {
        if (!key){
         return null;
@@ -408,24 +370,6 @@ export default abstract class CommonController extends BaseController {
   
       const data = await this.getResource<Warehouse>(`${this.api.warehouses}('${key}')`)
       return data?.Name;
-    }
-  
-    async formatTaxName(key: string) {
-       if (!key){
-        return null;
-      }
-  
-      const data = await this.getResource<Taxes>(`${this.api.taxes}('${key}')`)
-      return data?.Name;
-    }
-  
-    async formatTaxRate(key: string) {
-       if (!key){
-        return null;
-      }
-  
-      const data = await this.getResource<Taxes>(`${this.api.taxes}('${key}')`)
-      return this.formatter.formatDecimal(data?.Rate);
     }
   
     async formatQualityAttribName(key: string) {
@@ -436,85 +380,5 @@ export default abstract class CommonController extends BaseController {
       const data = await this.getResource<QualityAttrib>(`${this.api.qualityAttrib}('${key}')`)
       return data?.Name;
     }
-
-    async formatProcessingCostDescription(key: string){
-      if (!key){
-        return null;
-      } 
-
-      try {
-        this.setBusy(true);
-        const data = await this
-          .getResource<any>(`${this.api.processingCosts}('${key}')`)
-        
-        return data?.Description;
-      } finally {
-        this.setBusy(false);
-      }
-  }
-
-  async formatParentMenuTitle(key: string){
-    if (!key){
-      return null;
-    } 
-
-    try {
-      this.setBusy(true);
-      const data = await this
-        .getResource<any>(`${this.api.menuItems}('${key}')`)
-      
-      return data?.Title;
-    } finally {
-      this.setBusy(false);
-    }
-  }
-
-  async formatPermissionName(key: string){
-    if (!key){
-      return null;
-    } 
-
-    try {
-      this.setBusy(true);
-      const data = await this
-        .getResource<any>(`${this.api.permissions}('${key}')`)
-      
-      return data?.Description;
-    } finally {
-      this.setBusy(false);
-    }
-  }
-
-  async formatRoleDescription(key: string){
-    if (!key){
-      return null;
-    } 
-
-    try {
-      this.setBusy(true);
-      const data = await this
-        .getResource<any>(`${this.api.roles}('${key}')`)
-      
-      return data?.Description;
-    } finally {
-      this.setBusy(false);
-    }
-  }
-
-  async formatProfileDescription(key: string){
-    if (!key){
-      return null;
-    } 
-
-    try {
-      this.setBusy(true);
-      const data = await this
-        .getResource<any>(`${this.api.profiles}('${key}')`)
-      
-      return data?.Description;
-    } finally {
-      this.setBusy(false);
-    }
-  }
 
 } 

@@ -31,7 +31,7 @@ export default class Main extends CommonController {
   private applyFilters() {
     const oBinding = this.getView().byId("ownershipTransfersTable").getBinding("rows") as ODataListBinding;
     const filterModel = this.getModel("filter") as JSONModel;
-    const filterData = filterModel.getData() as any;
+    const filterData = filterModel.getData() as Record<string, string>;
     const filters: string[] = [];
 
     Object.keys(filterData).forEach((key: string) => {

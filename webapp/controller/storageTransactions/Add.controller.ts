@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import Context from "sap/ui/model/odata/v4/Context";
@@ -11,7 +11,7 @@ import { BaseController } from "./BaseController";
 export default class Add extends BaseController {
 
 	onInit(): void  {
-		this.getRouter().getRoute("storageTransactionsNew").attachPatternMatched(async () => this.newRouteMatched());
+		this.getRouter().getRoute("storageTransactionsNew").attachPatternMatched(() => void this.newRouteMatched());
 	}
 
 	private async newRouteMatched() {

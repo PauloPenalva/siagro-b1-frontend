@@ -7,7 +7,7 @@ import MessageBox from "sap/m/MessageBox";
  */
 export default class Main extends BaseController {
 
-	onInit(): void | undefined {
+	onInit(): void {
 		const paramsModel = new JSONModel();
     const view = this.getView();
     view.setModel(paramsModel, "params");
@@ -32,7 +32,7 @@ export default class Main extends BaseController {
     }
     
     const paramsModel = this.getModel("params") as JSONModel;
-    const payload = paramsModel.getData();
+    const payload = paramsModel.getData() as object;
 
     try {
         

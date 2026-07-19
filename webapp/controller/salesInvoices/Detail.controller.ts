@@ -56,7 +56,7 @@ export default class Detail extends BaseController {
     action.setParameter("Key", ctx.getProperty("Key"));
 
     this.setBusy(false);
-    action.invoke()
+    void action.invoke()
       .then(() => {
         MessageToast.show("Documento de saída confirmado com sucesso.");
         this.navToSalesInvoices();
@@ -81,7 +81,7 @@ export default class Detail extends BaseController {
     action.setParameter("Key", ctx.getProperty("Key"));
 
     this.setBusy(false);
-    action.invoke()
+    void action.invoke()
       .then(() => {
         MessageToast.show("Documento de saída estornado com sucesso.");
         this.navToSalesInvoices();

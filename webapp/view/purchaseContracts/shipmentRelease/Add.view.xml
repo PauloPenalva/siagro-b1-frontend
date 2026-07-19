@@ -81,17 +81,14 @@
                     showValueHelp="true" 
                     valueHelpOnly="true" 
                     valueHelpRequest=".openWarehouseValueHelp">
+              <customData>
+                <core:CustomData key="descriptionProperty" value="DeliveryLocationName:Name" />
+              </customData>
                     <layoutData>
                         <l:GridData span="XL3 L3 M3 S4" />
                     </layoutData>
                   </Input>
-                  <Input 
-                    value="{
-                      parts:['DeliveryLocationCode'],
-                      formatter: '.formatWarehouseName'
-                    }" 
-                    editable="false"
-                  />
+                  <Input value="{DeliveryLocationName}" editable="false" />
                   <core:Title />
                 </form:content>
               </form:SimpleForm>

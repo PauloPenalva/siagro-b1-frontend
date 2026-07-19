@@ -10,7 +10,7 @@ import Context from "sap/ui/model/odata/v4/Context";
  */
 export default class Add extends BaseController {
 
-	onInit(): void | undefined {
+	onInit(): void {
 		this.getRouter().getRoute("storageInvoicesAdd").attachPatternMatched(() => this.newRouteMatched());
 	}
 	private newRouteMatched() {
@@ -33,7 +33,7 @@ export default class Add extends BaseController {
 		}
 
     this.setBusy(true);
-    this.getDocNumberInfoByTransaction("StorageInvoice")
+    void this.getDocNumberInfoByTransaction("StorageInvoice")
       .then(results => {
 
         const docNumberInfo = results.filter(x => x.Default)[0];
@@ -47,7 +47,7 @@ export default class Add extends BaseController {
       .finally(() => this.setBusy(false))
 	}
 
-	async onSave() {
+	onSave() {
 		
     if (!this.validateForm("storageInvoicesForm")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
@@ -70,10 +70,10 @@ export default class Add extends BaseController {
       action.setParameter("IncludeUnpricedItems", false);
       action.setParameter("ClosingDate", ctx.getProperty("ClosingDate"));
 
-      action.invoke()
+      void action.invoke()
         .then(() => {
           const resultContext = action.getBoundContext();
-          const { Key } = resultContext.getObject();
+          const { Key } = resultContext.getObject() as { Key?: string };
           this.navTo("storageInvoicesDetail", { id: Key} );
 
           MessageToast.show("Dados salvos com sucesso.", {

@@ -115,6 +115,9 @@ export default class Component extends UIComponent {
   }
 
 	onMessageBindingChange(oEvent: Binding$ChangeEvent) {
+    // O cast é necessário: `getSource()` devolve `Binding`, que não tem `getContexts`.
+    // A regra o acusa de redundante, mas remover quebra o `tsc` (TS2551).
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const aContexts = (oEvent.getSource() as ListBinding).getContexts();
     let aMessages: Array<Message> = [];
 
@@ -132,7 +135,7 @@ export default class Component extends UIComponent {
 
     if (aMessages.length) this.bError = true;
 
-    const { httpStatus } = aMessages[0]?.getTechnicalDetails() as any ?? {};
+    const { httpStatus } = (aMessages[0]?.getTechnicalDetails() ?? {}) as { httpStatus?: number };
     if (httpStatus && httpStatus === 401){
       SessionService.clearSessionState();
       this.getRouter().navTo("login", {}, undefined, true);

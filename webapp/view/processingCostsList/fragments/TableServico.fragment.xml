@@ -41,12 +41,15 @@
 						width="10rem"
 						>
 						<t:template>
-							<Input 
-								value="{ProcessingServiceCode}" 
-								showValueHelp="true" 
-								valueHelpOnly="true" 
-								valueHelpRequest=".openProcessingServicesValueHelp"
-							/>
+							<Input
+								value="{ProcessingServiceCode}"
+								showValueHelp="true"
+								valueHelpOnly="true"
+								valueHelpRequest=".openProcessingServicesValueHelp">
+								<customData>
+									<core:CustomData key="descriptionProperty" value="ProcessingService/Code,ProcessingService/Description" />
+								</customData>
+							</Input>
 						</t:template>
 					</t:Column>
 					<t:Column
@@ -54,12 +57,7 @@
 						width="20rem"
 						>
 						<t:template>
-							<Text 
-								text="{ 
-									parts:['ProcessingServiceCode'], 
-									formatter:'.formatDescricaoServico'
-								}" 
-							/>
+							<Text text="{ProcessingService/Description}" />
 						</t:template>
 					</t:Column>
 					<t:Column

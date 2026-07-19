@@ -9,7 +9,7 @@ import VeiculoBaseController from "./VeiculoBaseController";
  */
 export default class Edit extends VeiculoBaseController {
 
-	onInit(): void | undefined {	
+	onInit(): void {	
 		this.getRouter().getRoute("veiculosEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 
@@ -23,7 +23,7 @@ export default class Edit extends VeiculoBaseController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const {id} = ev.getParameter("arguments") as {id: string | null};
+		const {id} = ev.getParameter("arguments") as {id: string};
 		if (id != null) {
       const sPath = `/Trucks('${id}')`;
 			oView.bindElement({

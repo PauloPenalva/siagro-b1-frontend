@@ -40,7 +40,7 @@ export default class Main extends BaseController {
   private applyFilters() {
     const oBinding = this.getView().byId("tableSalesInvoices").getBinding("rows") as ODataListBinding;
     const filterModel = this.getModel("filter") as JSONModel;
-    const filterData = filterModel.getData() as any;
+    const filterData = filterModel.getData() as Record<string, string>;
     const filters: string[] = [];
 
     Object.keys(filterData).forEach((key: string) => {
@@ -132,16 +132,16 @@ export default class Main extends BaseController {
     const ctx = table.getContextByIndex(selectedInvoice[0]);
     const viewModel = this.getModel("viewModel") as JSONModel;
     viewModel.setData({
-      TaxDocumentNumber: ctx.getProperty("TaxDocumentNumber"),
-      TaxDocumentSeries: ctx.getProperty("TaxDocumentSeries"),
-      ChaveNFe: ctx.getProperty("ChaveNFe"),
+      TaxDocumentNumber: ctx.getProperty("TaxDocumentNumber") as string,
+      TaxDocumentSeries: ctx.getProperty("TaxDocumentSeries") as string,
+      ChaveNFe: ctx.getProperty("ChaveNFe") as string,
 
     });
 
-    this.openNotaFiscalDialog();
+    void this.openNotaFiscalDialog();
   }
 
-  private async openNotaFiscalDialog(){
+  private openNotaFiscalDialog(){
     this._notaFiscalDialog?.open();
   }
 
@@ -149,15 +149,15 @@ export default class Main extends BaseController {
     this._notaFiscalDialog?.close();
   }
 
-  async onNotaFiscalConfirm() {
+  onNotaFiscalConfirm() {
     const viewModel = this.getModel("viewModel") as JSONModel;
-    const notaFiscal = viewModel.getProperty("/TaxDocumentNumber");
-    const serie = viewModel.getProperty("/TaxDocumentSeries");
-    const chaveNfe = viewModel.getProperty("/ChaveNFe");
+    const notaFiscal = viewModel.getProperty("/TaxDocumentNumber") as string;
+    const serie = viewModel.getProperty("/TaxDocumentSeries") as string;
+    const chaveNfe = viewModel.getProperty("/ChaveNFe") as string;
 
     if (!notaFiscal || !serie) {
       MessageBox.warning("Preencha corretamente o formulário.");
-      throw new Error("Preencha corretamente o formulário.");
+      return;
     }
 
     const table = this.byId("tableSalesInvoices") as Table;
@@ -173,7 +173,7 @@ export default class Main extends BaseController {
     action.setParameter("ChaveNFe", chaveNfe );
 
     this.setBusy(true);
-    action.invoke()
+    void action.invoke()
       .then(() => {
         this.onCloseNotaFiscalDialog();
         viewModel.setData({});
@@ -202,7 +202,7 @@ export default class Main extends BaseController {
     const action = (this.getModel() as ODataModel).bindContext("/SalesInvoicesReturn(...)");
     action.setParameter("Key", ctx.getProperty("Key"));
     this.setBusy(true);
-    action.invoke()
+    void action.invoke()
       .then(() => {
         this.refreshData();
       })

@@ -17,7 +17,6 @@ export default class Detail extends BaseController {
 
 	private detailRouteMatched(ev: Route$MatchedEvent) {
 		const {id} = ev.getParameter("arguments") as {id: string };
-    const uiModel = this.getModel("ui") as JSONModel;
 
 		if (id != null) {
 

@@ -246,22 +246,22 @@ export default abstract class BaseController extends Controller {
 
   async getSystemInfo(): Promise<SystemInfo> {
     const requestModel = new RequestModel();
-    return await requestModel.get(ServerRoutes.systemInfo);
+    return await requestModel.get<SystemInfo>(ServerRoutes.systemInfo);
   }
 
   async getBranchInfo(): Promise<BranchInfo> {
     const requestModel = new RequestModel();
-    return await requestModel.get(ServerRoutes.getBranchInfo);
+    return await requestModel.get<BranchInfo>(ServerRoutes.getBranchInfo);
   }
 
   async getUserInfo() {
      const requestModel = new RequestModel();
-     return await requestModel.get(ServerRoutes.userInfo);
+     return await requestModel.get<{ authenticated?: boolean }>(ServerRoutes.userInfo);
   }
 
   async getUserMenu() {
      const requestModel = new RequestModel();
-     return await requestModel.get(ServerRoutes.userMenu);
+     return await requestModel.get<object>(ServerRoutes.userMenu);
   }
 
   async setSystemSetup() {
@@ -275,7 +275,7 @@ export default abstract class BaseController extends Controller {
   }
 
   getSystemSetup(): SystemSetup {
-    return JSON.parse(localStorage.getItem(SYSTEM_SETUP_KEY)) ?? {}
+    return (JSON.parse(localStorage.getItem(SYSTEM_SETUP_KEY)) ?? {}) as SystemSetup
   }
 
 }

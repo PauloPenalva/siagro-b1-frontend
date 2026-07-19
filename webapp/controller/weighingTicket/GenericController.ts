@@ -1,6 +1,3 @@
-import * as $ from 'jquery';
-import { TruckDriver } from "siagrob1/types/TruckDriver";
-import { BusinessPartner } from "siagrob1/types/BusinessPartner";
 import CommonController from "../common/CommonController";
 import Fragment from 'sap/ui/core/Fragment';
 import TableSelectDialog from 'sap/m/TableSelectDialog';
@@ -84,7 +81,13 @@ export default class GenericController extends CommonController {
     void oContext.delete(oModel.getUpdateGroupId());
   }
   
-  async openStorageAddressesValueHelp(e: Input$ValueHelpRequestEvent) {
+  // A base declara retorno `void`; o corpo assíncrono fica na privada abaixo
+  // para não devolver Promise onde o contrato pede void.
+  openStorageAddressesValueHelp(e: Input$ValueHelpRequestEvent) {
+    void this._openStorageAddressesValueHelp(e);
+  }
+
+  private async _openStorageAddressesValueHelp(e: Input$ValueHelpRequestEvent) {
     this.storageAddressesSelectDialog ??= await Fragment.load({
       name: 'siagrob1.dialogs.fragments.StorageAddressesSelectDialog',
       controller: this,
@@ -104,7 +107,7 @@ export default class GenericController extends CommonController {
                   .getParameter("selectedItem")
                   .getBindingContext() as Context;
       
-        e.getSource().setValue((oContext.getProperty("Code")));
+        e.getSource().setValue(oContext.getProperty("Code") as string);
     });
     this.storageAddressesSelectDialog.attachSearch(ev => {
         const value = ev.getParameter("value");
@@ -124,68 +127,6 @@ export default class GenericController extends CommonController {
       this.storageAddressesSelectDialog.open("");
   }
 
-
-  async formatTruckDriverName(sKey: string) {
-    if (!sKey) 
-      return new Promise(resolve => resolve(""));
-    
-    return new Promise((resolve, reject) => {
-      $.ajax(`/odata/TruckDrivers('${sKey}')?$select=Name`,{
-        method: 'GET',
-        contentType: 'application/json',
-        success: ((data: TruckDriver) => resolve(data.Name)),
-        error: (err => reject(new Error(err.responseText)))
-      });
-    });
-  }
-
-  async formatCustomerName(sKey: string) {
-    if (!sKey) 
-      return new Promise(resolve => resolve(""));
-    
-    return new Promise((resolve, reject) => {
-      $.ajax(`/odata/BusinessPartners('${sKey}')?$select=CardName`,{
-        method: 'GET',
-        contentType: 'application/json',
-        success: ((data: BusinessPartner) => resolve(data.CardName)),
-        error: (err => reject(new Error(err.responseText)))
-      });
-    });
-  }
-
-  async formatProcessingCostDescription(key: string){
-    if (!key){
-      return null;
-    } 
-
-    try {
-      this.setBusy(true);
-      const data = await this
-        .getResource<any>(`${this.api.processingCosts}('${key}')`)
-      
-      return data?.Description;
-    } finally {
-      this.setBusy(false);
-    }
-
-  }
-
-   async formatStorageAddressDescription(key: string){
-    if (!key){
-      return null;
-    } 
-
-    try {
-      this.setBusy(true);
-      const data = await this
-        .getResource<any>(`${this.api.storageAddresses}('${key}')`)
-      
-      return data?.Description;
-    } finally {
-      this.setBusy(false);
-    }
-
-  }
 
   async formatQualityAttribName(key: string) {
       if (!key) {

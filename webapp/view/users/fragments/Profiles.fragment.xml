@@ -47,18 +47,15 @@
             showValueHelp="true" 
             valueHelpOnly="true" 
             valueHelpRequest=".openProfilesValueHelp">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="Profile/Code,Profile/Description" />
+            </customData>
           </Input>
         </t:template>
       </t:Column>
       <t:Column label="Descricao">
         <t:template>
-          <Text 
-            text="{
-              parts: ['ProfileCode'],
-              formatter: '.formatProfileDescription'
-            }" 
-            >
-          </Text>
+          <Text text="{Profile/Description}" />
         </t:template>
       </t:Column>
     </t:columns>

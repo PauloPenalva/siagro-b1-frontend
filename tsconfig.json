@@ -14,8 +14,7 @@
 			"siagrob1/*": ["./webapp/*"],
 			"unit/*": ["./webapp/test/unit/*"],
 			"integration/*": ["./webapp/test/integration/*"]
-		},
-    "ignoreDeprecations": "6.0"
+		}
 	},
 	"exclude": ["./webapp/test/e2e/**/*"],
 	"include": ["./webapp/**/*"]

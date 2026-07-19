@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Context from "sap/ui/model/odata/v4/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
@@ -28,10 +28,10 @@ export default class Add extends BaseController {
     this.getView().setModel(new JSONModel(), "balance");
     this.getView().setModel(new JSONModel(), "destination");
     
-		this.getRouter().getRoute("ownershipTransfersNew").attachPatternMatched(async (ev) => this.newRouteMatched(ev));
+		this.getRouter().getRoute("ownershipTransfersNew").attachPatternMatched((ev) => void this.newRouteMatched(ev));
 	}
 
-  private async newRouteMatched(ev: Route$PatternMatchedEvent) {
+  private newRouteMatched(ev: Route$PatternMatchedEvent) {
     const navCon = this.byId("navCon") as NavContainer;
     navCon.to(this.byId("ownershipTransferOriginPage") as ObjectPageLayout);
 
@@ -44,7 +44,7 @@ export default class Add extends BaseController {
       filterModel.setData({ItemCode: key});
       
       if (key) {
-        this.getStorageAddressesBalance(key)	
+        void this.getStorageAddressesBalance(key)	
       }
 
       return;
@@ -61,13 +61,13 @@ export default class Add extends BaseController {
 
     switch(pageId){
       case "ownershipTransferOriginPage":
-        this.onSearch();
+        void this.onSearch();
         break;
       case "ownershipTransferDestinationPage":
         this.getDestinationData();
         break;
       case "ownershipTransferConfirmPage":
-        this.newOwnershipTransfer();
+        void this.newOwnershipTransfer();
         break;
       default:
         break;
@@ -140,12 +140,12 @@ export default class Add extends BaseController {
     const ignoreCode = ctx.getProperty("Code") as string;
     const itemCode = ctx.getProperty("ItemCode") as string;
 
-    this.getStorageAddressesBalance(itemCode, ignoreCode, "destination");
+    void this.getStorageAddressesBalance(itemCode, ignoreCode, "destination");
   }
 
   handleNav(evt: Button$PressEvent) {
     const navCon = this.byId("navCon") as NavContainer;
-    const target = evt.getSource().data("target");
+    const target = evt.getSource().data("target") as string;
     if (target) {
       navCon.to(this.byId(target) as ObjectPageLayout);
     } else {
@@ -158,7 +158,7 @@ export default class Add extends BaseController {
     navCon.back();
   }
 
-  async onSearch() {
+  onSearch() {
     
     const filterModel = this.getModel("filter") as JSONModel;
     const filterData = filterModel.getData() as { ItemCode: string };
@@ -169,7 +169,7 @@ export default class Add extends BaseController {
 
       if (!value) return;
 
-      this.getStorageAddressesBalance(value);
+      void this.getStorageAddressesBalance(value);
     });
   }
 

@@ -14,7 +14,7 @@ import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
  */
 export default class Main extends BaseController {
 
-	onInit(): void | undefined {
+	onInit(): void {
     this.getRouter().getRoute("produtos").attachPatternMatched(() => this.routeMatched())
   }
   
@@ -22,11 +22,11 @@ export default class Main extends BaseController {
     this.onRefresh();
   }
 
-  onRefresh(): void | undefined {
+  onRefresh(): void {
     (this.getView().byId("tableProdutos").getBinding("rows") as ODataListBinding).refresh();
   }
   
-	onSearch(ev: SearchField$SearchEvent): void | undefined {
+	onSearch(ev: SearchField$SearchEvent): void {
 		const query = ev.getParameter("query");
 		const oFilters = new Filter({
 			filters: [

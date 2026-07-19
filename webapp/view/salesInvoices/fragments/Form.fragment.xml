@@ -115,14 +115,11 @@
               <layoutData>
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="CardName" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts: ['CardCode'],
-                formatter: '.formatBusinessPartnerName'
-              }" 
-              editable="false"
-            />
+            <Input value="{CardName}" editable="false" />
             <Label text="Peso Bruto"/>
             <Input 
               required="true"
@@ -167,14 +164,11 @@
               <layoutData>
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="DeliveryCardName:CardName" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts: ['DeliveryCardCode'],
-                formatter: '.formatBusinessPartnerName'
-              }" 
-              editable="false"
-            />
+            <Input value="{DeliveryCardName}" editable="false" />
             <Label text="Transportadora" />
             <Input
               editable="{ui>/editable}"
@@ -187,14 +181,11 @@
               <layoutData>
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="TruckingCompanyName:CardName" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts: ['TruckingCompanyCode'],
-                formatter: '.formatBusinessPartnerName'
-              }" 
-              editable="false"
-            />
+            <Input value="{TruckingCompanyName}" editable="false" />
             <Label text="Placa" />
             <Input
               editable="{ui>/editable}"

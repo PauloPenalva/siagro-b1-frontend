@@ -9,8 +9,8 @@ import JSONModel from "sap/ui/model/json/JSONModel";
  */
 export default class Add extends GenericController {
 
-	onInit(): void | undefined {
-		this.getRouter().getRoute("weighingTicketsNew").attachPatternMatched(async () => this.newRouteMatched());
+	onInit(): void {
+		this.getRouter().getRoute("weighingTicketsNew").attachPatternMatched(() => void this.newRouteMatched());
 	}
 	private async newRouteMatched() {
 		

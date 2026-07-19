@@ -2,7 +2,6 @@ import { BusinessPartner } from "siagrob1/types/BusinessPartner";
 import { Item } from "siagrob1/types/Items";
 import { QualityAttrib } from "siagrob1/types/QualityAttrib";
 import { TruckDriver } from "siagrob1/types/TruckDriver";
-import { UnitOfMeasure } from "siagrob1/types/UnitOfMeasure";
 import { Warehouse } from "siagrob1/types/Warehouse";
 import CommonController from "../common/CommonController";
 
@@ -49,17 +48,6 @@ export abstract class BaseController extends CommonController {
   
       const data = await this.getResource<Item>(`${this.api.items}('${key}')`);
       return data?.ItemName;
-    }
-  
-    async formatUnitOfMeasureDescription(key: string) {
-      if (!key) {
-        return null;
-      }
-  
-      const data = await this.getResource<UnitOfMeasure>(
-        `${this.api.unitsOfMeasure}('${key}')`
-      );
-      return data?.Description;
     }
   
     async formatWarehouseName(key: string) {

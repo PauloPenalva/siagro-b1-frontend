@@ -133,14 +133,11 @@
               <layoutData>
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="AgentName:Name" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts: ['AgentCode'],
-                formatter: '.formatAgentName'
-              }" 
-              editable="false"
-            />
+            <Input value="{AgentName}" editable="false" />
             <Label text="Cliente" />
             <Input
               editable="{ui>/editable}"
@@ -153,14 +150,11 @@
               <layoutData>
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="CardName" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts: ['CardCode'],
-                formatter: '.formatBusinessPartnerName'
-              }" 
-              editable="false"
-            />
+            <Input value="{CardName}" editable="false" />
             <Label text="Observações" />
             <TextArea 
               editable="{ui>/editable}"
@@ -181,14 +175,11 @@
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="ItemName" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts:['ItemCode'],
-                formatter: '.formatItemName'
-              }" 
-              editable="false"
-            />
+            <Input value="{ItemName}" editable="false" />
             <Label text="Un.Med." />
             <Input 
               editable="false"
@@ -201,13 +192,6 @@
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
-            <Input 
-              value="{
-                parts:['UnitOfMeasureCode'],
-                formatter: '.formatUnitOfMeasureDescription'
-              }" 
-              editable="false"
-            />
             <Label text="Safra" />
             <Input 
 							editable="{ui>/editable}"	
@@ -219,14 +203,11 @@
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="HarvestSeason/Code,HarvestSeason/Name" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts:['HarvestSeasonCode'],
-                formatter: '.formatHarvestSeasonName'
-              }" 
-              editable="false"
-            />
+            <Input value="{HarvestSeason/Name}" editable="false" />
             <Label text="Quantidade"/>
             <Input 
               required="true"
@@ -304,14 +285,11 @@
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="LogisticRegion/Code,LogisticRegion/Name" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts:['LogisticRegionCode'],
-                formatter: '.formatLogisticRegionName'
-              }" 
-              editable="false"
-            />
+            <Input value="{LogisticRegion/Name}" editable="false" />
             <Label text="Inicio entrega" />
             <DatePicker
                 value="{

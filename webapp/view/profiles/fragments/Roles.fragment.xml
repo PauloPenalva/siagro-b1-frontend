@@ -47,18 +47,15 @@
             showValueHelp="true" 
             valueHelpOnly="true" 
             valueHelpRequest=".openRolesValueHelp">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="Role/Code,Role/Description" />
+            </customData>
           </Input>
         </t:template>
       </t:Column>
       <t:Column label="Descricao">
         <t:template>
-          <Text 
-            text="{
-              parts: ['RoleCode'],
-              formatter: '.formatRoleDescription'
-            }" 
-            >
-          </Text>
+          <Text text="{Role/Description}" />
         </t:template>
       </t:Column>
     </t:columns>

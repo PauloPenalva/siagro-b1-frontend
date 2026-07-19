@@ -101,17 +101,14 @@
               showValueHelp="true" 
               valueHelpOnly="true" 
               valueHelpRequest=".openItemValueHelp">
+              <customData>
+                <core:CustomData key="descriptionProperty" value="ItemName" />
+              </customData>
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
-            <Input 
-              value="{
-                parts:['ItemCode'],
-                formatter: '.formatItemName'
-              }" 
-              editable="false"
-            />
+            <Input value="{ItemName}" editable="false" />
             <Label text="Un.Med." />
             <Input 
               editable="false"
@@ -124,13 +121,6 @@
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
-            <Input 
-              value="{
-                parts:['UomCode'],
-                formatter: '.formatUnitOfMeasureDescription'
-              }" 
-              editable="false"
-            />
             <core:Title text="Lotes" />
             <Label text="Lote de Origem" />
             <Input 

@@ -12,7 +12,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
  */
 export default class FirstWeighing extends GenericController {
 
-	onInit(): void | undefined {	
+	onInit(): void {	
 		this.getRouter().getRoute("weighingTicketsFirstWeighing").attachPatternMatched((ev) => this.routeMatched(ev));
 	}
 
@@ -30,14 +30,14 @@ export default class FirstWeighing extends GenericController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const {id} = ev.getParameter("arguments") as {id: string | null};
+		const {id} = ev.getParameter("arguments") as {id: string};
 		if (id != null) {
       const sPath = `/WeighingTickets(${id})`;
       this.bindElement(sPath);
 
       const ctx = this.getView().getBindingContext() as Context;
       if (ctx) {
-        ctx.setProperty("Stage", "ReadyForSecondWeighing");
+        void ctx.setProperty("Stage", "ReadyForSecondWeighing");
       }
 			return;
 		}

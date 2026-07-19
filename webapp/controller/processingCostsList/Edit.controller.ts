@@ -9,7 +9,7 @@ import MessageBox from "sap/m/MessageBox";
  */
 export default class Edit extends TabelaCustoBaseController {
 
-	onInit(): void | undefined {	
+	onInit(): void {	
 		this.getRouter().getRoute("processingCostsListEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 
@@ -23,7 +23,7 @@ export default class Edit extends TabelaCustoBaseController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const {id} = ev.getParameter("arguments") as {id: string | null};
+		const {id} = ev.getParameter("arguments") as {id: string};
 		if (id != null) {
 			const sPath = `/ProcessingCosts('${id}')`;
 			oView.bindElement({

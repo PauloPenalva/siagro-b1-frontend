@@ -54,7 +54,7 @@ export default class Upload extends PurchaseContractsBaseController {
       throw new Error("Contexto não encontrado.");
     }
 
-    const contractKey = ctx.getProperty("Key");
+    const contractKey = ctx.getProperty("Key") as string;
     const description = this.byId("description") as Input;
     if (!description.getValue()){
       return;

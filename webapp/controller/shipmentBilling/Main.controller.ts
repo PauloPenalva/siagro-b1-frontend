@@ -24,6 +24,33 @@ type BillingData = {
   }
 }
 
+/** Dados do formulário do diálogo de faturamento (model "viewModel"). */
+type BillingForm = {
+  InvoiceDate?: string,
+  BranchCode?: string,
+  Volume?: string | number,
+  TruckingCompanyCode?: string,
+  TruckCode?: string,
+  TaxPayerComments?: string,
+  DeliveryCardCode?: string,
+  ItemCode?: string,
+  FreightTerms?: string,
+  FreightCost?: number,
+}
+
+/** Campos do contrato de venda usados na montagem do documento de saída. */
+type BilledContract = {
+  Key?: string,
+  CardCode?: string,
+  Price?: string | number,
+  UnitOfMeasureCode?: string,
+}
+
+/** Romaneio selecionado, enviado como `SalesTransactions`. */
+type BilledShipment = {
+  Key?: string,
+}
+
 /**
  * @namespace siagrob1.controller.shipmentBilling
  */
@@ -137,8 +164,8 @@ export default class Main extends BaseController {
 
     itemsSelected.forEach(i => {
       const ctx = table.getContextByIndex(i) as Context;
-      totalVolume += +ctx.getProperty("GrossWeight");
-      transactions.push(ctx.getObject());
+      totalVolume += +(ctx.getProperty("GrossWeight") as number);
+      transactions.push(ctx.getObject() as BillingData);
     })
 
     console.log(transactions);
@@ -209,13 +236,13 @@ export default class Main extends BaseController {
       return;
     }
 
-    const shipments: any[] = [];
+    const shipments: BilledShipment[] = [];
     const shipmentBillingTable = this.byId("shipmentBillingTable") as Table;
     const selectedShipments = shipmentBillingTable.getSelectedIndices();
 
     selectedShipments.forEach(i => {
       const shipmentCtx = shipmentBillingTable.getContextByIndex(i);
-      const shipmentObj: any = shipmentCtx.getObject();
+      const shipmentObj = shipmentCtx.getObject() as BilledShipment;
 
       shipments.push({
         Key: shipmentObj?.Key
@@ -235,13 +262,13 @@ export default class Main extends BaseController {
     if (contractCtx) {
       const model = this.getModel() as ODataModel;
       const viewModel = this.getModel("viewModel") as JSONModel;
-      const contract = contractCtx.getObject();
-      const billing = viewModel.getData();
+      const contract = contractCtx.getObject() as BilledContract;
+      const billing = viewModel.getData() as BillingForm;
       
       const confirm = await DialogHelper.confirmDialog("Confirma emissão do(s) Documento(s) de Saída ?");
       if (confirm) {
 
-        const salesInvoice: any = {
+        const salesInvoice = {
           InvoiceDate: billing?.InvoiceDate,
           BranchCode: billing?.BranchCode,
           CardCode: contract?.CardCode,

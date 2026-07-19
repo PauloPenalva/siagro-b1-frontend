@@ -1,2 +1,2 @@
 // import all your OPA journeys here
-import "./HelloJourney";
+import "./AppJourney";

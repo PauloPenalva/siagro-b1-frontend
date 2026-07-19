@@ -16,7 +16,7 @@ export default class Main extends BaseController {
 
   formatter = formatter;
 
-	onInit(): void | undefined {
+	onInit(): void {
 		this.getRouter().getRoute("armazens").attachPatternMatched(() => this.routeMatched())
 	}
 
@@ -24,11 +24,11 @@ export default class Main extends BaseController {
 		this.onRefresh();
 	}
 
-	onRefresh(): void | undefined {
+	onRefresh(): void {
 		(this.getView().byId("tableArmazens").getBinding("rows") as ODataListBinding).refresh();
 	}
 
-	onSearch(ev: SearchField$SearchEvent): void | undefined {
+	onSearch(ev: SearchField$SearchEvent): void {
 		const query = ev.getParameter("query");
 		const oFilters = new Filter({
 			filters: [

@@ -8,7 +8,7 @@ import MessageBox from "sap/m/MessageBox";
  */
 export default class Add extends TabelaCustoBaseController {
 
-	onInit(): void | undefined {
+	onInit(): void {
 		this.getRouter().getRoute("processingCostsListNew").attachPatternMatched(() => this.newRouteMatched());
 	}
 	private newRouteMatched() {

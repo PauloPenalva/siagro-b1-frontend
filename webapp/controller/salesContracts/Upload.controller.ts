@@ -54,7 +54,7 @@ export default class Upload extends SalesContractsBaseController {
       throw new Error("Contexto não encontrado.");
     }
 
-    const contractKey = ctx.getProperty("Key");
+    const contractKey = ctx.getProperty("Key") as string;
     const description = this.byId("salesContractAttachmentDescription") as Input;
     if (!description.getValue()){
       return;

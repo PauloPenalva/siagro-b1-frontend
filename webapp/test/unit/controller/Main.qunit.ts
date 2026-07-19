@@ -1,8 +1,15 @@
 import Main from "siagrob1/controller/Main.controller";
+import BaseController from "siagrob1/controller/BaseController";
 
-QUnit.module("Sample Main controller test");
+QUnit.module("Main controller");
 
-QUnit.test("The Main controller class has a sayHello method", function (assert) {
-	// as a very basic test example just check the presence of the "sayHello" method
-	assert.strictEqual(typeof Main.prototype.sayHello, "function");
+QUnit.test("herda de BaseController", function (assert) {
+	assert.ok(Main.prototype instanceof BaseController);
+});
+
+QUnit.test("expõe os formatters na instância", function (assert) {
+	const oController = new Main("siagrob1.controller.Main");
+
+	assert.strictEqual(typeof oController.formatter, "object");
+	assert.strictEqual(typeof oController.formatter.formatContractType, "function");
 });

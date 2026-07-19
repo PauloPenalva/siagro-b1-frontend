@@ -49,19 +49,15 @@
             showValueHelp="true" 
             valueHelpOnly="true" 
             valueHelpRequest=".openSuppliersValueHelp">
+              <customData>
+                <core:CustomData key="descriptionProperty" value="CardName" />
+              </customData>
           </Input>
         </t:template>
       </t:Column>
       <t:Column label="Nome">
         <t:template>
-          <Text 
-            wrapping="false"
-            text="{
-              parts: ['CardCode'],
-              formatter: '.formatBusinessPartnerName'
-            }" 
-            >
-          </Text>
+          <Text value="{CardName}" editable="false" />
         </t:template>
       </t:Column>
       <t:Column label="Valor">

@@ -5,9 +5,6 @@ import Context from "sap/ui/model/odata/v4/Context";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import formatter from "../../model/formatter";
 import "jquery";
-import models from "../../model/models";
-import { CaracteristcaQualidade } from "siagrob1/types/CaracteristcaQualidade";
-import { ServicoArmazenagem } from "siagrob1/types/ServicoArmazenagem";
 import Row from "sap/ui/table/Row";
 import CommonController from "../common/CommonController";
 
@@ -117,27 +114,6 @@ export default class TabelaCustoBaseController extends CommonController {
     void oContext.delete(oModel.getUpdateGroupId());
   }
 
-
-  async formatDescricaoCaracteristica(sId: string): Promise<string> {
-      const oTable = <Table> this.byId("tableQualidade");
-      if (sId) {
-        const sPath = `/odata/QualityAttribs('${sId}')`;
-        const cq = 
-          await models.requestModel(sPath, oTable) as CaracteristcaQualidade
-        
-        return cq.Name;
-      }
-    }
-
-  async formatDescricaoServico(sId: string): Promise<string> {
-    const oTable = <Table> this.byId("tableServicos");
-    if (sId) {
-      const sPath = `/odata/ProcessingServices('${sId}')`;
-      const sv = await models.requestModel(sPath, oTable) as ServicoArmazenagem;
-    
-      return sv.Description;
-    }
-  }
 
   public validateLineItems(){
     if (!this.validateDescontosSecagem()) {

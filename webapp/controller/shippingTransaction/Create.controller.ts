@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import JSONModel from "sap/ui/model/json/JSONModel";
@@ -9,9 +9,41 @@ import { QualityAttrib } from "siagrob1/types/QualityAttrib";
 import MessageToast from "sap/m/MessageToast";
 
 type routeArgs = {
-  "?query": { 
-    shipmentReleaseKey: string 
+  "?query": {
+    shipmentReleaseKey: string
   }
+}
+
+/** Liberação de entrega lida com `$expand=PurchaseContract`. */
+type ShipmentReleaseWithContract = {
+  PurchaseContractKey?: string,
+  DeliveryLocationCode?: string,
+  PurchaseContract?: {
+    CardCode?: string,
+    ItemCode?: string,
+    UnitOfMeasureCode?: string,
+  },
+}
+
+/** Envelope de coleção OData retornado pelo endpoint REST. */
+type ODataCollection<T> = {
+  value?: T[],
+}
+
+/** Dados montados no model "viewModel" e enviados na criação do embarque. */
+type ShippingTransactionForm = {
+  PurchaseContractKey?: string,
+  StorageTransaction?: {
+    DocNumberKey?: string,
+    BranchCode?: string,
+    TransactionType?: string,
+    CardCode?: string,
+    ItemCode?: string,
+    UnitOfMeasureCode?: string,
+    WarehouseCode?: string,
+    ShipmentReleaseKey?: string,
+    QualityInspections?: { QualityAttribCode?: string, Value: number }[],
+  },
 }
 
 /**
@@ -22,7 +54,7 @@ export default class Create extends BaseController {
   private _itemCode: string;
 
 	onInit(): void  {
-		this.getRouter().getRoute("shippingTransactionCreate").attachPatternMatched((ev) => this.routeMatched(ev));
+		this.getRouter().getRoute("shippingTransactionCreate").attachPatternMatched((ev) => void this.routeMatched(ev));
 	}
 
 	private async routeMatched(ev: Route$PatternMatchedEvent) {
@@ -35,27 +67,27 @@ export default class Create extends BaseController {
       const requestModel = new RequestModel();
       const shipmentServerUrl = this.api.shipmentReleases + `(${key})?$expand=PurchaseContract`
 
-      let data;
+      let data: ShipmentReleaseWithContract;
 
       try {
         this.setBusy(true);
-        data = await requestModel.get(shipmentServerUrl);
+        data = await requestModel.get<ShipmentReleaseWithContract>(shipmentServerUrl);
       } catch (error) {
         const err = error as JQueryXHR;
-        MessageBox.error(err.responseJSON?.error?.message);
+        MessageBox.error((err.responseJSON as { error?: { message?: string } })?.error?.message);
         return;
       } finally {
         this.setBusy(false);
       }
 
       const qualityAttribServerUrl = this.api.qualityAttrib + `?$orderby=Code&$filter=Disabled eq false`
-      let qualityAttribs;
+      let qualityAttribs: ODataCollection<QualityAttrib>;
       try {
         this.setBusy(true);
-        qualityAttribs = await requestModel.get(qualityAttribServerUrl)
+        qualityAttribs = await requestModel.get<ODataCollection<QualityAttrib>>(qualityAttribServerUrl)
       } catch (error) {
         const err = error as JQueryXHR;
-        MessageBox.error(err.responseJSON?.error?.message);
+        MessageBox.error((err.responseJSON as { error?: { message?: string } })?.error?.message);
         return;
       } finally {
         this.setBusy(false);
@@ -85,7 +117,7 @@ export default class Create extends BaseController {
             UnitOfMeasureCode: data?.PurchaseContract?.UnitOfMeasureCode,
             WarehouseCode: data?.DeliveryLocationCode,
             ShipmentReleaseKey: key,
-            QualityInspections: qualityAttribs?.value?.map((x: QualityAttrib) => { 
+            QualityInspections: qualityAttribs?.value?.map((x) => {
               return { QualityAttribCode: x.Code, Value: 0 }
             }),
           }
@@ -110,7 +142,7 @@ export default class Create extends BaseController {
     
     const oModel = this.getModel() as ODataModel;
     const viewModel = this.getModel("viewModel") as JSONModel;
-    const viewData = viewModel.getData();
+    const viewData = viewModel.getData() as ShippingTransactionForm;
 
     const action = oModel.bindContext("/ShippingTransactionsCreate(...)");
     action.setParameter("StorageTransaction", viewData?.StorageTransaction);

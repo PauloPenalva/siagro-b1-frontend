@@ -7,7 +7,6 @@ import { TruckDriver } from "siagrob1/types/TruckDriver";
 import MessageBox from "sap/m/MessageBox";
 import { BusinessPartner } from "siagrob1/types/BusinessPartner";
 import { Item } from "siagrob1/types/Items";
-import { UnitOfMeasure } from "siagrob1/types/UnitOfMeasure";
 import { Warehouse } from "siagrob1/types/Warehouse";
 import { QualityAttrib } from "siagrob1/types/QualityAttrib";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
@@ -110,17 +109,6 @@ export abstract class BaseController extends CommonController {
     return data?.ItemName;
   }
 
-  async formatUnitOfMeasureDescription(key: string) {
-    if (!key) {
-      return null;
-    }
-
-    const data = await this.getResource<UnitOfMeasure>(
-      `${this.api.unitsOfMeasure}('${key}')`
-    );
-    return data?.Description;
-  }
-
   async formatWarehouseName(key: string) {
     if (!key) {
       return null;
@@ -141,40 +129,6 @@ export abstract class BaseController extends CommonController {
       `${this.api.qualityAttrib}('${key}')`
     );
     return data?.Name;
-  }
-
-  async formatProcessingCostDescription(key: string){
-    if (!key){
-      return null;
-    } 
-
-    try {
-      this.setBusy(true);
-      const data = await this
-        .getResource<any>(`${this.api.processingCosts}('${key}')`)
-      
-      return data?.Description;
-    } finally {
-      this.setBusy(false);
-    }
-
-  }
-
-   async formatStorageAddressDescription(key: string){
-    if (!key){
-      return null;
-    } 
-
-    try {
-      this.setBusy(true);
-      const data = await this
-        .getResource<any>(`${this.api.storageAddresses}('${key}')`)
-      
-      return data?.Description;
-    } finally {
-      this.setBusy(false);
-    }
-
   }
 
   private createColumnConfig() {

@@ -37,7 +37,7 @@ export default class Detail extends SalesContractsBaseController {
         this.bindElement(sPath);
   
         const requestModel = new RequestModel({Key: id});
-        requestModel.get(this.api.salesContractsGetTotals.replace("$", id))
+        requestModel.get<SalesContractsTotals>(this.api.salesContractsGetTotals.replace("$", id))
           .then((data: SalesContractsTotals) => {
             viewModel.setProperty("/TotalPrice", data.TotalPrice ?? 0)
             viewModel.setProperty("/TotalVolume", data.TotalVolume ?? 0)
@@ -127,7 +127,7 @@ export default class Detail extends SalesContractsBaseController {
         this.navToSalesContractsApprovalList();
       },
       error: (err) => {
-        MessageBox.error(err.responseJSON?.error?.message as string  || "Erro ao aprovar contrato.")
+        MessageBox.error((err.responseJSON as { error?: { message?: string } })?.error?.message  || "Erro ao aprovar contrato.")
         this.setBusy(false);
       }
     })  
@@ -154,7 +154,7 @@ export default class Detail extends SalesContractsBaseController {
         this.navToSalesContractsApprovalList();
       },
       error: (err) => {
-        MessageBox.error(err.responseJSON?.error?.message as string  || "Erro ao rejeitar contrato.")
+        MessageBox.error((err.responseJSON as { error?: { message?: string } })?.error?.message  || "Erro ao rejeitar contrato.")
         this.setBusy(false);
       }
     })  
@@ -181,7 +181,7 @@ export default class Detail extends SalesContractsBaseController {
         this.navToSalesContractsApprovalList();
       },
       error: (err) => {
-        MessageBox.error(err.responseJSON?.error?.message as string  || "Erro ao cancelar contrato.")
+        MessageBox.error((err.responseJSON as { error?: { message?: string } })?.error?.message  || "Erro ao cancelar contrato.")
         this.setBusy(false);
       }
     })  

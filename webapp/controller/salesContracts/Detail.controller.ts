@@ -29,7 +29,7 @@ export default class Detail extends SalesContractsBaseController {
       this.getAttachments(id);
 
       const requestModel = new RequestModel({Key: id});
-      requestModel.get(this.api.salesContractsGetTotals.replace("$", id))
+      requestModel.get<SalesContractsTotals>(this.api.salesContractsGetTotals.replace("$", id))
         .then((data: SalesContractsTotals) => {
           viewModel.setProperty("/TotalPrice", data.TotalPrice ?? 0)
           viewModel.setProperty("/TotalVolume", data.TotalVolume ?? 0)

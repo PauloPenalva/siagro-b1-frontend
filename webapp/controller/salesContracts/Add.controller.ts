@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import BaseController from "./SalesContractsBaseController";
@@ -11,7 +11,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 export default class Add extends BaseController {
 
 	onInit(): void  {
-		this.getRouter().getRoute("salesContractsNew").attachPatternMatched(async () => this.newRouteMatched());
+		this.getRouter().getRoute("salesContractsNew").attachPatternMatched(() => void this.newRouteMatched());
 	}
 
 	private async newRouteMatched() {

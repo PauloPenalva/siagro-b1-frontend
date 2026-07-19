@@ -1,8 +1,6 @@
-import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import { Column, EdmType, SpreadsheetSettings } from "sap/ui/export/library";
 import Spreadsheet from "sap/ui/export/Spreadsheet";
-import Context from "sap/ui/model/odata/v4/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Table from "sap/ui/table/Table";

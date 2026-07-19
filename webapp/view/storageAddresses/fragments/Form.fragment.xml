@@ -89,16 +89,14 @@
 								showValueHelp="true" 
 								valueHelpOnly="true" 
 								valueHelpRequest=".openItemValueHelp">
+              <customData>
+                <core:CustomData key="descriptionProperty" value="ItemName" />
+              </customData>
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
-            <Input 
-								value="{
-                  parts:['ItemCode'],
-                  formatter: '.formatProdutoDescricao'
-                }" 
-								editable="false"/>
+            <Input value="{ItemName}" editable="false" />
             <Label text="Un.Med." />
             <Input 
               editable="{ui>/editable}"
@@ -111,13 +109,6 @@
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
-            <Input 
-              value="{
-                parts:['UoM'],
-                formatter: '.formatUnitOfMeasureDescription'
-              }" 
-              editable="false"
-            />
             <Label text="Cliente" />
             <Input 
 								required="true"
@@ -125,16 +116,14 @@
 								showValueHelp="true" 
 								valueHelpOnly="true" 
 								valueHelpRequest=".openBusinessPartnersValueHelp">
+              <customData>
+                <core:CustomData key="descriptionProperty" value="CardName" />
+              </customData>
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
-            <Input 
-								value="{
-                  parts:['CardCode'],
-                  formatter: '.formatRazaoSocialBP'
-                }" 
-								editable="false"/>
+            <Input value="{CardName}" editable="false" />
             
             <core:Title />
             <Label text="Armazém" />
@@ -144,16 +133,14 @@
 								showValueHelp="true" 
 								valueHelpOnly="true" 
 								valueHelpRequest=".openWarehouseValueHelp">
+              <customData>
+                <core:CustomData key="descriptionProperty" value="WarehouseName:Name" />
+              </customData>
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
-            <Input 
-								value="{
-                  parts:['WarehouseCode'],
-                  formatter: '.formatArmazemDescricao'
-                }" 
-								editable="false"/>
+            <Input value="{WarehouseName}" editable="false" />
             <Label visible="true" text="Tabela de Custos" />
             <Input 
               visible="true"
@@ -162,18 +149,14 @@
               showValueHelp="true" 
               valueHelpOnly="true" 
               valueHelpRequest=".openProcessingCostsListValueHelp">
+              <customData>
+                <core:CustomData key="descriptionProperty" value="ProcessingCost/Code,ProcessingCost/Description" />
+              </customData>
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
-            <Input 
-              visible="true"
-              value="{
-                parts: ['ProcessingCostCode'], 
-                formatter: '.formatProcessingCostDescription'
-              }" 
-              editable="false">
-            </Input>
+            <Input value="{ProcessingCost/Description}" editable="false" />
             <Label text="Saldo" />
             <Input
                 value="{ 

@@ -50,19 +50,15 @@
             showValueHelp="true" 
             valueHelpOnly="true" 
             valueHelpRequest=".openItemValueHelp">
+              <customData>
+                <core:CustomData key="descriptionProperty" value="ItemName" />
+              </customData>
           </Input>
         </t:template>
       </t:Column>
       <t:Column label="Descricao">
         <t:template>
-          <Text 
-            width="10rem"
-            text="{
-              parts: ['ItemCode'],
-              formatter: '.formatItemName'
-            }" 
-            >
-          </Text>
+          <Text value="{ItemName}" editable="false" />
         </t:template>
       </t:Column>
       <t:Column label="Quantidade">

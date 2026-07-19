@@ -41,11 +41,15 @@
 						width="10rem"
 						>
 						<t:template>
-							<Input 
+							<Input
 								value="{QualityAttribCode}"
-								showValueHelp="true" 
+								showValueHelp="true"
 								valueHelpOnly="true"
-								valueHelpRequest=".openQualityAttribsValueHelp"/>
+								valueHelpRequest=".openQualityAttribsValueHelp">
+								<customData>
+									<core:CustomData key="descriptionProperty" value="QualityAttrib/Code,QualityAttrib/Name" />
+								</customData>
+							</Input>
 						</t:template>
 					</t:Column>
 					<t:Column
@@ -53,12 +57,7 @@
 						width="20rem"
 						>
 						<t:template>
-							<Text 
-								text="{ 
-									parts: ['QualityAttribCode'], 	
-									formatter: '.formatDescricaoCaracteristica'
-								}"
-							/>	
+							<Text text="{QualityAttrib/Name}" />
 						</t:template>
 					</t:Column>
 					<t:Column

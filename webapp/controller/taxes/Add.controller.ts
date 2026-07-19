@@ -8,7 +8,7 @@ import BaseController from "../BaseController";
  */
 export default class Add extends BaseController {
 
-	onInit(): void | undefined {
+	onInit(): void {
 		this.getRouter().getRoute("taxesNew").attachPatternMatched(() => this.newRouteMatched());
 	}
 	private newRouteMatched() {

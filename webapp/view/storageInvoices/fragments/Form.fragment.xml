@@ -119,15 +119,11 @@
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="StorageAddress/Code,StorageAddress/Description" />
+              </customData>
             </Input>
-            <Input 
-              visible="true"
-              value="{
-                parts: ['StorageAddressCode'], 
-                formatter: '.formatStorageAddressDescription'
-              }" 
-              editable="false">
-            </Input>
+            <Input visible="true" value="{StorageAddress/Description}" editable="false" />
             <Label text="Cliente" />
             <Input
               editable="false"
@@ -141,12 +137,9 @@
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
             </Input>
-            <Input 
+            <Input
               visible="{= ${ui>/editable} ? false : true }"
-              value="{
-                parts: ['CardCode'],
-                formatter: '.formatBusinessPartnerName'
-              }" 
+              value="{CardName}"
               editable="false"
             />
             

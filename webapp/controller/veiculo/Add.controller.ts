@@ -8,7 +8,7 @@ import VeiculoBaseController from "./VeiculoBaseController";
  */
 export default class Add extends VeiculoBaseController {
 
-	onInit(): void | undefined {
+	onInit(): void {
 		this.getRouter().getRoute("veiculosNew").attachPatternMatched(() => this.newRouteMatched());
 	}
 	private newRouteMatched() {

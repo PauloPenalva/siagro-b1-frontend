@@ -6,7 +6,7 @@ import BaseController from "./BaseController";
  */
 export default class Main extends BaseController {
 
-	onInit(): void | undefined {
+	onInit(): void {
 		
     this.getRouter().getRoute("purchaseContractsReport").attachPatternMatched(() => this.routeMatched())
 	}
@@ -18,7 +18,7 @@ export default class Main extends BaseController {
     viewModel.setProperty("/Height", "100vh");
 	}
 
-	onRefresh(): void | undefined {
+	onRefresh(): void {
 		
 	}
 

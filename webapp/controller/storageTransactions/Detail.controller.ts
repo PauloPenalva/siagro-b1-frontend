@@ -83,7 +83,7 @@ export default class Detail extends BaseController {
 
       const model = this.getModel() as ODataModel;
       const action = model.bindContext("/StorageTransactionsReverse(...)");
-      const key = oContext.getProperty("Key");
+      const key = oContext.getProperty("Key") as string;
       action.setParameter("Key", key);
 
       this.setBusy(true);

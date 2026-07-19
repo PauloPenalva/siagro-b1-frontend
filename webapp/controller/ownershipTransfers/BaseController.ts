@@ -8,7 +8,7 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { Column, EdmType, SpreadsheetSettings } from "sap/ui/export/library";
 import Spreadsheet from "sap/ui/export/Spreadsheet";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import TableSelectDialog from "sap/m/TableSelectDialog";
+import TableSelectDialog, { TableSelectDialog$ConfirmEvent } from "sap/m/TableSelectDialog";
 import Fragment from "sap/ui/core/Fragment";
 import MessageBox from "sap/m/MessageBox";
 import { Input$ValueHelpRequestEvent } from "sap/m/Input";
@@ -40,61 +40,72 @@ export abstract class BaseController extends CommonController {
   }
 
   async openStorageAddressesListValueHelp(ev: Input$ValueHelpRequestEvent) {
-    this._openStorageAddressesList()
-      .then((aContexts: any) => {
-        const value = aContexts[0]?.getObject()?.Code as string;
-        ev.getSource().setValue(value);
-      })
-      .catch(err => {
-        throw err;
-      });
+    const aContexts = await this._openStorageAddressesList();
+
+    if (!aContexts.length) {
+      return;
+    }
+
+    ev.getSource().setValue(aContexts[0].getProperty("Code") as string);
   }
 
-  private async _openStorageAddressesList(): Promise<object[]> {
-    return new Promise(async (resolve) => {
-      const view = this.getView();
-      const ctx = view.getBindingContext();
+  /**
+   * Abre o diálogo de saldos por lote e resolve com os contextos escolhidos.
+   *
+   * Resolve com lista vazia quando não há o que escolher (sem contexto ou sem
+   * produto), em vez de ficar pendurada.
+   */
+  private async _openStorageAddressesList(): Promise<Context[]> {
+    const view = this.getView();
+    const ctx = view.getBindingContext();
 
-      if (!ctx) return;
+    if (!ctx) return [];
 
-      const itemCode = ctx.getProperty("ItemCode");
+    const itemCode = ctx.getProperty("ItemCode") as string;
 
-      if (!itemCode) {
-        MessageBox.warning("Selecione o produto.");
-        throw new Error("Selecione o produto.");
-      }
+    if (!itemCode) {
+      MessageBox.warning("Selecione o produto.");
+      return [];
+    }
 
-      this._dialog ??= await Fragment.load({
-        name: "siagrob1.view.ownershipTransfers.fragments.StorageAddressesBalanceDialog",
-        controller: this,
-        id: view.getId(),
-      }) as TableSelectDialog;
+    this._dialog ??= await Fragment.load({
+      name: "siagrob1.view.ownershipTransfers.fragments.StorageAddressesBalanceDialog",
+      controller: this,
+      id: view.getId(),
+    }) as TableSelectDialog;
 
-      if (view.indexOfDependent(this._dialog) < 0) {
-        view.addDependent(this._dialog);
-      }
+    if (view.indexOfDependent(this._dialog) < 0) {
+      view.addDependent(this._dialog);
+    }
 
-      const fnConfirm = (ev: any) => {
-        const aContext = ev.getParameter("selectedContexts");
+    // Registrado antes do open para não perder o confirm; a promise só é
+    // aguardada no fim.
+    const pSelection = new Promise<Context[]>((resolve) => {
+      const fnConfirm = (oEvent: TableSelectDialog$ConfirmEvent) => {
         this._dialog.detachConfirm(fnConfirm);
-        resolve(aContext);
+        resolve(oEvent.getParameter("selectedContexts") as Context[]);
       };
 
       this._dialog.attachConfirm(fnConfirm);
+    });
 
-      const requestModel = new RequestModel();
+    const requestModel = new RequestModel();
 
-      this.setBusy(true);
-      const results = await requestModel.get(
+    this.setBusy(true);
+    try {
+      const results = await requestModel.get<object>(
         `${this.api.storageAddressesBalance}(Code='${itemCode}')`
       );
 
       const viewModel = this.getModel("viewModel") as JSONModel;
       viewModel.setData(results);
+    } finally {
       this.setBusy(false);
+    }
 
-      this._dialog.open(undefined);
-    });
+    this._dialog.open(undefined);
+
+    return pSelection;
   }
 
 

@@ -10,7 +10,7 @@ import SessionService, { Credentials } from "siagrob1/services/SessionService";
 export default class Main extends BaseController {
   formatter = { ...formatter }
 
-	onInit(): void | undefined {
+	onInit(): void {
 		this.getRouter().getRoute("login").attachPatternMatched(() => this.routeMatched())
 	}
 
@@ -46,7 +46,7 @@ export default class Main extends BaseController {
       this.navTo("main");
     } catch (error) {
       const err = error as JQuery.jqXHR;
-      MessageBox.error("Falha ao efetuar login: \n" + err.responseJSON?.message);
+      MessageBox.error("Falha ao efetuar login: \n" + (err.responseJSON as { message?: string })?.message);
     } finally {
       this.setBusy(false);
     }

@@ -12,7 +12,7 @@ import Context from "sap/ui/model/odata/v4/Context";
  */
 export default class Edit extends GenericController {
 
-	onInit(): void | undefined {	
+	onInit(): void {	
 		this.getRouter().getRoute("weighingTicketsEdit").attachPatternMatched((ev) => this.routeMatched(ev));
 	}
 
@@ -36,7 +36,7 @@ export default class Edit extends GenericController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const {id} = ev.getParameter("arguments") as {id: string | null};
+		const {id} = ev.getParameter("arguments") as {id: string};
 		if (id != null) {
       const sPath = `/WeighingTickets(${id})`;
       this.bindElement(sPath);

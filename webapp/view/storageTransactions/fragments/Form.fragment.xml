@@ -118,17 +118,14 @@
               required="true"
               value="{CardCode}"
               >
+              <customData>
+                <core:CustomData key="descriptionProperty" value="CardName" />
+              </customData>
               <layoutData>
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
             </Input>
-            <Input 
-              value="{
-                parts: ['CardCode'],
-                formatter: '.formatBusinessPartnerName'
-              }" 
-              editable="false"
-            />
+            <Input value="{CardName}" editable="false" />
             <Label text="Observações" />
             <TextArea 
               editable="{ui>/editable}"
@@ -146,17 +143,14 @@
               showValueHelp="true" 
               valueHelpOnly="true" 
               valueHelpRequest=".openItemValueHelp">
+              <customData>
+                <core:CustomData key="descriptionProperty" value="ItemName" />
+              </customData>
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
-            <Input 
-              value="{
-                parts:['ItemCode'],
-                formatter: '.formatItemName'
-              }" 
-              editable="false"
-            />
+            <Input value="{ItemName}" editable="false" />
             <Label text="Un.Med." />
             <Input 
               editable="{ui>/editable}"
@@ -169,13 +163,6 @@
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
-            <Input 
-              value="{
-                parts:['UnitOfMeasureCode'],
-                formatter: '.formatUnitOfMeasureDescription'
-              }" 
-              editable="false"
-            />
             <Label text="Peso Bruto"/>
             <Input 
               required="true"
@@ -215,17 +202,14 @@
               showValueHelp="true" 
               valueHelpOnly="true" 
               valueHelpRequest=".openWarehouseValueHelp">
+              <customData>
+                <core:CustomData key="descriptionProperty" value="WarehouseName:Name" />
+              </customData>
               <layoutData>
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
-            <Input 
-              value="{
-                parts:['WarehouseCode'],
-                formatter: '.formatWarehouseName'
-              }" 
-              editable="false"
-            />
+            <Input value="{WarehouseName}" editable="false" />
             <Label text="Motorista" />
             <Input
               editable="{ui>/editable}"
@@ -238,14 +222,11 @@
               <layoutData>
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
+              <customData>
+                <core:CustomData key="descriptionProperty" value="TruckDriver/Code,TruckDriver/Name" />
+              </customData>
             </Input>
-            <Input 
-              value="{
-                parts: ['TruckDriverCode'],
-                formatter: '.formatDriverName'
-              }" 
-              editable="false"
-            />
+            <Input value="{TruckDriver/Name}" editable="false" />
             <Label text="Placa" />
             <Input
               editable="{ui>/editable}"
@@ -293,15 +274,11 @@
             <layoutData>
                 <l:GridData span="XL3 L3 M3 S4" />
             </layoutData>
+            <customData>
+              <core:CustomData key="descriptionProperty" value="ProcessingCost/Code,ProcessingCost/Description" />
+            </customData>
           </Input>
-          <Input 
-              visible="true"
-              value="{
-                parts: ['ProcessingCostCode'], 
-                formatter: '.formatProcessingCostDescription'
-              }" 
-              editable="false">
-          </Input>
+          <Input visible="true" value="{ProcessingCost/Description}" editable="false" />
           <Label visible="true" text="Lote de Armazenagem" />
           <Input 
               editable="{ui>/editable}"
@@ -313,15 +290,11 @@
             <layoutData>
                 <l:GridData span="XL3 L3 M3 S4" />
             </layoutData>
+            <customData>
+              <core:CustomData key="descriptionProperty" value="StorageAddress/Code,StorageAddress/Description" />
+            </customData>
           </Input>
-          <Input 
-              visible="true"
-              value="{
-                parts: ['StorageAddressCode'], 
-                formatter: '.formatStorageAddressDescription'
-              }" 
-              editable="false">
-          </Input>
+          <Input visible="true" value="{StorageAddress/Description}" editable="false" />
             
             <core:Title text="Documento Fiscal"/>
             <Label text="Numero"/>

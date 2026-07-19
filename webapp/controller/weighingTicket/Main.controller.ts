@@ -1,8 +1,6 @@
 import SearchField, { SearchField$SearchEvent } from "sap/m/SearchField";
 import BaseController from "../BaseController";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
-import Filter from "sap/ui/model/Filter";
-import FilterOperator from "sap/ui/model/FilterOperator";
 import Table from "sap/ui/table/Table";
 import MessageBox from "sap/m/MessageBox";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
@@ -12,7 +10,7 @@ import formatter from "siagrob1/model/formatter";
 import Dialog from "sap/m/Dialog";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageToast from "sap/m/MessageToast";
-import IconTabBar, { IconTabBar$SelectEvent } from "sap/m/IconTabBar";
+import IconTabBar from "sap/m/IconTabBar";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { ListBase$ItemPressEvent } from "sap/m/ListBase";
 
@@ -25,7 +23,7 @@ export default class Main extends BaseController {
 
   private oDialog: Dialog;
 
-	onInit(): void | undefined {
+	onInit(): void {
 		this.getRouter().getRoute("weighingTickets")
     .attachPatternMatched(() => this.onFilterSelect())
 	}

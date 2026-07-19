@@ -44,7 +44,7 @@ export default class SelectShipmentRelease extends BaseController {
       this._itemCode = itemCode;
       
       if (itemCode) {
-        this.getPurchaseContracts(itemCode, warehouseCode)	
+        void this.getPurchaseContracts(itemCode, warehouseCode)	
       }
 
       return;

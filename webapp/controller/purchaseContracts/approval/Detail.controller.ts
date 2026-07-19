@@ -141,8 +141,8 @@ export default class Detail extends PurchaseContractsBaseController {
         MessageToast.show(`Contrato ${code} aprovado com sucesso.`)
         this.navToPurchaseContractsApprovalList();
       },
-      error: (err) => {
-        //MessageBox.error(err.responseJSON?.message as string  || "Erro ao aprovar contrato.")
+      error: () => {
+        //MessageBox.error((err.responseJSON as { message?: string })?.message  || "Erro ao aprovar contrato.")
         this.setBusy(false);
       }
     })  
@@ -168,8 +168,8 @@ export default class Detail extends PurchaseContractsBaseController {
         MessageToast.show(`Contrato ${code} rejeitado com sucesso.`)
         this.navToPurchaseContractsApprovalList();
       },
-      error: (err) => {
-        //MessageBox.error(err.responseJSON?.message as string  || "Erro ao rejeitar contrato.")
+      error: () => {
+        //MessageBox.error((err.responseJSON as { message?: string })?.message  || "Erro ao rejeitar contrato.")
         this.setBusy(false);
       }
     })  
@@ -195,8 +195,8 @@ export default class Detail extends PurchaseContractsBaseController {
         MessageToast.show(`Contrato ${code} cancelado com sucesso.`)
         this.navToPurchaseContractsApprovalList();
       },
-      error: (err) => {
-        MessageBox.error(err.responseJSON?.message as string  || "Erro ao cancelar contrato.")
+      error: (err: JQueryXHR) => {
+        MessageBox.error((err.responseJSON as { message?: string })?.message  || "Erro ao cancelar contrato.")
         this.setBusy(false);
       }
     })  
