@@ -285,6 +285,12 @@
           "icon": "sap-icon://folder-blank"
         },
         {
+          "title": "Entrada em Armazenagem",
+          "key": "storageEntryTransaction",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
           "title": "Faturamento de Expedição",
           "key": "shipmentBilling",
           "enabled": true,

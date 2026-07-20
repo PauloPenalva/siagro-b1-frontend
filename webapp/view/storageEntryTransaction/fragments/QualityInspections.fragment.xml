@@ -1,0 +1,70 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <t:Table
+    id="storageEntryQualityInspectionTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    busyIndicatorDelay="0"
+    rows="{
+      path: 'viewModel>/StorageTransaction/QualityInspections',
+      sorter: {
+        path: 'QualityAttribCode'
+      }
+    }"
+    visible="true"
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Classificação" />
+          <ToolbarSpacer />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Codigo" width="10rem">
+        <t:template>
+          <Input
+            editable="{ui>/editable}"
+            value="{viewModel>QualityAttribCode}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openQualityAttribsValueHelp">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="QualityAttribName:Name" />
+            </customData>
+          </Input>
+        </t:template>
+      </t:Column>
+      <t:Column label="Nome" width="10rem">
+        <t:template>
+          <Text text="{viewModel>QualityAttribName}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="%" width="10rem">
+        <t:template>
+          <Input
+            editable="{ui>/editable}"
+            value="{
+              path: 'viewModel>Value',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions: {
+                  decimals: 1,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+              }
+            }"
+          />
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

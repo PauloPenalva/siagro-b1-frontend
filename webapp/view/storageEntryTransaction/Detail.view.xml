@@ -1,0 +1,149 @@
+<mvc:View
+	controllerName="siagrob1.controller.storageEntryTransaction.Detail"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:l="sap.ui.layout"
+	xmlns:uxap="sap.uxap"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+  <uxap:ObjectPageLayout
+    showFooter="true"
+    toggleHeaderOnTitleClick="true"
+		preserveHeaderStateOnScroll="false"
+    busy="{ui>/busy}"
+    busyIndicatorDelay="0"
+	>
+   	<uxap:headerTitle>
+      <uxap:ObjectPageDynamicHeaderTitle>
+        <uxap:breadcrumbs>
+          <Breadcrumbs separatorStyle="GreaterThan" currentLocationText="Detalhe">
+            <Link text="Entrada em Armazenagem" press=".onNavToList" />
+          </Breadcrumbs>
+        </uxap:breadcrumbs>
+        <uxap:expandedHeading>
+          <Title text="Entrada em Armazenagem Própria"/>
+        </uxap:expandedHeading>
+        <uxap:snappedHeading>
+          <Title text="Entrada em Armazenagem Própria"/>
+        </uxap:snappedHeading>
+        <uxap:actions>
+          <Button text="Voltar" type="Transparent" press=".onNavToList"/>
+          <!-- Enum chega como tipo Raw: sem targetType 'any' o UI5 lança ao formatar. -->
+          <Button
+            text="Estornar"
+            type="Critical"
+            press=".onReverse"
+            enabled="{= ${path: 'Status', targetType: 'any'} === 'Confirmed' }"/>
+        </uxap:actions>
+      </uxap:ObjectPageDynamicHeaderTitle>
+		</uxap:headerTitle>
+
+    <uxap:headerContent>
+      <HBox class="sapUiTinyMarginBottom" alignItems="Center">
+        <ObjectIdentifier
+          title="{PurchaseStorageTransaction/Code}"
+          text="Romaneio de compra"
+          class="sapUiMediumMarginEnd"/>
+        <ObjectStatus
+          class="sapUiMediumMarginEnd"
+          inverted="true"
+          text="{ path: 'Status', targetType: 'any' }"
+          state="{= ${path: 'Status', targetType: 'any'} === 'Cancelled' ? 'Error' : 'Success' }"/>
+        <ObjectNumber
+          class="sapUiMediumMarginEnd"
+          number="{
+            path: 'AllocatedVolume',
+            type: 'sap.ui.model.type.Float',
+            formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+          }"
+          unit="KG"
+          textAlign="Begin"/>
+        <!-- Diverge quando a tabela de custos do lote não é a mesma da compra. -->
+        <ObjectNumber
+          number="{
+            path: 'ReceiptNetWeight',
+            type: 'sap.ui.model.type.Float',
+            formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+          }"
+          unit="KG"
+          textAlign="Begin"
+          state="{= ${AllocatedVolume} === ${ReceiptNetWeight} ? 'None' : 'Warning' }"/>
+      </HBox>
+   	</uxap:headerContent>
+
+    <uxap:sections>
+      <uxap:ObjectPageSection titleUppercase="false" title="Dados da Entrada">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <f:SimpleForm
+                editable="false"
+                layout="ResponsiveGridLayout"
+                labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12"
+                adjustLabelSpan="false"
+                emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0"
+                columnsXL="2" columnsL="2" columnsM="2"
+                singleContainerFullSize="true">
+                <f:content>
+                  <core:Title text="Origem" emphasized="true"/>
+                  <Label text="Contrato de Compra"/>
+                  <Text text="{PurchaseContract/Code}"/>
+                  <Label text="Baixado do Contrato"/>
+                  <Text text="{
+                    path: 'AllocatedVolume',
+                    type: 'sap.ui.model.type.Float',
+                    formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }"/>
+
+                  <core:Title text="Destino" emphasized="true"/>
+                  <Label text="Lote de Armazenagem"/>
+                  <Text text="({StorageAddressCode}) {StorageAddress/Description}"/>
+                  <Label text="Recebido no Lote"/>
+                  <Text text="{
+                    path: 'ReceiptNetWeight',
+                    type: 'sap.ui.model.type.Float',
+                    formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }"/>
+
+                  <core:Title text="Auditoria" emphasized="true"/>
+                  <Label text="Criado por"/>
+                  <Text text="{CreatedBy}"/>
+                  <!--
+                    targetType 'any' é OBRIGATÓRIO aqui. No OData V4 o binding
+                    aplica sozinho o tipo vindo do $metadata (DateTimeOffset), e
+                    ele rejeita as 7 casas de fração de segundo que o datetime2 do
+                    SQL Server serializa — o campo renderiza vazio, sem erro visível.
+                    Com 'any' o valor chega cru e o formatter do projeto o converte.
+                  -->
+                  <Label text="Criado em"/>
+                  <Text text="{ path: 'CreatedAt', targetType: 'any', formatter: 'formatter.formatDateTime' }"/>
+                  <Label text="Estornado por"/>
+                  <Text text="{CanceledBy}"/>
+                  <Label text="Estornado em"/>
+                  <Text text="{ path: 'CanceledAt', targetType: 'any', formatter: 'formatter.formatDateTime' }"/>
+                </f:content>
+              </f:SimpleForm>
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
+      <uxap:ObjectPageSection titleUppercase="false" title="Romaneios do Par">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <l:Grid defaultSpan="XL6 L6 M6 S12" hSpacing="1" vSpacing="1">
+                <core:Fragment fragmentName="siagrob1.view.storageEntryTransaction.fragments.PairTransaction" type="XML"/>
+              </l:Grid>
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+    </uxap:sections>
+  </uxap:ObjectPageLayout>
+</mvc:View>

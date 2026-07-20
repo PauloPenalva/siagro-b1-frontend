@@ -1,0 +1,165 @@
+<mvc:View
+    controllerName="siagrob1.controller.storageEntryTransaction.SelectWarehouse"
+    displayBlock="true"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    xmlns:fb="sap.ui.comp.filterbar"
+    xmlns:uxap="sap.uxap"
+    core:require="{
+    formatter: 'siagrob1/model/formatter'
+  }"
+>
+    <uxap:ObjectPageLayout
+        showFooter="true"
+        toggleHeaderOnTitleClick="true"
+        preserveHeaderStateOnScroll="false"
+        busy="{ui>/busy}"
+        busyIndicatorDelay="0"
+    >
+        <uxap:headerTitle>
+            <uxap:ObjectPageDynamicHeaderTitle>
+              <uxap:breadcrumbs>
+                <Breadcrumbs separatorStyle="GreaterThan" currentLocationText="Seleção de Armazém">
+                  <Link text="Entrada em Armazenagem" press=".onCancel" />
+                </Breadcrumbs>
+              </uxap:breadcrumbs>
+              <uxap:expandedHeading>
+                  <Title text="Entrada em Armazenagem Própria" />
+              </uxap:expandedHeading>
+              <uxap:snappedHeading>
+                  <Title text="Entrada em Armazenagem Própria" />
+              </uxap:snappedHeading>
+            </uxap:ObjectPageDynamicHeaderTitle>
+        </uxap:headerTitle>
+        <uxap:headerContent>
+            <fb:FilterBar
+                search=".onSearch"
+                showRestoreButton="false"
+                filterBarExpanded="true"
+            >
+                <fb:filterGroupItems>
+                    <fb:FilterGroupItem
+                        name="items"
+                        label="Produto"
+                        groupName="GroupItem"
+                        visibleInFilterBar="true"
+                    >
+                        <fb:control>
+                            <Input
+                                showClearIcon="true"
+                                showValueHelp="true"
+                                valueHelpRequest=".openItemValueHelp"
+                                value="{filter>/ItemCode}"
+                            />
+                        </fb:control>
+                    </fb:FilterGroupItem>
+                </fb:filterGroupItems>
+            </fb:FilterBar>
+        </uxap:headerContent>
+        <uxap:sections>
+            <uxap:ObjectPageSection
+                titleUppercase="false"
+                title="Seleção de Armazém"
+            >
+                <uxap:subSections>
+                    <uxap:ObjectPageSubSection>
+                        <uxap:blocks>
+                            <Table
+                                id="tableStorageEntryBalance"
+                                class="sapUiSizeCondensed"
+                                alternateRowColors="true"
+                                inset="false"
+                                items="{
+                                  path: 'balance>/'
+                                }"
+                                mode="SingleSelect"
+                            >
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <content>
+                                            <Title
+                                                text="Seleção de Armazém para Entrada"
+                                                level="H2"
+                                            />
+                                            <ToolbarSpacer />
+                                            <SearchField
+                                                placeholder="Pesquisar..."
+                                                width="30%"
+                                                search=".onFilter"
+                                            />
+                                        </content>
+                                    </OverflowToolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column width="3rem">
+                                        <Text />
+                                    </Column>
+                                    <Column width="20rem">
+                                        <Text text="Armazem" />
+                                    </Column>
+                                    <Column width="20rem">
+                                        <Text text="Nome Fantasia" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="Codigo" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="CNPJ" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="Municipio" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="Estado" />
+                                    </Column>
+                                    <Column hAlign="End">
+                                        <Text text="Saldo" />
+                                    </Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <core:Icon tooltip="{balance>Notes}" src="sap-icon://information" />
+                                            <ObjectIdentifier title="{balance>DeliveryLocationName}" />
+                                            <Text text="{balance>FName}" />
+                                            <Text text="{balance>DeliveryLocationCode}" />
+                                            <Text text="{balance>TaxId}" />
+                                            <Text text="{balance>City}" />
+                                            <Text text="{balance>State}" />
+                                            <ObjectNumber
+                                                number="{
+                                                  path: 'balance>AvailableQuantity',
+                                                  type: 'sap.ui.model.type.Float',
+                                                  formatOptions: {
+                                                    decimals: 3,
+                                                    decimalSeparator: ',',
+                                                    groupingEnabled: true,
+                                                    groupingSeparator: '.'
+                                                  }
+                                                }"
+                                                unit="{balance>UnitOfMeasureCode}"
+                                            />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </uxap:blocks>
+                    </uxap:ObjectPageSubSection>
+                </uxap:subSections>
+            </uxap:ObjectPageSection>
+        </uxap:sections>
+        <uxap:footer>
+            <OverflowToolbar>
+                <ToolbarSpacer />
+                <Button text="Voltar" press=".onCancel" />
+                <Button
+                    text="Selecionar Contrato"
+                    icon="sap-icon://add"
+                    press=".onSelectShipmentRelease"
+                    type="Emphasized"
+                />
+            </OverflowToolbar>
+        </uxap:footer>
+    </uxap:ObjectPageLayout>
+</mvc:View>

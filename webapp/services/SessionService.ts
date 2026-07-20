@@ -32,6 +32,7 @@ class SessionService {
   private component: UIComponent;
   private idleTimer?: number;
   private warningTimer?: number;
+  private warningDialog?: Dialog;
   private watching = false;
   private listenersAttached = false;
 
@@ -186,6 +187,7 @@ class SessionService {
   /** Zera tudo que identifica o usuário: modelos, storage, timers e cache. */
   public clearSessionState(): void {
     this.stopIdleWatch();
+    this.closeWarningDialog();
 
     this.authenticated = false;
     this.branchInfo = undefined;
@@ -248,6 +250,11 @@ class SessionService {
   }
 
   private showWarning(): void {
+    // Um aviso já na tela não deve ser empilhado por um novo disparo.
+    if (this.warningDialog) {
+      return;
+    }
+
     const dialog = new Dialog({
       title: "Sessão prestes a expirar",
       type: "Message",
@@ -268,10 +275,24 @@ class SessionService {
           void this.expireSession();
         }
       }),
-      afterClose: () => dialog.destroy()
+      afterClose: () => {
+        dialog.destroy();
+        this.warningDialog = undefined;
+      }
     });
 
+    this.warningDialog = dialog;
     dialog.open();
+  }
+
+  /**
+   * Destrói o aviso imediatamente - o `afterClose` não dispara quando a
+   * sessão termina sem ação do usuário, e o diálogo modal sobreviveria à
+   * navegação para o login.
+   */
+  private closeWarningDialog(): void {
+    this.warningDialog?.destroy();
+    this.warningDialog = undefined;
   }
 
   /**

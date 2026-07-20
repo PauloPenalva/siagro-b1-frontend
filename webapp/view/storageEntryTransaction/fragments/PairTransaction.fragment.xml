@@ -1,0 +1,20 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+    <!--
+      Cada Panel abre um contexto de elemento na sua navegação, então o fragmento
+      de campos usa caminhos relativos e serve aos dois romaneios sem duplicação.
+    -->
+    <Panel headerText="Romaneio de Compra" binding="{PurchaseStorageTransaction}" class="sapUiNoContentPadding">
+        <content>
+            <core:Fragment fragmentName="siagrob1.view.storageEntryTransaction.fragments.TransactionFields" type="XML"/>
+        </content>
+    </Panel>
+
+    <Panel headerText="Romaneio de Recebimento" binding="{ReceiptStorageTransaction}" class="sapUiNoContentPadding">
+        <content>
+            <core:Fragment fragmentName="siagrob1.view.storageEntryTransaction.fragments.TransactionFields" type="XML"/>
+        </content>
+    </Panel>
+</core:FragmentDefinition>

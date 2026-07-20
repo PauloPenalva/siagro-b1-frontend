@@ -1,0 +1,207 @@
+<mvc:View
+	controllerName="siagrob1.controller.storageEntryTransaction.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.f"
+	xmlns:fb="sap.ui.comp.filterbar"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Entrada em Armazenagem Própria"/>
+        </f:heading>
+      </f:DynamicPageTitle>
+    </f:title>
+    <f:header>
+      <f:DynamicPageHeader pinnable="true">
+        <fb:FilterBar
+          search=".onSearch"
+          showRestoreButton="false"
+          filterBarExpanded="true"
+        >
+          <fb:filterGroupItems>
+            <fb:FilterGroupItem
+              name="lot"
+              label="Lote"
+              groupName="GroupItem"
+              visibleInFilterBar="true"
+            >
+              <fb:control>
+                <Input
+                  showClearIcon="true"
+                  value="{filter>/StorageAddressCode}"
+                  submit=".onSearch"
+                />
+              </fb:control>
+            </fb:FilterGroupItem>
+            <fb:FilterGroupItem
+              name="contract"
+              label="Contrato"
+              groupName="GroupItem"
+              visibleInFilterBar="true"
+            >
+              <fb:control>
+                <Input
+                  showClearIcon="true"
+                  value="{filter>/PurchaseContractCode}"
+                  submit=".onSearch"
+                />
+              </fb:control>
+            </fb:FilterGroupItem>
+            <fb:FilterGroupItem
+              name="romaneio"
+              label="Romaneio"
+              groupName="GroupItem"
+              visibleInFilterBar="true"
+            >
+              <fb:control>
+                <Input
+                  showClearIcon="true"
+                  value="{filter>/StorageTransactionCode}"
+                  submit=".onSearch"
+                />
+              </fb:control>
+            </fb:FilterGroupItem>
+          </fb:filterGroupItems>
+        </fb:FilterBar>
+      </f:DynamicPageHeader>
+    </f:header>
+    <f:content>
+      <IconTabBar
+        id="storageEntriesIconTabBar"
+        expanded="true"
+        expandable="false"
+        select=".onTabSelect">
+        <items>
+          <IconTabFilter
+            icon="sap-icon://accept"
+            iconColor="Positive"
+            count="{
+              path: '/StorageEntryTransactions/$count',
+              parameters: {
+                $filter: 'Status eq \'Confirmed\''
+              }
+            }"
+            text="Confirmadas"
+            key="Confirmed" />
+          <IconTabFilter
+            icon="sap-icon://decline"
+            iconColor="Negative"
+            count="{
+              path: '/StorageEntryTransactions/$count',
+              parameters: {
+                $filter: 'Status eq \'Cancelled\''
+              }
+            }"
+            text="Canceladas"
+            key="Cancelled" />
+        </items>
+        <content>
+          <Table
+            id="tableStorageEntries"
+            growing="true"
+            growingThreshold="20"
+            growingScrollToLoad="true"
+            class="sapUiSizeCondensed"
+            alternateRowColors="true"
+            busyIndicatorDelay="0"
+            mode="SingleSelect"
+            items="{
+              path: '/StorageEntryTransactions',
+              parameters: {
+                $expand: 'PurchaseContract,StorageAddress,PurchaseStorageTransaction',
+                $filter: 'Status eq \'Confirmed\'',
+                $count: true
+              },
+              sorter: {
+                path: 'CreatedAt',
+                descending: true
+              }
+            }"
+          >
+            <headerToolbar>
+              <OverflowToolbar design="Transparent">
+                <Title text="Entradas" level="H2" />
+                <ToolbarSpacer />
+                <Button text="Nova Entrada" icon="sap-icon://add" type="Transparent" press=".onCreate" />
+                <Button text="Visualizar" icon="sap-icon://display" type="Transparent" press=".onDetail" />
+                <Button text="Atualizar" icon="sap-icon://refresh" type="Transparent" press=".onRefresh" />
+              </OverflowToolbar>
+            </headerToolbar>
+            <columns>
+              <Column width="10rem">
+                <Text text="Romaneio" />
+              </Column>
+              <Column width="10rem">
+                <Text text="Contrato" />
+              </Column>
+              <Column width="16rem">
+                <Text text="Lote" />
+              </Column>
+              <Column hAlign="End" width="10rem">
+                <Text text="Baixado do Contrato" />
+              </Column>
+              <Column hAlign="End" width="10rem">
+                <Text text="Recebido no Lote" />
+              </Column>
+              <Column width="8rem">
+                <Text text="Situação" />
+              </Column>
+            </columns>
+            <items>
+              <ColumnListItem>
+                <cells>
+                  <ObjectIdentifier title="{PurchaseStorageTransaction/Code}" />
+                  <Text text="{PurchaseContract/Code}" />
+                  <Text text="({StorageAddressCode}) {StorageAddress/Description}" />
+                  <ObjectNumber
+                    number="{
+                      path: 'AllocatedVolume',
+                      type: 'sap.ui.model.type.Float',
+                      formatOptions: {
+                        decimals: 3,
+                        decimalSeparator: ',',
+                        groupingEnabled: true,
+                        groupingSeparator: '.'
+                      }
+                    }"
+                  />
+                  <!-- Diverge de AllocatedVolume quando a tabela de custos do lote
+                       não é a mesma da compra; destacado para saltar aos olhos. -->
+                  <ObjectNumber
+                    number="{
+                      path: 'ReceiptNetWeight',
+                      type: 'sap.ui.model.type.Float',
+                      formatOptions: {
+                        decimals: 3,
+                        decimalSeparator: ',',
+                        groupingEnabled: true,
+                        groupingSeparator: '.'
+                      }
+                    }"
+                    state="{= ${AllocatedVolume} === ${ReceiptNetWeight} ? 'None' : 'Warning' }"
+                  />
+                  <!-- Enum OData V4 chega como tipo Raw: sem targetType 'any' em CADA
+                       leitura, inclusive dentro da expression binding, o UI5 lança. -->
+                  <ObjectStatus
+                    text="{
+                      path: 'Status',
+                      targetType: 'any'
+                    }"
+                    state="{= ${path: 'Status', targetType: 'any'} === 'Cancelled' ? 'Error' : 'Success' }"
+                  />
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </content>
+      </IconTabBar>
+    </f:content>
+  </f:DynamicPage>
+</mvc:View>

@@ -1,0 +1,79 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+    <!--
+      Caminhos RELATIVOS: quem define de qual romaneio vêm os dados é o
+      binding do Panel que inclui este fragmento (ver PairTransaction).
+    -->
+    <f:SimpleForm
+        editable="false"
+        layout="ResponsiveGridLayout"
+        labelSpanXL="5" labelSpanL="5" labelSpanM="5" labelSpanS="12"
+        adjustLabelSpan="false"
+        emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0"
+        columnsXL="1" columnsL="1" columnsM="1"
+        singleContainerFullSize="true">
+        <f:content>
+            <Label text="Código"/>
+            <Text text="{Code}"/>
+
+            <!-- Enums chegam como tipo Raw: targetType 'any' é obrigatório. -->
+            <Label text="Tipo"/>
+            <Text text="{ path: 'TransactionType', targetType: 'any' }"/>
+
+            <Label text="Situação"/>
+            <ObjectStatus
+                text="{ path: 'TransactionStatus', targetType: 'any' }"
+                state="{= ${path: 'TransactionStatus', targetType: 'any'} === 'Cancelled' ? 'Error' : 'Success' }"/>
+
+            <Label text="Parceiro"/>
+            <Text text="({CardCode}) {CardName}"/>
+
+            <Label text="Armazém"/>
+            <Text text="({WarehouseCode}) {WarehouseName}"/>
+
+            <Label text="Lote"/>
+            <Text text="{StorageAddressCode}"/>
+
+            <Label text="Peso Bruto"/>
+            <Text text="{
+                path: 'GrossWeight',
+                type: 'sap.ui.model.type.Float',
+                formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"/>
+
+            <Label text="Desc. Secagem"/>
+            <Text text="{
+                path: 'DryingDiscount',
+                type: 'sap.ui.model.type.Float',
+                formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"/>
+
+            <Label text="Desc. Limpeza"/>
+            <Text text="{
+                path: 'CleaningDiscount',
+                type: 'sap.ui.model.type.Float',
+                formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"/>
+
+            <Label text="Desc. Qualidade"/>
+            <Text text="{
+                path: 'OthersDicount',
+                type: 'sap.ui.model.type.Float',
+                formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"/>
+
+            <Label text="Peso Líquido"/>
+            <ObjectNumber
+                number="{
+                    path: 'NetWeight',
+                    type: 'sap.ui.model.type.Float',
+                    formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"
+                unit="KG"
+                textAlign="Begin"/>
+        </f:content>
+    </f:SimpleForm>
+</core:FragmentDefinition>

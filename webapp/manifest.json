@@ -463,6 +463,31 @@
           "target": "shippingTransactionCreate"
         },
         {
+          "pattern": "storage-entry-transaction:?query:",
+          "name": "storageEntryTransaction",
+          "target": "storageEntryTransaction"
+        },
+        {
+          "pattern": "storage-entry-transaction/select-warehouse:?query:",
+          "name": "storageEntryTransactionSelectWarehouse",
+          "target": "storageEntryTransactionSelectWarehouse"
+        },
+        {
+          "pattern": "storage-entry-transaction/select-shipment-release:?query:",
+          "name": "storageEntryTransactionSelectRelease",
+          "target": "storageEntryTransactionSelectRelease"
+        },
+        {
+          "pattern": "storage-entry-transaction/create:?query:",
+          "name": "storageEntryTransactionCreate",
+          "target": "storageEntryTransactionCreate"
+        },
+        {
+          "pattern": "storage-entry-transaction/{id}/detail",
+          "name": "storageEntryTransactionDetail",
+          "target": "storageEntryTransactionDetail"
+        },
+        {
           "pattern": "shipment-billing",
           "name": "shipmentBilling",
           "target": "shipmentBilling"
@@ -1179,6 +1204,36 @@
 					"id": "shippingTransactionCreate",
           "level": 2,
 					"name": "siagrob1.view.shippingTransaction.Create",
+          "clearControlAggregation": true
+				},
+        "storageEntryTransaction": {
+					"id": "storageEntryTransaction",
+          "level": 1,
+					"name": "siagrob1.view.storageEntryTransaction.Main",
+          "clearControlAggregation": true
+				},
+        "storageEntryTransactionSelectWarehouse": {
+					"id": "storageEntryTransactionSelectWarehouse",
+          "level": 2,
+					"name": "siagrob1.view.storageEntryTransaction.SelectWarehouse",
+          "clearControlAggregation": true
+				},
+        "storageEntryTransactionSelectRelease": {
+					"id": "storageEntryTransactionSelectRelease",
+          "level": 2,
+					"name": "siagrob1.view.storageEntryTransaction.SelectShipmentRelease",
+          "clearControlAggregation": true
+				},
+        "storageEntryTransactionCreate": {
+					"id": "storageEntryTransactionCreate",
+          "level": 2,
+					"name": "siagrob1.view.storageEntryTransaction.Create",
+          "clearControlAggregation": true
+				},
+        "storageEntryTransactionDetail": {
+					"id": "storageEntryTransactionDetail",
+          "level": 2,
+					"name": "siagrob1.view.storageEntryTransaction.Detail",
           "clearControlAggregation": true
 				},
         "shipmentBilling": {
