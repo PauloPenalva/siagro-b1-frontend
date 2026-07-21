@@ -1,0 +1,113 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <t:Table
+    id="salesContractsShipmentReleasesTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    busyIndicatorDelay="0"
+   selectionBehavior="Row"
+    selectionMode="Single"
+    visibleRowCountMode="Auto"
+    minAutoRowCount="5"
+    rows="{
+      path: 'SalesShipmentReleases',
+      parameters: {
+        $expand: 'SalesContract($select=UnitOfMeasureCode)'
+      },
+      sorter: [{ path: 'RowId', descending: true }]
+    }"
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Liberações de Entrega do Contrato" />
+          <ToolbarSpacer />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Status" width="9rem" hAlign="Center">
+        <t:template>
+          <ObjectStatus
+            inverted="true"
+            state="{
+              path: 'Status',
+              targetType: 'any',
+              formatter: '.formatter.stateShipmentReleaseStatus'
+            }"
+            text="{
+              path: 'Status',
+              targetType: 'any',
+              formatter: '.formatter.formatShipmentReleaseStatus'
+            }"
+          />
+        </t:template>
+      </t:Column>
+      <t:Column label="Dt.Liberação" width="9rem">
+        <t:template>
+          <Text
+            wrapping="false"
+            text="{
+              path: 'ReleaseDate',
+              targetType: 'any',
+              formatter: '.formatter.formatDate'
+            }"
+          />
+        </t:template>
+      </t:Column>
+      <t:Column label="Filial" width="6rem">
+        <t:template>
+          <Text wrapping="false" text="{BranchCode}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Armazém" width="16rem">
+        <t:template>
+          <Text wrapping="false" text="({DeliveryLocationCode}) {DeliveryLocationName}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Qtd.Liberada" width="10rem" hAlign="End">
+        <t:template>
+          <ObjectNumber
+            textAlign="End"
+            number="{
+              path: 'ReleasedQuantity',
+              type: 'sap.ui.model.type.Float',
+              formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"
+            unit="{SalesContract/UnitOfMeasureCode}"
+          />
+        </t:template>
+      </t:Column>
+      <t:Column label="Romaneado" width="10rem" hAlign="End">
+        <t:template>
+          <ObjectNumber
+            textAlign="End"
+            number="{
+              path: 'ShippedQuantity',
+              type: 'sap.ui.model.type.Float',
+              formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"
+            unit="{SalesContract/UnitOfMeasureCode}"
+          />
+        </t:template>
+      </t:Column>
+      <t:Column label="Saldo" width="10rem" hAlign="End">
+        <t:template>
+          <ObjectNumber
+            textAlign="End"
+            number="{
+              path: 'AvailableQuantity',
+              type: 'sap.ui.model.type.Float',
+              formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"
+            unit="{SalesContract/UnitOfMeasureCode}"
+          />
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

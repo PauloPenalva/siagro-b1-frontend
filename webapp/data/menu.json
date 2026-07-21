@@ -279,6 +279,18 @@
           "icon": "sap-icon://folder-blank"
         },
         {
+          "title": "Contratos de Venda - Liberação de entregas",
+          "key": "salesContractsShipmentRelease",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
+          "title": "Liberações de Entrega de Contratos de Venda",
+          "key": "salesShipmentReleases",
+          "enabled": true,
+          "icon": "sap-icon://folder-blank"
+        },
+        {
           "title": "Expedição de Grãos",
           "key": "shippingTransaction",
           "enabled": true,

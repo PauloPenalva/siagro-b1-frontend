@@ -6,8 +6,6 @@ import { BaseController } from "./BaseController";
 import MessageBox from "sap/m/MessageBox";
 import Context from "sap/ui/model/odata/v4/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import Filter from "sap/ui/model/Filter";
-import FilterOperator from "sap/ui/model/FilterOperator";
 import Fragment from "sap/ui/core/Fragment";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
@@ -42,12 +40,14 @@ type BillingForm = {
   FreightCost?: number,
 }
 
-/** Campos do contrato de venda usados na montagem do documento de saída. */
-type BilledContract = {
-  Key?: string,
+/** Liberação de entrega de venda selecionada, usada na montagem do documento de saída. */
+type BilledRelease = {
+  SalesShipmentReleaseKey?: string,
+  SalesContractKey?: string,
   CardCode?: string,
   Price?: string | number,
   UnitOfMeasureCode?: string,
+  AvailableQuantity?: string | number,
 }
 
 /** Romaneio selecionado, enviado como `SalesTransactions`. */
@@ -66,6 +66,11 @@ export default class Main extends BaseController {
   private _busyDialog: Dialog;
 
   onInit(): void {
+    // Liberações de venda disponíveis do dialog de faturamento: resultado da function
+    // OData vai para um JSONModel (a resposta é array cru, sem envelope — mesmo padrão
+    // de SelectShipmentRelease; bindar a table direto na function quebra o modelo V4).
+    this.getView().setModel(new JSONModel([]), "releases");
+
     this.getRouter().getRoute("shipmentBilling")
       .attachPatternMatched(() => this.applyFilters(null));
   }
@@ -144,7 +149,6 @@ export default class Main extends BaseController {
 
     const table = this.byId("shipmentBillingTable") as Table;
     const contractsTable = this.byId("shipmentBillingSalesContractsTable") as Table;
-    const contractsBinding = contractsTable.getBinding("rows") as ODataListBinding;
     const itemsSelected = table.getSelectedIndices();
 
     if (itemsSelected.length < 1) {
@@ -185,19 +189,28 @@ export default class Main extends BaseController {
       BranchCode: transactions[0]?.Branch?.Code
     });
 
-    contractsBinding.filter([
-      new Filter("ItemCode", FilterOperator.EQ, transactions[0]?.ItemCode)
-    ]);
+    // Lista as LIBERAÇÕES de venda disponíveis para o produto embarcado, recarregada a
+    // cada abertura. Padrão bindContext + invoke + JSONModel (como SelectShipmentRelease):
+    // a function retorna array cru, que vira a raiz do model "releases".
+    contractsTable.clearSelection();
+    await this.loadAvailableReleases(transactions[0]?.ItemCode ?? "");
 
-    // const contexts = (contractsBinding.getContexts() as Context[]).map(ctx =>{
-    //   const availableVolume =  +ctx.getProperty("AvaiableVolume");
-    //   if (availableVolume > 0) {
-    //     return ctx;
-    //   }
-    // });
-    
-    contractsBinding.refresh();
     this._billingDialog?.open();
+  }
+
+  private async loadAvailableReleases(itemCode: string): Promise<void> {
+    const model = this.getModel() as ODataModel;
+    const func = model.bindContext("/SalesShipmentReleasesGetAvailable(...)");
+    func.setParameter("ItemCode", itemCode);
+
+    this.setBusy(true);
+    try {
+      await func.invoke();
+      const releasesModel = this.getModel("releases") as JSONModel;
+      releasesModel.setData(func.getBoundContext().getObject() as object);
+    } finally {
+      this.setBusy(false);
+    }
   }
 
   private hasTruckCodeInconsistency(itemsSelected: number[]): boolean {
@@ -257,25 +270,26 @@ export default class Main extends BaseController {
     const contractsTable = this.byId("shipmentBillingSalesContractsTable") as Table;
     const selectedContract = contractsTable.getSelectedIndices();
     if (selectedContract.length < 1) {
-      MessageBox.error("Contrato não selecionado.");
-      throw new Error("Contrato não selecionado.");
+      MessageBox.error("Liberação de entrega não selecionada.");
+      throw new Error("Liberação de entrega não selecionada.");
     }
 
-    const contractCtx = contractsTable.getContextByIndex(selectedContract[0]) as Context;
+    // Contexto do JSONModel "releases" (não OData) — getObject() devolve o DTO da function.
+    const contractCtx = contractsTable.getContextByIndex(selectedContract[0]);
 
     if (contractCtx) {
       const model = this.getModel() as ODataModel;
       const viewModel = this.getModel("viewModel") as JSONModel;
-      const contract = contractCtx.getObject() as BilledContract;
+      const release = contractCtx.getObject() as BilledRelease;
       const billing = viewModel.getData() as BillingForm;
-      
+
       const confirm = await DialogHelper.confirmDialog("Confirma emissão do(s) Documento(s) de Saída ?");
       if (confirm) {
 
         const salesInvoice = {
           InvoiceDate: billing?.InvoiceDate,
           BranchCode: billing?.BranchCode,
-          CardCode: contract?.CardCode,
+          CardCode: release?.CardCode,
           GrossWeight: +billing?.Volume,
           NetWeight: +billing?.Volume,
           TruckingCompanyCode: billing?.TruckingCompanyCode,
@@ -286,9 +300,10 @@ export default class Main extends BaseController {
             {
               ItemCode: billing?.ItemCode,
               Quantity: +billing?.Volume,
-              UnitPrice: +contract?.Price,
-              UnitOfMeasureCode: contract?.UnitOfMeasureCode,
-              SalesContractKey: contract?.Key
+              UnitPrice: +release?.Price,
+              UnitOfMeasureCode: release?.UnitOfMeasureCode,
+              SalesContractKey: release?.SalesContractKey,
+              SalesShipmentReleaseKey: release?.SalesShipmentReleaseKey
             }
           ],
           SalesTransactions: shipments,

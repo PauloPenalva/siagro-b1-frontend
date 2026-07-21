@@ -1,0 +1,79 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table">
+	<t:Table
+		id="tableReleaseTransactions"
+		busyIndicatorDelay="0"
+		selectionMode="None"
+		class="sapUiSizeCondensed"
+		visibleRowCountMode="Auto"
+		minAutoRowCount="5"
+		alternateRowColors="true"
+		rows="{
+			path: '/StorageTransactions',
+			parameters: {
+				$filter: '(TransactionType eq \'SalesShipment\')'
+			},
+			sorter: [{ path: 'RowId', descending: true }]
+		}">
+		<t:columns>
+			<t:Column label="Código" width="10rem">
+				<t:template>
+					<Text text="{Code}" wrapping="false"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Data" width="10rem">
+				<t:template>
+					<Text wrapping="false" text="{
+						path: 'TransactionDate',
+						targetType: 'any',
+						formatter: '.formatter.formatDate'
+					}"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Tipo" width="12rem">
+				<t:template>
+					<Text wrapping="false" text="{
+						path: 'TransactionType',
+						targetType: 'any',
+						formatter: '.formatter.formatStorageTransactionType'
+					}"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Armazém" width="10rem">
+				<t:template>
+					<Text text="{WarehouseCode}" wrapping="false"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Peso Líquido" hAlign="End" width="10rem">
+				<t:template>
+					<ObjectNumber
+						textAlign="End"
+						number="{
+							path: 'NetWeight',
+							type: 'sap.ui.model.type.Float',
+							formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+						}"
+						unit="{UnitOfMeasureCode}"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Status" hAlign="Center" width="8rem">
+				<t:template>
+					<ObjectStatus
+						inverted="true"
+						state="{
+							path: 'TransactionStatus',
+							targetType: 'any',
+							formatter: '.formatter.stateStorageTransactionStatus'
+						}"
+						text="{
+							path: 'TransactionStatus',
+							targetType: 'any',
+							formatter: '.formatter.formatStorageTransactionStatus'
+						}"/>
+				</t:template>
+			</t:Column>
+		</t:columns>
+	</t:Table>
+</core:FragmentDefinition>

@@ -89,7 +89,7 @@
         <VBox class="sapUiTinyMarginBottom sapUiMediumMarginEnd">
           <HBox class="sapUiTinyMarginBottom">
             <Text text="Saldo" class="sapUiMediumMarginEnd" />
-            <ObjectNumber 
+            <ObjectNumber
               number="{
                 path: 'AvaiableVolume',
                 type: 'sap.ui.model.odata.type.Double',
@@ -99,12 +99,40 @@
                   groupingEnabled: true,
                   groupingSeparator: '.'
                 }
-              }" 
+              }"
               unit="{UnitOfMeasureCode}" />
           </HBox>
         </VBox>
-      </HBox> 
-   	</uxap:headerContent> 
+        <VBox class="sapUiTinyMarginBottom sapUiMediumMarginEnd">
+          <HBox class="sapUiTinyMarginBottom">
+            <Text text="Aguardando Liberação:" class="sapUiMediumMarginEnd" />
+            <ObjectNumber number="{
+              path: 'TotalAvailableToRelease',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions:{
+                decimals: 3,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+              }
+            }" unit="{UnitOfMeasureCode}"  />
+          </HBox>
+          <HBox class="sapUiTinyMarginBottom">
+            <Text text="Liberado para embarque:" class="sapUiMediumMarginEnd" />
+            <ObjectNumber number="{
+              path: 'TotalShipmentReleases',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions:{
+                decimals: 3,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+              }
+            }" unit="{UnitOfMeasureCode}"  />
+          </HBox>
+        </VBox>
+      </HBox>
+   	</uxap:headerContent>
     
     <uxap:sections>
       <uxap:ObjectPageSection titleUppercase="false" title="Dados do Contrato">
@@ -114,7 +142,14 @@
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
-      <uxap:ObjectPageSection titleUppercase="false" title="Entregas">
+      <uxap:ObjectPageSection titleUppercase="false" title="Liberações de Entrega">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection titleUppercase="false">
+						 <core:Fragment fragmentName="siagrob1.view.salesContracts.fragments.SalesContractShipmentReleases" type="XML" />
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+       <uxap:ObjectPageSection titleUppercase="false" title="Entregas">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection titleUppercase="false">
 						 <core:Fragment fragmentName="siagrob1.view.salesContracts.fragments.SalesContractAllocations" type="XML" />

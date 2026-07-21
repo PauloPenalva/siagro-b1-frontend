@@ -20,6 +20,7 @@ export default {
   truckDrivers: '/odata/TruckDrivers',
   trucks: '/odata/Trucks',
   shipmentReleases: 'odata/ShipmentReleases',
+  salesShipmentReleases: 'odata/SalesShipmentReleases',
   processingCosts: 'odata/ProcessingCosts',
   storageTransactions: 'odata/StorageTransactions',
   menuItems: 'odata/MenuItems',

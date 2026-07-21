@@ -267,157 +267,78 @@
 			visibleRowCountMode="Fixed"
 			visibleRowCount="6"
 			rows="{
-				path: '/SalesContracts',
-        sorter: {
-					path: 'Code'
-				},
-        parameters: {
-          $filter: 'Status eq \'Approved\''
-        }
+				path: 'releases>/'
 			}"
 		>
 			<t:toolbar>
 				<Toolbar>
-					<Title text="Contratos de Venda" />
+					<Title text="Liberações de Entrega de Venda Disponíveis" />
 					<ToolbarSpacer />
 				</Toolbar>
 			</t:toolbar>
 			<t:columns>
-        <t:Column 
-          filterProperty="Branch/ShortName"
-					width="6rem"
-					sortProperty="Branch/ShortName"
-				>
+        <t:Column width="6rem" sortProperty="BranchShortName">
 					<Label text="Filial" />
 					<t:template>
-						<Text
-							text="{Branch/ShortName}"
-							wrapping="false"
-						/>
+						<Text text="{releases>BranchShortName}" wrapping="false"/>
 					</t:template>
 				</t:Column>
-				<t:Column 
-          filterProperty="Code"
-					width="6rem"
-					sortProperty="Code"
-				>
-					<Label text="Codigo" />
+				<t:Column width="6rem" sortProperty="SalesContractCode">
+					<Label text="Contrato" />
 					<t:template>
-						<Text
-							text="{Code}"
-							wrapping="false"
-						/>
+						<Text text="{releases>SalesContractCode}" wrapping="false"/>
 					</t:template>
 				</t:Column>
-				<t:Column 
-          filterProperty="Complement"
-					width="10rem"
-					sortProperty="Complement"
-				>
+				<t:Column width="10rem" sortProperty="Complement">
 					<Label text="Compl." />
 					<t:template>
-						<Text
-							text="{Complement}"
-							wrapping="false"
-						/>
+						<Text text="{releases>Complement}" wrapping="false"/>
 					</t:template>
 				</t:Column>
-				<t:Column 
-          filterProperty="CardCode"
-					sortProperty="CardCode"
-					width="5rem"
-				>
+				<t:Column sortProperty="CardCode" width="5rem">
 					<Label text="Cliente" />
 					<t:template>
-						<Text
-							text="{CardCode}"
-							wrapping="false"
-						/>
+						<Text text="{releases>CardCode}" wrapping="false"/>
 					</t:template>
 				</t:Column>
-				<t:Column sortProperty="CardName" filterProperty="CardName" width="25rem">
+				<t:Column sortProperty="CardName" width="25rem">
 					<Label text="Razao Social" />
 					<t:template>
-						<Text
-							text="{CardName}"
-							wrapping="false"
-						/>
+						<Text text="{releases>CardName}" wrapping="false"/>
 					</t:template>
 				</t:Column>
 				<t:Column width="25rem">
 					<Label text="Nome Fantasia" />
 					<t:template>
-						<Text text="{CardFName}" wrapping="false" />
+						<Text text="{releases>CardFName}" wrapping="false" />
 					</t:template>
 				</t:Column>
 				<t:Column width="15rem">
-					<Label text="Cnpj" />
+					<Label text="Armazém" />
 					<t:template>
-						<Text text="{CardTaxId}" wrapping="false" />
+						<Text text="({releases>DeliveryLocationCode}) {releases>DeliveryLocationName}" wrapping="false" />
 					</t:template>
 				</t:Column>
-				<t:Column sortProperty="LogisticRegionCode" filterProperty="LogisticRegionCode" width="5rem">
-					<Label text="Região" />
-					<t:template>
-						<Text
-							text="{LogisticRegionCode}"
-							wrapping="false"
-						/>
-					</t:template>
-				</t:Column>
-				<t:Column sortProperty="LogisticRegion/Name" filterProperty="LogisticRegion/Name" width="10rem">
-					<Label text="Região" />
-					<t:template>
-						<Text
-							text="{LogisticRegion/Name}"
-							wrapping="false"
-						/>
-					</t:template>
-				</t:Column>
-
-				<t:Column
-					width="8rem"
-					hAlign="End"
-					sortProperty="Price"
-				>
+				<t:Column width="8rem" hAlign="End" sortProperty="Price">
 					<Label text="Preço Unit." />
 					<t:template>
 						<ObjectNumber
 							number="{
-                path: 'Price',
+                path: 'releases>Price',
                 type: 'sap.ui.model.type.Float',
-                formatOptions: {
-                  decimals: 8,
-                  decimalSeparator: ',',
-                  groupingEnabled: true,
-                  groupingSeparator: '.'
-                }
-              }"
-							unit="{
-                path: 'StandardCurrency',
-                targetType: 'any',
-                formatter: '.formatter.formatCurrency'
+                formatOptions: { decimals: 8, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
               }"
 						/>
 					</t:template>
 				</t:Column>
-				<t:Column
-					width="8rem"
-					hAlign="End"
-					sortProperty="Saldo"
-				>
+				<t:Column width="8rem" hAlign="End" sortProperty="AvailableQuantity">
 					<Label text="Saldo" />
 					<t:template>
 						<Text
 							text="{
-							path: 'AvaiableVolume',
+							path: 'releases>AvailableQuantity',
               type: 'sap.ui.model.type.Float',
-							formatOptions: {
-								decimals: 3,
-								decimalSeparator: ',',
-								groupingEnabled: true,
-								groupingSeparator: '.'
-							}}"
+							formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }}"
 							wrapping="false"
 						/>
 					</t:template>
@@ -425,19 +346,7 @@
 				<t:Column width="3rem">
 					<Label text="Um" />
 					<t:template>
-						<Text
-							text="{UnitOfMeasureCode}"
-							wrapping="false"
-						/>
-					</t:template>
-				</t:Column>
-				<t:Column width="25rem">
-					<Label text="Obs." />
-					<t:template>
-						<Text
-							text="{Comments}"
-							wrapping="false"
-						/>
+						<Text text="{releases>UnitOfMeasureCode}" wrapping="false"/>
 					</t:template>
 				</t:Column>
 			</t:columns>

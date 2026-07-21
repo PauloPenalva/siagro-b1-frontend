@@ -373,6 +373,26 @@
           "target": "shipmentReleasesDetail"
         },
         {
+          "pattern": "sales-contracts/shipment-release",
+          "name": "salesContractsShipmentRelease",
+          "target": "salesContractsShipmentRelease"
+        },
+        {
+          "pattern": "sales-contracts/{salesContractId}/shipment-release/request",
+          "name": "salesContractsShipmentReleaseRequest",
+          "target": "salesContractsShipmentReleaseRequest"
+        },
+        {
+          "pattern": "sales-shipment-releases",
+          "name": "salesShipmentReleases",
+          "target": "salesShipmentReleases"
+        },
+        {
+          "pattern": "sales-shipment-releases/{id}/detail",
+          "name": "salesShipmentReleasesDetail",
+          "target": "salesShipmentReleasesDetail"
+        },
+        {
           "pattern": "sales-contracts",
           "name": "salesContracts",
           "target": "salesContracts"
@@ -1100,6 +1120,30 @@
 					"id": "shipmentReleasesDetail",
           "level": 2,
 					"name": "siagrob1.view.shipmentReleases.Detail",
+          "clearControlAggregation": true
+				},
+        "salesContractsShipmentRelease": {
+					"id": "salesContractsShipmentRelease",
+          "level": 1,
+					"name": "siagrob1.view.salesContracts.shipmentRelease.Main",
+          "clearControlAggregation": true
+				},
+        "salesContractsShipmentReleaseRequest": {
+					"id": "salesContractsShipmentReleaseRequest",
+          "level": 2,
+					"name": "siagrob1.view.salesContracts.shipmentRelease.Add",
+          "clearControlAggregation": true
+				},
+        "salesShipmentReleases": {
+					"id": "salesShipmentReleases",
+          "level": 1,
+					"name": "siagrob1.view.salesShipmentReleases.Main",
+          "clearControlAggregation": true
+				},
+        "salesShipmentReleasesDetail": {
+					"id": "salesShipmentReleasesDetail",
+          "level": 2,
+					"name": "siagrob1.view.salesShipmentReleases.Detail",
           "clearControlAggregation": true
 				},
         "salesContracts": {
