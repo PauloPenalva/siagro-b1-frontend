@@ -1,0 +1,112 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+<!--
+  Usa f:Form + f:ColumnLayout, e não f:SimpleForm como o resto do módulo:
+  SimpleForm é desaconselhado pelas diretrizes oficiais do SAP UI5. Código novo
+  segue a diretriz; os fragmentos antigos ficam como estão.
+-->
+<Dialog id="purchaseContractPriceFixationDialog" title="Fixar Preço">
+  <content>
+    <VBox class="sapUiSmallMargin" width="460px">
+      <MessageStrip
+        text="Saldo disponível para fixação: {
+          path: 'viewModel>/fixationAvailableVolume',
+          type: 'sap.ui.model.type.Float',
+          formatOptions: { decimals: 3, groupingEnabled: true }
+        } kg"
+        type="Information"
+        showIcon="true"
+        class="sapUiSmallMarginBottom"
+      />
+      <f:Form editable="true">
+        <f:layout>
+          <f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+        </f:layout>
+        <f:formContainers>
+          <f:FormContainer>
+            <f:formElements>
+              <f:FormElement label="Data da Fixação">
+                <f:fields>
+                  <DatePicker
+                    value="{
+                      path: 'viewModel>/fixationDate',
+                      type: 'sap.ui.model.type.Date',
+                      formatOptions: { pattern: 'dd/MM/yyyy' }
+                    }"
+                  />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Volume (kg)">
+                <f:fields>
+                  <Input
+                    value="{
+                      path: 'viewModel>/fixationVolume',
+                      type: 'sap.ui.model.type.Float',
+                      formatOptions: { decimals: 3, groupingEnabled: true }
+                    }"
+                  />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Preço">
+                <f:fields>
+                  <Input
+                    value="{
+                      path: 'viewModel>/fixationPrice',
+                      type: 'sap.ui.model.type.Float',
+                      formatOptions: { decimals: 8, groupingEnabled: true }
+                    }"
+                  />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Frete">
+                <f:fields>
+                  <Input
+                    value="{
+                      path: 'viewModel>/fixationFreightCost',
+                      type: 'sap.ui.model.type.Float',
+                      formatOptions: { decimals: 2, groupingEnabled: true }
+                    }"
+                  />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Vencimento Financeiro">
+                <f:fields>
+                  <DatePicker
+                    value="{
+                      path: 'viewModel>/fixationFinancialDueDate',
+                      type: 'sap.ui.model.type.Date',
+                      formatOptions: { pattern: 'dd/MM/yyyy' }
+                    }"
+                  />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Dados para Pagamento">
+                <f:fields>
+                  <TextArea
+                    value="{viewModel>/fixationPaymentDetails}"
+                    rows="4"
+                    width="100%"
+                    growing="true"
+                    maxLength="1000"
+                    placeholder="Banco, agência, conta, chave PIX, etc."
+                  />
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+        </f:formContainers>
+      </f:Form>
+    </VBox>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Fixar" type="Emphasized" press=".onConfirmPriceFixation"/>
+      <Button text="Fechar" press=".onClosePriceFixationDialog" />
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>

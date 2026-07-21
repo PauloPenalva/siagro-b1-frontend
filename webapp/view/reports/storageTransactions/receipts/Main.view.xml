@@ -51,6 +51,7 @@
                 value="{
                   path: 'params>/TransactionDateFrom',
                   type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }
@@ -63,6 +64,7 @@
                 value="{
                   path: 'params>/TransactionDateTo',
                   type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }

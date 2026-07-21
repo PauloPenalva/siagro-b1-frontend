@@ -87,6 +87,7 @@
                 value="{
                   path: 'CreationDate',
                   type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }
@@ -244,9 +245,15 @@
               }"
             />
             <Label text="Preço Standard"/>
-            <Input 
-              required="true"
-              editable="{ui>/editable}"
+            <!-- Contrato a fixar (PAF) não tem preço na negociação: o preço vem das
+                 fixações aprovadas pela diretoria. O campo fica desabilitado E deixa de
+                 ser obrigatório — obrigatório e desabilitado travaria a gravação. -->
+            <!-- targetType 'any' é obrigatório: o enum Type chega ao modelo OData v4
+                 como sap.ui.model.odata.type.Raw, que não suporta formatação. Sem isso
+                 o binding lança FormatException e a regra simplesmente não vale. -->
+            <Input
+              required="{= ${path: 'Type', targetType: 'any'} !== 'ToBeDetermined' }"
+              editable="{= ${ui>/editable} &amp;&amp; ${path: 'Type', targetType: 'any'} !== 'ToBeDetermined' }"
               value="{
                 path: 'StandardPrice',
                 type: 'sap.ui.model.odata.type.Double',
@@ -300,6 +307,7 @@
                 value="{
                   path: 'StandardCashFlowDate',
                   type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }
@@ -352,6 +360,7 @@
                 value="{
                   path: 'DeliveryStartDate',
                   type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }
@@ -365,6 +374,7 @@
                 value="{
                   path: 'DeliveryEndDate',
                   type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }

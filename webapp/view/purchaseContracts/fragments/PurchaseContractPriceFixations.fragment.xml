@@ -1,10 +1,14 @@
 <core:FragmentDefinition
     xmlns="sap.m"
-    xmlns:f="sap.ui.layout.form"
-    xmlns:l="sap.ui.layout"
     xmlns:t="sap.ui.table"
     xmlns:core="sap.ui.core"
 >
+  <!--
+    Colunas somente-leitura de propósito: fixação confirmada é imutável no backend
+    (PurchaseContractsPriceFixationsUpdateService rejeita edição de não-InApproval).
+    Campos editáveis aqui só produziriam erro na gravação.
+    Correção se faz por estorno + nova fixação, preservando a auditoria.
+  -->
   <t:Table
     id="purchaseContractPriceFixationsTable"
     class="sapUiSizeCondensed"
@@ -14,7 +18,10 @@
     selectionBehavior="Row"
     selectionMode="Single"
     busyIndicatorDelay="0"
-    rows="{PriceFixations}"
+    rows="{
+      path: 'PriceFixations',
+      parameters: { '$$ownRequest': true }
+    }"
     visible="true"
     >
     <t:extension>
@@ -22,59 +29,63 @@
         <content>
           <Title text="Fixações de Preço do Contrato de Compra" />
           <ToolbarSpacer />
-          <!-- <Button
-            visible="{ui>/editable}"
-            text="Incluir"
+          <Button
+            text="Detalhes"
+            tooltip="Visualizar todos os dados da fixação selecionada"
             type="Transparent"
-            icon="sap-icon://add"
-            press=".onAddPriceFixation"
+            icon="sap-icon://detail-view"
+            press=".onViewPriceFixationDetails"
           />
           <Button
-            visible="{ui>/editable}"
-            text="Remover"
+            visible="{= ${path: 'Type', targetType: 'any'} === 'ToBeDetermined' &amp;&amp; !${ui>/readonly} }"
+            text="Fixar Preço"
+            type="Transparent"
+            icon="sap-icon://add"
+            press=".onOpenPriceFixationDialog"
+          />
+          <Button
+            visible="{= ${path: 'Type', targetType: 'any'} === 'ToBeDetermined' &amp;&amp; !${ui>/readonly} }"
+            text="Estornar"
+            tooltip="Desfazer a aprovação: a fixação volta para a fila da diretoria"
+            type="Transparent"
+            icon="sap-icon://undo"
+            press=".onCancelPriceFixation"
+          />
+          <Button
+            visible="{= ${path: 'Type', targetType: 'any'} === 'ToBeDetermined' &amp;&amp; !${ui>/readonly} }"
+            text="Excluir"
+            tooltip="Excluir fixação em aprovação e devolver o volume ao saldo"
             type="Transparent"
             icon="sap-icon://delete"
-            press=".onRemovePriceFixation"
-          /> -->
+            press=".onDeletePriceFixation"
+          />
+          <Button
+            visible="{= ${path: 'Type', targetType: 'any'} === 'ToBeDetermined' &amp;&amp; !${ui>/readonly} }"
+            text="Espelho"
+            tooltip="Emitir espelho da fixação selecionada para envio ao produtor"
+            type="Transparent"
+            icon="sap-icon://print"
+            press=".onPrintPriceFixation"
+          />
         </content>
       </OverflowToolbar>
     </t:extension>
   <t:columns>
     <t:Column label="Data">
       <t:template>
-        <DatePicker
-          editable="{ui>/editable}"
-          value="{
+        <Text
+          text="{
             path: 'FixationDate',
             type: 'sap.ui.model.odata.type.DateTimeOffset',
-            formatOptions: {
-              pattern: 'dd/MM/yyyy'
-            }
+            constraints: { precision: 7 },
+            formatOptions: { pattern: 'dd/MM/yyyy' }
           }"
         />
       </t:template>
     </t:Column>
-    <t:Column label="Frete">
+    <t:Column label="Volume" hAlign="End">
       <t:template>
-        <Input
-          editable="{ui>/editable}"
-          value="{
-          path: 'FreightCost',
-          type: 'sap.ui.model.odata.type.Double',
-          formatOptions: {
-              decimals: 2,
-              decimalSeparator: ',',
-              groupingEnabled: true,
-              groupingSeparator: '.'
-          } 
-        }"/>
-      </t:template>
-    </t:Column>
-    <t:Column label="Volume">
-      <t:template>
-        <Input
-          editable="{ui>/editable}"
-          value="{
+        <Text text="{
           path: 'FixationVolume',
           type: 'sap.ui.model.odata.type.Double',
           formatOptions: {
@@ -82,16 +93,13 @@
               decimalSeparator: ',',
               groupingEnabled: true,
               groupingSeparator: '.'
-          } 
-        }"
-      />
+          }
+        }"/>
       </t:template>
     </t:Column>
-    <t:Column label="Preço">
+    <t:Column label="Preço" hAlign="End">
       <t:template>
-        <Input
-          editable="{ui>/editable}"
-          value="{
+        <Text text="{
           path: 'FixationPrice',
           type: 'sap.ui.model.odata.type.Double',
           formatOptions: {
@@ -99,9 +107,18 @@
               decimalSeparator: ',',
               groupingEnabled: true,
               groupingSeparator: '.'
-          } 
-        }"
-      />
+          }
+        }"/>
+      </t:template>
+    </t:Column>
+    <t:Column label="Venc. Financeiro">
+      <t:template>
+        <Text text="{
+          path: 'FinancialDueDate',
+          type: 'sap.ui.model.odata.type.DateTimeOffset',
+          constraints: { precision: 7 },
+          formatOptions: { pattern: 'dd/MM/yyyy' }
+        }"/>
       </t:template>
     </t:Column>
     <t:Column label="Status">
@@ -113,6 +130,11 @@
               formatter: '.formatter.formatPriceFixationStatus'
             }"
         />
+      </t:template>
+    </t:Column>
+    <t:Column label="Aprovado por">
+      <t:template>
+        <Text text="{ApprovedBy}"/>
       </t:template>
     </t:Column>
   </t:columns>

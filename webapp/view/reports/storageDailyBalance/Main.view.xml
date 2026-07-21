@@ -46,6 +46,7 @@
                 value="{
                   path: 'params>/FromDate',
                   type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }
@@ -58,6 +59,7 @@
                 value="{
                   path: 'params>/ToDate',
                   type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }

@@ -318,7 +318,7 @@
           "target": "purchaseContractsEdit"
         },
         {
-          "pattern": "purchase-contracts/{id}/detail",
+          "pattern": "purchase-contracts/{id}/detail:?query:",
           "name": "purchaseContractsDetail",
           "target": "purchaseContractsDetail"
         },
@@ -331,6 +331,11 @@
           "pattern": "purchase-contracts/approval",
           "name": "purchaseContractsApproval",
           "target": "purchaseContractsApproval"
+        },
+        {
+          "pattern": "purchase-contracts/price-fixation-approval",
+          "name": "purchaseContractsPriceFixationApproval",
+          "target": "purchaseContractsPriceFixationApproval"
         },
         {
           "pattern": "purchase-contracts/{id}/approval/detail",
@@ -1047,6 +1052,12 @@
 					"id": "purchaseContractsApproval",
           "level": 1,
 					"name": "siagrob1.view.purchaseContracts.approval.Main",
+          "clearControlAggregation": true
+				},
+        "purchaseContractsPriceFixationApproval": {
+					"id": "purchaseContractsPriceFixationApproval",
+          "level": 1,
+					"name": "siagrob1.view.purchaseContracts.priceFixationApproval.Main",
           "clearControlAggregation": true
 				},
         "purchaseContractsApprovalDetail": {

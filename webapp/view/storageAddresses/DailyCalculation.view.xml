@@ -37,6 +37,7 @@
                 value="{
                   path: 'params>/ProcessingDate',
                   type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }

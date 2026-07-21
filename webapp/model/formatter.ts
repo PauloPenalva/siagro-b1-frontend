@@ -138,13 +138,33 @@ export default {
     return m.get(value);
   },
 
+  /**
+   * Valor financeiro da fixação (volume × preço). É o número que a diretoria
+   * de fato aprova — nem volume nem preço isolados dizem o tamanho do compromisso.
+   */
+  formatFixationTotal: (volume: number | string, price: number | string) => {
+    const total = Number(volume ?? 0) * Number(price ?? 0);
+
+    // Sem targetType 'any' na parte do binding, o modelo v4 entrega o valor já
+    // formatado em pt-BR ("10.000,000") e Number() devolve NaN. Preferimos vazio
+    // a estampar "NaN" na tela de aprovação da diretoria.
+    if (!Number.isFinite(total)) {
+      return "";
+    }
+
+    return total.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  },
+
   formatPriceFixationStatus: (value: string) => {
     const m = new Map<string, string>();
-    m.set("Pending", "Pendente");
-    m.set("Confirmed", "Confirmado");
-    m.set("Canceled", "Cancelado");
     m.set("InApproval", "Em Aprovação");
-    
+    m.set("Confirmed", "Confirmado");
+    m.set("Canceled", "Estornado");
+    m.set("Rejected", "Rejeitado");
+
     return m.get(value);
   },
 

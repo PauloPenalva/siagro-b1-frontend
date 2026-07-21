@@ -50,6 +50,7 @@
             value="{
               path: 'viewModel>/InvoiceDate',
               type: 'sap.ui.model.odata.type.DateTimeOffset',
+              constraints: { precision: 7 },
               formatOptions: {
                 pattern: 'dd/MM/yyyy'
               }

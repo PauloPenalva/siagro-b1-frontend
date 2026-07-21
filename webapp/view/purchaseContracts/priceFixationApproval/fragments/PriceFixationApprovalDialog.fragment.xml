@@ -1,0 +1,34 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+<Dialog id="priceFixationApprovalDialog" title="{viewModel>/dialogTitle}">
+  <content>
+    <VBox class="sapUiSmallMargin" width="460px">
+      <MessageStrip
+        text="{viewModel>/dialogSummary}"
+        type="Information"
+        showIcon="true"
+        class="sapUiSmallMarginBottom"
+      />
+      <TextArea
+        value="{viewModel>/dialogComments}"
+        rows="5"
+        cols="20"
+        width="100%"
+        placeholder="Comentários..."
+      />
+    </VBox>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button
+        text="{viewModel>/dialogConfirmButtonText}"
+        type="Emphasized"
+        press=".onConfirmPriceFixationAction"/>
+      <Button text="Fechar" press=".onClosePriceFixationApprovalDialog" />
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>

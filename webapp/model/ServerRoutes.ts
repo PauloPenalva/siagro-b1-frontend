@@ -43,6 +43,17 @@ export default {
   purchaseContractsRecalculateBalance: '/odata/PurchaseContractsRecalculateBalance',
   prePurchaseContractReport: '/reports/PrePurchaseContract',
 
+  purchaseContractsPriceFixations: '/odata/PurchaseContractsPriceFixations',
+  // Actions OData invocadas via ODataModel.bindContext — formato relativo à raiz
+  // do serviço, com "(...)". Chamar por bindContext (e não jQuery.ajax) faz o modelo
+  // reconhecer a mudança e atualizar a tela sem recarregar a rota.
+  purchaseContractsPriceFixationCreate: '/PurchaseContractsPriceFixationCreate(...)',
+  purchaseContractsPriceFixationDelete: '/PurchaseContractsPriceFixationDelete(...)',
+  purchaseContractsPriceFixationApproval: '/PurchaseContractsPriceFixationApproval(...)',
+  purchaseContractsPriceFixationReject: '/PurchaseContractsPriceFixationReject(...)',
+  purchaseContractsPriceFixationCancel: '/PurchaseContractsPriceFixationCancel(...)',
+  priceFixationReport: '/reports/PriceFixation',
+
   purchaseContractsAllocationsCreate: '/PurchaseContractsCreateAllocation(...)',
   purchaseContractsAllocationsDelete: '/PurchaseContractsDeleteAllocation(...)',
 

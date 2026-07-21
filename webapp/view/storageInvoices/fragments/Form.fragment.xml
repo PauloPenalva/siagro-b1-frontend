@@ -73,6 +73,7 @@
                 value="{
                   path: 'ClosingDate',
                   type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }
@@ -86,6 +87,7 @@
                 value="{
                   path: 'PeriodStart',
                   type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }
@@ -99,6 +101,7 @@
                 value="{
                   path: 'PeriodEnd',
                   type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }

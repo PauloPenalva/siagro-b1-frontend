@@ -87,6 +87,7 @@
                 value="{
                   path: 'CreationDate',
                   type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }
@@ -243,6 +244,7 @@
                 value="{
                   path: 'StandardCashFlowDate',
                   type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }
@@ -295,6 +297,7 @@
                 value="{
                   path: 'DeliveryStartDate',
                   type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }
@@ -308,6 +311,7 @@
                 value="{
                   path: 'DeliveryEndDate',
                   type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
                   formatOptions: {
                     pattern: 'dd/MM/yyyy'
                   }

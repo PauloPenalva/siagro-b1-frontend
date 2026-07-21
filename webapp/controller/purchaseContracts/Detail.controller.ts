@@ -19,7 +19,8 @@ export default class Detail extends PurchaseContractsBaseController {
 	}
 
 	private detailRouteMatched(ev: Route$MatchedEvent) {
-		const {id} = ev.getParameter("arguments") as {id: string };
+		const args = ev.getParameter("arguments") as { id: string; "?query"?: { readonly?: string } };
+		const id = args.id;
     const uiModel = this.getModel("ui") as JSONModel;
 
     const viewModel = this.getModel("viewModel") as JSONModel;
@@ -27,6 +28,11 @@ export default class Detail extends PurchaseContractsBaseController {
 		if (id != null) {
 
       uiModel.setProperty("/editable", false);
+
+      // Modo somente-leitura: acionado por ?readonly=true, usado quando o aprovador
+      // abre o contrato a partir da fila de aprovação de fixações. Nenhuma ação sobre
+      // o contrato pode ser executada nesse modo.
+      uiModel.setProperty("/readonly", args["?query"]?.readonly === "true");
       
 			const sPath = `/PurchaseContracts(${id})`;
 			this.bindElement(sPath);
