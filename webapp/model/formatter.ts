@@ -233,6 +233,23 @@ export default {
     return m.get(value);
   },
 
+  formatSalesContractAllocationOrigin: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Billing", "Faturamento");
+    m.set("Reallocation", "Realocação");
+    m.set("Return", "Devolução");
+    m.set("Backfill", "Migração");
+
+    return m.get(value) ?? value;
+  },
+
+  formatPriceDifferenceState: (value: number | string) => {
+    // OData v4 serializa Edm.Decimal como string — coagir antes de comparar.
+    const n = Number(value);
+    if (!n) return "None";
+    return n > 0 ? "Success" : "Error";
+  },
+
   formatStorageTransactionType: (value: string) => {
     const m = new Map<string, string>();
     m.set("Receipt", "Entrada");

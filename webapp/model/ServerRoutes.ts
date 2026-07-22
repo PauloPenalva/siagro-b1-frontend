@@ -58,6 +58,11 @@ export default {
   purchaseContractsAllocationsCreate: '/PurchaseContractsCreateAllocation(...)',
   purchaseContractsAllocationsDelete: '/PurchaseContractsDeleteAllocation(...)',
 
+  salesContractsReallocationCreate: '/SalesContractsCreateReallocation(...)',
+  salesContractsReallocationDelete: '/SalesContractsDeleteReallocation(...)',
+  salesContractsRecalculateBalance: '/SalesContractsRecalculateBalance(...)',
+  salesContractsRecalculateAllBalances: '/SalesContractsRecalculateAllBalances(...)',
+
   salesContractsCopy: '/odata/SalesContractsCopy',
   salesContractsWithdrawApproval: '/odata/SalesContractsWithdrawApproval',
   salesContractsSendToApproval: '/odata/SalesContractsSendApproval',

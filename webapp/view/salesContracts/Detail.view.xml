@@ -131,6 +131,66 @@
             }" unit="{UnitOfMeasureCode}"  />
           </HBox>
         </VBox>
+        <VBox class="sapUiTinyMarginBottom sapUiMediumMarginEnd">
+          <HBox class="sapUiTinyMarginBottom">
+            <Text text="Total Entregue:" class="sapUiMediumMarginEnd" />
+            <ObjectNumber number="{
+              path: 'invoicesModel>/totals/TotalDelivered',
+              type: 'sap.ui.model.type.Float',
+              formatOptions:{
+                decimals: 2,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+              }
+            }" unit="{
+              path: 'StandardCurrency',
+              targetType: 'any',
+              formatter: '.formatter.formatCurrency'
+            }" />
+          </HBox>
+          <HBox class="sapUiTinyMarginBottom">
+            <Text text="Total Invoices:" class="sapUiMediumMarginEnd" />
+            <ObjectNumber number="{
+              path: 'invoicesModel>/totals/TotalInvoices',
+              type: 'sap.ui.model.type.Float',
+              formatOptions:{
+                decimals: 2,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+              }
+            }" unit="{
+              path: 'StandardCurrency',
+              targetType: 'any',
+              formatter: '.formatter.formatCurrency'
+            }" />
+          </HBox>
+          <HBox class="sapUiTinyMarginBottom">
+            <Text text="Diferença:" class="sapUiMediumMarginEnd" />
+            <ObjectNumber
+              number="{
+                path: 'invoicesModel>/totals/TotalDifference',
+                type: 'sap.ui.model.type.Float',
+                formatOptions:{
+                  decimals: 2,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }"
+              unit="{
+                path: 'StandardCurrency',
+                targetType: 'any',
+                formatter: '.formatter.formatCurrency'
+              }"
+              state="{
+                path: 'invoicesModel>/totals/TotalDifference',
+                targetType: 'any',
+                formatter: '.formatter.formatPriceDifferenceState'
+              }" />
+          </HBox>
+        </VBox>
       </HBox>
    	</uxap:headerContent>
     

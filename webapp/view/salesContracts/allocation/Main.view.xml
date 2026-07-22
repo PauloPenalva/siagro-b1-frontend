@@ -1,0 +1,186 @@
+<mvc:View
+	controllerName="siagrob1.controller.salesContracts.allocation.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+  xmlns:f="sap.f"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Entregas de Contratos de Venda"/>
+        </f:heading>
+			</f:DynamicPageTitle>
+    </f:title>
+    <f:header>
+      <f:DynamicPageHeader>
+        <f:content>
+          <core:Fragment fragmentName="siagrob1.view.salesContracts.allocation.fragments.Filterbar" type="XML" />
+        </f:content>
+      </f:DynamicPageHeader>
+    </f:header>
+		<f:content>
+      <t:Table
+				id="tableSalesContractsAllocations"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+        rows="{
+					path: '/SalesContractsAllocations',
+          parameters: {
+            $expand: 'SalesContract($expand=Branch),SalesInvoiceItem($expand=SalesInvoice),SalesShipmentRelease'
+          },
+          sorter: [
+            { path: 'SalesContract/RowId' }
+          ]
+				}"
+			>
+				<t:extension>
+					<OverflowToolbar >
+            <Title text="Entregas de Contratos de Venda" />
+						<ToolbarSpacer />
+            <Button type="Transparent" text="Realocar" icon="sap-icon://journey-change" press=".onReallocate"/>
+            <Button type="Transparent" text="Estornar Realocação" icon="sap-icon://undo" press=".onReverseReallocation"/>
+            <Button type="Transparent" text="Exportar Excel" icon="sap-icon://excel-attachment" press=".onExcel"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+          <t:Column label="Key" visible="false" width="10rem">
+						<t:template>
+							<Text text="{Key}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column label="Filial" sortProperty="SalesContract/Branch/ShortName" width="5rem">
+						<t:template>
+							<Text text="{SalesContract/Branch/ShortName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column label="Contrato" sortProperty="SalesContract/Code" filterProperty="SalesContract/Code" width="9rem">
+						<t:template>
+							<Text text="{SalesContract/Code}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column label="Cod.Cliente" sortProperty="SalesContract/CardCode" width="8rem">
+						<t:template>
+            <Text text="{SalesContract/CardCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column label="Cliente" sortProperty="SalesContract/CardName" filterProperty="SalesContract/CardName" filterOperator="Contains" width="14rem">
+						<t:template>
+            <Text text="{SalesContract/CardName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column label="Produto" sortProperty="SalesContract/ItemName" filterProperty="SalesContract/ItemName" filterOperator="Contains" width="10rem">
+						<t:template>
+            <Text text="{SalesContract/ItemName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column label="Nota Fiscal" sortProperty="SalesInvoiceItem/SalesInvoice/TaxDocumentNumber" width="9rem">
+						<t:template>
+							<Text text="{SalesInvoiceItem/SalesInvoice/TaxDocumentNumber}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column label="Documento" sortProperty="SalesInvoiceItem/SalesInvoice/InvoiceNumber" width="9rem">
+						<t:template>
+							<Text text="{SalesInvoiceItem/SalesInvoice/InvoiceNumber}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column label="Emissão" sortProperty="SalesInvoiceItem/SalesInvoice/InvoiceDate" width="8rem">
+						<t:template>
+            <Text
+              wrapping="false"
+              text="{
+                path: 'SalesInvoiceItem/SalesInvoice/InvoiceDate',
+                targetType: 'any',
+                formatter: '.formatter.formatDate'
+              }"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column label="Origem" width="8rem">
+						<t:template>
+							<Text
+                wrapping="false"
+                text="{
+                  path: 'Origin',
+                  targetType: 'any',
+                  formatter: '.formatter.formatSalesContractAllocationOrigin'
+                }"/>
+						</t:template>
+					</t:Column>
+          <t:Column label="Liberação" sortProperty="SalesShipmentRelease/RowId" width="7rem">
+						<t:template>
+							<Text text="{SalesShipmentRelease/RowId}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column label="Quantidade" hAlign="End" width="9rem">
+						<t:template>
+            <Text
+              wrapping="false"
+              text="{
+                path: 'Volume',
+                type: 'sap.ui.model.type.Float',
+                formatOptions:{ decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column label="Un.Med." width="6rem">
+						<t:template>
+              <Text text="{SalesInvoiceItem/UnitOfMeasureCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column label="Preço NF" hAlign="End" width="9rem">
+						<t:template>
+            <Text
+              wrapping="false"
+              text="{
+                path: 'InvoiceUnitPrice',
+                type: 'sap.ui.model.type.Float',
+                formatOptions:{ decimals: 7, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column label="Preço Ctr." hAlign="End" width="9rem">
+						<t:template>
+            <Text
+              wrapping="false"
+              text="{
+                path: 'ContractPrice',
+                type: 'sap.ui.model.type.Float',
+                formatOptions:{ decimals: 7, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column label="Diferença" hAlign="End" width="10rem">
+						<t:template>
+            <ObjectNumber
+              number="{
+                path: 'PriceDifference',
+                type: 'sap.ui.model.type.Float',
+                formatOptions:{ decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }"
+              state="{
+                path: 'PriceDifference',
+                targetType: 'any',
+                formatter: '.formatter.formatPriceDifferenceState'
+              }"
+            />
+						</t:template>
+					</t:Column>
+        </t:columns>
+			</t:Table>
+    </f:content>
+  </f:DynamicPage>
+</mvc:View>

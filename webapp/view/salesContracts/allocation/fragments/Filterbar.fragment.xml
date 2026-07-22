@@ -1,0 +1,70 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:fb="sap.ui.comp.filterbar"
+>
+<fb:FilterBar search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+  <fb:filterGroupItems>
+      <fb:FilterGroupItem name="salesContractBranchCode" label="Filial" groupName="GroupSalesContractBranchCode" visibleInFilterBar="true">
+        <fb:control>
+            <Select
+              forceSelection="false"
+              selectedKey="{filter>/SalesContractBranchCode}"
+              items="{
+                path: '/Branchs',
+                suspended: true,
+                sorter: { path: 'Code' }
+              }">
+              <core:ListItem key="{Code}" text="{ShortName}"/>
+            </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="salesContractCode" label="Contrato" groupName="GroupSalesContractCode" visibleInFilterBar="true">
+        <fb:control>
+            <Input showClearIcon="true" value="{filter>/SalesContractCode}" />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="customers" label="Cliente" groupName="GroupCustomer" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openCostumersValueHelp"
+              value="{filter>/SalesContractCardCode}"
+              />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="items" label="Produto" groupName="GroupItem" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openItemValueHelp"
+              value="{filter>/SalesContractItemCode}"
+              />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="invoiceNumber" label="Documento" groupName="GroupInvoiceNumber" visibleInFilterBar="true">
+        <fb:control>
+            <Input showClearIcon="true" value="{filter>/InvoiceNumber}" />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="taxDocumentNumber" label="Nota Fiscal" groupName="GroupTaxDocumentNumber" visibleInFilterBar="true">
+        <fb:control>
+            <Input showClearIcon="true" value="{filter>/TaxDocumentNumber}" />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="origin" label="Origem" groupName="GroupOrigin" visibleInFilterBar="true">
+        <fb:control>
+            <Select forceSelection="false" selectedKey="{filter>/Origin}">
+              <core:Item key="" text="" />
+              <core:Item key="Billing" text="Faturamento" />
+              <core:Item key="Reallocation" text="Realocação" />
+              <core:Item key="Return" text="Devolução" />
+              <core:Item key="Backfill" text="Migração" />
+            </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
+    </fb:filterGroupItems>
+  </fb:FilterBar>
+</core:FragmentDefinition>

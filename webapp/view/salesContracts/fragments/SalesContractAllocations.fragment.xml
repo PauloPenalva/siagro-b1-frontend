@@ -49,6 +49,21 @@
           <Text text="{invoicesModel>Type}" />
         </t:template>
       </t:Column>
+      <t:Column label="Origem">
+        <t:template>
+          <Text text="{invoicesModel>OriginLabel}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Contrato Relac.">
+        <t:template>
+          <Text text="{invoicesModel>CounterpartyContractCode}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Liberação">
+        <t:template>
+          <Text text="{invoicesModel>SalesShipmentReleaseRowId}" />
+        </t:template>
+      </t:Column>
       <t:Column label="Quantidade" hAlign="End">
         <t:template>
           <Text text="{
@@ -59,8 +74,8 @@
                 decimalSeparator: ',',
                 groupingEnabled: true,
                 groupingSeparator: '.'
-            } 
-          }" />   
+            }
+          }" />
         </t:template>
       </t:Column>
       <t:Column label="Un.Med.">
@@ -109,6 +124,39 @@
       <t:Column label="Sts.Entrega">
         <t:template>
           <Text text="{invoicesModel>DeliveryStatus}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Preço NF" hAlign="End">
+        <t:template>
+          <Text text="{
+            path: 'invoicesModel>InvoiceUnitPrice',
+            type: 'sap.ui.model.type.Float',
+            formatOptions: { decimals: 7, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+          }" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Preço Ctr." hAlign="End">
+        <t:template>
+          <Text text="{
+            path: 'invoicesModel>ContractPrice',
+            type: 'sap.ui.model.type.Float',
+            formatOptions: { decimals: 7, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+          }" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Diferença" hAlign="End">
+        <t:template>
+          <ObjectNumber
+            number="{
+              path: 'invoicesModel>PriceDifference',
+              type: 'sap.ui.model.type.Float',
+              formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"
+            state="{
+              path: 'invoicesModel>PriceDifference',
+              targetType: 'any',
+              formatter: '.formatter.formatPriceDifferenceState'
+            }" />
         </t:template>
       </t:Column>
     </t:columns>

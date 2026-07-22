@@ -383,6 +383,11 @@
           "target": "salesContractsShipmentReleaseRequest"
         },
         {
+          "pattern": "sales-contracts/allocations",
+          "name": "salesContractsAllocations",
+          "target": "salesContractsAllocations"
+        },
+        {
           "pattern": "sales-shipment-releases",
           "name": "salesShipmentReleases",
           "target": "salesShipmentReleases"
@@ -1132,6 +1137,12 @@
 					"id": "salesContractsShipmentReleaseRequest",
           "level": 2,
 					"name": "siagrob1.view.salesContracts.shipmentRelease.Add",
+          "clearControlAggregation": true
+				},
+        "salesContractsAllocations": {
+					"id": "salesContractsAllocations",
+          "level": 1,
+					"name": "siagrob1.view.salesContracts.allocation.Main",
           "clearControlAggregation": true
 				},
         "salesShipmentReleases": {
