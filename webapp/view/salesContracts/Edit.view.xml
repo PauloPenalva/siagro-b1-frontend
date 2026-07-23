@@ -41,6 +41,15 @@
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Locais de Entrega">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <core:Fragment fragmentName="siagrob1.view.salesContracts.fragments.SalesContractDeliveryLocations" type="XML" />
+            </uxap:blocks>
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
       <!-- <uxap:ObjectPageSection titleUppercase="false" title="Parametros de Qualidade">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection titleUppercase="false">
