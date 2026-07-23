@@ -26,45 +26,69 @@
       </OverflowToolbar>
     </t:extension>
     <t:columns>
-      <t:Column label="Filial">
+      <t:Column label="Filial" width="12rem">
         <t:template>
-          <Text text="{invoicesModel>BranchName}" />
+          <Text text="{invoicesModel>BranchName}" wrapping="false" />
         </t:template>
       </t:Column>
-      <t:Column label="Documento">
+      <t:Column label="Documento" width="8rem">
         <t:template>
-          <Text text="{invoicesModel>InvoiceNumber}" />
+          <Text text="{invoicesModel>InvoiceNumber}" wrapping="false"/>
         </t:template>
       </t:Column>
-      <t:Column label="Data">
+      <t:Column label="Nota Fiscal" width="8rem">
         <t:template>
-          <Text text="{
+          <Text text="{invoicesModel>NotaFiscal}" wrapping="false" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Diferença" hAlign="End" width="8rem">
+        <t:template>
+          <ObjectNumber
+            number="{
+              path: 'invoicesModel>PriceDifference',
+              type: 'sap.ui.model.type.Float',
+              formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"
+            state="{
+              path: 'invoicesModel>PriceDifference',
+              targetType: 'any',
+              formatter: '.formatter.formatPriceDifferenceState'
+            }" 
+            textAlign="End"
+            />
+        </t:template>
+      </t:Column>
+      <t:Column label="Data" width="8rem">
+        <t:template>
+          <Text 
+          wrapping="false"
+          text="{
             path: 'invoicesModel>InvoiceDate',
             formatter: '.formatter.formatDate'
           }" />
         </t:template>
       </t:Column>
-      <t:Column label="Tipo">
+      <t:Column label="Tipo" width="10rem">
         <t:template>
-          <Text text="{invoicesModel>Type}" />
+          <Text text="{invoicesModel>Type}" wrapping="false" />
         </t:template>
       </t:Column>
-      <t:Column label="Origem">
+      <t:Column label="Origem" width="10rem">
         <t:template>
-          <Text text="{invoicesModel>OriginLabel}" />
+          <Text text="{invoicesModel>OriginLabel}" wrapping="false" />
         </t:template>
       </t:Column>
-      <t:Column label="Contrato Relac.">
+      <t:Column label="Contrato Relac." width="10rem">
         <t:template>
-          <Text text="{invoicesModel>CounterpartyContractCode}" />
+          <Text text="{invoicesModel>CounterpartyContractCode}" wrapping="false" />
         </t:template>
       </t:Column>
-      <t:Column label="Liberação">
+      <t:Column label="Liberação" width="6rem" visible="false">
         <t:template>
-          <Text text="{invoicesModel>SalesShipmentReleaseRowId}" />
+          <Text text="{invoicesModel>SalesShipmentReleaseRowId}" wrapping="false" />
         </t:template>
       </t:Column>
-      <t:Column label="Quantidade" hAlign="End">
+      <t:Column label="Quantidade" hAlign="End" width="10rem">
         <t:template>
           <Text text="{
             path: 'invoicesModel>Quantity',
@@ -78,24 +102,22 @@
           }" />
         </t:template>
       </t:Column>
-      <t:Column label="Un.Med.">
+      <t:Column label="Un.Med." width="10rem">
         <t:template>
-          <Text text="{invoicesModel>UnitOfMeasureCode}" />
+          <Text text="{invoicesModel>UnitOfMeasureCode}" wrapping="false" />
         </t:template>
       </t:Column>
-      <t:Column label="Placa">
+      <t:Column label="Placa" width="10rem">
         <t:template>
-          <Text text="{invoicesModel>TruckCode}" />
+          <Text text="{invoicesModel>TruckCode}" wrapping="false" />
         </t:template>
       </t:Column>
-      <t:Column label="Nota Fiscal">
+     
+      <t:Column label="Qtd.Entregue" hAlign="End" width="10rem">
         <t:template>
-          <Text text="{invoicesModel>NotaFiscal}" />
-        </t:template>
-      </t:Column>
-      <t:Column label="Qtd.Entregue" hAlign="End">
-        <t:template>
-          <Text text="{
+          <Text 
+          wrapping="false"
+          text="{
             path: 'invoicesModel>DeliveredQuantity',
             type: 'sap.ui.model.type.Float',
             formatOptions: {
@@ -107,9 +129,11 @@
           }" />   
         </t:template>
       </t:Column>
-      <t:Column label="Qtd.Desc." hAlign="End">
+      <t:Column label="Qtd.Desc." hAlign="End" width="10rem">
         <t:template>
-          <Text text="{
+          <Text 
+          wrapping="false"
+          text="{
             path: 'invoicesModel>QuantityLoss',
             type: 'sap.ui.model.type.Float',
             formatOptions: {
@@ -121,44 +145,34 @@
           }" />   
         </t:template>
       </t:Column>
-      <t:Column label="Sts.Entrega">
+      <t:Column label="Sts.Entrega" width="12rem">
         <t:template>
-          <Text text="{invoicesModel>DeliveryStatus}" />
+          <Text text="{invoicesModel>DeliveryStatus}" wrapping="false" />
         </t:template>
       </t:Column>
-      <t:Column label="Preço NF" hAlign="End">
+      <t:Column label="Preço NF" hAlign="End" width="12rem">
         <t:template>
-          <Text text="{
+          <Text 
+          wrapping="false"
+          text="{
             path: 'invoicesModel>InvoiceUnitPrice',
             type: 'sap.ui.model.type.Float',
             formatOptions: { decimals: 7, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
           }" />
         </t:template>
       </t:Column>
-      <t:Column label="Preço Ctr." hAlign="End">
+      <t:Column label="Preço Ctr." hAlign="End" width="12rem">
         <t:template>
-          <Text text="{
+          <Text 
+          wrapping="false"
+          text="{
             path: 'invoicesModel>ContractPrice',
             type: 'sap.ui.model.type.Float',
             formatOptions: { decimals: 7, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
           }" />
         </t:template>
       </t:Column>
-      <t:Column label="Diferença" hAlign="End">
-        <t:template>
-          <ObjectNumber
-            number="{
-              path: 'invoicesModel>PriceDifference',
-              type: 'sap.ui.model.type.Float',
-              formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
-            }"
-            state="{
-              path: 'invoicesModel>PriceDifference',
-              targetType: 'any',
-              formatter: '.formatter.formatPriceDifferenceState'
-            }" />
-        </t:template>
-      </t:Column>
+     
     </t:columns>
   </t:Table>
 </core:FragmentDefinition>

@@ -9,7 +9,7 @@
     alternateRowColors="true"
     enableBusyIndicator="true"
     busyIndicatorDelay="0"
-   selectionBehavior="Row"
+    selectionBehavior="Row"
     selectionMode="Single"
     visibleRowCountMode="Auto"
     minAutoRowCount="5"
