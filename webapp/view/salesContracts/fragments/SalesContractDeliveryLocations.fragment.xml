@@ -13,7 +13,10 @@
     selectionBehavior="Row"
     selectionMode="Single"
     busyIndicatorDelay="0"
-    rows="{DeliveryLocations}"
+    rows="{
+      path: 'DeliveryLocations',
+      parameters: { '$$ownRequest': true }
+    }"
     visible="true"
     >
     <t:extension>
