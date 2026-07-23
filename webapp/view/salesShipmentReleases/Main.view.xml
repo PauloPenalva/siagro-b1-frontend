@@ -130,7 +130,7 @@
             />
 						</t:template>
 					</t:Column>
-					<t:Column label="Armazem" width="15rem">
+					<t:Column label="Local de entrega" width="15rem">
 						<t:template>
               <Text text="({DeliveryLocationCode}) {DeliveryLocationName}" />
         	</t:template>

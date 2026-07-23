@@ -1,0 +1,122 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    core:require="{ formatter: 'siagrob1/model/formatter' }"
+>
+<!--
+  Visualização somente-leitura de uma fixação de venda. Aberto tanto pela tabela de
+  fixações do contrato quanto pela fila de aprovação, sempre com o binding context da
+  fixação selecionada (setBindingContext), então usa caminhos relativos.
+-->
+<Dialog id="salesPriceFixationDetailsDialog" title="Detalhes da Fixação" contentWidth="34rem">
+  <content>
+    <f:Form editable="false" class="sapUiSmallMargin">
+      <f:layout>
+        <f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+      </f:layout>
+      <f:formContainers>
+        <f:FormContainer title="Fixação">
+          <f:formElements>
+            <f:FormElement label="Data da Fixação">
+              <f:fields>
+                <Text text="{
+                  path: 'FixationDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
+                  formatOptions: { pattern: 'dd/MM/yyyy' }
+                }"/>
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Volume (kg)">
+              <f:fields>
+                <Text text="{
+                  path: 'FixationVolume',
+                  type: 'sap.ui.model.odata.type.Double',
+                  formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"/>
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Preço">
+              <f:fields>
+                <Text text="{
+                  path: 'FixationPrice',
+                  type: 'sap.ui.model.odata.type.Double',
+                  formatOptions: { decimals: 8, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"/>
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Frete">
+              <f:fields>
+                <Text text="{
+                  path: 'FreightCost',
+                  type: 'sap.ui.model.odata.type.Double',
+                  formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"/>
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Status">
+              <f:fields>
+                <Text text="{
+                  path: 'Status',
+                  targetType: 'any',
+                  formatter: '.formatter.formatPriceFixationStatus'
+                }"/>
+              </f:fields>
+            </f:FormElement>
+          </f:formElements>
+        </f:FormContainer>
+        <f:FormContainer title="Financeiro">
+          <f:formElements>
+            <f:FormElement label="Vencimento Financeiro">
+              <f:fields>
+                <Text text="{
+                  path: 'FinancialDueDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
+                  formatOptions: { pattern: 'dd/MM/yyyy' }
+                }"/>
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Dados para Pagamento">
+              <f:fields>
+                <Text text="{PaymentDetails}"/>
+              </f:fields>
+            </f:FormElement>
+          </f:formElements>
+        </f:FormContainer>
+        <f:FormContainer title="Aprovação">
+          <f:formElements>
+            <f:FormElement label="Aprovado por">
+              <f:fields>
+                <Text text="{ApprovedBy}"/>
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Data da Aprovação">
+              <f:fields>
+                <Text text="{
+                  path: 'ApprovedAt',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
+                  formatOptions: { pattern: 'dd/MM/yyyy HH:mm' }
+                }"/>
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Comentários da Aprovação">
+              <f:fields>
+                <Text text="{ApprovalComments}"/>
+              </f:fields>
+            </f:FormElement>
+          </f:formElements>
+        </f:FormContainer>
+      </f:formContainers>
+    </f:Form>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer/>
+      <Button text="Fechar" press=".onClosePriceFixationDetailsDialog"/>
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>

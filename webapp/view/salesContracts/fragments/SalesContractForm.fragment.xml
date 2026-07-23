@@ -98,7 +98,7 @@
             />
             <Label text="Tipo Contrato"/>
             <Select 
-              editable="false"
+              editable="true"
               forceSelection="false"
               required="true"
               selectedKey="{
@@ -225,9 +225,14 @@
               }"
             />
             <Label text="Preço Standard"/>
-            <Input 
-              required="true"
-              editable="{ui>/editable}"
+            <!--
+              Preço só se aplica a contrato de preço fixo (FIX): obrigatório e editável.
+              Em contrato a fixar (PAF) o preço nasce das fixações aprovadas pela diretoria,
+              então o campo fica desabilitado e o servidor o zera na criação.
+            -->
+            <Input
+              required="{= ${path: 'Type', targetType: 'any'} === 'Fixed' }"
+              editable="{= ${ui>/editable} &amp;&amp; ${path: 'Type', targetType: 'any'} === 'Fixed' }"
               value="{
                 path: 'Price',
                 type: 'sap.ui.model.odata.type.Double',
@@ -236,7 +241,7 @@
                     decimalSeparator: ',',
                     groupingEnabled: true,
                     groupingSeparator: '.'
-                } 
+                }
               }"
             />
             <Label text="Prev. Pagto." />

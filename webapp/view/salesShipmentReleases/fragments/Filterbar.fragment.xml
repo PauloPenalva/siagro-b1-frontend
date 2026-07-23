@@ -60,12 +60,12 @@
             <Input showClearIcon="true" value="{filter>/Code}"/>
         </fb:control>
       </fb:FilterGroupItem>
-      <fb:FilterGroupItem name="deliveryLocation" label="Armazém" groupName="GroupDeliveryLocation" visibleInFilterBar="true">
+      <fb:FilterGroupItem name="deliveryLocation" label="Local de entrega" groupName="GroupDeliveryLocation" visibleInFilterBar="true">
         <fb:control>
             <Input
               showClearIcon="true"
               showValueHelp="true"
-              valueHelpRequest=".openWarehouseValueHelp"
+              valueHelpRequest=".openCostumersValueHelp"
               value="{filter>/DeliveryLocationCode}"/>
         </fb:control>
       </fb:FilterGroupItem>

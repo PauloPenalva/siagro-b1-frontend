@@ -1,0 +1,142 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <!--
+    Colunas somente-leitura de propósito: fixação confirmada é imutável no backend
+    (SalesContractsPriceFixationsUpdateService rejeita edição de não-InApproval).
+    Correção se faz por estorno + nova fixação, preservando a auditoria.
+    Espelha PurchaseContractPriceFixations.fragment.xml.
+  -->
+  <t:Table
+    id="salesContractPriceFixationsTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    busyIndicatorDelay="0"
+    rows="{
+      path: 'PriceFixations',
+      parameters: { '$$ownRequest': true }
+    }"
+    visible="true"
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Fixações de Preço do Contrato de Venda" />
+          <ToolbarSpacer />
+          <Button
+            text="Detalhes"
+            tooltip="Visualizar todos os dados da fixação selecionada"
+            type="Transparent"
+            icon="sap-icon://detail-view"
+            press=".onViewPriceFixationDetails"
+          />
+          <Button
+            visible="{= ${path: 'Type', targetType: 'any'} === 'ToBeDetermined' &amp;&amp; !${ui>/readonly} }"
+            text="Fixar Preço"
+            type="Transparent"
+            icon="sap-icon://add"
+            press=".onOpenPriceFixationDialog"
+          />
+          <Button
+            visible="{= ${path: 'Type', targetType: 'any'} === 'ToBeDetermined' &amp;&amp; !${ui>/readonly} }"
+            text="Estornar"
+            tooltip="Desfazer a aprovação: a fixação volta para a fila da diretoria"
+            type="Transparent"
+            icon="sap-icon://undo"
+            press=".onCancelPriceFixation"
+          />
+          <Button
+            visible="{= ${path: 'Type', targetType: 'any'} === 'ToBeDetermined' &amp;&amp; !${ui>/readonly} }"
+            text="Excluir"
+            tooltip="Excluir fixação em aprovação e devolver o volume ao saldo"
+            type="Transparent"
+            icon="sap-icon://delete"
+            press=".onDeletePriceFixation"
+          />
+          <Button
+            visible="{= ${path: 'Type', targetType: 'any'} === 'ToBeDetermined' &amp;&amp; !${ui>/readonly} }"
+            text="Espelho"
+            tooltip="Emitir espelho da fixação confirmada para envio ao cliente"
+            type="Transparent"
+            icon="sap-icon://print"
+            press=".onPrintPriceFixation"
+          />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+  <t:columns>
+    <t:Column label="Data">
+      <t:template>
+        <Text
+          text="{
+            path: 'FixationDate',
+            type: 'sap.ui.model.odata.type.DateTimeOffset',
+            constraints: { precision: 7 },
+            formatOptions: { pattern: 'dd/MM/yyyy' }
+          }"
+        />
+      </t:template>
+    </t:Column>
+    <t:Column label="Volume" hAlign="End">
+      <t:template>
+        <Text text="{
+          path: 'FixationVolume',
+          type: 'sap.ui.model.odata.type.Double',
+          formatOptions: {
+              decimals: 3,
+              decimalSeparator: ',',
+              groupingEnabled: true,
+              groupingSeparator: '.'
+          }
+        }"/>
+      </t:template>
+    </t:Column>
+    <t:Column label="Preço" hAlign="End">
+      <t:template>
+        <Text text="{
+          path: 'FixationPrice',
+          type: 'sap.ui.model.odata.type.Double',
+          formatOptions: {
+              decimals: 8,
+              decimalSeparator: ',',
+              groupingEnabled: true,
+              groupingSeparator: '.'
+          }
+        }"/>
+      </t:template>
+    </t:Column>
+    <t:Column label="Venc. Financeiro">
+      <t:template>
+        <Text text="{
+          path: 'FinancialDueDate',
+          type: 'sap.ui.model.odata.type.DateTimeOffset',
+          constraints: { precision: 7 },
+          formatOptions: { pattern: 'dd/MM/yyyy' }
+        }"/>
+      </t:template>
+    </t:Column>
+    <t:Column label="Status">
+      <t:template>
+        <Text
+            text="{
+              path: 'Status',
+              targetType: 'any',
+              formatter: '.formatter.formatPriceFixationStatus'
+            }"
+        />
+      </t:template>
+    </t:Column>
+    <t:Column label="Aprovado por">
+      <t:template>
+        <Text text="{ApprovedBy}"/>
+      </t:template>
+    </t:Column>
+  </t:columns>
+</t:Table>
+</core:FragmentDefinition>

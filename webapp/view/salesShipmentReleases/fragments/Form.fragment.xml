@@ -21,7 +21,7 @@
 			<Label text="Produto"/>
 			<Input editable="false" value="({SalesContract/ItemCode}) {SalesContract/ItemName}"/>
 
-			<Label text="Armazém"/>
+			<Label text="Local de entrega"/>
 			<Input editable="false" value="({DeliveryLocationCode}) {DeliveryLocationName}"/>
 
 			<Label text="Dt.Liberação"/>

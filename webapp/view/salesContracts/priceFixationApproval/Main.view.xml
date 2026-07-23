@@ -1,0 +1,133 @@
+<mvc:View
+	controllerName="siagrob1.controller.salesContracts.priceFixationApproval.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+  xmlns:f="sap.f"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Aprovação de Fixações de Preço (Venda)"/>
+        </f:heading>
+      </f:DynamicPageTitle>
+    </f:title>
+    <f:content>
+      <!--
+        O backend (SalesContractsPriceFixationsGetService.QueryPending) já restringe a
+        InApproval E a contratos de venda a fixar (PAF). Espelha a fila de compras.
+      -->
+      <Table
+        id="priceFixationApprovalTable"
+        growing="true"
+        growingThreshold="20"
+        growingScrollToLoad="true"
+        alternateRowColors="true"
+        fixedLayout="Strict"
+        busyIndicatorDelay="0"
+        mode="SingleSelectLeft"
+        items="{
+          path: '/SalesContractsPriceFixations',
+          parameters: {
+            $expand: 'SalesContract',
+            $count: true
+          }
+        }"
+        >
+        <headerToolbar>
+          <OverflowToolbar>
+            <Title text="Fixações Aguardando Aprovação"/>
+            <ToolbarSpacer/>
+            <Button
+              text="Detalhes"
+              tooltip="Ver todos os dados da fixação selecionada (vencimento, pagamento, etc.)"
+              icon="sap-icon://detail-view"
+              press=".onViewFixationDetails"/>
+            <Button
+              text="Ver Contrato"
+              tooltip="Abrir o contrato de venda da fixação selecionada"
+              icon="sap-icon://document"
+              press=".onViewContract"/>
+            <Button
+              text="Aprovar"
+              type="Accept"
+              icon="sap-icon://accept"
+              press=".onApprove"/>
+            <Button
+              text="Rejeitar"
+              type="Reject"
+              icon="sap-icon://decline"
+              press=".onReject"/>
+            <Button
+              tooltip="Atualizar"
+              icon="sap-icon://refresh"
+              press=".onRefresh"/>
+          </OverflowToolbar>
+        </headerToolbar>
+        <columns>
+          <Column><Text text="Contrato"/></Column>
+          <Column><Text text="Cliente"/></Column>
+          <Column><Text text="Produto"/></Column>
+          <Column hAlign="End"><Text text="Volume"/></Column>
+          <Column hAlign="End"><Text text="Preço"/></Column>
+          <Column hAlign="End"><Text text="Total"/></Column>
+          <Column><Text text="Data"/></Column>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <cells>
+              <ObjectIdentifier
+                title="{SalesContract/Code}"
+                text="{SalesContract/HarvestSeasonCode}"/>
+              <Text text="{SalesContract/CardName}"/>
+              <Text text="{SalesContract/ItemName}"/>
+              <Text text="{
+                path: 'FixationVolume',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions: {
+                  decimals: 3,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }"/>
+              <Text text="{
+                path: 'FixationPrice',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions: {
+                  decimals: 8,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }"/>
+              <!-- targetType 'any' em cada parte é obrigatório: FixationVolume e
+                   FixationPrice são Edm.Decimal e o modelo v4 aplica o type Decimal
+                   automaticamente; sem isso a multiplicação recebe string já formatada
+                   e resulta em NaN. -->
+              <ObjectNumber
+                number="{
+                  parts: [
+                    {path: 'FixationVolume', targetType: 'any'},
+                    {path: 'FixationPrice', targetType: 'any'}
+                  ],
+                  formatter: '.formatter.formatFixationTotal'
+                }"
+                unit="BRL"/>
+              <Text text="{
+                path: 'FixationDate',
+                type: 'sap.ui.model.odata.type.DateTimeOffset',
+                constraints: { precision: 7 },
+                formatOptions: { pattern: 'dd/MM/yyyy' }
+              }"/>
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </f:content>
+  </f:DynamicPage>
+</mvc:View>

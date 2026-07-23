@@ -71,10 +71,10 @@
                     value="{DeliveryLocationCode}"
                     showValueHelp="true"
                     valueHelpOnly="true"
-                    valueHelpRequest=".openWarehouseValueHelp">
-              <customData>
-                <core:CustomData key="descriptionProperty" value="DeliveryLocationName:Name" />
-              </customData>
+                    valueHelpRequest=".openCostumersValueHelp">
+                    <customData>
+                      <core:CustomData key="descriptionProperty" value="DeliveryLocationName:CardName" />
+                    </customData>
                     <layoutData>
                         <l:GridData span="XL3 L3 M3 S4" />
                     </layoutData>

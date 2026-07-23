@@ -71,5 +71,13 @@ export default {
   salesContractsCancel: '/odata/SalesContractsCancel',
   salesContractsGetTotals: '/odata/SalesContractsGetTotals(key=$)',
 
+  salesContractsPriceFixations: '/odata/SalesContractsPriceFixations',
+  salesContractsPriceFixationCreate: '/SalesContractsPriceFixationCreate(...)',
+  salesContractsPriceFixationDelete: '/SalesContractsPriceFixationDelete(...)',
+  salesContractsPriceFixationApproval: '/SalesContractsPriceFixationApproval(...)',
+  salesContractsPriceFixationReject: '/SalesContractsPriceFixationReject(...)',
+  salesContractsPriceFixationCancel: '/SalesContractsPriceFixationCancel(...)',
+  salesPriceFixationReport: '/reports/SalesPriceFixation',
+
   storageTransactionCopy: '/StorageTransactionsCopy(...)',
 }

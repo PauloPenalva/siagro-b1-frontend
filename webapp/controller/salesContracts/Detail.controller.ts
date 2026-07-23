@@ -15,14 +15,20 @@ export default class Detail extends SalesContractsBaseController {
 	}
 
 	private detailRouteMatched(ev: Route$MatchedEvent) {
-		const {id} = ev.getParameter("arguments") as {id: string };
+		const args = ev.getParameter("arguments") as { id: string; "?query"?: { readonly?: string } };
+		const id = args.id;
     const viewModel = this.getModel("viewModel") as JSONModel;
     const uiModel = this.getModel("ui") as JSONModel;
 
 		if (id != null) {
 
       uiModel.setProperty("/editable", false);
-      
+
+      // Modo somente-leitura: acionado por ?readonly=true quando o aprovador abre o
+      // contrato a partir da fila de aprovação de fixações. Nenhuma ação de mutação
+      // (editar, aprovar/retirar, fixar/estornar/excluir, anexar/remover) fica acessível.
+      uiModel.setProperty("/readonly", args["?query"]?.readonly === "true");
+
 			const sPath = `/SalesContracts(${id})`;
 			this.bindElement(sPath);
       this.getInvoices(id);

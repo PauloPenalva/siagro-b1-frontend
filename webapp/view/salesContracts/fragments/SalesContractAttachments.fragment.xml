@@ -23,6 +23,7 @@
           <Title text="Anexos" />
           <ToolbarSpacer />
           <Button
+            visible="{= !${ui>/readonly} }"
             text="Anexar"
             type="Transparent"
             icon="sap-icon://attachment"
@@ -35,6 +36,7 @@
             press=".onDownload"
           />
           <Button
+            visible="{= !${ui>/readonly} }"
             text="Remover"
             type="Transparent"
             icon="sap-icon://delete"
