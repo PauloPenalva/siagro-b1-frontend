@@ -46,6 +46,7 @@ export default class Add extends BaseController {
       "FreightUmCode": systemSetup.DefaultFreightUoM,
       "UnitOfMeasureCode": systemSetup.DefaultUoM,
       "FunruralType": "",
+      "StandardPrice": 0,
     }, false, false, false);
 
     oView.setBindingContext(oContext);

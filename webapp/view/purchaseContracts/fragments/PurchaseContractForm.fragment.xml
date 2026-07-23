@@ -98,7 +98,7 @@
             />
             <Label text="Tipo Contrato"/>
             <Select 
-              editable="false"
+              editable="true"
               forceSelection="false"
               required="true"
               selectedKey="{
