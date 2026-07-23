@@ -475,6 +475,27 @@ export default abstract class SalesContractsBaseController extends CommonControl
     void oContext.delete(oModel.getUpdateGroupId());
   }
 
+  onAddDeliveryLocation() {
+    const oTable = this.byId("salesContractDeliveryLocationsTable") as Table;
+    const oBinding = oTable.getBinding("rows") as ODataListBinding;
+    oBinding.create({}, false, true, false);
+  }
+
+  onRemoveDeliveryLocation() {
+    const oModel = this.getView().getModel() as ODataModel;
+    const oTable = this.byId("salesContractDeliveryLocationsTable") as Table;
+    const aSelectedIndices = oTable.getSelectedIndices();
+
+    if (aSelectedIndices.length === 0) {
+      MessageBox.alert("Selecione um item para remover.");
+      return;
+    }
+
+    const index = aSelectedIndices[0];
+    const oContext = oTable.getContextByIndex(index) as Context;
+    void oContext.delete(oModel.getUpdateGroupId());
+  }
+
   async onWithdrawApproval() {
     const oView = this.getView();
     const oContext = oView.getBindingContext() as Context;
