@@ -53,6 +53,11 @@ export default {
   purchaseContractsPriceFixationApproval: '/PurchaseContractsPriceFixationApproval(...)',
   purchaseContractsPriceFixationReject: '/PurchaseContractsPriceFixationReject(...)',
   purchaseContractsPriceFixationCancel: '/PurchaseContractsPriceFixationCancel(...)',
+
+  // Comentários do contrato: no Update/Delete a chave é a do COMENTÁRIO, não a do contrato.
+  purchaseContractsCommentCreate: '/PurchaseContractsCommentCreate(...)',
+  purchaseContractsCommentUpdate: '/PurchaseContractsCommentUpdate(...)',
+  purchaseContractsCommentDelete: '/PurchaseContractsCommentDelete(...)',
   priceFixationReport: '/reports/PriceFixation',
 
   purchaseContractsAllocationsCreate: '/PurchaseContractsCreateAllocation(...)',
@@ -78,6 +83,11 @@ export default {
   salesContractsPriceFixationReject: '/SalesContractsPriceFixationReject(...)',
   salesContractsPriceFixationCancel: '/SalesContractsPriceFixationCancel(...)',
   salesPriceFixationReport: '/reports/SalesPriceFixation',
+
+  // Comentários do contrato: no Update/Delete a chave é a do COMENTÁRIO, não a do contrato.
+  salesContractsCommentCreate: '/SalesContractsCommentCreate(...)',
+  salesContractsCommentUpdate: '/SalesContractsCommentUpdate(...)',
+  salesContractsCommentDelete: '/SalesContractsCommentDelete(...)',
 
   storageTransactionCopy: '/StorageTransactionsCopy(...)',
 }

@@ -424,6 +424,9 @@ export default {
     m.set("DeliveryLocation", "Local de entrega");
     m.set("Attachment", "Anexo");
     m.set("PriceFixation", "Fixação de preço");
+    // Singular: é a coleção de comentários do Detail (CommentEntries). Não confundir com
+    // "Comments" abaixo, que é a observação do cabeçalho.
+    m.set("Comment", "Comentário");
     // Legado: a observação já foi editável depois de aprovada e deixou linhas gravadas.
     // Hoje ela só muda em rascunho, mas as linhas antigas precisam continuar legíveis.
     m.set("Comments", "Observação");

@@ -442,7 +442,7 @@ reverta — ou use `resetChanges()` para descartar antes de salvar.
 
 ## Estado do repositório
 
-Branch `develop/1.1.201`. O trabalho anterior (infra + `PurchaseContractForm` +
+Branch `develop/1.1.202`. O trabalho anterior (infra + `PurchaseContractForm` +
 `PurchaseContractQualityParameters`, junto com os bumps de versão e as mudanças de sessão /
 `DialogHelper`) está no commit `970ba1d`.
 

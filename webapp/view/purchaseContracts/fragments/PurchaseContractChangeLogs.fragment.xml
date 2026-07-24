@@ -10,6 +10,11 @@
     `$$ownRequest` é obrigatório - sem ele o binding vira $expand no GET do contrato, e o get
     service não inclui ChangeLogs: a tabela viria vazia. Com request próprio a tabela também
     pode ser refrescada isoladamente depois de uma action.
+
+    O `sorter` também é obrigatório, por menos óbvio: o OrderByDescending do get service SÓ vale na
+    consulta sem paginação. A sap.ui.table pede $skip/$top, e aí o [EnableQuery] reordena por chave
+    para estabilizar a paginação - a lista sairia na ordem de inserção. O sorter manda $orderby
+    explícito, que sobrevive à paginação.
   -->
   <t:Table
     id="purchaseContractChangeLogsTable"
@@ -21,7 +26,8 @@
     busyIndicatorDelay="0"
     rows="{
       path: 'ChangeLogs',
-      parameters: { '$$ownRequest': true }
+      parameters: { '$$ownRequest': true },
+      sorter: { path: 'ChangedAt', descending: true }
     }"
     noData="Nenhuma alteração registrada neste contrato."
     >

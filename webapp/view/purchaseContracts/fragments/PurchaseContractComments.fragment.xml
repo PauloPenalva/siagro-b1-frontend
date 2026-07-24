@@ -1,0 +1,99 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <!--
+    Comentários do contrato: anotações com data, hora e autor. Editáveis a qualquer tempo -
+    inclusive em contrato encerrado ou cancelado -, porque comentário não altera valor nem saldo.
+    (Por isso a entidade também está fora do FinishedContractMutationGuardInterceptor.)
+
+    A tabela é somente leitura: o texto é digitado no diálogo (PurchaseContractCommentDialog) e
+    gravado por action. Nada de Input na linha - o update group do modelo é diferido e no Detail não
+    existe o "Salvar" da tela.
+
+    `$$ownRequest` é obrigatório: sem ele o binding vira $expand no GET do contrato, e
+    PurchaseContractsGetService não inclui CommentEntries - a tabela viria vazia. Com request
+    próprio ela também pode ser refrescada isoladamente depois de cada action.
+
+    O `sorter` também é obrigatório, por menos óbvio: o OrderByDescending do service SÓ vale na
+    consulta sem paginação. A sap.ui.table pede $skip/$top, e aí o [EnableQuery] reordena por chave
+    para estabilizar a paginação - a lista sairia na ordem de inserção. O sorter manda $orderby
+    explícito, que sobrevive à paginação.
+  -->
+  <t:Table
+    id="purchaseContractCommentsTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    busyIndicatorDelay="0"
+    rows="{
+      path: 'CommentEntries',
+      parameters: { '$$ownRequest': true },
+      sorter: { path: 'CommentedAt', descending: true }
+    }"
+    noData="Nenhum comentário registrado neste contrato."
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Comentários" />
+          <ToolbarSpacer />
+          <Button
+            text="Incluir"
+            icon="sap-icon://add"
+            type="Transparent"
+            press=".onAddComment"
+            visible="{= !${ui>/readonly} }" />
+          <Button
+            text="Editar"
+            icon="sap-icon://edit"
+            type="Transparent"
+            press=".onEditComment"
+            visible="{= !${ui>/readonly} }" />
+          <Button
+            text="Remover"
+            icon="sap-icon://delete"
+            type="Transparent"
+            press=".onRemoveComment"
+            visible="{= !${ui>/readonly} }" />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <!--
+        Data/hora e autor da ÚLTIMA escrita: editar um comentário reescreve as duas colunas. A
+        versão anterior fica no Log de Alterações.
+
+        `targetType: 'any'` porque o datetime2 chega com 7 casas de fração de segundo, que o
+        DateTimeOffset do UI5 recusa - o formatter resolve com o Date do JS.
+      -->
+      <t:Column label="Data/Hora" width="10rem">
+        <t:template>
+          <Text wrapping="false" text="{
+            path: 'CommentedAt',
+            targetType: 'any',
+            formatter: '.formatter.formatDateTime'
+          }" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Usuário" width="10rem">
+        <t:template>
+          <Text wrapping="false" text="{CommentedBy}" />
+        </t:template>
+      </t:Column>
+      <!--
+        `wrapping="false"`: sem isso um comentário longo quebra a linha e estoura a altura da
+        sap.ui.table. O texto completo continua no tooltip, e a edição abre no diálogo.
+      -->
+      <t:Column label="Comentário">
+        <t:template>
+          <Text text="{CommentText}" tooltip="{CommentText}" wrapping="false" />
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

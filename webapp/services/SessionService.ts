@@ -9,6 +9,7 @@ import ServerRoutes from "siagrob1/model/ServerRoutes";
 import formatter from "siagrob1/model/formatter";
 import { BranchInfo } from "siagrob1/types/BranchInfo";
 import { SystemInfo } from "siagrob1/types/SystemInfo";
+import { AuthStatus, LoginResult, UserIdentity } from "siagrob1/types/UserIdentity";
 
 export const USER_MENU_KEY = "USER_MENU";
 export const SYSTEM_SETUP_KEY = "SYSTEM_SETUP";
@@ -67,10 +68,13 @@ class SessionService {
   /* ------------------------------------------------------------------ */
 
   public async login(credentials: Credentials): Promise<void> {
-    await new RequestModel().post(ServerRoutes.login, credentials);
+    // A própria resposta do login traz o usuário: aproveitá-la evita uma segunda ida ao
+    // /status só para saber quem entrou.
+    const result = await new RequestModel().post(ServerRoutes.login, credentials) as LoginResult;
 
     this.authenticated = true;
     this.getSessionModel().setProperty("/logged", true);
+    this.applyUserIdentity(result?.user);
 
     // Uma falha ao carregar menu/filial não invalida o login já concedido.
     try {
@@ -101,11 +105,13 @@ class SessionService {
   /** Consulta `/security/auth/status` e atualiza o cache. */
   public async refreshStatus(): Promise<boolean> {
     try {
-      const status = await new RequestModel().get<{ authenticated?: boolean }>(ServerRoutes.userInfo);
+      const status = await new RequestModel().get<AuthStatus>(ServerRoutes.userInfo);
       this.authenticated = !!status?.authenticated;
+      this.applyUserIdentity(this.authenticated ? status : undefined);
     } catch (error) {
       console.warn("Falha ao consultar o status da sessão.", error);
       this.authenticated = false;
+      this.applyUserIdentity(undefined);
     }
 
     this.getSessionModel().setProperty("/logged", this.authenticated);
@@ -160,6 +166,19 @@ class SessionService {
     this.sessionReadyHandlers.forEach(handler => handler());
   }
 
+  /**
+   * Publica quem está logado no `sessionModel`. `undefined` limpa - é o que acontece no logout e
+   * quando o /status responde que não há sessão.
+   *
+   * Quem decide de fato o que o usuário pode alterar é o servidor; isto existe para a tela não
+   * oferecer uma ação que vai voltar recusada.
+   */
+  private applyUserIdentity(identity?: UserIdentity): void {
+    const sessionModel = this.getSessionModel();
+    sessionModel.setProperty("/userName", identity?.username ?? null);
+    sessionModel.setProperty("/isAdmin", identity?.isAdmin === true);
+  }
+
   /** Filial corrente já carregada, sem ida ao servidor. */
   public getBranchInfo(): BranchInfo {
     return this.branchInfo;
@@ -196,6 +215,7 @@ class SessionService {
     sessionModel.setProperty("/logged", false);
     sessionModel.setProperty("/branchInfo", null);
     sessionModel.setProperty("/systemInfo", null);
+    this.applyUserIdentity(undefined);
 
     this.getMenuModel()?.setData({});
 
