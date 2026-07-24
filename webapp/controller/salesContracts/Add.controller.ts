@@ -18,6 +18,10 @@ export default class Add extends BaseController {
 		
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setProperty("/editable", true);
+    // O fragmento de locais de entrega é compartilhado com o Detail, onde a edição
+    // sobrevive à aprovação. Aqui tudo é editável, então o flag acompanha.
+    uiModel.setProperty("/postApprovalEditable", true);
+    uiModel.setProperty("/postApprovalSaveVisible", false);
     
 		this.resetChanges();
 

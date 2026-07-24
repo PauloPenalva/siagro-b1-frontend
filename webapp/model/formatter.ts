@@ -410,7 +410,24 @@ export default {
     m.set("Canceled"  , "Error");
     m.set("Complete"  , "Success");
     m.set("Processing", "Information");
-    
+
     return m.get(value);
+  },
+
+  /**
+   * Rótulo do campo no log de alterações do contrato. O backend grava o código
+   * (ContractChangeLogFields), não o texto - a tradução é aqui para não travar o i18n.
+   * Código desconhecido cai para ele mesmo: linha antiga nunca fica em branco.
+   */
+  formatContractChangeLogField: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("DeliveryLocation", "Local de entrega");
+    m.set("Attachment", "Anexo");
+    m.set("PriceFixation", "Fixação de preço");
+    // Legado: a observação já foi editável depois de aprovada e deixou linhas gravadas.
+    // Hoje ela só muda em rascunho, mas as linhas antigas precisam continuar legíveis.
+    m.set("Comments", "Observação");
+
+    return m.get(value) ?? value;
   },
 };

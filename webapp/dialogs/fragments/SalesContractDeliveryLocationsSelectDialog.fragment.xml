@@ -1,0 +1,52 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+
+<!--
+  Locais de entrega do contrato de venda selecionado.
+
+  Diferente dos demais value helps, a lista é RELATIVA: os locais só existem sob a
+  rota de navegação /SalesContracts(guid)/DeliveryLocations. Quem abre o diálogo liga
+  o contrato via `elementPath` (DialogHelper.openTableSelectDialog).
+
+  `$$ownRequest` é obrigatório: sem ele o binding viraria $expand no GET do contrato, e
+  SalesContractsGetService.GetByIdAsync não inclui DeliveryLocations - a lista viria
+  vazia. Mesma armadilha da tabela em salesContracts/fragments/SalesContractDeliveryLocations.
+-->
+<TableSelectDialog
+  class="sapUiSizeCompact"
+  growing="true"
+  growingThreshold="20"
+  items="{
+    path: 'DeliveryLocations',
+    parameters: { '$$ownRequest': true },
+    sorter: {
+      path: 'CardName',
+      descending: false
+    }
+  }"
+  rememberSelections="false"
+  noDataText="Este contrato de venda não tem locais de entrega cadastrados. Informe os locais de entrega no contrato antes de solicitar a liberação."
+  title="Locais de Entrega do Contrato"
+>
+<columns>
+  <Column>
+    <header>
+      <Text text="Codigo" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Nome" />
+    </header>
+  </Column>
+</columns>
+<ColumnListItem>
+  <cells>
+    <Text text="{CardCode}" />
+    <Text text="{CardName}" />
+  </cells>
+</ColumnListItem>
+</TableSelectDialog>
+</core:FragmentDefinition>

@@ -317,6 +317,21 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
     const oBinding = (this.byId("purchaseContractPriceFixationsTable") as Table)
       .getBinding("rows") as ODataListBinding;
     oBinding?.refresh();
+
+    // Toda mutação de fixação passa por aqui, e todas geram linha no log — refrescar neste
+    // ponto evita depender de lembrar do log em cada handler.
+    this.refreshChangeLogs();
+  }
+
+  /**
+   * Recarrega o log de alterações. A tabela usa `$$ownRequest`, então tem cache próprio e
+   * pode ser refrescada isoladamente. Silencioso onde a tabela não existe (Add/Edit) — o
+   * fragmento do log só está no Detail.
+   */
+  refreshChangeLogs() {
+    const oBinding = (this.byId("purchaseContractChangeLogsTable") as Table)
+      ?.getBinding("rows") as ODataListBinding;
+    oBinding?.refresh();
   }
 
   /**

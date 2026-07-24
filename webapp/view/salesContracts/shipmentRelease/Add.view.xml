@@ -28,7 +28,56 @@
          </uxap:snappedHeading>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>
-    <uxap:headerContent/>
+    <uxap:headerContent>
+      <!--
+        Dados do contrato selecionado. O contexto da view é a liberação transiente
+        (só tem SalesContractKey), então esta subárvore é ligada ao contrato pelo
+        controller em `newRouteMatched`.
+      -->
+      <HBox id="salesShipmentReleaseContractHeader" wrap="Wrap">
+        <VBox class="sapUiSmallMarginEnd">
+          <ObjectIdentifier title="{Code}" text="{Complement}"/>
+          <ObjectAttribute title="Filial" text="{Branch/ShortName}"/>
+          <ObjectAttribute title="Safra" text="{HarvestSeasonCode}"/>
+        </VBox>
+        <VBox class="sapUiSmallMarginEnd">
+          <ObjectAttribute title="Cliente" text="({CardCode}) {CardName}"/>
+          <ObjectAttribute title="Produto" text="({ItemCode}) {ItemName}"/>
+        </VBox>
+        <VBox class="sapUiSmallMarginEnd">
+          <ObjectAttribute title="Limite de entrega" text="{
+            path: 'DeliveryEndDate',
+            targetType: 'any',
+            formatter: '.formatter.formatDate'
+          }"/>
+          <ObjectAttribute title="Prev.Pagto." text="{
+            path: 'StandardCashFlowDate',
+            targetType: 'any',
+            formatter: '.formatter.formatDate'
+          }"/>
+        </VBox>
+        <VBox>
+          <ObjectAttribute title="Saldo a liberar"/>
+          <ObjectNumber
+            emphasized="true"
+            number="{
+              path: 'PhysicalAvailableToRelease',
+              type: 'sap.ui.model.type.Float',
+              formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"
+            unit="{UnitOfMeasureCode}"/>
+          <ObjectAttribute title="Quantidade do contrato"/>
+          <ObjectNumber
+            emphasized="false"
+            number="{
+              path: 'TotalVolume',
+              type: 'sap.ui.model.type.Float',
+              formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"
+            unit="{UnitOfMeasureCode}"/>
+        </VBox>
+      </HBox>
+    </uxap:headerContent>
     <uxap:sections>
       <uxap:ObjectPageSection titleUppercase="false" title="Dados da Liberação">
 				<uxap:subSections>
@@ -71,7 +120,7 @@
                     value="{DeliveryLocationCode}"
                     showValueHelp="true"
                     valueHelpOnly="true"
-                    valueHelpRequest=".openCostumersValueHelp">
+                    valueHelpRequest=".openSalesContractDeliveryLocationsValueHelp">
                     <customData>
                       <core:CustomData key="descriptionProperty" value="DeliveryLocationName:CardName" />
                     </customData>

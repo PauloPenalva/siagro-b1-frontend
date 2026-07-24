@@ -17,6 +17,9 @@ export default class Edit extends SalesContractsBaseController {
 	private editRouteMatched(ev: Route$MatchedEvent) {
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setProperty("/editable", true);
+    // Ver Add.controller: o fragmento de locais é compartilhado com o Detail.
+    uiModel.setProperty("/postApprovalEditable", true);
+    uiModel.setProperty("/postApprovalSaveVisible", false);
         
 		this.clearStates("formSalesContracts");
     

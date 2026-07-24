@@ -100,14 +100,24 @@ export default {
    * Resolve com `undefined` quando o usuário cancela (botão Cancelar, Esc ou
    * clique fora) - antes disso a Promise simplesmente nunca era resolvida, e
    * todo cancelamento deixava um `await` pendurado para sempre.
+   *
+   * `elementPath` atende os diálogos cuja lista é **relativa** a um pai (ex.: os
+   * locais de entrega de um contrato, em `/SalesContracts(guid)/DeliveryLocations`,
+   * que só existem sob a rota de navegação). A ligação é refeita a cada abertura:
+   * o diálogo é reaproveitado por (view, fragmento) e o pai muda entre navegações.
    */
   openTableSelectDialog: async (
     oController: Controller,
     name: string,
     filters: string[],
-    defaultFilters: Filter[] = []
+    defaultFilters: Filter[] = [],
+    elementPath?: string
   ): Promise<Context | undefined> => {
     const oDlg = await getSelectDialog(oController, name, filters, defaultFilters);
+
+    if (elementPath) {
+      oDlg.bindElement(elementPath);
+    }
 
     return new Promise<Context | undefined>(resolve => {
       // Os handlers são ligados por abertura e desligados no primeiro disparo:

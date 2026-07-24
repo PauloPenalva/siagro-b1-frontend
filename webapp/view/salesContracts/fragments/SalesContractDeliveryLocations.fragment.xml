@@ -25,18 +25,29 @@
           <Title text="Locais de Entrega do Contrato" />
           <ToolbarSpacer />
           <Button
-            visible="{ui>/editable}"
+            visible="{ui>/postApprovalEditable}"
             text="Incluir"
             type="Transparent"
             icon="sap-icon://add"
             press=".onAddDeliveryLocation"
           />
           <Button
-            visible="{ui>/editable}"
+            visible="{ui>/postApprovalEditable}"
             text="Remover"
             type="Transparent"
             icon="sap-icon://delete"
             press=".onRemoveDeliveryLocation"
+          />
+          <!--
+            Só no Detail: Add/Edit gravam pelo Salvar da tela. O update group é diferido,
+            então sem isto as linhas incluídas aqui ficariam pendentes para sempre.
+          -->
+          <Button
+            visible="{ui>/postApprovalSaveVisible}"
+            text="Salvar"
+            type="Emphasized"
+            icon="sap-icon://save"
+            press=".onSaveDeliveryLocations"
           />
         </content>
       </OverflowToolbar>
@@ -45,7 +56,7 @@
       <t:Column label="Codigo">
         <t:template>
           <Input
-            editable="{ui>/editable}"
+            editable="{ui>/postApprovalEditable}"
             required="true"
             value="{CardCode}"
             showValueHelp="true"

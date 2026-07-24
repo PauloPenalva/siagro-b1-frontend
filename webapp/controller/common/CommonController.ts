@@ -93,15 +93,19 @@ export default abstract class CommonController extends BaseController {
    * Quando o Input declara `<core:CustomData key="descriptionProperty" .../>`, a
    * descrição correspondente também é gravada na entidade - assim o campo de nome
    * ao lado acompanha a troca sem precisar de um formatter que vai ao servidor.
+   *
+   * `elementPath` liga o diálogo a um pai antes de abrir, para as listas que são
+   * relativas a ele (ver `DialogHelper.openTableSelectDialog`).
    */
-  private async applyValueHelp(
+  protected async applyValueHelp(
     ev: Input$ValueHelpRequestEvent,
     name: string,
     filters: string[],
     property: string,
-    defaultFilters: Filter[] = []
+    defaultFilters: Filter[] = [],
+    elementPath?: string
   ) {
-    const oContext = await DialogHelper.openTableSelectDialog(this, name, filters, defaultFilters);
+    const oContext = await DialogHelper.openTableSelectDialog(this, name, filters, defaultFilters, elementPath);
 
     if (!oContext) {
       return;

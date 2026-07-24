@@ -103,6 +103,7 @@ export default abstract class SalesContractsBaseController extends CommonControl
       this.setBusy(true);
       await requestModel.delete(`/odata/SalesContractsAttachments(${attachmentKey})`);
       this.getAttachments(key);
+      this.refreshChangeLogs();
     } catch (e) {
       const err = e as Error;
       MessageBox.error(err.message);
@@ -257,6 +258,10 @@ export default abstract class SalesContractsBaseController extends CommonControl
     const oBinding = (this.byId("salesContractPriceFixationsTable") as Table)
       .getBinding("rows") as ODataListBinding;
     oBinding?.refresh();
+
+    // Toda mutação de fixação passa por aqui, e todas geram linha no log — refrescar neste
+    // ponto evita depender de lembrar do log em cada handler.
+    this.refreshChangeLogs();
   }
 
   /**
@@ -473,6 +478,45 @@ export default abstract class SalesContractsBaseController extends CommonControl
     const oContext = oTable.getContextByIndex(index) as Context;
 
     void oContext.delete(oModel.getUpdateGroupId());
+  }
+
+  /**
+   * Recarrega o log de alterações depois de uma operação que grava por fora do cache do
+   * modelo. A tabela usa `$$ownRequest`, então tem cache próprio e pode ser refrescada
+   * isoladamente. Silencioso onde a tabela não existe (Add/Edit) - o fragmento do log só
+   * está no Detail.
+   */
+  refreshChangeLogs() {
+    const oBinding = (this.byId("salesContractChangeLogsTable") as Table)
+      ?.getBinding("rows") as ODataListBinding;
+    oBinding?.refresh();
+  }
+
+  /**
+   * Grava as inclusões/remoções de local de entrega feitas no Detail.
+   *
+   * O modelo usa um update group diferido, então no Detail (que não tem o Salvar da tela)
+   * as linhas ficariam pendentes para sempre. Não dá para submeter na inclusão: a linha
+   * nasce vazia e só ganha o cliente depois do value help.
+   */
+  async onSaveDeliveryLocations() {
+    const oModel = this.getView().getModel() as ODataModel;
+
+    try {
+      this.setBusy(true);
+      await oModel.submitBatch(oModel.getUpdateGroupId());
+
+      if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
+        return;
+      }
+
+      MessageToast.show("Locais de entrega salvos.");
+      this.refreshChangeLogs();
+    } catch (err) {
+      MessageBox.error((err as Error).message || "Erro ao salvar os locais de entrega.");
+    } finally {
+      this.setBusy(false);
+    }
   }
 
   onAddDeliveryLocation() {

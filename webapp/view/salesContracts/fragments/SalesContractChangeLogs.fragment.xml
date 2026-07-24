@@ -1,0 +1,77 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <!--
+    Alterações feitas no contrato depois de aprovado (observação, locais de entrega, anexos).
+    Somente leitura: as linhas nascem nos services que fazem a alteração.
+
+    `$$ownRequest` é obrigatório - sem ele o binding vira $expand no GET do contrato, e
+    SalesContractsGetService.GetByIdAsync não inclui ChangeLogs: a tabela viria vazia.
+    Com request próprio a tabela também pode ser refrescada isoladamente após a action.
+  -->
+  <t:Table
+    id="salesContractChangeLogsTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionMode="None"
+    busyIndicatorDelay="0"
+    rows="{
+      path: 'ChangeLogs',
+      parameters: { '$$ownRequest': true }
+    }"
+    noData="Nenhuma alteração registrada neste contrato."
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Log de Alterações" />
+          <ToolbarSpacer />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Data/Hora" width="10rem">
+        <t:template>
+          <Text wrapping="false" text="{
+            path: 'ChangedAt',
+            targetType: 'any',
+            formatter: '.formatter.formatDateTime'
+          }" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Usuário" width="8rem">
+        <t:template>
+          <Text wrapping="false" text="{ChangedBy}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Campo" width="10rem">
+        <t:template>
+          <Text wrapping="false" text="{
+            path: 'Field',
+            formatter: '.formatter.formatContractChangeLogField'
+          }" />
+        </t:template>
+      </t:Column>
+      <!--
+        `wrapping="false"` sem largura fixa: as duas colunas dividem o espaço restante e truncam.
+        Sem o wrapping="false", o texto longo (uma observação inteira) quebra
+        numa coluna estreita e estoura a altura da linha - o log fica ilegível. O valor
+        completo continua acessível pelo tooltip.
+      -->
+      <t:Column label="De">
+        <t:template>
+          <Text text="{OldValue}" tooltip="{OldValue}" wrapping="false" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Para">
+        <t:template>
+          <Text text="{NewValue}" tooltip="{NewValue}" wrapping="false" />
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>
