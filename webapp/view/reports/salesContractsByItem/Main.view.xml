@@ -1,0 +1,132 @@
+<mvc:View
+	controllerName="siagrob1.controller.reports.salesContractsByItem.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+  <Page title="Relatório de Contratos de Venda por Produto">
+    <f:SimpleForm
+      id="salesContractsByItemForm"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+      busyIndicatorDelay="0">
+        <f:content>
+          <core:Title text="Período de emissão" emphasized="true" />
+          <Label text="Emissão de"/>
+          <DatePicker
+                value="{
+                  path: 'params>/FromDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
+                  formatOptions: { pattern: 'dd/MM/yyyy' }
+                }"
+                liveChange=".validateField"
+                required="true"
+            />
+          <Label text="Emissão até"/>
+          <DatePicker
+                value="{
+                  path: 'params>/ToDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
+                  formatOptions: { pattern: 'dd/MM/yyyy' }
+                }"
+                liveChange=".validateField"
+                required="true"
+            />
+
+          <core:Title text="Filtros" emphasized="true" />
+          <Label text="Produto" />
+          <Input
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openItemValueHelp"
+            value="{params>/ItemCode}">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="ItemName" />
+            </customData>
+          </Input>
+          <Input value="{params>/ItemName}" editable="false" />
+          <Label text="Safra" />
+          <Input
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openHarvestSeasonsValueHelp"
+            value="{params>/HarvestSeasonCode}" />
+          <Label text="Filial" />
+          <Input
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openBranchsValueHelp"
+            value="{params>/BranchCode}">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="BranchName:ShortName" />
+            </customData>
+          </Input>
+          <Input value="{params>/BranchName}" editable="false" />
+          <Label text="Região logística" />
+          <Input
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openLogisticRegionsValueHelp"
+            value="{params>/LogisticRegionCode}">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="LogisticRegionName:Name" />
+            </customData>
+          </Input>
+          <Input value="{params>/LogisticRegionName}" editable="false" />
+          <Label text="Cliente" />
+          <Input
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openCostumersValueHelp"
+            value="{params>/CardCode}">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="CardName" />
+            </customData>
+          </Input>
+          <Input value="{params>/CardName}" editable="false" />
+
+          <core:Title text="Período de entrega" emphasized="true" />
+          <Label text="Entrega de"/>
+          <DatePicker
+                value="{
+                  path: 'params>/DeliveryFromDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
+                  formatOptions: { pattern: 'dd/MM/yyyy' }
+                }"
+            />
+          <Label text="Entrega até"/>
+          <DatePicker
+                value="{
+                  path: 'params>/DeliveryToDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
+                  formatOptions: { pattern: 'dd/MM/yyyy' }
+                }"
+            />
+        </f:content>
+    </f:SimpleForm>
+    <footer>
+      <OverflowToolbar>
+        <ToolbarSpacer/>
+        <Button text="Imprimir" type="Emphasized" press=".onPrintReport"/>
+      </OverflowToolbar>
+    </footer>
+  </Page>
+</mvc:View>

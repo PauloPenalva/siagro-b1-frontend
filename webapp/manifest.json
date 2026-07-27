@@ -734,6 +734,16 @@
           "target": "storageAddressesBalanceReport"
         },
         {
+          "pattern": "purchase-contracts-by-item/report",
+          "name": "purchaseContractsByItemReport",
+          "target": "purchaseContractsByItemReport"
+        },
+        {
+          "pattern": "sales-contracts-by-item/report",
+          "name": "salesContractsByItemReport",
+          "target": "salesContractsByItemReport"
+        },
+        {
           "pattern": "storage-invoices",
           "name": "storageInvoices",
           "target": "storageInvoices"
@@ -1575,6 +1585,18 @@
 					"id": "storageAddressesBalanceReport",
           "level": 1,
 					"name": "siagrob1.view.reports.storageAddressesBalance.Main",
+          "clearControlAggregation": true
+				},
+        "purchaseContractsByItemReport": {
+					"id": "purchaseContractsByItemReport",
+          "level": 1,
+					"name": "siagrob1.view.reports.purchaseContractsByItem.Main",
+          "clearControlAggregation": true
+				},
+        "salesContractsByItemReport": {
+					"id": "salesContractsByItemReport",
+          "level": 1,
+					"name": "siagrob1.view.reports.salesContractsByItem.Main",
           "clearControlAggregation": true
 				},
         "storageInvoices": {

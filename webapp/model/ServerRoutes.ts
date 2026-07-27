@@ -43,6 +43,8 @@ export default {
   purchaseContractsReopen: '/odata/PurchaseContractsReopen',
   purchaseContractsRecalculateBalance: '/odata/PurchaseContractsRecalculateBalance',
   prePurchaseContractReport: '/reports/PrePurchaseContract',
+  purchaseContractsByItemReport: '/reports/PurchaseContractsByItem',
+  salesContractsByItemReport: '/reports/SalesContractsByItem',
 
   purchaseContractsPriceFixations: '/odata/PurchaseContractsPriceFixations',
   // Actions OData invocadas via ODataModel.bindContext — formato relativo à raiz
