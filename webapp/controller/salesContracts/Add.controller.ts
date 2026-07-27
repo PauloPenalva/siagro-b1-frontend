@@ -46,6 +46,7 @@ export default class Add extends BaseController {
       "DocNumberKey": docNumberInfo.Key,
       "BranchCode": branchInfo.code,
       "UnitOfMeasureCode": systemSetup.DefaultUoM,
+      "FreightUmCode": systemSetup.DefaultFreightUoM,
       "Price": 0
     }, false, false, false);
 

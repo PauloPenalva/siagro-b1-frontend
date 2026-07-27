@@ -281,6 +281,29 @@
               <core:ListItem key="Fob" text="FOB"/>
               <core:ListItem key="None" text="SEM FRETE"/>
             </Select>
+            <Label text="Frete Standard"/>
+            <Input
+              editable="{ui>/editable}"
+              required="true"
+              value="{
+                path: 'FreightCostStandard',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions: {
+                    decimals: 8,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                }
+              }"
+            />
+            <Label text="UM. Frete"/>
+            <Input
+              editable="false"
+              required="true"
+              value="{FreightUmCode}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openUnitsOfMeasureValueHelp"/>
             <Label text="Região Logistica" />
             <Input 
 							editable="{ui>/editable}"	
