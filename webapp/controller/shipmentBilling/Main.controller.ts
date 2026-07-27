@@ -64,6 +64,8 @@ export default class Main extends BaseController {
 
   private _billingDialog: Dialog;
   private _busyDialog: Dialog;
+  /** Trava de reentrância do faturamento — ver `saveBillingDialog`. */
+  private _billingInFlight = false;
 
   onInit(): void {
     // Liberações de venda disponíveis do dialog de faturamento: resultado da function
@@ -248,83 +250,102 @@ export default class Main extends BaseController {
   }
 
   async saveBillingDialog() {
-    if (!this.validateForm("shipmentBillingSalesContractsForm")) {
-      MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
+    // Trava de reentrância: precisa ser avaliada e setada ANTES do primeiro await, senão
+    // um duplo clique em "Confirmar" enfileira dois MessageBox.confirm e dispara dois
+    // faturamentos do mesmo carregamento (documento de saída duplicado, saldo do contrato
+    // descontado duas vezes). O backend também recusa, mas aqui o usuário nem chega lá.
+    if (this._billingInFlight) {
       return;
     }
+    this._billingInFlight = true;
 
-    const shipments: BilledShipment[] = [];
-    const shipmentBillingTable = this.byId("shipmentBillingTable") as Table;
-    const selectedShipments = shipmentBillingTable.getSelectedIndices();
-
-    selectedShipments.forEach(i => {
-      const shipmentCtx = shipmentBillingTable.getContextByIndex(i);
-      const shipmentObj = shipmentCtx.getObject() as BilledShipment;
-
-      shipments.push({
-        Key: shipmentObj?.Key
-      });
-    });
-
-
-    const contractsTable = this.byId("shipmentBillingSalesContractsTable") as Table;
-    const selectedContract = contractsTable.getSelectedIndices();
-    if (selectedContract.length < 1) {
-      MessageBox.error("Liberação de entrega não selecionada.");
-      throw new Error("Liberação de entrega não selecionada.");
-    }
-
-    // Contexto do JSONModel "releases" (não OData) — getObject() devolve o DTO da function.
-    const contractCtx = contractsTable.getContextByIndex(selectedContract[0]);
-
-    if (contractCtx) {
-      const model = this.getModel() as ODataModel;
-      const viewModel = this.getModel("viewModel") as JSONModel;
-      const release = contractCtx.getObject() as BilledRelease;
-      const billing = viewModel.getData() as BillingForm;
-
-      const confirm = await DialogHelper.confirmDialog("Confirma emissão do(s) Documento(s) de Saída ?");
-      if (confirm) {
-
-        const salesInvoice = {
-          InvoiceDate: billing?.InvoiceDate,
-          BranchCode: billing?.BranchCode,
-          CardCode: release?.CardCode,
-          GrossWeight: +billing?.Volume,
-          NetWeight: +billing?.Volume,
-          TruckingCompanyCode: billing?.TruckingCompanyCode,
-          TruckCode: billing?.TruckCode,
-          TaxPayerComments: billing?.TaxPayerComments,
-          DeliveryCardCode: billing?.DeliveryCardCode,
-          Items: [
-            {
-              ItemCode: billing?.ItemCode,
-              Quantity: +billing?.Volume,
-              UnitPrice: +release?.Price,
-              UnitOfMeasureCode: release?.UnitOfMeasureCode,
-              SalesContractKey: release?.SalesContractKey,
-              SalesShipmentReleaseKey: release?.SalesShipmentReleaseKey
-            }
-          ],
-          SalesTransactions: shipments,
-          FreightTerms: billing?.FreightTerms,
-          FreightCostStandard: billing?.FreightCost
-        };
- 
-        this.closeBillingDialog();
-
-        await this.createBusyDialog();
-        this._busyDialog?.open();
-
-        const action = model.bindContext("/ShipmentBillingCreateSalesInvoice(...)");
-        action.setParameter("SalesInvoice", salesInvoice)
-        void action.invoke()
-          .then(() => {
-            MessageToast.show("Documento(s) de saída criado(s) com sucesso.");
-            this.refreshData();
-          })
-          .finally(() => this._busyDialog?.close());
+    try {
+      if (!this.validateForm("shipmentBillingSalesContractsForm")) {
+        MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
+        return;
       }
+
+      const shipments: BilledShipment[] = [];
+      const shipmentBillingTable = this.byId("shipmentBillingTable") as Table;
+      const selectedShipments = shipmentBillingTable.getSelectedIndices();
+
+      selectedShipments.forEach(i => {
+        const shipmentCtx = shipmentBillingTable.getContextByIndex(i);
+        const shipmentObj = shipmentCtx.getObject() as BilledShipment;
+
+        shipments.push({
+          Key: shipmentObj?.Key
+        });
+      });
+
+
+      const contractsTable = this.byId("shipmentBillingSalesContractsTable") as Table;
+      const selectedContract = contractsTable.getSelectedIndices();
+      if (selectedContract.length < 1) {
+        MessageBox.error("Liberação de entrega não selecionada.");
+        throw new Error("Liberação de entrega não selecionada.");
+      }
+
+      // Contexto do JSONModel "releases" (não OData) — getObject() devolve o DTO da function.
+      const contractCtx = contractsTable.getContextByIndex(selectedContract[0]);
+
+      if (contractCtx) {
+        const model = this.getModel() as ODataModel;
+        const viewModel = this.getModel("viewModel") as JSONModel;
+        const release = contractCtx.getObject() as BilledRelease;
+        const billing = viewModel.getData() as BillingForm;
+
+        const confirm = await DialogHelper.confirmDialog("Confirma emissão do(s) Documento(s) de Saída ?");
+        if (confirm) {
+
+          const salesInvoice = {
+            InvoiceDate: billing?.InvoiceDate,
+            BranchCode: billing?.BranchCode,
+            CardCode: release?.CardCode,
+            GrossWeight: +billing?.Volume,
+            NetWeight: +billing?.Volume,
+            TruckingCompanyCode: billing?.TruckingCompanyCode,
+            TruckCode: billing?.TruckCode,
+            TaxPayerComments: billing?.TaxPayerComments,
+            DeliveryCardCode: billing?.DeliveryCardCode,
+            Items: [
+              {
+                ItemCode: billing?.ItemCode,
+                Quantity: +billing?.Volume,
+                UnitPrice: +release?.Price,
+                UnitOfMeasureCode: release?.UnitOfMeasureCode,
+                SalesContractKey: release?.SalesContractKey,
+                SalesShipmentReleaseKey: release?.SalesShipmentReleaseKey
+              }
+            ],
+            SalesTransactions: shipments,
+            FreightTerms: billing?.FreightTerms,
+            FreightCostStandard: billing?.FreightCost
+          };
+
+          this.closeBillingDialog();
+
+          await this.createBusyDialog();
+          this._busyDialog?.open();
+
+          const action = model.bindContext("/ShipmentBillingCreateSalesInvoice(...)");
+          action.setParameter("SalesInvoice", salesInvoice)
+          try {
+            await action.invoke();
+            MessageToast.show("Documento(s) de saída criado(s) com sucesso.");
+          } catch {
+            // A mensagem técnica do backend já é exibida pelo handler global de mensagens
+            // OData (Component.onMessageBindingChange).
+          } finally {
+            this._busyDialog?.close();
+            // Refresh também no erro: se o romaneio já ficou vinculado, ele não pode
+            // continuar sendo oferecido na lista para uma nova tentativa.
+            this.refreshData();
+          }
+        }
+      }
+    } finally {
+      this._billingInFlight = false;
     }
   }
 
