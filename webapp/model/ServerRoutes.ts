@@ -91,5 +91,11 @@ export default {
   salesContractsCommentUpdate: '/SalesContractsCommentUpdate(...)',
   salesContractsCommentDelete: '/SalesContractsCommentDelete(...)',
 
+  // Comentários do documento de saída: no Update/Delete a chave é a do COMENTÁRIO, não a do
+  // documento.
+  salesInvoicesCommentCreate: '/SalesInvoicesCommentCreate(...)',
+  salesInvoicesCommentUpdate: '/SalesInvoicesCommentUpdate(...)',
+  salesInvoicesCommentDelete: '/SalesInvoicesCommentDelete(...)',
+
   storageTransactionCopy: '/StorageTransactionsCopy(...)',
 }

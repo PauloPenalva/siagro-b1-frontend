@@ -67,6 +67,20 @@
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Comentários">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection title=" " titleUppercase="false">
+						<core:Fragment fragmentName="siagrob1.view.salesInvoices.fragments.SalesInvoiceComments" type="XML" />
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Log de Alterações">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection title=" " titleUppercase="false">
+						<core:Fragment fragmentName="siagrob1.view.salesInvoices.fragments.SalesInvoiceChangeLogs" type="XML" />
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
     </uxap:sections>
   </uxap:ObjectPageLayout>
 
