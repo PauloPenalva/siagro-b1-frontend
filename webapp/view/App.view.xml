@@ -64,6 +64,24 @@
                 </f:profile>
             </f:ShellBar>
         </tnt:header>
+        <!--
+            Aviso de nova versão publicada. Fica no subHeader para aparecer em
+            qualquer tela; enquanto invisível o ToolPage não renderiza a faixa,
+            então não sobra espaço em branco.
+        -->
+        <tnt:subHeader>
+            <MessageStrip
+                id="updateAvailableStrip"
+                visible="{ui>/updateAvailable}"
+                type="Information"
+                showIcon="true"
+                class="sapUiTinyMargin"
+                text="Uma nova versão do sistema está disponível.">
+                <link>
+                    <Link text="Atualizar agora" press=".onApplyUpdate" />
+                </link>
+            </MessageStrip>
+        </tnt:subHeader>
         <tnt:sideContent >
             <core:Fragment fragmentName="siagrob1.fragments.SideMenu" type="XML" />
         </tnt:sideContent>

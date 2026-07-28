@@ -7,6 +7,9 @@ export default {
 
   getBranchInfo: '/security/auth/GetBranchInfo',
   setDefaultBranch: '/security/auth/SetDefaultBranch',
+
+  // Versão do frontend publicada no servidor - usada para detectar deploy novo.
+  appVersion: '/security/app/version',
   
   businessPartners: '/odata/BusinessPartners',
   items: '/odata/Items',

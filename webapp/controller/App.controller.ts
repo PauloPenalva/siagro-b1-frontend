@@ -15,6 +15,7 @@ import { ListItemBase$PressEvent } from "sap/m/ListItemBase";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import formatter from "siagrob1/model/formatter";
 import SessionService from "siagrob1/services/SessionService";
+import VersionService from "siagrob1/services/VersionService";
 
 /**
  * @namespace siagrob1.controller
@@ -165,6 +166,11 @@ export default class App extends BaseController {
 
     await SessionService.setDefaultBranch(branchCode);
     await SessionService.loadBranchInfo();
+  }
+
+  /** Recarrega a página para carregar a versão recém-publicada. */
+  onApplyUpdate(): void {
+    VersionService.applyUpdate();
   }
 
 	onHomePress(): void {

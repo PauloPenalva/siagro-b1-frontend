@@ -9,6 +9,7 @@ import Message from "sap/ui/core/message/Message";
 import { Binding$ChangeEvent } from "sap/ui/model/Binding"
 import MessageBox from "sap/m/MessageBox";
 import SessionService from "./services/SessionService";
+import VersionService from "./services/VersionService";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { Router$RouteMatchedEvent } from "sap/ui/core/routing/Router";
 
@@ -35,6 +36,11 @@ export default class Component extends UIComponent {
 		this.setModel(models.createDeviceModel(), "device");
 
     SessionService.init(this);
+
+    // Antes do `initialize()` do router: o serviço acompanha a rota corrente para
+    // não recarregar a página por cima de um cadastro em digitação.
+    VersionService.init(this);
+    VersionService.start();
 
     const uiModel = this.getModel("ui") as JSONModel;
 
