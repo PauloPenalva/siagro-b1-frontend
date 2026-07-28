@@ -1,0 +1,48 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <t:Table
+    id="notificationGroupMembersTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    busyIndicatorDelay="0"
+    visibleRowCountMode="Auto"
+    rows="{Members}"
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Membros" />
+          <ToolbarSpacer />
+          <Button text="Incluir" type="Transparent" icon="sap-icon://add" press=".onAddMember" />
+          <Button text="Remover" type="Transparent" icon="sap-icon://delete" press=".onRemoveMember" />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Nome">
+        <t:template>
+          <Input value="{Name}" required="true" maxLength="100" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Telefone" width="14rem">
+        <t:template>
+          <!-- O servidor normaliza para DDI+DDD+número e recusa o que não der para
+               determinar; aqui aceita-se com máscara, como a pessoa digita. -->
+          <Input value="{Phone}" required="true" maxLength="20" placeholder="(66) 99999-8888" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Ativo" width="6rem">
+        <t:template>
+          <CheckBox selected="{Active}" />
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

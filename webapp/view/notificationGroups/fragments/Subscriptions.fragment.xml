@@ -1,0 +1,64 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <t:Table
+    id="notificationGroupSubscriptionsTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    busyIndicatorDelay="0"
+    visibleRowCountMode="Auto"
+    rows="{Subscriptions}"
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Eventos assinados" />
+          <ToolbarSpacer />
+          <Button text="Incluir" type="Transparent" icon="sap-icon://add" press=".onAddSubscription" />
+          <Button text="Remover" type="Transparent" icon="sap-icon://delete" press=".onRemoveSubscription" />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Documento" width="16rem">
+        <t:template>
+          <!-- targetType 'any' é obrigatório em enum do OData v4: sem ele o Select recebe
+               string e nunca casa com a chave do ListItem.
+               forceSelection="false" é igualmente obrigatório: por padrão o Select
+               auto-seleciona o primeiro item ao renderizar e ESCREVE de volta no modelo —
+               nas linhas-template vazias da sap.ui.table isso estoura com
+               "Must not change a property before it has been read" só ao abrir a aba. -->
+          <Select forceSelection="false" selectedKey="{path: 'DocumentType', targetType: 'any'}">
+            <core:ListItem key="PurchaseContract" text="Contrato de Compra" />
+            <core:ListItem key="SalesContract" text="Contrato de Venda" />
+          </Select>
+        </t:template>
+      </t:Column>
+      <t:Column label="Evento">
+        <t:template>
+          <Select forceSelection="false" selectedKey="{path: 'EventType', targetType: 'any'}">
+            <core:ListItem key="Created" text="Incluído" />
+            <core:ListItem key="HeaderUpdated" text="Alterado" />
+            <core:ListItem key="SentForApproval" text="Enviado para aprovação" />
+            <core:ListItem key="Approved" text="Aprovado" />
+            <core:ListItem key="Rejected" text="Rejeitado" />
+            <core:ListItem key="Canceled" text="Cancelado" />
+            <core:ListItem key="Closed" text="Encerrado" />
+            <core:ListItem key="Reopened" text="Reaberto" />
+            <core:ListItem key="ApprovalWithdrawn" text="Aprovação retirada" />
+            <core:ListItem key="PriceFixationCreated" text="Fixação de preço incluída" />
+            <core:ListItem key="PriceFixationApproved" text="Fixação de preço aprovada" />
+            <core:ListItem key="PriceFixationRejected" text="Fixação de preço rejeitada" />
+            <core:ListItem key="PriceFixationReversed" text="Fixação de preço estornada" />
+          </Select>
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

@@ -583,6 +583,26 @@
           "target": "taxesEdit"
         },
         {
+          "pattern": "notification-groups",
+          "name": "notificationGroups",
+          "target": "notificationGroups"
+        },
+        {
+          "pattern": "notification-groups/new",
+          "name": "notificationGroupsNew",
+          "target": "notificationGroupsNew"
+        },
+        {
+          "pattern": "notification-groups/{id}/edit",
+          "name": "notificationGroupsEdit",
+          "target": "notificationGroupsEdit"
+        },
+        {
+          "pattern": "notification-logs",
+          "name": "notificationLogs",
+          "target": "notificationLogs"
+        },
+        {
           "pattern": "logistic-regions",
           "name": "logisticRegions",
           "target": "logisticRegions"
@@ -1393,6 +1413,30 @@
 					"id": "taxesEdit",
           "level": 2,
 					"name": "siagrob1.view.taxes.Edit",
+          "clearControlAggregation": true
+				},
+        "notificationGroups": {
+					"id": "notificationGroups",
+          "level": 1,
+					"name": "siagrob1.view.notificationGroups.Main",
+          "clearControlAggregation": true
+				},
+        "notificationGroupsNew": {
+					"id": "notificationGroupsNew",
+          "level": 2,
+					"name": "siagrob1.view.notificationGroups.Add",
+          "clearControlAggregation": true
+				},
+        "notificationGroupsEdit": {
+					"id": "notificationGroupsEdit",
+          "level": 2,
+					"name": "siagrob1.view.notificationGroups.Edit",
+          "clearControlAggregation": true
+				},
+        "notificationLogs": {
+					"id": "notificationLogs",
+          "level": 1,
+					"name": "siagrob1.view.notificationLogs.Main",
           "clearControlAggregation": true
 				},
          "logisticRegions": {

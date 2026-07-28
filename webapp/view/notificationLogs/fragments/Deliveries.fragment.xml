@@ -1,0 +1,71 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <!-- Envios da notificação selecionada acima. O binding é preenchido pelo controller a
+       partir da linha selecionada: é aqui que se responde "o que exatamente essa pessoa
+       recebeu, e por que não chegou".
+
+       Dentro de um Panel para separar visualmente das notificações — sem ele as duas
+       tabelas ficam coladas e não dá para saber onde uma termina e a outra começa. -->
+  <Panel
+    id="deliveriesPanel"
+    headerText="Envios"
+    expandable="true"
+    expanded="true"
+    class="sapUiSmallMarginTop"
+  >
+    <t:Table
+      id="notificationDeliveriesTable"
+      class="sapUiSizeCondensed"
+      alternateRowColors="true"
+      enableBusyIndicator="true"
+      enableSelectAll="false"
+      selectionMode="None"
+      busyIndicatorDelay="0"
+      visibleRowCount="5"
+      noData="Selecione uma notificação acima para ver os envios."
+      >
+      <t:columns>
+        <t:Column label="Enviado em" width="10rem">
+          <t:template>
+            <Text text="{path: 'SentAt', targetType: 'any', formatter: '.formatter.formatDateTime'}" wrapping="false" />
+          </t:template>
+        </t:Column>
+        <t:Column label="Grupo" width="11rem">
+          <t:template>
+            <Text text="{GroupName}" wrapping="false" />
+          </t:template>
+        </t:Column>
+        <t:Column label="Destinatário" width="12rem">
+          <t:template>
+            <Text text="{RecipientName}" wrapping="false" />
+          </t:template>
+        </t:Column>
+        <t:Column label="Telefone" width="11rem">
+          <t:template>
+            <Text text="{RecipientPhone}" wrapping="false" />
+          </t:template>
+        </t:Column>
+        <t:Column label="Situação" width="8rem">
+          <t:template>
+            <ObjectStatus
+              text="{path: 'Status', targetType: 'any', formatter: '.formatter.formatNotificationDeliveryStatus'}"
+              state="{path: 'Status', targetType: 'any', formatter: '.formatter.stateNotificationDeliveryStatus'}" />
+          </t:template>
+        </t:Column>
+        <t:Column label="Tent." width="4rem" hAlign="End">
+          <t:template>
+            <Text text="{Attempt}" wrapping="false" />
+          </t:template>
+        </t:Column>
+        <t:Column label="Erro" width="20rem">
+          <t:template>
+            <Text text="{ErrorMessage}" maxLines="2" />
+          </t:template>
+        </t:Column>
+      </t:columns>
+    </t:Table>
+  </Panel>
+</core:FragmentDefinition>

@@ -433,4 +433,91 @@ export default {
 
     return m.get(value) ?? value;
   },
+
+  // ---------------------------------------------------------------------------
+  // Notificação por WhatsApp
+  // ---------------------------------------------------------------------------
+
+  formatActive: (value: boolean) => (value ? "Ativo" : "Inativo"),
+
+  stateActive: (value: boolean) => (value ? "Success" : "None"),
+
+  /**
+   * Curto de propósito ("Compra"/"Venda"): a coluna já se chama Tipo e está numa tela de
+   * contratos, então "Contrato de" só empurrava as colunas seguintes para fora da tela.
+   * O texto longo, esse sim, aparece no cabeçalho da mensagem de WhatsApp (backend).
+   */
+  formatNotificationDocumentType: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("PurchaseContract", "Compra");
+    m.set("SalesContract", "Venda");
+
+    return m.get(value) ?? value;
+  },
+
+  /**
+   * Evento que originou a notificação. O backend grava o enum; a tradução fica aqui, como
+   * no resto do projeto. Valor desconhecido cai para ele mesmo, para que uma linha antiga
+   * nunca apareça em branco.
+   */
+  formatNotificationEventType: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Created", "Incluído");
+    m.set("HeaderUpdated", "Alterado");
+    m.set("SentForApproval", "Enviado para aprovação");
+    m.set("Approved", "Aprovado");
+    m.set("Rejected", "Rejeitado");
+    m.set("Canceled", "Cancelado");
+    m.set("Closed", "Encerrado");
+    m.set("Reopened", "Reaberto");
+    m.set("ApprovalWithdrawn", "Aprovação retirada");
+    m.set("PriceFixationCreated", "Fixação de preço incluída");
+    m.set("PriceFixationApproved", "Fixação de preço aprovada");
+    m.set("PriceFixationRejected", "Fixação de preço rejeitada");
+    // Estornada, não cancelada: a fixação volta para "Em aprovação".
+    m.set("PriceFixationReversed", "Fixação de preço estornada");
+
+    return m.get(value) ?? value;
+  },
+
+  formatNotificationOutboxStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Pending", "Pendente");
+    m.set("Sent", "Enviada");
+    m.set("PartiallySent", "Enviada parcialmente");
+    m.set("Failed", "Falhou");
+    // Ignorada não é erro: ou nenhum grupo assinava o evento, ou o envio está desligado.
+    m.set("Skipped", "Ignorada");
+
+    return m.get(value) ?? value;
+  },
+
+  stateNotificationOutboxStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Pending", "Information");
+    m.set("Sent", "Success");
+    m.set("PartiallySent", "Warning");
+    m.set("Failed", "Error");
+    m.set("Skipped", "None");
+
+    return m.get(value) ?? "None";
+  },
+
+  formatNotificationDeliveryStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Sent", "Enviado");
+    m.set("Failed", "Falhou");
+    m.set("Skipped", "Ignorado");
+
+    return m.get(value) ?? value;
+  },
+
+  stateNotificationDeliveryStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Sent", "Success");
+    m.set("Failed", "Error");
+    m.set("Skipped", "None");
+
+    return m.get(value) ?? "None";
+  },
 };

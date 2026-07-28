@@ -1,0 +1,107 @@
+<mvc:View
+	controllerName="siagrob1.controller.notificationLogs.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<!-- Duas tabelas na mesma página: nenhuma pode usar visibleRowCountMode="Auto".
+	     Auto mede o espaço livre do container e, com duas irmãs, as duas tentam ocupar a
+	     página inteira e acabam se sobrepondo. Contagem fixa + rolagem da Page resolve. -->
+	<Page title="Log de Notificações" enableScrolling="true">
+		<content>
+			<t:Table
+				id="tableNotificationLogs"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCount="10"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+				rows="{
+					path: '/NotificationOutboxMessages',
+					parameters: { $expand: 'Deliveries' },
+					sorter: { path: 'OccurredAt', descending: true }
+				}"
+			>
+				<t:extension>
+					<OverflowToolbar>
+						<Title text="Notificações" level="H2" />
+						<ToolbarSpacer />
+						<Label text="Situação:" labelFor="statusFilter" />
+						<Select id="statusFilter" change=".onFilterStatus" autoAdjustWidth="true">
+							<core:Item key="" text="Todas" />
+							<core:Item key="Pending" text="Pendente" />
+							<core:Item key="Sent" text="Enviada" />
+							<core:Item key="PartiallySent" text="Enviada parcialmente" />
+							<core:Item key="Failed" text="Falhou" />
+							<core:Item key="Skipped" text="Ignorada" />
+						</Select>
+						<SearchField placeholder="Documento..." width="14rem" search=".onSearch"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="Ocorrido em" sortProperty="OccurredAt" width="10rem">
+						<t:template>
+							<Text text="{path: 'OccurredAt', targetType: 'any', formatter: '.formatter.formatDateTime'}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Documento" sortProperty="DocumentCode" width="8rem">
+						<t:template>
+							<Text text="{DocumentCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Tipo" width="6rem">
+						<t:template>
+							<Text text="{path: 'DocumentType', targetType: 'any', formatter: '.formatter.formatNotificationDocumentType'}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Evento" width="14rem">
+						<t:template>
+							<Text text="{path: 'EventType', targetType: 'any', formatter: '.formatter.formatNotificationEventType'}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<!-- Situação vem antes de Tentativas/Por/Último erro: é a coluna pela qual
+					     se decide se há algo a fazer, e precisa caber sem rolagem horizontal. -->
+					<t:Column label="Situação" width="10rem">
+						<t:template>
+							<ObjectStatus
+								text="{path: 'Status', targetType: 'any', formatter: '.formatter.formatNotificationOutboxStatus'}"
+								state="{path: 'Status', targetType: 'any', formatter: '.formatter.stateNotificationOutboxStatus'}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Tent." width="4rem" hAlign="End">
+						<t:template>
+							<Text text="{AttemptCount}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Por" width="9rem">
+						<t:template>
+							<Text text="{TriggeredBy}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Último erro" width="20rem">
+						<t:template>
+							<Text text="{LastError}" maxLines="2"/>
+						</t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+
+			<core:Fragment fragmentName="siagrob1.view.notificationLogs.fragments.Deliveries" type="XML" />
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<Button text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
+				<ToolbarSpacer />
+				<Button text="Reenviar" icon="sap-icon://email" type="Emphasized" press=".onResend"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

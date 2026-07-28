@@ -19,6 +19,15 @@ export default {
   taxes: '/odata/Taxes',
   qualityAttrib: '/odata/QualityAttribs',
   logisticRegions: '/odata/LogisticRegions',
+
+  // Notificação por WhatsApp. O log é somente leitura: as linhas nascem nos serviços de
+  // mutação do contrato, na mesma transação da alteração.
+  notificationGroups: '/odata/NotificationGroups',
+  notificationGroupMembers: '/odata/NotificationGroupMembers',
+  notificationGroupSubscriptions: '/odata/NotificationGroupSubscriptions',
+  notificationOutboxMessages: '/odata/NotificationOutboxMessages',
+  notificationDeliveryLogs: '/odata/NotificationDeliveryLogs',
+  notificationOutboxResend: '/NotificationOutboxResend(...)',
   agents: '/odata/Agents',
   truckDrivers: '/odata/TruckDrivers',
   trucks: '/odata/Trucks',
