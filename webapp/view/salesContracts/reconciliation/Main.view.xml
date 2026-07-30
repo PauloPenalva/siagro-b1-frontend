@@ -1,0 +1,270 @@
+<mvc:View
+	controllerName="siagrob1.controller.salesContracts.reconciliation.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.f"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Conciliação de Entregas de Venda"/>
+        </f:heading>
+        <f:snappedContent>
+          <Text text="Move entregas para o contrato correto ao conferir com o relatório de entrega do cliente."/>
+        </f:snappedContent>
+        <f:expandedContent>
+          <Text text="Move entregas para o contrato correto ao conferir com o relatório de entrega do cliente."/>
+        </f:expandedContent>
+      </f:DynamicPageTitle>
+    </f:title>
+    <f:header>
+      <f:DynamicPageHeader>
+        <f:content>
+          <core:Fragment fragmentName="siagrob1.view.salesContracts.reconciliation.fragments.Filterbar" type="XML" />
+        </f:content>
+      </f:DynamicPageHeader>
+    </f:header>
+    <f:content>
+      <VBox fitContainer="true">
+        <!--
+          Painel de diagnóstico, recolhido por padrão: mostra onde estão os problemas de
+          saldo. Clicar num contrato joga o código no filtro e busca as entregas dele —
+          é atalho, não o ponto de entrada obrigatório.
+        -->
+        <Panel
+          id="panelNegativeContracts"
+          expandable="true"
+          expanded="false"
+          headerText="Contratos com Saldo Negativo"
+          class="sapUiNoContentPadding"
+        >
+          <headerToolbar>
+            <OverflowToolbar>
+              <Title text="Contratos com Saldo Negativo" />
+              <ToolbarSpacer />
+              <Button type="Transparent" text="Recalcular Saldos" icon="sap-icon://synchronize" press=".onRecalculateAllBalances"/>
+              <Button type="Transparent" text="Atualizar" icon="sap-icon://refresh" press=".onRefreshNegatives"/>
+            </OverflowToolbar>
+          </headerToolbar>
+          <t:Table
+            id="tableNegativeContracts"
+            busyIndicatorDelay="0"
+            selectionMode="Single"
+            selectionBehavior="Row"
+            class="sapUiSizeCondensed"
+            visibleRowCount="6"
+            visibleRowCountMode="Fixed"
+            enableBusyIndicator="true"
+            alternateRowColors="true"
+            rowSelectionChange=".onSelectNegativeContract"
+            rows="{negativeModel>/}"
+          >
+            <t:columns>
+              <t:Column label="Filial" width="5rem">
+                <t:template>
+                  <Text text="{negativeModel>BranchName}" wrapping="false"/>
+                </t:template>
+              </t:Column>
+              <t:Column label="Contrato" width="9rem">
+                <t:template>
+                  <Text text="{negativeModel>Code}" wrapping="false"/>
+                </t:template>
+              </t:Column>
+              <t:Column label="Cliente" width="18rem">
+                <t:template>
+                  <Text text="{negativeModel>CardName}" wrapping="false"/>
+                </t:template>
+              </t:Column>
+              <t:Column label="Produto" width="14rem">
+                <t:template>
+                  <Text text="{negativeModel>ItemName}" wrapping="false"/>
+                </t:template>
+              </t:Column>
+              <t:Column label="Safra" width="6rem">
+                <t:template>
+                  <Text text="{negativeModel>HarvestSeasonCode}" wrapping="false"/>
+                </t:template>
+              </t:Column>
+              <t:Column label="Vol. Contrato" hAlign="End" width="10rem">
+                <t:template>
+                  <Text wrapping="false" text="{
+                    path: 'negativeModel>TotalVolume',
+                    type: 'sap.ui.model.type.Float',
+                    formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }"/>
+                </t:template>
+              </t:Column>
+              <t:Column label="Vol. Alocado" hAlign="End" width="10rem">
+                <t:template>
+                  <Text wrapping="false" text="{
+                    path: 'negativeModel>AllocatedVolume',
+                    type: 'sap.ui.model.type.Float',
+                    formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }"/>
+                </t:template>
+              </t:Column>
+              <t:Column label="Saldo" hAlign="End" width="10rem">
+                <t:template>
+                  <ObjectNumber state="Error" unit="{negativeModel>UnitOfMeasureCode}" number="{
+                    path: 'negativeModel>Balance',
+                    type: 'sap.ui.model.type.Float',
+                    formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }"/>
+                </t:template>
+              </t:Column>
+            </t:columns>
+          </t:Table>
+        </Panel>
+
+        <t:Table
+          id="tableAllocations"
+          busyIndicatorDelay="0"
+          selectionMode="Single"
+          selectionBehavior="Row"
+          class="sapUiSizeCondensed sapUiSmallMarginTop"
+          visibleRowCountMode="Auto"
+          enableBusyIndicator="true"
+          alternateRowColors="true"
+          rows="{
+            path: '/SalesContractsAllocations',
+            parameters: {
+              $expand: 'SalesContract($expand=Branch),SalesInvoiceItem($expand=SalesInvoice),SalesShipmentRelease'
+            },
+            sorter: [
+              { path: 'SalesContract/RowId' }
+            ]
+          }"
+        >
+          <t:extension>
+            <OverflowToolbar>
+              <Title text="Entregas" />
+              <ToolbarSpacer />
+              <Button type="Emphasized" text="Conciliar" icon="sap-icon://journey-change" press=".onReconcile"/>
+              <Button type="Transparent" text="Estornar" icon="sap-icon://undo" press=".onReverse"/>
+            </OverflowToolbar>
+          </t:extension>
+          <t:columns>
+            <t:Column label="Filial" width="5rem">
+              <t:template>
+                <Text text="{SalesContract/Branch/ShortName}" wrapping="false"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="Contrato" width="9rem">
+              <t:template>
+                <Text text="{SalesContract/Code}" wrapping="false"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="Cliente" width="14rem">
+              <t:template>
+                <Text text="{SalesContract/CardName}" wrapping="false"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="Produto" width="11rem">
+              <t:template>
+                <Text text="{SalesContract/ItemName}" wrapping="false"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="Saldo Contrato" hAlign="End" width="10rem">
+              <t:template>
+                <ObjectNumber
+                  state="{= ${SalesContract/AvaiableVolume} &lt; 0 ? 'Error' : 'Success' }"
+                  number="{
+                    path: 'SalesContract/AvaiableVolume',
+                    type: 'sap.ui.model.type.Float',
+                    formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="Nota Fiscal" width="9rem">
+              <t:template>
+                <Text text="{SalesInvoiceItem/SalesInvoice/TaxDocumentNumber}" wrapping="false"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="Documento" width="9rem">
+              <t:template>
+                <Text text="{SalesInvoiceItem/SalesInvoice/InvoiceNumber}" wrapping="false"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="Emissão" width="8rem">
+              <t:template>
+                <Text wrapping="false" text="{
+                  path: 'SalesInvoiceItem/SalesInvoice/InvoiceDate',
+                  targetType: 'any',
+                  formatter: '.formatter.formatDate'
+                }"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="Origem" width="8rem">
+              <t:template>
+                <Text wrapping="false" text="{
+                  path: 'Origin',
+                  targetType: 'any',
+                  formatter: '.formatter.formatSalesContractAllocationOrigin'
+                }"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="Liberação" width="7rem">
+              <t:template>
+                <Text text="{SalesShipmentRelease/RowId}" wrapping="false"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="Quantidade" hAlign="End" width="10rem">
+              <t:template>
+                <Text wrapping="false" text="{
+                  path: 'Volume',
+                  type: 'sap.ui.model.type.Float',
+                  formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="Un.Med." width="6rem">
+              <t:template>
+                <Text text="{SalesInvoiceItem/UnitOfMeasureCode}" wrapping="false"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="Preço NF" hAlign="End" width="9rem">
+              <t:template>
+                <Text wrapping="false" text="{
+                  path: 'InvoiceUnitPrice',
+                  type: 'sap.ui.model.type.Float',
+                  formatOptions: { decimals: 7, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="Preço Ctr." hAlign="End" width="9rem">
+              <t:template>
+                <Text wrapping="false" text="{
+                  path: 'ContractPrice',
+                  type: 'sap.ui.model.type.Float',
+                  formatOptions: { decimals: 7, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="Diferença" hAlign="End" width="10rem">
+              <t:template>
+                <ObjectNumber
+                  state="{path: 'PriceDifference', formatter: '.formatter.formatPriceDifferenceState'}"
+                  number="{
+                    path: 'PriceDifference',
+                    type: 'sap.ui.model.type.Float',
+                    formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="Motivo" width="16rem">
+              <t:template>
+                <Text text="{ReconciliationReason}" wrapping="false"/>
+              </t:template>
+            </t:Column>
+          </t:columns>
+        </t:Table>
+      </VBox>
+    </f:content>
+  </f:DynamicPage>
+</mvc:View>

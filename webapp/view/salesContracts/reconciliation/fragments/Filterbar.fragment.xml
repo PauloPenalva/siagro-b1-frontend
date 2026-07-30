@@ -1,0 +1,82 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:fb="sap.ui.comp.filterbar"
+>
+<!--
+  Filtros da busca de entregas. A tabela principal é o entity set OData
+  /SalesContractsAllocations, então a filtragem é SERVER-SIDE via $filter.
+
+  Nota Fiscal e Documento existem porque a conciliação com o relatório do cliente começa
+  pela NF ("a NF 186703 é do contrato B"), não pelo contrato — que é justamente o que se
+  quer descobrir.
+
+  ⚠️ `suspended: true` no binding de /Branchs é OBRIGATÓRIO aqui, não um resquício: a
+  sap.ui.comp.filterbar.FilterBar dá resume nos bindings dos seus controles na
+  inicialização. Sem `suspended`, ela chama resume() num binding que não está suspenso e
+  lança "Cannot resume a not suspended binding", derrubando a rota inteira.
+-->
+<fb:FilterBar search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+  <fb:filterGroupItems>
+      <fb:FilterGroupItem name="branchCode" label="Filial" groupName="GroupBranchCode" visibleInFilterBar="true">
+        <fb:control>
+            <Select
+              forceSelection="false"
+              selectedKey="{filter>/BranchCode}"
+              items="{
+                path: '/Branchs',
+                suspended: true,
+                sorter: { path: 'Code' }
+              }">
+              <core:ListItem key="{Code}" text="{ShortName}"/>
+            </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="code" label="Contrato" groupName="GroupCode" visibleInFilterBar="true">
+        <fb:control>
+            <Input showClearIcon="true" value="{filter>/Code}" />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="customers" label="Cliente" groupName="GroupCustomer" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openCostumersValueHelp"
+              value="{filter>/CardCode}"
+              />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="items" label="Produto" groupName="GroupItem" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openItemValueHelp"
+              value="{filter>/ItemCode}"
+              />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="harvestSeason" label="Safra" groupName="GroupHarvestSeason" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openHarvestSeasonsValueHelp"
+              value="{filter>/HarvestSeasonCode}"
+              />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="taxDocumentNumber" label="Nota Fiscal" groupName="GroupTaxDocumentNumber" visibleInFilterBar="true">
+        <fb:control>
+            <Input showClearIcon="true" value="{filter>/TaxDocumentNumber}" />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="invoiceNumber" label="Documento" groupName="GroupInvoiceNumber" visibleInFilterBar="true">
+        <fb:control>
+            <Input showClearIcon="true" value="{filter>/InvoiceNumber}" />
+        </fb:control>
+      </fb:FilterGroupItem>
+    </fb:filterGroupItems>
+  </fb:FilterBar>
+</core:FragmentDefinition>

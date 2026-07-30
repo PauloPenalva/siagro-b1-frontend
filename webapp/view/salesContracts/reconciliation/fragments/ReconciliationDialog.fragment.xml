@@ -1,0 +1,134 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+<Dialog id="salesReconciliationDlg" title="Conciliar Entrega para Outro Contrato" contentHeight="640px" contentWidth="1180px">
+  <content>
+    <VBox class="sapUiSmallMargin">
+      <HBox>
+        <Label text="Contrato de Origem:" class="sapUiTinyMarginEnd" />
+        <Text text="{viewModel>/sourceContractCode}" wrapping="false" class="sapUiLargeMarginEnd"/>
+        <Label text="Cliente:" class="sapUiTinyMarginEnd" />
+        <Text text="{viewModel>/cardName}" maxLines="1" class="sapUiLargeMarginEnd"/>
+      </HBox>
+      <HBox>
+        <Label text="Nota Fiscal:" class="sapUiTinyMarginEnd" />
+        <Text text="{viewModel>/taxDocumentNumber}" wrapping="false" class="sapUiLargeMarginEnd"/>
+        <Label text="Volume desta entrega:" class="sapUiTinyMarginEnd" />
+        <ObjectNumber unit="{viewModel>/unitOfMeasureCode}" number="{
+          path: 'viewModel>/lineVolume',
+          type: 'sap.ui.model.type.Float',
+          formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+        }" class="sapUiLargeMarginEnd"/>
+      </HBox>
+    </VBox>
+    <t:Table
+      id="reconciliationTargetTable"
+      busyIndicatorDelay="0"
+      selectionMode="Single"
+      selectionBehavior="Row"
+      class="sapUiSizeCondensed"
+      visibleRowCount="7"
+      visibleRowCountMode="Fixed"
+      enableBusyIndicator="true"
+      alternateRowColors="false"
+      rows="{targetsModel>/}"
+    >
+      <t:extension>
+        <OverflowToolbar>
+          <Title text="Contratos de Destino (inclusive sem saldo)" />
+          <ToolbarSpacer />
+        </OverflowToolbar>
+      </t:extension>
+      <t:columns>
+        <t:Column label="Filial" width="5rem">
+          <t:template>
+            <Text text="{targetsModel>BranchShortName}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Contrato" width="9rem">
+          <t:template>
+            <Text text="{targetsModel>Code}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Complemento" width="10rem">
+          <t:template>
+            <Text text="{targetsModel>Complement}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Safra" width="6rem">
+          <t:template>
+            <Text text="{targetsModel>HarvestSeasonCode}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Preço Ctr." hAlign="End" width="9rem">
+          <t:template>
+            <Text wrapping="false" text="{
+              path: 'targetsModel>Price',
+              type: 'sap.ui.model.type.Float',
+              formatOptions: { decimals: 7, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Saldo do Destino" hAlign="End" width="10rem">
+          <t:template>
+            <ObjectNumber
+              state="{= ${targetsModel>Balance} &lt; 0 ? 'Error' : 'Success' }"
+              number="{
+                path: 'targetsModel>Balance',
+                type: 'sap.ui.model.type.Float',
+                formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }"/>
+          </t:template>
+        </t:Column>
+        <!--
+          Quanto de liberação ATIVA o destino tem. É o que o FIFO vai consumir; o volume
+          que passar disso fica estacionado sem liberação (caso dos contratos legados).
+        -->
+        <t:Column label="Saldo Liberações" hAlign="End" width="10rem">
+          <t:template>
+            <Text wrapping="false" text="{
+              path: 'targetsModel>ActiveReleaseBalance',
+              type: 'sap.ui.model.type.Float',
+              formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Volume a Conciliar" hAlign="End" width="11rem">
+          <t:template>
+            <Input value="{
+              path: 'targetsModel>ReconciliationVolume',
+              type: 'sap.ui.model.type.Float',
+              formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"/>
+          </t:template>
+        </t:Column>
+      </t:columns>
+    </t:Table>
+    <VBox class="sapUiSmallMargin">
+      <CheckBox
+        id="allowNegativeBalance"
+        text="Permitir saldo negativo no destino (corrigir contrato legado / troca cruzada)"
+        select=".onToggleAllowNegative"
+      />
+      <Label text="Motivo da conciliação" labelFor="reconciliationReason"/>
+      <TextArea
+        id="reconciliationReason"
+        rows="2"
+        width="100%"
+        maxLength="500"
+        enabled="false"
+        placeholder="Obrigatório ao permitir saldo negativo. Ex.: conciliação com o relatório de entrega do cliente de 07/2026"
+      />
+    </VBox>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Confirmar" type="Emphasized" press=".onConfirmReconciliation"/>
+      <Button text="Fechar" press=".onCloseReconciliation"/>
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>
