@@ -158,6 +158,28 @@ export default {
     });
   },
 
+  /**
+   * Peso líquido da conferência de entrega: quantidade entregue menos o desconto de
+   * quebra. Calculado no cliente (e não lido do servidor) para acompanhar a digitação
+   * antes de salvar o encerramento.
+   *
+   * As partes do binding precisam de targetType 'any': sem ele o modelo v4 entrega o
+   * decimal já formatado em pt-BR ("1.000,000") e Number() devolve NaN — mesma
+   * armadilha documentada em formatFixationTotal.
+   */
+  formatNetQuantity: (delivered: number | string, loss: number | string) => {
+    const net = Number(delivered ?? 0) - Number(loss ?? 0);
+
+    if (!Number.isFinite(net)) {
+      return "";
+    }
+
+    return net.toLocaleString("pt-BR", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 3,
+    });
+  },
+
   formatPriceFixationStatus: (value: string) => {
     const m = new Map<string, string>();
     m.set("InApproval", "Em Aprovação");
@@ -239,6 +261,7 @@ export default {
     m.set("Reallocation", "Realocação");
     m.set("Return", "Devolução");
     m.set("Backfill", "Migração");
+    m.set("Reconciliation", "Conciliação");
 
     return m.get(value) ?? value;
   },

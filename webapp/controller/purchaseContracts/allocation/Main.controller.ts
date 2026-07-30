@@ -21,7 +21,7 @@ export default class Main extends BaseController {
 	onInit(): void  {
     this.createFilterModel();
 
-    this.getRouter().getRoute("purchaseOrdersAllocations")
+    this.getRouter().getRoute("purchaseContractsAllocations")
        .attachPatternMatched(() => this.applyFilters());
 	}
 
@@ -56,6 +56,10 @@ export default class Main extends BaseController {
         filters.push(`contains(PurchaseContract/CardCode, '${value}')`)
       } else if (filterKey == "PurchaseContractItemCode") {
         filters.push(`contains(PurchaseContract/ItemCode, '${value}')`)
+      } else if (filterKey == "PurchaseContractAgentCode") {
+        // Edm.Int32 navegado: só dígitos. Number() aceitaria "1e3"/"0x10"/" " e
+        // filtraria o agente errado ou zeraria a lista em vez de ignorar o valor inválido.
+        if (/^\d+$/.test(value.trim())) filters.push(`PurchaseContract/AgentCode eq ${Number(value)}`)
       } else if (filterKey == "StorageTransactionBranchCode") {
         filters.push(`contains(StorageTransaction/BranchCode, '${value}')`)
       } else if (filterKey == "StorageTransactionCode") {

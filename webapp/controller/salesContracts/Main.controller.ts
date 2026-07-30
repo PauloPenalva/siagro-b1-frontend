@@ -18,6 +18,7 @@ type FilterData = {
   DocTypeCode?: string,
   Complement?: string,
   MarketType?: string,
+  AgentCode?: string,
 }
 
 /**
@@ -57,6 +58,10 @@ export default class Main extends SalesContractsBaseController {
 
       if (filterKey == "Status" || filterKey == "Type" || filterKey == "MarketType") {
         filters.push(`${filterKey} eq '${value}'`)
+      } else if (filterKey == "AgentCode") {
+        // Edm.Int32: só dígitos. Number() aceitaria "1e3"/"0x10"/" " e filtraria
+        // o agente errado ou zeraria a lista em vez de ignorar o valor inválido.
+        if (/^\d+$/.test(value.trim())) filters.push(`AgentCode eq ${Number(value)}`)
       } else {
         filters.push(`contains(${filterKey},'${value}')`)
       }

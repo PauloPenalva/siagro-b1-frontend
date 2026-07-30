@@ -82,6 +82,14 @@ export default {
   salesContractsRecalculateBalance: '/SalesContractsRecalculateBalance(...)',
   salesContractsRecalculateAllBalances: '/SalesContractsRecalculateAllBalances(...)',
 
+  // Conciliação de saldos (tela ADMIN): lista os contratos negativos e os destinos
+  // candidatos — inclusive os SEM liberação e SEM saldo, que a realocação operacional
+  // esconde e que são justamente os que precisam receber o ajuste.
+  // Mesmo sem parâmetros, o `(...)` é obrigatório: bindContext().invoke() exige binding
+  // deferido ("The binding must be deferred"). Só quebra no browser.
+  salesContractsNegativeBalances: '/SalesContractsGetNegativeBalances(...)',
+  salesContractsReconciliationTargets: '/SalesContractsGetReconciliationTargets(...)',
+
   salesContractsCopy: '/odata/SalesContractsCopy',
   salesContractsWithdrawApproval: '/odata/SalesContractsWithdrawApproval',
   salesContractsSendToApproval: '/odata/SalesContractsSendApproval',

@@ -20,6 +20,16 @@
             <Input showClearIcon="true" value="{filter>/ItemName}"/>
         </fb:control>
       </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="agent" label="Vendedor" groupName="GroupAgent" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openAgentsValueHelp"
+              value="{filter>/AgentCode}"
+              />
+        </fb:control>
+      </fb:FilterGroupItem>
       <fb:FilterGroupItem name="deliveryEndDateFrom" label="Limite Entrega de" groupName="GroupDeliveryEndDateFrom" visibleInFilterBar="true">
         <fb:control>
            <DatePicker value="{ path: 'filter>/DeliveryEndDateFrom', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>

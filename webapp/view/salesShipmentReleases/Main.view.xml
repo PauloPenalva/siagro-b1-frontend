@@ -140,6 +140,11 @@
               <Text text="({SalesContract/Code}) {SalesContract/CardName}" />
         	</t:template>
 					</t:Column>
+          <t:Column label="Vendedor" sortProperty="SalesContract/AgentName" width="12rem">
+            <t:template>
+              <Text text="{SalesContract/AgentName}" wrapping="false"/>
+            </t:template>
+					</t:Column>
           <t:Column label="Produto" width="25rem">
 						<t:template>
               <Text text="({SalesContract/ItemCode}) {SalesContract/ItemName}" />

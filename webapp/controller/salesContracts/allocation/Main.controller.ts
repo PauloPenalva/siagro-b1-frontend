@@ -195,8 +195,11 @@ export default class Main extends BaseController {
       return;
     }
 
-    if (context.getProperty("Origin") !== "Reallocation") {
-      MessageBox.warning("Selecione uma linha de realocação para estornar.");
+    // Conciliação é um par −/+ com a mesma estrutura da realocação e estorna pelo mesmo
+    // caminho — só o modo de criação difere (sem liberação no destino).
+    const origin = context.getProperty("Origin") as string;
+    if (origin !== "Reallocation" && origin !== "Reconciliation") {
+      MessageBox.warning("Selecione uma linha de realocação ou conciliação para estornar.");
       return;
     }
 
@@ -234,6 +237,10 @@ export default class Main extends BaseController {
         filters.push(`contains(SalesContract/CardCode, '${value}')`);
       } else if (key === "SalesContractItemCode") {
         filters.push(`contains(SalesContract/ItemCode, '${value}')`);
+      } else if (key === "SalesContractAgentCode") {
+        // Edm.Int32 navegado: só dígitos. Number() aceitaria "1e3"/"0x10"/" " e
+        // filtraria o agente errado ou zeraria a lista em vez de ignorar o valor inválido.
+        if (/^\d+$/.test(value.trim())) filters.push(`SalesContract/AgentCode eq ${Number(value)}`);
       } else if (key === "InvoiceNumber") {
         filters.push(`contains(SalesInvoiceItem/SalesInvoice/InvoiceNumber, '${value}')`);
       } else if (key === "TaxDocumentNumber") {

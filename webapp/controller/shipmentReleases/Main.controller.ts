@@ -100,6 +100,10 @@ export default class Main extends BaseController {
         filters.push(`contains(PurchaseContract/CardCode,'${value}')`)
       } else if (filterKey == "ItemCode"){
         filters.push(`contains(PurchaseContract/ItemCode,'${value}')`)
+      } else if (filterKey == "AgentCode"){
+        // Edm.Int32 navegado: só dígitos. Number() aceitaria "1e3"/"0x10"/" " e
+        // filtraria o agente errado ou zeraria a lista em vez de ignorar o valor inválido.
+        if (/^\d+$/.test(value.trim())) filters.push(`PurchaseContract/AgentCode eq ${Number(value)}`)
       } else {
         filters.push(`contains(${filterKey},'${value}')`)
       }

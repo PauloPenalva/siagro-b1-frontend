@@ -28,6 +28,12 @@ export class BaseController extends CommonController {
 			});
 
 			aCols.push({
+				label: "Comprador",
+				property: "PurchaseContract/AgentName",
+				type: EdmType.String,
+			});
+
+			aCols.push({
 				label: "Cod.Produto",
 				property: "PurchaseContract/ItemCode",
 				type: EdmType.String,
@@ -78,7 +84,7 @@ export class BaseController extends CommonController {
 			});
 
       aCols.push({
-				label: "Un.Med.",
+				label: "Armazém",
 				property: "StorageTransaction/WarehouseCode",
         type: EdmType.String
 			});

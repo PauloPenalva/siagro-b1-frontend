@@ -78,6 +78,15 @@
           </t:template>
         </t:Column>
         <t:Column
+          label="Comprador"
+          sortProperty="AgentName"
+          width="12rem"
+          >
+          <t:template>
+            <Text text="{viewModel>AgentName}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column
           label="Saldo"
           sortProperty="AvaiableVolume"
           hAlign="End"

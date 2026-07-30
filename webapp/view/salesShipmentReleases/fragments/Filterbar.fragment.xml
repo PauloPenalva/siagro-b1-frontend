@@ -74,6 +74,16 @@
             <Input showClearIcon="true" value="{filter>/CardCode}"/>
         </fb:control>
       </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="agent" label="Vendedor" groupName="GroupAgent" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openAgentsValueHelp"
+              value="{filter>/AgentCode}"
+              />
+        </fb:control>
+      </fb:FilterGroupItem>
       <fb:FilterGroupItem name="items" label="Produto" groupName="GroupItem" visibleInFilterBar="true">
         <fb:control>
             <Input

@@ -52,8 +52,12 @@ export default class Main extends BaseController {
         filters.push(`DeliveryEndDate le ${value}`)
       } else if (filterKey == "StandardCashFlowDateFrom") { 
         filters.push(`StandardCashFlowDate ge ${value}`)
-      } else if (filterKey == "StandardCashFlowDateTo") { 
+      } else if (filterKey == "StandardCashFlowDateTo") {
         filters.push(`StandardCashFlowDate le ${value}`)
+      } else if (filterKey == "AgentCode") {
+        // Edm.Int32: só dígitos. Number() aceitaria "1e3"/"0x10"/" " e filtraria
+        // o agente errado ou zeraria a lista em vez de ignorar o valor inválido.
+        if (/^\d+$/.test(value.trim())) filters.push(`AgentCode eq ${Number(value)}`)
       } else {
         filters.push(`contains(${filterKey},'${value}')`)
       }

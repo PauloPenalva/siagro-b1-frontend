@@ -393,6 +393,11 @@
           "target": "salesContractsAllocations"
         },
         {
+          "pattern": "sales-contracts/reconciliation",
+          "name": "salesContractsReconciliation",
+          "target": "salesContractsReconciliation"
+        },
+        {
           "pattern": "sales-shipment-releases",
           "name": "salesShipmentReleases",
           "target": "salesShipmentReleases"
@@ -1184,6 +1189,12 @@
 					"id": "salesContractsAllocations",
           "level": 1,
 					"name": "siagrob1.view.salesContracts.allocation.Main",
+          "clearControlAggregation": true
+				},
+        "salesContractsReconciliation": {
+					"id": "salesContractsReconciliation",
+          "level": 1,
+					"name": "siagrob1.view.salesContracts.reconciliation.Main",
           "clearControlAggregation": true
 				},
         "salesShipmentReleases": {

@@ -83,6 +83,11 @@
           <Text text="{invoicesModel>CounterpartyContractCode}" wrapping="false" />
         </t:template>
       </t:Column>
+      <t:Column label="Motivo" width="16rem">
+        <t:template>
+          <Text text="{invoicesModel>ReconciliationReason}" wrapping="false" />
+        </t:template>
+      </t:Column>
       <t:Column label="Liberação" width="6rem" visible="false">
         <t:template>
           <Text text="{invoicesModel>SalesShipmentReleaseRowId}" wrapping="false" />

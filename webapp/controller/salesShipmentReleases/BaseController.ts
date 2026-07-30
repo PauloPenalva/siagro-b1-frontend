@@ -66,6 +66,12 @@ export abstract class BaseController extends CommonController {
     });
 
     aCols.push({
+      label: "Vendedor",
+      property: "SalesContract/AgentName",
+      type: EdmType.String,
+    });
+
+    aCols.push({
       label: "Cod.Cliente",
       property: "SalesContract/CardCode",
       type: EdmType.String,

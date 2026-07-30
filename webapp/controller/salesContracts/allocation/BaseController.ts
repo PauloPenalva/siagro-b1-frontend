@@ -12,6 +12,7 @@ export class BaseController extends CommonController {
     aCols.push({ label: "Contrato", property: "SalesContract/Code", type: EdmType.String });
     aCols.push({ label: "Cod.Cliente", property: "SalesContract/CardCode", type: EdmType.String });
     aCols.push({ label: "Cliente", property: "SalesContract/CardName", type: EdmType.String });
+    aCols.push({ label: "Vendedor", property: "SalesContract/AgentName", type: EdmType.String });
     aCols.push({ label: "Produto", property: "SalesContract/ItemName", type: EdmType.String });
     aCols.push({ label: "Nota Fiscal", property: "SalesInvoiceItem/SalesInvoice/TaxDocumentNumber", type: EdmType.String });
     aCols.push({ label: "Documento", property: "SalesInvoiceItem/SalesInvoice/InvoiceNumber", type: EdmType.String });
@@ -25,6 +26,7 @@ export class BaseController extends CommonController {
         "Reallocation": "Realocação",
         "Return": "Devolução",
         "Backfill": "Migração",
+        "Reconciliation": "Conciliação",
       }
     });
     aCols.push({ label: "Quantidade", property: "Volume", type: EdmType.Number, scale: 3, delimiter: true });

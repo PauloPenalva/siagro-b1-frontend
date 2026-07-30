@@ -34,6 +34,16 @@
               />
         </fb:control>
       </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="agent" label="Vendedor" groupName="GroupAgent" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openAgentsValueHelp"
+              value="{filter>/SalesContractAgentCode}"
+              />
+        </fb:control>
+      </fb:FilterGroupItem>
       <fb:FilterGroupItem name="items" label="Produto" groupName="GroupItem" visibleInFilterBar="true">
         <fb:control>
             <Input
@@ -62,6 +72,7 @@
               <core:Item key="Reallocation" text="Realocação" />
               <core:Item key="Return" text="Devolução" />
               <core:Item key="Backfill" text="Migração" />
+              <core:Item key="Reconciliation" text="Conciliação" />
             </Select>
         </fb:control>
       </fb:FilterGroupItem>

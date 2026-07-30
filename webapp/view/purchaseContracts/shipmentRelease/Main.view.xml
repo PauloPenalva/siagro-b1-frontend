@@ -209,6 +209,17 @@
 						</t:template>
 					</t:Column>
           <t:Column
+						label="Comprador"
+						sortProperty="AgentName"
+            filterProperty="AgentName"
+            filterOperator="Contains"
+            width="12rem"
+						>
+						<t:template>
+            <Text text="{AgentName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
 						label="Cod.Produto"
 						sortProperty="ItemCode"
             width="10rem"

@@ -206,6 +206,21 @@
 						</t:template>
 					</t:Column>
           <t:Column
+						label="Peso Líquido"
+						hAlign="Center"
+            width="7rem"
+						>
+						<t:template>
+							<Text text="{
+                parts: [
+                  { path: 'DeliveredQuantity', targetType: 'any' },
+                  { path: 'QuantityLoss', targetType: 'any' }
+                ],
+                formatter: '.formatter.formatNetQuantity'
+              }" />
+						</t:template>
+					</t:Column>
+          <t:Column
 						label="Status"
 						hAlign="Center"
             width="7rem"

@@ -190,6 +190,11 @@
                 text="({PurchaseContract/Code}) {PurchaseContract/CardName}" />
           	</t:template>
 					</t:Column>
+          <t:Column label="Comprador" sortProperty="PurchaseContract/AgentName" width="12rem">
+            <t:template>
+              <Text text="{PurchaseContract/AgentName}" wrapping="false"/>
+            </t:template>
+					</t:Column>
           <t:Column label="Produto" width="25rem">
 						<t:template>
               <Text 

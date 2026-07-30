@@ -79,6 +79,11 @@
             <Text text="{SalesContract/CardName}" wrapping="false"/>
 						</t:template>
 					</t:Column>
+          <t:Column label="Vendedor" sortProperty="SalesContract/AgentName" filterProperty="SalesContract/AgentName" filterOperator="Contains" width="12rem">
+						<t:template>
+            <Text text="{SalesContract/AgentName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
           <t:Column label="Produto" sortProperty="SalesContract/ItemName" filterProperty="SalesContract/ItemName" filterOperator="Contains" width="10rem">
 						<t:template>
             <Text text="{SalesContract/ItemName}" wrapping="false"/>
