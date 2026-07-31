@@ -186,6 +186,22 @@
 						</t:template>
 					</t:Column>
           <t:Column
+						label="Diferença"
+						hAlign="Center"
+            width="7rem"
+						>
+						<t:template>
+							<Text text="{
+                parts: [
+                  { path: 'DeliveredQuantity', targetType: 'any' },
+                  { path: 'Quantity', targetType: 'any' },
+                  { path: 'DeliveryStatus', targetType: 'any' }
+                ],
+                formatter: '.formatter.formatDeliveryDifference'
+              }" />
+						</t:template>
+					</t:Column>
+          <t:Column
 						label="Desconto"
 						hAlign="Center"
             width="7rem"

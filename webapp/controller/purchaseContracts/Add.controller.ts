@@ -19,7 +19,9 @@ export default class Add extends BaseController {
     const uiModel = this.getModel("ui") as JSONModel;
    
     uiModel.setProperty("/editable", true);
-    
+    // O tipo do contrato só pode ser escolhido aqui, na criação.
+    uiModel.setProperty("/typeEditable", true);
+
 		this.resetChanges();
 
     this.clearStates("formPurchaseContracts");

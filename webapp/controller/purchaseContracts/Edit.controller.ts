@@ -18,7 +18,9 @@ export default class Edit extends PurchaseContractsBaseController {
     const uiModel = this.getModel("ui") as JSONModel;
     
     uiModel.setProperty("/editable", true);
-        
+    // O tipo do contrato é definido na criação e não muda mais.
+    uiModel.setProperty("/typeEditable", false);
+
 		this.clearStates("formPurchaseContracts");
     
     const oModel = this.getView().getModel() as ODataModel;

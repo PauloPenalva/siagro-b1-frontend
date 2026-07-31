@@ -172,8 +172,10 @@
             width="7rem"
 						>
 						<t:template>
-							<Input 
-                type="Number" 
+							<!-- Somente leitura: nesta tela a única ação é reabrir a entrega (Status). -->
+							<Input
+                type="Number"
+                editable="false"
                 value="{
                   path: 'DeliveredQuantity',
                   type: 'sap.ui.model.type.Integer',
@@ -181,8 +183,24 @@
                     groupingEnabled: true,
                     groupingSeparator: '.'
                   }
-                }" 
+                }"
                 textAlign="End"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Diferença"
+						hAlign="Center"
+            width="7rem"
+						>
+						<t:template>
+							<Text text="{
+                parts: [
+                  { path: 'DeliveredQuantity', targetType: 'any' },
+                  { path: 'Quantity', targetType: 'any' },
+                  { path: 'DeliveryStatus', targetType: 'any' }
+                ],
+                formatter: '.formatter.formatDeliveryDifference'
+              }" />
 						</t:template>
 					</t:Column>
           <t:Column
@@ -191,8 +209,10 @@
             width="7rem"
 						>
 						<t:template>
-							<Input 
-                type="Number" 
+							<!-- Somente leitura: ver comentário na coluna Qtd.Entregue. -->
+							<Input
+                type="Number"
+                editable="false"
                 value="{
                   path: 'QuantityLoss',
                   type: 'sap.ui.model.type.Integer',
@@ -200,7 +220,7 @@
                     groupingEnabled: true,
                     groupingSeparator: '.'
                   }
-                }" 
+                }"
                 textAlign="End"
               />
 						</t:template>

@@ -60,7 +60,16 @@
                   </Menu>
                 </f:menu>
                 <f:profile>
-                    <Avatar id="avatar" initials="YK" press=".onAvatarPress" />
+                    <!--
+                        Sem foto, `src` fica nulo e o Avatar cai para as iniciais sozinho.
+                        `fallbackIcon` cobre o caso da imagem existir mas não carregar.
+                    -->
+                    <Avatar
+                        id="avatar"
+                        initials="{sessionModel>/initials}"
+                        src="{sessionModel>/photoUrl}"
+                        fallbackIcon="sap-icon://person-placeholder"
+                        press=".onAvatarPress" />
                 </f:profile>
             </f:ShellBar>
         </tnt:header>

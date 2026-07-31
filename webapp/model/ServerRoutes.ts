@@ -8,6 +8,20 @@ export default {
   getBranchInfo: '/security/auth/GetBranchInfo',
   setDefaultBranch: '/security/auth/SetDefaultBranch',
 
+  // Recuperação de senha. Endpoints anônimos: o usuário chega neles sem sessão.
+  forgotPassword: '/security/auth/forgot-password',
+  validateResetToken: '/security/auth/reset-password/validate',
+  resetPassword: '/security/auth/reset-password',
+
+  // Perfil do próprio usuário. Sempre "me": o servidor resolve quem é pela sessão.
+  myProfile: '/security/users/me/profile',
+  myPhoto: '/security/users/me/photo',
+  myTheme: '/security/users/me/theme',
+  changePassword: '/security/users/me/change-password',
+
+  // Espelhamento do cadastro de usuários do SAP (só responde quando Erp = SAPB1).
+  usersSyncFromSap: '/UsersSyncFromSap(...)',
+
   // Versão do frontend publicada no servidor - usada para detectar deploy novo.
   appVersion: '/security/app/version',
   
@@ -91,6 +105,8 @@ export default {
   salesContractsReconciliationTargets: '/SalesContractsGetReconciliationTargets(...)',
 
   salesContractsCopy: '/odata/SalesContractsCopy',
+  salesContractsClose: '/odata/SalesContractsClose',
+  salesContractsReopen: '/odata/SalesContractsReopen',
   salesContractsWithdrawApproval: '/odata/SalesContractsWithdrawApproval',
   salesContractsSendToApproval: '/odata/SalesContractsSendApproval',
   salesContractsApproval: '/odata/SalesContractsApproval',

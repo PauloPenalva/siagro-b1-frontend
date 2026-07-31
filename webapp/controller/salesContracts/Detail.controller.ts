@@ -5,6 +5,10 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import RequestModel from "siagrob1/model/RequestModel";
 import { SalesContractsTotals } from "siagrob1/types/SalesContractsTotal";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
+import MessageBox from "sap/m/MessageBox";
+import MessageToast from "sap/m/MessageToast";
+import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import { SalesContractRecalcResult } from "siagrob1/types/SalesContractRecalcResult";
 
 /**
  * @namespace siagrob1.controller.salesContracts
@@ -24,6 +28,7 @@ export default class Detail extends SalesContractsBaseController {
 		if (id != null) {
 
       uiModel.setProperty("/editable", false);
+      uiModel.setProperty("/typeEditable", false);
 
       // Modo somente-leitura: acionado por ?readonly=true quando o aprovador abre o
       // contrato a partir da fila de aprovação de fixações. Nenhuma ação de mutação
@@ -88,6 +93,119 @@ export default class Detail extends SalesContractsBaseController {
       // Sem o status não dá para liberar a edição: o servidor recusaria de qualquer forma,
       // e deixar os botões ativos só produziria erro na cara do usuário.
     }
+  }
+
+  /**
+   * AllocatedVolume é persistido-derivado e pode dessincronizar do ledger de alocações.
+   * Este botão reconcilia UM contrato a partir do ledger — mesmo cálculo do recálculo em
+   * lote da tela de conciliação.
+   *
+   * O Saldo do header está ligado direto em AvaiableVolume da entidade, então o refresh do
+   * contexto já repinta o número: não há viewModel para atualizar (diferente da tela de
+   * compra, que lê os totais de um endpoint separado).
+   */
+  async onRecalculateBalance() {
+    const oContext = this.getView().getBindingContext() as Context;
+    if (!oContext) {
+      return;
+    }
+
+    if (!await confirmDialog("Recalcular o saldo do contrato a partir das alocações ?")) {
+      return;
+    }
+
+    const action = (this.getModel() as ODataModel)
+      .bindContext(this.api.salesContractsRecalculateBalance);
+    action.setParameter("Key", oContext.getProperty("Key") as string);
+
+    this.setBusy(true);
+    try {
+      await action.invoke();
+      const result = action.getBoundContext().getObject() as SalesContractRecalcResult;
+
+      const fmt = (v: number) =>
+        Number(v ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+
+      if (result.Changed) {
+        MessageBox.information(
+          `Saldo recalculado.\n\n` +
+          `Alocado: ${fmt(result.PreviousAllocatedVolume)} → ${fmt(result.NewAllocatedVolume)}\n` +
+          `Disponível: ${fmt(result.PreviousAvaiableVolume)} → ${fmt(result.NewAvaiableVolume)}`
+        );
+      } else {
+        MessageToast.show("Saldo já estava correto.");
+      }
+
+      oContext.refresh();
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  /**
+   * O servidor recusa encerrar contrato faturado além do volume contratado (saldo negativo);
+   * a mensagem da trava chega ao usuário por este MessageBox.
+   */
+  async onCloseContract() {
+    const oContext = this.getView().getBindingContext() as Context;
+    if (!oContext) {
+      return;
+    }
+
+    if (!await confirmDialog("Encerrar o contrato ? Após encerrado não será possível movimentá-lo.")) {
+      return;
+    }
+
+    const key = oContext.getProperty("Key") as string;
+
+    this.setBusy(true);
+
+    void jQuery.ajax({
+      url: `${this.api.salesContractsClose}`,
+      method: 'POST',
+      data: JSON.stringify({ Key: key }),
+      contentType: 'application/json',
+      success: () => {
+        oContext.refresh();
+      },
+      error: err => {
+        this.setBusy(false);
+        const message = (err.responseJSON as { error?: { message?: string } })?.error?.message;
+        MessageBox.error(message ?? "Erro ao encerrar o contrato.");
+      },
+    })
+    .done(() => this.setBusy(false));
+  }
+
+  async onReopenContract() {
+    const oContext = this.getView().getBindingContext() as Context;
+    if (!oContext) {
+      return;
+    }
+
+    if (!await confirmDialog("Reabrir o contrato ? Ele voltará a aceitar movimentação.")) {
+      return;
+    }
+
+    const key = oContext.getProperty("Key") as string;
+
+    this.setBusy(true);
+
+    void jQuery.ajax({
+      url: `${this.api.salesContractsReopen}`,
+      method: 'POST',
+      data: JSON.stringify({ Key: key }),
+      contentType: 'application/json',
+      success: () => {
+        oContext.refresh();
+      },
+      error: err => {
+        this.setBusy(false);
+        const message = (err.responseJSON as { error?: { message?: string } })?.error?.message;
+        MessageBox.error(message ?? "Erro ao reabrir o contrato.");
+      },
+    })
+    .done(() => this.setBusy(false));
   }
 
 }

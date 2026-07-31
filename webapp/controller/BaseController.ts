@@ -102,8 +102,18 @@ export default abstract class BaseController extends Controller {
   }
 
   public setBusy(isBusy: boolean) {
-    (this.getView().getModel("ui") as JSONModel).setProperty("/isBusy", isBusy);
-    (this.getView().getModel("ui") as JSONModel).setProperty("/busy", isBusy);
+    // No primeiro `patternMatched` de uma rota a view ainda não recebeu os modelos do Component,
+    // e `getModel("ui")` volta indefinido - daí o fallback. Sem ele, qualquer controller que
+    // marque busy já no route matched estoura antes de carregar a tela.
+    const uiModel = (this.getView()?.getModel("ui") ??
+      this.getOwnerComponent()?.getModel("ui")) as JSONModel;
+
+    if (!uiModel) {
+      return;
+    }
+
+    uiModel.setProperty("/isBusy", isBusy);
+    uiModel.setProperty("/busy", isBusy);
   }
 
   public validateForm(sFormId?: string) {

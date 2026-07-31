@@ -97,8 +97,9 @@
                 liveChange=".validateField"
             />
             <Label text="Tipo Contrato"/>
-            <Select 
-              editable="true"
+            <!-- Flag próprio: o tipo só é editável na criação, e `ui>/editable` é true também na Edição. -->
+            <Select
+              editable="{ui>/typeEditable}"
               forceSelection="false"
               required="true"
               selectedKey="{

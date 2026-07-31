@@ -13,6 +13,9 @@ import VersionService from "./services/VersionService";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { Router$RouteMatchedEvent } from "sap/ui/core/routing/Router";
 
+/** Rotas alcançáveis sem sessão. */
+const PUBLIC_ROUTES = ["login", "forgotPassword", "resetPassword"];
+
 /**
  * @namespace siagrob1
  */
@@ -28,6 +31,9 @@ export default class Component extends UIComponent {
 
   private bMessageOpen = false;
 
+  /** Rota corrente - o tratamento de 401 precisa saber se a tela exige sessão. */
+  private currentRoute = "";
+
 	public init(): void {
 		// call the base component's init function
 		super.init();
@@ -36,6 +42,10 @@ export default class Component extends UIComponent {
 		this.setModel(models.createDeviceModel(), "device");
 
     SessionService.init(this);
+
+    // Antes de qualquer render: o tema guardado da última sessão evita que a tela apareça no
+    // tema padrão e troque quando o /status responder.
+    SessionService.applyCachedTheme();
 
     // Antes do `initialize()` do router: o serviço acompanha a rota corrente para
     // não recarregar a página por cima de um cadastro em digitação.
@@ -49,6 +59,8 @@ export default class Component extends UIComponent {
     });
 
     this.getRouter().attachRouteMatched((ev: Router$RouteMatchedEvent) => {
+        this.currentRoute = ev.getParameter("name");
+
         if (this.guardRoute(ev)) {
             return;
         }
@@ -99,7 +111,8 @@ export default class Component extends UIComponent {
   private guardRoute(ev: Router$RouteMatchedEvent): boolean {
     const sRouteName = ev.getParameter("name");
 
-    if (sRouteName === "login" || SessionService.isAuthenticated()) {
+    // Rotas públicas: quem esqueceu a senha chega aqui exatamente por não conseguir autenticar.
+    if (PUBLIC_ROUTES.includes(sRouteName) || SessionService.isAuthenticated()) {
       return false;
     }
 
@@ -143,6 +156,13 @@ export default class Component extends UIComponent {
 
     const { httpStatus } = (aMessages[0]?.getTechnicalDetails() ?? {}) as { httpStatus?: number };
     if (httpStatus && httpStatus === 401){
+      // Nas telas públicas o 401 é o estado normal - o OData responde assim justamente por não
+      // haver sessão. Redirecionar aqui expulsaria da redefinição de senha quem chegou pelo link
+      // do e-mail, que é exatamente quem não consegue autenticar.
+      if (PUBLIC_ROUTES.includes(this.currentRoute)) {
+        return;
+      }
+
       SessionService.clearSessionState();
       this.getRouter().navTo("login", {}, undefined, true);
       return;

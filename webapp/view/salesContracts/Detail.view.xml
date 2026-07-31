@@ -31,6 +31,9 @@
           <Button visible="{= ${path: 'Status', targetType: 'any'}==='InApproval' &amp;&amp; !${ui>/readonly} }" text="Retirar da Aprovação" type="Transparent" press=".onWithdrawApproval"/>
           <Button visible="{= ${path: 'Status', targetType: 'any'}==='Approved' &amp;&amp; !${ui>/readonly} }" text="Retirar da Aprovação" type="Transparent" press=".onWithdrawApproval"/>
           <Button visible="{= ${path: 'Status', targetType: 'any'}==='Draft' &amp;&amp; !${ui>/readonly} }" text="Enviar para Aprovação" type="Transparent" press=".onSendToApproval"/>
+          <Button visible="{= ${path: 'Status', targetType: 'any'}==='Approved' &amp;&amp; !${ui>/readonly} }" text="Recalcular Saldo" type="Transparent" press=".onRecalculateBalance"/>
+          <Button visible="{= ${path: 'Status', targetType: 'any'}==='Approved' &amp;&amp; !${ui>/readonly} }" text="Encerrar" type="Transparent" press=".onCloseContract"/>
+          <Button visible="{= ${path: 'Status', targetType: 'any'}==='Finished' &amp;&amp; !${ui>/readonly} }" text="Reabrir" type="Transparent" press=".onReopenContract"/>
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>

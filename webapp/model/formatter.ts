@@ -180,6 +180,40 @@ export default {
     });
   },
 
+  /**
+   * Diferença da conferência de entrega: o que foi entregue menos o que foi faturado.
+   * Fica negativa quando chegou menos do que a nota diz, que é o caso comum de quebra.
+   * Existe como coluna persistida no banco (DeliveryDifference, computed column), mas na
+   * tela é calculada no cliente para acompanhar a digitação de Qtd.Entregue — a coluna do
+   * servidor só mudaria depois de salvar. As duas fórmulas precisam andar juntas.
+   *
+   * Entrega ainda não conferida (zerada e em aberto) devolve 0, e não a quantidade inteira
+   * negativa: ali não há divergência apurada, só falta digitar.
+   *
+   * Mesma armadilha de formatNetQuantity: sem targetType 'any' nas partes do binding, o
+   * modelo v4 entrega o decimal já formatado em pt-BR e Number() devolve NaN.
+   */
+  formatDeliveryDifference: (
+    delivered: number | string,
+    quantity: number | string,
+    deliveryStatus: string
+  ) => {
+    const deliveredQuantity = Number(delivered ?? 0);
+
+    const difference = deliveredQuantity === 0 && deliveryStatus === "Open"
+      ? 0
+      : deliveredQuantity - Number(quantity ?? 0);
+
+    if (!Number.isFinite(difference)) {
+      return "";
+    }
+
+    return difference.toLocaleString("pt-BR", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 3,
+    });
+  },
+
   formatPriceFixationStatus: (value: string) => {
     const m = new Map<string, string>();
     m.set("InApproval", "Em Aprovação");
@@ -542,5 +576,29 @@ export default {
     m.set("Skipped", "None");
 
     return m.get(value) ?? "None";
+  },
+
+  /**
+   * Iniciais para o avatar: primeira letra do primeiro e do último nome.
+   *
+   * Partículas ("da", "de", "dos"...) são ignoradas - "João da Silva" precisa render "JS", e não
+   * "JD". O `Avatar` do UI5 aceita no máximo duas letras.
+   */
+  formatInitials: (fullName?: string): string => {
+    const particles = ["da", "de", "do", "das", "dos", "e"];
+
+    const parts = (fullName ?? "")
+      .trim()
+      .split(/\s+/)
+      .filter(part => part.length > 0 && !particles.includes(part.toLowerCase()));
+
+    if (parts.length === 0) {
+      return "";
+    }
+
+    const first = parts[0].charAt(0);
+    const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : "";
+
+    return (first + last).toUpperCase();
   },
 };

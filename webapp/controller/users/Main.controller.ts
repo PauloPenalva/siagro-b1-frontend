@@ -8,6 +8,7 @@ import MessageBox from "sap/m/MessageBox";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
 
 /**
  * @namespace siagrob1.controller.users
@@ -42,6 +43,40 @@ export default class Main extends BaseController {
 
 	onCreate() {
 			this.navTo("usersNew");
+	}
+
+	/**
+	 * Espelha o cadastro de usuários do SAP (OUSR) sem esperar a varredura periódica.
+	 *
+	 * Só aparece em modo SAPB1; a action responde 400 nos demais.
+	 */
+	async onSyncFromSap(): Promise<void> {
+		if (!await confirmDialog(
+			"Os usuários serão criados e atualizados a partir do cadastro do SAP. Continuar ?",
+			"Sincronizar com o SAP")) {
+			return;
+		}
+
+		try {
+			this.setBusy(true);
+
+			const model = this.getView().getModel() as ODataModel;
+			// Action sem parâmetro: o "(...)" é obrigatório no bindContext, senão o UI5 monta uma
+			// URL que o OData não reconhece.
+			const action = model.bindContext(ServerRoutes.usersSyncFromSap);
+
+			await action.invoke();
+
+			const result = action.getBoundContext()?.getObject() as { message?: string };
+
+			MessageBox.information(result?.message ?? "Sincronização concluída.");
+			this.onRefresh();
+		} catch (error) {
+			MessageBox.error("Falha ao sincronizar os usuários com o SAP.");
+			console.warn("Falha ao sincronizar os usuários com o SAP.", error);
+		} finally {
+			this.setBusy(false);
+		}
 	}
 
 	onEdit(): void {

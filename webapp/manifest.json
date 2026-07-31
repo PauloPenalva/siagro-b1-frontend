@@ -123,6 +123,21 @@
 					"target": "login"
 				},
 				{
+					"pattern": "forgot-password",
+					"name": "forgotPassword",
+					"target": "forgotPassword"
+				},
+				{
+					"pattern": "reset-password:?query:",
+					"name": "resetPassword",
+					"target": "resetPassword"
+				},
+				{
+					"pattern": "profile",
+					"name": "profile",
+					"target": "profile"
+				},
+				{
 					"pattern": "business-partners",
 					"name": "parceirosNegocio",
 					"target": "parceirosNegocio"
@@ -893,6 +908,22 @@
 				"login": {
 					"id": "login",
 					"name": "siagrob1.view.login.Main",
+          "clearControlAggregation": true
+				},
+				"forgotPassword": {
+					"id": "forgotPassword",
+					"name": "siagrob1.view.login.ForgotPassword",
+          "clearControlAggregation": true
+				},
+				"resetPassword": {
+					"id": "resetPassword",
+					"name": "siagrob1.view.login.ResetPassword",
+          "clearControlAggregation": true
+				},
+				"profile": {
+					"id": "profile",
+					"level": 1,
+					"name": "siagrob1.view.profile.Main",
           "clearControlAggregation": true
 				},
 				"parceirosNegocio": {

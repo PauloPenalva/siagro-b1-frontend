@@ -17,6 +17,8 @@ export default class Edit extends SalesContractsBaseController {
 	private editRouteMatched(ev: Route$MatchedEvent) {
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setProperty("/editable", true);
+    // O tipo do contrato é definido na criação e não muda mais.
+    uiModel.setProperty("/typeEditable", false);
     // Ver Add.controller: o fragmento de locais é compartilhado com o Detail.
     uiModel.setProperty("/postApprovalEditable", true);
     uiModel.setProperty("/postApprovalSaveVisible", false);

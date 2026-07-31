@@ -28,6 +28,7 @@ export default class Detail extends PurchaseContractsBaseController {
 		if (id != null) {
 
       uiModel.setProperty("/editable", false);
+      uiModel.setProperty("/typeEditable", false);
 
       // Modo somente-leitura: acionado por ?readonly=true, usado quando o aprovador
       // abre o contrato a partir da fila de aprovação de fixações. Nenhuma ação sobre

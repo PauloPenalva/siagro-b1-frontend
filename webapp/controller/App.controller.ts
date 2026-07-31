@@ -213,6 +213,13 @@ export default class App extends BaseController {
 			}
 		}
 
+  /** Abre "Meu Perfil" pelo menu do avatar - o popover precisa fechar junto com a navegação. */
+  onOpenProfile(): void {
+    this._avatarPopover.close();
+    this._avatar.setActive(false);
+    this.navTo("profile");
+  }
+
   async onLogout(){
     if (!await DialogHelper.confirmDialog("Encerrar a sessão ?", "Sair")){
       return;

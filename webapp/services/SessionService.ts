@@ -4,6 +4,7 @@ import Button from "sap/m/Button";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import UIComponent from "sap/ui/core/UIComponent";
+import Theming from "sap/ui/core/Theming";
 import RequestModel from "siagrob1/model/RequestModel";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import formatter from "siagrob1/model/formatter";
@@ -13,6 +14,23 @@ import { AuthStatus, LoginResult, UserIdentity } from "siagrob1/types/UserIdenti
 
 export const USER_MENU_KEY = "USER_MENU";
 export const SYSTEM_SETUP_KEY = "SYSTEM_SETUP";
+
+/**
+ * Tema espelhado localmente. Sobrevive ao logout de propósito: é preferência do navegador para o
+ * boot seguinte, não dado de sessão - e o servidor continua sendo a fonte da verdade.
+ */
+export const THEME_KEY = "THEME";
+
+/** Mesmo tema declarado no bootstrap do `index.html`. */
+export const DEFAULT_THEME = "sap_fiori_3";
+
+/** Temas oferecidos na tela de perfil - a lista precisa bater com a aceita pelo servidor. */
+export const AVAILABLE_THEMES = [
+  { key: "sap_fiori_3", text: "Quartz (claro)" },
+  { key: "sap_fiori_3_dark", text: "Quartz (escuro)" },
+  { key: "sap_horizon", text: "Horizon (claro)" },
+  { key: "sap_horizon_dark", text: "Horizon (escuro)" }
+];
 
 export type Credentials = {
   Username: string;
@@ -177,6 +195,64 @@ class SessionService {
     const sessionModel = this.getSessionModel();
     sessionModel.setProperty("/userName", identity?.username ?? null);
     sessionModel.setProperty("/isAdmin", identity?.isAdmin === true);
+    sessionModel.setProperty("/fullName", identity?.fullName ?? null);
+    sessionModel.setProperty("/email", identity?.email ?? null);
+    sessionModel.setProperty("/initials", formatter.formatInitials(identity?.fullName));
+
+    this.applyPhoto(identity?.hasPhoto === true);
+    this.applyTheme(identity?.theme);
+  }
+
+  /**
+   * Publica a URL da foto do avatar.
+   *
+   * `null` (e não string vazia) quando não há foto: o `Avatar` do UI5 só cai para as iniciais
+   * quando o `src` está ausente - com uma URL que responde 204 ele mostraria o ícone de imagem
+   * quebrada.
+   */
+  private applyPhoto(hasPhoto: boolean): void {
+    this.getSessionModel().setProperty(
+      "/photoUrl",
+      hasPhoto ? `${ServerRoutes.myPhoto}?v=${Date.now()}` : null
+    );
+  }
+
+  /**
+   * Recarrega a foto depois de o usuário trocá-la. O `?v=` muda a URL: sem isso o browser
+   * continuaria exibindo a imagem antiga, que já está no cache.
+   */
+  public refreshPhoto(hasPhoto: boolean): void {
+    this.applyPhoto(hasPhoto);
+  }
+
+  /**
+   * Aplica o tema do usuário.
+   *
+   * O valor do servidor manda, mas fica espelhado em `localStorage` para o boot seguinte: sem o
+   * cache, toda entrada no sistema renderizaria primeiro no tema padrão e trocaria depois que o
+   * `/status` respondesse - um piscar visível a cada carregamento.
+   */
+  public applyTheme(theme?: string): void {
+    if (theme) {
+      window.localStorage.setItem(THEME_KEY, theme);
+    }
+
+    const effective = theme ?? window.localStorage.getItem(THEME_KEY);
+
+    this.getSessionModel().setProperty("/theme", effective ?? DEFAULT_THEME);
+
+    if (effective && Theming.getTheme() !== effective) {
+      Theming.setTheme(effective);
+    }
+  }
+
+  /** Lê o tema guardado localmente - usado no boot, antes de haver resposta do servidor. */
+  public applyCachedTheme(): void {
+    const cached = window.localStorage.getItem(THEME_KEY);
+
+    if (cached && Theming.getTheme() !== cached) {
+      Theming.setTheme(cached);
+    }
   }
 
   /** Filial corrente já carregada, sem ida ao servidor. */
@@ -354,6 +430,14 @@ class SessionService {
   private async loadSystemInfo(): Promise<void> {
     const systemInfo = await new RequestModel().get<SystemInfo>(ServerRoutes.systemInfo);
     this.getSessionModel().setProperty("/systemInfo", systemInfo?.companyName);
+
+    // Modo de integração: as telas de usuário usam isto para saber quem manda no cadastro.
+    this.getSessionModel().setProperty("/erp", systemInfo?.erp ?? "STANDALONE");
+  }
+
+  /** `true` quando o cadastro de usuários é mantido no SAP Business One. */
+  public isSapMode(): boolean {
+    return this.getSessionModel().getProperty("/erp") === "SAPB1";
   }
 
   private async loadSystemSetup(): Promise<void> {

@@ -32,7 +32,8 @@ export default class Detail extends SalesContractsBaseController {
       if (id != null) {
   
         uiModel.setProperty("/editable", false);
-        
+        uiModel.setProperty("/typeEditable", false);
+
         const sPath = `/SalesContracts(${id})`;
         this.bindElement(sPath);
   
