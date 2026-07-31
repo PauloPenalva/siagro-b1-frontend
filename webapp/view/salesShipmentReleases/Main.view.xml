@@ -55,8 +55,13 @@
           text="Cancelar"
           press=".onCancel"
           enabled="{selection>/canCancel}"
-          tooltip="Liberação sem saldo deve ser finalizada, não cancelada."/>
-						<Button type="Transparent" text="Finalizar" press=".onFinalize"/>
+          tooltip="Liberação sem saldo deve ser finalizada, não cancelada. Saldo negativo precisa ser regularizado."/>
+          <Button
+          type="Transparent"
+          text="Finalizar"
+          press=".onFinalize"
+          enabled="{selection>/canClose}"
+          tooltip="Liberação faturada além do liberado precisa ser regularizada antes de finalizar."/>
 						<Button type="Transparent" text="Reabrir" press=".onReopen"/>
 						<Button type="Transparent" text="Recalcular Saldo" press=".onRecalculate"/>
 						<Button type="Transparent" text="Recalcular Todos" press=".onRecalculateAll"/>

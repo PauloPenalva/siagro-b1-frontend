@@ -20,25 +20,35 @@ export default class Main extends BaseController {
 
   onInit(): void {
     this.createFilterModel();
-    this.getView().setModel(new JSONModel({ canCancel: false }), "selection");
+    this.getView().setModel(new JSONModel({ canCancel: false, canClose: false }), "selection");
 
     this.getRouter().getRoute("salesShipmentReleases")
       .attachPatternMatched(() => this.applyFilters());
   }
 
   /**
-   * Só permite cancelar quando a liberação ainda tem saldo a devolver ao contrato.
-   * Sem saldo, a ação correta é Finalizar (o backend também recusa).
+   * O faturamento pode furar a liberação, então o saldo chega a ficar negativo — e nesse
+   * estado nenhuma das duas saídas serve: cancelar não tem o que devolver ao contrato e
+   * finalizar congelaria o excedente. Só a regularização resolve.
+   *
+   * - saldo > 0: cancelar devolve o não faturado ao contrato.
+   * - saldo = 0: a ação correta é Finalizar.
+   * - saldo < 0: nenhuma das duas (o backend recusa as duas).
    */
   onRowSelectionChange(oEvent: Table$RowSelectionChangeEvent): void {
     const oContext = oEvent.getParameter("rowContext") as Context;
     const balance = oContext ? Number(oContext.getProperty("AvailableQuantity")) : 0;
 
-    this.setCanCancel(balance > 0);
+    this.setCanCancel(!!oContext && balance > 0);
+    this.setCanClose(!!oContext && balance >= 0);
   }
 
   private setCanCancel(value: boolean): void {
     (this.getView().getModel("selection") as JSONModel).setProperty("/canCancel", value);
+  }
+
+  private setCanClose(value: boolean): void {
+    (this.getView().getModel("selection") as JSONModel).setProperty("/canClose", value);
   }
 
   onDetail(): void {
