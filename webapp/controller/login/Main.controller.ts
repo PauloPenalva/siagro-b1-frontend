@@ -29,6 +29,10 @@ export default class Main extends BaseController {
     this.getView().setModel(authModel, "auth");
 	}
 
+  onForgotPassword(): void {
+    this.navTo("forgotPassword");
+  }
+
   async onLogin() {
     const authModel = this.getView().getModel("auth") as JSONModel;
     const credentials = authModel.getData() as Credentials;

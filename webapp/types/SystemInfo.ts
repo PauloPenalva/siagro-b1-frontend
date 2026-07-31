@@ -7,4 +7,6 @@ export type SystemInfo = {
   supports: string[],
   timestamp: string,
   companyName: string,
+  /** Modo de integração do backend: "SAPB1" ou "STANDALONE". */
+  erp: string,
 }

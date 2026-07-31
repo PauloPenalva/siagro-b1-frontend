@@ -36,19 +36,28 @@
               liveChange=".validateField"
               editable="false"
           />
+          <!--
+              Em modo SAPB1 nome e e-mail vêm do cadastro do SAP (OUSR): editá-los aqui só
+              produziria uma alteração que a próxima sincronização desfaz.
+          -->
           <Label text="Nome" />
           <Input
               value="{FullName}"
-              editable="true"
+              editable="{= ${sessionModel>/erp} !== 'SAPB1' }"
               required="true"
               liveChange=".validateField"
               maxLength="100"
           />
+          <!--
+              E-mail não é obrigatório: o OUSR do SAP também não o exige, e mais da metade dos
+              usuários espelhados de lá está sem endereço. Marcá-lo como obrigatório aqui - onde
+              ele ainda por cima é somente-leitura em modo SAPB1 - travaria o Save desses
+              usuários sem dar ao operador nenhuma forma de destravar.
+          -->
           <Label text="Email" />
           <Input
               value="{Email}"
-              editable="true"
-              required="true"
+              editable="{= ${sessionModel>/erp} !== 'SAPB1' }"
               liveChange=".validateField"
               maxLength="100"
           />

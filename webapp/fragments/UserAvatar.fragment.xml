@@ -5,10 +5,9 @@
 	xmlns:l="sap.ui.layout">
 	<Popover
 		id="userMenu"
-		title="User Menu"
+		title="{sessionModel>/fullName}"
 		titleAlignment="Center"
-		placement="Bottom"
-		afterClose="onPopoverClose">
+		placement="Bottom">
 		<core:Fragment fragmentName="siagrob1.fragments.UserMenu" type="XML"> </core:Fragment>
 	</Popover>
 </core:FragmentDefinition>

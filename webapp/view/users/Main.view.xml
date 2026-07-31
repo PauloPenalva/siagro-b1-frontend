@@ -76,10 +76,28 @@
     <footer>
 			<OverflowToolbar>
 				<Button text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
+				<!--
+					Em modo SAPB1 o cadastro é mantido no SAP: incluir e deletar aqui produziria
+					usuários que a próxima sincronização desfaria.
+				-->
+				<Button
+					text="Sincronizar com o SAP"
+					icon="sap-icon://synchronize"
+					visible="{= ${sessionModel>/erp} === 'SAPB1' }"
+					press=".onSyncFromSap"/>
 				<ToolbarSpacer />
-				<Button text="Incluir" icon="sap-icon://add" type="Emphasized" press=".onCreate"/>
+				<Button
+					text="Incluir"
+					icon="sap-icon://add"
+					type="Emphasized"
+					visible="{= ${sessionModel>/erp} !== 'SAPB1' }"
+					press=".onCreate"/>
 				<Button text="Editar" icon="sap-icon://edit" press=".onEdit"/>
-				<Button text="Deletar" icon="sap-icon://delete" press=".onDelete"/>
+				<Button
+					text="Deletar"
+					icon="sap-icon://delete"
+					visible="{= ${sessionModel>/erp} !== 'SAPB1' }"
+					press=".onDelete"/>
 			</OverflowToolbar>
 		</footer>
 	</Page>

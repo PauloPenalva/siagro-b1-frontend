@@ -43,11 +43,11 @@
               liveChange=".validateField"
               maxLength="100"
           />
+          <!-- Opcional, como no OUSR do SAP. Sem e-mail o usuário só não terá recuperação de senha. -->
           <Label text="Email" />
           <Input
               value="{Email}"
               editable="true"
-              required="true"
               liveChange=".validateField"
               maxLength="100"
           />

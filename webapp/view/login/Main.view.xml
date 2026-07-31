@@ -38,6 +38,12 @@
                   <Label text="Senha:" required="true"/>
                   <Input value="{auth>/Password}" placeholder="Senha..." width="250px" submit=".onLogin" type="Password" showClearIcon="true"/>
                   <Button text="Entrar" width="250px" press=".onLogin" type="Emphasized"/>
+                  <Link
+                    text="Esqueci minha senha"
+                    press=".onForgotPassword"
+                    width="250px"
+                    textAlign="Center"
+                    class="sapUiSmallMarginTop"/>
                 </items>
               </VBox>
             </items>
@@ -49,7 +55,7 @@
       <OverflowToolbar >
         <Text text="Desenvolvido por IDX Tecnologia" />
         <ToolbarSeparator />
-        <Text text="Versão: 1.1.207" />
+        <Text text="Versão: 1.1.208" />
         <ToolbarSpacer />
         <!-- <Button icon="sap-icon://action-settings"/> -->
       </OverflowToolbar>
