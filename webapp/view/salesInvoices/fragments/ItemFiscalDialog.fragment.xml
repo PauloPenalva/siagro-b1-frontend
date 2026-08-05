@@ -1,0 +1,253 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:core="sap.ui.core"
+>
+  <Dialog
+    title="Dados Fiscais do Item"
+    contentWidth="42rem"
+    resizable="true"
+    draggable="true"
+  >
+    <content>
+      <f:Form editable="true">
+        <f:layout>
+          <f:ColumnLayout columnsM="2" columnsL="2" columnsXL="2" />
+        </f:layout>
+        <f:formContainers>
+
+          <f:FormContainer title="Identificação">
+            <f:formElements>
+              <!-- Um campo por propriedade: binding composto ("{ItemCode} - {ItemName}")
+                   quebra no OData v4, que entrega as partes como sap.ui.model.odata.type.Raw
+                   e estoura "does not support formatting" ao renderizar. -->
+              <f:FormElement label="Produto">
+                <f:fields>
+                  <Text text="{ItemCode}" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Descrição">
+                <f:fields>
+                  <Text text="{ItemName}" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="CFOP">
+                <f:fields>
+                  <!-- Resolvido da natureza de operação na gravação e congelado como
+                       histórico do documento: não é editável. -->
+                  <Input value="{Cfop}" editable="false" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="NCM">
+                <f:fields>
+                  <Input value="{Ncm}" editable="{ui>/editable}" maxLength="8" />
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+
+          <f:FormContainer title="ICMS">
+            <f:formElements>
+              <f:FormElement label="CST">
+                <f:fields>
+                  <Input value="{CstIcms}" editable="{ui>/editable}" maxLength="3" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Base">
+                <f:fields>
+                  <Input
+                    editable="{ui>/editable}"
+                    value="{
+                      path: 'IcmsBase',
+                      type: 'sap.ui.model.odata.type.Decimal',
+                      constraints: { precision: 18, scale: 2 },
+                      formatOptions: {
+                        decimalSeparator: ',',
+                        groupingEnabled: true,
+                        groupingSeparator: '.'
+                      }
+                    }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Alíquota">
+                <f:fields>
+                  <Input
+                    editable="{ui>/editable}"
+                    value="{
+                      path: 'IcmsRate',
+                      type: 'sap.ui.model.odata.type.Decimal',
+                      constraints: { precision: 5, scale: 4 },
+                      formatOptions: {
+                        decimalSeparator: ',',
+                        groupingEnabled: false
+                      }
+                    }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Valor">
+                <f:fields>
+                  <Input
+                    editable="{ui>/editable}"
+                    value="{
+                      path: 'IcmsValue',
+                      type: 'sap.ui.model.odata.type.Decimal',
+                      constraints: { precision: 18, scale: 2 },
+                      formatOptions: {
+                        decimalSeparator: ',',
+                        groupingEnabled: true,
+                        groupingSeparator: '.'
+                      }
+                    }" />
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+
+          <f:FormContainer title="PIS">
+            <f:formElements>
+              <f:FormElement label="CST">
+                <f:fields>
+                  <Input value="{CstPis}" editable="{ui>/editable}" maxLength="3" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Base">
+                <f:fields>
+                  <Input
+                    editable="{ui>/editable}"
+                    value="{
+                      path: 'PisBase',
+                      type: 'sap.ui.model.odata.type.Decimal',
+                      constraints: { precision: 18, scale: 2 },
+                      formatOptions: {
+                        decimalSeparator: ',',
+                        groupingEnabled: true,
+                        groupingSeparator: '.'
+                      }
+                    }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Alíquota">
+                <f:fields>
+                  <Input
+                    editable="{ui>/editable}"
+                    value="{
+                      path: 'PisRate',
+                      type: 'sap.ui.model.odata.type.Decimal',
+                      constraints: { precision: 5, scale: 4 },
+                      formatOptions: {
+                        decimalSeparator: ',',
+                        groupingEnabled: false
+                      }
+                    }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Valor">
+                <f:fields>
+                  <Input
+                    editable="{ui>/editable}"
+                    value="{
+                      path: 'PisValue',
+                      type: 'sap.ui.model.odata.type.Decimal',
+                      constraints: { precision: 18, scale: 2 },
+                      formatOptions: {
+                        decimalSeparator: ',',
+                        groupingEnabled: true,
+                        groupingSeparator: '.'
+                      }
+                    }" />
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+
+          <f:FormContainer title="COFINS">
+            <f:formElements>
+              <f:FormElement label="CST">
+                <f:fields>
+                  <Input value="{CstCofins}" editable="{ui>/editable}" maxLength="3" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Base">
+                <f:fields>
+                  <Input
+                    editable="{ui>/editable}"
+                    value="{
+                      path: 'CofinsBase',
+                      type: 'sap.ui.model.odata.type.Decimal',
+                      constraints: { precision: 18, scale: 2 },
+                      formatOptions: {
+                        decimalSeparator: ',',
+                        groupingEnabled: true,
+                        groupingSeparator: '.'
+                      }
+                    }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Alíquota">
+                <f:fields>
+                  <Input
+                    editable="{ui>/editable}"
+                    value="{
+                      path: 'CofinsRate',
+                      type: 'sap.ui.model.odata.type.Decimal',
+                      constraints: { precision: 5, scale: 4 },
+                      formatOptions: {
+                        decimalSeparator: ',',
+                        groupingEnabled: false
+                      }
+                    }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Valor">
+                <f:fields>
+                  <Input
+                    editable="{ui>/editable}"
+                    value="{
+                      path: 'CofinsValue',
+                      type: 'sap.ui.model.odata.type.Decimal',
+                      constraints: { precision: 18, scale: 2 },
+                      formatOptions: {
+                        decimalSeparator: ',',
+                        groupingEnabled: true,
+                        groupingSeparator: '.'
+                      }
+                    }" />
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+
+          <f:FormContainer title="Contábil">
+            <f:formElements>
+              <f:FormElement label="Centro de Custo">
+                <f:fields>
+                  <Input
+                    editable="{ui>/editable}"
+                    value="{CostCenterCode}"
+                    showValueHelp="true"
+                    valueHelpOnly="true"
+                    valueHelpRequest=".openCostCentersValueHelp" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Conta Contábil">
+                <f:fields>
+                  <Input
+                    editable="{ui>/editable}"
+                    value="{LedgerAccountCode}"
+                    showValueHelp="true"
+                    valueHelpOnly="true"
+                    valueHelpRequest=".openLedgerAccountsValueHelp" />
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+
+        </f:formContainers>
+      </f:Form>
+    </content>
+    <beginButton>
+      <Button text="Confirmar" type="Emphasized" press=".onCloseItemFiscal" />
+    </beginButton>
+  </Dialog>
+</core:FragmentDefinition>

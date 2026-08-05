@@ -159,6 +159,31 @@
               }"
               description="{UomCode}"
             />
+            <core:Title text="Contrato de Compra" />
+            <Label text="Contrato" />
+            <!--
+              O Input mostra PurchaseContractCode (legível); quem vale para o servidor
+              é PurchaseContractKey (GUID), gravado pelo handler no update group.
+              O diálogo lista só contratos aprovados com saldo a liberar, filtrados
+              pelo produto da transferência.
+            -->
+            <Input
+              id="purchaseContractInput"
+              editable="{= ${ui>/editable} &amp;&amp; ${ui>/contractEnabled} }"
+              value="{PurchaseContractCode}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openPurchaseContractValueHelp">
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Input>
+            <Text
+              id="purchaseContractHint"
+              text="{ui>/contractHint}"
+              class="sapUiTinyMarginTop"
+            />
+
             <core:Title text="Informações"/>
             <Label text="Observações" />
             <TextArea 

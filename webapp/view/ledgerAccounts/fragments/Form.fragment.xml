@@ -1,0 +1,71 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+    <f:SimpleForm
+      id="ledgerAccountsForm"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0">
+        <f:content>
+          <core:Title
+              text="Dados da Conta Contábil"
+              emphasized="true"
+          />
+          <Label text="Codigo" />
+          <Input
+              value="{Code}"
+              required="true"
+              maxLength="20"
+          />
+          <Label text="Nome" />
+          <Input
+              value="{Name}"
+              editable="true"
+              required="true"
+              liveChange=".validateField"
+              maxLength="100"
+          />
+          <Label text="Tipo"/>
+          <Select
+            required="true"
+            selectedKey="{
+              path: 'Type',
+              targetType: 'any'
+            }"
+            forceSelection="false"
+          >
+            <core:ListItem key="Asset" text="Ativo" />
+            <core:ListItem key="Liability" text="Passivo" />
+            <core:ListItem key="Revenue" text="Receita" />
+            <core:ListItem key="Expense" text="Despesa" />
+          </Select>
+          <Label text="Aceita lançamento ?" />
+          <CheckBox
+            selected="{AllowsPosting}"
+          />
+          <Label text="Inativo ?" />
+          <CheckBox
+            selected="{Inactive}"
+          />
+        </f:content>
+        <core:Title />
+        <core:Title />
+    </f:SimpleForm>
+</core:FragmentDefinition>

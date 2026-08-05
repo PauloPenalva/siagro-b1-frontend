@@ -33,6 +33,11 @@ export default class Add extends LoteArmazenagemBaseController {
       "DocNumberKey": docNumberInfo.Key,
       "BranchCode": branchInfo.code,
       "UoM": systemSetup.DefaultUoM,
+      // Nasce como Terceiros, igual ao default da entidade: lote não classificado
+      // não pode habilitar o vínculo de contrato na transferência de titularidade.
+      // String vazia aqui quebraria a desserialização do enum se o usuário não
+      // tocasse no campo.
+      "OwnershipType": "ThirdParty",
     }, false, false, false);
 
     oView.setBindingContext(oContext);

@@ -1,8 +1,9 @@
 import Table from "sap/ui/table/Table";
 import CommonController from "../common/CommonController";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
-import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Context from "sap/ui/model/odata/v4/Context";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 
 import { Column, EdmType, SpreadsheetSettings } from "sap/ui/export/library";
@@ -21,22 +22,112 @@ import RequestModel from "siagrob1/model/RequestModel";
 export abstract class BaseController extends CommonController {
   private _dialog: TableSelectDialog;
 
-  async onConfirm() {
-    const view = this.getView();
-    const context = view.getBindingContext() as Context;
-    if (context) {
-      
-      if (await DialogHelper.confirmDialog("Confirmar Romaneio ?")) {
-        const model = context.getModel() as ODataModel;
-        const action = model.bindContext("/StorageTransactionsConfirmed(...)");
-        action.setParameter("Key",  context.getProperty("Key"))
+  /**
+   * Só o lote de destino classificado como estoque próprio em nosso poder habilita
+   * o vínculo de contrato de compra. Aceita o índice numérico (o assistente lê os
+   * lotes de um JSON model alimentado por DTO) e o nome do enum (binding OData).
+   */
+  protected isOwnStockLot(ownershipType: string | number): boolean {
+    return ownershipType === "OwnedInOurCustody" || ownershipType === 0;
+  }
 
-        this.setBusy(true);
-        void action.invoke()
-          .then(() => this.navTo("storageTransactions"))
-          .finally(() => this.setBusy(false));
-      }
+  /**
+   * Liga/desliga o campo de contrato e explica o porquê quando desligado — sem a
+   * mensagem, um campo cinza sem motivo aparente vira chamado de suporte.
+   */
+  protected setContractEnabled(enabled: boolean) {
+    const uiModel = this.getModel("ui") as JSONModel;
+    uiModel.setProperty("/contractEnabled", enabled);
+    uiModel.setProperty(
+      "/contractHint",
+      enabled
+        ? ""
+        : "Disponível apenas quando o lote de destino é estoque próprio em nosso poder."
+    );
+  }
+
+  /**
+   * Guarda o armazém do lote de ORIGEM, que restringe os contratos ofertados: só
+   * faz sentido baixar contrato cujo local de entrega é o armazém onde a
+   * mercadoria já está depositada.
+   *
+   * Fica no model `ui` porque as duas telas o obtêm de fontes diferentes — o
+   * assistente lê do JSON model dos lotes, a edição da navegação do OData.
+   */
+  protected setOriginWarehouse(warehouseCode: string) {
+    (this.getModel("ui") as JSONModel).setProperty("/originWarehouseCode", warehouseCode);
+  }
+
+  /**
+   * Value help do contrato de compra.
+   *
+   * Não usa o `applyValueHelp` genérico porque o campo tem duas colunas: o Input
+   * mostra `PurchaseContractCode` (legível) mas quem vale para o servidor é
+   * `PurchaseContractKey` (GUID). O helper genérico grava a descrição com group
+   * id `null` de propósito — bom para descrição desnormalizada, mas a CHAVE
+   * precisa entrar no batch, então ela é gravada aqui no update group padrão.
+   *
+   * Os filtros são aplicados na abertura, e não no XML, porque dependem da
+   * transferência: o produto e o armazém do lote de origem só são conhecidos
+   * depois que os lotes são escolhidos.
+   *
+   * A busca do diálogo é por número do contrato, código ou nome do fornecedor.
+   */
+  async openPurchaseContractValueHelp(ev: Input$ValueHelpRequestEvent) {
+    const oInput = ev.getSource();
+    const oTarget = oInput.getBindingContext() as Context;
+
+    if (!oTarget) {
+      return;
     }
+
+    const sItemCode = oTarget.getProperty("ItemCode") as string;
+
+    if (!sItemCode) {
+      MessageBox.warning("Selecione o produto.");
+      return;
+    }
+
+    const sWarehouse = (this.getModel("ui") as JSONModel)
+      .getProperty("/originWarehouseCode") as string;
+
+    if (!sWarehouse) {
+      MessageBox.warning("Selecione o lote de origem.");
+      return;
+    }
+
+    const oSelected = await DialogHelper.openTableSelectDialog(
+      this,
+      "PurchaseContractsSelectDialog",
+      ["Code", "CardCode", "CardName"],
+      [
+        new Filter("ItemCode", FilterOperator.EQ, sItemCode),
+        // Local de entrega do contrato = armazém onde a mercadoria já está.
+        // Ambos são código de parceiro-armazém, mesmo domínio.
+        new Filter("DeliveryLocationCode", FilterOperator.EQ, sWarehouse),
+      ]
+    );
+
+    // Cancelar resolve undefined: não mexer no que já estava preenchido.
+    if (!oSelected) {
+      return;
+    }
+
+    oInput.setValue(oSelected.getProperty("Code") as string);
+    await oTarget.setProperty("PurchaseContractKey", oSelected.getProperty("Key"));
+  }
+
+  /**
+   * Limpa o vínculo quando o destino deixa de ser estoque próprio. As duas colunas
+   * saem juntas — código órfão sem chave confundiria a tela.
+   */
+  protected async clearPurchaseContract(oTarget: Context) {
+    if (!oTarget?.getProperty("PurchaseContractKey")) {
+      return;
+    }
+
+    await oTarget.setProperty("PurchaseContractKey", null);
+    await oTarget.setProperty("PurchaseContractCode", null);
   }
 
   async openStorageAddressesListValueHelp(ev: Input$ValueHelpRequestEvent) {

@@ -82,6 +82,20 @@
                 required="true"
                 liveChange=".validateField"
             />
+            <Label text="Tipo de Propriedade" />
+            <Select
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{
+                path: 'OwnershipType',
+                targetType: 'any'
+              }"
+            >
+              <core:ListItem key="ThirdParty" text="Terceiros - armazenagem/beneficiamento"/>
+              <core:ListItem key="OwnedInOurCustody" text="Próprio - em nosso poder"/>
+              <core:ListItem key="OwnedInThirdPartyCustody" text="Próprio - em poder de terceiros"/>
+            </Select>
             <Label text="Produto" />
             <Input 
 								required="true"

@@ -1,0 +1,115 @@
+<mvc:View
+	controllerName="siagrob1.controller.customerReturns.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<Page title="Devoluções de Clientes">
+		<content>
+			<t:Table
+				id="customerReturnsTable"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+				rows="{
+					path: '/CustomerReturns',
+					parameters: {
+						$expand: 'Items'
+					},
+					sorter: {
+						path: 'IssueDate',
+						descending: true
+					}
+				}"
+			>
+				<t:extension>
+					<OverflowToolbar>
+						<Title text="Devoluções de Clientes" />
+						<ToolbarSpacer />
+						<SearchField placeholder="Pesquisar..." width="30%" search=".onSearch"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="Cliente" filterProperty="CardName">
+						<t:template>
+							<ObjectIdentifier title="{CardName}" text="{CardCode}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="NF" width="8rem" filterProperty="DocumentNumber">
+						<t:template>
+							<Text text="{DocumentNumber}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Série" width="6rem">
+						<t:template>
+							<Text text="{DocumentSeries}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Emissão" width="9rem" sortProperty="IssueDate">
+						<t:template>
+							<Text text="{
+								path: 'IssueDate',
+								type: 'sap.ui.model.odata.type.DateTimeOffset',
+								constraints: { precision: 7 },
+								formatOptions: { pattern: 'dd/MM/yyyy' }
+							}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Valor" width="10rem" hAlign="End">
+						<t:template>
+							<Text text="{
+								path: 'TotalValue',
+								type: 'sap.ui.model.odata.type.Decimal',
+								constraints: { precision: 18, scale: 2 },
+								formatOptions: {
+									decimalSeparator: ',',
+									groupingEnabled: true,
+									groupingSeparator: '.'
+								}
+							}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Situação" width="9rem">
+						<t:template>
+							<ObjectStatus
+								text="{
+									path: 'Status',
+									targetType: 'any',
+									formatter: 'formatter.formatCustomerReturnStatus'
+								}"
+								state="{
+									path: 'Status',
+									targetType: 'any',
+									formatter: 'formatter.stateCustomerReturnStatus'
+								}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Chave NF-e">
+						<t:template>
+							<Text text="{AccessKey}" wrapping="false" />
+						</t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<Button text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
+				<ToolbarSpacer />
+				<Button text="Incluir" icon="sap-icon://add" type="Emphasized" press=".onCreate"/>
+				<Button text="Visualizar" icon="sap-icon://display" press=".onDetail"/>
+				<Button text="Cancelar Devolução" icon="sap-icon://decline" press=".onCancelReturn"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

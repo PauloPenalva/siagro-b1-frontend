@@ -119,6 +119,19 @@ export default {
       oDlg.bindElement(elementPath);
     }
 
+    // Os filtros também valem na ABERTURA, não só depois de uma busca. Antes disso
+    // `defaultFilters` só era aplicado dentro do attachSearch, e a lista abria
+    // inteira - passava despercebido porque todo diálogo com filtro fixo o repete
+    // no `filters:` do XML. Filtro que muda a cada abertura (ex.: contratos do
+    // produto da transferência) não cabe no XML e depende desta linha.
+    //
+    // Guardado por lista não-vazia de propósito: chamar `.filter([])` substituiria
+    // as application filters e apagaria o filtro declarado no XML de quem não passa
+    // defaultFilters (é o caso do HarvestSeasonsSelectDialog).
+    if (defaultFilters.length) {
+      (oDlg.getBinding("items") as ODataListBinding).filter(defaultFilters);
+    }
+
     return new Promise<Context | undefined>(resolve => {
       // Os handlers são ligados por abertura e desligados no primeiro disparo:
       // como o diálogo é reaproveitado, deixá-los presos resolveria a Promise

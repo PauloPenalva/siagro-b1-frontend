@@ -1,0 +1,78 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:core="sap.ui.core"
+>
+    <f:SimpleForm
+      id="customerReturnsForm"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="2"
+      columnsL="2"
+      columnsM="1"
+      singleContainerFullSize="true"
+      busyIndicatorDelay="0">
+        <f:content>
+          <core:Title text="Dados da Devolução" emphasized="true" />
+
+          <Label text="Cliente" />
+          <Input value="{CardCode}" editable="false" required="true" />
+          <Input value="{CardName}" editable="false" />
+
+          <Label text="Número da NF" />
+          <Input value="{DocumentNumber}" editable="{ui>/editable}" maxLength="9" />
+
+          <Label text="Série" />
+          <Input value="{DocumentSeries}" editable="{ui>/editable}" maxLength="3" />
+
+          <Label text="Emissão" />
+          <DatePicker
+              value="{
+                path: 'IssueDate',
+                type: 'sap.ui.model.odata.type.DateTimeOffset',
+                constraints: { precision: 7 },
+                formatOptions: { pattern: 'dd/MM/yyyy' }
+              }"
+              editable="{ui>/editable}" />
+
+          <Label text="Valor Total" />
+          <Input
+              editable="{ui>/editable}"
+              value="{
+                path: 'TotalValue',
+                type: 'sap.ui.model.odata.type.Decimal',
+                constraints: { precision: 18, scale: 2 },
+                formatOptions: {
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }" />
+
+          <Label text="Chave da NF-e" />
+          <Input value="{AccessKey}" editable="false" maxLength="44" />
+
+          <core:Title text="Informações do Contribuinte" emphasized="true" />
+          <!-- É AQUI que o cliente escreve número/série/chave e quantidade das notas de
+               origem. O layout da NF-e não amarra linha a origem, então este texto é a
+               referência que o operador usa para fazer a amarração na grade. -->
+          <Label text="Referências informadas pelo cliente" />
+          <TextArea
+              value="{TaxPayerComments}"
+              editable="false"
+              rows="8"
+              growing="true"
+              width="100%" />
+        </f:content>
+    </f:SimpleForm>
+</core:FragmentDefinition>

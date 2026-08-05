@@ -1,0 +1,82 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+
+<!--
+  Linhas de saída elegíveis como origem da devolução.
+
+  A lista é ligada na ABERTURA (elementPath), porque depende do cliente da devolução — quem
+  filtra é o servidor, na função CustomerReturnsOriginItems: mesmo cliente, documento
+  confirmado, entrega fechada e quebra apurada maior que zero.
+-->
+<TableSelectDialog
+  class=" sapUiSizeCompact"
+  growing="true"
+  growingThreshold="20"
+  items="{}"
+  rememberSelections="true"
+  title="NF de Origem"
+>
+<columns>
+  <Column>
+    <header>
+      <Text text="Documento" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="NF-e" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Produto" />
+    </header>
+  </Column>
+  <Column hAlign="End">
+    <header>
+      <Text text="Faturado" />
+    </header>
+  </Column>
+  <Column hAlign="End">
+    <header>
+      <Text text="Quebra Apurada" />
+    </header>
+  </Column>
+</columns>
+<ColumnListItem>
+  <cells>
+    <ObjectIdentifier title="{InvoiceNumber}" text="{SalesContractCode}" />
+    <Text text="{TaxDocumentNumber}" />
+    <ObjectIdentifier title="{ItemName}" text="{ItemCode}" />
+    <ObjectNumber
+      number="{
+        path: 'Quantity',
+        type: 'sap.ui.model.type.Float',
+        formatOptions: {
+          decimals: 3,
+          decimalSeparator: ',',
+          groupingEnabled: true,
+          groupingSeparator: '.'
+        }
+      }"
+      unit="{UnitOfMeasureCode}"
+      state="None" />
+    <ObjectNumber
+      number="{
+        path: 'AssessedShortage',
+        type: 'sap.ui.model.type.Float',
+        formatOptions: {
+          decimals: 3,
+          decimalSeparator: ',',
+          groupingEnabled: true,
+          groupingSeparator: '.'
+        }
+      }"
+      unit="{UnitOfMeasureCode}"
+      state="Warning" />
+  </cells>
+</ColumnListItem>
+</TableSelectDialog>
+</core:FragmentDefinition>

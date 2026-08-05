@@ -1,0 +1,112 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }"
+>
+  <t:Table
+    id="tableCustomerReturnItems"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    busyIndicatorDelay="0"
+    visibleRowCountMode="Auto"
+    rows="{Items}"
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Itens Devolvidos" />
+          <ToolbarSpacer />
+          <ObjectNumber
+            number="{ui>/totalReturned}"
+            unit="Total Devolvido"
+            emphasized="true"
+            state="None" />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Produto" width="10rem">
+        <t:template>
+          <Text text="{ItemCode}" wrapping="false" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Descrição">
+        <t:template>
+          <Text text="{ItemName}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Qtde Devolvida" width="10rem" hAlign="End">
+        <t:template>
+          <Text text="{
+            path: 'Quantity',
+            type: 'sap.ui.model.odata.type.Decimal',
+            constraints: { precision: 18, scale: 3 },
+            formatOptions: {
+              decimalSeparator: ',',
+              groupingEnabled: true,
+              groupingSeparator: '.'
+            }
+          }" />
+        </t:template>
+      </t:Column>
+
+      <!-- A AMARRAÇÃO: manual, porque o XML da NF-e não diz qual linha veio de qual origem.
+           O Input mostra a NF de origem e o value help grava a chave da linha. -->
+      <t:Column label="NF de Origem" width="12rem">
+        <t:template>
+          <Input
+            editable="{ui>/editable}"
+            value="{SalesInvoiceItem/SalesInvoice/InvoiceNumber}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openOriginItemValueHelp" />
+        </t:template>
+      </t:Column>
+
+      <t:Column label="Quebra Apurada" width="11rem" hAlign="End">
+        <t:template>
+          <!-- Faturado − líquido recebido: é o volume que o fator efetivo já devolveu ao
+               contrato, e o número que o fiscal precisa espelhar. -->
+          <Text text="{
+            path: 'AssessedShortage',
+            type: 'sap.ui.model.odata.type.Decimal',
+            constraints: { precision: 18, scale: 3 },
+            formatOptions: {
+              decimalSeparator: ',',
+              groupingEnabled: true,
+              groupingSeparator: '.'
+            }
+          }" />
+        </t:template>
+      </t:Column>
+
+      <t:Column label="Diferença" width="11rem" hAlign="End">
+        <t:template>
+          <ObjectStatus
+            text="{
+              path: 'Difference',
+              type: 'sap.ui.model.odata.type.Decimal',
+              constraints: { precision: 18, scale: 3 },
+              formatOptions: {
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+              }
+            }"
+            state="{
+              path: 'Difference',
+              targetType: 'any',
+              formatter: 'formatter.stateReturnDifference'
+            }" />
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

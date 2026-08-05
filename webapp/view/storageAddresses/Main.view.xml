@@ -56,20 +56,21 @@
 							<Text text="{Code}" wrapping="false"/>
 						</t:template>
 					</t:Column>
-					<!-- <t:Column
+					<t:Column
 						label="Tipo Propriedade"
 						sortProperty="OwnershipType"
 						filterProperty="OwnershipType"
             visible="true"
-            width="10rem"
+            width="14rem"
 						>
 						<t:template>
 							<Text text="{
                 path: 'OwnershipType',
-                targetType: 'any'
+                targetType: 'any',
+                formatter: '.formatter.formatStorageOwnershipType'
               }" wrapping="false"/>
 						</t:template>
-					</t:Column> -->
+					</t:Column>
 					<t:Column
 						label="Data"
 						sortProperty="CreationDate"

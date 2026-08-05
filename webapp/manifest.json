@@ -638,6 +638,36 @@
           "target": "logisticRegionsEdit"
         },
         {
+          "pattern": "cost-centers",
+          "name": "costCenters",
+          "target": "costCenters"
+        },
+        {
+          "pattern": "cost-centers/new",
+          "name": "costCentersNew",
+          "target": "costCentersNew"
+        },
+        {
+          "pattern": "cost-centers/{id}/edit",
+          "name": "costCentersEdit",
+          "target": "costCentersEdit"
+        },
+        {
+          "pattern": "ledger-accounts",
+          "name": "ledgerAccounts",
+          "target": "ledgerAccounts"
+        },
+        {
+          "pattern": "ledger-accounts/new",
+          "name": "ledgerAccountsNew",
+          "target": "ledgerAccountsNew"
+        },
+        {
+          "pattern": "ledger-accounts/{id}/edit",
+          "name": "ledgerAccountsEdit",
+          "target": "ledgerAccountsEdit"
+        },
+        {
           "pattern": "states",
           "name": "states",
           "target": "states"
@@ -1497,6 +1527,42 @@
 					"id": "logisticRegionsEdit",
           "level": 2,
 					"name": "siagrob1.view.logisticRegions.Edit",
+          "clearControlAggregation": true
+				},
+         "costCenters": {
+					"id": "costCenters",
+          "level": 1,
+					"name": "siagrob1.view.costCenters.Main",
+          "clearControlAggregation": true
+				},
+        "costCentersNew": {
+					"id": "costCentersNew",
+          "level": 2,
+					"name": "siagrob1.view.costCenters.Add",
+          "clearControlAggregation": true
+				},
+        "costCentersEdit": {
+					"id": "costCentersEdit",
+          "level": 2,
+					"name": "siagrob1.view.costCenters.Edit",
+          "clearControlAggregation": true
+				},
+         "ledgerAccounts": {
+					"id": "ledgerAccounts",
+          "level": 1,
+					"name": "siagrob1.view.ledgerAccounts.Main",
+          "clearControlAggregation": true
+				},
+        "ledgerAccountsNew": {
+					"id": "ledgerAccountsNew",
+          "level": 2,
+					"name": "siagrob1.view.ledgerAccounts.Add",
+          "clearControlAggregation": true
+				},
+        "ledgerAccountsEdit": {
+					"id": "ledgerAccountsEdit",
+          "level": 2,
+					"name": "siagrob1.view.ledgerAccounts.Edit",
           "clearControlAggregation": true
 				},
          "states": {

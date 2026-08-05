@@ -134,8 +134,27 @@ export default {
     const m = new Map<string, string>();
     m.set("Owner", "Próprio");
     m.set("ThirdParty", "Terceiro");
-    
+
     return m.get(value);
+  },
+
+  /**
+   * Propriedade da mercadoria no lote de armazenagem.
+   *
+   * Aceita o nome do enum (binding OData) e o índice numérico: as telas de
+   * transferência de titularidade leem o lote de um JSON model alimentado por DTO,
+   * onde o valor chega como int cru.
+   */
+  formatStorageOwnershipType: (value: string | number) => {
+    const m = new Map<string, string>();
+    m.set("OwnedInOurCustody", "Próprio - em nosso poder");
+    m.set("OwnedInThirdPartyCustody", "Próprio - em poder de terceiros");
+    m.set("ThirdParty", "Terceiros - armazenagem");
+
+    const byIndex = ["OwnedInOurCustody", "OwnedInThirdPartyCustody", "ThirdParty"];
+    const key = typeof value === "number" ? byIndex[value] : value;
+
+    return m.get(key);
   },
 
   /**
@@ -489,6 +508,32 @@ export default {
     m.set("Comments", "Observação");
 
     return m.get(value) ?? value;
+  },
+
+  // ---------------------------------------------------------------------------
+  // Cadastros de centro de custo e conta contábil
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Para colunas booleanas. Diferente de formatYesNo, que recebe o "Y"/"N" do SAP.
+   *
+   * Aceita string porque sem targetType: 'any' no binding o UI5 converte o Edm.Boolean
+   * para texto antes de chamar o formatter — e aí "false" é truthy e toda linha vira "Sim".
+   */
+  formatBooleanYesNo: (value: boolean | string) =>
+    (typeof value === "string" ? value.toLowerCase() === "true" : !!value) ? "Sim" : "Não",
+
+  /**
+   * Vem vazio em modo SAPB1: o SAP não classifica a conta nestes quatro grupos.
+   */
+  formatLedgerAccountType: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Asset", "Ativo");
+    m.set("Liability", "Passivo");
+    m.set("Revenue", "Receita");
+    m.set("Expense", "Despesa");
+
+    return m.get(value) ?? "";
   },
 
   // ---------------------------------------------------------------------------

@@ -22,7 +22,9 @@ export default class Detail extends BaseController {
 		if (id != null) {
 
       uiModel.setProperty("/editable", false);
-      
+      // O formulário inteiro é somente leitura aqui; o campo de contrato segue a regra.
+      this.setContractEnabled(false);
+
 			const sPath = `/OwnershipTransfers(${id})`;
 			this.bindElement(sPath);
 

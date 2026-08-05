@@ -65,12 +65,12 @@
            />
         </fb:control>
       </fb:FilterGroupItem>
-      <fb:FilterGroupItem name="businessPartners" label="Cliente" groupName="GroupBusinessPartner" visibleInFilterBar="true">
+      <fb:FilterGroupItem name="businessPartners" label="Cliente/Fornecedor" groupName="GroupBusinessPartner" visibleInFilterBar="true">
         <fb:control>
             <Input
               showClearIcon="true"
               showValueHelp="true"
-              valueHelpRequest=".openCostumersValueHelp"
+              valueHelpRequest=".openBusinessPartnersValueHelp"
               value="{filter>/CardCode}"
               >
             </Input>

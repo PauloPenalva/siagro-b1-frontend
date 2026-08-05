@@ -29,10 +29,44 @@ export default class Edit extends BaseController {
 		const {id} = ev.getParameter("arguments") as {id: string };
 		if (id != null) {
 			const sPath = `/OwnershipTransfers(${id})`;
-			this.bindElement(sPath);
+			// $expand dos dois lotes: a habilitação do contrato depende da classificação
+			// de propriedade de ambos, e sem o expand ela não vem no GET-by-key.
+			this.bindElement(sPath, {
+				$expand: "StorageAddressOrigin($select=Code,OwnershipType,WarehouseCode),"
+					+ "StorageAddressDestination($select=Code,OwnershipType)"
+			});
+
+			// Só depois que os dados chegam: antes disso as propriedades dos lotes
+			// ainda não existem no contexto.
+			this.getView().getObjectBinding()
+				?.attachEventOnce("dataReceived", (): void => {
+					void this.applyContractAvailability();
+				});
 			return;
 		}
 
+	}
+
+	/** Reavalia se o contrato pode ser vinculado, a partir da classificação dos lotes. */
+	private async applyContractAvailability() {
+		const oContext = this.getView().getBindingContext() as Context;
+		if (!oContext) return;
+
+		const originType = oContext.getProperty("StorageAddressOrigin/OwnershipType") as string;
+		const destinationType = oContext.getProperty("StorageAddressDestination/OwnershipType") as string;
+
+		const enabled = this.isOwnStockLot(destinationType) && !this.isOwnStockLot(originType);
+		this.setContractEnabled(enabled);
+
+		// Restringe os contratos ofertados ao armazém onde a mercadoria já está.
+		this.setOriginWarehouse(
+			oContext.getProperty("StorageAddressOrigin/WarehouseCode") as string);
+
+		// Destino deixou de ser estoque próprio (reclassificação do lote): o vínculo
+		// não pode sobreviver escondido num campo desabilitado.
+		if (!enabled) {
+			await this.clearPurchaseContract(oContext);
+		}
 	}
 
 	async onSave() {

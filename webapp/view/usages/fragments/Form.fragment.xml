@@ -1,0 +1,115 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+    <f:SimpleForm
+      id="usagesForm"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0">
+        <f:content>
+          <core:Title
+              text="Dados da Natureza de Operação"
+              emphasized="true"
+          />
+          <Label text="Nome" />
+          <Input
+              value="{Name}"
+              editable="true"
+              required="true"
+              liveChange=".validateField"
+              maxLength="200"
+          />
+          <Label text="Descrição" />
+          <Input
+              value="{Description}"
+              editable="true"
+              maxLength="200"
+          />
+          <Label text="CFOP dentro do estado" />
+          <Input
+              value="{CfopOutgoingInState}"
+              editable="true"
+              maxLength="4"
+          />
+          <Label text="CFOP fora do estado" />
+          <Input
+              value="{CfopOutgoingOutState}"
+              editable="true"
+              maxLength="4"
+          />
+
+          <core:Title
+              text="Efeito no Contrato"
+              emphasized="true"
+          />
+          <Label text="Saldo do contrato" />
+          <Select
+            selectedKey="{
+              path: 'ContractBalanceEffect',
+              targetType: 'any'
+            }"
+            forceSelection="false"
+          >
+            <core:ListItem key="None" text="Não altera" />
+            <core:ListItem key="Consume" text="Consome saldo" />
+            <core:ListItem key="Restore" text="Devolve saldo" />
+          </Select>
+          <Label text="Valor do contrato" />
+          <Select
+            selectedKey="{
+              path: 'ContractValueEffect',
+              targetType: 'any'
+            }"
+            forceSelection="false"
+          >
+            <core:ListItem key="None" text="Não altera" />
+            <core:ListItem key="Add" text="Soma ao apurado" />
+            <core:ListItem key="Subtract" text="Subtrai do apurado" />
+          </Select>
+
+          <core:Title
+              text="Obrigatoriedades"
+              emphasized="true"
+          />
+          <Label text="Exige contrato ?" />
+          <CheckBox
+            selected="{RequiresContract}"
+          />
+          <Label text="Exige quantidade ?" />
+          <CheckBox
+            selected="{RequiresQuantity}"
+          />
+          <Label text="Exige peso ?" />
+          <CheckBox
+            selected="{RequiresWeight}"
+          />
+          <Label text="Padrão do faturamento de romaneio ?" />
+          <CheckBox
+            selected="{IsDefault}"
+          />
+          <Label text="Inativo ?" />
+          <CheckBox
+            selected="{Inactive}"
+          />
+        </f:content>
+        <core:Title />
+        <core:Title />
+    </f:SimpleForm>
+</core:FragmentDefinition>

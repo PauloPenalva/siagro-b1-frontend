@@ -1,0 +1,76 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+
+<!--
+  Contratos de venda para a linha do documento de saída avulso.
+
+  Lista /SalesContracts direto, e não uma função de saldo, porque o documento avulso
+  atende justamente os casos que NÃO consomem saldo: complemento de preço (só valor) e
+  ajuste de quebra (devolve saldo). Filtrar por saldo a liberar esconderia exatamente o
+  contrato que o usuário precisa corrigir. Quem recusa contrato encerrado é o serviço,
+  na confirmação.
+-->
+<TableSelectDialog
+  class=" sapUiSizeCompact"
+  growing="true"
+  growingThreshold="20"
+  items="{
+    path: '/SalesContracts',
+    sorter: {
+      path: 'Code',
+      descending: true
+    }
+  }"
+  rememberSelections="true"
+  title="Contratos de Venda"
+>
+<columns>
+  <Column>
+    <header>
+      <Text text="Contrato" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Cliente" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Produto" />
+    </header>
+  </Column>
+  <Column hAlign="End">
+    <header>
+      <Text text="Volume Total" />
+    </header>
+  </Column>
+</columns>
+<ColumnListItem>
+  <cells>
+    <ObjectIdentifier title="{Code}" />
+    <ObjectIdentifier title="{CardName}" text="{CardCode}" />
+    <ObjectIdentifier title="{ItemName}" text="{ItemCode}" />
+    <ObjectNumber
+      number="{
+        path: 'TotalVolume',
+        type: 'sap.ui.model.type.Float',
+        formatOptions: {
+          decimals: 3,
+          decimalSeparator: ',',
+          groupingEnabled: true,
+          groupingSeparator: '.'
+        }
+      }"
+      unit="{UnitOfMeasureCode}"
+      state="None"
+    />
+  </cells>
+</ColumnListItem>
+</TableSelectDialog>
+</core:FragmentDefinition>

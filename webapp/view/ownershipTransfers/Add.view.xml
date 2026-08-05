@@ -119,6 +119,9 @@
                                     <Column >
                                         <Text text="Armazém" />
                                     </Column>
+                                    <Column >
+                                        <Text text="Tipo Propriedade" />
+                                    </Column>
                                     <Column hAlign="End" width="15rem">
                                         <Text text="Saldo" />
                                     </Column>
@@ -146,6 +149,12 @@
                                             <ObjectIdentifier
                                               title="{balance>WarehouseName}"
                                               text="{balance>WarehouseCode}"
+                                            />
+                                            <Text
+                                                text="{
+                                                  path: 'balance>OwnershipType',
+                                                  formatter: '.formatter.formatStorageOwnershipType'
+                                                }"
                                             />
                                             <ObjectNumber
                                                 number="{
@@ -262,6 +271,9 @@
                                     <Column >
                                         <Text text="Armazém" />
                                     </Column>
+                                    <Column >
+                                        <Text text="Tipo Propriedade" />
+                                    </Column>
                                     <Column hAlign="End" width="15rem">
                                         <Text text="Saldo" />
                                     </Column>
@@ -289,6 +301,12 @@
                                             <ObjectIdentifier
                                               title="{destination>WarehouseName}"
                                               text="{destination>WarehouseCode}"
+                                            />
+                                            <Text
+                                                text="{
+                                                  path: 'destination>OwnershipType',
+                                                  formatter: '.formatter.formatStorageOwnershipType'
+                                                }"
                                             />
                                             <ObjectNumber
                                                 number="{

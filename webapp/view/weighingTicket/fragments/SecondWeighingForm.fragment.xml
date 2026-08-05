@@ -121,7 +121,7 @@
             </layoutData>
           </Input>
           <Input value="{TruckDriver/Name}" editable="false" />
-          <Label text="Cliente" />
+          <Label text="Cliente/Fornecedor" />
           <Input 
               required="true"
               editable="false"

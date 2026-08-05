@@ -125,14 +125,14 @@
             </customData>
           </Input>
           <Input value="{TruckDriver/Name}" editable="false" />
-          <Label text="Cliente" />
-          <Input 
+          <Label text="Cliente/Fornecedor" />
+          <Input
               required="true"
               editable="{ui>/editable}"
-              value="{CardCode}" 
-              showValueHelp="true" 
-              valueHelpOnly="true" 
-              valueHelpRequest=".openCostumersValueHelp">
+              value="{CardCode}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openBusinessPartnersValueHelp">
               <customData>
                 <core:CustomData key="descriptionProperty" value="CardName" />
               </customData>

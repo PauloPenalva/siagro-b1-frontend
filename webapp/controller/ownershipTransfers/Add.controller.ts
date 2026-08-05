@@ -98,6 +98,16 @@ export default class Add extends BaseController {
     const originCode = originCtx.getProperty("Code") as string;
     const destinationCode = destinationCtx.getProperty("Code") as string;
 
+    // O vínculo com contrato de compra só existe quando a mercadoria realmente passa
+    // a ser da empresa: destino próprio e origem de terceiros.
+    const destinationType = destinationCtx.getProperty("OwnershipType") as number;
+    const originType = originCtx.getProperty("OwnershipType") as number;
+    this.setContractEnabled(
+      this.isOwnStockLot(destinationType) && !this.isOwnStockLot(originType));
+
+    // Restringe os contratos ofertados ao armazém onde a mercadoria já está.
+    this.setOriginWarehouse(originCtx.getProperty("WarehouseCode") as string);
+
     const oView = this.getView();
 		const oModel = this.getView().getModel() as ODataModel;
 		const oBinding = oModel.bindList("/OwnershipTransfers")
@@ -119,7 +129,10 @@ export default class Add extends BaseController {
     }, false, false, false);
 
     oView.setBindingContext(oContext);
-      
+
+    // O filtro por produto do value help é aplicado na abertura do diálogo,
+    // lendo o ItemCode do contexto — nada a fazer aqui.
+
     this.setBusy(false);
   }
 

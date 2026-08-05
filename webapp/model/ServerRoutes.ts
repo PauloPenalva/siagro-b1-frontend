@@ -34,6 +34,11 @@ export default {
   qualityAttrib: '/odata/QualityAttribs',
   logisticRegions: '/odata/LogisticRegions',
 
+  // Dual-mode: em SAPB1 o backend lê de OPRC/OACT (somente leitura); em STANDALONE,
+  // das tabelas locais. O caminho é o mesmo nos dois modos.
+  costCenters: '/odata/CostCenters',
+  ledgerAccounts: '/odata/LedgerAccounts',
+
   // Notificação por WhatsApp. O log é somente leitura: as linhas nascem nos serviços de
   // mutação do contrato, na mesma transação da alteração.
   notificationGroups: '/odata/NotificationGroups',

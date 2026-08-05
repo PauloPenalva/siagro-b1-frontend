@@ -1,0 +1,104 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }"
+>
+
+<!--
+  Origem é a função que já devolve só os contratos APROVADOS com saldo a liberar,
+  a mesma da tela "Contratos de Compra a Liberar Entrega" - listar /PurchaseContracts
+  cru ofereceria contrato encerrado, cancelado ou sem saldo, que o servidor recusa
+  na confirmação da transferência. Contrato encerrado (Finished) não passa pelo
+  filtro de status, então nunca chega aqui.
+
+  Produto e local de entrega são filtrados na abertura pelo controller, a partir
+  do lote de origem. A busca cobre número do contrato, código e nome do fornecedor.
+-->
+<TableSelectDialog
+  class=" sapUiSizeCompact"
+  growing="true"
+  growingThreshold="20"
+  items="{
+    path: '/PurchaseContractsGetShipmentReleasesAvailable',
+    sorter: {
+      path: 'Code',
+      descending: false
+    }
+  }"
+  rememberSelections="true"
+  title="Contratos de Compra"
+>
+<columns>
+  <Column>
+    <header>
+      <Text text="Contrato" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Fornecedor" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Produto" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Local de Entrega" />
+    </header>
+  </Column>
+  <Column hAlign="End">
+    <header>
+      <Text text="Volume Total" />
+    </header>
+  </Column>
+  <Column hAlign="End">
+    <header>
+      <Text text="Saldo a Liberar" />
+    </header>
+  </Column>
+</columns>
+<ColumnListItem>
+  <cells>
+    <ObjectIdentifier title="{Code}" text="{Complement}" />
+    <ObjectIdentifier title="{CardName}" text="{CardCode}" />
+    <ObjectIdentifier title="{ItemName}" text="{ItemCode}" />
+    <ObjectIdentifier title="{DeliveryLocationName}" text="{DeliveryLocationCode}" />
+    <ObjectNumber
+      number="{
+        path: 'TotalVolume',
+        type: 'sap.ui.model.type.Float',
+        formatOptions: {
+          decimals: 3,
+          decimalSeparator: ',',
+          groupingEnabled: true,
+          groupingSeparator: '.'
+        }
+      }"
+      unit="{UnitOfMeasureCode}"
+      state="None"
+    />
+    <ObjectNumber
+      number="{
+        path: 'TotalAvailableToRelease',
+        type: 'sap.ui.model.type.Float',
+        formatOptions: {
+          decimals: 3,
+          decimalSeparator: ',',
+          groupingEnabled: true,
+          groupingSeparator: '.'
+        }
+      }"
+      unit="{UnitOfMeasureCode}"
+    />
+  </cells>
+</ColumnListItem>
+</TableSelectDialog>
+</core:FragmentDefinition>
