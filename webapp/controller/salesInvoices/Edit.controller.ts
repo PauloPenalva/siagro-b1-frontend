@@ -17,7 +17,10 @@ export default class Edit extends BaseController {
 	private editRouteMatched(ev: Route$MatchedEvent) {
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setProperty("/editable", true);
-        
+
+    uiModel.setProperty("/canPickContract", false);
+
+
 		this.clearStates("formSalesInvoice");
     
     const oModel = this.getView().getModel() as ODataModel;
@@ -30,6 +33,7 @@ export default class Edit extends BaseController {
 		if (id != null) {
 			const sPath = `/SalesInvoices(${id})`;
 			this.bindElement(sPath);
+			this.attachDocumentTotalRefresh();
 			return;
 		}
 

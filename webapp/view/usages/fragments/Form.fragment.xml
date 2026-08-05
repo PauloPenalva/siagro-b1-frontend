@@ -24,14 +24,24 @@
       singleContainerFullSize="true"
 		  busyIndicatorDelay="0">
         <f:content>
+          <!-- IDENTIDADE fiscal. Em modo SAPB1 vem do OUSG e o Siagro não a escreve: os
+               campos ficam somente-leitura. O EFEITO, abaixo, é sempre editável — ele é do
+               Siagro nos dois modos. -->
           <core:Title
               text="Dados da Natureza de Operação"
               emphasized="true"
           />
+          <MessageStrip
+              visible="{= !${ui>/identityEditable} }"
+              text="Nome, descrição e CFOP são mantidos no SAP (OUSG). Aqui você configura apenas o efeito no contrato."
+              type="Information"
+              showIcon="true"
+              class="sapUiSmallMarginBottom"
+          />
           <Label text="Nome" />
           <Input
               value="{Name}"
-              editable="true"
+              editable="{ui>/identityEditable}"
               required="true"
               liveChange=".validateField"
               maxLength="200"
@@ -39,19 +49,19 @@
           <Label text="Descrição" />
           <Input
               value="{Description}"
-              editable="true"
+              editable="{ui>/identityEditable}"
               maxLength="200"
           />
           <Label text="CFOP dentro do estado" />
           <Input
               value="{CfopOutgoingInState}"
-              editable="true"
+              editable="{ui>/identityEditable}"
               maxLength="4"
           />
           <Label text="CFOP fora do estado" />
           <Input
               value="{CfopOutgoingOutState}"
-              editable="true"
+              editable="{ui>/identityEditable}"
               maxLength="4"
           />
 
@@ -107,6 +117,7 @@
           <Label text="Inativo ?" />
           <CheckBox
             selected="{Inactive}"
+            editable="{ui>/identityEditable}"
           />
         </f:content>
         <core:Title />

@@ -6,15 +6,26 @@
 <!--
   Linhas de saída elegíveis como origem da devolução.
 
-  A lista é ligada na ABERTURA (elementPath), porque depende do cliente da devolução — quem
-  filtra é o servidor, na função CustomerReturnsOriginItems: mesmo cliente, documento
-  confirmado, entrega fechada e quebra apurada maior que zero.
+  Ligado ao ENTITY SET, e não à função CustomerReturnsOriginItems: função que devolve coleção
+  não se liga por elementPath, e o diálogo abria vazio. As condições de elegibilidade cabem
+  todas no $filter — documento confirmado, entrega fechada e quebra apurada (faturado maior
+  que o líquido). O cliente muda a cada devolução e entra como filtro na abertura, pelo
+  controller.
+
+  A quebra é comparada pela FÓRMULA e não por AvaiableVolume/AssessedShortage: propriedade
+  [NotMapped] é calculada em memória e não vira SQL.
 -->
 <TableSelectDialog
   class=" sapUiSizeCompact"
   growing="true"
   growingThreshold="20"
-  items="{}"
+  items="{
+    path: '/SalesInvoicesItems',
+    parameters: {
+      $filter: 'SalesInvoice/InvoiceStatus eq \'Confirmed\' and DeliveryStatus eq \'Closed\' and Quantity gt DeliveredQuantity sub QuantityLoss',
+      $expand: 'SalesInvoice,SalesContract'
+    }
+  }"
   rememberSelections="true"
   title="NF de Origem"
 >
@@ -47,8 +58,8 @@
 </columns>
 <ColumnListItem>
   <cells>
-    <ObjectIdentifier title="{InvoiceNumber}" text="{SalesContractCode}" />
-    <Text text="{TaxDocumentNumber}" />
+    <ObjectIdentifier title="{SalesInvoice/InvoiceNumber}" text="{SalesContract/Code}" />
+    <Text text="{SalesInvoice/TaxDocumentNumber}" />
     <ObjectIdentifier title="{ItemName}" text="{ItemCode}" />
     <ObjectNumber
       number="{

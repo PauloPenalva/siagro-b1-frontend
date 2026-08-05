@@ -8,6 +8,8 @@ import Context from "sap/ui/model/odata/v4/Context";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import BaseController from "./PurchaseContractsBaseController";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import { Column, EdmType, SpreadsheetSettings } from "sap/ui/export/library";
+import Spreadsheet from "sap/ui/export/Spreadsheet";
 
 type FilterData = {
   Code?: string,
@@ -27,6 +29,9 @@ type FilterData = {
 export default class Main extends BaseController {
 
   formatter = formatter;
+
+  /** `$filter` corrente da filterbar, reaproveitado pelo binding do export. */
+  private currentFilter: string;
 
 	onInit(): void  {
     this.createFilterModel();
@@ -68,6 +73,8 @@ export default class Main extends BaseController {
     });
 
     const filterParam = filters.length > 0 ? filters.join(' and ') : undefined;
+
+    this.currentFilter = filterParam;
 
 		oBinding.changeParameters({
       $filter: filterParam
@@ -163,5 +170,154 @@ export default class Main extends BaseController {
     const oTable = this.byId("tablePurchaseContracts") as Table;
     (oTable.getBinding("rows") as ODataListBinding).refresh();
   }
- 
+
+  private createColumnConfig() {
+    const aCols: Column[] = [];
+
+    aCols.push({
+      label: "Filial",
+      property: "Branch/ShortName",
+      type: EdmType.String,
+    });
+
+    aCols.push({
+      label: "Status",
+      property: "Status",
+      type: EdmType.Enumeration,
+      valueMap: {
+        "Draft": "Rascunho",
+        "InApproval": "Em Aprovação",
+        "Approved": "Aprovado",
+        "Finished": "Finalizado",
+        "Rejected": "Rejeitado",
+        "Canceled": "Cancelado",
+      }
+    });
+
+    aCols.push({
+      label: "Codigo",
+      property: "Code",
+      type: EdmType.String,
+    });
+
+    aCols.push({
+      label: "Tipo de Contrato",
+      property: "Type",
+      type: EdmType.Enumeration,
+      valueMap: {
+        "Fixed": "FIX - Preço Fixo",
+        "ToBeDetermined": "PAF - Preço a Fixar",
+      }
+    });
+
+    aCols.push({
+      label: "Complemento",
+      property: "Complement",
+      type: EdmType.String,
+    });
+
+    aCols.push({
+      label: "Emissão",
+      property: "CreationDate",
+      type: EdmType.Date,
+    });
+
+    aCols.push({
+      label: "Inicio Entrega",
+      property: "DeliveryStartDate",
+      type: EdmType.Date,
+    });
+
+    aCols.push({
+      label: "Termino Entrega",
+      property: "DeliveryEndDate",
+      type: EdmType.Date,
+    });
+
+    aCols.push({
+      label: "Cod.Fornecedor",
+      property: "CardCode",
+      type: EdmType.String,
+    });
+
+    aCols.push({
+      label: "Fornecedor",
+      property: "CardName",
+      type: EdmType.String,
+    });
+
+    aCols.push({
+      label: "Comprador",
+      property: "AgentName",
+      type: EdmType.String,
+    });
+
+    aCols.push({
+      label: "Cod.Produto",
+      property: "ItemCode",
+      type: EdmType.String,
+    });
+
+    aCols.push({
+      label: "Produto",
+      property: "ItemName",
+      type: EdmType.String,
+    });
+
+    aCols.push({
+      label: "Tipo Mercado",
+      property: "MarketType",
+      type: EdmType.Enumeration,
+      valueMap: {
+        "Internal": "Interno",
+        "External": "Exportação",
+      }
+    });
+
+    aCols.push({
+      label: "Quantidade",
+      property: "TotalVolume",
+      type: EdmType.Number,
+      scale: 3,
+      delimiter: true
+    });
+
+    aCols.push({
+      label: "Saldo (Físico)",
+      property: "AvaiableVolume",
+      type: EdmType.Number,
+      scale: 3,
+      delimiter: true
+    });
+
+    aCols.push({
+      label: "Un.Med.",
+      property: "UnitOfMeasureCode",
+      type: EdmType.String,
+    });
+
+    return aCols;
+  }
+
+  async onExcel() {
+    const cols = this.createColumnConfig();
+
+    const setting: SpreadsheetSettings = {
+      dataSource: await this.createExportBinding("/PurchaseContracts", cols, "Code", this.currentFilter),
+      fileName: 'Contratos de Compra.xlsx',
+      workbook: {
+        columns: cols,
+        hierarchyLevel: "Level",
+        context: {
+          sheetName: 'Contratos de Compra'
+        }
+      }
+    };
+
+    const oSheet = new Spreadsheet(setting);
+    void oSheet.build().finally(function() {
+      oSheet.destroy();
+    });
+  }
+
 }

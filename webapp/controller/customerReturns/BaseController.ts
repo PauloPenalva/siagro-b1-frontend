@@ -41,18 +41,18 @@ export abstract class BaseController extends CommonController {
     const oSelected = await DialogHelper.openTableSelectDialog(
       this,
       "CustomerReturnOriginItemsSelectDialog",
-      ["InvoiceNumber", "TaxDocumentNumber", "ItemName"],
-      [ new Filter("CardCode", FilterOperator.EQ, cardCode) ],
-      `/CustomerReturnsOriginItems(CardCode='${cardCode}')`);
+      ["SalesInvoice/InvoiceNumber", "SalesInvoice/TaxDocumentNumber", "ItemName"],
+      // O cliente muda a cada devolução, então entra na abertura. As demais condições de
+      // elegibilidade são fixas e vivem no $filter do fragmento.
+      [ new Filter("SalesInvoice/CardCode", FilterOperator.EQ, cardCode) ]);
 
     // Cancelar resolve undefined: não mexer no que já estava amarrado.
     if (!oSelected) {
       return;
     }
 
-    oInput.setValue(oSelected.getProperty("InvoiceNumber") as string);
-    await oTarget.setProperty(
-      "SalesInvoiceItemKey", oSelected.getProperty("SalesInvoiceItemKey"));
+    oInput.setValue(oSelected.getProperty("SalesInvoice/InvoiceNumber") as string);
+    await oTarget.setProperty("SalesInvoiceItemKey", oSelected.getProperty("Key"));
   }
 
   /**

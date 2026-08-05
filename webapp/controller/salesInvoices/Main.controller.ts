@@ -67,6 +67,14 @@ export default class Main extends BaseController {
     });
   }
 
+  /**
+   * Documento de saída AVULSO — sem romaneio. O faturamento de romaneio continua entrando
+   * pela tela de Expedição.
+   */
+  onCreate(): void {
+    this.navTo("salesInvoicesAdd");
+  }
+
  	onDetail(): void {
 		const oTable = this.byId("tableSalesInvoices") as Table;
     const i = oTable.getSelectedIndex()

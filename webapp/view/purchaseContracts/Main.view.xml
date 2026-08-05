@@ -53,6 +53,7 @@
 						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
 						<Button type="Transparent" text="Criar" press=".onCreate"/>
 						<Button type="Transparent" text="Deletar" press=".onDelete"/>
+						<Button type="Transparent" text="Exportar Excel" icon="sap-icon://excel-attachment" press=".onExcel"/>
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>
@@ -145,6 +146,38 @@
 						</t:template>
 					</t:Column>
           <t:Column
+						label="Inicio Entrega"
+						sortProperty="DeliveryStartDate"
+            width="10rem"
+						>
+						<t:template>
+            <Text
+              wrapping="false"
+              text="{
+                path: 'DeliveryStartDate',
+                targetType: 'any',
+                formatter: '.formatter.formatDate'
+              }"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Termino Entrega"
+						sortProperty="DeliveryEndDate"
+            width="10rem"
+						>
+						<t:template>
+            <Text
+              wrapping="false"
+              text="{
+                path: 'DeliveryEndDate',
+                targetType: 'any',
+                formatter: '.formatter.formatDate'
+              }"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column
 						label="Cod.Fornecedor"
 						sortProperty="CardCode"
             width="10rem"
@@ -230,6 +263,28 @@
                 }
               }"
             />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Saldo (Físico)"
+            hAlign="End"
+            width="10rem"
+						>
+						<t:template>
+              <ObjectNumber
+                textAlign="End"
+                state="{= ${AvaiableVolume} &lt; 0 ? 'Error' : 'Success' }"
+                number="{
+                  path: 'AvaiableVolume',
+                  type: 'sap.ui.model.type.Float',
+                  formatOptions:{
+                    decimals: 3,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                  }
+                }"
+              />
 						</t:template>
 					</t:Column>
 					<t:Column label="Un.Med." width="10rem">

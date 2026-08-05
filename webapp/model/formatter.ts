@@ -537,6 +537,103 @@ export default {
   },
 
   // ---------------------------------------------------------------------------
+  // Natureza de operação
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Efeito da natureza sobre o SALDO FÍSICO do contrato de venda.
+   */
+  formatContractBalanceEffect: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("None", "Não altera");
+    m.set("Consume", "Consome saldo");
+    m.set("Restore", "Devolve saldo");
+
+    return m.get(value) ?? "";
+  },
+
+  /**
+   * Total da linha do documento de saída, calculado NO CLIENTE.
+   *
+   * A propriedade `Total` da entidade é [NotMapped] — só existe depois que o servidor
+   * responde, então a linha em digitação ficava sempre vazia. Aqui o valor acompanha o que
+   * está sendo digitado.
+   *
+   * Aceita string porque, sem `targetType: 'any'` em cada parte, o binding composto do OData
+   * v4 entrega os valores já convertidos para texto.
+   */
+  formatLineTotal: (quantity: number | string, unitPrice: number | string) => {
+    const qty = Number(quantity ?? 0);
+    const price = Number(unitPrice ?? 0);
+    const total = (isNaN(qty) ? 0 : qty) * (isNaN(price) ? 0 : price);
+
+    return total.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  },
+
+  // ---------------------------------------------------------------------------
+  // Devolução de cliente
+  // ---------------------------------------------------------------------------
+
+  formatCustomerReturnStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Registered", "Registrada");
+    m.set("Cancelled", "Cancelada");
+
+    return m.get(value) ?? "";
+  },
+
+  stateCustomerReturnStatus: (value: string) =>
+    value === "Cancelled" ? "Error" : "Success",
+
+  /**
+   * Diferença entre o devolvido e a quebra apurada.
+   *
+   * Zero é o caso em que fiscal e físico batem. Diferente de zero só ALERTA — arredondamento
+   * e devolução parcial são legítimos, e quem decide é o usuário.
+   */
+  stateReturnDifference: (value: number | string) => {
+    const difference = Number(value ?? 0);
+
+    return !isNaN(difference) && difference === 0 ? "Success" : "Warning";
+  },
+
+  /**
+   * Saldo do contrato na escolha do documento de saída.
+   *
+   * A lista NÃO filtra por saldo (complemento de preço e ajuste de quebra atendem contrato já
+   * entregue), então o estado é o que separa o que ainda tem saldo do que não tem.
+   */
+  stateContractBalance: (value: number | string) => {
+    const balance = Number(value ?? 0);
+
+    return !isNaN(balance) && balance > 0 ? "Success" : "Warning";
+  },
+
+  /**
+   * Natureza sem efeito configurado é bloqueada no documento — o alerta é para o usuário ver
+   * o que falta antes de tentar usá-la.
+   */
+  stateConfiguredEffects: (value: boolean | string) =>
+    (typeof value === "string" ? value.toLowerCase() === "true" : !!value)
+      ? "Success"
+      : "Warning",
+
+  /**
+   * Efeito da natureza sobre o VALOR apurado do contrato (diferença de preço).
+   */
+  formatContractValueEffect: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("None", "Não altera");
+    m.set("Add", "Soma ao apurado");
+    m.set("Subtract", "Subtrai do apurado");
+
+    return m.get(value) ?? "";
+  },
+
+  // ---------------------------------------------------------------------------
   // Notificação por WhatsApp
   // ---------------------------------------------------------------------------
 

@@ -121,9 +121,13 @@
               </customData>
             </Input>
             <Input value="{CardName}" editable="false" />
+            <!-- Peso e o bloco de transporte NÃO são marcados como obrigatórios na tela.
+                 Quem exige é a natureza de operação, que agora é da LINHA: um complemento de
+                 preço não tem peso, caminhão nem transportadora, e o cabeçalho não pode
+                 reagir à natureza antes de existirem itens. A recusa vem do
+                 SalesInvoicesUsageGuardService, com mensagem de negócio em pt-BR. -->
             <Label text="Peso Bruto"/>
-            <Input 
-              required="true"
+            <Input
               editable="{ui>/editable}"
               value="{
                 path: 'GrossWeight',
@@ -137,8 +141,7 @@
               }"
             />
             <Label text="Peso Liquido"/>
-            <Input 
-              required="true"
+            <Input
               editable="{ui>/editable}"
               value="{
                 path: 'NetWeight',
@@ -159,7 +162,6 @@
               showValueHelp="true"
               valueHelpOnly="true"
               valueHelpRequest=".openBusinessPartnersValueHelp"
-              required="true"
               value="{DeliveryCardCode}"
               >
               <layoutData>
@@ -176,7 +178,6 @@
               showValueHelp="true"
               valueHelpOnly="true"
               valueHelpRequest=".openBusinessPartnersValueHelp"
-              required="true"
               value="{TruckingCompanyCode}"
               >
               <layoutData>
@@ -193,7 +194,6 @@
               showValueHelp="true"
               valueHelpOnly="true"
               valueHelpRequest=".openTrucksValueHelp"
-              required="true"
               value="{TruckCode}"
               >
               <layoutData>
@@ -201,10 +201,9 @@
               </layoutData>
             </Input>
             <Label text="Tipo do Frete"/>
-            <Select 
+            <Select
               editable="{ui>/editable}"
               forceSelection="false"
-              required="true"
               selectedKey="{
                 path: 'FreightTerms',
                 targetType: 'any'
@@ -215,9 +214,8 @@
               <core:ListItem key="None" text="SEM FRETE"/>
             </Select>
             <Label text="Valor do Frete"/>
-            <Input 
+            <Input
               editable="{ui>/editable}"
-              required="true"
               value="{
                 path: 'FreightCostStandard',
                 type: 'sap.ui.model.odata.type.Double',

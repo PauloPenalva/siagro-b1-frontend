@@ -56,6 +56,16 @@
               editable="true"
               maxLength="14"
           />
+          <Label text="UF" />
+          <Input
+              value="{StateCode}"
+              editable="true"
+              required="true"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openStatesAbbreviationValueHelp"
+              maxLength="2"
+          />
         </f:content>
         <core:Title />
         <core:Title />

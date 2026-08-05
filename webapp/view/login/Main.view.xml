@@ -55,7 +55,7 @@
       <OverflowToolbar >
         <Text text="Desenvolvido por IDX Tecnologia" />
         <ToolbarSeparator />
-        <Text text="Versão: 1.1.210" />
+        <Text text="Versão: 1.1.211" />
         <ToolbarSpacer />
         <!-- <Button icon="sap-icon://action-settings"/> -->
       </OverflowToolbar>

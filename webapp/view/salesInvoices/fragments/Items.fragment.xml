@@ -4,6 +4,9 @@
     xmlns:l="sap.ui.layout"
     xmlns:t="sap.ui.table"
     xmlns:core="sap.ui.core"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }"
 >
   <t:Table
     id="tableSalesInvoicesItems"
@@ -36,6 +39,22 @@
             icon="sap-icon://delete"
             press=".onRemoveItem"
           />
+          <Button
+            text="Fiscal"
+            type="Transparent"
+            icon="sap-icon://official-service"
+            press=".onOpenItemFiscal"
+          />
+          <ToolbarSpacer />
+          <!-- Total geral do documento. Somado no cliente pelo mesmo motivo do total da
+               linha: TotalInvoiceItems é [NotMapped] e não existe antes de salvar. -->
+          <ObjectNumber
+            id="salesInvoiceDocumentTotal"
+            number="{ui>/documentTotal}"
+            unit="Total do Documento"
+            emphasized="true"
+            state="None"
+          />
         </content>
       </OverflowToolbar>
     </t:extension>
@@ -58,14 +77,15 @@
       </t:Column>
       <t:Column label="Descricao">
         <t:template>
-          <Text value="{ItemName}" editable="false" />
+          <Text text="{ItemName}" />
         </t:template>
       </t:Column>
       <t:Column label="Quantidade">
         <t:template>
-          <Input 
+          <Input
               required="true"
               editable="{ui>/editable}"
+              change=".onItemAmountChange"
               value="{
                 path: 'Quantity',
                 type: 'sap.ui.model.odata.type.Double',
@@ -74,7 +94,7 @@
                     decimalSeparator: ',',
                     groupingEnabled: true,
                     groupingSeparator: '.'
-                } 
+                }
               }"
           />
         </t:template>
@@ -96,9 +116,10 @@
       </t:Column>
       <t:Column label="Valor Unitário">
         <t:template>
-          <Input 
+          <Input
               required="true"
               editable="{ui>/editable}"
+              change=".onItemAmountChange"
               value="{
                 path: 'UnitPrice',
                 type: 'sap.ui.model.odata.type.Double',
@@ -107,30 +128,67 @@
                     decimalSeparator: ',',
                     groupingEnabled: true,
                     groupingSeparator: '.'
-                } 
+                }
               }"
           />
         </t:template>
       </t:Column>
       <t:Column label="Total">
         <t:template>
-          <Text 
+          <!-- Calculado no cliente: `Total` é [NotMapped] e só existe depois que o servidor
+               responde, então a linha em digitação aparecia vazia. `targetType: 'any'` em
+               cada parte é obrigatório — sem ele o binding composto entrega texto. -->
+          <Text
               text="{
-                path: 'Total',
-                type: 'sap.ui.model.odata.type.Double',
-                formatOptions: {
-                    decimals: 2,
-                    decimalSeparator: ',',
-                    groupingEnabled: true,
-                    groupingSeparator: '.'
-                } 
+                parts: [
+                  { path: 'Quantity', targetType: 'any' },
+                  { path: 'UnitPrice', targetType: 'any' }
+                ],
+                formatter: 'formatter.formatLineTotal'
               }"
           />
         </t:template>
       </t:Column>
-      <t:Column label="Contrato">
+      <!-- Duas colunas para o mesmo dado, uma visível de cada vez.
+           O item guarda SalesContractKey (GUID) e lê o código por navegação
+           (SalesContract/Code), que é somente leitura: não dá para um Input escrever
+           nele. Então a escolha do contrato só aparece onde há linha nova para
+           preencher (inclusão), e o resto das telas continua com o texto navegado.
+           `canPickContract` PRECISA ser inicializado como false nas outras telas —
+           binding indefinido faz `visible` valer true. -->
+      <t:Column label="Contrato" visible="{= !${ui>/canPickContract} }">
         <t:template>
           <Text text="{SalesContract/Code}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Contrato" visible="{ui>/canPickContract}">
+        <t:template>
+          <Input
+            editable="{ui>/editable}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openSalesContractValueHelp" />
+        </t:template>
+      </t:Column>
+      <!-- Natureza de operação por LINHA, como no SAP. O Input mostra o nome desnormalizado
+           (UsageName) e o value help grava também o UsageCode, que é quem vale para o
+           servidor — mesmo desenho do contrato. -->
+      <t:Column label="Natureza de Operação" width="14rem">
+        <t:template>
+          <Input
+            editable="{ui>/editable}"
+            required="true"
+            value="{UsageName}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openUsageValueHelp" />
+        </t:template>
+      </t:Column>
+      <t:Column label="CFOP" width="6rem">
+        <t:template>
+          <!-- Resolvido da natureza de operação na gravação. Somente leitura: o documento
+               emitido não muda se o cadastro mudar depois. -->
+          <Text text="{Cfop}" />
         </t:template>
       </t:Column>
     </t:columns>

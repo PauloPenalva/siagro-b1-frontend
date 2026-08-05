@@ -2,12 +2,12 @@ import MessageToast from "sap/m/MessageToast";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
-import BaseController from "../BaseController";
+import CommonController from "../common/CommonController";
 
 /**
  * @namespace siagrob1.controller.branchs
  */
-export default class Edit extends BaseController {
+export default class Edit extends CommonController {
 
 	onInit(): void {	
 		this.getRouter().getRoute("branchsEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));

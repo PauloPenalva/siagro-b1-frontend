@@ -2,6 +2,7 @@ import MessageToast from "sap/m/MessageToast";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
+import JSONModel from "sap/ui/model/json/JSONModel";
 import BaseController from "../BaseController";
 
 /**
@@ -15,6 +16,8 @@ export default class Edit extends BaseController {
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
 		this.clearStates("usagesForm");
+
+    void this.applyErpMode();
 
     const oModel = this.getView().getModel() as ODataModel;
 		const oView = this.getView();
@@ -69,5 +72,17 @@ export default class Edit extends BaseController {
 		}
 
 		this.onNavBack();
+	}
+
+	/**
+	 * Em SAPB1 a identidade fiscal (nome, descrição, CFOP) vem do OUSG e é somente-leitura;
+	 * o efeito no contrato continua editável, porque é do Siagro. Inicializar como `true`
+	 * antes da resposta manteria o comportamento do STANDALONE, que é o caso permissivo.
+	 */
+	private async applyErpMode() {
+		const uiModel = this.getModel("ui") as JSONModel;
+		const systemInfo = await this.getSystemInfo();
+
+		uiModel.setProperty("/identityEditable", systemInfo?.erp !== "SAPB1");
 	}
 }

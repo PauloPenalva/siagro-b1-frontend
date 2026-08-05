@@ -1,12 +1,12 @@
 import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
-import BaseController from "../BaseController";
+import CommonController from "../common/CommonController";
 
 /**
  * @namespace siagrob1.controller.branchs
  */
-export default class Add extends BaseController {
+export default class Add extends CommonController {
 
 	onInit(): void {
 		this.getRouter().getRoute("branchsNew").attachPatternMatched(() => this.newRouteMatched());
@@ -23,7 +23,9 @@ export default class Add extends BaseController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const oContext = oBinding.create({}, false, false, false);
+		// StateCode precisa existir no cache da entidade transiente: propriedade ausente do
+		// create() faz o value help estourar "Must not change a property before it has been read".
+		const oContext = oBinding.create({ StateCode: null }, false, false, false);
 
 		oView.setBindingContext(oContext);
 	}

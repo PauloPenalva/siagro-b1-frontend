@@ -4,16 +4,21 @@
     xmlns:l="sap.ui.layout"
     xmlns:t="sap.ui.table"
     xmlns:core="sap.ui.core"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }"
 >
 
 <!--
-  Contratos de venda para a linha do documento de saída avulso.
+  Contratos de venda para a linha do documento de saída.
 
-  Lista /SalesContracts direto, e não uma função de saldo, porque o documento avulso
-  atende justamente os casos que NÃO consomem saldo: complemento de preço (só valor) e
-  ajuste de quebra (devolve saldo). Filtrar por saldo a liberar esconderia exatamente o
-  contrato que o usuário precisa corrigir. Quem recusa contrato encerrado é o serviço,
-  na confirmação.
+  SEM filtro de saldo, de propósito: o documento avulso atende justamente os casos em que o
+  contrato já foi entregue e o saldo está zerado — complemento de preço e ajuste de quebra.
+  Filtrar por saldo esconderia exatamente o contrato que se precisa corrigir. A coluna Saldo
+  fica visível para a escolha ser informada.
+
+  Aprovado fica AQUI porque não muda entre aberturas. Cliente e produto NÃO cabem aqui:
+  mudam a cada linha e são aplicados na abertura, pelo controller.
 -->
 <TableSelectDialog
   class=" sapUiSizeCompact"
@@ -21,6 +26,9 @@
   growingThreshold="20"
   items="{
     path: '/SalesContracts',
+    parameters: {
+      $filter: 'Status eq \'Approved\''
+    },
     sorter: {
       path: 'Code',
       descending: true
@@ -50,6 +58,11 @@
       <Text text="Volume Total" />
     </header>
   </Column>
+  <Column hAlign="End">
+    <header>
+      <Text text="Saldo" />
+    </header>
+  </Column>
 </columns>
 <ColumnListItem>
   <cells>
@@ -69,6 +82,26 @@
       }"
       unit="{UnitOfMeasureCode}"
       state="None"
+    />
+    <!-- A lista traz contrato sem saldo de propósito (complemento, quebra), então o estado
+         precisa distinguir: verde só quando ainda há saldo. -->
+    <ObjectNumber
+      number="{
+        path: 'AvaiableVolume',
+        type: 'sap.ui.model.type.Float',
+        formatOptions: {
+          decimals: 3,
+          decimalSeparator: ',',
+          groupingEnabled: true,
+          groupingSeparator: '.'
+        }
+      }"
+      unit="{UnitOfMeasureCode}"
+      state="{
+        path: 'AvaiableVolume',
+        targetType: 'any',
+        formatter: 'formatter.stateContractBalance'
+      }"
     />
   </cells>
 </ColumnListItem>

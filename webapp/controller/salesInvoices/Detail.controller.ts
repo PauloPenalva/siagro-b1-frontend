@@ -27,9 +27,11 @@ export default class Detail extends BaseController {
 		if (id != null) {
 
       uiModel.setProperty("/editable", false);
-      
+      uiModel.setProperty("/canPickContract", false);
+
 			const sPath = `/SalesInvoices(${id})`;
 			this.bindElement(sPath);
+			this.attachDocumentTotalRefresh();
 
 			return;
 		}

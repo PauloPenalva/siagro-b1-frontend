@@ -5,7 +5,10 @@ import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import Context from "sap/ui/model/odata/v4/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Table from "sap/ui/table/Table";
-import { Select$ChangeEvent } from "sap/m/Select";
+import { Input$ValueHelpRequestEvent } from "sap/m/Input";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { BaseController } from "./BaseController";
 
 /**
@@ -35,11 +38,10 @@ export default class Add extends BaseController {
     uiModel.setProperty("/editable", true);
     uiModel.setProperty("/editableGrid", true);
 
-    // Inicializar ANTES do primeiro render: binding indefinido faz `visible` valer true,
-    // e os campos de peso apareceriam antes de qualquer natureza ser escolhida.
-    uiModel.setProperty("/requiresWeight", false);
-    uiModel.setProperty("/requiresQuantity", false);
-    uiModel.setProperty("/requiresContract", false);
+    // Só a inclusão escolhe contrato por linha: nas demais telas a coluna é o texto
+    // navegado (SalesContract/Code), que não é gravável.
+    uiModel.setProperty("/canPickContract", true);
+    uiModel.setProperty("/documentTotal", "0,00");
 
     const oView = this.getView();
     const oModel = this.getModel() as ODataModel;
@@ -62,7 +64,6 @@ export default class Add extends BaseController {
       const oContext = oBinding.create({
         DocNumberKey: docNumberInfo?.Key ?? null,
         BranchCode: branchInfo?.code ?? null,
-        UsageCode: null,
         InvoiceType: "Normal",
         InvoiceStatus: "Pending",
         InvoiceDate: new Date().toISOString(),
@@ -86,23 +87,56 @@ export default class Add extends BaseController {
       }, false, false, false);
 
       oView.setBindingContext(oContext);
+
+      this.attachDocumentTotalRefresh();
     } finally {
       this.setBusy(false);
     }
   }
 
   /**
-   * A natureza escolhida governa o que a tela pede. O registro inteiro vem do contexto do
-   * item selecionado — a lista do Select já está ligada a /Usages, então não há requisição
-   * extra.
+   * Value help do contrato de venda da linha.
+   *
+   * Não usa o `applyValueHelp` genérico porque são dois valores: o Input mostra o `Code`
+   * (legível) e quem vale para o servidor é o `SalesContractKey` (GUID). O helper genérico
+   * grava com group id `null` — certo para descrição desnormalizada, errado para a CHAVE,
+   * que precisa entrar no batch. Mesmo desenho do contrato de compra na Transferência de
+   * Titularidade.
    */
-  onUsageChange(ev: Select$ChangeEvent) {
-    const uiModel = this.getModel("ui") as JSONModel;
-    const oUsage = ev.getParameter("selectedItem")?.getBindingContext() as Context;
+  async openSalesContractValueHelp(ev: Input$ValueHelpRequestEvent) {
+    const oInput = ev.getSource();
+    const oTarget = oInput.getBindingContext() as Context;
+    const oInvoice = this.getView().getBindingContext() as Context;
 
-    uiModel.setProperty("/requiresWeight", !!oUsage?.getProperty("RequiresWeight"));
-    uiModel.setProperty("/requiresQuantity", !!oUsage?.getProperty("RequiresQuantity"));
-    uiModel.setProperty("/requiresContract", !!oUsage?.getProperty("RequiresContract"));
+    const cardCode = oInvoice?.getProperty("CardCode") as string;
+    const itemCode = oTarget?.getProperty("ItemCode") as string;
+
+    if (!cardCode) {
+      MessageBox.warning("Informe o cliente antes de escolher o contrato.");
+      return;
+    }
+
+    if (!itemCode) {
+      MessageBox.warning("Informe o produto da linha antes de escolher o contrato.");
+      return;
+    }
+
+    // Cliente e produto mudam a cada linha, então são aplicados na abertura — não cabem no
+    // XML. Aprovado e com saldo são fixos e ficam no $filter do fragmento.
+    const oSelected = await DialogHelper.openTableSelectDialog(
+      this, "SalesContractsSelectDialog", ["Code", "CardCode", "CardName"],
+      [
+        new Filter("CardCode", FilterOperator.EQ, cardCode),
+        new Filter("ItemCode", FilterOperator.EQ, itemCode),
+      ]);
+
+    // Cancelar resolve undefined: não mexer no que já estava preenchido.
+    if (!oSelected) {
+      return;
+    }
+
+    oInput.setValue(oSelected.getProperty("Code") as string);
+    await oTarget.setProperty("SalesContractKey", oSelected.getProperty("Key"));
   }
 
   onAddItem() {
@@ -112,6 +146,8 @@ export default class Add extends BaseController {
     oBinding.create({
       ItemCode: null,
       ItemName: null,
+      UsageCode: null,
+      UsageName: null,
       Quantity: 0,
       UnitPrice: 0,
       UnitOfMeasureCode: null,
@@ -131,7 +167,10 @@ export default class Add extends BaseController {
       CofinsValue: 0,
       CostCenterCode: null,
       LedgerAccountCode: null,
+      Cfop: null,
     }, false, true, false);
+
+    this.refreshDocumentTotal();
   }
 
   onRemoveItem() {
@@ -144,7 +183,7 @@ export default class Add extends BaseController {
     }
 
     const oContext = oTable.getContextByIndex(i) as Context;
-    void oContext.delete("$auto");
+    void oContext.delete("$auto").then(() => this.refreshDocumentTotal());
   }
 
   async onSave() {

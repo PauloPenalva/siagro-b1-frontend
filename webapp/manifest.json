@@ -553,6 +553,26 @@
           "target": "salesInvoices"
         },
         {
+          "pattern": "customer-returns",
+          "name": "customerReturns",
+          "target": "customerReturns"
+        },
+        {
+          "pattern": "customer-returns/add",
+          "name": "customerReturnsAdd",
+          "target": "customerReturnsAdd"
+        },
+        {
+          "pattern": "customer-returns/{id}/detail",
+          "name": "customerReturnsDetail",
+          "target": "customerReturnsDetail"
+        },
+        {
+          "pattern": "sales-invoices/add",
+          "name": "salesInvoicesAdd",
+          "target": "salesInvoicesAdd"
+        },
+        {
           "pattern": "sales-invoices/{id}/detail",
           "name": "salesInvoicesDetail",
           "target": "salesInvoicesDetail"
@@ -636,6 +656,21 @@
           "pattern": "logistic-regions/{id}/edit",
           "name": "logisticRegionsEdit",
           "target": "logisticRegionsEdit"
+        },
+        {
+          "pattern": "usages",
+          "name": "usages",
+          "target": "usages"
+        },
+        {
+          "pattern": "usages/new",
+          "name": "usagesNew",
+          "target": "usagesNew"
+        },
+        {
+          "pattern": "usages/{id}/edit",
+          "name": "usagesEdit",
+          "target": "usagesEdit"
         },
         {
           "pattern": "cost-centers",
@@ -1427,6 +1462,30 @@
 					"name": "siagrob1.view.salesInvoices.Main",
           "clearControlAggregation": true
 				},
+        "customerReturns": {
+					"id": "customerReturns",
+          "level": 1,
+					"name": "siagrob1.view.customerReturns.Main",
+          "clearControlAggregation": true
+				},
+        "customerReturnsAdd": {
+					"id": "customerReturnsAdd",
+          "level": 2,
+					"name": "siagrob1.view.customerReturns.Add",
+          "clearControlAggregation": true
+				},
+        "customerReturnsDetail": {
+					"id": "customerReturnsDetail",
+          "level": 2,
+					"name": "siagrob1.view.customerReturns.Detail",
+          "clearControlAggregation": true
+				},
+        "salesInvoicesAdd": {
+					"id": "salesInvoicesAdd",
+          "level": 1,
+					"name": "siagrob1.view.salesInvoices.Add",
+          "clearControlAggregation": true
+				},
         "salesInvoicesEdit": {
 					"id": "salesInvoicesEdit",
           "level": 1,
@@ -1527,6 +1586,24 @@
 					"id": "logisticRegionsEdit",
           "level": 2,
 					"name": "siagrob1.view.logisticRegions.Edit",
+          "clearControlAggregation": true
+				},
+        "usages": {
+					"id": "usages",
+          "level": 1,
+					"name": "siagrob1.view.usages.Main",
+          "clearControlAggregation": true
+				},
+        "usagesNew": {
+					"id": "usagesNew",
+          "level": 2,
+					"name": "siagrob1.view.usages.Add",
+          "clearControlAggregation": true
+				},
+        "usagesEdit": {
+					"id": "usagesEdit",
+          "level": 2,
+					"name": "siagrob1.view.usages.Edit",
           "clearControlAggregation": true
 				},
          "costCenters": {

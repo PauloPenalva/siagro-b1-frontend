@@ -8,6 +8,7 @@ import MessageBox from "sap/m/MessageBox";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
+import JSONModel from "sap/ui/model/json/JSONModel";
 import formatter from "siagrob1/model/formatter";
 
 /**
@@ -21,7 +22,21 @@ export default class Main extends BaseController {
 	}
 
 	private routeMatched() {
+		void this.applyErpMode();
 		this.onRefresh();
+	}
+
+	/**
+	 * Em SAPB1 a natureza é cadastrada no SAP: aqui só se configura o efeito. Inicializar
+	 * como `false` evita a armadilha do `visible` com binding indefinido, que valeria true e
+	 * mostraria Incluir/Deletar por um instante antes da resposta.
+	 */
+	private async applyErpMode() {
+		const uiModel = this.getModel("ui") as JSONModel;
+		uiModel.setProperty("/identityEditable", false);
+
+		const systemInfo = await this.getSystemInfo();
+		uiModel.setProperty("/identityEditable", systemInfo?.erp !== "SAPB1");
 	}
 
 	onRefresh(): void {

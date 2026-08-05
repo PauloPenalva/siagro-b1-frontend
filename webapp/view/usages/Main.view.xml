@@ -92,6 +92,26 @@
 						</t:template>
 					</t:Column>
 					<t:Column
+						label="Efeito Configurado"
+						width="11rem"
+						>
+						<t:template>
+							<!-- Sem isto, natureza vinda do OUSG e natureza configurada como
+							     "não altera nada" ficam idênticas na tela. -->
+							<ObjectStatus
+								text="{
+									path: 'HasConfiguredEffects',
+									targetType: 'any',
+									formatter: 'formatter.formatBooleanYesNo'
+								}"
+								state="{
+									path: 'HasConfiguredEffects',
+									targetType: 'any',
+									formatter: 'formatter.stateConfiguredEffects'
+								}" />
+						</t:template>
+					</t:Column>
+					<t:Column
 						label="Padrão"
 						width="7rem"
 						>
@@ -125,9 +145,11 @@
 			<OverflowToolbar>
 				<Button text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
 				<ToolbarSpacer />
-				<Button text="Incluir" icon="sap-icon://add" type="Emphasized" press=".onCreate"/>
+				<!-- Em SAPB1 o cadastro da natureza é do SAP: só o efeito é configurável aqui.
+				     Incluir/Deletar sumem em vez de estourar NotImplemented no servidor. -->
+				<Button text="Incluir" icon="sap-icon://add" type="Emphasized" press=".onCreate" visible="{ui>/identityEditable}"/>
 				<Button text="Editar" icon="sap-icon://edit" press=".onEdit"/>
-				<Button text="Deletar" icon="sap-icon://delete" press=".onDelete"/>
+				<Button text="Deletar" icon="sap-icon://delete" press=".onDelete" visible="{ui>/identityEditable}"/>
 			</OverflowToolbar>
 		</footer>
 	</Page>

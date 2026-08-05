@@ -25,6 +25,16 @@ import formatter from "siagrob1/model/formatter";
  */
 const selectDialogCache = new Map<string, TableSelectDialog>();
 
+/**
+ * Últimos `defaultFilters` de cada diálogo.
+ *
+ * O handler de busca é ligado UMA vez, na criação, e fecharia sobre os filtros da primeira
+ * abertura. Com filtro que muda a cada abertura (ex.: contratos do produto DAQUELA linha),
+ * pesquisar depois de trocar de linha traria o resultado da linha anterior — sem erro
+ * nenhum, só com a lista errada. Guardar por chave faz a busca ler sempre o filtro vigente.
+ */
+const selectDialogFilters = new Map<string, Filter[]>();
+
 async function getSelectDialog(
   oController: Controller,
   name: string,
@@ -34,6 +44,8 @@ async function getSelectDialog(
   const view = oController.getView();
   const key = `${view.getId()}_${name}`;
   const oCached = selectDialogCache.get(key);
+
+  selectDialogFilters.set(key, defaultFilters);
 
   // A view é destruída ao navegar (clearControlAggregation), levando junto os
   // seus dependents - por isso o cache precisa validar antes de reaproveitar.
@@ -59,7 +71,10 @@ async function getSelectDialog(
       and: false,
     });
 
-    (ev.getSource().getBinding("items") as ODataListBinding).filter([oFilters, ...defaultFilters]);
+    // Lê o filtro VIGENTE, não o da criação do diálogo.
+    const aCurrentDefaults = selectDialogFilters.get(key) ?? [];
+
+    (ev.getSource().getBinding("items") as ODataListBinding).filter([oFilters, ...aCurrentDefaults]);
   });
 
   if (Device.system.desktop) {

@@ -1,6 +1,7 @@
 import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
+import JSONModel from "sap/ui/model/json/JSONModel";
 import BaseController from "../BaseController";
 
 /**
@@ -15,6 +16,10 @@ export default class Add extends BaseController {
 	private newRouteMatched() {
 
     this.clearStates("usagesForm");
+
+    // Só se chega aqui em STANDALONE (em SAPB1 o botão Incluir some): a identidade é
+    // editável por definição.
+    (this.getModel("ui") as JSONModel).setProperty("/identityEditable", true);
 
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;

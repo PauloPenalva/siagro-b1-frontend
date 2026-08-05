@@ -50,6 +50,7 @@
             <Title text="Documentos de Saída" />
 						<ToolbarSpacer />
 						<Button type="Transparent" text="Exportar Excel" press=".onExcel"/>
+						<Button type="Emphasized" icon="sap-icon://add" text="Incluir" press=".onCreate"/>
 						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
             <Button type="Transparent" text="Informar Nota Fiscal" press=".onNotaFiscal"/>
             <Button type="Transparent" text="Retornar" press=".onReturn"/>
