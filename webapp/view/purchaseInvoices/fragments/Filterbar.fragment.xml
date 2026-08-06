@@ -1,0 +1,122 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:fb="sap.ui.comp.filterbar"
+>
+
+<!--
+  Barra de filtros da lista de documentos de entrada, espelhando a do documento de saída.
+
+  Todo valor vai para o modelo `filter`, e o controller monta a string `$filter` a partir dele.
+  Os três Selects são ENUM: o controller os compara com `eq 'valor'` em string crua, porque
+  sap.ui.model.Filter sobre enum estoura "Unsupported type" — ver o applyFilters.
+-->
+<fb:FilterBar
+  id="purchaseInvoicesFb"
+  search=".onSearch"
+  showClearOnFB="true"
+  clear=".onClearFilters">
+  <fb:filterGroupItems>
+
+    <!-- forceSelection="false" em todos os Selects: no padrão (true) o controle auto-seleciona
+         um item na inicialização e a lista nasceria filtrada sem o usuário ter escolhido nada.
+         O item de chave vazia ("Todos") é o que permite DESLIGAR um filtro isolado sem recorrer
+         ao Limpar, que zera a barra inteira. -->
+    <fb:FilterGroupItem name="invoiceType" label="Tipo" groupName="GroupInvoiceType" visibleInFilterBar="true">
+      <fb:control>
+        <Select forceSelection="false" selectedKey="{filter>/InvoiceType}">
+          <core:ListItem key="" text="Todos"/>
+          <core:ListItem key="Normal" text="Normal"/>
+          <core:ListItem key="Return" text="Devolução"/>
+        </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <fb:FilterGroupItem name="issuerType" label="Emissão própria" groupName="GroupIssuerType" visibleInFilterBar="true">
+      <fb:control>
+        <Select forceSelection="false" selectedKey="{filter>/IssuerType}">
+          <core:ListItem key="" text="Todos"/>
+          <core:ListItem key="ThirdParty" text="De terceiro"/>
+          <core:ListItem key="Own" text="Própria"/>
+        </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <!-- Sem "Retornado": InvoiceStatus é o enum compartilhado com o documento de saída e tem o
+         valor Returned, mas nenhum serviço do documento de ENTRADA o atribui — o ciclo é
+         Pending → Confirmed → Pending (estorno) → Cancelled. Seria um filtro que nunca traz nada. -->
+    <fb:FilterGroupItem name="status" label="Situação" groupName="GroupStatus" visibleInFilterBar="true">
+      <fb:control>
+        <Select forceSelection="false" selectedKey="{filter>/InvoiceStatus}">
+          <core:ListItem key="" text="Todos"/>
+          <core:ListItem key="Pending" text="Pendente"/>
+          <core:ListItem key="Confirmed" text="Confirmado"/>
+          <core:ListItem key="Cancelled" text="Cancelado"/>
+        </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <!-- Value help GENÉRICO de parceiro, e não o de clientes que a tela de saída usa: aqui o
+         emitente é fornecedor na compra e cliente na devolução. -->
+    <fb:FilterGroupItem name="businessPartners" label="Emitente" groupName="GroupBusinessPartners" visibleInFilterBar="true">
+      <fb:control>
+        <Input
+          showClearIcon="true"
+          showValueHelp="true"
+          valueHelpRequest=".openBusinessPartnersValueHelp"
+          value="{filter>/CardCode}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <fb:FilterGroupItem name="invoiceNumber" label="Número interno" groupName="GroupInvoiceNumber" visibleInFilterBar="true">
+      <fb:control>
+        <Input showClearIcon="true" value="{filter>/InvoiceNumber}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <fb:FilterGroupItem name="taxDocumentNumber" label="NF" groupName="GroupTaxDocumentNumber" visibleInFilterBar="true">
+      <fb:control>
+        <Input showClearIcon="true" value="{filter>/TaxDocumentNumber}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <fb:FilterGroupItem name="taxDocumentSeries" label="Série" groupName="GroupTaxDocumentSeries" visibleInFilterBar="true">
+      <fb:control>
+        <Input showClearIcon="true" value="{filter>/TaxDocumentSeries}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <fb:FilterGroupItem name="chaveNFe" label="Chave NF-e" groupName="GroupChaveNFe" visibleInFilterBar="true">
+      <fb:control>
+        <Input showClearIcon="true" value="{filter>/ChaveNFe}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <!-- valueFormat ISO é o que entra no $filter; displayFormat é só o que o usuário lê. -->
+    <fb:FilterGroupItem name="dateFrom" label="Emissão de" groupName="GroupDateFrom" visibleInFilterBar="true">
+      <fb:control>
+        <DatePicker
+          value="{
+            path: 'filter>/DateFrom',
+            type: 'sap.ui.model.type.String'
+          }"
+          displayFormat="dd/MM/yyyy"
+          valueFormat="yyyy-MM-dd"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <fb:FilterGroupItem name="dateTo" label="Emissão até" groupName="GroupDateTo" visibleInFilterBar="true">
+      <fb:control>
+        <DatePicker
+          value="{
+            path: 'filter>/DateTo',
+            type: 'sap.ui.model.type.String'
+          }"
+          displayFormat="dd/MM/yyyy"
+          valueFormat="yyyy-MM-dd"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+  </fb:filterGroupItems>
+</fb:FilterBar>
+</core:FragmentDefinition>

@@ -553,19 +553,24 @@
           "target": "salesInvoices"
         },
         {
-          "pattern": "customer-returns",
-          "name": "customerReturns",
-          "target": "customerReturns"
+          "pattern": "purchase-invoices",
+          "name": "purchaseInvoices",
+          "target": "purchaseInvoices"
         },
         {
-          "pattern": "customer-returns/add",
-          "name": "customerReturnsAdd",
-          "target": "customerReturnsAdd"
+          "pattern": "purchase-invoices/add",
+          "name": "purchaseInvoicesAdd",
+          "target": "purchaseInvoicesAdd"
         },
         {
-          "pattern": "customer-returns/{id}/detail",
-          "name": "customerReturnsDetail",
-          "target": "customerReturnsDetail"
+          "pattern": "purchase-invoices/{id}/detail",
+          "name": "purchaseInvoicesDetail",
+          "target": "purchaseInvoicesDetail"
+        },
+        {
+          "pattern": "purchase-invoices/{id}/edit",
+          "name": "purchaseInvoicesEdit",
+          "target": "purchaseInvoicesEdit"
         },
         {
           "pattern": "sales-invoices/add",
@@ -1462,22 +1467,28 @@
 					"name": "siagrob1.view.salesInvoices.Main",
           "clearControlAggregation": true
 				},
-        "customerReturns": {
-					"id": "customerReturns",
+        "purchaseInvoices": {
+					"id": "purchaseInvoices",
           "level": 1,
-					"name": "siagrob1.view.customerReturns.Main",
+					"name": "siagrob1.view.purchaseInvoices.Main",
           "clearControlAggregation": true
 				},
-        "customerReturnsAdd": {
-					"id": "customerReturnsAdd",
+        "purchaseInvoicesAdd": {
+					"id": "purchaseInvoicesAdd",
           "level": 2,
-					"name": "siagrob1.view.customerReturns.Add",
+					"name": "siagrob1.view.purchaseInvoices.Add",
           "clearControlAggregation": true
 				},
-        "customerReturnsDetail": {
-					"id": "customerReturnsDetail",
+        "purchaseInvoicesDetail": {
+					"id": "purchaseInvoicesDetail",
           "level": 2,
-					"name": "siagrob1.view.customerReturns.Detail",
+					"name": "siagrob1.view.purchaseInvoices.Detail",
+          "clearControlAggregation": true
+				},
+        "purchaseInvoicesEdit": {
+					"id": "purchaseInvoicesEdit",
+          "level": 2,
+					"name": "siagrob1.view.purchaseInvoices.Edit",
           "clearControlAggregation": true
 				},
         "salesInvoicesAdd": {

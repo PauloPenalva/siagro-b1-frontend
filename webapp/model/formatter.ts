@@ -574,19 +574,47 @@ export default {
   },
 
   // ---------------------------------------------------------------------------
-  // Devolução de cliente
+  // Documento de entrada
   // ---------------------------------------------------------------------------
 
-  formatCustomerReturnStatus: (value: string) => {
+  /**
+   * Tipo do documento de entrada. Só dois: compra de mercadoria, venda futura e remessa são
+   * NATUREZAS DE OPERAÇÃO, não tipos.
+   */
+  formatPurchaseInvoiceType: (value: string) => {
     const m = new Map<string, string>();
-    m.set("Registered", "Registrada");
-    m.set("Cancelled", "Cancelada");
+    m.set("Normal", "Normal");
+    m.set("Return", "Devolução");
 
     return m.get(value) ?? "";
   },
 
-  stateCustomerReturnStatus: (value: string) =>
-    value === "Cancelled" ? "Error" : "Success",
+  formatPurchaseInvoiceIssuerType: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("ThirdParty", "De terceiro");
+    m.set("Own", "Própria");
+
+    return m.get(value) ?? "";
+  },
+
+  formatPurchaseInvoiceStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Pending", "Pendente");
+    m.set("Confirmed", "Confirmado");
+    m.set("Cancelled", "Cancelado");
+    m.set("Returned", "Devolvido");
+
+    return m.get(value) ?? "";
+  },
+
+  statePurchaseInvoiceStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Confirmed", "Success");
+    m.set("Cancelled", "Error");
+    m.set("Returned", "Warning");
+
+    return m.get(value) ?? "None";
+  },
 
   /**
    * Diferença entre o devolvido e a quebra apurada.
@@ -594,7 +622,7 @@ export default {
    * Zero é o caso em que fiscal e físico batem. Diferente de zero só ALERTA — arredondamento
    * e devolução parcial são legítimos, e quem decide é o usuário.
    */
-  stateReturnDifference: (value: number | string) => {
+  stateInvoiceDifference: (value: number | string) => {
     const difference = Number(value ?? 0);
 
     return !isNaN(difference) && difference === 0 ? "Success" : "Warning";

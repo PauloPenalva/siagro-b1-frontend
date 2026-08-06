@@ -1,0 +1,142 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+    <f:SimpleForm
+      id="purchaseInvoicesForm"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="2"
+      columnsL="2"
+      columnsM="1"
+      singleContainerFullSize="true"
+      busyIndicatorDelay="0">
+        <f:content>
+          <core:Title text="Dados do Documento" emphasized="true" />
+
+          <!-- O tipo define a natureza do documento e as regras que o acompanham; mudá-lo depois
+               de gravado invalidaria as amarrações já feitas. Editável só na inclusão. -->
+          <!-- DUAS armadilhas neste par de Selects, ambas invisíveis fora do navegador:
+               1. `targetType: 'any'` é obrigatório em propriedade de ENUM — sem ele o UI5 tenta
+                  formatar com sap.ui.model.odata.type.Raw e estoura FormatException;
+               2. `forceSelection="false"` é obrigatório sobre entidade TRANSIENTE — no padrão
+                  (true) o Select auto-seleciona um item na inicialização e ESCREVE a chave de
+                  volta, o que abre "Must not change a property before it has been read" em
+                  diálogo de erro na cara do usuário. -->
+          <Label text="Tipo" />
+          <Select
+            selectedKey="{path: 'InvoiceType', targetType: 'any'}"
+            enabled="{ui>/typeEditable}"
+            forceSelection="false"
+            width="100%">
+            <core:Item key="Normal" text="Normal" />
+            <core:Item key="Return" text="Devolução" />
+          </Select>
+
+          <Label text="Emissão" />
+          <Select
+            selectedKey="{path: 'IssuerType', targetType: 'any'}"
+            enabled="{ui>/typeEditable}"
+            forceSelection="false"
+            width="100%">
+            <core:Item key="ThirdParty" text="De terceiro" />
+            <core:Item key="Own" text="Própria" />
+          </Select>
+
+          <Label text="Emitente" required="true" />
+          <Input
+              value="{CardCode}"
+              editable="{ui>/editable}"
+              showValueHelp="{ui>/editable}"
+              valueHelpOnly="true"
+              valueHelpRequest=".openBusinessPartnersValueHelp">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="CardName" />
+            </customData>
+          </Input>
+          <Input value="{CardName}" editable="false" />
+
+          <!-- Número interno: só existe na emissão própria. Na Fase 3 passa a ser gerado pelo
+               numerador DocNumbers; até lá é digitado. -->
+          <Label text="Número interno" />
+          <Input
+              value="{InvoiceNumber}"
+              editable="{= ${ui>/editable} &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'Own' }"
+              maxLength="9" />
+
+          <Label text="Número da NF" />
+          <Input value="{TaxDocumentNumber}" editable="{ui>/editable}" maxLength="9" />
+
+          <Label text="Série" />
+          <Input value="{TaxDocumentSeries}" editable="{ui>/editable}" maxLength="3" />
+
+          <!-- A chave tem 44 dígitos: maxLength menor trunca em silêncio na digitação. -->
+          <Label text="Chave da NF-e" />
+          <Input value="{ChaveNFe}" editable="{ui>/editable}" maxLength="44" />
+
+          <Label text="Data de emissão" />
+          <DatePicker
+              value="{
+                path: 'IssueDate',
+                type: 'sap.ui.model.odata.type.DateTimeOffset',
+                constraints: { precision: 7 },
+                formatOptions: { pattern: 'dd/MM/yyyy' }
+              }"
+              editable="{ui>/editable}" />
+
+          <Label text="Data de entrada" />
+          <DatePicker
+              value="{
+                path: 'PostingDate',
+                type: 'sap.ui.model.odata.type.DateTimeOffset',
+                constraints: { precision: 7 },
+                formatOptions: { pattern: 'dd/MM/yyyy' }
+              }"
+              editable="{ui>/editable}" />
+
+          <!-- Total DECLARADO pelo emitente. Divergir da soma das linhas é informação de
+               conciliação (frete e impostos entram aqui e não nas linhas), não erro. -->
+          <!-- `Double` e não `Decimal`: campo de ESCRITA. `Decimal` faz parse para string e o
+               leitor OData deste backend recusa Edm.Decimal em string (400 sem nomear o campo).
+               Mesma escolha do documento de saída. -->
+          <Label text="Valor declarado" />
+          <Input
+              editable="{ui>/editable}"
+              value="{
+                path: 'TotalDocumentValue',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions: {
+                  decimals: 2,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }" />
+
+          <Label text="Observações" />
+          <TextArea value="{Comments}" editable="{ui>/editable}" rows="3" width="100%" />
+
+          <core:Title text="Informações do Contribuinte" emphasized="true" />
+          <!-- É AQUI que o emitente escreve número/série/chave e quantidade das notas de
+               origem. O layout da NF-e não amarra linha a origem, então este texto é a
+               referência que o operador usa para fazer a amarração na grade. -->
+          <Label text="Referências informadas pelo emitente" />
+          <TextArea
+              value="{TaxPayerComments}"
+              editable="false"
+              rows="8"
+              growing="true"
+              width="100%" />
+        </f:content>
+    </f:SimpleForm>
+</core:FragmentDefinition>

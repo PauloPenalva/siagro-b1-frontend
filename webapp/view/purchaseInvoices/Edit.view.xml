@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.customerReturns.Detail"
+	controllerName="siagrob1.controller.purchaseInvoices.Edit"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -19,44 +19,30 @@
     <uxap:headerTitle>
       <uxap:ObjectPageDynamicHeaderTitle>
         <uxap:expandedHeading>
-          <Title text="Devolução de Cliente"/>
+          <Title text="Editar Documento de Entrada {TaxDocumentNumber}"/>
         </uxap:expandedHeading>
         <uxap:snappedHeading>
-          <Title text="Devolução de Cliente"/>
+          <Title text="Editar Documento de Entrada {TaxDocumentNumber}"/>
         </uxap:snappedHeading>
+        <uxap:actions>
+          <Button text="Incluir Item" icon="sap-icon://add" press=".onAddItem" />
+          <Button text="Excluir Item" icon="sap-icon://delete" press=".onRemoveItem" />
+        </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
     </uxap:headerTitle>
 
-    <uxap:headerContent>
-      <HBox class="sapUiTinyMarginBottom">
-        <ObjectIdentifier title="{DocumentNumber}" text="{CardName}" class="sapUiMediumMarginEnd"/>
-        <ObjectStatus
-          state="{
-            path: 'Status',
-            targetType: 'any',
-            formatter: 'formatter.stateCustomerReturnStatus'
-          }"
-          inverted="true"
-          text="{
-            path: 'Status',
-            targetType: 'any',
-            formatter: 'formatter.formatCustomerReturnStatus'
-          }" />
-      </HBox>
-    </uxap:headerContent>
-
     <uxap:sections>
-      <uxap:ObjectPageSection titleUppercase="false" title="Dados da Devolução">
+      <uxap:ObjectPageSection titleUppercase="false" title="Dados do Documento">
         <uxap:subSections>
           <uxap:ObjectPageSubSection title=" " titleUppercase="false">
-            <core:Fragment fragmentName="siagrob1.view.customerReturns.fragments.Form" type="XML" />
+            <core:Fragment fragmentName="siagrob1.view.purchaseInvoices.fragments.Form" type="XML" />
           </uxap:ObjectPageSubSection>
         </uxap:subSections>
       </uxap:ObjectPageSection>
-      <uxap:ObjectPageSection titleUppercase="false" title="Itens Devolvidos">
+      <uxap:ObjectPageSection titleUppercase="false" title="Itens">
         <uxap:subSections>
           <uxap:ObjectPageSubSection title=" " titleUppercase="false">
-            <core:Fragment fragmentName="siagrob1.view.customerReturns.fragments.Items" type="XML" />
+            <core:Fragment fragmentName="siagrob1.view.purchaseInvoices.fragments.Items" type="XML" />
           </uxap:ObjectPageSubSection>
         </uxap:subSections>
       </uxap:ObjectPageSection>
@@ -64,7 +50,8 @@
     <uxap:footer>
       <OverflowToolbar>
         <ToolbarSpacer />
-        <Button text="Voltar" press=".onNavBack" />
+        <Button text="Cancelar" press=".onCancel" />
+        <Button text="Salvar" type="Emphasized" press=".onSave"/>
       </OverflowToolbar>
     </uxap:footer>
   </uxap:ObjectPageLayout>

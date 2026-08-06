@@ -1,0 +1,162 @@
+<mvc:View
+	controllerName="siagrob1.controller.purchaseInvoices.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.f"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="Documentos de Entrada"/>
+				</f:heading>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:header>
+			<f:DynamicPageHeader>
+				<f:content>
+					<core:Fragment fragmentName="siagrob1.view.purchaseInvoices.fragments.Filterbar" type="XML" />
+				</f:content>
+			</f:DynamicPageHeader>
+		</f:header>
+		<f:content>
+			<!-- Sem $expand de Items: nenhuma coluna consome as linhas, e TotalInvoiceItems já vem
+			     resolvido porque PurchaseInvoicesGetService.QueryAll() faz o Include. Expandir aqui
+			     carregava todos os itens de todos os documentos sem usar nenhum. -->
+			<t:Table
+				id="purchaseInvoicesTable"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+				rows="{
+					path: '/PurchaseInvoices',
+					sorter: {
+						path: 'IssueDate',
+						descending: true
+					}
+				}"
+			>
+				<t:extension>
+					<OverflowToolbar>
+						<Title text="Documentos de Entrada" />
+						<ToolbarSpacer />
+						<Button type="Transparent" text="Exportar Excel" press=".onExcel"/>
+						<Button type="Emphasized" icon="sap-icon://add" text="Incluir" press=".onCreate"/>
+						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
+						<Button type="Transparent" text="Editar" press=".onEdit"/>
+						<ToolbarSeparator />
+						<Button type="Transparent" text="Cancelar Documento" press=".onCancelInvoice"/>
+						<ToolbarSeparator />
+						<Button type="Transparent" text="Atualizar" press=".onRefresh"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="Emitente" width="25rem" sortProperty="CardName" filterProperty="CardName">
+						<t:template>
+							<Text text="({CardCode}) {CardName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Tipo" width="8rem" hAlign="Center" sortProperty="InvoiceType">
+						<t:template>
+							<Text text="{
+								path: 'InvoiceType',
+								targetType: 'any',
+								formatter: 'formatter.formatPurchaseInvoiceType'
+							}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Emissão própria" width="9rem" hAlign="Center" sortProperty="IssuerType">
+						<t:template>
+							<Text text="{
+								path: 'IssuerType',
+								targetType: 'any',
+								formatter: 'formatter.formatPurchaseInvoiceIssuerType'
+							}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Situação" width="10rem" hAlign="Center" sortProperty="InvoiceStatus">
+						<t:template>
+							<ObjectStatus
+								inverted="true"
+								text="{
+									path: 'InvoiceStatus',
+									targetType: 'any',
+									formatter: 'formatter.formatPurchaseInvoiceStatus'
+								}"
+								state="{
+									path: 'InvoiceStatus',
+									targetType: 'any',
+									formatter: 'formatter.statePurchaseInvoiceStatus'
+								}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Número interno" width="8rem" hAlign="Center" sortProperty="InvoiceNumber">
+						<t:template>
+							<Text text="{InvoiceNumber}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="NF" width="8rem" hAlign="Center" sortProperty="TaxDocumentNumber" filterProperty="TaxDocumentNumber">
+						<t:template>
+							<Text text="{TaxDocumentNumber}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Série" width="6rem" hAlign="Center" sortProperty="TaxDocumentSeries">
+						<t:template>
+							<Text text="{TaxDocumentSeries}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Emissão" width="9rem" hAlign="Center" sortProperty="IssueDate">
+						<t:template>
+							<Text text="{
+								path: 'IssueDate',
+								type: 'sap.ui.model.odata.type.DateTimeOffset',
+								constraints: { precision: 7 },
+								formatOptions: { pattern: 'dd/MM/yyyy' }
+							}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Entrada" width="9rem" hAlign="Center" sortProperty="PostingDate">
+						<t:template>
+							<Text text="{
+								path: 'PostingDate',
+								type: 'sap.ui.model.odata.type.DateTimeOffset',
+								constraints: { precision: 7 },
+								formatOptions: { pattern: 'dd/MM/yyyy' }
+							}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Valor declarado" width="11rem" hAlign="End" sortProperty="TotalDocumentValue">
+						<t:template>
+							<Text text="{
+								path: 'TotalDocumentValue',
+								type: 'sap.ui.model.odata.type.Decimal',
+								constraints: { precision: 18, scale: 2 },
+								formatOptions: {
+									decimalSeparator: ',',
+									groupingEnabled: true,
+									groupingSeparator: '.'
+								}
+							}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Chave NF-e" width="25rem" sortProperty="ChaveNFe">
+						<t:template>
+							<Text text="{ChaveNFe}" wrapping="false" />
+						</t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</f:content>
+	</f:DynamicPage>
+
+</mvc:View>

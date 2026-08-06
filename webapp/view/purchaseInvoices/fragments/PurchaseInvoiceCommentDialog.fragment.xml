@@ -1,0 +1,47 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+<!--
+  Inclusão e edição de comentário. O campo escreve num BUFFER JSON (`viewModel>/commentDialog/...`),
+  nunca no contexto OData: two-way binding num Detail deixa PATCH pendente no update group diferido
+  e derruba o batch inteiro. Ao confirmar, o texto vai por action.
+-->
+<Dialog id="purchaseInvoiceCommentDialog" title="{viewModel>/commentDialog/title}">
+  <content>
+    <VBox class="sapUiSmallMargin" width="520px">
+      <f:Form editable="true">
+        <f:layout>
+          <f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+        </f:layout>
+        <f:formContainers>
+          <f:FormContainer>
+            <f:formElements>
+              <f:FormElement label="Comentário">
+                <f:fields>
+                  <TextArea
+                    value="{viewModel>/commentDialog/text}"
+                    rows="6"
+                    width="100%"
+                    growing="true"
+                    maxLength="500"
+                    placeholder="Anotação sobre o documento de entrada."
+                  />
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+        </f:formContainers>
+      </f:Form>
+    </VBox>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Salvar" type="Emphasized" press=".onConfirmComment"/>
+      <Button text="Fechar" press=".onCloseCommentDialog" />
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>

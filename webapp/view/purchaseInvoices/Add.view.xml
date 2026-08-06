@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.customerReturns.Add"
+	controllerName="siagrob1.controller.purchaseInvoices.Add"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -19,10 +19,10 @@
     <uxap:headerTitle>
       <uxap:ObjectPageDynamicHeaderTitle>
         <uxap:expandedHeading>
-          <Title text="Nova Devolução de Cliente"/>
+          <Title text="Novo Documento de Entrada"/>
         </uxap:expandedHeading>
         <uxap:snappedHeading>
-          <Title text="Nova Devolução de Cliente"/>
+          <Title text="Novo Documento de Entrada"/>
         </uxap:snappedHeading>
         <uxap:actions>
           <Button
@@ -30,22 +30,30 @@
             icon="sap-icon://attachment"
             type="Emphasized"
             press=".onImportXml" />
+          <Button
+            text="Incluir Item"
+            icon="sap-icon://add"
+            press=".onAddItem" />
+          <Button
+            text="Excluir Item"
+            icon="sap-icon://delete"
+            press=".onRemoveItem" />
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
     </uxap:headerTitle>
 
     <uxap:sections>
-      <uxap:ObjectPageSection titleUppercase="false" title="Dados da Devolução">
+      <uxap:ObjectPageSection titleUppercase="false" title="Dados do Documento">
         <uxap:subSections>
           <uxap:ObjectPageSubSection title=" " titleUppercase="false">
-            <core:Fragment fragmentName="siagrob1.view.customerReturns.fragments.Form" type="XML" />
+            <core:Fragment fragmentName="siagrob1.view.purchaseInvoices.fragments.Form" type="XML" />
           </uxap:ObjectPageSubSection>
         </uxap:subSections>
       </uxap:ObjectPageSection>
-      <uxap:ObjectPageSection titleUppercase="false" title="Itens Devolvidos">
+      <uxap:ObjectPageSection titleUppercase="false" title="Itens">
         <uxap:subSections>
           <uxap:ObjectPageSubSection title=" " titleUppercase="false">
-            <core:Fragment fragmentName="siagrob1.view.customerReturns.fragments.Items" type="XML" />
+            <core:Fragment fragmentName="siagrob1.view.purchaseInvoices.fragments.Items" type="XML" />
           </uxap:ObjectPageSubSection>
         </uxap:subSections>
       </uxap:ObjectPageSection>

@@ -4,16 +4,16 @@
 >
 
 <!--
-  Linhas de saída elegíveis como origem da devolução.
+  Linhas de saída elegíveis como origem da devolução (documento de entrada tipo Return).
 
-  Ligado ao ENTITY SET, e não à função CustomerReturnsOriginItems: função que devolve coleção
+  Ligado ao ENTITY SET, e não à função PurchaseInvoicesOriginItems: função que devolve coleção
   não se liga por elementPath, e o diálogo abria vazio. As condições de elegibilidade cabem
   todas no $filter — documento confirmado, entrega fechada e quebra apurada (faturado maior
-  que o líquido). O cliente muda a cada devolução e entra como filtro na abertura, pelo
+  que o líquido). O cliente muda a cada documento e entra como filtro na abertura, pelo
   controller.
 
-  A quebra é comparada pela FÓRMULA e não por AvaiableVolume/AssessedShortage: propriedade
-  [NotMapped] é calculada em memória e não vira SQL.
+  A quebra é comparada pela FÓRMULA e não por AssessedShortage: propriedade [NotMapped] é
+  calculada em memória e não vira SQL.
 -->
 <TableSelectDialog
   class=" sapUiSizeCompact"
