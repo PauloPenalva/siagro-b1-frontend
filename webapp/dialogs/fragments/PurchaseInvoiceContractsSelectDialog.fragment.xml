@@ -1,0 +1,97 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+
+<!--
+  Binda o ENTITY SET, não uma função: é o padrão da casa para value help, o mesmo que o diálogo da
+  NF de origem usa. As condições FIXAS ficam neste $filter estático; fornecedor e produto entram
+  como Filter de runtime pelo controller, porque mudam a cada linha.
+
+  ENCERRADO entra de propósito: a NF chega com frequência depois de o contrato fechar, e recusá-la
+  deixaria essa nota sem como ser conciliada.
+
+  O $filter de status é STRING ESTÁTICA e não sap.ui.model.Filter: filtro de enum montado como
+  objeto estoura "Unsupported type" no UI5.
+-->
+<TableSelectDialog
+  class=" sapUiSizeCompact"
+  growing="true"
+  growingThreshold="20"
+  items="{
+    path: '/PurchaseContracts',
+    parameters: {
+      $filter: 'Status eq \'Approved\' or Status eq \'Finished\''
+    },
+    sorter: {
+      path: 'Code',
+      descending: false
+    }
+  }"
+  rememberSelections="true"
+  title="Contratos de Compra"
+>
+<columns>
+  <Column>
+    <header>
+      <Text text="Contrato" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Início" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Fim" />
+    </header>
+  </Column>
+  <Column hAlign="End">
+    <header>
+      <Text text="Volume Total" />
+    </header>
+  </Column>
+  <Column hAlign="End">
+    <header>
+      <Text text="Saldo" />
+    </header>
+  </Column>
+</columns>
+<ColumnListItem>
+  <cells>
+    <ObjectIdentifier title="{Code}" text="{Complement}" />
+    <Text text="{path: 'DeliveryStartDate', type: 'sap.ui.model.odata.type.DateTimeOffset', formatOptions: {style: 'short'}}" />
+    <Text text="{path: 'DeliveryEndDate', type: 'sap.ui.model.odata.type.DateTimeOffset', formatOptions: {style: 'short'}}" />
+    <ObjectNumber
+      number="{
+        path: 'TotalVolume',
+        type: 'sap.ui.model.type.Float',
+        formatOptions: {
+          decimals: 3,
+          decimalSeparator: ',',
+          groupingEnabled: true,
+          groupingSeparator: '.'
+        }
+      }"
+      unit="{UnitOfMeasureCode}"
+      state="None"
+    />
+    <ObjectNumber
+      number="{
+        path: 'AvaiableVolume',
+        type: 'sap.ui.model.type.Float',
+        formatOptions: {
+          decimals: 3,
+          decimalSeparator: ',',
+          groupingEnabled: true,
+          groupingSeparator: '.'
+        }
+      }"
+      unit="{UnitOfMeasureCode}"
+      state="None"
+    />
+  </cells>
+</ColumnListItem>
+</TableSelectDialog>
+</core:FragmentDefinition>
