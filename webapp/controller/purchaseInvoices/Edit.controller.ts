@@ -6,6 +6,7 @@ import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import MessageToast from "sap/m/MessageToast";
 import MessageBox from "sap/m/MessageBox";
 import Table from "sap/ui/table/Table";
+import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 
@@ -53,8 +54,8 @@ export default class Edit extends BaseController {
     this.bindElement(`/PurchaseInvoices(${id})`, {
       $expand:
         "Items($select=Key,ItemCode,ItemName,UnitOfMeasureCode,Quantity,UnitPrice,Total," +
-        "AssessedShortage,Difference,SalesInvoiceItemKey" +
-        ";$expand=SalesInvoiceItem($expand=SalesInvoice))",
+        "AssessedShortage,Difference,SalesInvoiceItemKey,PurchaseContractKey" +
+        ";$expand=SalesInvoiceItem($expand=SalesInvoice),PurchaseContract($select=Key,Code))",
     });
 
     // Depois que os dados CHEGAM, não junto do bindElement: o bind é assíncrono e somar aqui
@@ -76,7 +77,7 @@ export default class Edit extends BaseController {
     // Decimais vão como NÚMERO — em string o POST volta 400 no vínculo do corpo.
     oBinding.create({
       ItemCode: "", ItemName: "", UnitOfMeasureCode: "",
-      Quantity: 0, UnitPrice: 0, SalesInvoiceItemKey: null,
+      Quantity: 0, UnitPrice: 0, SalesInvoiceItemKey: null, PurchaseContractKey: null,
     }, false, false, false);
 
     this.refreshDocumentTotal();
@@ -106,6 +107,22 @@ export default class Edit extends BaseController {
     if (!oContext.getProperty("CardCode")) {
       MessageBox.warning("Informe o emitente do documento.");
       return;
+    }
+
+    const oTable = this.byId("tablePurchaseInvoiceItems");
+    const oBinding = oTable?.getBinding("rows") as ODataListBinding;
+
+    // Aviso, não bloqueio: amarrar depois é caminho legítimo, e a conciliação fiscal-contratual
+    // fica incompleta enquanto isso. Só faz sentido no tipo Normal.
+    if (oContext.getProperty("InvoiceType") === "Normal") {
+      const unlinked = (oBinding?.getAllCurrentContexts() ?? [])
+        .filter(ctx => !ctx.getProperty("PurchaseContractKey"));
+
+      if (unlinked.length > 0 && !await confirmDialog(
+        `${unlinked.length} item(ns) sem contrato amarrado. Salvar assim mesmo ?`,
+        "Documento sem contrato")) {
+        return;
+      }
     }
 
     const oModel = this.getModel() as ODataModel;

@@ -32,19 +32,39 @@
       </OverflowToolbar>
     </t:extension>
     <t:columns>
+      <!-- `showValueHelp` liga em `{ui>/editable}`, e não em "true": este fragmento é o MESMO do
+           Detail, onde a grade é read-only e o botão do diálogo não pode aparecer. -->
+      <!-- `.openLineItemValueHelp`, não o genérico `.openItemValueHelp`: aqui a troca de produto
+           também precisa desamarrar o contrato da linha (coluna "Contrato" abaixo). -->
       <t:Column label="Produto" width="10rem">
         <t:template>
-          <Input value="{ItemCode}" editable="{ui>/editable}" />
+          <Input
+            value="{ItemCode}"
+            editable="{ui>/editable}"
+            showValueHelp="{ui>/editable}"
+            valueHelpOnly="true"
+            valueHelpRequest=".openLineItemValueHelp">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="ItemName" />
+            </customData>
+          </Input>
         </t:template>
       </t:Column>
+      <!-- Consequência do produto escolhido, nunca digitada: quem preenche é o gatilho do value
+           help. O que veio do XML continua exibido intacto até o operador trocar o produto. -->
       <t:Column label="Descrição">
         <t:template>
-          <Input value="{ItemName}" editable="{ui>/editable}" />
+          <Input value="{ItemName}" editable="false" />
         </t:template>
       </t:Column>
       <t:Column label="UM" width="6rem">
         <t:template>
-          <Input value="{UnitOfMeasureCode}" editable="{ui>/editable}" maxLength="4" />
+          <Input
+            value="{UnitOfMeasureCode}"
+            editable="{ui>/editable}"
+            showValueHelp="{ui>/editable}"
+            valueHelpOnly="true"
+            valueHelpRequest=".openUnitsOfMeasureValueHelp" />
         </t:template>
       </t:Column>
       <!-- Campo de ESCRITA de decimal usa `Double`, e não `Decimal`, seguindo o documento de
@@ -56,6 +76,7 @@
         <t:template>
           <Input
             editable="{ui>/editable}"
+            change=".onItemAmountChange"
             value="{
               path: 'Quantity',
               type: 'sap.ui.model.odata.type.Double',
@@ -72,6 +93,7 @@
         <t:template>
           <Input
             editable="{ui>/editable}"
+            change=".onItemAmountChange"
             value="{
               path: 'UnitPrice',
               type: 'sap.ui.model.odata.type.Double',
@@ -86,16 +108,33 @@
       </t:Column>
       <t:Column label="Total" width="10rem" hAlign="End">
         <t:template>
+          <!-- Calculado no cliente: `Total` é [NotMapped] e só existe depois que o servidor
+               responde, então a linha em digitação aparecia VAZIA — e nas já gravadas o valor
+               ficava parado até salvar e reler. `targetType: 'any'` em cada parte é obrigatório:
+               sem ele o binding composto entrega texto e a multiplicação vira NaN. -->
           <Text text="{
-            path: 'Total',
-            type: 'sap.ui.model.odata.type.Decimal',
-            constraints: { precision: 18, scale: 2 },
-            formatOptions: {
-              decimalSeparator: ',',
-              groupingEnabled: true,
-              groupingSeparator: '.'
-            }
+            parts: [
+              { path: 'Quantity', targetType: 'any' },
+              { path: 'UnitPrice', targetType: 'any' }
+            ],
+            formatter: 'formatter.formatLineTotal'
           }" />
+        </t:template>
+      </t:Column>
+
+      <!-- A amarração fiscal, só relevante no tipo Normal: o campo mostra o CÓDIGO do contrato e o
+           value help grava a CHAVE. OneWay é obrigatório porque o campo exibe uma NAVEGAÇÃO — em
+           linha ainda não amarrada `PurchaseContract` é null, e no modo TwoWay o setValue tentaria
+           escrever dentro do null. Mesmo desenho da coluna "NF de Origem" abaixo. -->
+      <t:Column label="Contrato" width="12rem"
+                visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }">
+        <t:template>
+          <Input
+            editable="{ui>/editable}"
+            value="{path: 'PurchaseContract/Code', mode: 'OneWay'}"
+            showValueHelp="{ui>/editable}"
+            valueHelpOnly="true"
+            valueHelpRequest=".openContractValueHelp" />
         </t:template>
       </t:Column>
 
@@ -112,7 +151,7 @@
           <Input
             editable="{ui>/editable}"
             value="{path: 'SalesInvoiceItem/SalesInvoice/InvoiceNumber', mode: 'OneWay'}"
-            showValueHelp="true"
+            showValueHelp="{ui>/editable}"
             valueHelpOnly="true"
             valueHelpRequest=".openOriginItemValueHelp" />
         </t:template>

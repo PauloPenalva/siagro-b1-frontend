@@ -24,6 +24,8 @@ interface InvoiceItemPayload {
   UnitPrice: number;
   /** Nulo até o operador amarrar. (strictNullChecks off: `string` já admite null aqui.) */
   SalesInvoiceItemKey: string;
+  /** Nulo até o operador amarrar. (strictNullChecks off: `string` já admite null aqui.) */
+  PurchaseContractKey: string;
 }
 
 /** Rascunho devolvido pela leitura do XML — não é gravado ainda. */
@@ -169,6 +171,8 @@ export default class Add extends BaseController {
       // payload inicial, senão a primeira escolha no value help abre
       // "Must not change a property before it has been read".
       SalesInvoiceItemKey: null,
+      // Idem para a amarração com o contrato de compra: nasce nula até o operador escolher.
+      PurchaseContractKey: null,
     }));
 
     const oContext = oBinding.create({
@@ -207,7 +211,7 @@ export default class Add extends BaseController {
 
     oBinding.create({
       ItemCode: "", ItemName: "", UnitOfMeasureCode: "",
-      Quantity: 0, UnitPrice: 0, SalesInvoiceItemKey: null,
+      Quantity: 0, UnitPrice: 0, SalesInvoiceItemKey: null, PurchaseContractKey: null,
     }, false, false, false);
 
     this.refreshDocumentTotal();
@@ -255,6 +259,19 @@ export default class Add extends BaseController {
       }
     }
 
+    // Mesmo aviso, agora para o tipo Normal: item sem contrato amarrado é caminho legítimo
+    // (a conciliação fiscal-contratual fica incompleta, não o documento).
+    if (oContext.getProperty("InvoiceType") === "Normal") {
+      const unlinked = (oBinding?.getAllCurrentContexts() ?? [])
+        .filter(ctx => !ctx.getProperty("PurchaseContractKey"));
+
+      if (unlinked.length > 0 && !await confirmDialog(
+        `${unlinked.length} item(ns) sem contrato amarrado. Salvar assim mesmo ?`,
+        "Documento sem contrato")) {
+        return;
+      }
+    }
+
     const oModel = this.getModel() as ODataModel;
 
     try {
@@ -263,7 +280,7 @@ export default class Add extends BaseController {
 
       if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
         MessageToast.show("Documento de entrada registrado.", { closeOnBrowserNavigation: false });
-        this.navTo("purchaseInvoices");
+        this.navToDetail();
       }
     } finally {
       this.setBusy(false);
@@ -278,5 +295,27 @@ export default class Add extends BaseController {
     }
 
     this.navTo("purchaseInvoices");
+  }
+
+  /**
+   * Depois de gravar, vai direto ao detalhe — é de lá que saem confirmar, comentar e as demais
+   * operações do documento, e voltar para a lista obrigaria o operador a procurar o que ele acabou
+   * de criar. Espelha o documento de saída.
+   *
+   * A chave só existe depois do POST: o contexto nasce transiente e é o servidor que a gera. Por
+   * isso a leitura acontece aqui, após o submitBatch, e não no createDraft.
+   *
+   * Sem chave, cai na lista em vez de deixar o operador preso na tela de inclusão de um documento
+   * que já foi gravado.
+   */
+  private navToDetail() {
+    const key = (this.getView().getBindingContext() as Context)?.getProperty("Key") as string;
+
+    if (!key) {
+      this.navTo("purchaseInvoices");
+      return;
+    }
+
+    this.navTo("purchaseInvoicesDetail", { id: key });
   }
 }

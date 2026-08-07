@@ -55,6 +55,90 @@ export abstract class BaseController extends CommonController {
   }
 
   /**
+   * Value help do CONTRATO DE COMPRA da linha — só faz sentido no documento tipo Normal.
+   *
+   * Não usa o `applyValueHelp` genérico nem `descriptionProperty`: aquele mecanismo copia uma
+   * DESCRIÇÃO, e aqui o que precisa ser gravado é a CHAVE do contrato. Segue o mesmo desenho do
+   * value help da NF de origem — `setValue` no que a tela mostra, `setProperty` no que o banco
+   * guarda.
+   *
+   * Fornecedor e produto entram como filtro porque o contrato é por par (fornecedor, produto):
+   * sem eles o diálogo ofereceria contrato de outro produto, que o servidor recusa na gravação.
+   */
+  async openContractValueHelp(ev: Input$ValueHelpRequestEvent) {
+    const oInput = ev.getSource();
+    const oTarget = oInput.getBindingContext() as Context;
+    const oInvoice = this.getView().getBindingContext() as Context;
+
+    const cardCode = oInvoice?.getProperty("CardCode") as string;
+    const itemCode = oTarget?.getProperty("ItemCode") as string;
+
+    if (!cardCode) {
+      MessageBox.warning("Informe o emitente antes de amarrar o contrato.");
+      return;
+    }
+
+    if (!itemCode) {
+      MessageBox.warning("Informe o produto da linha antes de amarrar o contrato.");
+      return;
+    }
+
+    const oSelected = await DialogHelper.openTableSelectDialog(
+      this,
+      "PurchaseInvoiceContractsSelectDialog",
+      ["Code", "Complement"],
+      [
+        new Filter("CardCode", FilterOperator.EQ, cardCode),
+        new Filter("ItemCode", FilterOperator.EQ, itemCode),
+      ]);
+
+    // Cancelar resolve undefined: não mexer no que já estava amarrado.
+    if (!oSelected) {
+      return;
+    }
+
+    oInput.setValue(oSelected.getProperty("Code") as string);
+    await oTarget.setProperty("PurchaseContractKey", oSelected.getProperty("Key"));
+  }
+
+  /**
+   * Value help do PRODUTO da linha.
+   *
+   * Não usa `.openItemValueHelp` — o genérico do `CommonController`, compartilhado por muitas
+   * telas — porque aqui a troca de produto precisa desamarrar o contrato: o guard do servidor só
+   * aceita contrato do MESMO produto, e manter a chave apontando para o produto ANTERIOR reprova
+   * o Save sem dar ao operador um jeito de corrigir além de apagar a linha inteira.
+   */
+  async openLineItemValueHelp(ev: Input$ValueHelpRequestEvent) {
+    const oTarget = ev.getSource().getBindingContext() as Context;
+    const previousItemCode = oTarget?.getProperty("ItemCode") as string;
+
+    await this.applyValueHelp(ev, "ItemsSelectDialog", ["ItemCode", "ItemName"], "ItemCode");
+
+    if (!oTarget || oTarget.getProperty("ItemCode") === previousItemCode) {
+      return;
+    }
+
+    // Produto mudou: o contrato eventualmente amarrado era válido para o produto ANTERIOR. A
+    // célula "Contrato" da grade lê `PurchaseContract/Code` — uma NAVEGAÇÃO — e o cache do
+    // cliente não a esvazia sozinho só porque a chave zerou.
+    //
+    // A ORDEM importa e não é cosmética: `setProperty` no grupo padrão (deferido, vai no PATCH
+    // só quando o Save chama `submitBatch`) devolve uma Promise que só resolve NAQUELE momento —
+    // dar `await` nela aqui trava esta função até o operador salvar, e a limpeza da navegação
+    // (linha seguinte) nunca chegaria a rodar. Por isso a navegação é limpa PRIMEIRO, com grupo
+    // `null` (client-only, resolve na hora), e a chave é gravada DEPOIS sem `await` — o valor já
+    // fica correto no cache local de imediato, e a gravação de fato acontece no próximo Save.
+    await oTarget.setProperty("PurchaseContract/Code", null, null);
+    void oTarget.setProperty("PurchaseContractKey", null);
+  }
+
+  /** Quantidade ou preço mudou numa linha: o "Total dos itens" acompanha. */
+  onItemAmountChange() {
+    this.refreshDocumentTotal();
+  }
+
+  /**
    * Soma das linhas do documento.
    *
    * Calculada NO CLIENTE porque `TotalInvoiceItems` é derivada e, num documento em digitação, o

@@ -48,8 +48,8 @@ export default class Detail extends BaseController {
     this.bindElement(`/PurchaseInvoices(${id})`, {
       $expand:
         "Items($select=Key,ItemCode,ItemName,UnitOfMeasureCode,Quantity,UnitPrice,Total," +
-        "AssessedShortage,Difference,SalesInvoiceItemKey" +
-        ";$expand=SalesInvoiceItem($expand=SalesInvoice))",
+        "AssessedShortage,Difference,SalesInvoiceItemKey,PurchaseContractKey" +
+        ";$expand=SalesInvoiceItem($expand=SalesInvoice),PurchaseContract($select=Key,Code))",
     });
 
     // Depois que os dados CHEGAM, não junto do bindElement: o bind é assíncrono e somar aqui
@@ -98,7 +98,11 @@ export default class Detail extends BaseController {
       return;
     }
 
-    await this.invokeAction("/PurchaseInvoicesReverseConfirm(...)", ctx, "Confirmação estornada.");
+    // Vai direto para a edição: quem estorna quer alterar o documento, e o estorno é justamente o
+    // que o destrava (só documento pendente é alterável).
+    await this.invokeAction(
+      "/PurchaseInvoicesReverseConfirm(...)", ctx, "Confirmação estornada.",
+      () => this.onEdit());
   }
 
   async onCancelInvoice() {
@@ -121,7 +125,14 @@ export default class Detail extends BaseController {
    * Actions do ciclo de vida vão por `bindContext`, não por `callFunction`: é a forma do OData v4
    * no UI5.
    */
-  private async invokeAction(path: string, ctx: Context, message: string) {
+  /**
+   * `onSuccess` existe porque o destino depois da ação NÃO é o mesmo para todas: confirmar e
+   * cancelar encerram o trabalho no documento e voltam à lista, mas estornar existe justamente
+   * para alterar algo — e largar o operador na lista o obrigaria a procurar de novo o documento
+   * que ele acabou de destravar. Sem parâmetro, mantém o comportamento antigo.
+   */
+  private async invokeAction(
+    path: string, ctx: Context, message: string, onSuccess?: () => void) {
     const action = (ctx.getModel() as ODataModel).bindContext(path);
     action.setParameter("Key", ctx.getProperty("Key"));
 
@@ -130,6 +141,12 @@ export default class Detail extends BaseController {
       await action.invoke();
 
       MessageToast.show(message);
+
+      if (onSuccess) {
+        onSuccess();
+        return;
+      }
+
       this.navTo("purchaseInvoices");
     } finally {
       this.setBusy(false);
