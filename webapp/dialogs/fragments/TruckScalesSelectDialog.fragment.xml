@@ -1,0 +1,45 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+
+<TableSelectDialog
+  class=" sapUiSizeCompact"
+  growing="true"
+  growingThreshold="20"
+  items="{
+    path: '/TruckScales',
+    sorter: {
+      path: 'Code',
+      descending: false
+    }
+  }"
+  rememberSelections="true"
+  title="Balanças"
+>
+<columns>
+  <Column>
+    <header>
+      <Text text="Codigo" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Nome" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Localização" />
+    </header>
+  </Column>
+</columns>
+<ColumnListItem>
+  <cells>
+    <Text text="{Code}" />
+    <Text text="{Name}" />
+    <Text text="{Localization}" />
+  </cells>
+</ColumnListItem>
+</TableSelectDialog>
+</core:FragmentDefinition>

@@ -21,6 +21,11 @@
               <core:Fragment fragmentName="siagrob1.view.users.fragments.Profiles" type="XML" />
             </content>
           </IconTabFilter>
+          <IconTabFilter text="Balanças">
+            <content>
+              <core:Fragment fragmentName="siagrob1.view.users.fragments.TruckScales" type="XML" />
+            </content>
+          </IconTabFilter>
         </items>
       </IconTabBar>
 		</content>

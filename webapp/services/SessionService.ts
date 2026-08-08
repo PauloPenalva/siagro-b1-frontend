@@ -198,9 +198,23 @@ class SessionService {
     sessionModel.setProperty("/fullName", identity?.fullName ?? null);
     sessionModel.setProperty("/email", identity?.email ?? null);
     sessionModel.setProperty("/initials", formatter.formatInitials(identity?.fullName));
+    sessionModel.setProperty("/permissions", identity?.permissions ?? []);
 
     this.applyPhoto(identity?.hasPhoto === true);
     this.applyTheme(identity?.theme);
+  }
+
+  /** Administrador passa por cima de qualquer permissão, como no servidor. */
+  public hasPermission(code: string): boolean {
+    const sessionModel = this.getSessionModel();
+
+    if (sessionModel.getProperty("/isAdmin") === true) {
+      return true;
+    }
+
+    const permissions = (sessionModel.getProperty("/permissions") ?? []) as string[];
+
+    return permissions.includes(code);
   }
 
   /**

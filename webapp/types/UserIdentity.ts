@@ -14,6 +14,8 @@ export type UserIdentity = {
   theme?: string;
   /** Diz à shell se deve buscar a imagem do avatar ou ficar nas iniciais. */
   hasPhoto?: boolean;
+  /** Permissões efetivas. A tela usa para não oferecer o que o servidor recusaria. */
+  permissions?: string[];
 };
 
 /** Resposta de `/security/auth/status`. */

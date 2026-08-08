@@ -49,8 +49,23 @@ server:
       mountPath: /reports
       configuration:
         baseUri: "http://localhost:5246/reports"
+    # /scales carrega Server-Sent Events (peso ao vivo). O simpleproxy acumula a resposta inteira
+    # antes de devolvê-la, e como o SSE nunca termina o navegador ficava sem nenhuma leitura.
+    - name: scales-sse-proxy
+      afterMiddleware: compression
+      mountPath: /scales
+      configuration:
+        baseUri: "http://localhost:5246/scales"
     - name: ui5-middleware-simpleproxy
       afterMiddleware: compression
       mountPath: /hangfire
       configuration:
         baseUri: "http://localhost:5246/hangfire"
+---
+specVersion: "4.0"
+kind: extension
+type: server-middleware
+metadata:
+  name: scales-sse-proxy
+middleware:
+  path: lib/middleware/scalesSseProxy.js

@@ -1,5 +1,7 @@
 import SearchField, { SearchField$SearchEvent } from "sap/m/SearchField";
-import BaseController from "../BaseController";
+// GenericController (e não o BaseController comum): é dele que vem o ciclo de vida da captura de
+// peso, usado aqui pelo diálogo de pesagem da lista.
+import GenericController from "./GenericController";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import Table from "sap/ui/table/Table";
 import MessageBox from "sap/m/MessageBox";
@@ -17,7 +19,7 @@ import { ListBase$ItemPressEvent } from "sap/m/ListBase";
 /**
  * @namespace siagrob1.controller.weighingTicket
  */
-export default class Main extends BaseController {
+export default class Main extends GenericController {
     
   formatter = { ...formatter }
 
@@ -155,10 +157,28 @@ export default class Main extends BaseController {
 
     this.oDialog.setBindingContext(oContext);
     this.oDialog.open();
+
+    void this.startWeighingCapture(sOperation === "FW" ? "Opening" : "Closing", "weighingTickets");
   }
 
+  /**
+   * O peso capturado vai para o viewModel do diálogo, e não para a entidade: aqui a pesagem só
+   * existe enquanto o diálogo está aberto.
+   */
+  protected applyCapturedWeight(weight: number): void {
+    const uiModel = this.getModel("ui") as JSONModel;
+    const viewModel = this.getModel("viewModel") as JSONModel;
+
+    const property = uiModel.getProperty("/firstWeighValueVisible") === true
+      ? "/FirstWeighValue"
+      : "/SecondWeighValue";
+
+    viewModel.setProperty(property, weight);
+  }
 
   onCloseDlg() {
+    this.stopWeighingCapture();
+
     if (this.oDialog instanceof Dialog) {
       this.oDialog.close();
     }
@@ -176,6 +196,7 @@ export default class Main extends BaseController {
     const action = oModel.bindContext("/WeighingTicketsFirstWeighing(...)")
     action.setParameter("Key", oContext.getProperty("Key"));
     action.setParameter("Value", +viewModel.getProperty("/FirstWeighValue") )
+    action.setParameter("CaptureId", (this.getModel("ui") as JSONModel).getProperty("/captureId"))
 
     this.setBusy(true);
     void action.invoke()
@@ -201,6 +222,7 @@ export default class Main extends BaseController {
     const action = oModel.bindContext("/WeighingTicketsSecondWeighing(...)")
     action.setParameter("Key", oContext.getProperty("Key"));
     action.setParameter("Value", +viewModel.getProperty("/SecondWeighValue") )
+    action.setParameter("CaptureId", (this.getModel("ui") as JSONModel).getProperty("/captureId"))
 
     this.setBusy(true);
     void action.invoke()

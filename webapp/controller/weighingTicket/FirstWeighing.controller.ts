@@ -39,9 +39,20 @@ export default class FirstWeighing extends GenericController {
       if (ctx) {
         void ctx.setProperty("Stage", "ReadyForSecondWeighing");
       }
+
+      void this.startWeighingCapture("Opening", "weighingTicketsFirstWeighing");
 			return;
 		}
 
+	}
+
+	onExit(): void {
+		this.stopWeighingCapture();
+	}
+
+	protected applyCapturedWeight(weight: number): void {
+		const ctx = this.getView().getBindingContext() as Context;
+		void ctx?.setProperty("FirstWeighValue", weight);
 	}
 
 	async onSave() {
@@ -68,6 +79,7 @@ export default class FirstWeighing extends GenericController {
       action.setParameter("Key", ctx.getProperty("Key"));
       action.setParameter("Value", value);
       action.setParameter("Comments", ctx.getProperty("Comments"));
+      action.setParameter("CaptureId", (this.getModel("ui") as JSONModel).getProperty("/captureId"));
 
       await action.invoke();
 

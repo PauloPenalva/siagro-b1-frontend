@@ -1,0 +1,65 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <t:Table
+    id="userTruckScalesTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    busyIndicatorDelay="0"
+    rows="{
+      path: '/UserTruckScales',
+      parameters: {
+        $expand: 'TruckScale',
+        $$ownRequest: true
+      }
+    }">
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Balanças" />
+          <ToolbarSpacer />
+          <Button text="Incluir" type="Transparent" icon="sap-icon://add" press=".onAddTruckScale" />
+          <Button text="Remover" type="Transparent" icon="sap-icon://delete" press=".onRemoveTruckScale" />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Finalidade">
+        <t:template>
+          <Select
+            selectedKey="{ path: 'Purpose', targetType: 'any' }"
+            forceSelection="false">
+            <core:ListItem key="Opening" text="Abertura" />
+            <core:ListItem key="Closing" text="Encerramento" />
+          </Select>
+        </t:template>
+      </t:Column>
+      <t:Column label="Balança">
+        <t:template>
+          <Input
+            width="10rem"
+            required="true"
+            value="{TruckScaleCode}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openTruckScalesValueHelp">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="TruckScale/Name" />
+            </customData>
+          </Input>
+        </t:template>
+      </t:Column>
+      <t:Column label="Nome">
+        <t:template>
+          <Text text="{TruckScale/Name}" />
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

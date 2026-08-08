@@ -41,6 +41,18 @@
               editable="true"
               liveChange=".validateField"
           />
+          <Label text="Tara (kg)" />
+          <Input
+            value="{
+              path: 'TareWeight',
+              type: 'sap.ui.model.type.Integer',
+              formatOptions: {
+                groupingEnabled: true,
+                groupingSeparator: '.'
+              }
+            }"
+            editable="true"
+          />
           <Label text="Municipio" />
           <Input
               value="{City}"

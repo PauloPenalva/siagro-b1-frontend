@@ -1,0 +1,37 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:l="sap.ui.layout"
+    xmlns:core="sap.ui.core"
+>
+  <VBox class="sapUiSmallMargin">
+    <ObjectNumber
+      class="siagroLiveWeight"
+      number="{
+        path: 'ui>/liveWeight',
+        type: 'sap.ui.model.type.Integer',
+        formatOptions: {
+          groupingEnabled: true,
+          groupingSeparator: '.'
+        }
+      }"
+      unit="KG"
+      emphasized="true"
+      state="{= ${ui>/liveStable} ? 'Success' : 'Warning' }"
+      visible="{ui>/scaleConfigured}" />
+    <ObjectStatus
+      text="{ui>/liveStatusText}"
+      state="{ui>/liveStatusState}" />
+    <Button
+      text="Usar este peso"
+      icon="sap-icon://accept"
+      type="Emphasized"
+      enabled="{= ${ui>/liveOnline} &amp;&amp; ${ui>/liveStable} }"
+      visible="{ui>/scaleConfigured}"
+      press=".onUseCapturedWeight" />
+    <MessageStrip
+      text="Nenhuma balança configurada para esta etapa. Peça ao administrador para configurá-la no seu usuário."
+      type="Warning"
+      showIcon="true"
+      visible="{= !${ui>/scaleConfigured} }" />
+  </VBox>
+</core:FragmentDefinition>

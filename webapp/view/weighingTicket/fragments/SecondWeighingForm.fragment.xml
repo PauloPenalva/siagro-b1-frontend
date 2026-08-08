@@ -156,21 +156,18 @@
 
           <core:Title />
           <Label text="Segunda Pesagem" />
-          <Input 
+          <Input
             description="KG"
-            editable="true"
+            editable="{ui>/canTypeWeight}"
             value="{
               path: 'SecondWeighValue',
               type: 'sap.ui.model.type.Integer',
               formatOptions: {
                 groupingEnabled: true,
                 groupingSeparator: '.'
-              } 
+              }
             }" />
-           <Button 
-            text="Capturar Peso" 
-            icon="sap-icon://action" 
-            type="Emphasized" />
+          <core:Fragment fragmentName="siagrob1.view.weighingTicket.fragments.WeighingCapture" type="XML" />
          
           <Label text="Observações"/>
           <TextArea 

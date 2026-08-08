@@ -30,7 +30,17 @@ export default class Edit extends BaseController {
 				path: sPath,
 				events: {
 					dataRequested: () => this.setBusy(true),
-					dataReceived: () => this.setBusy(false),
+					dataReceived: () => {
+						this.setBusy(false);
+
+						// O Username só existe depois que a entidade chega - filtrar antes disso
+						// deixaria a grade mostrando as balanças de todo mundo.
+						const username = oView.getBindingContext()?.getProperty("Username") as string;
+
+						if (username) {
+							this.bindTruckScales(username);
+						}
+					},
 				}
 			})
 			return;

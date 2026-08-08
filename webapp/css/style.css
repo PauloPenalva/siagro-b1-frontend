@@ -1,0 +1,23 @@
+/*
+ * Estilos próprios do aplicativo. Use classes padrão do UI5 sempre que existir uma —
+ * este arquivo é para o que o tema não cobre.
+ */
+
+/*
+ * Peso ao vivo da balança rodoviária. O balanceiro lê o número em pé ao lado do monitor,
+ * não sentado à frente dele, então o tamanho padrão do ObjectNumber é curto demais.
+ * A unidade fica menor de propósito, para o número dominar a leitura.
+ */
+/*
+ * A unidade quebra para a linha de baixo: com o separador de milhar o número não cabe junto dela
+ * na coluna do formulário. Forçar `white-space: nowrap` aqui NÃO resolve - o container é estreito
+ * demais e a unidade sai cortada ("K" em vez de "KG"). Empilhado é estável para qualquer peso.
+ */
+.siagroLiveWeight .sapMObjectNumberText {
+  font-size: 2.5rem;
+  line-height: 1.2;
+}
+
+.siagroLiveWeight .sapMObjectNumberUnit {
+  font-size: 1.25rem;
+}

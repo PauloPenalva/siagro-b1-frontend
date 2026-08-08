@@ -20,36 +20,30 @@
             text="Peso"
             visible="{ui>/firstWeighValueVisible}" 
             />
-          <Input 
-            id="inputFirstWeigh" 
+          <Input
+            id="inputFirstWeigh"
             visible="{ui>/firstWeighValueVisible}"
+            editable="{ui>/canTypeWeight}"
             value="{
               path: 'viewModel>/FirstWeighValue',
               type: 'sap.ui.model.odata.type.Int32'
-            }" 
+            }"
             textAlign="Center" />
-          <Button 
-            visible="{ui>/firstWeighValueVisible}"
-            text="Capturar Peso" 
-            icon="sap-icon://action" 
-            type="Emphasized" />
           <!-- Segunda Pesagem-->
           <Label 
             text="Peso" 
             visible="{ui>/secondWeighValueVisible}"/>
-          <Input 
-            id="inputSecondWeigh" 
+          <Input
+            id="inputSecondWeigh"
             visible="{ui>/secondWeighValueVisible}"
+            editable="{ui>/canTypeWeight}"
             value="{
               path: 'viewModel>/SecondWeighValue',
               type: 'sap.ui.model.odata.type.Int32'
-            }" 
+            }"
             textAlign="Center" />
-          <Button 
-            visible="{ui>/secondWeighValueVisible}"
-            text="Capturar Peso" 
-            icon="sap-icon://action" 
-            type="Emphasized" />
+          <!-- Um único bloco de captura: o diálogo mostra 1ª OU 2ª pesagem, nunca as duas. -->
+          <core:Fragment fragmentName="siagrob1.view.weighingTicket.fragments.WeighingCapture" type="XML" />
         </f:content>
       </f:SimpleForm>
       <buttons>

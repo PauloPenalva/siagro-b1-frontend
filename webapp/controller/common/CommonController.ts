@@ -399,6 +399,10 @@ export default abstract class CommonController extends BaseController {
     void this.applyValueHelp(ev, "PermissionsSelectDialog", ["Description", "Code"], "Code");
   }
 
+  openTruckScalesValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "TruckScalesSelectDialog", ["Name", "Code"], "Code");
+  }
+
   openRolesValueHelp(ev: Input$ValueHelpRequestEvent) {
     void this.applyValueHelp(ev, "RolesSelectDialog", ["Description", "Code"], "Code");
   }

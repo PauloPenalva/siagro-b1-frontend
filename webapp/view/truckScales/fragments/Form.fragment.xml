@@ -50,6 +50,54 @@
               liveChange=".validateField"
               maxLength="100"
           />
+
+          <core:Title text="Conexão" emphasized="true" />
+          <Label text="Endereço IP" />
+          <Input value="{IpAddress}" editable="true" maxLength="50" />
+          <Label text="Porta" />
+          <Input
+            value="{
+              path: 'Port',
+              type: 'sap.ui.model.type.Integer'
+            }"
+            editable="true" />
+          <Label text="Protocolo" />
+          <Select
+            selectedKey="{
+              path: 'Protocol',
+              targetType: 'any'
+            }"
+            forceSelection="false">
+            <core:ListItem key="JundiaiBj850" text="Jundiaí BJ850" />
+            <core:ListItem key="Generic" text="Genérico (expressão regular)" />
+          </Select>
+
+          <core:Title text="Validação da Tara" emphasized="true" />
+          <Label text="Validar tara" />
+          <CheckBox
+            selected="{
+              path: 'ValidateTare',
+              targetType: 'any'
+            }" />
+          <Label text="Tolerância (kg)" />
+          <Input
+            value="{
+              path: 'TareToleranceKg',
+              type: 'sap.ui.model.type.Integer'
+            }"
+            editable="true" />
+
+          <core:Title text="Avançado (parsing do frame)" emphasized="true" />
+          <Label text="Caracteres antes do peso" />
+          <Input value="{ path: 'FramePrefixLength', type: 'sap.ui.model.type.Integer' }" />
+          <Label text="Dígitos do peso" />
+          <Input value="{ path: 'WeightLength', type: 'sap.ui.model.type.Integer' }" />
+          <Label text="Casas decimais" />
+          <Input value="{ path: 'DecimalPlaces', type: 'sap.ui.model.type.Integer' }" />
+          <Label text="Expressão regular (protocolo genérico)" />
+          <Input value="{FramePattern}" maxLength="200" />
+          <Label text="Registrar frames no log" />
+          <CheckBox selected="{ path: 'LogRawFrames', targetType: 'any' }" />
         <core:Title />
         <core:Title />
         </f:content>

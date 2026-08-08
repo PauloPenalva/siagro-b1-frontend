@@ -50,6 +50,13 @@ export default {
   agents: '/odata/Agents',
   truckDrivers: '/odata/TruckDrivers',
   trucks: '/odata/Trucks',
+  truckScales: '/odata/TruckScales',
+  userTruckScales: '/odata/UserTruckScales',
+
+  // Captura de peso. Fora do /odata: são endpoints de streaming e de comando, roteados no
+  // Gateway por /scales.
+  scaleLive: (code: string): string => `/scales/${encodeURIComponent(code)}/live`,
+  scaleCapture: (code: string): string => `/scales/${encodeURIComponent(code)}/capture`,
   shipmentReleases: 'odata/ShipmentReleases',
   salesShipmentReleases: 'odata/SalesShipmentReleases',
   processingCosts: 'odata/ProcessingCosts',
