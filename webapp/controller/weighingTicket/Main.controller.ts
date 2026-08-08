@@ -1,6 +1,5 @@
 import SearchField, { SearchField$SearchEvent } from "sap/m/SearchField";
-// GenericController (e não o BaseController comum): é dele que vem o ciclo de vida da captura de
-// peso, usado aqui pelo diálogo de pesagem da lista.
+// A lista só navega para as telas de pesagem; a captura de peso acontece lá, não aqui.
 import GenericController from "./GenericController";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import Table from "sap/ui/table/Table";
@@ -9,11 +8,7 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
 import formatter from "siagrob1/model/formatter";
-import Dialog from "sap/m/Dialog";
-import JSONModel from "sap/ui/model/json/JSONModel";
-import MessageToast from "sap/m/MessageToast";
 import IconTabBar from "sap/m/IconTabBar";
-import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { ListBase$ItemPressEvent } from "sap/m/ListBase";
 
 /**
@@ -22,8 +17,6 @@ import { ListBase$ItemPressEvent } from "sap/m/ListBase";
 export default class Main extends GenericController {
     
   formatter = { ...formatter }
-
-  private oDialog: Dialog;
 
 	onInit(): void {
 		this.getRouter().getRoute("weighingTickets")
@@ -124,117 +117,6 @@ export default class Main extends GenericController {
 		}
 
 	}
-
-  async openFirstWeighing() {
-    await this.openWeighingDialog("FW");
-  }
-
-  async openSecondWeighing() {
-    await this.openWeighingDialog("SW");
-  }
-
-  async openWeighingDialog(sOperation: "FW" | "SW") {
-    const oTable = this.byId("tableWeighTickets") as Table;
-    const oContext = this.getSelectRowContext(oTable);
-    if (!oContext) {
-      MessageBox.warning("Selecione um ticket.")
-      return;
-    }
-
-    const uiModel = this.getModel("ui") as JSONModel;
-    uiModel.setProperty("/firstWeighValueVisible", sOperation === "FW" );
-    uiModel.setProperty("/secondWeighValueVisible", sOperation === "SW"  );
-
-    const viewModel = this.getModel("viewModel") as JSONModel;
-    viewModel.setProperty("/FirstWeighValue", 0);
-    viewModel.setProperty("/SecondWeighValue", 0);
-      
-    this.oDialog ??= await this.loadFragment({
-      name: "siagrob1.view.weighingTicket.fragments.Weighing",
-      id: this.createId("fragWeighingDlg")  ,
-      addToDependents: true,
-    }) as Dialog;
-
-    this.oDialog.setBindingContext(oContext);
-    this.oDialog.open();
-
-    void this.startWeighingCapture(sOperation === "FW" ? "Opening" : "Closing", "weighingTickets");
-  }
-
-  /**
-   * O peso capturado vai para o viewModel do diálogo, e não para a entidade: aqui a pesagem só
-   * existe enquanto o diálogo está aberto.
-   */
-  protected applyCapturedWeight(weight: number): void {
-    const uiModel = this.getModel("ui") as JSONModel;
-    const viewModel = this.getModel("viewModel") as JSONModel;
-
-    const property = uiModel.getProperty("/firstWeighValueVisible") === true
-      ? "/FirstWeighValue"
-      : "/SecondWeighValue";
-
-    viewModel.setProperty(property, weight);
-  }
-
-  onCloseDlg() {
-    this.stopWeighingCapture();
-
-    if (this.oDialog instanceof Dialog) {
-      this.oDialog.close();
-    }
-  }
-
-  async onSaveFirstWeighValue() {
-    if (!await DialogHelper.confirmDialog("Confirma Primeira Pesagem ?")){
-      return;
-    }
-
-    const oContext = this.oDialog.getBindingContext();
-    const oModel = this.getModel() as ODataModel;
-    const viewModel = this.getModel("viewModel") as JSONModel;
-    
-    const action = oModel.bindContext("/WeighingTicketsFirstWeighing(...)")
-    action.setParameter("Key", oContext.getProperty("Key"));
-    action.setParameter("Value", +viewModel.getProperty("/FirstWeighValue") )
-    action.setParameter("CaptureId", (this.getModel("ui") as JSONModel).getProperty("/captureId"))
-
-    this.setBusy(true);
-    void action.invoke()
-      .then(() => {
-        	MessageToast.show("Dados salvos com sucesso.", {
-					closeOnBrowserNavigation: false
-				});
-        this.onCloseDlg();
-        this.onRefresh();
-      })
-      .finally(() => this.setBusy(false));
-  }
-
-  async onSaveSecondWeighValue() {
-   if (!await DialogHelper.confirmDialog("Confirma Segunda Pesagem ?")){
-      return;
-    }
-
-    const oContext = this.oDialog.getBindingContext();
-    const oModel = this.getModel() as ODataModel;
-    const viewModel = this.getModel("viewModel") as JSONModel;
-    
-    const action = oModel.bindContext("/WeighingTicketsSecondWeighing(...)")
-    action.setParameter("Key", oContext.getProperty("Key"));
-    action.setParameter("Value", +viewModel.getProperty("/SecondWeighValue") )
-    action.setParameter("CaptureId", (this.getModel("ui") as JSONModel).getProperty("/captureId"))
-
-    this.setBusy(true);
-    void action.invoke()
-      .then(() => {
-        	MessageToast.show("Dados salvos com sucesso.", {
-					closeOnBrowserNavigation: false
-				});
-        this.onCloseDlg();
-        this.onRefresh();
-      })
-      .finally(() => this.setBusy(false));
-  }
 
   onEdit(ev: ListBase$ItemPressEvent) {
     const tab = this.byId("weighingTicketsIconTabBar") as IconTabBar  
