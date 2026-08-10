@@ -19,11 +19,11 @@
                 showNavButton="true"
                 showMenuButton="true"
                 showSearch="false"
-				        showNotifications="false"
+				showNotifications="false"
                 navButtonPressed=".onNavBack"
                 homeIconPressed=".onHomePress"
                 productSwitcherPressed=".onOpenProductSwitch"
-			          showProductSwitcher="false"
+			    showProductSwitcher="false"
                 menuButtonPressed=".onMenuButtonPress">
                 <f:menu>
                   <Menu>
