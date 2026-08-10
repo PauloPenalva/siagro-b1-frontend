@@ -51,15 +51,24 @@
               liveChange=".validateField"
               maxLength="100"
           />
-          <Label text="Senha" />
-          <Input
-              value="{Password}"
-              editable="true"
-              required="true"
-              liveChange=".validateField"
-              type="Password"
-              maxLength="100"
-          />
+          <!-- `required` explícito no label: o SimpleForm tira o asterisco do controle seguinte,
+               e o seguinte aqui é o VBox, não o Input. -->
+          <Label text="Senha" required="true" />
+          <VBox>
+            <Input
+                value="{Password}"
+                editable="true"
+                required="true"
+                liveChange=".validateField"
+                type="Password"
+                maxLength="100"
+            />
+            <!-- A regra vem do servidor: a política é configurável e um texto fixo aqui
+                 divergiria dela. Quem reprova a senha fraca é o servidor, não esta tela. -->
+            <Text
+                text="{sessionModel>/passwordRequirements}"
+                class="sapUiTinyMarginTop" />
+          </VBox>
           <Label text="Ativo ?" />
           <CheckBox
               selected="{IsActive}"

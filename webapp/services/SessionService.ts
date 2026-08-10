@@ -92,7 +92,7 @@ class SessionService {
 
     this.authenticated = true;
     this.getSessionModel().setProperty("/logged", true);
-    this.applyUserIdentity(result?.user);
+    this.applyUserIdentity(result?.user, result?.passwordRequirements);
 
     // Uma falha ao carregar menu/filial não invalida o login já concedido.
     try {
@@ -125,7 +125,9 @@ class SessionService {
     try {
       const status = await new RequestModel().get<AuthStatus>(ServerRoutes.userInfo);
       this.authenticated = !!status?.authenticated;
-      this.applyUserIdentity(this.authenticated ? status : undefined);
+      this.applyUserIdentity(
+        this.authenticated ? status : undefined,
+        this.authenticated ? status?.passwordRequirements : undefined);
     } catch (error) {
       console.warn("Falha ao consultar o status da sessão.", error);
       this.authenticated = false;
@@ -191,7 +193,7 @@ class SessionService {
    * Quem decide de fato o que o usuário pode alterar é o servidor; isto existe para a tela não
    * oferecer uma ação que vai voltar recusada.
    */
-  private applyUserIdentity(identity?: UserIdentity): void {
+  private applyUserIdentity(identity?: UserIdentity, passwordRequirements?: string): void {
     const sessionModel = this.getSessionModel();
     sessionModel.setProperty("/userName", identity?.username ?? null);
     sessionModel.setProperty("/isAdmin", identity?.isAdmin === true);
@@ -199,6 +201,9 @@ class SessionService {
     sessionModel.setProperty("/email", identity?.email ?? null);
     sessionModel.setProperty("/initials", formatter.formatInitials(identity?.fullName));
     sessionModel.setProperty("/permissions", identity?.permissions ?? []);
+    // Parâmetro à parte porque a regra não é identidade: ela vem no mesmo par de respostas
+    // (login e /status), mas fora do objeto do usuário.
+    sessionModel.setProperty("/passwordRequirements", passwordRequirements ?? "");
 
     this.applyPhoto(identity?.hasPhoto === true);
     this.applyTheme(identity?.theme);

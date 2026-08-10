@@ -21,6 +21,11 @@ export type UserIdentity = {
 /** Resposta de `/security/auth/status`. */
 export type AuthStatus = UserIdentity & {
   authenticated?: boolean;
+  /**
+   * Regra de senha vigente, em texto. Vem junto da identidade pelo mesmo motivo das permissões:
+   * o /status é a única fonte depois do boot, e um dado publicado só no login some no primeiro F5.
+   */
+  passwordRequirements?: string;
 };
 
 /** Resposta de `/security/users/me/profile`. */
@@ -38,4 +43,6 @@ export type UserProfile = {
 /** Resposta de `/security/auth/login`. */
 export type LoginResult = {
   user?: UserIdentity;
+  /** Ver a nota em `AuthStatus`: o login não é seguido de uma consulta ao /status. */
+  passwordRequirements?: string;
 };
