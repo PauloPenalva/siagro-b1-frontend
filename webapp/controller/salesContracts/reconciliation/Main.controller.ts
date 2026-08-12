@@ -3,6 +3,7 @@ import Dialog from "sap/m/Dialog";
 import Fragment from "sap/ui/core/Fragment";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
+import SearchField from "sap/m/SearchField";
 import TextArea from "sap/m/TextArea";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Context from "sap/ui/model/odata/v4/Context";
@@ -24,6 +25,12 @@ interface NegativeContract {
 interface ReconciliationTarget {
   SalesContractKey: string;
   Code: string;
+  Complement?: string;
+  CardCode: string;
+  CardName?: string;
+  CardTaxId?: string;
+  /** Calculado no servidor: contrato de cliente diferente do cliente da NOTA. */
+  IsOtherCustomer: boolean;
   Balance: number;
   ActiveReleaseBalance: number;
   ReconciliationVolume?: number;
@@ -52,6 +59,12 @@ export default class Main extends CommonController {
   formatter = formatter;
 
   private reconciliationDialog: Dialog;
+
+  /**
+   * Resultado íntegro do servidor. O `targetsModel` recebe só o recorte da busca, e é
+   * daqui que a lista completa volta quando a busca é limpa.
+   */
+  private allTargets: ReconciliationTarget[] = [];
 
   onInit(): void {
     this.createFilterModel();
@@ -213,29 +226,79 @@ export default class Main extends CommonController {
     this.dialogControl<CheckBox>("allowNegativeBalance").setSelected(false);
     this.onToggleAllowNegative();
 
+    // O diálogo é cacheado entre aberturas: sem zerar aqui, o recorte da abertura
+    // anterior reaparece na próxima entrega.
+    this.dialogControl<CheckBox>("includeOtherCustomers").setSelected(false);
+    this.dialogControl<SearchField>("targetsSearch").setValue("");
+
     this.reconciliationDialog.open();
     await this.loadTargets(
       context.getProperty("SalesInvoiceItem/Key") as string,
-      context.getProperty("SalesContract/Key") as string);
+      context.getProperty("SalesContract/Key") as string,
+      false);
   }
 
   /**
    * Destinos candidatos: NÃO filtra por saldo nem exige liberação — contrato esgotado ou
-   * já negativo é exatamente o que precisa aparecer.
+   * já negativo é exatamente o que precisa aparecer. O cliente é opt-in: por padrão só o
+   * cliente da nota, e com `includeOtherCustomers` a lista abre para todos.
    */
-  private async loadTargets(salesInvoiceItemKey: string, sourceContractKey: string): Promise<void> {
+  private async loadTargets(salesInvoiceItemKey: string, sourceContractKey: string,
+    includeOtherCustomers: boolean): Promise<void> {
     const func = (this.getModel() as ODataModel).bindContext(this.api.salesContractsReconciliationTargets);
     func.setParameter("SalesInvoiceItemKey", salesInvoiceItemKey);
     func.setParameter("SourceSalesContractKey", sourceContractKey);
+    func.setParameter("IncludeOtherCustomers", includeOtherCustomers);
 
     this.setBusy(true);
     try {
       await func.invoke();
-      (this.getModel("targetsModel") as JSONModel)
-        .setData(this.unwrap<ReconciliationTarget>(func.getBoundContext().getObject()));
+      this.allTargets = this.unwrap<ReconciliationTarget>(func.getBoundContext().getObject());
+      this.applyTargetsSearch();
     } finally {
       this.setBusy(false);
     }
+  }
+
+  /** Recarrega do servidor: o recorte por cliente é decidido lá, não aqui. */
+  async onToggleIncludeOtherCustomers(): Promise<void> {
+    const header = (this.getModel("viewModel") as JSONModel).getData() as Record<string, string | number>;
+
+    this.dialogControl<SearchField>("targetsSearch").setValue("");
+    await this.loadTargets(
+      header.salesInvoiceItemKey as string,
+      header.sourceContractKey as string,
+      this.dialogControl<CheckBox>("includeOtherCustomers").getSelected());
+  }
+
+  onSearchTargets(): void {
+    this.applyTargetsSearch();
+  }
+
+  /**
+   * Busca client-side sobre o que já veio do servidor.
+   *
+   * Trabalha com as MESMAS referências de `allTargets`, nunca com cópias: o volume
+   * digitado vive no próprio objeto da linha, e copiar faria a digitação sumir a cada
+   * tecla da busca.
+   *
+   * O CNPJ casa também sem máscara: o campo está gravado formatado em uma parte da base
+   * e só com dígitos em outra, e quem digita copia da coluna (formatada) ou do cadastro.
+   */
+  private applyTargetsSearch(): void {
+    const query = (this.dialogControl<SearchField>("targetsSearch").getValue() ?? "").trim().toLowerCase();
+
+    const digits = (value?: string) => String(value ?? "").replace(/\D/g, "");
+    const queryDigits = digits(query);
+
+    const rows = query
+      ? this.allTargets.filter(t =>
+        [t.Code, t.Complement, t.CardName, t.CardTaxId]
+          .some(field => String(field ?? "").toLowerCase().includes(query)) ||
+        (queryDigits !== "" && digits(t.CardTaxId).includes(queryDigits)))
+      : this.allTargets;
+
+    (this.getModel("targetsModel") as JSONModel).setData(rows);
   }
 
   /** O motivo só faz sentido — e só é obrigatório — quando o saldo vai ser furado. */
@@ -245,6 +308,7 @@ export default class Main extends CommonController {
   }
 
   onCloseReconciliation(): void {
+    this.allTargets = [];
     (this.getModel("targetsModel") as JSONModel).setData([]);
     this.reconciliationDialog?.close();
   }
@@ -295,9 +359,21 @@ export default class Main extends CommonController {
       return;
     }
 
-    const question = resultingBalance < 0
-      ? `O contrato de destino ${target.Code} ficará com saldo NEGATIVO de ` +
-        `${this.formatter.formatDecimal(resultingBalance, 3)}. Confirma a conciliação?`
+    // Sem guard no servidor para cliente diferente, o aviso é o que impede a entrega de
+    // trocar de cliente por descuido. O cliente de origem já está no topo do diálogo.
+    const warnings: string[] = [];
+
+    if (target.IsOtherCustomer) {
+      warnings.push(
+        `pertence ao cliente ${target.CardName ?? target.CardCode}, diferente do cliente da nota`);
+    }
+
+    if (resultingBalance < 0) {
+      warnings.push(`ficará com saldo NEGATIVO de ${this.formatter.formatDecimal(resultingBalance, 3)}`);
+    }
+
+    const question = warnings.length > 0
+      ? `O contrato de destino ${target.Code} ${warnings.join(" e ")}. Confirma a conciliação?`
       : `Confirma a conciliação da entrega para o contrato ${target.Code}?`;
 
     if (!await DialogHelper.confirmDialog(question)) {

@@ -3,7 +3,7 @@
     xmlns:t="sap.ui.table"
     xmlns:core="sap.ui.core"
 >
-<Dialog id="salesReconciliationDlg" title="Conciliar Entrega para Outro Contrato" contentHeight="640px" contentWidth="1180px">
+<Dialog id="salesReconciliationDlg" title="Conciliar Entrega para Outro Contrato" contentHeight="640px" contentWidth="1440px">
   <content>
     <VBox class="sapUiSmallMargin">
       <HBox>
@@ -39,6 +39,17 @@
         <OverflowToolbar>
           <Title text="Contratos de Destino (inclusive sem saldo)" />
           <ToolbarSpacer />
+          <CheckBox
+            id="includeOtherCustomers"
+            text="Incluir contratos de outros clientes"
+            select=".onToggleIncludeOtherCustomers"
+          />
+          <SearchField
+            id="targetsSearch"
+            width="18rem"
+            placeholder="Contrato, cliente ou CNPJ"
+            liveChange=".onSearchTargets"
+          />
         </OverflowToolbar>
       </t:extension>
       <t:columns>
@@ -50,6 +61,19 @@
         <t:Column label="Contrato" width="9rem">
           <t:template>
             <Text text="{targetsModel>Code}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Cliente" width="16rem">
+          <t:template>
+            <Text text="{targetsModel>CardName}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="CNPJ" width="11rem">
+          <t:template>
+            <Text wrapping="false" text="{
+              path: 'targetsModel>CardTaxId',
+              formatter: '.formatter.formatCnpj'
+            }"/>
           </t:template>
         </t:Column>
         <t:Column label="Complemento" width="10rem">
