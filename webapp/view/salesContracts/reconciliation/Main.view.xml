@@ -228,6 +228,40 @@
                 <Text text="{SalesInvoiceItem/UnitOfMeasureCode}" wrapping="false"/>
               </t:template>
             </t:Column>
+            <!--
+              Quantidade acima é a FATURADA (casa com Preço NF e Diferença). Estas duas
+              mostram o que de fato baixou do contrato: a quebra da conferência sai inteira
+              da linha dona, e é ali que Difer. Entrega aparece preenchida.
+            -->
+            <t:Column label="Qtd. Efetiva" hAlign="End" width="10rem">
+              <t:template>
+                <Text wrapping="false" text="{
+                  parts: [
+                    { path: 'Volume', targetType: 'any' },
+                    { path: 'OwnsDeliveryDifference', targetType: 'any' },
+                    { path: 'SalesInvoiceItem/Quantity', targetType: 'any' },
+                    { path: 'SalesInvoiceItem/DeliveredQuantity', targetType: 'any' },
+                    { path: 'SalesInvoiceItem/QuantityLoss', targetType: 'any' },
+                    { path: 'SalesInvoiceItem/DeliveryStatus', targetType: 'any' }
+                  ],
+                  formatter: '.formatter.formatAllocationEffectiveVolume'
+                }"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="Difer. Entrega" hAlign="End" width="10rem">
+              <t:template>
+                <Text wrapping="false" text="{
+                  parts: [
+                    { path: 'OwnsDeliveryDifference', targetType: 'any' },
+                    { path: 'SalesInvoiceItem/Quantity', targetType: 'any' },
+                    { path: 'SalesInvoiceItem/DeliveredQuantity', targetType: 'any' },
+                    { path: 'SalesInvoiceItem/QuantityLoss', targetType: 'any' },
+                    { path: 'SalesInvoiceItem/DeliveryStatus', targetType: 'any' }
+                  ],
+                  formatter: '.formatter.formatAllocationDeliveryDifference'
+                }"/>
+              </t:template>
+            </t:Column>
             <t:Column label="Preço NF" hAlign="End" width="9rem">
               <t:template>
                 <Text wrapping="false" text="{

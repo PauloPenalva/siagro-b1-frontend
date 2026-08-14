@@ -319,6 +319,74 @@ export default {
     return m.get(value) ?? value;
   },
 
+  /**
+   * Quantidade que a linha do ledger realmente baixou do contrato: o volume faturado menos
+   * a quebra apurada na conferência — e a quebra INTEIRA sai de uma única linha (a marcada
+   * com OwnsDeliveryDifference), nunca rateada entre os contratos que dividem a entrega.
+   * Espelha SalesContractsRecalculateBalanceService.EffectiveVolume no backend; as duas
+   * fórmulas precisam andar juntas.
+   *
+   * Todas as partes do binding precisam de targetType 'any': sem ele o modelo v4 entrega o
+   * decimal já formatado em pt-BR ("1.000,000") e Number() devolve NaN, e o booleano chega
+   * como texto — mesma armadilha documentada em formatNetQuantity.
+   */
+  formatAllocationEffectiveVolume: (
+    volume: number | string,
+    ownsDifference: boolean,
+    quantity: number | string,
+    delivered: number | string,
+    loss: number | string,
+    deliveryStatus: string
+  ) => {
+    const nominal = Number(volume ?? 0);
+    const shortage = ownsDifference && deliveryStatus === "Closed"
+      ? Number(quantity ?? 0) - (Number(delivered ?? 0) - Number(loss ?? 0))
+      : 0;
+
+    const effective = nominal - shortage;
+
+    if (!Number.isFinite(effective)) {
+      return "";
+    }
+
+    return effective.toLocaleString("pt-BR", {
+      minimumFractionDigits: 3,
+      maximumFractionDigits: 3,
+    });
+  },
+
+  /**
+   * Diferença de entrega atribuída a ESTA linha: líquido recebido menos faturado, negativa
+   * na quebra. Sai preenchida só na linha dona — nas demais fica vazia, que é justamente o
+   * que mostra ao operador quem carrega a quebra do item.
+   *
+   * Vazia também enquanto a entrega está aberta: sem conferência não há diferença apurada.
+   * Note que aqui o desconto de quebra (QuantityLoss) ENTRA na conta, ao contrário da coluna
+   * DeliveryDifference do item — é este o valor que move o saldo do contrato.
+   */
+  formatAllocationDeliveryDifference: (
+    ownsDifference: boolean,
+    quantity: number | string,
+    delivered: number | string,
+    loss: number | string,
+    deliveryStatus: string
+  ) => {
+    if (!ownsDifference || deliveryStatus !== "Closed") {
+      return "";
+    }
+
+    const difference = (Number(delivered ?? 0) - Number(loss ?? 0)) - Number(quantity ?? 0);
+
+    if (!Number.isFinite(difference)) {
+      return "";
+    }
+
+    return difference.toLocaleString("pt-BR", {
+      minimumFractionDigits: 3,
+      maximumFractionDigits: 3,
+    });
+  },
+
   formatPriceDifferenceState: (value: number | string) => {
     // OData v4 serializa Edm.Decimal como string — coagir antes de comparar.
     const n = Number(value);
