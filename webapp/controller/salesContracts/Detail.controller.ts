@@ -27,6 +27,12 @@ export default class Detail extends SalesContractsBaseController {
 
 		if (id != null) {
 
+      // O Salvar dos Locais de Entrega submete o update group diferido inteiro, que é
+      // compartilhado pelo app. Entrar aqui nunca tem alteração pendente legítima, então
+      // limpar garante que aquele submitBatch só carregue o que esta tela produziu - mesmo
+      // que o descarte global do Component tenha sido pulado por um $batch em voo.
+      this.resetModelChanges();
+
       uiModel.setProperty("/editable", false);
       uiModel.setProperty("/typeEditable", false);
 

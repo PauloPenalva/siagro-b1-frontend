@@ -11,6 +11,7 @@ import MessageBox from "sap/m/MessageBox";
 import SessionService from "./services/SessionService";
 import VersionService from "./services/VersionService";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { Router$RouteMatchedEvent } from "sap/ui/core/routing/Router";
 
 /** Rotas alcançáveis sem sessão. */
@@ -56,6 +57,7 @@ export default class Component extends UIComponent {
 
     this.getRouter().attachBeforeRouteMatched(() => {
         uiModel.setProperty("/busy", true);
+        this.discardPendingChanges();
     });
 
     this.getRouter().attachRouteMatched((ev: Router$RouteMatchedEvent) => {
@@ -96,6 +98,35 @@ export default class Component extends UIComponent {
       uiModel.setProperty("/busy", false);
       SessionService.notifyReady();
       this.getRouter().initialize();
+    }
+  }
+
+  /**
+   * Descarta o que a tela anterior deixou pendente no update group diferido.
+   *
+   * O app inteiro compartilha um único update group (`UpdateGroup`, no manifest), então o
+   * `submitBatch` de qualquer tela envia TUDO que estiver pendente num único changeset - e
+   * changeset é atômico. As telas de inclusão criam o contexto transiente já no
+   * `patternMatched` (a liberação de entrega, por exemplo, nasce só com `SalesContractKey`);
+   * se o usuário sair por fora do Cancelar/voltar - menu lateral, URL - esse POST incompleto
+   * fica na fila e derruba o Salvar de outra tela, com o erro de um campo obrigatório de uma
+   * entidade que nem está na tela.
+   *
+   * `beforeRouteMatched` e não `routeMatched`: este dispara ANTES do `patternMatched` da rota
+   * de destino, então não apaga o contexto transiente que a tela nova acabou de criar.
+   */
+  private discardPendingChanges(): void {
+    const oModel = this.getModel() as ODataModel;
+
+    if (!oModel?.hasPendingChanges(oModel.getUpdateGroupId())) {
+      return;
+    }
+
+    try {
+      oModel.resetChanges(oModel.getUpdateGroupId());
+    } catch {
+      // Há um $batch em voo (o usuário navegou durante um Salvar). Não há o que descartar:
+      // o submit em andamento segue e a tela de destino ainda verá o resultado dele.
     }
   }
 
