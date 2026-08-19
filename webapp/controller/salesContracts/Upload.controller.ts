@@ -1,7 +1,6 @@
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import FileUploader, { FileUploader$ChangeEvent } from "sap/ui/unified/FileUploader";
-import Context from "sap/ui/model/odata/v4/Context";
 import Input from "sap/m/Input";
 import MessageToast from "sap/m/MessageToast";
 import MessageBox from "sap/m/MessageBox";
@@ -14,7 +13,14 @@ export default class Upload extends SalesContractsBaseController {
 
   file: File;
 
-	onInit(): void  {	
+  /**
+   * Chave do contrato, lida da ROTA. Não vem do contexto da view de propósito: o `bindElement`
+   * é assíncrono e pode falhar, e `getProperty("Key")` devolve `undefined` sem esperar — era o
+   * que montava um payload sem `ContractKey` e derrubava o envio com 404, de forma intermitente.
+   */
+  contractKey: string;
+
+	onInit(): void  {
 		this.getRouter().getRoute("salesContractsUpload").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 
@@ -23,7 +29,10 @@ export default class Upload extends SalesContractsBaseController {
     const fileUpload = this.byId('salesContractAttachmentFileUploader') as FileUploader;
     description.setValue(undefined);
     fileUpload.setValue(undefined);
-    
+    // O controller é reusado entre visitas à tela: sem limpar aqui, o arquivo escolhido na
+    // visita anterior continuaria em memória.
+    this.file = undefined;
+
     const oModel = this.getView().getModel() as ODataModel;
 		
 		if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
@@ -31,6 +40,8 @@ export default class Upload extends SalesContractsBaseController {
 		}
 
 		const {id} = ev.getParameter("arguments") as {id: string };
+		this.contractKey = id;
+
 		if (id != null) {
 			const sPath = `/SalesContracts(${id})`;
 			this.bindElement(sPath);
@@ -49,18 +60,18 @@ export default class Upload extends SalesContractsBaseController {
   }
 
 	onSend() {
-    const ctx = this.getView().getBindingContext() as Context;
-    if (!ctx) {
-      throw new Error("Contexto não encontrado.");
+    const contractKey = this.contractKey;
+    if (!contractKey) {
+      MessageBox.error("Contrato não identificado. Volte à lista e abra o anexo novamente.");
+      return;
     }
 
-    const contractKey = ctx.getProperty("Key") as string;
     const description = this.byId("salesContractAttachmentDescription") as Input;
     if (!description.getValue()){
       return;
     }
     const fileUpload = this.byId('salesContractAttachmentFileUploader') as FileUploader;
-    if (!fileUpload.getValue()){
+    if (!fileUpload.getValue() || !this.file){
       return;
     }
 
@@ -86,7 +97,7 @@ export default class Upload extends SalesContractsBaseController {
                 File: base64
             };     
 
-          const response = await fetch(`odata/SalesContractsAttachmentUpload`,
+          const response = await fetch(`/odata/SalesContractsAttachmentUpload`,
               {
                   method: "POST",
                   headers: {
@@ -97,7 +108,13 @@ export default class Upload extends SalesContractsBaseController {
           );
 
           if (!response.ok) {
-              throw new Error("Erro ao enviar anexo");
+              // O corpo da resposta traz o motivo real — o backend responde `BadRequest(e.Message)`
+              // ou `NotFound(e.Message)`. Sem ele o usuário só via o texto genérico e não havia
+              // como diagnosticar a falha nem pelo relato nem pelo log.
+              const detail = await this.readErrorMessage(response);
+              throw new Error(detail
+                  ? `Erro ao enviar anexo (${response.status}): ${detail}`
+                  : `Erro ao enviar anexo (${response.status}).`);
           }
 
           this.onNavBack();
@@ -110,6 +127,24 @@ export default class Upload extends SalesContractsBaseController {
         }
     }
     
+  }
+
+  /**
+   * Extrai a mensagem de negócio do corpo de erro. O backend responde no envelope do OData
+   * (`{"error":{"message":"..."}}`) — mostrar o JSON cru numa MessageBox não ajuda o usuário.
+   */
+  private async readErrorMessage(response: Response): Promise<string> {
+    const body = (await response.text())?.trim();
+    if (!body) {
+      return "";
+    }
+
+    try {
+      const parsed = JSON.parse(body) as { error?: { message?: string } };
+      return parsed?.error?.message ?? body;
+    } catch {
+      return body;
+    }
   }
 
 	onCancel() {

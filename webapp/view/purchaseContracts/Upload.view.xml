@@ -22,10 +22,10 @@
    	<uxap:headerTitle>
 			<uxap:ObjectPageDynamicHeaderTitle>
         <uxap:expandedHeading>
-           <Title text="Contrato de Venda - Upload de Anexo"/>
+           <Title text="Contrato de Compra - Upload de Anexo"/>
           </uxap:expandedHeading>
           <uxap:snappedHeading>
-           <Title text="Contrato de Venda - Upload de Anexo"/>
+           <Title text="Contrato de Compra - Upload de Anexo"/>
          </uxap:snappedHeading>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>

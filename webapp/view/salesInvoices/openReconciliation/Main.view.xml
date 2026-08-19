@@ -173,13 +173,16 @@
 						>
 						<t:template>
 							<!-- Somente leitura: nesta tela a única ação é reabrir a entrega (Status). -->
+							<!-- Sem type="Number": o <input type="number"> nativo apaga valor com separador pt-BR. -->
 							<Input
-                type="Number"
                 editable="false"
                 value="{
                   path: 'DeliveredQuantity',
-                  type: 'sap.ui.model.type.Integer',
+                  type: 'sap.ui.model.odata.type.Double',
                   formatOptions:{
+                    minFractionDigits: 0,
+                    maxFractionDigits: 3,
+                    decimalSeparator: ',',
                     groupingEnabled: true,
                     groupingSeparator: '.'
                   }
@@ -210,13 +213,16 @@
 						>
 						<t:template>
 							<!-- Somente leitura: ver comentário na coluna Qtd.Entregue. -->
+							<!-- Sem type="Number": o <input type="number"> nativo apaga valor com separador pt-BR. -->
 							<Input
-                type="Number"
                 editable="false"
                 value="{
                   path: 'QuantityLoss',
-                  type: 'sap.ui.model.type.Integer',
+                  type: 'sap.ui.model.odata.type.Double',
                   formatOptions:{
+                    minFractionDigits: 0,
+                    maxFractionDigits: 3,
+                    decimalSeparator: ',',
                     groupingEnabled: true,
                     groupingSeparator: '.'
                   }

@@ -172,16 +172,25 @@
             width="7rem"
 						>
 						<t:template>
-							<Input 
-                type="Number" 
+							<!--
+								Peso da balança do cliente: aceita decimais (a coluna é DECIMAL(18,3)).
+								Sem type="Number" de propósito: com ele o navegador renderiza <input type="number">,
+								que apaga qualquer valor com separador pt-BR ("40.000,5" não é float válido em HTML).
+								Double e não Decimal porque Decimal faz parse para string e o leitor OData devolve 400
+								- ver docs/superpowers/specs/2026-08-06-odata-decimal-string-blocker.md no backend.
+							-->
+							<Input
                 value="{
                   path: 'DeliveredQuantity',
-                  type: 'sap.ui.model.type.Integer',
+                  type: 'sap.ui.model.odata.type.Double',
                   formatOptions:{
+                    minFractionDigits: 0,
+                    maxFractionDigits: 3,
+                    decimalSeparator: ',',
                     groupingEnabled: true,
                     groupingSeparator: '.'
                   }
-                }" 
+                }"
                 textAlign="End"/>
 						</t:template>
 					</t:Column>
@@ -207,16 +216,19 @@
             width="7rem"
 						>
 						<t:template>
-							<Input 
-                type="Number" 
+							<!-- Quebra de qualidade: mesma regra da coluna Qtd.Entregue. -->
+							<Input
                 value="{
                   path: 'QuantityLoss',
-                  type: 'sap.ui.model.type.Integer',
+                  type: 'sap.ui.model.odata.type.Double',
                   formatOptions:{
+                    minFractionDigits: 0,
+                    maxFractionDigits: 3,
+                    decimalSeparator: ',',
                     groupingEnabled: true,
                     groupingSeparator: '.'
                   }
-                }" 
+                }"
                 textAlign="End"
               />
 						</t:template>
