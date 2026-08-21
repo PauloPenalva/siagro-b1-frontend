@@ -12,14 +12,16 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageToast from "sap/m/MessageToast";
 import { SearchField$SearchEvent } from "sap/m/SearchField";
 
-type BillingData = {
+/** Carga selecionada na lista — a origem do faturamento agora. */
+type LoadData = {
+  Key: string,
+  Code: string,
   ItemCode: string,
   ItemName: string,
   TruckDriverCode: string,
   TruckCode: string,
-  Branch: {
-    Code: string,
-  }
+  BranchCode: string,
+  AvailableQuantity: number,
 }
 
 /** Dados do formulário do diálogo de faturamento (model "viewModel"). */
@@ -38,6 +40,13 @@ type BillingForm = {
   ItemCode?: string,
   FreightTerms?: string,
   FreightCost?: number,
+  /** Chave da carga faturada — substitui `SalesTransactions` no payload. */
+  ShipmentLoadKey?: string,
+  ShipmentLoadCode?: string,
+  /** Saldo da carga no momento da abertura, limite da quantidade a faturar. */
+  AvailableQuantity?: number,
+  /** Escape do filtro de saldo do contrato na lista de liberações. */
+  IncludeContractsWithoutBalance?: boolean,
 }
 
 /** Liberação de entrega de venda selecionada, usada na montagem do documento de saída. */
@@ -48,11 +57,6 @@ type BilledRelease = {
   Price?: string | number,
   UnitOfMeasureCode?: string,
   AvailableQuantity?: string | number,
-}
-
-/** Romaneio selecionado, enviado como `SalesTransactions`. */
-type BilledShipment = {
-  Key?: string,
 }
 
 /**
@@ -86,11 +90,13 @@ export default class Main extends BaseController {
     const oBinding = this.getView().byId("shipmentBillingTable").getBinding("rows") as ODataListBinding;
     const filters: string[] = [];
 
-    filters.push("TransactionType eq 'SalesShipment'");
-    filters.push("TransactionStatus eq 'Confirmed'");
+    // Pelo ENUM de status, não por `InvoicedQuantity lt TotalQuantity`: comparação
+    // propriedade-a-propriedade é frágil e não indexável. Carga cancelada e carga totalmente
+    // faturada saem da worklist.
+    filters.push("(Status eq 'Open' or Status eq 'PartiallyInvoiced')");
 
     if (query) {
-      filters.push(`contains(TruckCode,'${query}')`);
+      filters.push(`(contains(Code,'${query}') or contains(TruckCode,'${query}'))`);
     }
     
     const filterParam = filters.length > 0 ? filters.join(' and ') : undefined;
@@ -100,34 +106,8 @@ export default class Main extends BaseController {
     });
   }
 
-  async onDelete() {
-    const table = this.byId("shipmentBillingTable") as Table;
-    const selectedInvoices = table.getSelectedIndices();
-    if (selectedInvoices.length < 1){
-      MessageBox.warning("Selecione um registro.")
-      throw new Error("Selecione um registro");
-    }
-
-    if (selectedInvoices.length > 1){
-      MessageBox.warning("Selecione apenas um registro por vez.")
-      throw new Error("Selecione apenas um registro por vez.");
-    }
-
-    if (await DialogHelper.confirmDialog("Estornar Embarque ?")) {
-      const ctx = table.getContextByIndex(selectedInvoices[0]);
-      const oModel = this.getModel() as ODataModel;
-      const action = oModel.bindContext("/ShipmentBillingDeleteInvoice(...)");
-      action.setParameter("Key", ctx.getProperty("Key"));
-      
-      this.setBusy(true);
-      void action.invoke()
-        .then(() => {
-          this.refreshData();
-          MessageToast.show("Embarque estornado com sucesso.")
-        })
-        .finally(() => this.setBusy(false));
-    }
-  }
+  // onDelete saiu daqui: o estorno do romaneio de embarque migrou para a Montagem de Carga,
+  // que é o único lugar onde o romaneio ainda está solto — condição para poder estornar.
 
   private async createBillingDialog() {
     const name = "siagrob1.view.shipmentBilling.fragments.Billing";
@@ -151,59 +131,63 @@ export default class Main extends BaseController {
 
     const table = this.byId("shipmentBillingTable") as Table;
     const contractsTable = this.byId("shipmentBillingSalesContractsTable") as Table;
-    const itemsSelected = table.getSelectedIndices();
+    const selected = table.getSelectedIndices();
 
-    if (itemsSelected.length < 1) {
-      MessageBox.warning("Selecione ao menos 1 item para faturamento.");
-      throw new Error("Selecione ao menos 1 item para faturamento.");
-    }
-
-    if (this.hasTruckCodeInconsistency(itemsSelected)) {
-      MessageBox.warning("Placas diferentes selecionadas.");
+    // UMA carga: a aglutinação já foi decidida na Montagem, e por isso as duas checagens de
+    // consistência (placa e produto) saíram daqui — a carga é homogênea por construção.
+    if (selected.length !== 1) {
+      MessageBox.warning("Selecione uma carga para faturar.");
       return;
     }
 
-    if (this.hasItemCodeInconsistency(itemsSelected)) {
-      MessageBox.warning("Produtos diferentes selecionados.");
+    const load = (table.getContextByIndex(selected[0]) as Context).getObject() as LoadData;
+
+    if (!(load.AvailableQuantity > 0)) {
+      MessageBox.warning("Carga sem saldo a faturar.");
       return;
     }
 
     const viewModel = this.getModel("viewModel") as JSONModel;
-    const transactions: BillingData[] = [];
-    let totalVolume = 0;
-
-    itemsSelected.forEach(i => {
-      const ctx = table.getContextByIndex(i) as Context;
-      totalVolume += +(ctx.getProperty("GrossWeight") as number);
-      transactions.push(ctx.getObject() as BillingData);
-    })
-
-    console.log(transactions);
 
     viewModel.setData({
-      ItemCode: transactions[0]?.ItemCode,
-      ItemName: transactions[0]?.ItemName,
-      Volume: totalVolume,
-      GrossWeightLimit: 0,
-      TruckDriverCode: transactions[0]?.TruckDriverCode,
-      TruckCode: transactions[0]?.TruckCode,
+      ItemCode: load.ItemCode,
+      ItemName: load.ItemName,
+      // Sugere o saldo inteiro; o usuário reduz para faturar em partes.
+      Volume: load.AvailableQuantity,
+      AvailableQuantity: load.AvailableQuantity,
+      ShipmentLoadKey: load.Key,
+      ShipmentLoadCode: load.Code,
+      TruckDriverCode: load.TruckDriverCode,
+      TruckCode: load.TruckCode,
       FreightTerms: "",
-      BranchCode: transactions[0]?.Branch?.Code
+      BranchCode: load.BranchCode,
+      IncludeContractsWithoutBalance: false,
     });
 
-    // Lista as LIBERAÇÕES de venda disponíveis para o produto embarcado, recarregada a
-    // cada abertura. Padrão bindContext + invoke + JSONModel (como SelectShipmentRelease):
-    // a function retorna array cru, que vira a raiz do model "releases".
     contractsTable.clearSelection();
-    await this.loadAvailableReleases(transactions[0]?.ItemCode ?? "");
+    await this.loadAvailableReleases(load.ItemCode ?? "");
 
     this._billingDialog?.open();
+  }
+
+  /**
+   * Recarrega a lista de liberações com ou sem o filtro de saldo do contrato. Só muda o que a
+   * lista MOSTRA: não há guard de saldo no faturamento, então isto nunca é a causa de uma recusa.
+   */
+  async onToggleContractsWithoutBalance(): Promise<void> {
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    (this.byId("shipmentBillingSalesContractsTable") as Table).clearSelection();
+
+    await this.loadAvailableReleases(viewModel.getProperty("/ItemCode") as string);
   }
 
   private async loadAvailableReleases(itemCode: string): Promise<void> {
     const model = this.getModel() as ODataModel;
     const func = model.bindContext("/SalesShipmentReleasesGetAvailable(...)");
     func.setParameter("ItemCode", itemCode);
+    func.setParameter(
+      "IncludeContractsWithoutBalance",
+      Boolean((this.getModel("viewModel") as JSONModel).getProperty("/IncludeContractsWithoutBalance")));
 
     this.setBusy(true);
     try {
@@ -215,39 +199,9 @@ export default class Main extends BaseController {
     }
   }
 
-  private hasTruckCodeInconsistency(itemsSelected: number[]): boolean {
-    const table = this.byId("shipmentBillingTable") as Table;
-
-    const truckCodes: string[] = itemsSelected.map((i) => {
-      const ctx = table.getContextByIndex(i);
-      return ctx.getProperty("TruckCode") as string;
-    });
-
-    for (let i = 1; i < truckCodes.length; i++) {
-      if (truckCodes[i] !== truckCodes[0]) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  private hasItemCodeInconsistency(itemsSelected: number[]): boolean {
-    const table = this.byId("shipmentBillingTable") as Table;
-
-    const itemCodes: string[] = itemsSelected.map((i) => {
-      const ctx = table.getContextByIndex(i);
-      return ctx.getProperty("ItemCode") as string;
-    });
-
-    for (let i = 1; i < itemCodes.length; i++) {
-      if (itemCodes[i] !== itemCodes[0]) {
-        return true;
-      }
-    }
-
-    return false;
-  }
+  // hasTruckCodeInconsistency e hasItemCodeInconsistency migraram para a Montagem de Carga,
+  // onde a aglutinação passa a ser decidida (e ganharam a terceira, de filial). Aqui a carga
+  // já chega homogênea por construção — simplificação real, não remoção de validação.
 
   async saveBillingDialog() {
     // Trava de reentrância: precisa ser avaliada e setada ANTES do primeiro await, senão
@@ -265,18 +219,22 @@ export default class Main extends BaseController {
         return;
       }
 
-      const shipments: BilledShipment[] = [];
-      const shipmentBillingTable = this.byId("shipmentBillingTable") as Table;
-      const selectedShipments = shipmentBillingTable.getSelectedIndices();
+      const viewModelForm = this.getModel("viewModel") as JSONModel;
+      const volume = Number(viewModelForm.getProperty("/Volume"));
+      const available = Number(viewModelForm.getProperty("/AvailableQuantity"));
 
-      selectedShipments.forEach(i => {
-        const shipmentCtx = shipmentBillingTable.getContextByIndex(i);
-        const shipmentObj = shipmentCtx.getObject() as BilledShipment;
+      // Validação local do saldo FÍSICO da carga. O backend recusa igual — isto só evita a
+      // ida ao servidor e dá a mensagem no idioma da tela.
+      if (!(volume > 0)) {
+        MessageBox.warning("Informe uma quantidade a faturar maior que zero.");
+        return;
+      }
 
-        shipments.push({
-          Key: shipmentObj?.Key
-        });
-      });
+      if (volume > available) {
+        MessageBox.warning(
+          `Quantidade a faturar maior que o saldo da carga (${available.toLocaleString("pt-BR", { minimumFractionDigits: 3 })}).`);
+        return;
+      }
 
 
       const contractsTable = this.byId("shipmentBillingSalesContractsTable") as Table;
@@ -318,7 +276,9 @@ export default class Main extends BaseController {
                 SalesShipmentReleaseKey: release?.SalesShipmentReleaseKey
               }
             ],
-            SalesTransactions: shipments,
+            // A nota aponta a CARGA e não escreve romaneio: com N notas por carga,
+            // SalesInvoiceKey no romaneio não teria dono único.
+            ShipmentLoadKey: billing?.ShipmentLoadKey,
             FreightTerms: billing?.FreightTerms,
             FreightCostStandard: billing?.FreightCost
           };

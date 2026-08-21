@@ -1,0 +1,301 @@
+import Dialog from "sap/m/Dialog";
+import MessageBox from "sap/m/MessageBox";
+import MessageToast from "sap/m/MessageToast";
+import { SearchField$SearchEvent } from "sap/m/SearchField";
+import Fragment from "sap/ui/core/Fragment";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import Context from "sap/ui/model/odata/v4/Context";
+import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
+import ODataModel from "sap/ui/model/odata/v4/ODataModel";
+import Table from "sap/ui/table/Table";
+import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import formatter from "siagrob1/model/formatter";
+import { BaseController } from "./BaseController";
+
+/** Romaneio selecionado na aba de disponíveis. */
+type AvailableShipment = {
+  Key: string,
+  Code: string,
+  ItemCode: string,
+  ItemName: string,
+  UnitOfMeasureCode: string,
+  TruckCode: string,
+  GrossWeight: number,
+  Branch?: { Code?: string },
+  BranchCode?: string,
+}
+
+/**
+ * @namespace siagrob1.controller.shipmentLoads
+ */
+export default class Main extends BaseController {
+
+  formatter = formatter;
+
+  private _assembleDialog: Dialog;
+  /** Trava de reentrância da montagem, espelhando `_billingInFlight` do faturamento. */
+  private _assembleInFlight = false;
+
+  onInit(): void {
+    this.getRouter().getRoute("shipmentLoads")
+      .attachPatternMatched(() => {
+        this.applyShipmentFilters(null);
+        this.applyLoadFilters(null);
+      });
+  }
+
+  onTabSelect(): void {
+    this.refreshShipments();
+    this.refreshLoads();
+  }
+
+  onSearchShipments(ev: SearchField$SearchEvent): void {
+    this.applyShipmentFilters(ev);
+  }
+
+  onSearchLoads(ev: SearchField$SearchEvent): void {
+    this.applyLoadFilters(ev);
+  }
+
+  /**
+   * Romaneio de embarque ainda SOLTO. `ShipmentLoadKey eq null` é o que faz o romaneio sumir
+   * daqui assim que entra numa carga — e reaparecer quando a carga é cancelada.
+   *
+   * O $filter é montado como string inteira, e não com `sap.ui.model.Filter`: o modelo V4 não
+   * serializa literal de enum e estoura "Unsupported type".
+   */
+  private applyShipmentFilters(ev: SearchField$SearchEvent | null): void {
+    const query = ev?.getParameter("query");
+    const binding = (this.byId("availableShipmentsTable") as Table)
+      .getBinding("rows") as ODataListBinding;
+
+    const filters: string[] = [
+      "TransactionType eq 'SalesShipment'",
+      "TransactionStatus eq 'Confirmed'",
+      "ShipmentLoadKey eq null",
+    ];
+
+    if (query) {
+      filters.push(`contains(TruckCode,'${query}')`);
+    }
+
+    binding.changeParameters({ $filter: filters.join(" and ") });
+  }
+
+  /** Carga cancelada continua listada: é histórico, e some só do faturamento. */
+  private applyLoadFilters(ev: SearchField$SearchEvent | null): void {
+    const query = ev?.getParameter("query");
+    const binding = (this.byId("shipmentLoadsTable") as Table)
+      .getBinding("rows") as ODataListBinding;
+
+    const filters: string[] = [];
+
+    if (query) {
+      filters.push(`(contains(Code,'${query}') or contains(TruckCode,'${query}'))`);
+    }
+
+    binding.changeParameters({ $filter: filters.length > 0 ? filters.join(" and ") : undefined });
+  }
+
+  async onAssembleLoad(): Promise<void> {
+    const table = this.byId("availableShipmentsTable") as Table;
+    const selected = table.getSelectedIndices();
+
+    if (selected.length < 1) {
+      MessageBox.warning("Selecione ao menos 1 romaneio para montar a carga.");
+      return;
+    }
+
+    // As três checagens de aglutinação. Migraram do faturamento para cá: é aqui que a
+    // aglutinação passa a ser decidida. A de FILIAL é nova — o backend sempre a exigiu, mas
+    // a tela antiga não perguntava, e o usuário só descobriria pelo erro do servidor.
+    if (this.hasInconsistency(selected, "TruckCode")) {
+      MessageBox.warning("Placas diferentes selecionadas.");
+      return;
+    }
+
+    if (this.hasInconsistency(selected, "ItemCode")) {
+      MessageBox.warning("Produtos diferentes selecionados.");
+      return;
+    }
+
+    if (this.hasInconsistency(selected, "BranchCode")) {
+      MessageBox.warning("Filiais diferentes selecionadas.");
+      return;
+    }
+
+    await this.createAssembleDialog();
+
+    const shipments: AvailableShipment[] = selected.map(i =>
+      (table.getContextByIndex(i) as Context).getObject() as AvailableShipment);
+
+    const totalQuantity = shipments.reduce((sum, s) => sum + Number(s.GrossWeight), 0);
+
+    (this.getModel("viewModel") as JSONModel).setData({
+      TruckCode: shipments[0]?.TruckCode,
+      ItemCode: shipments[0]?.ItemCode,
+      ItemName: shipments[0]?.ItemName,
+      UnitOfMeasureCode: shipments[0]?.UnitOfMeasureCode,
+      ShipmentCount: shipments.length,
+      TotalQuantity: totalQuantity,
+      Comments: "",
+      StorageTransactionKeys: shipments.map(s => s.Key),
+    });
+
+    this._assembleDialog.open();
+  }
+
+  async saveAssembleLoadDialog(): Promise<void> {
+    if (this._assembleInFlight) return;
+    this._assembleInFlight = true;
+
+    try {
+      const viewModel = this.getModel("viewModel") as JSONModel;
+      const keys = viewModel.getProperty("/StorageTransactionKeys") as string[];
+      const comments = viewModel.getProperty("/Comments") as string;
+
+      const action = (this.getModel() as ODataModel).bindContext("/ShipmentLoadsCreate(...)");
+      action.setParameter("StorageTransactionKeys", keys);
+      // Só manda o parâmetro opcional quando há texto: JSON.stringify omite undefined, e o
+      // backend trata a ausência.
+      if (comments) {
+        action.setParameter("Comments", comments);
+      }
+
+      this.setBusy(true);
+      await action.invoke();
+
+      this.closeAssembleLoadDialog();
+      this.refreshShipments();
+      this.refreshLoads();
+      MessageToast.show("Carga montada com sucesso.");
+    } catch (e) {
+      MessageBox.error((e as Error).message);
+    } finally {
+      this.setBusy(false);
+      this._assembleInFlight = false;
+    }
+  }
+
+  closeAssembleLoadDialog(): void {
+    (this.byId("availableShipmentsTable") as Table).clearSelection();
+    this._assembleDialog?.close();
+  }
+
+  /**
+   * Estorno do romaneio de embarque, migrado do `/shipment-billing`: aqui é o único lugar em
+   * que o romaneio ainda está solto, que é a condição para poder estornar.
+   */
+  async onReverseShipment(): Promise<void> {
+    const table = this.byId("availableShipmentsTable") as Table;
+    const selected = table.getSelectedIndices();
+
+    if (selected.length < 1) {
+      MessageBox.warning("Selecione um registro.");
+      return;
+    }
+
+    if (selected.length > 1) {
+      MessageBox.warning("Selecione apenas um registro por vez.");
+      return;
+    }
+
+    if (await DialogHelper.confirmDialog("Estornar Embarque ?")) {
+      const ctx = table.getContextByIndex(selected[0]) as Context;
+      const action = (this.getModel() as ODataModel).bindContext("/ShippingTransactionsReverse(...)");
+      action.setParameter("Key", ctx.getProperty("Key"));
+
+      this.setBusy(true);
+      try {
+        await action.invoke();
+        this.refreshShipments();
+        MessageToast.show("Embarque estornado com sucesso.");
+      } catch (e) {
+        MessageBox.error((e as Error).message);
+      } finally {
+        this.setBusy(false);
+      }
+    }
+  }
+
+  async onCancelLoad(): Promise<void> {
+    const table = this.byId("shipmentLoadsTable") as Table;
+    const selected = table.getSelectedIndices();
+
+    if (selected.length !== 1) {
+      MessageBox.warning("Selecione uma carga.");
+      return;
+    }
+
+    const ctx = table.getContextByIndex(selected[0]) as Context;
+
+    const reason = await DialogHelper.promptDialog(
+      "Cancelar Carga", "Informe o motivo do cancelamento:");
+
+    if (!reason) return;
+
+    const action = (this.getModel() as ODataModel).bindContext("/ShipmentLoadsCancel(...)");
+    action.setParameter("Key", ctx.getProperty("Key"));
+    action.setParameter("CancellationReason", reason);
+
+    this.setBusy(true);
+    try {
+      await action.invoke();
+      this.refreshShipments();
+      this.refreshLoads();
+      MessageToast.show("Carga cancelada. Romaneios devolvidos à montagem.");
+    } catch (e) {
+      MessageBox.error((e as Error).message);
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  onOpenDetail(): void {
+    const table = this.byId("shipmentLoadsTable") as Table;
+    const selected = table.getSelectedIndices();
+
+    if (selected.length !== 1) {
+      MessageBox.warning("Selecione uma carga.");
+      return;
+    }
+
+    const ctx = table.getContextByIndex(selected[0]) as Context;
+    this.navTo("shipmentLoadsDetail", { id: ctx.getProperty("Key") as string });
+  }
+
+  private hasInconsistency(selected: number[], property: string): boolean {
+    const table = this.byId("availableShipmentsTable") as Table;
+
+    const values = selected.map(i =>
+      (table.getContextByIndex(i) as Context).getProperty(property) as string);
+
+    return values.some(v => v !== values[0]);
+  }
+
+  private async createAssembleDialog(): Promise<void> {
+    const oView = this.getView();
+    this._assembleDialog = this.byId("assembleLoadDialog") as Dialog;
+
+    if (!this._assembleDialog) {
+      this.setBusy(true);
+      this._assembleDialog = await Fragment.load({
+        id: oView.getId(),
+        name: "siagrob1.view.shipmentLoads.fragments.AssembleLoad",
+        controller: this,
+      }) as unknown as Dialog;
+      oView.addDependent(this._assembleDialog);
+      this.setBusy(false);
+    }
+  }
+
+  private refreshShipments(): void {
+    ((this.byId("availableShipmentsTable") as Table)
+      .getBinding("rows") as ODataListBinding).refresh();
+  }
+
+  private refreshLoads(): void {
+    ((this.byId("shipmentLoadsTable") as Table)
+      .getBinding("rows") as ODataListBinding).refresh();
+  }
+}

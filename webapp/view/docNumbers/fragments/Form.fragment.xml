@@ -47,6 +47,7 @@
               <core:ListItem key="StorageTransaction" text="Romaneio"/>
               <core:ListItem key="OwnershipTransfer" text="Transferencia Propriedade"/>
               <core:ListItem key="StorageInvoice" text="Fatura de Serviço"/>
+              <core:ListItem key="ShipmentLoad" text="Carga"/>
             </Select>
             <Label text="Nome" />
             <Input

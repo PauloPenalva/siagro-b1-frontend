@@ -20,6 +20,70 @@ export abstract class BaseController extends CommonController {
     private documentTotalAttached = false;
 
     /**
+     * Filtro server-side das duas telas de conferência de entrega (Conferência e Estorno).
+     * Mora aqui, e não em cada controller, pelo mesmo motivo do fragmento
+     * `ReconciliationFilterbar` ser compartilhado: as duas telas são espelho, os campos são
+     * os mesmos, e divergir seria bug. O que cada uma traz de próprio é o `scope`.
+     *
+     * O valor é escapado antes de entrar no literal — uma aspa simples no nome do cliente ou
+     * da transportadora quebraria o $filter inteiro.
+     *
+     * Cliente, transportadora e produto casam contra código OU nome: o value help grava o
+     * código, mas quem digita à mão digita o nome.
+     */
+    protected applyReconciliationFilters(tableId: string, scope: string): void {
+      const oBinding = this.byId(tableId).getBinding("rows") as ODataListBinding;
+      const filterData = (this.getModel("filter") as JSONModel).getData() as Record<string, string>;
+      const filters: string[] = [scope];
+
+      const esc = (value: string) => value.replace(/'/g, "''");
+
+      Object.keys(filterData ?? {}).forEach((key) => {
+        const value = filterData[key];
+        if (!value) return;
+
+        const v = esc(value);
+
+        switch (key) {
+          case "BranchCode":
+            filters.push(`SalesInvoice/BranchCode eq '${v}'`);
+            break;
+          case "InvoiceNumber":
+            filters.push(`contains(SalesInvoice/InvoiceNumber, '${v}')`);
+            break;
+          case "DateFrom":
+            filters.push(`SalesInvoice/InvoiceDate ge ${v}`);
+            break;
+          case "DateTo":
+            filters.push(`SalesInvoice/InvoiceDate le ${v}`);
+            break;
+          case "TaxDocumentNumber":
+            filters.push(`contains(SalesInvoice/TaxDocumentNumber, '${v}')`);
+            break;
+          case "TruckCode":
+            filters.push(`contains(SalesInvoice/TruckCode, '${v}')`);
+            break;
+          case "TruckingCompanyCode":
+            filters.push(`(contains(SalesInvoice/TruckingCompanyCode, '${v}') or contains(SalesInvoice/TruckingCompanyName, '${v}'))`);
+            break;
+          case "CardCode":
+            filters.push(`(contains(SalesInvoice/CardCode, '${v}') or contains(SalesInvoice/CardName, '${v}'))`);
+            break;
+          case "ContractCode":
+            filters.push(`contains(SalesContract/Code, '${v}')`);
+            break;
+          case "ItemCode":
+            filters.push(`(contains(ItemCode, '${v}') or contains(ItemName, '${v}'))`);
+            break;
+          default:
+            filters.push(`contains(${key}, '${v}')`);
+        }
+      });
+
+      oBinding.changeParameters({ $filter: filters.join(" and ") });
+    }
+
+    /**
      * Dados fiscais da linha num diálogo, e não em colunas do grid: são dezesseis campos
      * por item, e a tabela de itens ficaria com mais de vinte colunas roláveis.
      *

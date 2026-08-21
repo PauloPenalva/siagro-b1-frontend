@@ -6,10 +6,6 @@
 	xmlns:core="sap.ui.core"
 	xmlns:t="sap.ui.table"
   xmlns:f="sap.f"
-  xmlns:mdc="sap.ui.mdc"
-  xmlns:fb="sap.ui.comp.filterbar"
-  xmlns:vm="sap.ui.fl.variants"
-  xmlns:svm="sap.ui.comp.smartvariants"
 	core:require="{
 		formatter: 'siagrob1/model/formatter'
 	}">
@@ -21,190 +17,139 @@
         </f:heading>
 			</f:DynamicPageTitle>
     </f:title>
-    <!-- <f:header>
-      <f:DynamicPageHeader>
-        <f:content>
-          <core:Fragment fragmentName="siagrob1.view.salesContracts.fragments.SalesContractFilterbar" type="XML" />
-        </f:content>
-      </f:DynamicPageHeader>
-    </f:header> -->
 		<f:content>
+      <!-- Lista CARGAS, não romaneios: o agrupamento deixou de existir só no instante do
+           faturamento e virou documento próprio, com saldo. Seleção Single porque uma nota
+           consome de UMA carga — a aglutinação já foi decidida na Montagem. -->
       <t:Table
 				id="shipmentBillingTable"
 				busyIndicatorDelay="0"
-				selectionMode="Multi"
+				selectionMode="Single"
 				selectionBehavior="Row"
 				class="sapUiSizeCondensed"
 				visibleRowCountMode="Auto"
 				enableBusyIndicator="true"
 				alternateRowColors="true"
         rows="{
-					path: '/StorageTransactions',
-          sorter: [ { path: 'RowId' } ]
+					path: '/ShipmentLoads',
+          sorter: [ { path: 'RowId' } ],
+          parameters: { $select: 'BranchCode' }
 				}"
 			>
 				<t:extension>
 					<OverflowToolbar >
-            <Title text="Romaneios de Embarque" />
+            <Title text="Cargas Montadas" />
 						<ToolbarSpacer />
 						<Button type="Emphasized" text="Faturar" press=".openBillingDialog"/>
-						<Button type="Transparent" text="Estornar Romaneio de Embarque" press=".onDelete"/>
-            <SearchField width="30%" placeholder="Pesquisar placa..." search=".onSearch" />
+            <SearchField width="30%" placeholder="Pesquisar carga ou placa..." search=".onSearch" />
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>
-          <t:Column
-						label="Key"
-            visible="false"
-            width="10rem"
-            >
+          <t:Column label="Key" visible="false" width="10rem">
 						<t:template>
 							<Text text="{Key}" wrapping="false"/>
 						</t:template>
 					</t:Column>
-          <t:Column
-						label="Filial"
-						sortProperty="Branch/ShortName"
-            width="5rem"
-						>
+          <t:Column label="Filial" sortProperty="Branch/ShortName" width="5rem">
 						<t:template>
 							<Text text="{Branch/ShortName}" wrapping="false"/>
 						</t:template>
 					</t:Column>
-          <t:Column
-						label="Status"
-						sortProperty="TransactionStatus"
-            hAlign="Center"
-            width="10rem"
-						>
+          <t:Column label="Status" sortProperty="Status" hAlign="Center" width="10rem">
 						<t:template>
-							<ObjectStatus 
+							<ObjectStatus
                 inverted="true"
                 state="{
-                  path: 'TransactionStatus', 
-                  targetType: 'any', 
-                  formatter: '.formatter.stateStorageTransactionStatus'
+                  path: 'Status',
+                  targetType: 'any',
+                  formatter: '.formatter.stateShipmentLoadStatus'
                 }"
                 text="{
-                  path: 'TransactionStatus', 
-                  targetType: 'any', 
-                  formatter: '.formatter.formatStorageTransactionStatus' 
+                  path: 'Status',
+                  targetType: 'any',
+                  formatter: '.formatter.formatShipmentLoadStatus'
                 }"/>
 						</t:template>
 					</t:Column>
-          <t:Column
-						label="Codigo"
-						sortProperty="Code"
-            width="7rem"
-						>
+          <t:Column label="Carga" sortProperty="Code" width="8rem">
 						<t:template>
 							<Text text="{Code}" wrapping="false"/>
 						</t:template>
 					</t:Column>
-          <!-- <t:Column
-						label="Tipo"
-						width="7rem"
-						>
+          <t:Column label="Data" sortProperty="LoadDate" width="8rem">
 						<t:template>
-							<Text 
+              <Text
                 wrapping="false"
                 text="{
-                  path: 'TransactionType',
+                  path: 'LoadDate',
                   targetType: 'any',
-                  formatter: '.formatter.formatStorageTransactionType'
+                  formatter: '.formatter.formatDate'
                 }"/>
 						</t:template>
-					</t:Column> -->
-          <t:Column
-						label="Emissão"
-						sortProperty="TransactionDate"
-            width="8rem"
-						>
+					</t:Column>
+          <t:Column label="Veículo" sortProperty="TruckCode" width="6rem">
 						<t:template>
-            <Text
-              wrapping="false"
-              text="{
-                path: 'TransactionDate',
-                targetType: 'any',
-                formatter: '.formatter.formatDate'
-              }"
-            />
+              <Text text="{TruckCode}" wrapping="false"/>
 						</t:template>
 					</t:Column>
-          <t:Column
-						label="Veículo"
-						sortProperty="TruckCode"
-            width="6rem"
-						>
+          <t:Column label="Motorista" width="6rem">
 						<t:template>
-            <Text text="{TruckCode}" wrapping="false"/>
+              <Text text="{TruckDriverCode}" wrapping="false"/>
 						</t:template>
 					</t:Column>
-          <t:Column
-						label="Motorista"
-						width="6rem"
-						>
+          <t:Column label="Produto" sortProperty="ItemCode" width="15rem">
 						<t:template>
-            <Text text="{TruckDriverCode}" wrapping="false"/>
+              <Text text="({ItemCode}) {ItemName}" wrapping="false"/>
 						</t:template>
 					</t:Column>
-          <t:Column
-						label="Peso Bruto"
-						sortProperty="GrossWeight"
-            hAlign="End"
-            width="7rem"
-						>
+          <t:Column label="Armazem" sortProperty="WarehouseCode" width="15rem">
 						<t:template>
-            <ObjectNumber
-              textAlign="End"
-              number="{
-                path: 'GrossWeight',
-                type: 'sap.ui.model.type.Float',
-                formatOptions:{
-                  decimals: 3,
-                  decimalSeparator: ',',
-                  groupingEnabled: true,
-                  groupingSeparator: '.'
-                }
-              }"
-              unit="{UnitOfMeasureCode}"
-            />
+              <Text text="({WarehouseCode}) {WarehouseName}" wrapping="false"/>
 						</t:template>
 					</t:Column>
-          <t:Column
-						label="Armazem"
-						sortProperty="WarehouseCode"
-            width="15rem"
-						>
+          <t:Column label="Qtd. Total" sortProperty="TotalQuantity" hAlign="End" width="8rem">
 						<t:template>
-            <Text text="({WarehouseCode}) {WarehouseName}" wrapping="false"/>
+              <ObjectNumber
+                textAlign="End"
+                number="{
+                  path: 'TotalQuantity',
+                  type: 'sap.ui.model.type.Float',
+                  formatOptions:{ decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"
+                unit="{UnitOfMeasureCode}"/>
 						</t:template>
 					</t:Column>
-          <t:Column
-						label="Origem"
-						sortProperty="CardCode"
-            width="20rem"
-						>
+          <t:Column label="Qtd. Faturada" sortProperty="InvoicedQuantity" hAlign="End" width="8rem">
 						<t:template>
-            <Text text="({CardCode}) {CardName}" wrapping="false"/>
+              <ObjectNumber
+                textAlign="End"
+                number="{
+                  path: 'InvoicedQuantity',
+                  type: 'sap.ui.model.type.Float',
+                  formatOptions:{ decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"
+                unit="{UnitOfMeasureCode}"/>
 						</t:template>
 					</t:Column>
-          <t:Column
-						label="Produto"
-						sortProperty="ItemCode"
-            width="15rem"
-						>
+          <t:Column label="Saldo" hAlign="End" width="8rem">
 						<t:template>
-            <Text text="({ItemCode}) {ItemName}" wrapping="false"/>
+              <ObjectNumber
+                textAlign="End"
+                emphasized="true"
+                number="{
+                  path: 'AvailableQuantity',
+                  type: 'sap.ui.model.type.Float',
+                  formatOptions:{ decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"
+                unit="{UnitOfMeasureCode}"/>
 						</t:template>
 					</t:Column>
-          
 				</t:columns>
 
 			</t:Table>
 
     </f:content>
-  
+
   </f:DynamicPage>
 
 </mvc:View>

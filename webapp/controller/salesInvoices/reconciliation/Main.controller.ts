@@ -5,7 +5,6 @@ import Table from "sap/ui/table/Table";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { BaseController } from "../BaseController";
 import MessageToast from "sap/m/MessageToast";
-import { SearchField$SearchEvent } from "sap/m/SearchField";
 
 
 /**
@@ -15,29 +14,34 @@ export default class Main extends BaseController {
 
   formatter = formatter;
 
+  /**
+   * Escopo da tela, não filtro: esta é a fila do que falta conferir, e conferir entrega só
+   * faz sentido em documento de saída normal e confirmado. Nunca aparece na filterbar e
+   * nunca sai do $filter — nem quando o usuário limpa a barra.
+   */
+  private static readonly SCOPE =
+    "SalesInvoice/InvoiceType eq 'Normal' and SalesInvoice/InvoiceStatus eq 'Confirmed' " +
+    "and DeliveryStatus eq 'Open'";
+
 	onInit(): void  {
+    this.createFilterModel();
+
     this.getRouter().getRoute("salesInvoicesReconciliation")
-      .attachPatternMatched(() => {
-        this.onSearch({ query: ''} as unknown as SearchField$SearchEvent)
-      });
+      .attachPatternMatched(() => this.applyFilters());
 	}
 
-	onSearch(ev: SearchField$SearchEvent): void {
-    const query = ev.getParameter("query");
-    const oBinding = this.getView()
-      .byId("tableSalesInvoicesReconciliation")
-      .getBinding("rows") as ODataListBinding;
-
-    let filterParam = 'DeliveryStatus eq \'Open\' and SalesInvoice/InvoiceType eq \'Normal\' and SalesInvoice/InvoiceStatus eq \'Confirmed\''
-    
-    if (query) {
-      filterParam += `and contains(SalesInvoice/TaxDocumentNumber,'${query}')`
-    }
-
-    oBinding.changeParameters({
-      $filter: filterParam
-    });
+	onSearch(): void {
+    this.applyFilters();
 	}
+
+  onClearFilters(): void {
+    this.clearFilters();
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    this.applyReconciliationFilters("tableSalesInvoicesReconciliation", Main.SCOPE);
+  }
 
   private refreshData() {
     const oTable = this.byId("tableSalesInvoicesReconciliation") as Table;

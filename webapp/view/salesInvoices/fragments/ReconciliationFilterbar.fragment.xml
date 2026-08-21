@@ -1,0 +1,125 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:fb="sap.ui.comp.filterbar"
+>
+<!--
+  Filtros da conferência de entregas, COMPARTILHADOS pelas duas telas espelho: a Conferência
+  (entregas em aberto) e o Estorno (entregas encerradas). O conjunto de filtros é o mesmo nas
+  duas, e divergir seria bug — por isso um fragmento só. O que muda entre elas é o `SCOPE` do
+  controller, que não aparece aqui.
+
+  Ambas listam o entity set OData /SalesInvoicesItems, então a filtragem é SERVER-SIDE via
+  $filter montado no controller.
+
+  Só entram aqui as colunas de identificação do documento e da linha. Quantidade,
+  Qtd.Entregue, Diferença, Desconto e Peso Líquido ficam de fora de propósito: são os
+  números que a tela existe para APURAR, e filtrar por eles é filtrar pelo resultado da
+  conferência.
+
+  Status também não é filtro: cada tela é uma fila fechada — a Conferência só lista entrega
+  em aberto, o Estorno só lista encerrada. A trava vive no `SCOPE` do controller.
+
+  ⚠️ `suspended: true` no binding de /Branchs é OBRIGATÓRIO, não um resquício: a
+  sap.ui.comp.filterbar.FilterBar dá resume nos bindings dos seus controles na
+  inicialização. Sem `suspended`, ela chama resume() num binding que não está suspenso e
+  lança "Cannot resume a not suspended binding", derrubando a rota inteira.
+-->
+<fb:FilterBar search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+  <fb:filterGroupItems>
+      <fb:FilterGroupItem name="branchCode" label="Filial" groupName="GroupBranchCode" visibleInFilterBar="true">
+        <fb:control>
+            <Select
+              forceSelection="false"
+              selectedKey="{filter>/BranchCode}"
+              items="{
+                path: '/Branchs',
+                suspended: true,
+                sorter: { path: 'Code' }
+              }">
+              <core:ListItem key="{Code}" text="{ShortName}"/>
+            </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="invoiceNumber" label="Numero" groupName="GroupInvoiceNumber" visibleInFilterBar="true">
+        <fb:control>
+            <Input showClearIcon="true" value="{filter>/InvoiceNumber}" />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="dateFrom" label="Emissão de" groupName="GroupDateFrom" visibleInFilterBar="true">
+        <fb:control>
+            <DatePicker
+              value="{
+                path: 'filter>/DateFrom',
+                type: 'sap.ui.model.type.String'
+              }"
+              displayFormat="dd/MM/yyyy"
+              valueFormat="yyyy-MM-dd"
+            />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="dateTo" label="Emissão até" groupName="GroupDateTo" visibleInFilterBar="true">
+        <fb:control>
+            <DatePicker
+              value="{
+                path: 'filter>/DateTo',
+                type: 'sap.ui.model.type.String'
+              }"
+              displayFormat="dd/MM/yyyy"
+              valueFormat="yyyy-MM-dd"
+            />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="taxDocumentNumber" label="Nota Fiscal" groupName="GroupTaxDocumentNumber" visibleInFilterBar="true">
+        <fb:control>
+            <Input showClearIcon="true" value="{filter>/TaxDocumentNumber}" />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="truck" label="Placa" groupName="GroupTruck" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openTrucksValueHelp"
+              value="{filter>/TruckCode}"
+              />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="truckingCompany" label="Transportadora" groupName="GroupTruckingCompany" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openBusinessPartnersValueHelp"
+              value="{filter>/TruckingCompanyCode}"
+              />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="customers" label="Cliente" groupName="GroupCustomer" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openCostumersValueHelp"
+              value="{filter>/CardCode}"
+              />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="contract" label="Contrato" groupName="GroupContract" visibleInFilterBar="true">
+        <fb:control>
+            <Input showClearIcon="true" value="{filter>/ContractCode}" />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="items" label="Produto" groupName="GroupItem" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openItemValueHelp"
+              value="{filter>/ItemCode}"
+              />
+        </fb:control>
+      </fb:FilterGroupItem>
+    </fb:filterGroupItems>
+  </fb:FilterBar>
+</core:FragmentDefinition>

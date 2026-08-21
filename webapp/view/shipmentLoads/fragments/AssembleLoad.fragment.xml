@@ -1,0 +1,61 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:l="sap.ui.layout"
+	xmlns:f="sap.ui.layout.form"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+	<Dialog id="assembleLoadDialog" title="Montar Carga" contentWidth="40rem" resizable="true" draggable="true">
+		<content>
+			<f:Form editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="Veículo">
+								<f:fields>
+									<Text text="{viewModel>/TruckCode}"/>
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement label="Produto">
+								<f:fields>
+									<Text text="({viewModel>/ItemCode}) {viewModel>/ItemName}"/>
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement label="Romaneios">
+								<f:fields>
+									<Text text="{viewModel>/ShipmentCount}"/>
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement label="Quantidade Total">
+								<f:fields>
+									<ObjectNumber
+										number="{
+											path: 'viewModel>/TotalQuantity',
+											type: 'sap.ui.model.type.Float',
+											formatOptions:{ decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+										}"
+										unit="{viewModel>/UnitOfMeasureCode}"/>
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement label="Observações">
+								<f:fields>
+									<TextArea rows="3" value="{viewModel>/Comments}"/>
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<beginButton>
+			<Button type="Emphasized" text="Montar" press=".saveAssembleLoadDialog"/>
+		</beginButton>
+		<endButton>
+			<Button text="Cancelar" press=".closeAssembleLoadDialog"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

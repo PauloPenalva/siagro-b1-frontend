@@ -21,7 +21,19 @@
         </f:heading>
 			</f:DynamicPageTitle>
     </f:title>
+    <f:header>
+      <f:DynamicPageHeader pinnable="true">
+        <f:content>
+          <core:Fragment fragmentName="siagrob1.view.salesInvoices.fragments.ReconciliationFilterbar" type="XML" />
+        </f:content>
+      </f:DynamicPageHeader>
+    </f:header>
 		<f:content>
+      <!--
+        Sem $filter estático no binding: quem monta o filtro é o applyFilters do controller,
+        a partir da filterbar. O escopo fixo da tela (documento normal e confirmado, entrega
+        em aberto) virou a constante SCOPE de lá e continua entrando em toda requisição.
+      -->
       <t:Table
 				id="tableSalesInvoicesReconciliation"
 				busyIndicatorDelay="0"
@@ -35,10 +47,7 @@
 					path: '/SalesInvoicesItems',
           sorter: [
             { path: 'SalesInvoice/RowId' }
-          ],
-          parameters:{
-            $filter: 'DeliveryStatus eq \'Open\' and SalesInvoice/InvoiceType eq \'Normal\' and SalesInvoice/InvoiceStatus eq \'Confirmed\''
-          }
+          ]
 				}"
 			>
 				<t:extension>
@@ -48,7 +57,6 @@
 						<Button type="Emphasized" text="Salvar" press=".onSave"/>
             <Button type="Transparent" text="Cancelar Digitação" press=".onCancel"/>
 						<!-- <Button type="Transparent" text="Exportar Excel" press=".onExcel"/> -->
-            <SearchField placeholder="Pesquisar Nota Fiscal" width="30%" search=".onSearch" />
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>
@@ -100,7 +108,7 @@
 					</t:Column>
           <t:Column
 						label="Nota Fiscal"
-						sortProperty=""
+						sortProperty="SalesInvoice/TaxDocumentNumber"
             hAlign="Center"
             width="7rem"
 						>
@@ -116,6 +124,16 @@
 						>
 						<t:template>
 							<Text text="{SalesInvoice/TruckCode}" />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Transportadora"
+						sortProperty="SalesInvoice/TruckingCompanyName"
+            hAlign="Center"
+            width="12rem"
+            >
+						<t:template>
+							<Text text="{SalesInvoice/TruckingCompanyName}" wrapping="false"/>
 						</t:template>
 					</t:Column>
           <t:Column

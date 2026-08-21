@@ -415,6 +415,8 @@ export default {
     m.set("Confirmed", "Confirmado");
     m.set("Cancelled", "Cancelado");
     m.set("Invoiced", "Faturado");
+    // Returned faltava: a devolução deixava a célula em branco.
+    m.set("Returned", "Devolvido");
     
     return m.get(value);
   },
@@ -425,6 +427,41 @@ export default {
     m.set("Confirmed", "Information");
     m.set("Invoiced", "Success");
     m.set("Cancelled", "Error");
+    m.set("Returned", "Warning");
+    
+    return m.get(value);
+  },
+
+  formatShipmentLoadStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Open", "Aberta");
+    m.set("PartiallyInvoiced", "Faturada Parcial");
+    m.set("Invoiced", "Faturada");
+    m.set("Cancelled", "Cancelada");
+    
+    return m.get(value);
+  },
+
+  stateShipmentLoadStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Open", "Information");
+    m.set("PartiallyInvoiced", "Warning");
+    m.set("Invoiced", "Success");
+    m.set("Cancelled", "Error");
+    
+    return m.get(value);
+  },
+
+  formatShipmentLoadMovementType: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Assembled", "Carga Montada");
+    m.set("Billed", "Faturamento");
+    m.set("BillingCancelled", "Faturamento Cancelado");
+    m.set("ReturnRequested", "Devolução Solicitada");
+    m.set("Returned", "Devolução Confirmada");
+    m.set("ReturnReversed", "Devolução Estornada");
+    m.set("BillingDeleted", "Faturamento Excluído");
+    m.set("Cancelled", "Carga Cancelada");
     
     return m.get(value);
   },
@@ -516,6 +553,7 @@ export default {
     m.set("SalesInvoice", "Documento de Saída");
     m.set("OwnershipTransfer", "Transferencia Propriedade");
     m.set("StorageInvoice", "Fatura de Serviço");
+    m.set("ShipmentLoad", "Carga");
     
     return m.get(value);
   },

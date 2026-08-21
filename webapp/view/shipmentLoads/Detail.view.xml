@@ -1,0 +1,270 @@
+<mvc:View
+	controllerName="siagrob1.controller.shipmentLoads.Detail"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:uxap="sap.uxap"
+	xmlns:f="sap.ui.layout.form"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+	<uxap:ObjectPageLayout
+		busy="{ui>/busy}"
+		busyIndicatorDelay="0"
+		showTitleInHeaderContent="true"
+		toggleHeaderOnTitleClick="true"
+		preserveHeaderStateOnScroll="false">
+		<uxap:headerTitle>
+			<uxap:ObjectPageDynamicHeaderTitle>
+				<uxap:expandedHeading>
+					<Title text="Carga {Code}"/>
+				</uxap:expandedHeading>
+				<uxap:snappedHeading>
+					<Title text="Carga {Code}"/>
+				</uxap:snappedHeading>
+				<uxap:actions>
+					<Button text="Recalcular Saldo" type="Transparent" press=".onRecalculate"/>
+					<Button text="Cancelar Carga" type="Transparent" press=".onCancelLoad"/>
+					<Button text="Voltar" type="Transparent" press=".onNavBack"/>
+				</uxap:actions>
+			</uxap:ObjectPageDynamicHeaderTitle>
+		</uxap:headerTitle>
+		<uxap:headerContent>
+			<HBox>
+				<ObjectIdentifier title="{Code}" text="{TruckCode}"/>
+				<ObjectStatus
+					class="sapUiMediumMarginBegin"
+					inverted="true"
+					state="{
+						path: 'Status',
+						targetType: 'any',
+						formatter: '.formatter.stateShipmentLoadStatus'
+					}"
+					text="{
+						path: 'Status',
+						targetType: 'any',
+						formatter: '.formatter.formatShipmentLoadStatus'
+					}"/>
+				<ObjectNumber
+					class="sapUiMediumMarginBegin"
+					emphasized="true"
+					number="{
+						path: 'AvailableQuantity',
+						type: 'sap.ui.model.type.Float',
+						formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+					}"
+					unit="{UnitOfMeasureCode}"/>
+			</HBox>
+		</uxap:headerContent>
+		<uxap:sections>
+			<uxap:ObjectPageSection titleUppercase="false" title="Dados">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<uxap:blocks>
+							<f:Form editable="false">
+								<f:layout>
+									<f:ColumnLayout columnsM="2" columnsL="2" columnsXL="2"/>
+								</f:layout>
+								<f:formContainers>
+									<f:FormContainer>
+										<f:formElements>
+											<f:FormElement label="Código">
+												<f:fields><Text text="{Code}"/></f:fields>
+											</f:FormElement>
+											<f:FormElement label="Data">
+												<f:fields>
+													<Text text="{ path: 'LoadDate', targetType: 'any', formatter: '.formatter.formatDate' }"/>
+												</f:fields>
+											</f:FormElement>
+											<f:FormElement label="Filial">
+												<f:fields><Text text="{Branch/ShortName}"/></f:fields>
+											</f:FormElement>
+											<f:FormElement label="Veículo">
+												<f:fields><Text text="{TruckCode}"/></f:fields>
+											</f:FormElement>
+											<f:FormElement label="Motorista">
+												<f:fields><Text text="{TruckDriverCode}"/></f:fields>
+											</f:FormElement>
+										</f:formElements>
+									</f:FormContainer>
+									<f:FormContainer>
+										<f:formElements>
+											<f:FormElement label="Produto">
+												<f:fields><Text text="({ItemCode}) {ItemName}"/></f:fields>
+											</f:FormElement>
+											<f:FormElement label="Armazém">
+												<f:fields><Text text="({WarehouseCode}) {WarehouseName}"/></f:fields>
+											</f:FormElement>
+											<f:FormElement label="Qtd. Total">
+												<f:fields>
+													<ObjectNumber
+														number="{ path: 'TotalQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+														unit="{UnitOfMeasureCode}"/>
+												</f:fields>
+											</f:FormElement>
+											<f:FormElement label="Qtd. Faturada">
+												<f:fields>
+													<ObjectNumber
+														number="{ path: 'InvoicedQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+														unit="{UnitOfMeasureCode}"/>
+												</f:fields>
+											</f:FormElement>
+											<f:FormElement label="Observações">
+												<f:fields><Text text="{Comments}"/></f:fields>
+											</f:FormElement>
+											<f:FormElement label="Motivo do Cancelamento" visible="{= ${CancellationReason} !== null &amp;&amp; ${CancellationReason} !== '' }">
+												<f:fields><Text text="{CancellationReason}"/></f:fields>
+											</f:FormElement>
+										</f:formElements>
+									</f:FormContainer>
+								</f:formContainers>
+							</f:Form>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
+			<uxap:ObjectPageSection titleUppercase="false" title="Romaneios">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<uxap:blocks>
+							<!-- $$ownRequest: sem ele a coleção vira $expand do pai e o refresh() não
+							     funciona depois de cancelar ou recalcular. -->
+							<t:Table
+								id="loadTransactionsTable"
+								selectionMode="None"
+								class="sapUiSizeCondensed"
+								visibleRowCount="6"
+								rows="{ path: 'Transactions', parameters: { '$$ownRequest': true } }">
+								<t:columns>
+									<t:Column label="Código" width="8rem">
+										<t:template><Text text="{Code}" wrapping="false"/></t:template>
+									</t:Column>
+									<t:Column label="Status" hAlign="Center" width="9rem">
+										<t:template>
+											<ObjectStatus
+												inverted="true"
+												state="{ path: 'TransactionStatus', targetType: 'any', formatter: '.formatter.stateStorageTransactionStatus' }"
+												text="{ path: 'TransactionStatus', targetType: 'any', formatter: '.formatter.formatStorageTransactionStatus' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Emissão" width="8rem">
+										<t:template>
+											<Text wrapping="false" text="{ path: 'TransactionDate', targetType: 'any', formatter: '.formatter.formatDate' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Peso Bruto" hAlign="End" width="8rem">
+										<t:template>
+											<ObjectNumber
+												textAlign="End"
+												number="{ path: 'GrossWeight', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+												unit="{UnitOfMeasureCode}"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Armazém" width="15rem">
+										<t:template><Text text="({WarehouseCode}) {WarehouseName}" wrapping="false"/></t:template>
+									</t:Column>
+								</t:columns>
+							</t:Table>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
+			<uxap:ObjectPageSection titleUppercase="false" title="Documentos de Saída">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<uxap:blocks>
+							<t:Table
+								id="loadInvoicesTable"
+								selectionMode="None"
+								class="sapUiSizeCondensed"
+								visibleRowCount="6"
+								rows="{ path: 'Invoices', parameters: { '$$ownRequest': true } }">
+								<t:columns>
+									<t:Column label="Número" width="9rem">
+										<t:template><Text text="{InvoiceNumber}" wrapping="false"/></t:template>
+									</t:Column>
+									<t:Column label="Tipo" width="8rem">
+										<t:template>
+											<Text wrapping="false" text="{ path: 'InvoiceType', targetType: 'any', formatter: '.formatter.formatSalesInvoiceType' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Status" hAlign="Center" width="9rem">
+										<t:template>
+											<ObjectStatus
+												inverted="true"
+												state="{ path: 'InvoiceStatus', targetType: 'any', formatter: '.formatter.stateSalesInvoiceStatus' }"
+												text="{ path: 'InvoiceStatus', targetType: 'any', formatter: '.formatter.formatSalesInvoiceStatus' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Emissão" width="8rem">
+										<t:template>
+											<Text wrapping="false" text="{ path: 'InvoiceDate', targetType: 'any', formatter: '.formatter.formatDate' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Cliente" width="20rem">
+										<t:template><Text text="({CardCode}) {CardName}" wrapping="false"/></t:template>
+									</t:Column>
+								</t:columns>
+							</t:Table>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
+			<uxap:ObjectPageSection titleUppercase="false" title="Movimentação">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<uxap:blocks>
+							<t:Table
+								id="loadMovementsTable"
+								selectionMode="None"
+								class="sapUiSizeCondensed"
+								visibleRowCount="8"
+								rows="{ path: 'Movements', parameters: { '$$ownRequest': true }, sorter: [ { path: 'RowId' } ] }">
+								<t:columns>
+									<t:Column label="Data" width="11rem">
+										<t:template>
+											<Text wrapping="false" text="{ path: 'CreatedAt', targetType: 'any', formatter: '.formatter.formatDateTime' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Movimento" width="14rem">
+										<t:template>
+											<Text wrapping="false" text="{ path: 'MovementType', targetType: 'any', formatter: '.formatter.formatShipmentLoadMovementType' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Quantidade" hAlign="End" width="9rem">
+										<t:template>
+											<ObjectNumber
+												textAlign="End"
+												number="{ path: 'Quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Saldo Após" hAlign="End" width="9rem">
+										<t:template>
+											<ObjectNumber
+												textAlign="End"
+												number="{ path: 'BalanceAfter', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Documento" width="9rem">
+										<t:template><Text text="{InvoiceNumber}" wrapping="false"/></t:template>
+									</t:Column>
+									<t:Column label="Descrição" width="30rem">
+										<t:template><Text text="{Description}" wrapping="false"/></t:template>
+									</t:Column>
+									<t:Column label="Usuário" width="10rem">
+										<t:template><Text text="{CreatedBy}" wrapping="false"/></t:template>
+									</t:Column>
+								</t:columns>
+							</t:Table>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+		</uxap:sections>
+	</uxap:ObjectPageLayout>
+</mvc:View>

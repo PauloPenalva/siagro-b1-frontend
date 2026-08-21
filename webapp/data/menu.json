@@ -303,6 +303,12 @@
           "icon": "sap-icon://folder-blank"
         },
         {
+          "title": "Montagem de Carga",
+          "key": "shipmentLoads",
+          "enabled": true,
+          "icon": "sap-icon://shipping-status"
+        },
+        {
           "title": "Faturamento de Expedição",
           "key": "shipmentBilling",
           "enabled": true,

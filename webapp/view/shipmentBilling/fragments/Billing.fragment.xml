@@ -79,7 +79,35 @@
 					</layoutData>
 				</Input>
 
-				<Label text="Qtd.Embarcada" />
+				<Label text="Carga" />
+				<Input value="{viewModel>/ShipmentLoadCode}" editable="false">
+					<layoutData>
+						<l:GridData span="XL2 L1 M3 S4" />
+					</layoutData>
+				</Input>
+
+				<Label text="Saldo da Carga" />
+				<Input
+					value="{
+						path: 'viewModel>/AvailableQuantity',
+						type: 'sap.ui.model.type.Float',
+						formatOptions: {
+								decimals: 3 ,
+								decimalSeparator: ',',
+								groupingEnabled: true,
+								groupingSeparator: '.'
+						}}"
+					editable="false"
+					textAlign="End"
+				>
+					<layoutData>
+						<l:GridData span="XL2 L1 M3 S4" />
+					</layoutData>
+				</Input>
+
+				<!-- Editavel agora: a carga pode ser faturada em partes. O tipo continua Float e o
+				     payload leva NUMERO - Edm.Decimal em string devolve 400 sem nomear o campo. -->
+				<Label text="Qtd. a Faturar" />
 				<Input
 					value="{
 						path: 'viewModel>/Volume',
@@ -90,7 +118,8 @@
 								groupingEnabled: true,
 								groupingSeparator: '.'
 						}}"
-					editable="false"
+					editable="true"
+					required="true"
 					textAlign="End"
 				>
 					<layoutData>
@@ -274,6 +303,17 @@
 				<Toolbar>
 					<Title text="Liberações de Entrega de Venda Disponíveis" />
 					<ToolbarSpacer />
+					<!-- Escape do filtro de saldo do contrato. NAO existe guard de saldo no
+					     faturamento: ligar isto nao muda o que o servidor aceita, so o que a lista
+					     mostra. Existe para o filtro nao virar trava muda, que e o que empurra o
+					     usuario a criar contrato "AJUSTE DE SALDO". -->
+					<Label text="Incluir contratos sem saldo" labelFor="includeContractsWithoutBalance" />
+					<Switch
+						id="includeContractsWithoutBalance"
+						state="{viewModel>/IncludeContractsWithoutBalance}"
+						change=".onToggleContractsWithoutBalance"
+						customTextOn="Sim"
+						customTextOff="Nao" />
 				</Toolbar>
 			</t:toolbar>
 			<t:columns>
@@ -347,6 +387,33 @@
 					<Label text="Um" />
 					<t:template>
 						<Text text="{releases>UnitOfMeasureCode}" wrapping="false"/>
+					</t:template>
+				</t:Column>
+				<t:Column width="10rem" hAlign="End" sortProperty="SalesContractAvailableVolume">
+					<Label text="Saldo Contrato" />
+					<t:template>
+						<!-- Negativo em vermelho para o usuario ver o que esta fazendo: o faturamento
+						     aceita, mas ele decide com o numero a vista. -->
+						<ObjectNumber
+							textAlign="End"
+							state="{= ${releases>SalesContractAvailableVolume} &lt; 0 ? 'Error' : 'None' }"
+							number="{
+								path: 'releases>SalesContractAvailableVolume',
+								type: 'sap.ui.model.type.Float',
+								formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+							}"/>
+					</t:template>
+				</t:Column>
+				<t:Column width="9rem">
+					<Label text="Situação Contrato" />
+					<t:template>
+						<Text
+							wrapping="false"
+							text="{
+								path: 'releases>SalesContractStatus',
+								targetType: 'any',
+								formatter: '.formatter.formatContractStatus'
+							}"/>
 					</t:template>
 				</t:Column>
 			</t:columns>
