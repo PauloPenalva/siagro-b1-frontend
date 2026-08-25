@@ -95,6 +95,31 @@ export default class Detail extends BaseController {
       .finally(() => this.setBusy(false));
   }
 
+  async onCancel() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) {
+      MessageBox.error("Contexto inválido.")
+      return;
+    }
+
+    if (await DialogHelper.confirmDialog("Cancelar documento de saída ?")) {
+      this.cancelAction(ctx);
+    }
+  }
+
+  private cancelAction(ctx:Context) {
+    const action = (ctx.getModel() as ODataModel).bindContext("/SalesInvoicesCancel(...)");
+    action.setParameter("Key", ctx.getProperty("Key"));
+
+    this.setBusy(false);
+    void action.invoke()
+      .then(() => {
+        MessageToast.show("Documento de saída cancelado com sucesso.");
+        this.navToSalesInvoices();
+      })
+      .finally(() => this.setBusy(false));
+  }
+
   private navToSalesInvoices(){
     this.navTo("salesInvoices");
   }

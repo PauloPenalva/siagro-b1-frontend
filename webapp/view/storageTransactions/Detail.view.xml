@@ -30,7 +30,7 @@
           <Button text="Voltar para Lista de Romaneios" type="Transparent" press=".navToStorageTransactionsList"/>
           <Button enabled="{= ${path: 'TransactionStatus', targetType: 'any'}==='Pending' ? true : false }" text="Editar" type="Emphasized" press=".onEdit"/>
           <Button enabled="{= ${path: 'TransactionStatus', targetType: 'any'}==='Pending' ? true : false }" text="Confirmar" type="Accept" press=".onConfirm"/>
-          <Button enabled="{= ${path: 'TransactionStatus', targetType: 'any'}==='Pending' ? true : false }" text="Cancelar" type="Reject" press=".onReject"/>
+          <Button enabled="{= ${path: 'TransactionStatus', targetType: 'any'}==='Pending' || ${path: 'TransactionStatus', targetType: 'any'}==='Confirmed' ? true : false }" text="Cancelar" type="Reject" press=".onReject"/>
           <Button enabled="{= ${path: 'TransactionStatus', targetType: 'any'}==='Confirmed' ? true : false }" text="Estornar" type="Critical" press=".onReverse"/>
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>

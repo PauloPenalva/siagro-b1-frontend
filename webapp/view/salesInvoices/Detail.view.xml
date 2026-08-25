@@ -30,6 +30,7 @@
           <Button text="Editar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' ? true : false }" type="Emphasized" press=".onEdit"/>
           <Button text="Confirmar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' ? true : false }" type="Success" press=".onConfirm"/>
           <Button text="Estornar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Confirmed' ? true : false }" type="Critical" press=".onReverse"/>
+          <Button text="Cancelar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' || ${path: 'InvoiceStatus', targetType: 'any'}==='Confirmed' ? true : false }" type="Reject" press=".onCancel"/>
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>
