@@ -1,0 +1,92 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:fb="sap.ui.comp.filterbar"
+>
+<!--
+  Filtros da aba Cargas. Só colunas NÃO-numéricas entram aqui — Qtd. Total, Qtd. Faturada e Saldo
+  ficam de fora de propósito.
+
+  Status é ENUM: entra como `eq 'valor'` em string crua no controller, porque
+  sap.ui.model.Filter sobre enum estoura "Unsupported type" — ver applyFilters em
+  Main.controller.ts.
+
+  Filial usa o JSONModel "branches" (carregado uma vez em Main.controller#loadBranches), não bind
+  direto em /Branchs — mesmo motivo do fragmento da aba Romaneios Disponíveis.
+-->
+<fb:FilterBar search=".onSearchLoadFilters" showClearOnFB="true" clear=".onClearLoadFilters">
+  <fb:filterGroupItems>
+    <fb:FilterGroupItem name="code" label="Código" groupName="GroupCode" visibleInFilterBar="true">
+      <fb:control>
+        <Input showClearIcon="true" value="{filterLoads>/Code}" />
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="dateFrom" label="Data de" groupName="GroupDateFrom" visibleInFilterBar="true">
+      <fb:control>
+        <DatePicker
+          value="{
+            path: 'filterLoads>/DateFrom',
+            type: 'sap.ui.model.type.String'
+          }"
+          displayFormat="dd/MM/yyyy"
+          valueFormat="yyyy-MM-dd"
+        />
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="dateTo" label="Data até" groupName="GroupDateTo" visibleInFilterBar="true">
+      <fb:control>
+        <DatePicker
+          value="{
+            path: 'filterLoads>/DateTo',
+            type: 'sap.ui.model.type.String'
+          }"
+          displayFormat="dd/MM/yyyy"
+          valueFormat="yyyy-MM-dd"
+        />
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="status" label="Status" groupName="GroupStatus" visibleInFilterBar="true">
+      <fb:control>
+        <Select forceSelection="false" selectedKey="{filterLoads>/Status}">
+          <core:ListItem key="" text="Todos"/>
+          <core:ListItem key="Open" text="Aberta"/>
+          <core:ListItem key="PartiallyInvoiced" text="Faturada Parcial"/>
+          <core:ListItem key="Invoiced" text="Faturada"/>
+          <core:ListItem key="Cancelled" text="Cancelada"/>
+        </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="branchCode" label="Filial" groupName="GroupBranchCode" visibleInFilterBar="true">
+      <fb:control>
+        <Select
+          id="branchCodeSelectLoads"
+          forceSelection="false"
+          selectedKey="{filterLoads>/BranchCode}"
+          items="{branches>/}">
+          <core:ListItem key="{branches>Code}" text="{branches>ShortName}"/>
+        </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="truck" label="Veículo" groupName="GroupTruck" visibleInFilterBar="true">
+      <fb:control>
+        <Input
+          showClearIcon="true"
+          showValueHelp="true"
+          valueHelpRequest=".openTrucksValueHelp"
+          value="{filterLoads>/TruckCode}"
+          />
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="item" label="Produto" groupName="GroupItem" visibleInFilterBar="true">
+      <fb:control>
+        <Input
+          showClearIcon="true"
+          showValueHelp="true"
+          valueHelpRequest=".openItemValueHelp"
+          value="{filterLoads>/ItemCode}"
+          />
+      </fb:control>
+    </fb:FilterGroupItem>
+  </fb:filterGroupItems>
+</fb:FilterBar>
+</core:FragmentDefinition>

@@ -1,9 +1,10 @@
 import Dialog from "sap/m/Dialog";
+import { IconTabBar$SelectEvent } from "sap/m/IconTabBar";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
-import { SearchField$SearchEvent } from "sap/m/SearchField";
 import Fragment from "sap/ui/core/Fragment";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import Sorter from "sap/ui/model/Sorter";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
@@ -35,66 +36,126 @@ export default class Main extends BaseController {
   private _assembleDialog: Dialog;
   /** Trava de reentrância da montagem, espelhando `_billingInFlight` do faturamento. */
   private _assembleInFlight = false;
+  private _branchesLoaded = false;
 
   onInit(): void {
+    this.getView().setModel(new JSONModel(), "filterShipments");
+    this.getView().setModel(new JSONModel(), "filterLoads");
+    this.getView().setModel(new JSONModel([]), "branches");
+
     this.getRouter().getRoute("shipmentLoads")
       .attachPatternMatched(() => {
-        this.applyShipmentFilters(null);
-        this.applyLoadFilters(null);
+        // this.getModel() só resolve o OData model depois que a rota casa (onInit é cedo demais).
+        if (!this._branchesLoaded) {
+          this._branchesLoaded = true;
+          void this.loadBranches();
+        }
+        this.applyShipmentFilters();
+        this.applyLoadFilters();
       });
   }
 
-  onTabSelect(): void {
-    this.refreshShipments();
-    this.refreshLoads();
+  /**
+   * Os dois Selects de Filial (um por aba) carregam a lista UMA vez num JSONModel estático, em vez
+   * de bind direto em `/Branchs` com `suspended: true`: a sap.ui.comp.filterbar.FilterBar resume()
+   * incondicionalmente o binding suspenso de um Select toda vez que sua aba volta a ficar visível,
+   * mas nunca o suspende de novo — e como o IconTabBar força um re-render completo do conteúdo a
+   * cada troca de aba (não só show/hide), a segunda vez que qualquer aba reaparece o resume() da
+   * vendor lib estoura "Cannot resume a not suspended binding" NO MEIO do onBeforeRendering e
+   * aborta a troca visual — sintoma: a aba clicada não atualiza a tela. Tentar resuspender o
+   * binding manualmente (ex.: num handler de `dataReceived`) não segura: a FilterBar troca a
+   * instância do binding entre renders, então o listener fica pendurado no objeto errado. Um
+   * JSONModel não tem suspend/resume, então a FilterBar nem tenta — o bug nem existe pra esse tipo
+   * de binding.
+   */
+  private async loadBranches(): Promise<void> {
+    const oModel = this.getModel() as ODataModel;
+    const contexts = await oModel.bindList("/Branchs", undefined, [new Sorter("Code")])
+      .requestContexts(0, 100);
+    const branches = contexts.map(ctx => ctx.getObject() as { Code: string; ShortName: string });
+    (this.getView().getModel("branches") as JSONModel).setData(branches);
   }
 
-  onSearchShipments(ev: SearchField$SearchEvent): void {
-    this.applyShipmentFilters(ev);
+  onTabSelect(ev: IconTabBar$SelectEvent): void {
+    const selectedKey = ev.getSource().getSelectedKey();
+    if (selectedKey === "availableShipments") {
+      this.refreshShipments();
+    } else if (selectedKey === "loads") {
+      this.refreshLoads();
+    }
   }
 
-  onSearchLoads(ev: SearchField$SearchEvent): void {
-    this.applyLoadFilters(ev);
+  onSearchShipmentFilters(): void {
+    this.applyShipmentFilters();
+  }
+
+  onClearShipmentFilters(): void {
+    (this.getModel("filterShipments") as JSONModel).setData({});
+    this.applyShipmentFilters();
+  }
+
+  onSearchLoadFilters(): void {
+    this.applyLoadFilters();
+  }
+
+  onClearLoadFilters(): void {
+    (this.getModel("filterLoads") as JSONModel).setData({});
+    this.applyLoadFilters();
+  }
+
+  /**
+   * Monta o `$filter` a partir do modelo de filtro da aba e o aplica como parâmetro estático do
+   * binding. `exactMatchFields` cobre enum/status e código de filial — comparados com `eq` em
+   * string crua, porque `sap.ui.model.Filter` sobre enum estoura "Unsupported type" (o modelo V4
+   * não serializa o literal). Os demais campos entram com `contains`, e `DateFrom`/`DateTo` viram
+   * `ge`/`le` sobre `dateProperty`.
+   */
+  private applyFilters(
+    tableId: string,
+    filterModelName: string,
+    dateProperty: string,
+    exactMatchFields: string[],
+    fixedScope: string[] = [],
+  ): void {
+    const binding = (this.byId(tableId) as Table).getBinding("rows") as ODataListBinding;
+    const filterData = ((this.getModel(filterModelName) as JSONModel)?.getData()
+      ?? {}) as Record<string, string>;
+    const filters: string[] = [...fixedScope];
+
+    Object.keys(filterData).forEach((key) => {
+      const value = filterData[key];
+      if (!value) return;
+      const esc = value.replace(/'/g, "''");
+
+      if (exactMatchFields.includes(key)) {
+        filters.push(`${key} eq '${esc}'`);
+      } else if (key === "DateFrom") {
+        filters.push(`${dateProperty} ge ${esc}`);
+      } else if (key === "DateTo") {
+        filters.push(`${dateProperty} le ${esc}`);
+      } else {
+        filters.push(`contains(${key},'${esc}')`);
+      }
+    });
+
+    binding.changeParameters({ $filter: filters.length > 0 ? filters.join(" and ") : undefined });
   }
 
   /**
    * Romaneio de embarque ainda SOLTO. `ShipmentLoadKey eq null` é o que faz o romaneio sumir
    * daqui assim que entra numa carga — e reaparecer quando a carga é cancelada.
-   *
-   * O $filter é montado como string inteira, e não com `sap.ui.model.Filter`: o modelo V4 não
-   * serializa literal de enum e estoura "Unsupported type".
    */
-  private applyShipmentFilters(ev: SearchField$SearchEvent | null): void {
-    const query = ev?.getParameter("query");
-    const binding = (this.byId("availableShipmentsTable") as Table)
-      .getBinding("rows") as ODataListBinding;
-
-    const filters: string[] = [
+  private applyShipmentFilters(): void {
+    this.applyFilters("availableShipmentsTable", "filterShipments", "TransactionDate", ["BranchCode"], [
       "TransactionType eq 'SalesShipment'",
       "TransactionStatus eq 'Confirmed'",
       "ShipmentLoadKey eq null",
-    ];
-
-    if (query) {
-      filters.push(`contains(TruckCode,'${query}')`);
-    }
-
-    binding.changeParameters({ $filter: filters.join(" and ") });
+    ]);
   }
 
   /** Carga cancelada continua listada: é histórico, e some só do faturamento. */
-  private applyLoadFilters(ev: SearchField$SearchEvent | null): void {
-    const query = ev?.getParameter("query");
-    const binding = (this.byId("shipmentLoadsTable") as Table)
-      .getBinding("rows") as ODataListBinding;
-
-    const filters: string[] = [];
-
-    if (query) {
-      filters.push(`(contains(Code,'${query}') or contains(TruckCode,'${query}'))`);
-    }
-
-    binding.changeParameters({ $filter: filters.length > 0 ? filters.join(" and ") : undefined });
+  private applyLoadFilters(): void {
+    this.applyFilters("shipmentLoadsTable", "filterLoads", "LoadDate", ["Status", "BranchCode"]);
   }
 
   async onAssembleLoad(): Promise<void> {

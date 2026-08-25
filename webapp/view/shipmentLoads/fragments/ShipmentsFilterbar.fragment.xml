@@ -1,0 +1,108 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:fb="sap.ui.comp.filterbar"
+>
+<!--
+  Filtros da aba Romaneios Disponíveis. Só colunas NÃO-numéricas entram aqui — Peso Bruto fica
+  de fora de propósito.
+
+  Filial usa o JSONModel "branches" (carregado uma vez em Main.controller#loadBranches), não bind
+  direto em /Branchs — ver o comentário de loadBranches para o motivo (resume() da FilterBar
+  quebra em binding suspenso dentro de aba do IconTabBar).
+-->
+<fb:FilterBar search=".onSearchShipmentFilters" showClearOnFB="true" clear=".onClearShipmentFilters">
+  <fb:filterGroupItems>
+    <fb:FilterGroupItem name="branchCode" label="Filial" groupName="GroupBranchCode" visibleInFilterBar="true">
+      <fb:control>
+        <Select
+          id="branchCodeSelectShipments"
+          forceSelection="false"
+          selectedKey="{filterShipments>/BranchCode}"
+          items="{branches>/}">
+          <core:ListItem key="{branches>Code}" text="{branches>ShortName}"/>
+        </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="code" label="Codigo" groupName="GroupCode" visibleInFilterBar="true">
+      <fb:control>
+        <Input showClearIcon="true" value="{filterShipments>/Code}" />
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="dateFrom" label="Emissão de" groupName="GroupDateFrom" visibleInFilterBar="true">
+      <fb:control>
+        <DatePicker
+          value="{
+            path: 'filterShipments>/DateFrom',
+            type: 'sap.ui.model.type.String'
+          }"
+          displayFormat="dd/MM/yyyy"
+          valueFormat="yyyy-MM-dd"
+        />
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="dateTo" label="Emissão até" groupName="GroupDateTo" visibleInFilterBar="true">
+      <fb:control>
+        <DatePicker
+          value="{
+            path: 'filterShipments>/DateTo',
+            type: 'sap.ui.model.type.String'
+          }"
+          displayFormat="dd/MM/yyyy"
+          valueFormat="yyyy-MM-dd"
+        />
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="truck" label="Veículo" groupName="GroupTruck" visibleInFilterBar="true">
+      <fb:control>
+        <Input
+          showClearIcon="true"
+          showValueHelp="true"
+          valueHelpRequest=".openTrucksValueHelp"
+          value="{filterShipments>/TruckCode}"
+          />
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="truckDriver" label="Motorista" groupName="GroupTruckDriver" visibleInFilterBar="true">
+      <fb:control>
+        <Input
+          showClearIcon="true"
+          showValueHelp="true"
+          valueHelpRequest=".openTruckDriversValueHelp"
+          value="{filterShipments>/TruckDriverCode}"
+          />
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="warehouse" label="Armazem" groupName="GroupWarehouse" visibleInFilterBar="true">
+      <fb:control>
+        <Input
+          showClearIcon="true"
+          showValueHelp="true"
+          valueHelpRequest=".openWarehouseValueHelp"
+          value="{filterShipments>/WarehouseCode}"
+          />
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="card" label="Origem" groupName="GroupCard" visibleInFilterBar="true">
+      <fb:control>
+        <Input
+          showClearIcon="true"
+          showValueHelp="true"
+          valueHelpRequest=".openBusinessPartnersValueHelp"
+          value="{filterShipments>/CardCode}"
+          />
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="item" label="Produto" groupName="GroupItem" visibleInFilterBar="true">
+      <fb:control>
+        <Input
+          showClearIcon="true"
+          showValueHelp="true"
+          valueHelpRequest=".openItemValueHelp"
+          value="{filterShipments>/ItemCode}"
+          />
+      </fb:control>
+    </fb:FilterGroupItem>
+  </fb:filterGroupItems>
+</fb:FilterBar>
+</core:FragmentDefinition>
