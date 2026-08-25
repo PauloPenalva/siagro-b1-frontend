@@ -23,6 +23,7 @@
 			<IconTabBar id="shipmentLoadsTabBar" expandable="false" stretchContentHeight="true" select=".onTabSelect">
 				<items>
 					<IconTabFilter key="availableShipments" text="Romaneios Disponíveis" icon="sap-icon://shipping-status">
+						<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.ShipmentsFilterbar" type="XML"/>
 						<t:Table
 							id="availableShipmentsTable"
 							busyIndicatorDelay="0"
@@ -43,7 +44,6 @@
 									<ToolbarSpacer/>
 									<Button type="Emphasized" text="Montar Carga" press=".onAssembleLoad"/>
 									<Button type="Transparent" text="Estornar Romaneio de Embarque" press=".onReverseShipment"/>
-									<SearchField width="30%" placeholder="Pesquisar placa..." search=".onSearchShipments"/>
 								</OverflowToolbar>
 							</t:extension>
 							<t:columns>
@@ -136,6 +136,7 @@
 					</IconTabFilter>
 
 					<IconTabFilter key="loads" text="Cargas" icon="sap-icon://product">
+						<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.LoadsFilterbar" type="XML"/>
 						<t:Table
 							id="shipmentLoadsTable"
 							busyIndicatorDelay="0"
@@ -155,7 +156,6 @@
 									<ToolbarSpacer/>
 									<Button type="Emphasized" text="Detalhes" press=".onOpenDetail"/>
 									<Button type="Transparent" text="Cancelar Carga" press=".onCancelLoad"/>
-									<SearchField width="30%" placeholder="Pesquisar carga ou placa..." search=".onSearchLoads"/>
 								</OverflowToolbar>
 							</t:extension>
 							<t:columns>

@@ -72,7 +72,7 @@ export default class Main extends BaseController {
 			MessageBox.information(result?.message ?? "Sincronização concluída.");
 			this.onRefresh();
 		} catch (error) {
-			MessageBox.error("Falha ao sincronizar os usuários com o SAP.");
+			MessageBox.error((error as Error).message || "Falha ao sincronizar os usuários com o SAP.");
 			console.warn("Falha ao sincronizar os usuários com o SAP.", error);
 		} finally {
 			this.setBusy(false);
