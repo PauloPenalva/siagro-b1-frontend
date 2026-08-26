@@ -347,6 +347,20 @@
 						/>
 					</t:template>
 				</t:Column>
+				<t:Column width="9rem" hAlign="End" sortProperty="SalesContractFreightCostStandard">
+					<Label text="Frete Standard" />
+					<t:template>
+						<ObjectNumber
+							textAlign="End"
+							number="{
+								path: 'releases>SalesContractFreightCostStandard',
+								type: 'sap.ui.model.type.Float',
+								formatOptions: { decimals: 8, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+							}"
+							unit="{releases>SalesContractFreightUmCode}"
+						/>
+					</t:template>
+				</t:Column>
 				<t:Column sortProperty="CardCode" width="5rem">
 					<Label text="Cliente" />
 					<t:template>
