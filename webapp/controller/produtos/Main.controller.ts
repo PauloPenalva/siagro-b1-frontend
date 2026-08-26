@@ -58,6 +58,20 @@ export default class Main extends BaseController {
 		this.navTo("produtosEdit", {id: sId});
 	}
 
+	onComplement(): void {
+		const oTable = this.byId("tableProdutos") as Table;
+		const i = oTable.getSelectedIndex();
+
+		if (i < 0) {
+			MessageBox.warning("Selecione um registro.")
+			return;
+		}
+
+		const sId = oTable.getContextByIndex(i).getProperty("ItemCode") as string;
+
+		this.navTo("produtosComplement", {id: sId});
+	}
+
 	async onDelete() {
 		const oModel = this.getView().getModel() as ODataModel;
 		const oTable = this.byId("tableProdutos") as Table;

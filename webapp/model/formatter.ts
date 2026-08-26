@@ -877,4 +877,29 @@ export default {
 
     return (first + last).toUpperCase();
   },
+
+  /**
+   * Preço unitário do diálogo de faturamento: mostra o preço na UoM comercial do item quando
+   * configurada (`CommercialPrice`), senão cai pro preço em KG (`price`) — nunca fica em branco.
+   */
+  formatCommercialOrKgPrice: (
+    commercialPrice?: string | number,
+    price?: string | number,
+  ): string => {
+    const raw = commercialPrice ?? price;
+    if (raw == null) return "";
+
+    const num = typeof raw === "string" ? parseFloat(raw) : raw;
+    if (isNaN(num)) return "";
+
+    return num.toLocaleString("pt-BR", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+  },
+
+  /** Acompanha `formatCommercialOrKgPrice`: a UoM do valor exibido. */
+  formatCommercialOrKgUnit: (
+    commercialUnitOfMeasureCode?: string,
+    unitOfMeasureCode?: string,
+  ): string => {
+    return commercialUnitOfMeasureCode ?? unitOfMeasureCode ?? "";
+  },
 };

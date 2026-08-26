@@ -9,13 +9,13 @@ import { BaseController } from "./BaseController";
  */
 export default class Edit extends BaseController {
 
-	onInit(): void {	
+	onInit(): void {
 		this.getRouter().getRoute("produtosEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
 		this.clearStates("itemForm");
-    
+
     const oModel = this.getView().getModel() as ODataModel;
 		const oView = this.getView();
 
@@ -43,13 +43,14 @@ export default class Edit extends BaseController {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }
-    
+
     const oModel = this.getView().getModel() as ODataModel;
 		try {
 			this.setBusy(true);
 			await oModel.submitBatch(oModel.getUpdateGroupId());
 			if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 				oModel.resetChanges(oModel.getUpdateGroupId())
+
 				MessageToast.show("Dados atualizados com sucesso.", {
 					closeOnBrowserNavigation: false
 				});
@@ -57,7 +58,7 @@ export default class Edit extends BaseController {
 		} finally {
 			this.setBusy(false);
 		}
-		
+
 	}
 
 	onCancel() {

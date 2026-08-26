@@ -57,6 +57,10 @@ type BilledRelease = {
   Price?: string | number,
   UnitOfMeasureCode?: string,
   AvailableQuantity?: string | number,
+  /** Só exibição — preço em KG convertido pra UoM comercial do item, quando configurada. */
+  CommercialPrice?: string | number,
+  /** Só exibição — acompanha CommercialPrice. */
+  CommercialUnitOfMeasureCode?: string,
 }
 
 /**

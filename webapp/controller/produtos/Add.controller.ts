@@ -1,5 +1,6 @@
 import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
+import Context from "sap/ui/model/odata/v4/Context";
 import MessageBox from "sap/m/MessageBox";
 import { BaseController } from "./BaseController";
 
@@ -8,13 +9,15 @@ import { BaseController } from "./BaseController";
  */
 export default class Add extends BaseController {
 
+	private _itemContext: Context;
+
 	onInit(): void {
 		this.getRouter().getRoute("produtosAdd").attachPatternMatched(() => this.newRouteMatched());
 	}
 	private newRouteMatched() {
-		
+
     this.clearStates("itemForm");
-    
+
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;
 		const oBinding = oModel.bindList("/Items")
@@ -28,16 +31,17 @@ export default class Add extends BaseController {
       "Enabled": "SIM",
     }, false, false, false);
 
+		this._itemContext = oContext;
 		oView.setBindingContext(oContext);
 	}
 
 	async onSave() {
-		
+
     if (!this.validateForm("itemForm")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }
-    
+
     const oModel = this.getView().getModel() as ODataModel;
 
 		try {

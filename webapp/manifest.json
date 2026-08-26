@@ -176,6 +176,11 @@
 					"target": "produtosEdit"
 				},
 				{
+					"pattern": "items/{id}/complement",
+					"name": "produtosComplement",
+					"target": "produtosComplement"
+				},
+				{
 					"pattern": "processing-costs",
 					"name": "processingCostsList",
 					"target": "processingCostsList"
@@ -1048,6 +1053,12 @@
 					"id": "produtosEdit",
           "level": 2,
 					"name": "siagrob1.view.produtos.Edit",
+          "clearControlAggregation": true
+				},
+				"produtosComplement": {
+					"id": "produtosComplement",
+          "level": 2,
+					"name": "siagrob1.view.produtos.Complement",
           "clearControlAggregation": true
 				},
 				"processingCostsList": {

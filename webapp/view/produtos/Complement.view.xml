@@ -1,0 +1,72 @@
+<mvc:View
+	controllerName="siagrob1.controller.produtos.Complement"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+
+	<Page title="Complemento do Produto" busy="{ui>/busy}" busyIndicatorDelay="0">
+		<content>
+			<f:SimpleForm
+				id="itemComplementForm"
+				editable="true"
+				layout="ResponsiveGridLayout"
+				labelSpanXL="4"
+				labelSpanL="4"
+				labelSpanM="4"
+				labelSpanS="12"
+				adjustLabelSpan="false"
+				emptySpanXL="0"
+				emptySpanL="0"
+				emptySpanM="0"
+				emptySpanS="0"
+				columnsXL="3"
+				columnsL="2"
+				columnsM="2"
+				singleContainerFullSize="true"
+				busyIndicatorDelay="0">
+				<f:content>
+					<core:Title text="Produto" emphasized="true" />
+					<Label text="Codigo" />
+					<Text text="{complement>/ItemCode}" />
+					<Label text="Descrição" />
+					<Text text="{complement>/ItemName}" />
+
+					<core:Title text="UoM Comercial" emphasized="true" />
+					<Label text="Unidade" />
+					<Input
+						id="commercialUnitOfMeasureCode"
+						value="{complement>/CommercialUnitOfMeasureCode}"
+						showValueHelp="true"
+						valueHelpOnly="true"
+						valueHelpRequest=".onCommercialUnitOfMeasureValueHelp"
+						maxLength="4"
+					/>
+					<Label text="Fator (KG por unidade)" />
+					<Input
+						id="commercialFactor"
+						value="{
+							path: 'complement>/CommercialFactor',
+							type: 'sap.ui.model.type.Float',
+							formatOptions: { decimals: 6, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+						}"
+					/>
+					<Label text="" />
+					<Text text="Preenchidos os dois campos, o preço do contrato (sempre em KG) passa a ser exibido nesta unidade. Deixe os dois em branco para voltar a exibir em KG." />
+
+					<core:Title />
+				</f:content>
+			</f:SimpleForm>
+		</content>
+		<footer>
+			<Toolbar>
+				<ToolbarSpacer />
+				<Button text="Limpar" press=".onClear" />
+				<Button text="Cancelar" press=".onCancel" />
+				<Button text="Salvar" type="Emphasized" press=".onSave" />
+			</Toolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

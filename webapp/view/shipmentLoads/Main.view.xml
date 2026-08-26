@@ -94,9 +94,9 @@
 										<Text text="{TruckCode}" wrapping="false"/>
 									</t:template>
 								</t:Column>
-								<t:Column label="Motorista" width="6rem">
+								<t:Column label="Motorista" width="22rem">
 									<t:template>
-										<Text text="{TruckDriverCode}" wrapping="false"/>
+										<Text text="({TruckDriverCode}) {TruckDriver/Name}" wrapping="false"/>
 									</t:template>
 								</t:Column>
 								<t:Column label="Peso Bruto" sortProperty="GrossWeight" hAlign="End" width="7rem">
@@ -204,6 +204,11 @@
 								<t:Column label="Veículo" sortProperty="TruckCode" width="6rem">
 									<t:template>
 										<Text text="{TruckCode}" wrapping="false"/>
+									</t:template>
+								</t:Column>
+								<t:Column label="Motorista" sortProperty="TruckDriverName" width="22rem">
+									<t:template>
+										<Text text="({TruckDriverCode}) {TruckDriverName}" wrapping="false"/>
 									</t:template>
 								</t:Column>
 								<t:Column label="Produto" sortProperty="ItemCode" width="15rem">

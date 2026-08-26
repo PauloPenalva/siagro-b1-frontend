@@ -114,7 +114,7 @@
 											<f:FormElement label="Observações">
 												<f:fields><Text text="{Comments}"/></f:fields>
 											</f:FormElement>
-											<f:FormElement label="Motivo do Cancelamento" visible="{= ${CancellationReason} !== null &amp;&amp; ${CancellationReason} !== '' }">
+											<f:FormElement label="Motivo do Cancelamento" visible="{= ${path: 'CancellationReason', targetType: 'any'} !== null &amp;&amp; ${path: 'CancellationReason', targetType: 'any'} !== '' }">
 												<f:fields><Text text="{CancellationReason}"/></f:fields>
 											</f:FormElement>
 										</f:formElements>
