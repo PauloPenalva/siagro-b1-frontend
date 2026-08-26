@@ -5,6 +5,8 @@ import Table from "sap/ui/table/Table";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { BaseController } from "../BaseController";
 import MessageToast from "sap/m/MessageToast";
+import Context from "sap/ui/model/odata/v4/Context";
+import { Button$PressEvent } from "sap/m/Button";
 
 
 /**
@@ -60,6 +62,11 @@ export default class Main extends BaseController {
 		} finally {
 			this.setBusy(false);
 		}
+  }
+
+  /** Log de modificações da linha clicada. Ver openItemChangeLogs no BaseController. */
+  onOpenItemChangeLogs(oEvent: Button$PressEvent): void {
+    void this.openItemChangeLogs(oEvent.getSource().getBindingContext() as Context);
   }
 
   onCancel() {

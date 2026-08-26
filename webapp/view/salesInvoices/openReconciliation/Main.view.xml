@@ -283,6 +283,49 @@
 						</t:template>
 					</t:Column>
 
+          <t:Column
+						label="Últ. Atualização"
+						sortProperty="UpdatedAt"
+            hAlign="Center"
+            width="10rem"
+						>
+						<t:template>
+							<!-- Carimbo da CONFERÊNCIA, não de qualquer PATCH no item: em branco
+							     enquanto a entrega nunca foi conferida. -->
+							<Text wrapping="false" text="{
+                path: 'UpdatedAt',
+                targetType: 'any',
+                formatter: '.formatter.formatDateTime'
+              }" />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Usuário"
+						sortProperty="UpdatedBy"
+            hAlign="Center"
+            width="9rem"
+						>
+						<t:template>
+							<Text text="{UpdatedBy}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Log"
+            hAlign="Center"
+            width="4rem"
+						>
+						<t:template>
+							<!-- Abre o log da PRÓPRIA linha: o handler usa o contexto do botão,
+							     não a linha selecionada (clicar no ícone não seleciona a linha). -->
+							<Button
+                icon="sap-icon://history"
+                type="Transparent"
+                tooltip="Log de modificações"
+                press=".onOpenItemChangeLogs"
+              />
+						</t:template>
+					</t:Column>
+
 				</t:columns>
 
 			</t:Table>

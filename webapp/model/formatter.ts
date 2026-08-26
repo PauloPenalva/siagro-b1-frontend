@@ -613,6 +613,11 @@ export default {
     // Hoje ela só muda em rascunho, mas as linhas antigas precisam continuar legíveis.
     m.set("Comments", "Observação");
 
+    // Conferência de entregas: linhas de LOG DE ITEM (SalesInvoiceItemKey preenchido).
+    m.set("DeliveredQuantity", "Qtd. entregue");
+    m.set("QuantityLoss", "Desconto");
+    m.set("DeliveryStatus", "Situação da entrega");
+
     return m.get(value) ?? value;
   },
 

@@ -1,0 +1,81 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <!--
+    Log de modificações da CONFERÊNCIA de uma linha do documento de saída. Compartilhado pelas
+    duas telas espelho (Conferência de entregas e Estorno), como a ReconciliationFilterbar.
+
+    Somente leitura: as linhas nascem no SalesInvoicesItemsUpdateService, no mesmo SaveChanges
+    da alteração.
+
+    A tabela binda o ENTITY SET `/SalesInvoicesChangeLogs` com `$filter` montado no controller,
+    e NÃO a navegação `SalesInvoicesItems(key)/ChangeLogs`: rota aninhada só responde onde foi
+    declarada à mão no controller do backend, e essa não existe (404). O `$filter` completo vem
+    como string por causa da mesma limitação de sempre com a chave — quem monta é o
+    `openItemChangeLogs` do BaseController.
+
+    `sorter` explícito é obrigatório: a sap.ui.table pagina com $skip/$top e o [EnableQuery]
+    reordena por chave para estabilizar a paginação, ignorando qualquer OrderBy do serviço.
+  -->
+  <Dialog
+    title="Log de Modificações"
+    contentWidth="52rem"
+    contentHeight="24rem"
+    resizable="true"
+    draggable="true"
+  >
+    <content>
+      <t:Table
+        id="salesInvoiceItemChangeLogsTable"
+        class="sapUiSizeCondensed"
+        alternateRowColors="true"
+        enableBusyIndicator="true"
+        enableSelectAll="false"
+        selectionMode="None"
+        busyIndicatorDelay="0"
+        visibleRowCountMode="Auto"
+        noData="Nenhuma alteração registrada nesta linha."
+      >
+        <t:columns>
+          <t:Column label="Data/Hora" width="11rem">
+            <t:template>
+              <Text wrapping="false" text="{
+                path: 'ChangedAt',
+                targetType: 'any',
+                formatter: '.formatter.formatDateTime'
+              }" />
+            </t:template>
+          </t:Column>
+          <t:Column label="Usuário" width="10rem">
+            <t:template>
+              <Text wrapping="false" text="{ChangedBy}" />
+            </t:template>
+          </t:Column>
+          <t:Column label="Campo" width="12rem">
+            <t:template>
+              <Text wrapping="false" text="{
+                path: 'Field',
+                formatter: '.formatter.formatContractChangeLogField'
+              }" />
+            </t:template>
+          </t:Column>
+          <t:Column label="De">
+            <t:template>
+              <Text text="{OldValue}" tooltip="{OldValue}" wrapping="false" />
+            </t:template>
+          </t:Column>
+          <t:Column label="Para">
+            <t:template>
+              <Text text="{NewValue}" tooltip="{NewValue}" wrapping="false" />
+            </t:template>
+          </t:Column>
+        </t:columns>
+      </t:Table>
+    </content>
+    <beginButton>
+      <Button text="Fechar" press=".onCloseItemChangeLogs" />
+    </beginButton>
+  </Dialog>
+</core:FragmentDefinition>

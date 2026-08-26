@@ -10,12 +10,15 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import { Input$ValueHelpRequestEvent } from "sap/m/Input";
+import Sorter from "sap/ui/model/Sorter";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
 
 export abstract class BaseController extends CommonController {
 
     private itemFiscalDialog: Dialog;
+
+    private itemChangeLogsDialog: Dialog;
 
     private documentTotalAttached = false;
 
@@ -108,6 +111,48 @@ export abstract class BaseController extends CommonController {
 
     onCloseItemFiscal() {
       this.itemFiscalDialog?.close();
+    }
+
+    /**
+     * Log de modificações da conferência de UMA linha, no diálogo compartilhado pelas duas
+     * telas espelho (Conferência de entregas e Estorno).
+     *
+     * Recebe o contexto da linha do PRÓPRIO botão, e não a linha selecionada da tabela:
+     * clicar no ícone não seleciona a linha, e pela seleção o diálogo mostraria o log de
+     * outra linha (ou reclamaria de nenhuma seleção).
+     *
+     * O binding é feito aqui, e não no fragmento, porque o `$filter` depende da chave. Vai
+     * como string inteira, o padrão do projeto para chave. `bindRows` a cada abertura, e não
+     * refresh: o filtro muda de linha para linha, e reaproveitar o binding mostraria o log da
+     * linha aberta antes.
+     */
+    protected async openItemChangeLogs(oContext: Context) {
+      if (!oContext) {
+        MessageBox.alert("Selecione uma linha.");
+        return;
+      }
+
+      const key = oContext.getProperty("Key") as string;
+
+      this.itemChangeLogsDialog ??= await DialogHelper.createDialog(
+        this, "siagrob1.view.salesInvoices.fragments.SalesInvoiceItemChangeLogsDialog");
+
+      // Pelo conteúdo do diálogo, e não por Fragment.byId: o DialogHelper prefixa os ids
+      // com `viewId_nomeDoFragmento`, e reproduzir esse prefixo aqui quebraria calado se ele
+      // mudasse lá.
+      const oLogTable = this.itemChangeLogsDialog.getContent()[0] as Table;
+
+      oLogTable.bindRows({
+        path: "/SalesInvoicesChangeLogs",
+        parameters: { $filter: `SalesInvoiceItemKey eq ${key}`, $$ownRequest: true },
+        sorter: new Sorter("ChangedAt", true),
+      });
+
+      this.itemChangeLogsDialog.open();
+    }
+
+    onCloseItemChangeLogs() {
+      this.itemChangeLogsDialog?.close();
     }
 
     /**
