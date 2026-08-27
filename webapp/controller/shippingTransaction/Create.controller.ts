@@ -14,9 +14,14 @@ type routeArgs = {
   }
 }
 
+/** `ReleaseOrigin.OwnershipTransfer` — o enum trafega como inteiro no OData. */
+const RELEASE_ORIGIN_OWNERSHIP_TRANSFER = 1;
+
 /** Liberação de entrega lida com `$expand=PurchaseContract`. */
 type ShipmentReleaseWithContract = {
   PurchaseContractKey?: string,
+  /** `ReleaseOrigin`: 0 = Standard, 1 = OwnershipTransfer. */
+  Origin?: number,
   DeliveryLocationCode?: string,
   DeliveryLocationName?: string,
   PurchaseContract?: {
@@ -35,6 +40,7 @@ type ODataCollection<T> = {
 
 /** Dados montados no model "viewModel" e enviados na criação do embarque. */
 type ShippingTransactionForm = {
+  /** Nulo no embarque de liberação emitida por transferência de titularidade. */
   PurchaseContractKey?: string,
   StorageTransaction?: {
     DocNumberKey?: string,
@@ -114,8 +120,13 @@ export default class Create extends BaseController {
         const results = await this.getDocNumberInfoByTransaction("StorageTransaction")
         const docNumberInfo = results.filter(x => x.Default)[0];
 
+        // Liberação emitida por transferência de titularidade: a compra já foi
+        // registrada e alocada no confirm da transferência, então este embarque não tem
+        // contrato a informar — o backend recusa a alocação em dobro pela mesma origem.
+        const isOwnershipTransfer = data?.Origin === RELEASE_ORIGIN_OWNERSHIP_TRANSFER;
+
         viewModel.setData({
-          PurchaseContractKey: data?.PurchaseContractKey,
+          PurchaseContractKey: isOwnershipTransfer ? null : data?.PurchaseContractKey,
           StorageTransaction: {
             DocNumberKey: docNumberInfo.Key,
             BranchCode: branchInfo.code,
@@ -184,7 +195,9 @@ export default class Create extends BaseController {
 
     const action = oModel.bindContext("/ShippingTransactionsCreate(...)");
     action.setParameter("StorageTransaction", this.toPayload(viewData?.StorageTransaction));
-    action.setParameter("PurchaseContractKey", viewData?.PurchaseContractKey);
+    // Null explícito, nunca undefined: JSON.stringify omite a chave undefined e o
+    // desserializador do OData recusa o corpo inteiro sem dizer qual campo faltou.
+    action.setParameter("PurchaseContractKey", viewData?.PurchaseContractKey ?? null);
 
 		try {
 			this.setBusy(true);
