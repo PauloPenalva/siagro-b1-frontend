@@ -108,6 +108,11 @@
             </Input>
         </fb:control>
       </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="withoutTaxDocument" label="Sem Nota Fiscal" groupName="GroupWithoutTaxDocument" visibleInFilterBar="true">
+        <fb:control>
+            <CheckBox selected="{filter>/WithoutTaxDocument}"/>
+        </fb:control>
+      </fb:FilterGroupItem>
     </fb:filterGroupItems>
   </fb:FilterBar>
 </core:FragmentDefinition>

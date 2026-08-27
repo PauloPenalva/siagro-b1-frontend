@@ -1,0 +1,75 @@
+<mvc:View
+	controllerName="siagrob1.controller.armazem.Complement"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+
+	<Page title="Complemento do Armazém" busy="{ui>/busy}" busyIndicatorDelay="0">
+		<content>
+			<f:SimpleForm
+				id="warehouseComplementForm"
+				editable="true"
+				layout="ResponsiveGridLayout"
+				labelSpanXL="4"
+				labelSpanL="4"
+				labelSpanM="4"
+				labelSpanS="12"
+				adjustLabelSpan="false"
+				emptySpanXL="0"
+				emptySpanL="0"
+				emptySpanM="0"
+				emptySpanS="0"
+				columnsXL="3"
+				columnsL="2"
+				columnsM="2"
+				singleContainerFullSize="true"
+				busyIndicatorDelay="0">
+				<f:content>
+					<core:Title text="Armazém" emphasized="true" />
+					<Label text="Codigo" />
+					<Text text="{complement>/WarehouseCode}" />
+					<Label text="Descrição" />
+					<Text text="{complement>/WarehouseName}" />
+
+					<core:Title text="Complemento" emphasized="true" />
+					<Label text="Armazém Participante" />
+					<Switch
+						id="isParticipant"
+						state="{complement>/IsParticipant}"
+						customTextOn="SIM"
+						customTextOff="NÃO"
+					/>
+					<Label text="Armazém Próprio" />
+					<Switch
+						id="isOwn"
+						state="{complement>/IsOwn}"
+						customTextOn="SIM"
+						customTextOff="NÃO"
+					/>
+					<Label text="Observações" />
+					<TextArea
+						id="notes"
+						value="{complement>/Notes}"
+						maxLength="500"
+						rows="4"
+						growing="true"
+						growingMaxLines="8"
+						width="100%"
+					/>
+
+					<core:Title />
+				</f:content>
+			</f:SimpleForm>
+		</content>
+		<footer>
+			<Toolbar>
+				<ToolbarSpacer />
+				<Button text="Cancelar" press=".onCancel" />
+				<Button text="Salvar" type="Emphasized" press=".onSave" />
+			</Toolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

@@ -34,6 +34,10 @@ export default {
   unitsOfMeasure: '/odata/UnitsOfMeasure',
   harvestSeasons: '/odata/HarvestSeasons',
   warehouses: '/odata/Warehouses',
+  // Complemento cadastral do armazém (participante / próprio) — só cadastro, nenhuma outra tela
+  // consome os flags.
+  warehousesGetComplement: '/WarehousesGetComplement(...)',
+  warehousesSetComplement: '/WarehousesSetComplement(...)',
   taxes: '/odata/Taxes',
   qualityAttrib: '/odata/QualityAttribs',
   logisticRegions: '/odata/LogisticRegions',
@@ -82,6 +86,7 @@ export default {
   purchaseContractsSendToApproval: '/odata/PurchaseContractsSendApproval',
   purchaseContractsCopy: '/odata/PurchaseContractsCopy',
   purchaseContractsClose: '/odata/PurchaseContractsClose',
+  purchaseContractsSetSignatureStatus: '/odata/PurchaseContractsSetSignatureStatus',
   purchaseContractsReopen: '/odata/PurchaseContractsReopen',
   purchaseContractsRecalculateBalance: '/odata/PurchaseContractsRecalculateBalance',
   prePurchaseContractReport: '/reports/PrePurchaseContract',
@@ -122,6 +127,7 @@ export default {
 
   salesContractsCopy: '/odata/SalesContractsCopy',
   salesContractsClose: '/odata/SalesContractsClose',
+  salesContractsSetSignatureStatus: '/odata/SalesContractsSetSignatureStatus',
   salesContractsReopen: '/odata/SalesContractsReopen',
   salesContractsWithdrawApproval: '/odata/SalesContractsWithdrawApproval',
   salesContractsSendToApproval: '/odata/SalesContractsSendApproval',

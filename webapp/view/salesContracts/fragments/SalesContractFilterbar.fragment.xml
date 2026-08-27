@@ -22,6 +22,20 @@
             </Select>
         </fb:control>
       </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="signatureStatus" label="Assinatura" groupName="GroupSignatureStatus" visibleInFilterBar="true">
+        <fb:control>
+            <Select
+              forceSelection="false"
+              selectedKey="{
+                path: 'filter>/SignatureStatus',
+                type: 'sap.ui.model.type.String'
+              }"
+            >
+              <core:ListItem key="AwaitingSignature" text="Aguardando Assinatura"/>
+              <core:ListItem key="Signed" text="Assinado"/>
+            </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
       <fb:FilterGroupItem name="code" label="Codigo" groupName="GroupCode" visibleInFilterBar="true">
         <fb:control>
             <Input showClearIcon="true" value="{filter>/Code}">

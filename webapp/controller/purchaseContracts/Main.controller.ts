@@ -16,6 +16,7 @@ type FilterData = {
   CardCode?: string,
   ItemCode?: string,
   Status?: string,
+  SignatureStatus?: string,
   Type?:string,
   DocTypeCode?: string,
   Complement?: string,
@@ -61,7 +62,7 @@ export default class Main extends BaseController {
 
       if (!value) return;
 
-      if (filterKey == "Status" || filterKey == "Type" || filterKey == "MarketType") {
+      if (filterKey == "Status" || filterKey == "SignatureStatus" || filterKey == "Type" || filterKey == "MarketType") {
         filters.push(`${filterKey} eq '${value}'`)
       } else if (filterKey == "AgentCode") {
         // Edm.Int32: só dígitos. Number() aceitaria "1e3"/"0x10"/" " e filtraria
@@ -191,6 +192,16 @@ export default class Main extends BaseController {
         "Finished": "Finalizado",
         "Rejected": "Rejeitado",
         "Canceled": "Cancelado",
+      }
+    });
+
+    aCols.push({
+      label: "Assinatura",
+      property: "SignatureStatus",
+      type: EdmType.Enumeration,
+      valueMap: {
+        "AwaitingSignature": "Aguardando Assinatura",
+        "Signed": "Assinado",
       }
     });
 

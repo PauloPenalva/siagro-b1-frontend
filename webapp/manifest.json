@@ -211,6 +211,11 @@
           "target": "armazensEdit"
         },
         {
+          "pattern": "warehouses/{id}/complement",
+          "name": "armazensComplement",
+          "target": "armazensComplement"
+        },
+        {
           "pattern": "truck-scales",
           "name": "truckScales",
           "target": "truckScales"
@@ -1097,6 +1102,12 @@
 					"id": "armazensEdit",
           "level": 2,
 					"name": "siagrob1.view.armazem.Edit",
+          "clearControlAggregation": true
+				},
+        "armazensComplement": {
+					"id": "armazensComplement",
+          "level": 2,
+					"name": "siagrob1.view.armazem.Complement",
           "clearControlAggregation": true
 				},
         "storageAddresses": {

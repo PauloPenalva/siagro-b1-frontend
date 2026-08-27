@@ -160,6 +160,78 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
 
   private _priceFixationDialog: Dialog;
   private _priceFixationDetailsDialog: Dialog;
+  private _signatureStatusDialog: Dialog;
+
+  /* ------------------------------------------------------------------ */
+  /* Situação da assinatura                                              */
+  /* ------------------------------------------------------------------ */
+
+  /**
+   * Abre o diálogo da situação de assinatura. Sem guarda de status de propósito: assinatura é
+   * fato documental e vale em qualquer status, inclusive encerrado e cancelado.
+   */
+  async onOpenSignatureStatusDialog() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) {
+      MessageBox.alert("Contrato não carregado.");
+      return;
+    }
+
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    // "" e não null: o Select casa a chave por string, e null deixaria o item sem seleção.
+    viewModel.setProperty("/signatureStatus", (ctx.getProperty("SignatureStatus") as string) ?? "");
+
+    this._signatureStatusDialog ??= await DialogHelper.createDialog(
+      this,
+      "siagrob1.view.purchaseContracts.fragments.PurchaseContractSignatureDialog"
+    );
+
+    this._signatureStatusDialog?.open();
+  }
+
+  onCloseSignatureStatusDialog() {
+    this._signatureStatusDialog?.close();
+  }
+
+  /**
+   * Grava pela action dedicada — o PATCH do cabeçalho recusaria o contrato fora de rascunho.
+   * String vazia vira null: "não informado" é valor legítimo do campo.
+   */
+  async onConfirmSignatureStatus() {
+    const oContext = this.getView().getBindingContext() as Context;
+    if (!oContext) {
+      return;
+    }
+
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    const selected = (viewModel.getProperty("/signatureStatus") as string) || null;
+    // requestProperty e não getProperty: o botão fica visível desde o primeiro render, e num
+    // contexto ainda não resolvido getProperty devolve undefined - JSON.stringify omitiria a
+    // chave e o binder do OData recusaria o corpo inteiro com "parameters field is required".
+    const key = await oContext.requestProperty("Key") as string;
+
+    this.setBusy(true);
+
+    void jQuery.ajax({
+      url: `${this.api.purchaseContractsSetSignatureStatus}`,
+      method: 'POST',
+      data: JSON.stringify({ Key: key, SignatureStatus: selected }),
+      contentType: 'application/json',
+      success: () => {
+        this._signatureStatusDialog?.close();
+        oContext.refresh();
+        // O log de alterações tem `$$ownRequest` — o refresh do contexto não o alcança.
+        this.refreshChangeLogs();
+        MessageToast.show("Situação da assinatura atualizada.");
+      },
+      error: err => {
+        this.setBusy(false);
+        const message = (err.responseJSON as { error?: { message?: string } })?.error?.message;
+        MessageBox.error(message ?? "Erro ao atualizar a situação da assinatura.");
+      },
+    })
+    .done(() => this.setBusy(false));
+  }
 
   /**
    * Abre o diálogo somente-leitura com todos os dados da fixação selecionada,

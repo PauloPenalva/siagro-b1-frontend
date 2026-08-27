@@ -10,6 +10,9 @@ import { BaseController } from "./BaseController";
 import MessageToast from "sap/m/MessageToast";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import Dialog from "sap/m/Dialog";
+import { Input$LiveChangeEvent } from "sap/m/Input";
+
+const NFE_KEY_LENGTH = 44;
 
 
 /**
@@ -55,6 +58,11 @@ export default class Main extends BaseController {
         filters.push(`InvoiceDate ge ${value}`)
       } else if (filterKey == "DateTo") {
         filters.push(`InvoiceDate le ${value}`)
+      } else if (filterKey == "WithoutTaxDocument") {
+        // Checkbox: só entra quando marcado (desmarcado é `false`, já descartado acima).
+        // O `eq ''` cobre documentos antigos, gravados antes de o serviço normalizar
+        // branco para null.
+        filters.push(`(TaxDocumentNumber eq null or TaxDocumentNumber eq '')`)
       } else {
         filters.push(`contains(${filterKey},'${value}')`)
       }
@@ -157,35 +165,75 @@ export default class Main extends BaseController {
     this._notaFiscalDialog?.close();
   }
 
+  /**
+   * A chave de acesso da NF-e tem layout fixo de 44 dígitos, com série e número em posições
+   * conhecidas — digitar só a chave já basta para preencher o resto do formulário.
+   */
+  onChaveNFeLiveChange(ev: Input$LiveChangeEvent) {
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    const chave = (ev.getParameter("value") || "").replace(/\D/g, "");
+
+    // Número e série são somente leitura: a chave é a única origem deles, então enquanto ela
+    // estiver incompleta os dois ficam em branco em vez de manter um valor órfão.
+    if (chave.length !== NFE_KEY_LENGTH) {
+      viewModel.setProperty("/TaxDocumentSeries", "");
+      viewModel.setProperty("/TaxDocumentNumber", "");
+      return;
+    }
+
+    // Série e número são gravados como estão na chave, zero-preenchidos (série 001, número
+    // 000000167) — é assim que o usuário informa manualmente.
+    viewModel.setProperty("/TaxDocumentSeries", chave.substring(22, 25));
+    viewModel.setProperty("/TaxDocumentNumber", chave.substring(25, 34));
+  }
+
   onNotaFiscalConfirm() {
     const viewModel = this.getModel("viewModel") as JSONModel;
-    const notaFiscal = viewModel.getProperty("/TaxDocumentNumber") as string;
-    const serie = viewModel.getProperty("/TaxDocumentSeries") as string;
-    const chaveNfe = viewModel.getProperty("/ChaveNFe") as string;
+    const notaFiscal = ((viewModel.getProperty("/TaxDocumentNumber") as string) || "").trim();
+    const serie = ((viewModel.getProperty("/TaxDocumentSeries") as string) || "").trim();
+    const chaveNfe = ((viewModel.getProperty("/ChaveNFe") as string) || "").trim();
 
     if (!notaFiscal || !serie) {
       MessageBox.warning("Preencha corretamente o formulário.");
       return;
     }
 
+    this.sendDocumentNumber(notaFiscal, serie, chaveNfe, "Documento de saída atualizado com sucesso.");
+  }
+
+  /**
+   * Limpar é a mesma action com os três campos em branco: o backend já normaliza vazio para
+   * null, então não há uma segunda regra de negócio a manter aqui.
+   */
+  async onNotaFiscalClear() {
+    if (!await DialogHelper.confirmDialog("Limpar nota fiscal, série e chave de acesso deste documento ?"))
+      return;
+
+    this.sendDocumentNumber("", "", "", "Dados da nota fiscal removidos com sucesso.");
+  }
+
+  private sendDocumentNumber(
+    documentNumber: string, documentSeries: string, chaveNFe: string, successMessage: string
+  ) {
+    const viewModel = this.getModel("viewModel") as JSONModel;
     const table = this.byId("tableSalesInvoices") as Table;
     const selectedInvoice = table.getSelectedIndices();
 
     const ctx = table.getContextByIndex(selectedInvoice[0]) as Context;
-    
+
     const oModel = ctx.getModel() as ODataModel;
     const action = oModel.bindContext("/SalesInvoicesSetDocumentNumber(...)")
     action.setParameter("Key", ctx.getProperty("Key"));
-    action.setParameter("DocumentNumber", notaFiscal );
-    action.setParameter("DocumentSeries", serie );
-    action.setParameter("ChaveNFe", chaveNfe );
+    action.setParameter("DocumentNumber", documentNumber);
+    action.setParameter("DocumentSeries", documentSeries);
+    action.setParameter("ChaveNFe", chaveNFe);
 
     this.setBusy(true);
     void action.invoke()
       .then(() => {
         this.onCloseNotaFiscalDialog();
         viewModel.setData({});
-        MessageToast.show("Documento de saída atualizado com sucesso.");
+        MessageToast.show(successMessage);
         this.refreshData();
       })
       .finally(() => this.setBusy(false));

@@ -58,6 +58,19 @@ export default class Main extends BaseController {
 		this.navTo("armazensEdit", {id: sId});
 	}
 
+	onComplement(): void {
+		const oTable = this.byId("tableArmazens") as Table;
+		const oContext = this.getSelectRowContext(oTable);
+
+		if (!oContext) {
+			MessageBox.alert("Selecione um item para editar.");
+			return;
+		}
+
+		const sId = oContext.getProperty("Code") as string;
+		this.navTo("armazensComplement", {id: sId});
+	}
+
 	async onDelete() {
 		const oModel = this.getView().getModel() as ODataModel;
 		const oTable = this.byId("tableArmazens") as Table;

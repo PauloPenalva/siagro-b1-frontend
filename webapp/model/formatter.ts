@@ -267,6 +267,27 @@ export default {
     return m.get(value);
   },
 
+  /**
+   * Situação da assinatura do contrato. Independente do status do contrato: pode estar
+   * preenchida em contrato encerrado ou cancelado, e vazia em contrato aprovado.
+   * Nulo/vazio devolve "" - "não informado" é estado legítimo, não erro.
+   */
+  formatSignatureStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("AwaitingSignature", "Aguardando Assinatura");
+    m.set("Signed"           , "Assinado");
+
+    return m.get(value) ?? "";
+  },
+
+  stateSignatureStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("AwaitingSignature", "Warning");
+    m.set("Signed"           , "Success");
+
+    return m.get(value) ?? "None";
+  },
+
   formatContractType: (value: string) => {
     const m = new Map<string, string>();
     m.set("Fixed", "FIX - Preço Fixo");
@@ -617,6 +638,8 @@ export default {
     m.set("DeliveredQuantity", "Qtd. entregue");
     m.set("QuantityLoss", "Desconto");
     m.set("DeliveryStatus", "Situação da entrega");
+
+    m.set("SignatureStatus", "Situação da assinatura");
 
     return m.get(value) ?? value;
   },

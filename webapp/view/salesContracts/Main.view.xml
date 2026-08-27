@@ -97,6 +97,26 @@
 						</t:template>
 					</t:Column>
           <t:Column
+						label="Assinatura"
+						sortProperty="SignatureStatus"
+            hAlign="Center"
+            width="11rem"
+						>
+						<t:template>
+							<ObjectStatus
+                state="{
+                  path: 'SignatureStatus',
+                  targetType: 'any',
+                  formatter: '.formatter.stateSignatureStatus'
+                }"
+                text="{
+                  path: 'SignatureStatus',
+                  targetType: 'any',
+                  formatter: '.formatter.formatSignatureStatus'
+                }"/>
+						</t:template>
+					</t:Column>
+          <t:Column
 						label="Codigo"
 						sortProperty="Code"
             width="10rem"

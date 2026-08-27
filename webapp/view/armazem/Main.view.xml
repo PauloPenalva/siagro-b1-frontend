@@ -75,6 +75,7 @@
 				<ToolbarSpacer />
 				<Button text="Incluir" icon="sap-icon://add" type="Emphasized" press=".onCreate"/>
 				<Button text="Editar" icon="sap-icon://edit" press=".onEdit"/>
+				<Button text="Complemento" icon="sap-icon://add-product" press=".onComplement"/>
 				<Button text="Deletar" icon="sap-icon://delete" press=".onDelete"/>
 			</OverflowToolbar>
 		</footer>

@@ -34,6 +34,8 @@
           <Button visible="{= ${path: 'Status', targetType: 'any'}==='Approved' &amp;&amp; !${ui>/readonly} }" text="Recalcular Saldo" type="Transparent" press=".onRecalculateBalance"/>
           <Button visible="{= ${path: 'Status', targetType: 'any'}==='Approved' &amp;&amp; !${ui>/readonly} }" text="Encerrar" type="Transparent" press=".onCloseContract"/>
           <Button visible="{= ${path: 'Status', targetType: 'any'}==='Finished' &amp;&amp; !${ui>/readonly} }" text="Reabrir" type="Transparent" press=".onReopenContract"/>
+          <!-- Sem binding de Status: assinatura vale em qualquer status do contrato. -->
+          <Button visible="{= !${ui>/readonly} }" text="Assinatura" type="Transparent" icon="sap-icon://signature" press=".onOpenSignatureStatusDialog"/>
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>
@@ -52,6 +54,19 @@
             path: 'Status',
             formatter: '.formatter.formatContractStatus',
             targetType: 'any'
+          }" />
+        <!-- Contrato nunca marcado fica em branco: "não informado" é estado legítimo. -->
+        <ObjectStatus
+          class="sapUiMediumMarginBegin"
+          state="{
+            path: 'SignatureStatus',
+            targetType: 'any',
+            formatter: '.formatter.stateSignatureStatus'
+          }"
+          text="{
+            path: 'SignatureStatus',
+            targetType: 'any',
+            formatter: '.formatter.formatSignatureStatus'
           }" />
       </HBox>
       <HBox>
