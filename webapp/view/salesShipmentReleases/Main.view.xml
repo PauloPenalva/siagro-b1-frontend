@@ -135,7 +135,7 @@
             />
 						</t:template>
 					</t:Column>
-					<t:Column label="Local de entrega" width="15rem">
+					<t:Column label="Local de entrega" sortProperty="DeliveryLocationName" width="15rem">
 						<t:template>
               <Text text="({DeliveryLocationCode}) {DeliveryLocationName}" />
         	</t:template>

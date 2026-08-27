@@ -106,7 +106,9 @@ export default class Main extends BaseController {
       } else if (filterKey == "Code") {
         filters.push(`contains(SalesContract/Code,'${value}')`);
       } else if (filterKey == "CardCode") {
-        filters.push(`contains(SalesContract/CardCode,'${value}')`);
+        // O usuario tanto escolhe o cliente pelo value help (grava o CardCode) quanto
+        // digita parte do nome; filtrar so por CardCode fazia o segundo caso nunca retornar nada.
+        filters.push(`(contains(SalesContract/CardCode,'${value}') or contains(SalesContract/CardName,'${value}'))`);
       } else if (filterKey == "ItemCode") {
         filters.push(`contains(SalesContract/ItemCode,'${value}')`);
       } else if (filterKey == "AgentCode") {
