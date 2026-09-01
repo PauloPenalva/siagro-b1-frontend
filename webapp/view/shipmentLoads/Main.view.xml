@@ -17,247 +17,180 @@
 				</f:heading>
 			</f:DynamicPageTitle>
 		</f:title>
+		<f:header>
+			<f:DynamicPageHeader>
+				<f:content>
+					<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.LoadsFilterbar" type="XML"/>
+				</f:content>
+			</f:DynamicPageHeader>
+		</f:header>
 		<f:content>
-			<!-- Duas abas em vez de duas entradas de menu: romaneios soltos e cargas montadas
-			     são o antes e o depois da mesma operação. -->
-			<IconTabBar id="shipmentLoadsTabBar" expandable="false" stretchContentHeight="true" select=".onTabSelect">
-				<items>
-					<IconTabFilter key="availableShipments" text="Romaneios Disponíveis" icon="sap-icon://shipping-status">
-						<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.ShipmentsFilterbar" type="XML"/>
-						<t:Table
-							id="availableShipmentsTable"
-							busyIndicatorDelay="0"
-							selectionMode="Multi"
-							selectionBehavior="Row"
-							class="sapUiSizeCondensed"
-							visibleRowCountMode="Auto"
-							enableBusyIndicator="true"
-							alternateRowColors="true"
-							rows="{
-								path: '/StorageTransactions',
-								sorter: [ { path: 'RowId' } ],
-								parameters: { $select: 'BranchCode' }
-							}">
-							<t:extension>
-								<OverflowToolbar>
-									<Title text="Romaneios de Embarque"/>
-									<ToolbarSpacer/>
-									<Button type="Emphasized" text="Montar Carga" press=".onAssembleLoad"/>
-									<Button type="Transparent" text="Estornar Romaneio de Embarque" press=".onReverseShipment"/>
-								</OverflowToolbar>
-							</t:extension>
-							<t:columns>
-								<t:Column label="Key" visible="false" width="10rem">
-									<t:template>
-										<Text text="{Key}" wrapping="false"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Filial" sortProperty="Branch/ShortName" width="5rem">
-									<t:template>
-										<Text text="{Branch/ShortName}" wrapping="false"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Status" sortProperty="TransactionStatus" hAlign="Center" width="10rem">
-									<t:template>
-										<ObjectStatus
-											inverted="true"
-											state="{
-												path: 'TransactionStatus',
-												targetType: 'any',
-												formatter: '.formatter.stateStorageTransactionStatus'
-											}"
-											text="{
-												path: 'TransactionStatus',
-												targetType: 'any',
-												formatter: '.formatter.formatStorageTransactionStatus'
-											}"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Codigo" sortProperty="Code" width="7rem">
-									<t:template>
-										<Text text="{Code}" wrapping="false"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Emissão" sortProperty="TransactionDate" width="8rem">
-									<t:template>
-										<Text
-											wrapping="false"
-											text="{
-												path: 'TransactionDate',
-												targetType: 'any',
-												formatter: '.formatter.formatDate'
-											}"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Veículo" sortProperty="TruckCode" width="6rem">
-									<t:template>
-										<Text text="{TruckCode}" wrapping="false"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Motorista" width="22rem">
-									<t:template>
-										<Text text="({TruckDriverCode}) {TruckDriver/Name}" wrapping="false"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Peso Bruto" sortProperty="GrossWeight" hAlign="End" width="7rem">
-									<t:template>
-										<ObjectNumber
-											textAlign="End"
-											number="{
-												path: 'GrossWeight',
-												type: 'sap.ui.model.type.Float',
-												formatOptions:{
-													decimals: 3,
-													decimalSeparator: ',',
-													groupingEnabled: true,
-													groupingSeparator: '.'
-												}
-											}"
-											unit="{UnitOfMeasureCode}"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Armazem" sortProperty="WarehouseCode" width="15rem">
-									<t:template>
-										<Text text="({WarehouseCode}) {WarehouseName}" wrapping="false"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Origem" sortProperty="CardCode" width="20rem">
-									<t:template>
-										<Text text="({CardCode}) {CardName}" wrapping="false"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Produto" sortProperty="ItemCode" width="15rem">
-									<t:template>
-										<Text text="({ItemCode}) {ItemName}" wrapping="false"/>
-									</t:template>
-								</t:Column>
-							</t:columns>
-						</t:Table>
-					</IconTabFilter>
-
-					<IconTabFilter key="loads" text="Cargas" icon="sap-icon://product">
-						<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.LoadsFilterbar" type="XML"/>
-						<t:Table
-							id="shipmentLoadsTable"
-							busyIndicatorDelay="0"
-							selectionMode="Single"
-							selectionBehavior="Row"
-							class="sapUiSizeCondensed"
-							visibleRowCountMode="Auto"
-							enableBusyIndicator="true"
-							alternateRowColors="true"
-							rows="{
-								path: '/ShipmentLoads',
-								sorter: [ { path: 'RowId', descending: true } ]
-							}">
-							<t:extension>
-								<OverflowToolbar>
-									<Title text="Cargas Montadas"/>
-									<ToolbarSpacer/>
-									<Button type="Emphasized" text="Detalhes" press=".onOpenDetail"/>
-									<Button type="Transparent" text="Cancelar Carga" press=".onCancelLoad"/>
-								</OverflowToolbar>
-							</t:extension>
-							<t:columns>
-								<t:Column label="Key" visible="false" width="10rem">
-									<t:template>
-										<Text text="{Key}" wrapping="false"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Código" sortProperty="Code" width="8rem">
-									<t:template>
-										<Text text="{Code}" wrapping="false"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Data" sortProperty="LoadDate" width="8rem">
-									<t:template>
-										<Text
-											wrapping="false"
-											text="{
-												path: 'LoadDate',
-												targetType: 'any',
-												formatter: '.formatter.formatDate'
-											}"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Status" sortProperty="Status" hAlign="Center" width="10rem">
-									<t:template>
-										<ObjectStatus
-											inverted="true"
-											state="{
-												path: 'Status',
-												targetType: 'any',
-												formatter: '.formatter.stateShipmentLoadStatus'
-											}"
-											text="{
-												path: 'Status',
-												targetType: 'any',
-												formatter: '.formatter.formatShipmentLoadStatus'
-											}"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Filial" sortProperty="Branch/ShortName" width="5rem">
-									<t:template>
-										<Text text="{Branch/ShortName}" wrapping="false"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Veículo" sortProperty="TruckCode" width="6rem">
-									<t:template>
-										<Text text="{TruckCode}" wrapping="false"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Motorista" sortProperty="TruckDriverName" width="22rem">
-									<t:template>
-										<Text text="({TruckDriverCode}) {TruckDriverName}" wrapping="false"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Produto" sortProperty="ItemCode" width="15rem">
-									<t:template>
-										<Text text="({ItemCode}) {ItemName}" wrapping="false"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Qtd. Total" sortProperty="TotalQuantity" hAlign="End" width="8rem">
-									<t:template>
-										<ObjectNumber
-											textAlign="End"
-											number="{
-												path: 'TotalQuantity',
-												type: 'sap.ui.model.type.Float',
-												formatOptions:{ decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
-											}"
-											unit="{UnitOfMeasureCode}"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Qtd. Faturada" sortProperty="InvoicedQuantity" hAlign="End" width="8rem">
-									<t:template>
-										<ObjectNumber
-											textAlign="End"
-											number="{
-												path: 'InvoicedQuantity',
-												type: 'sap.ui.model.type.Float',
-												formatOptions:{ decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
-											}"
-											unit="{UnitOfMeasureCode}"/>
-									</t:template>
-								</t:Column>
-								<t:Column label="Saldo" hAlign="End" width="8rem">
-									<t:template>
-										<ObjectNumber
-											textAlign="End"
-											emphasized="true"
-											number="{
-												path: 'AvailableQuantity',
-												type: 'sap.ui.model.type.Float',
-												formatOptions:{ decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
-											}"
-											unit="{UnitOfMeasureCode}"/>
-									</t:template>
-								</t:Column>
-							</t:columns>
-						</t:Table>
-					</IconTabFilter>
-				</items>
-			</IconTabBar>
+			<!-- A lista de cargas é a tela inteira: a carga é PLANEJADA aqui (Nova Carga) e os
+			     romaneios são vinculados depois, na página própria de Vincular Romaneios — que precisa
+			     de uma carga alvo para saber quais romaneios pode oferecer. -->
+			<t:Table
+				id="shipmentLoadsTable"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+				rows="{
+					path: '/ShipmentLoads',
+					sorter: [ { path: 'RowId', descending: true } ],
+					parameters: { $select: 'Key,Code,Status,TruckCode,ItemCode,BranchCode,UnitOfMeasureCode' }
+				}">
+				<t:extension>
+					<OverflowToolbar>
+						<Title text="Cargas"/>
+						<ToolbarSpacer/>
+						<Button type="Emphasized" text="Nova Carga" icon="sap-icon://add" press=".onNewLoad"/>
+						<Button type="Transparent" text="Vincular Romaneios" icon="sap-icon://chain-link" press=".onGoToAttach"/>
+						<Button type="Transparent" text="Editar" press=".onEditLoad"/>
+						<Button type="Transparent" text="Detalhes" press=".onOpenDetail"/>
+						<Button type="Transparent" text="Cancelar Carga" press=".onCancelLoad"/>
+						<Button type="Transparent" text="Excluir" icon="sap-icon://delete" press=".onDeleteLoad"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="Key" visible="false" width="10rem">
+						<t:template>
+							<Text text="{Key}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Código" sortProperty="Code" width="8rem">
+						<t:template>
+							<Text text="{Code}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Data" sortProperty="LoadDate" width="8rem">
+						<t:template>
+							<Text
+								wrapping="false"
+								text="{
+									path: 'LoadDate',
+									targetType: 'any',
+									formatter: '.formatter.formatDate'
+								}"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Situação" sortProperty="Status" hAlign="Center" width="10rem">
+						<t:template>
+							<ObjectStatus
+								inverted="true"
+								state="{
+									path: 'Status',
+									targetType: 'any',
+									formatter: '.formatter.stateShipmentLoadStatus'
+								}"
+								text="{
+									path: 'Status',
+									targetType: 'any',
+									formatter: '.formatter.formatShipmentLoadStatus'
+								}"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Filial" sortProperty="Branch/ShortName" width="5rem">
+						<t:template>
+							<Text text="{Branch/ShortName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Placa" sortProperty="TruckCode" width="6rem">
+						<t:template>
+							<Text text="{TruckCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Motorista" sortProperty="TruckDriverName" width="18rem">
+						<t:template>
+							<Text text="{TruckDriverName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Transportadora" sortProperty="CarrierName" width="18rem">
+						<t:template>
+							<Text text="{CarrierName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Produto" sortProperty="ItemCode" width="15rem">
+						<t:template>
+							<Text text="({ItemCode}) {ItemName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Cliente" sortProperty="CardName" width="18rem">
+						<t:template>
+							<Text text="{CardName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Armazém" sortProperty="WarehouseCode" width="15rem">
+						<t:template>
+							<Text text="({WarehouseCode}) {WarehouseName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<!-- targetType 'any' num booleano: sem ele o binding entrega a string
+					     'true'/'false', que é sempre truthy, e a coluna mostraria "Sim"
+					     em toda linha. -->
+					<t:Column label="Excesso" hAlign="Center" width="6rem">
+						<t:template>
+							<Text
+								wrapping="false"
+								text="{
+									path: 'HasExcess',
+									targetType: 'any',
+									formatter: '.formatter.formatBooleanYesNo'
+								}"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Frete" sortProperty="FreightPrice" hAlign="End" width="8rem">
+						<t:template>
+							<ObjectNumber
+								textAlign="End"
+								number="{
+									path: 'FreightPrice',
+									type: 'sap.ui.model.type.Float',
+									formatOptions:{ decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+								}"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Qtd. Total" sortProperty="TotalQuantity" hAlign="End" width="8rem">
+						<t:template>
+							<ObjectNumber
+								textAlign="End"
+								number="{
+									path: 'TotalQuantity',
+									type: 'sap.ui.model.type.Float',
+									formatOptions:{ decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+								}"
+								unit="{UnitOfMeasureCode}"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Qtd. Faturada" sortProperty="InvoicedQuantity" hAlign="End" width="8rem">
+						<t:template>
+							<ObjectNumber
+								textAlign="End"
+								number="{
+									path: 'InvoicedQuantity',
+									type: 'sap.ui.model.type.Float',
+									formatOptions:{ decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+								}"
+								unit="{UnitOfMeasureCode}"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Saldo" hAlign="End" width="8rem">
+						<t:template>
+							<ObjectNumber
+								textAlign="End"
+								emphasized="true"
+								number="{
+									path: 'AvailableQuantity',
+									type: 'sap.ui.model.type.Float',
+									formatOptions:{ decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+								}"
+								unit="{UnitOfMeasureCode}"/>
+						</t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
 		</f:content>
 	</f:DynamicPage>
 </mvc:View>

@@ -2,6 +2,7 @@ import Table from "sap/ui/table/Table";
 import CommonController from "../common/CommonController";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import Context from "sap/ui/model/odata/v4/Context";
+import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
@@ -47,15 +48,31 @@ export abstract class BaseController extends CommonController {
   }
 
   /**
-   * Guarda o armazém do lote de ORIGEM, que restringe os contratos ofertados: só
-   * faz sentido baixar contrato cujo local de entrega é o armazém onde a
-   * mercadoria já está depositada.
+   * Códigos dos armazéns marcados como próprios no complemento cadastral, que é
+   * quem restringe os contratos ofertados no value help.
    *
-   * Fica no model `ui` porque as duas telas o obtêm de fontes diferentes — o
-   * assistente lê do JSON model dos lotes, a edição da navegação do OData.
+   * Lido uma vez por sessão da tela: é cadastro, não muda entre duas aberturas do
+   * diálogo, e a chamada extra atrasaria o clique do usuário.
    */
-  protected setOriginWarehouse(warehouseCode: string) {
-    (this.getModel("ui") as JSONModel).setProperty("/originWarehouseCode", warehouseCode);
+  private _ownWarehouseCodes: string[];
+
+  private async getOwnWarehouseCodes(): Promise<string[]> {
+    if (this._ownWarehouseCodes) {
+      return this._ownWarehouseCodes;
+    }
+
+    const oModel = this.getModel() as ODataModel;
+    const func = oModel.bindContext(this.api.warehousesGetOwnComplements);
+
+    await func.invoke();
+
+    // Função que devolve coleção: o objeto do contexto é o envelope `{ value: [...] }`.
+    const result = func.getBoundContext().getObject() as
+      { value?: { WarehouseCode: string }[] };
+
+    this._ownWarehouseCodes = (result?.value ?? []).map((x) => x.WarehouseCode);
+
+    return this._ownWarehouseCodes;
   }
 
   /**
@@ -68,8 +85,13 @@ export abstract class BaseController extends CommonController {
    * precisa entrar no batch, então ela é gravada aqui no update group padrão.
    *
    * Os filtros são aplicados na abertura, e não no XML, porque dependem da
-   * transferência: o produto e o armazém do lote de origem só são conhecidos
-   * depois que os lotes são escolhidos.
+   * transferência (o produto só é conhecido depois que os lotes são escolhidos) e
+   * do cadastro (a lista de armazéns próprios vem do servidor).
+   *
+   * Quem qualifica o contrato é o ARMAZÉM PRÓPRIO, não o lote: a lista traz os
+   * contratos cujo local de entrega é um armazém com `IsOwn` no complemento
+   * cadastral, de qualquer armazém próprio — não só o do lote de origem. Mesmo
+   * critério do guard de confirmação, que olha o complemento do armazém.
    *
    * A busca do diálogo é por número do contrato, código ou nome do fornecedor.
    */
@@ -88,23 +110,33 @@ export abstract class BaseController extends CommonController {
       return;
     }
 
-    const sWarehouse = (this.getModel("ui") as JSONModel)
-      .getProperty("/originWarehouseCode") as string;
+    const aOwnWarehouses = await this.getOwnWarehouseCodes();
 
-    if (!sWarehouse) {
-      MessageBox.warning("Selecione o lote de origem.");
+    // Falha fechada, mesma convenção do cadastro e do guard de confirmação: sem
+    // armazém próprio não existe contrato elegível, então não abre o diálogo — uma
+    // lista vazia deixaria o usuário procurando o filtro errado.
+    if (aOwnWarehouses.length === 0) {
+      MessageBox.warning(
+        "Nenhum armazém está marcado como próprio no complemento cadastral. " +
+        "Configure em Armazéns > Complemento antes de vincular um contrato."
+      );
       return;
     }
 
     const oSelected = await DialogHelper.openTableSelectDialog(
       this,
       "PurchaseContractsSelectDialog",
-      ["Code", "CardCode", "CardName"],
+      ["Code", "CardCode", "CardName", "DeliveryLocationName"],
       [
         new Filter("ItemCode", FilterOperator.EQ, sItemCode),
-        // Local de entrega do contrato = armazém onde a mercadoria já está.
-        // Ambos são código de parceiro-armazém, mesmo domínio.
-        new Filter("DeliveryLocationCode", FilterOperator.EQ, sWarehouse),
+        // Local de entrega do contrato = um armazém próprio. Ambos são código de
+        // parceiro-armazém, mesmo domínio.
+        new Filter({
+          filters: aOwnWarehouses.map(
+            (code) => new Filter("DeliveryLocationCode", FilterOperator.EQ, code)
+          ),
+          and: false,
+        }),
       ]
     );
 

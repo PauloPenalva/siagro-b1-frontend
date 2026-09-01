@@ -37,6 +37,40 @@
             </Select>
         </fb:control>
       </fb:FilterGroupItem>
+      <!-- O filtro que resolve a tela: "Sem carga" isola os romaneios que podem ser estornados
+           direto, sem passar pela desvinculação. -->
+      <fb:FilterGroupItem name="hasLoad" label="Vínculo" groupName="GroupHasLoad" visibleInFilterBar="true">
+        <fb:control>
+            <Select
+              forceSelection="false"
+              selectedKey="{
+                path: 'filter>/HasLoad',
+                type: 'sap.ui.model.type.String'
+              }"
+            >
+              <core:ListItem key="without" text="Sem carga"/>
+              <core:ListItem key="with" text="Com carga"/>
+            </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="shipmentLoadCode" label="Carga" groupName="GroupShipmentLoadCode" visibleInFilterBar="true">
+        <fb:control>
+            <Input showClearIcon="true" value="{filter>/ShipmentLoadCode}"/>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="shipmentLoadStatus" label="Situação da Carga" groupName="GroupShipmentLoadStatus" visibleInFilterBar="true">
+        <fb:control>
+            <Select
+              forceSelection="false"
+              selectedKey="{
+                path: 'filter>/ShipmentLoadStatus',
+                type: 'sap.ui.model.type.String'
+              }"
+              items="{loadStatuses>/items}">
+              <core:ListItem key="{loadStatuses>key}" text="{loadStatuses>text}"/>
+            </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
       <fb:FilterGroupItem name="code" label="Codigo" groupName="GroupCode" visibleInFilterBar="true">
         <fb:control>
             <Input showClearIcon="true" value="{filter>/Code}">

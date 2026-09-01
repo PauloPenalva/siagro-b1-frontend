@@ -58,10 +58,6 @@ export default class Edit extends BaseController {
 		const enabled = this.isOwnStockLot(destinationType) && !this.isOwnStockLot(originType);
 		this.setContractEnabled(enabled);
 
-		// Restringe os contratos ofertados ao armazém onde a mercadoria já está.
-		this.setOriginWarehouse(
-			oContext.getProperty("StorageAddressOrigin/WarehouseCode") as string);
-
 		// Destino deixou de ser estoque próprio (reclassificação do lote): o vínculo
 		// não pode sobreviver escondido num campo desabilitado.
 		if (!enabled) {

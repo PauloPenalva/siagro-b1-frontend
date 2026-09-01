@@ -1,0 +1,131 @@
+<mvc:View
+	controllerName="siagrob1.controller.shipmentLoads.Attach"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<Page title="{target>/title}" showNavButton="true" navButtonPress=".onNavBack" busy="{ui>/busy}" busyIndicatorDelay="0">
+		<content>
+			<t:Table
+				id="availableShipmentsTable"
+				busyIndicatorDelay="0"
+				selectionMode="Multi"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+				rows="{
+					path: '/StorageTransactions',
+					sorter: [ { path: 'RowId' } ],
+					parameters: { $select: 'BranchCode' }
+				}">
+				<t:extension>
+					<OverflowToolbar>
+						<Title text="Romaneios de Embarque Disponíveis"/>
+						<ToolbarSpacer/>
+						<Button type="Emphasized" text="Vincular à Carga" icon="sap-icon://chain-link" press=".onAttachShipments"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="Key" visible="false" width="10rem">
+						<t:template>
+							<Text text="{Key}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Filial" sortProperty="Branch/ShortName" width="5rem">
+						<t:template>
+							<Text text="{Branch/ShortName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Status" sortProperty="TransactionStatus" hAlign="Center" width="10rem">
+						<t:template>
+							<ObjectStatus
+								inverted="true"
+								state="{
+									path: 'TransactionStatus',
+									targetType: 'any',
+									formatter: '.formatter.stateStorageTransactionStatus'
+								}"
+								text="{
+									path: 'TransactionStatus',
+									targetType: 'any',
+									formatter: '.formatter.formatStorageTransactionStatus'
+								}"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Codigo" sortProperty="Code" width="7rem">
+						<t:template>
+							<Text text="{Code}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Emissão" sortProperty="TransactionDate" width="8rem">
+						<t:template>
+							<Text
+								wrapping="false"
+								text="{
+									path: 'TransactionDate',
+									targetType: 'any',
+									formatter: '.formatter.formatDate'
+								}"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Veículo" sortProperty="TruckCode" width="6rem">
+						<t:template>
+							<Text text="{TruckCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Motorista" width="22rem">
+						<t:template>
+							<Text text="({TruckDriverCode}) {TruckDriver/Name}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Peso Bruto" sortProperty="GrossWeight" hAlign="End" width="7rem">
+						<t:template>
+							<ObjectNumber
+								textAlign="End"
+								number="{
+									path: 'GrossWeight',
+									type: 'sap.ui.model.type.Float',
+									formatOptions:{
+										decimals: 3,
+										decimalSeparator: ',',
+										groupingEnabled: true,
+										groupingSeparator: '.'
+									}
+								}"
+								unit="{UnitOfMeasureCode}"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Armazem" sortProperty="WarehouseCode" width="15rem">
+						<t:template>
+							<Text text="({WarehouseCode}) {WarehouseName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Origem" sortProperty="CardCode" width="20rem">
+						<t:template>
+							<Text text="({CardCode}) {CardName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Produto" sortProperty="ItemCode" width="15rem">
+						<t:template>
+							<Text text="({ItemCode}) {ItemName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</content>
+		<footer>
+			<Toolbar>
+				<ToolbarSpacer/>
+				<Button text="Voltar" press=".onNavBack"/>
+			</Toolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

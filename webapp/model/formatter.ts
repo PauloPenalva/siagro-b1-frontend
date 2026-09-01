@@ -455,7 +455,8 @@ export default {
 
   formatShipmentLoadStatus: (value: string) => {
     const m = new Map<string, string>();
-    m.set("Open", "Aberta");
+    m.set("Planned", "Planejada");
+    m.set("Open", "Carregada");
     m.set("PartiallyInvoiced", "Faturada Parcial");
     m.set("Invoiced", "Faturada");
     m.set("Cancelled", "Cancelada");
@@ -465,6 +466,7 @@ export default {
 
   stateShipmentLoadStatus: (value: string) => {
     const m = new Map<string, string>();
+    m.set("Planned", "None");
     m.set("Open", "Information");
     m.set("PartiallyInvoiced", "Warning");
     m.set("Invoiced", "Success");
@@ -483,6 +485,10 @@ export default {
     m.set("ReturnReversed", "Devolução Estornada");
     m.set("BillingDeleted", "Faturamento Excluído");
     m.set("Cancelled", "Carga Cancelada");
+    m.set("Planned", "Carga Planejada");
+    m.set("TransactionsAttached", "Romaneios Vinculados");
+    m.set("TransactionsDetached", "Romaneios Desvinculados");
+    m.set("Updated", "Dados Alterados");
     
     return m.get(value);
   },

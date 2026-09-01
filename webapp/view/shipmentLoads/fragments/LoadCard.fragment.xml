@@ -1,0 +1,46 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+	<!-- O cartão do painel. A PLACA vem em destaque de propósito: é por ela que a operação
+	     identifica o carregamento ao telefone e no pátio — o número da carga é secundário. -->
+	<VBox class="sapUiSmallMargin">
+		<HBox justifyContent="SpaceBetween" alignItems="Center">
+			<Title text="{TruckCode}" level="H3"/>
+			<ObjectStatus
+				text="{
+					path: 'Status',
+					targetType: 'any',
+					formatter: '.formatter.formatShipmentLoadStatus'
+				}"
+				state="{
+					path: 'Status',
+					targetType: 'any',
+					formatter: '.formatter.stateShipmentLoadStatus'
+				}"/>
+		</HBox>
+
+		<Text text="{Code} · {Branch/ShortName}" class="sapUiTinyMarginTop"/>
+		<Text text="{ItemName}"/>
+		<!-- targetType 'any' nos dois `visible`: numa expression binding a parte única é
+		     convertida para o tipo da propriedade alvo ANTES de a expressão rodar, e uma razão
+		     social não é um booleano válido — o `!!` nem chega a executar. -->
+		<Text text="{CardName}" visible="{= !!${path: 'CardName', targetType: 'any'} }"/>
+
+		<HBox justifyContent="SpaceBetween" alignItems="Center" class="sapUiTinyMarginTop">
+			<Text text="{TruckDriverName}"/>
+			<ObjectNumber
+				emphasized="true"
+				number="{
+					path: 'TotalQuantity',
+					type: 'sap.ui.model.type.Float',
+					formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+				}"
+				unit="{UnitOfMeasureCode}"/>
+		</HBox>
+
+		<Text text="{CarrierName}" visible="{= !!${path: 'CarrierName', targetType: 'any'} }"/>
+	</VBox>
+</core:FragmentDefinition>

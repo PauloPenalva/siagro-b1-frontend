@@ -1,0 +1,102 @@
+<mvc:View
+	controllerName="siagrob1.controller.shipmentLoads.Panel"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:l="sap.ui.layout"
+	xmlns:f="sap.f"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+	<!-- Painel diário das cargas. Nasceu de um pedido concreto: as cargas do dia vivem hoje em
+	     planilhas paralelas e a informação circula por WhatsApp, e o caso que dói é o motorista
+	     ligando para cobrar a nota de uma carga que ninguém sabia que estava carregada.
+
+	     As raias são a SITUAÇÃO da carga, que é derivada do saldo faturado — por isso o painel é
+	     somente leitura: arrastar um cartão não teria o que gravar. Clicar abre a carga, onde as
+	     ações de verdade estão.
+
+	     Quatro bindings independentes, um por raia, em vez de um binding agrupado por Sorter:
+	     o agrupamento do OData V4 não produz raias lado a lado. -->
+	<f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="Painel de Cargas"/>
+				</f:heading>
+				<f:actions>
+					<Label text="Data" labelFor="panelDate"/>
+					<DatePicker
+						id="panelDate"
+						valueFormat="yyyy-MM-dd"
+						displayFormat="dd/MM/yyyy"
+						value="{panel>/date}"
+						change=".onFilterChange"/>
+					<Label text="Filial" labelFor="panelBranch"/>
+					<Select
+						id="panelBranch"
+						forceSelection="false"
+						selectedKey="{panel>/branchCode}"
+						change=".onFilterChange"
+						items="{ path: 'branches>/', templateShareable: false }">
+						<core:Item key="" text="Todas"/>
+						<core:Item key="{branches>Code}" text="{branches>ShortName}"/>
+					</Select>
+					<Button icon="sap-icon://refresh" tooltip="Atualizar" press=".onRefresh"/>
+				</f:actions>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:content>
+			<l:Grid defaultSpan="XL3 L3 M6 S12" hSpacing="1" vSpacing="1" class="sapUiSmallMargin">
+				<Panel headerText="Planejada ({panel>/countPlanned})" expandable="false">
+					<List
+						id="listPlanned"
+						updateFinished=".onLaneUpdated"
+						noDataText="Nenhuma carga planejada."
+						items="{ path: '/ShipmentLoads', parameters: { $orderby: 'Code' } }">
+						<CustomListItem type="Navigation" press=".onOpenLoad">
+							<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.LoadCard" type="XML"/>
+						</CustomListItem>
+					</List>
+				</Panel>
+
+				<Panel headerText="Carregada ({panel>/countOpen})" expandable="false">
+					<List
+						id="listOpen"
+						updateFinished=".onLaneUpdated"
+						noDataText="Nenhuma carga carregada."
+						items="{ path: '/ShipmentLoads', parameters: { $orderby: 'Code' } }">
+						<CustomListItem type="Navigation" press=".onOpenLoad">
+							<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.LoadCard" type="XML"/>
+						</CustomListItem>
+					</List>
+				</Panel>
+
+				<Panel headerText="Faturada Parcial ({panel>/countPartiallyInvoiced})" expandable="false">
+					<List
+						id="listPartiallyInvoiced"
+						updateFinished=".onLaneUpdated"
+						noDataText="Nenhuma carga faturada parcialmente."
+						items="{ path: '/ShipmentLoads', parameters: { $orderby: 'Code' } }">
+						<CustomListItem type="Navigation" press=".onOpenLoad">
+							<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.LoadCard" type="XML"/>
+						</CustomListItem>
+					</List>
+				</Panel>
+
+				<Panel headerText="Faturada ({panel>/countInvoiced})" expandable="false">
+					<List
+						id="listInvoiced"
+						updateFinished=".onLaneUpdated"
+						noDataText="Nenhuma carga faturada."
+						items="{ path: '/ShipmentLoads', parameters: { $orderby: 'Code' } }">
+						<CustomListItem type="Navigation" press=".onOpenLoad">
+							<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.LoadCard" type="XML"/>
+						</CustomListItem>
+					</List>
+				</Panel>
+			</l:Grid>
+		</f:content>
+	</f:DynamicPage>
+</mvc:View>

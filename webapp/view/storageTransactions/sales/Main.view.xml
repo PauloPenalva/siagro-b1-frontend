@@ -1,5 +1,5 @@
 <mvc:View
-	controllerName="siagrob1.controller.storageTransactions.Main"
+	controllerName="siagrob1.controller.storageTransactions.sales.Main"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
@@ -17,7 +17,7 @@
     <f:title>
       <f:DynamicPageTitle>
         <f:heading>
-          <Title text="Romaneios de Vendas"/>
+          <Title text="Romaneios de Embarque"/>
         </f:heading>
 			</f:DynamicPageTitle>
     </f:title>
@@ -29,6 +29,10 @@
       </f:DynamicPageHeader>
     </f:header>
 		<f:content>
+      <!-- Sem filtro estático aqui: o escopo do tipo de romaneio é semeado pelo applyFilters do
+           controller, que roda no patternMatched da rota. O parser de binding do XML não engole
+           aspas escapadas dentro do parâmetro e tentava carregar o próprio texto do filtro como
+           se fosse um módulo. -->
       <t:Table
 				id="salesTransactionsTable"
 				busyIndicatorDelay="0"
@@ -42,18 +46,18 @@
 					path: '/StorageTransactions',
           sorter: [
             { path: 'RowId', descending: true }
-          ],
-          parameters: {
-            $filter: '(TransactionType eq \'SalesShipment\' or TransactionType eq \'SalesShipmentReturn\')'
-          }
+          ]
 				}"
 			>
 				<t:extension>
 					<OverflowToolbar >
-            <Title text="Romaneios" />
+            <Title text="Romaneios de Embarque" />
 						<ToolbarSpacer />
             <Button type="Transparent" text="Exportar Excel" icon="sap-icon://excel-attachment" press=".onExcel"/>
 						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
+						<Button type="Transparent" text="Desvincular da Carga" icon="sap-icon://chain-link" press=".onDetachFromLoad"/>
+						<Button type="Transparent" text="Estornar Embarque" icon="sap-icon://undo" press=".onReverse"/>
+						<Button type="Transparent" text="Atualizar" icon="sap-icon://refresh" press=".onRefresh"/>
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>
@@ -103,6 +107,38 @@
 						>
 						<t:template>
 							<Text text="{Code}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <!-- A carga é a informação que faltava: coluna vazia = romaneio solto, que é o único
+               estado em que o backend aceita o estorno direto. -->
+          <t:Column
+						label="Carga"
+						sortProperty="ShipmentLoad/Code"
+            width="8rem"
+						>
+						<t:template>
+							<Text text="{ShipmentLoad/Code}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Situação da Carga"
+						sortProperty="ShipmentLoad/Status"
+            hAlign="Center"
+            width="10rem"
+						>
+						<t:template>
+							<ObjectStatus
+                inverted="true"
+                state="{
+                  path: 'ShipmentLoad/Status',
+                  targetType: 'any',
+                  formatter: '.formatter.stateShipmentLoadStatus'
+                }"
+                text="{
+                  path: 'ShipmentLoad/Status',
+                  targetType: 'any',
+                  formatter: '.formatter.formatShipmentLoadStatus'
+                }"/>
 						</t:template>
 					</t:Column>
           <t:Column

@@ -1,8 +1,5 @@
-import Dialog from "sap/m/Dialog";
-import { IconTabBar$SelectEvent } from "sap/m/IconTabBar";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
-import Fragment from "sap/ui/core/Fragment";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Sorter from "sap/ui/model/Sorter";
 import Context from "sap/ui/model/odata/v4/Context";
@@ -13,34 +10,44 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 
-/** Romaneio selecionado na aba de disponíveis. */
-type AvailableShipment = {
+/** Carga selecionada na lista, com o mínimo que as ações precisam. */
+type SelectedLoad = {
   Key: string,
   Code: string,
-  ItemCode: string,
-  ItemName: string,
-  UnitOfMeasureCode: string,
-  TruckCode: string,
-  GrossWeight: number,
-  Branch?: { Code?: string },
-  BranchCode?: string,
+  Status: string,
 }
 
+/** Situações da carga oferecidas no filtro — mesmos rótulos de formatter.formatShipmentLoadStatus. */
+const SHIPMENT_LOAD_STATUSES = [
+  { key: "Planned", text: "Planejada" },
+  { key: "Open", text: "Carregada" },
+  { key: "PartiallyInvoiced", text: "Faturada Parcial" },
+  { key: "Invoiced", text: "Faturada" },
+  { key: "Cancelled", text: "Cancelada" },
+];
+
 /**
+ * Montagem de Carga.
+ *
+ * O fluxo é: a Logística CRIA a carga (botão Nova Carga) e os romaneios de embarque são
+ * VINCULADOS depois, na página `Attach`. O caminho inverso — montar a carga a partir de uma
+ * seleção de romaneios — não existe mais.
+ *
+ * O formulário mora nas páginas `Add`/`Edit` e a vinculação na `Attach`; aqui fica só a lista.
+ *
  * @namespace siagrob1.controller.shipmentLoads
  */
 export default class Main extends BaseController {
 
   formatter = formatter;
 
-  private _assembleDialog: Dialog;
-  /** Trava de reentrância da montagem, espelhando `_billingInFlight` do faturamento. */
-  private _assembleInFlight = false;
   private _branchesLoaded = false;
 
   onInit(): void {
-    this.getView().setModel(new JSONModel(), "filterShipments");
-    this.getView().setModel(new JSONModel(), "filterLoads");
+    // Status nasce como array porque o filtro é multi-seleção: com `undefined` o selectedKeys do
+    // MultiComboBox não teria onde gravar.
+    this.getView().setModel(new JSONModel({ Status: [] }), "filterLoads");
+    this.getView().setModel(new JSONModel({ items: SHIPMENT_LOAD_STATUSES }), "loadStatuses");
     this.getView().setModel(new JSONModel([]), "branches");
 
     this.getRouter().getRoute("shipmentLoads")
@@ -50,19 +57,20 @@ export default class Main extends BaseController {
           this._branchesLoaded = true;
           void this.loadBranches();
         }
-        this.applyShipmentFilters();
         this.applyLoadFilters();
+        // Voltando das páginas de Nova Carga / Editar / Vincular Romaneios, o filtro é o mesmo de antes: sem filtro
+        // novo o binding não refaz o request e a carga recém-gravada não apareceria.
+        this.refreshLoads();
       });
   }
 
   /**
-   * Os dois Selects de Filial (um por aba) carregam a lista UMA vez num JSONModel estático, em vez
+   * O Select de Filial do filtro de Cargas carrega a lista UMA vez num JSONModel estático, em vez
    * de bind direto em `/Branchs` com `suspended: true`: a sap.ui.comp.filterbar.FilterBar resume()
-   * incondicionalmente o binding suspenso de um Select toda vez que sua aba volta a ficar visível,
-   * mas nunca o suspende de novo — e como o IconTabBar força um re-render completo do conteúdo a
-   * cada troca de aba (não só show/hide), a segunda vez que qualquer aba reaparece o resume() da
-   * vendor lib estoura "Cannot resume a not suspended binding" NO MEIO do onBeforeRendering e
-   * aborta a troca visual — sintoma: a aba clicada não atualiza a tela. Tentar resuspender o
+   * incondicionalmente o binding suspenso de um Select toda vez que a filterbar volta a ficar
+   * visível, mas nunca o suspende de novo — na segunda exibição o resume() da vendor lib estoura
+   * "Cannot resume a not suspended binding" NO MEIO do onBeforeRendering e aborta o render —
+   * sintoma: a tela não atualiza. Tentar resuspender o
    * binding manualmente (ex.: num handler de `dataReceived`) não segura: a FilterBar troca a
    * instância do binding entre renders, então o listener fica pendurado no objeto errado. Um
    * JSONModel não tem suspend/resume, então a FilterBar nem tenta — o bug nem existe pra esse tipo
@@ -76,39 +84,25 @@ export default class Main extends BaseController {
     (this.getView().getModel("branches") as JSONModel).setData(branches);
   }
 
-  onTabSelect(ev: IconTabBar$SelectEvent): void {
-    const selectedKey = ev.getSource().getSelectedKey();
-    if (selectedKey === "availableShipments") {
-      this.refreshShipments();
-    } else if (selectedKey === "loads") {
-      this.refreshLoads();
-    }
-  }
-
-  onSearchShipmentFilters(): void {
-    this.applyShipmentFilters();
-  }
-
-  onClearShipmentFilters(): void {
-    (this.getModel("filterShipments") as JSONModel).setData({});
-    this.applyShipmentFilters();
-  }
-
   onSearchLoadFilters(): void {
     this.applyLoadFilters();
   }
 
   onClearLoadFilters(): void {
-    (this.getModel("filterLoads") as JSONModel).setData({});
+    (this.getModel("filterLoads") as JSONModel).setData({ Status: [] });
     this.applyLoadFilters();
   }
 
   /**
-   * Monta o `$filter` a partir do modelo de filtro da aba e o aplica como parâmetro estático do
+   * Monta o `$filter` a partir do modelo de filtro da tela e o aplica como parâmetro estático do
    * binding. `exactMatchFields` cobre enum/status e código de filial — comparados com `eq` em
    * string crua, porque `sap.ui.model.Filter` sobre enum estoura "Unsupported type" (o modelo V4
    * não serializa o literal). Os demais campos entram com `contains`, e `DateFrom`/`DateTo` viram
    * `ge`/`le` sobre `dateProperty`.
+   *
+   * Um valor em ARRAY (filtro multi-seleção, como a Situação da carga) vira um grupo de `or`
+   * PARENTIZADO: os pedaços são unidos com `and` no fim, e um `or` solto capturaria os demais
+   * filtros. Array vazio = sem restrição.
    */
   private applyFilters(
     tableId: string,
@@ -117,14 +111,27 @@ export default class Main extends BaseController {
     exactMatchFields: string[],
     fixedScope: string[] = [],
   ): void {
-    const binding = (this.byId(tableId) as Table).getBinding("rows") as ODataListBinding;
+    const table = this.byId(tableId) as Table;
+    const binding = table?.getBinding("rows") as ODataListBinding;
+
+    // O patternMatched roda antes de a tabela existir na primeira exibição da rota.
+    if (!binding) return;
+
     const filterData = ((this.getModel(filterModelName) as JSONModel)?.getData()
-      ?? {}) as Record<string, string>;
+      ?? {}) as Record<string, string | string[]>;
     const filters: string[] = [...fixedScope];
 
     Object.keys(filterData).forEach((key) => {
       const value = filterData[key];
       if (!value) return;
+
+      if (Array.isArray(value)) {
+        const ors = value.map((v) => `${key} eq '${String(v).replace(/'/g, "''")}'`);
+        if (ors.length === 0) return;
+        filters.push(ors.length === 1 ? ors[0] : `(${ors.join(" or ")})`);
+        return;
+      }
+
       const esc = value.replace(/'/g, "''");
 
       if (exactMatchFields.includes(key)) {
@@ -141,154 +148,95 @@ export default class Main extends BaseController {
     binding.changeParameters({ $filter: filters.length > 0 ? filters.join(" and ") : undefined });
   }
 
-  /**
-   * Romaneio de embarque ainda SOLTO. `ShipmentLoadKey eq null` é o que faz o romaneio sumir
-   * daqui assim que entra numa carga — e reaparecer quando a carga é cancelada.
-   */
-  private applyShipmentFilters(): void {
-    this.applyFilters("availableShipmentsTable", "filterShipments", "TransactionDate", ["BranchCode"], [
-      "TransactionType eq 'SalesShipment'",
-      "TransactionStatus eq 'Confirmed'",
-      "ShipmentLoadKey eq null",
-    ]);
-  }
-
   /** Carga cancelada continua listada: é histórico, e some só do faturamento. */
   private applyLoadFilters(): void {
-    this.applyFilters("shipmentLoadsTable", "filterLoads", "LoadDate", ["Status", "BranchCode"]);
+    this.applyFilters("shipmentLoadsTable", "filterLoads", "LoadDate",
+      ["Status", "BranchCode", "TruckDriverCode", "CarrierCardCode", "WarehouseCode"]);
   }
 
-  async onAssembleLoad(): Promise<void> {
-    const table = this.byId("availableShipmentsTable") as Table;
-    const selected = table.getSelectedIndices();
+  // ---------------------------------------------------------------- criação e edição
 
-    if (selected.length < 1) {
-      MessageBox.warning("Selecione ao menos 1 romaneio para montar a carga.");
-      return;
-    }
-
-    // As três checagens de aglutinação. Migraram do faturamento para cá: é aqui que a
-    // aglutinação passa a ser decidida. A de FILIAL é nova — o backend sempre a exigiu, mas
-    // a tela antiga não perguntava, e o usuário só descobriria pelo erro do servidor.
-    if (this.hasInconsistency(selected, "TruckCode")) {
-      MessageBox.warning("Placas diferentes selecionadas.");
-      return;
-    }
-
-    if (this.hasInconsistency(selected, "ItemCode")) {
-      MessageBox.warning("Produtos diferentes selecionados.");
-      return;
-    }
-
-    if (this.hasInconsistency(selected, "BranchCode")) {
-      MessageBox.warning("Filiais diferentes selecionadas.");
-      return;
-    }
-
-    await this.createAssembleDialog();
-
-    const shipments: AvailableShipment[] = selected.map(i =>
-      (table.getContextByIndex(i) as Context).getObject() as AvailableShipment);
-
-    const totalQuantity = shipments.reduce((sum, s) => sum + Number(s.GrossWeight), 0);
-
-    (this.getModel("viewModel") as JSONModel).setData({
-      TruckCode: shipments[0]?.TruckCode,
-      ItemCode: shipments[0]?.ItemCode,
-      ItemName: shipments[0]?.ItemName,
-      UnitOfMeasureCode: shipments[0]?.UnitOfMeasureCode,
-      ShipmentCount: shipments.length,
-      TotalQuantity: totalQuantity,
-      Comments: "",
-      StorageTransactionKeys: shipments.map(s => s.Key),
-    });
-
-    this._assembleDialog.open();
+  onNewLoad(): void {
+    this.navTo("shipmentLoadsNew");
   }
 
-  async saveAssembleLoadDialog(): Promise<void> {
-    if (this._assembleInFlight) return;
-    this._assembleInFlight = true;
+  onEditLoad(): void {
+    const load = this.selectedLoad();
 
-    try {
-      const viewModel = this.getModel("viewModel") as JSONModel;
-      const keys = viewModel.getProperty("/StorageTransactionKeys") as string[];
-      const comments = viewModel.getProperty("/Comments") as string;
-
-      const action = (this.getModel() as ODataModel).bindContext("/ShipmentLoadsCreate(...)");
-      action.setParameter("StorageTransactionKeys", keys);
-      // Só manda o parâmetro opcional quando há texto: JSON.stringify omite undefined, e o
-      // backend trata a ausência.
-      if (comments) {
-        action.setParameter("Comments", comments);
-      }
-
-      this.setBusy(true);
-      await action.invoke();
-
-      this.closeAssembleLoadDialog();
-      this.refreshShipments();
-      this.refreshLoads();
-      MessageToast.show("Carga montada com sucesso.");
-    } catch (e) {
-      MessageBox.error((e as Error).message);
-    } finally {
-      this.setBusy(false);
-      this._assembleInFlight = false;
-    }
-  }
-
-  closeAssembleLoadDialog(): void {
-    (this.byId("availableShipmentsTable") as Table).clearSelection();
-    this._assembleDialog?.close();
-  }
-
-  /**
-   * Estorno do romaneio de embarque, migrado do `/shipment-billing`: aqui é o único lugar em
-   * que o romaneio ainda está solto, que é a condição para poder estornar.
-   */
-  async onReverseShipment(): Promise<void> {
-    const table = this.byId("availableShipmentsTable") as Table;
-    const selected = table.getSelectedIndices();
-
-    if (selected.length < 1) {
-      MessageBox.warning("Selecione um registro.");
-      return;
-    }
-
-    if (selected.length > 1) {
-      MessageBox.warning("Selecione apenas um registro por vez.");
-      return;
-    }
-
-    if (await DialogHelper.confirmDialog("Estornar Embarque ?")) {
-      const ctx = table.getContextByIndex(selected[0]) as Context;
-      const action = (this.getModel() as ODataModel).bindContext("/ShippingTransactionsReverse(...)");
-      action.setParameter("Key", ctx.getProperty("Key"));
-
-      this.setBusy(true);
-      try {
-        await action.invoke();
-        this.refreshShipments();
-        MessageToast.show("Embarque estornado com sucesso.");
-      } catch (e) {
-        MessageBox.error((e as Error).message);
-      } finally {
-        this.setBusy(false);
-      }
-    }
-  }
-
-  async onCancelLoad(): Promise<void> {
-    const table = this.byId("shipmentLoadsTable") as Table;
-    const selected = table.getSelectedIndices();
-
-    if (selected.length !== 1) {
+    if (!load) {
       MessageBox.warning("Selecione uma carga.");
       return;
     }
 
-    const ctx = table.getContextByIndex(selected[0]) as Context;
+    if (load.Status === "Cancelled") {
+      MessageBox.warning("Carga cancelada não pode ser alterada.");
+      return;
+    }
+
+    this.navTo("shipmentLoadsEdit", { id: load.Key });
+  }
+
+  async onDeleteLoad(): Promise<void> {
+    const load = this.selectedLoad();
+
+    if (!load) {
+      MessageBox.warning("Selecione uma carga.");
+      return;
+    }
+
+    if (load.Status !== "Planned") {
+      MessageBox.warning(
+        "Somente uma carga apenas planejada pode ser excluída. Cancele a carga em vez de excluí-la.");
+      return;
+    }
+
+    if (!await DialogHelper.confirmDialog(`Excluir a carga ${load.Code} ?`)) return;
+
+    const action = (this.getModel() as ODataModel).bindContext("/ShipmentLoadsDelete(...)");
+    action.setParameter("Key", load.Key);
+
+    this.setBusy(true);
+    try {
+      await action.invoke();
+      this.refreshLoads();
+      MessageToast.show("Carga excluída.");
+    } catch (e) {
+      MessageBox.error((e as Error).message);
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  // ---------------------------------------------------------------- vinculação
+
+  /**
+   * Leva o usuário para a página de vinculação. A carga vai na URL porque é ela que define
+   * placa, produto e filial aceitos — sem carga alvo não há lista de romaneios a mostrar.
+   */
+  onGoToAttach(): void {
+    const load = this.selectedLoad();
+
+    if (!load) {
+      MessageBox.warning("Selecione uma carga.");
+      return;
+    }
+
+    if (load.Status !== "Planned" && load.Status !== "Open") {
+      MessageBox.warning(
+        `A carga ${load.Code} já foi faturada ou cancelada e não aceita novos romaneios.`);
+      return;
+    }
+
+    this.navTo("shipmentLoadsAttach", { id: load.Key });
+  }
+
+  async onCancelLoad(): Promise<void> {
+    const load = this.selectedLoad();
+
+    if (!load) {
+      MessageBox.warning("Selecione uma carga.");
+      return;
+    }
 
     const reason = await DialogHelper.promptDialog(
       "Cancelar Carga", "Informe o motivo do cancelamento:");
@@ -296,13 +244,12 @@ export default class Main extends BaseController {
     if (!reason) return;
 
     const action = (this.getModel() as ODataModel).bindContext("/ShipmentLoadsCancel(...)");
-    action.setParameter("Key", ctx.getProperty("Key"));
+    action.setParameter("Key", load.Key);
     action.setParameter("CancellationReason", reason);
 
     this.setBusy(true);
     try {
       await action.invoke();
-      this.refreshShipments();
       this.refreshLoads();
       MessageToast.show("Carga cancelada. Romaneios devolvidos à montagem.");
     } catch (e) {
@@ -313,50 +260,34 @@ export default class Main extends BaseController {
   }
 
   onOpenDetail(): void {
-    const table = this.byId("shipmentLoadsTable") as Table;
-    const selected = table.getSelectedIndices();
+    const load = this.selectedLoad();
 
-    if (selected.length !== 1) {
+    if (!load) {
       MessageBox.warning("Selecione uma carga.");
       return;
     }
 
+    this.navTo("shipmentLoadsDetail", { id: load.Key });
+  }
+
+  private selectedLoad(): SelectedLoad {
+    const table = this.byId("shipmentLoadsTable") as Table;
+    const selected = table?.getSelectedIndices() ?? [];
+
+    if (selected.length !== 1) return undefined;
+
     const ctx = table.getContextByIndex(selected[0]) as Context;
-    this.navTo("shipmentLoadsDetail", { id: ctx.getProperty("Key") as string });
-  }
 
-  private hasInconsistency(selected: number[], property: string): boolean {
-    const table = this.byId("availableShipmentsTable") as Table;
-
-    const values = selected.map(i =>
-      (table.getContextByIndex(i) as Context).getProperty(property) as string);
-
-    return values.some(v => v !== values[0]);
-  }
-
-  private async createAssembleDialog(): Promise<void> {
-    const oView = this.getView();
-    this._assembleDialog = this.byId("assembleLoadDialog") as Dialog;
-
-    if (!this._assembleDialog) {
-      this.setBusy(true);
-      this._assembleDialog = await Fragment.load({
-        id: oView.getId(),
-        name: "siagrob1.view.shipmentLoads.fragments.AssembleLoad",
-        controller: this,
-      }) as unknown as Dialog;
-      oView.addDependent(this._assembleDialog);
-      this.setBusy(false);
-    }
-  }
-
-  private refreshShipments(): void {
-    ((this.byId("availableShipmentsTable") as Table)
-      .getBinding("rows") as ODataListBinding).refresh();
+    return {
+      Key: ctx.getProperty("Key") as string,
+      Code: ctx.getProperty("Code") as string,
+      Status: ctx.getProperty("Status") as string,
+    };
   }
 
   private refreshLoads(): void {
-    ((this.byId("shipmentLoadsTable") as Table)
-      .getBinding("rows") as ODataListBinding).refresh();
+    const binding = (this.byId("shipmentLoadsTable") as Table)
+      ?.getBinding("rows") as ODataListBinding;
+    binding?.refresh();
   }
 }

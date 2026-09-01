@@ -1,0 +1,185 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:l="sap.ui.layout"
+	xmlns:f="sap.ui.layout.form"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+	<!-- Formulário do planejamento da Logística. O mesmo fragmento serve criação e edição: o que
+	     muda é `form>/fiscalEditable`, que trava produto, unidade e filial depois que a carga
+	     virou documento fiscal. Os demais campos seguem editáveis — o caso real é "o motorista
+	     trocou depois de carregar". -->
+	<f:Form editable="true">
+		<f:layout>
+			<f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2"/>
+		</f:layout>
+		<f:formContainers>
+			<f:FormContainer title="Carregamento">
+				<f:formElements>
+					<f:FormElement label="Filial">
+						<f:fields>
+							<!-- Filial e unidade de medida são preenchidas pelo sistema, como no contrato de
+							     compra: a filial é a do usuário logado e a unidade é a padrão do sistema.
+							     Ficam visíveis para conferência, mas não editáveis. -->
+							<Select
+								editable="false"
+								forceSelection="false"
+								selectedKey="{form>/BranchCode}"
+								items="{ path: 'branches>/', templateShareable: false }">
+								<core:Item key="{branches>Code}" text="{branches>ShortName}"/>
+							</Select>
+						</f:fields>
+					</f:FormElement>
+					<f:FormElement label="Data">
+						<f:fields>
+							<DatePicker
+								required="true"
+								valueFormat="yyyy-MM-dd"
+								displayFormat="dd/MM/yyyy"
+								value="{form>/LoadDate}"/>
+						</f:fields>
+					</f:FormElement>
+					<f:FormElement label="Placa">
+						<f:fields>
+							<Input
+								required="true"
+								editable="true"
+								showValueHelp="true"
+								valueHelpOnly="true"
+								valueHelpRequest=".openTrucksValueHelp"
+								value="{form>/TruckCode}"/>
+						</f:fields>
+					</f:FormElement>
+					<f:FormElement label="Motorista">
+						<f:fields>
+							<Input
+								editable="true"
+								showValueHelp="true"
+								valueHelpOnly="true"
+								valueHelpRequest=".openTruckDriversValueHelp"
+								value="{form>/TruckDriverCode}">
+								<customData>
+									<core:CustomData key="descriptionProperty" value="TruckDriverName:Name"/>
+								</customData>
+							</Input>
+							<Input value="{form>/TruckDriverName}" editable="false"/>
+						</f:fields>
+					</f:FormElement>
+					<f:FormElement label="Transportadora">
+						<f:fields>
+							<Input
+								editable="true"
+								showValueHelp="true"
+								valueHelpOnly="true"
+								valueHelpRequest=".openSuppliersValueHelp"
+								value="{form>/CarrierCardCode}">
+								<customData>
+									<core:CustomData key="descriptionProperty" value="CarrierName:CardName"/>
+								</customData>
+							</Input>
+							<Input value="{form>/CarrierName}" editable="false"/>
+						</f:fields>
+					</f:FormElement>
+					<f:FormElement label="Excesso">
+						<f:fields>
+							<CheckBox selected="{form>/HasExcess}" text="Carregamento com excesso"/>
+						</f:fields>
+					</f:FormElement>
+					<f:FormElement label="Valor do Frete">
+						<f:fields>
+							<!-- Double, NUNCA Decimal: o tipo Decimal faz parse para string e o
+							     backend devolve 400 sem nomear o campo. -->
+							<Input
+								value="{
+									path: 'form>/FreightPrice',
+									type: 'sap.ui.model.odata.type.Double',
+									formatOptions: {
+										decimals: 2,
+										decimalSeparator: ',',
+										groupingEnabled: true,
+										groupingSeparator: '.'
+									}
+								}"/>
+						</f:fields>
+					</f:FormElement>
+				</f:formElements>
+			</f:FormContainer>
+
+			<f:FormContainer title="Carga">
+				<f:formElements>
+					<f:FormElement label="Produto">
+						<f:fields>
+							<Input
+								required="true"
+								editable="{form>/fiscalEditable}"
+								showValueHelp="true"
+								valueHelpOnly="true"
+								valueHelpRequest=".openItemValueHelp"
+								value="{form>/ItemCode}">
+								<customData>
+									<core:CustomData key="descriptionProperty" value="ItemName:ItemName"/>
+								</customData>
+							</Input>
+							<Input value="{form>/ItemName}" editable="false"/>
+						</f:fields>
+					</f:FormElement>
+					<f:FormElement label="Un.Med.">
+						<f:fields>
+							<Input
+								required="true"
+								editable="false"
+								value="{form>/UnitOfMeasureCode}"/>
+						</f:fields>
+					</f:FormElement>
+					<f:FormElement label="Armazém de Carga">
+						<f:fields>
+							<Input
+								required="true"
+								editable="true"
+								showValueHelp="true"
+								valueHelpOnly="true"
+								valueHelpRequest=".openWarehouseValueHelp"
+								value="{form>/WarehouseCode}">
+								<customData>
+									<core:CustomData key="descriptionProperty" value="WarehouseName:Name"/>
+								</customData>
+							</Input>
+							<Input value="{form>/WarehouseName}" editable="false"/>
+						</f:fields>
+					</f:FormElement>
+					<f:FormElement label="Cliente">
+						<f:fields>
+							<Input
+								editable="true"
+								showValueHelp="true"
+								valueHelpOnly="true"
+								valueHelpRequest=".openCostumersValueHelp"
+								value="{form>/CardCode}">
+								<customData>
+									<core:CustomData key="descriptionProperty" value="CardName:CardName"/>
+								</customData>
+							</Input>
+							<Input value="{form>/CardName}" editable="false"/>
+						</f:fields>
+					</f:FormElement>
+					<f:FormElement>
+						<f:fields>
+							<!-- Armazém e cliente são informativos por decisão do cliente: quem
+							     dá a informação correta são as expedições e os documentos de
+							     saída. Trocá-los aqui não muda nada no sistema. -->
+							<Text
+								class="sapUiTinyMarginTop"
+								text="Armazém e cliente são informativos: podem ser alterados sem efeito no restante do sistema."/>
+						</f:fields>
+					</f:FormElement>
+					<f:FormElement label="Observações">
+						<f:fields>
+							<TextArea value="{form>/Comments}" rows="4"/>
+						</f:fields>
+					</f:FormElement>
+				</f:formElements>
+			</f:FormContainer>
+		</f:formContainers>
+	</f:Form>
+</core:FragmentDefinition>

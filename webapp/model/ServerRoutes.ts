@@ -34,10 +34,11 @@ export default {
   unitsOfMeasure: '/odata/UnitsOfMeasure',
   harvestSeasons: '/odata/HarvestSeasons',
   warehouses: '/odata/Warehouses',
-  // Complemento cadastral do armazém (participante / próprio) — só cadastro, nenhuma outra tela
-  // consome os flags.
+  // Complemento cadastral do armazém (participante / próprio). O flag "próprio" é consumido
+  // também pelo value help de contrato da transferência de titularidade.
   warehousesGetComplement: '/WarehousesGetComplement(...)',
   warehousesSetComplement: '/WarehousesSetComplement(...)',
+  warehousesGetOwnComplements: '/WarehousesGetOwnComplements(...)',
   taxes: '/odata/Taxes',
   qualityAttrib: '/odata/QualityAttribs',
   logisticRegions: '/odata/LogisticRegions',

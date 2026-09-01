@@ -309,6 +309,18 @@
           "icon": "sap-icon://shipping-status"
         },
         {
+          "title": "Painel de Cargas",
+          "key": "shipmentLoadsPanel",
+          "enabled": true,
+          "icon": "sap-icon://kanban-board"
+        },
+        {
+          "title": "Romaneios de Embarque",
+          "key": "storageTransactionsSales",
+          "enabled": true,
+          "icon": "sap-icon://shipping-status"
+        },
+        {
           "title": "Faturamento de Expedição",
           "key": "shipmentBilling",
           "enabled": true,

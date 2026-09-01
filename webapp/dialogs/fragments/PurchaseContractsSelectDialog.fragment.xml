@@ -16,8 +16,11 @@
   na confirmação da transferência. Contrato encerrado (Finished) não passa pelo
   filtro de status, então nunca chega aqui.
 
-  Produto e local de entrega são filtrados na abertura pelo controller, a partir
-  do lote de origem. A busca cobre número do contrato, código e nome do fornecedor.
+  Produto e local de entrega são filtrados na abertura pelo controller: o produto
+  vem da transferência e o local de entrega tem de ser um dos armazéns marcados
+  como próprios no complemento cadastral. Como a lista abrange vários armazéns, a
+  coluna Local de Entrega é o que distingue as linhas. A busca cobre número do
+  contrato, código e nome do fornecedor e o local de entrega.
 -->
 <TableSelectDialog
   class=" sapUiSizeCompact"

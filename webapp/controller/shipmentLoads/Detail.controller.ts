@@ -69,6 +69,46 @@ export default class Detail extends BaseController {
     }
   }
 
+  /**
+   * Desvincula romaneios, devolvendo-os à lista de disponíveis.
+   *
+   * O backend recusa se houver documento de saída vivo na carga: encolher o volume por baixo de
+   * uma nota já emitida furaria a invariante que o guard de faturamento não vigia — ele valida
+   * o que entra, não o que sai. A mensagem de recusa vem de lá.
+   */
+  async onDetachShipments(): Promise<void> {
+    const table = this.byId("loadTransactionsTable") as Table;
+    const selected = table.getSelectedIndices();
+
+    if (selected.length < 1) {
+      MessageBox.warning("Selecione ao menos 1 romaneio para desvincular.");
+      return;
+    }
+
+    if (!await DialogHelper.confirmDialog(
+      `Desvincular ${selected.length} romaneio(s) desta carga ?`)) return;
+
+    const keys = selected.map(i =>
+      (table.getContextByIndex(i) as Context).getProperty("Key") as string);
+
+    const action = (this.getModel() as ODataModel)
+      .bindContext("/ShipmentLoadsDetachTransactions(...)");
+    action.setParameter("Key", this._loadKey);
+    action.setParameter("StorageTransactionKeys", keys);
+
+    this.setBusy(true);
+    try {
+      await action.invoke();
+      table.clearSelection();
+      this.refreshAll();
+      MessageToast.show(`${keys.length} romaneio(s) desvinculado(s).`);
+    } catch (e) {
+      MessageBox.error((e as Error).message);
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
   onNavBack(): void {
     this.navTo("shipmentLoads");
   }

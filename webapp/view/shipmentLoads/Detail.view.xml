@@ -85,7 +85,23 @@
 												<f:fields><Text text="{TruckCode}"/></f:fields>
 											</f:FormElement>
 											<f:FormElement label="Motorista">
-												<f:fields><Text text="{TruckDriverCode}"/></f:fields>
+												<f:fields><Text text="({TruckDriverCode}) {TruckDriverName}"/></f:fields>
+											</f:FormElement>
+											<f:FormElement label="Transportadora">
+												<f:fields><Text text="({CarrierCardCode}) {CarrierName}"/></f:fields>
+											</f:FormElement>
+											<f:FormElement label="Excesso">
+												<f:fields>
+													<!-- targetType 'any': sem ele o booleano chega como a string
+													     'false', que é truthy, e o campo mostraria "Sim" sempre. -->
+													<Text text="{ path: 'HasExcess', targetType: 'any', formatter: '.formatter.formatBooleanYesNo' }"/>
+												</f:fields>
+											</f:FormElement>
+											<f:FormElement label="Valor do Frete">
+												<f:fields>
+													<ObjectNumber
+														number="{ path: 'FreightPrice', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+												</f:fields>
 											</f:FormElement>
 										</f:formElements>
 									</f:FormContainer>
@@ -96,6 +112,9 @@
 											</f:FormElement>
 											<f:FormElement label="Armazém">
 												<f:fields><Text text="({WarehouseCode}) {WarehouseName}"/></f:fields>
+											</f:FormElement>
+											<f:FormElement label="Cliente">
+												<f:fields><Text text="({CardCode}) {CardName}"/></f:fields>
 											</f:FormElement>
 											<f:FormElement label="Qtd. Total">
 												<f:fields>
@@ -134,10 +153,18 @@
 							     funciona depois de cancelar ou recalcular. -->
 							<t:Table
 								id="loadTransactionsTable"
-								selectionMode="None"
+								selectionMode="Multi"
+								selectionBehavior="Row"
 								class="sapUiSizeCondensed"
 								visibleRowCount="6"
 								rows="{ path: 'Transactions', parameters: { '$$ownRequest': true } }">
+								<t:extension>
+									<OverflowToolbar>
+										<Title text="Romaneios da Carga"/>
+										<ToolbarSpacer/>
+										<Button type="Transparent" text="Desvincular" icon="sap-icon://chain-link" press=".onDetachShipments"/>
+									</OverflowToolbar>
+								</t:extension>
 								<t:columns>
 									<t:Column label="Código" width="8rem">
 										<t:template><Text text="{Code}" wrapping="false"/></t:template>

@@ -95,9 +95,14 @@ export default class Main extends BaseController {
     const filters: string[] = [];
 
     // Pelo ENUM de status, não por `InvoicedQuantity lt TotalQuantity`: comparação
-    // propriedade-a-propriedade é frágil e não indexável. Carga cancelada e carga totalmente
-    // faturada saem da worklist.
-    filters.push("(Status eq 'Open' or Status eq 'PartiallyInvoiced')");
+    // propriedade-a-propriedade é frágil e não indexável. Carga cancelada, carga apenas
+    // planejada e carga totalmente faturada saem da worklist.
+    //
+    // `TotalQuantity gt 0` é cinto de segurança, não redundância: uma carga sem volume já
+    // deveria estar em 'Planned', mas se a desvinculação um dia esquecer de rebaixá-la,
+    // sobraria aqui uma carga 'Open' de volume zero oferecida para faturar. A cláusula de
+    // volume torna esse esquecimento inofensivo.
+    filters.push("(Status eq 'Open' or Status eq 'PartiallyInvoiced') and TotalQuantity gt 0");
 
     if (query) {
       filters.push(`(contains(Code,'${query}') or contains(TruckCode,'${query}'))`);

@@ -105,9 +105,6 @@ export default class Add extends BaseController {
     this.setContractEnabled(
       this.isOwnStockLot(destinationType) && !this.isOwnStockLot(originType));
 
-    // Restringe os contratos ofertados ao armazém onde a mercadoria já está.
-    this.setOriginWarehouse(originCtx.getProperty("WarehouseCode") as string);
-
     const oView = this.getView();
 		const oModel = this.getView().getModel() as ODataModel;
 		const oBinding = oModel.bindList("/OwnershipTransfers")

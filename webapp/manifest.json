@@ -566,9 +566,29 @@
           "target": "shipmentLoads"
         },
         {
+          "pattern": "shipment-loads/new",
+          "name": "shipmentLoadsNew",
+          "target": "shipmentLoadsNew"
+        },
+        {
+          "pattern": "shipment-loads/{id}/edit",
+          "name": "shipmentLoadsEdit",
+          "target": "shipmentLoadsEdit"
+        },
+        {
           "pattern": "shipment-loads/{id}/detail",
           "name": "shipmentLoadsDetail",
           "target": "shipmentLoadsDetail"
+        },
+        {
+          "pattern": "shipment-loads/{id}/attach",
+          "name": "shipmentLoadsAttach",
+          "target": "shipmentLoadsAttach"
+        },
+        {
+          "pattern": "shipment-loads-panel",
+          "name": "shipmentLoadsPanel",
+          "target": "shipmentLoadsPanel"
         },
         {
           "pattern": "shipment-billing",
@@ -1501,12 +1521,36 @@
 					"name": "siagrob1.view.shipmentLoads.Main",
           "clearControlAggregation": true
 				},
+        "shipmentLoadsNew": {
+					"id": "shipmentLoadsNew",
+          "level": 2,
+					"name": "siagrob1.view.shipmentLoads.Add",
+          "clearControlAggregation": true
+				},
+        "shipmentLoadsEdit": {
+					"id": "shipmentLoadsEdit",
+          "level": 2,
+					"name": "siagrob1.view.shipmentLoads.Edit",
+          "clearControlAggregation": true
+				},
         "shipmentLoadsDetail": {
 					"id": "shipmentLoadsDetail",
           "level": 2,
 					"name": "siagrob1.view.shipmentLoads.Detail",
           "clearControlAggregation": true
 				},
+        "shipmentLoadsAttach": {
+					"id": "shipmentLoadsAttach",
+          "level": 2,
+					"name": "siagrob1.view.shipmentLoads.Attach",
+          "clearControlAggregation": true
+				},
+        "shipmentLoadsPanel": {
+          "id": "shipmentLoadsPanel",
+          "level": 1,
+          "name": "siagrob1.view.shipmentLoads.Panel",
+          "clearControlAggregation": true
+        },
         "shipmentBilling": {
 					"id": "shipmentBilling",
           "level": 1,

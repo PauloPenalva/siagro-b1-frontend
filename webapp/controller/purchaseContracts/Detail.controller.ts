@@ -34,7 +34,9 @@ export default class Detail extends PurchaseContractsBaseController {
       // abre o contrato a partir da fila de aprovação de fixações. Nenhuma ação sobre
       // o contrato pode ser executada nesse modo.
       uiModel.setProperty("/readonly", args["?query"]?.readonly === "true");
-      
+
+      void this.applyPreContractPrintVisibility();
+
 			const sPath = `/PurchaseContracts(${id})`;
 			this.bindElement(sPath);
 
@@ -114,6 +116,20 @@ export default class Detail extends PurchaseContractsBaseController {
       },
     })
     .done(() => this.setBusy(false));
+  }
+
+  /**
+   * O pré-contrato é uma personalização do cliente Yokotobi e lê campos que só existem
+   * no banco do SAP Business One, então o botão só aparece em SAPB1 — o backend recusa
+   * a impressão nos demais modos. Inicializar como `false` evita a armadilha do `visible`
+   * com binding indefinido, que valeria true e exibiria o botão até a resposta chegar.
+   */
+  private async applyPreContractPrintVisibility() {
+    const uiModel = this.getModel("ui") as JSONModel;
+    uiModel.setProperty("/preContractPrintVisible", false);
+
+    const systemInfo = await this.getSystemInfo();
+    uiModel.setProperty("/preContractPrintVisible", systemInfo?.erp === "SAPB1");
   }
 
   /**
