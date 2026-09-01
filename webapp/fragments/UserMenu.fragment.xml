@@ -10,7 +10,7 @@
 				type="Active"
 				press=".onOpenProfile" />
 			<StandardListItem icon="sap-icon://synchronize" title="Trocar Filial" type="Active" press=".onChangeBranch" />
-      <StandardListItem icon="sap-icon://sys-help" title="v.1.1.223" type="Active" />
+      <StandardListItem icon="sap-icon://sys-help" title="v.1.1.225" type="Active" />
 			<StandardListItem icon="sap-icon://log" title="Sair" type="Active" press=".onLogout" />
 		</items>
 	</List>

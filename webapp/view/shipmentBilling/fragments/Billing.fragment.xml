@@ -303,17 +303,6 @@
 				<Toolbar>
 					<Title text="Liberações de Entrega de Venda Disponíveis" />
 					<ToolbarSpacer />
-					<!-- Escape do filtro de saldo do contrato. NAO existe guard de saldo no
-					     faturamento: ligar isto nao muda o que o servidor aceita, so o que a lista
-					     mostra. Existe para o filtro nao virar trava muda, que e o que empurra o
-					     usuario a criar contrato "AJUSTE DE SALDO". -->
-					<Label text="Incluir contratos sem saldo" labelFor="includeContractsWithoutBalance" />
-					<Switch
-						id="includeContractsWithoutBalance"
-						state="{viewModel>/IncludeContractsWithoutBalance}"
-						change=".onToggleContractsWithoutBalance"
-						customTextOn="Sim"
-						customTextOff="Nao" />
 				</Toolbar>
 			</t:toolbar>
 			<t:columns>

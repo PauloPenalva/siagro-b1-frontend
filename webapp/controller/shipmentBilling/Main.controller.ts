@@ -45,8 +45,6 @@ type BillingForm = {
   ShipmentLoadCode?: string,
   /** Saldo da carga no momento da abertura, limite da quantidade a faturar. */
   AvailableQuantity?: number,
-  /** Escape do filtro de saldo do contrato na lista de liberações. */
-  IncludeContractsWithoutBalance?: boolean,
 }
 
 /** Liberação de entrega de venda selecionada, usada na montagem do documento de saída. */
@@ -170,7 +168,6 @@ export default class Main extends BaseController {
       TruckCode: load.TruckCode,
       FreightTerms: "",
       BranchCode: load.BranchCode,
-      IncludeContractsWithoutBalance: false,
     });
 
     contractsTable.clearSelection();
@@ -179,24 +176,10 @@ export default class Main extends BaseController {
     this._billingDialog?.open();
   }
 
-  /**
-   * Recarrega a lista de liberações com ou sem o filtro de saldo do contrato. Só muda o que a
-   * lista MOSTRA: não há guard de saldo no faturamento, então isto nunca é a causa de uma recusa.
-   */
-  async onToggleContractsWithoutBalance(): Promise<void> {
-    const viewModel = this.getModel("viewModel") as JSONModel;
-    (this.byId("shipmentBillingSalesContractsTable") as Table).clearSelection();
-
-    await this.loadAvailableReleases(viewModel.getProperty("/ItemCode") as string);
-  }
-
   private async loadAvailableReleases(itemCode: string): Promise<void> {
     const model = this.getModel() as ODataModel;
     const func = model.bindContext("/SalesShipmentReleasesGetAvailable(...)");
     func.setParameter("ItemCode", itemCode);
-    func.setParameter(
-      "IncludeContractsWithoutBalance",
-      Boolean((this.getModel("viewModel") as JSONModel).getProperty("/IncludeContractsWithoutBalance")));
 
     this.setBusy(true);
     try {
