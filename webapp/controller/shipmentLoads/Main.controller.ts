@@ -23,6 +23,7 @@ const SHIPMENT_LOAD_STATUSES = [
   { key: "Open", text: "Carregada" },
   { key: "PartiallyInvoiced", text: "Faturada Parcial" },
   { key: "Invoiced", text: "Faturada" },
+  { key: "Returned", text: "Devolvida" },
   { key: "Cancelled", text: "Cancelada" },
 ];
 

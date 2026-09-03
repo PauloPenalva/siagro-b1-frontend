@@ -460,7 +460,8 @@ export default {
     m.set("PartiallyInvoiced", "Faturada Parcial");
     m.set("Invoiced", "Faturada");
     m.set("Cancelled", "Cancelada");
-    
+    m.set("Returned", "Devolvida");
+
     return m.get(value);
   },
 
@@ -471,7 +472,10 @@ export default {
     m.set("PartiallyInvoiced", "Warning");
     m.set("Invoiced", "Success");
     m.set("Cancelled", "Error");
-    
+    // Warning, e não Error: devolver ao armazém é um encerramento legítimo, não uma falha — mas
+    // precisa saltar aos olhos na lista, porque a mercadoria mudou de lugar.
+    m.set("Returned", "Warning");
+
     return m.get(value);
   },
 
@@ -489,7 +493,9 @@ export default {
     m.set("TransactionsAttached", "Romaneios Vinculados");
     m.set("TransactionsDetached", "Romaneios Desvinculados");
     m.set("Updated", "Dados Alterados");
-    
+    m.set("Refused", "Recusa Registrada");
+    m.set("ReturnedToWarehouse", "Devolvida ao Armazém");
+
     return m.get(value);
   },
 

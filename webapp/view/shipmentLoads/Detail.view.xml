@@ -26,6 +26,13 @@
 				</uxap:snappedHeading>
 				<uxap:actions>
 					<Button text="Recalcular Saldo" type="Transparent" press=".onRecalculate"/>
+					<!-- targetType 'any' em toda expressão sobre enum: sem ele o valor não chega
+					     como string e a comparação nunca casa, deixando o botão invisível. -->
+					<Button
+						text="Registrar Recusa"
+						type="Transparent"
+						press=".onRefuse"
+						visible="{= ${path: 'Status', targetType: 'any'} === 'PartiallyInvoiced' || ${path: 'Status', targetType: 'any'} === 'Invoiced' }"/>
 					<Button text="Cancelar Carga" type="Transparent" press=".onCancelLoad"/>
 					<Button text="Voltar" type="Transparent" press=".onNavBack"/>
 				</uxap:actions>
@@ -127,6 +134,19 @@
 												<f:fields>
 													<ObjectNumber
 														number="{ path: 'InvoicedQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+														unit="{UnitOfMeasureCode}"/>
+												</f:fields>
+											</f:FormElement>
+											<!-- Só aparece quando houve recusa com retorno ao armazém. É o que
+											     torna legível a situação "Devolvida": sem este campo, a carga
+											     lê saldo zero sem dizer para onde a mercadoria foi. -->
+											<f:FormElement
+												label="Qtd. Devolvida ao Armazém"
+												visible="{= ${path: 'ReturnedToWarehouseQuantity', targetType: 'any'} > 0 }">
+												<f:fields>
+													<ObjectNumber
+														state="Warning"
+														number="{ path: 'ReturnedToWarehouseQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
 														unit="{UnitOfMeasureCode}"/>
 												</f:fields>
 											</f:FormElement>
@@ -242,6 +262,56 @@
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
 
+			<uxap:ObjectPageSection titleUppercase="false" title="Devoluções ao Armazém">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<uxap:blocks>
+							<!-- Coleção separada de Transactions de propósito: aquela é o que foi
+							     EMBARCADO na carga, esta é o que voltou dela por recusa. -->
+							<t:Table
+								id="loadRefusalReturnsTable"
+								selectionMode="None"
+								class="sapUiSizeCondensed"
+								visibleRowCount="5"
+								rows="{ path: 'RefusalReturns', parameters: { '$$ownRequest': true } }">
+								<t:columns>
+									<t:Column label="Romaneio" width="9rem">
+										<t:template><Text text="{Code}" wrapping="false"/></t:template>
+									</t:Column>
+									<t:Column label="Data" width="8rem">
+										<t:template>
+											<Text wrapping="false" text="{ path: 'TransactionDate', targetType: 'any', formatter: '.formatter.formatDate' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Status" hAlign="Center" width="9rem">
+										<t:template>
+											<ObjectStatus
+												inverted="true"
+												state="{ path: 'TransactionStatus', targetType: 'any', formatter: '.formatter.stateStorageTransactionStatus' }"
+												text="{ path: 'TransactionStatus', targetType: 'any', formatter: '.formatter.formatStorageTransactionStatus' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Peso Bruto" hAlign="End" width="9rem">
+										<t:template>
+											<ObjectNumber
+												textAlign="End"
+												number="{ path: 'GrossWeight', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+												unit="{UnitOfMeasureCode}"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Armazém de Destino" width="18rem">
+										<t:template><Text text="({WarehouseCode}) {WarehouseName}" wrapping="false"/></t:template>
+									</t:Column>
+									<t:Column label="Observações" width="30rem">
+										<t:template><Text text="{Comments}" wrapping="false"/></t:template>
+									</t:Column>
+								</t:columns>
+							</t:Table>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
 			<uxap:ObjectPageSection titleUppercase="false" title="Movimentação">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection>
@@ -279,6 +349,21 @@
 									</t:Column>
 									<t:Column label="Documento" width="9rem">
 										<t:template><Text text="{InvoiceNumber}" wrapping="false"/></t:template>
+									</t:Column>
+									<!-- A narrativa do frete: para ONDE a carga foi em cada faturamento,
+									     POR QUE voltou e para qual armazém. É o que o financeiro lê
+									     para pagar o frete de uma carga recusada e redestinada. -->
+									<t:Column label="Cliente" width="18rem">
+										<t:template><Text text="({CardCode}) {CardName}" wrapping="false"/></t:template>
+									</t:Column>
+									<t:Column label="Local de Entrega" width="18rem">
+										<t:template><Text text="({DeliveryCardCode}) {DeliveryCardName}" wrapping="false"/></t:template>
+									</t:Column>
+									<t:Column label="Armazém Destino" width="16rem">
+										<t:template><Text text="({WarehouseCode}) {WarehouseName}" wrapping="false"/></t:template>
+									</t:Column>
+									<t:Column label="Motivo" width="20rem">
+										<t:template><Text text="{Reason}" wrapping="false"/></t:template>
 									</t:Column>
 									<t:Column label="Descrição" width="30rem">
 										<t:template><Text text="{Description}" wrapping="false"/></t:template>

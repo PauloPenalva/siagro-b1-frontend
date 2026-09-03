@@ -6,7 +6,7 @@
 	<Dialog
 		id="returnDialog"
 		title="Retornar Documento de Saída"
-		contentWidth="82rem"
+		contentWidth="94rem"
 		class="sapUiSizeCompact"
 		busy="{return>/busy}"
 		busyIndicatorDelay="0">
@@ -62,20 +62,29 @@
 				</f:formContainers>
 			</f:Form>
 
-			<!-- A escolha é por ROMANEIO, e não por quantidade: cada romaneio é uma carreta, e
-			     meia carreta não volta do pátio. O volume devolvido é a soma dos escolhidos. -->
+			<!-- A escolha é por ROMANEIO; a quantidade é opcional dentro dele. Sem ajuste, cada
+			     romaneio volta inteiro. Quantidade parcial só existe no destino armazém: em
+			     "segue viagem" o romaneio volta INTEIRO ao pool de faturamento, e devolvê-lo
+			     pela metade des-faturaria o volume que ficou com o cliente. -->
 			<t:Table
 				id="returnShipmentsTable"
 				selectionMode="MultiToggle"
 				selectionBehavior="Row"
 				class="sapUiSizeCondensed"
 				visibleRowCount="6"
+				rowSelectionChange=".updateReturnTotal"
 				rows="{returnShipments>/}">
 				<t:extension>
 					<OverflowToolbar>
 						<Title text="Romaneios do Documento"/>
 						<ToolbarSpacer/>
-						<Text text="Selecione os romaneios que retornaram."/>
+						<Text
+							text="{= ${return>/DestinationIndex} === 1
+								? 'Selecione os romaneios e ajuste quanto voltou de cada um.'
+								: 'Selecione os romaneios que retornaram.' }"/>
+						<ObjectNumber
+							emphasized="true"
+							number="{ path: 'return>/SelectedTotal', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>
@@ -102,6 +111,17 @@
 								textAlign="End"
 								number="{ path: 'returnShipments>NetWeight', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
 								unit="{returnShipments>UnitOfMeasureCode}"/>
+						</t:template>
+					</t:Column>
+					<!-- Editável só com destino armazém; em "segue viagem" o valor fica travado no
+					     peso líquido, que é o único que aquele destino aceita. -->
+					<t:Column label="Qtde a Devolver" hAlign="End" width="10rem">
+						<t:template>
+							<Input
+								textAlign="End"
+								editable="{= ${return>/DestinationIndex} === 1 }"
+								change=".updateReturnTotal"
+								value="{ path: 'returnShipments>ReturnQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
 						</t:template>
 					</t:Column>
 				</t:columns>

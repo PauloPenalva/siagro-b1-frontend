@@ -15,6 +15,7 @@ const LANES = [
   { id: "listOpen", status: "Open", count: "countOpen" },
   { id: "listPartiallyInvoiced", status: "PartiallyInvoiced", count: "countPartiallyInvoiced" },
   { id: "listInvoiced", status: "Invoiced", count: "countInvoiced" },
+  { id: "listReturned", status: "Returned", count: "countReturned" },
 ];
 
 /**

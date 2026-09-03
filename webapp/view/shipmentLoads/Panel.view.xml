@@ -96,6 +96,20 @@
 						</CustomListItem>
 					</List>
 				</Panel>
+
+				<!-- Sem esta raia a carga recusada some do painel sem explicação: ela sai de
+				     "Faturada" e não entra em lugar nenhum. -->
+				<Panel headerText="Devolvida ({panel>/countReturned})" expandable="false">
+					<List
+						id="listReturned"
+						updateFinished=".onLaneUpdated"
+						noDataText="Nenhuma carga devolvida."
+						items="{ path: '/ShipmentLoads', parameters: { $orderby: 'Code' } }">
+						<CustomListItem type="Navigation" press=".onOpenLoad">
+							<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.LoadCard" type="XML"/>
+						</CustomListItem>
+					</List>
+				</Panel>
 			</l:Grid>
 		</f:content>
 	</f:DynamicPage>

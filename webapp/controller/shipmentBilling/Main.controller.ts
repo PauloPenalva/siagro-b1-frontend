@@ -100,6 +100,11 @@ export default class Main extends BaseController {
     // deveria estar em 'Planned', mas se a desvinculação um dia esquecer de rebaixá-la,
     // sobraria aqui uma carga 'Open' de volume zero oferecida para faturar. A cláusula de
     // volume torna esse esquecimento inofensivo.
+    //
+    // 'Returned' fica DE FORA de propósito, e não por esquecimento: é a carga recusada cuja
+    // mercadoria voltou para um armazém. Ela tem saldo zero e o grão já está creditado em outro
+    // lugar — oferecê-la aqui seria vender duas vezes o mesmo volume. A carga recusada que
+    // SEGUE viagem volta para 'Open'/'PartiallyInvoiced' e reaparece por este mesmo filtro.
     filters.push("(Status eq 'Open' or Status eq 'PartiallyInvoiced') and TotalQuantity gt 0");
 
     if (query) {
