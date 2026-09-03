@@ -29,6 +29,9 @@
       </f:DynamicPageHeader>
     </f:header>
 		<f:content>
+      <!-- O $select traz ShipmentLoadKey, que nenhuma coluna exibe: é o guard de "Retornar" no
+           controller que a lê. Com autoExpandSelect, o que não é ligado por um controle não é
+           pedido, e sem ela o guard passaria batido. -->
       <t:Table
 				id="tableSalesInvoices"
 				busyIndicatorDelay="0"
@@ -40,6 +43,7 @@
 				alternateRowColors="true"
         rows="{
 					path: '/SalesInvoices',
+          parameters: { $select: 'ShipmentLoadKey' },
           sorter: [
             { path: 'RowId', descending: true }
           ]

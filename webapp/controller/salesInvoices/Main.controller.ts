@@ -310,6 +310,23 @@ export default class Main extends BaseController {
     const ctx = table.getContextByIndex(selectedInvoice[0]) as Context;
     this._returnInvoiceKey = ctx.getProperty("Key") as string;
 
+    // A nota de CARGA não se devolve por aqui: a recusa dela tem tela própria, que sabe mexer no
+    // saldo da carga. O backend recusa com a mensagem certa, mas nunca chega a ser chamado — a
+    // grade do diálogo é alimentada por SalesInvoicesGetReturnableShipments, que filtra os
+    // romaneios por SalesInvoiceKey, e o romaneio de uma carga nunca recebe essa chave (ele
+    // pertence à carga, não à nota). O resultado seria o aviso genérico "não tem romaneio
+    // faturado a devolver": verdade, mas sem dizer para onde ir.
+    //
+    // ⚠️ ShipmentLoadKey só chega aqui porque está no $select do binding da tabela: nenhuma
+    // coluna a exibe e, com autoExpandSelect, o que não é ligado por controle não é pedido —
+    // getProperty devolvia undefined e o guard passava batido. Quebra só no navegador.
+    const shipmentLoadKey = ctx.getProperty("ShipmentLoadKey") as string;
+
+    if (shipmentLoadKey) {
+      MessageBox.warning(await this.getShipmentLoadRefusalMessage(shipmentLoadKey));
+      return;
+    }
+
     const model = this.getModel() as ODataModel;
     const func = model.bindContext("/SalesInvoicesGetReturnableShipments(...)");
     func.setParameter("Key", this._returnInvoiceKey);
@@ -368,6 +385,31 @@ export default class Main extends BaseController {
     } finally {
       this.setBusy(false);
     }
+  }
+
+  /**
+   * Manda o operador para a tela certa, nomeando a carga quando dá para lê-la.
+   *
+   * O código da carga não vem no contexto da lista — `ShipmentLoad` é navigation property e a
+   * grade só traz as propriedades escalares da nota —, então é uma leitura à parte. Se ela
+   * falhar, a mensagem continua correta, só menos específica: o que importa é dizer para onde
+   * ir, e isso não depende do código.
+   */
+  private async getShipmentLoadRefusalMessage(shipmentLoadKey: string): Promise<string> {
+    const destination = "Registre a recusa pela tela de Montagem de Carga.";
+
+    try {
+      const code = await (this.getModel() as ODataModel)
+        .bindContext(`/ShipmentLoads(${shipmentLoadKey})`)
+        .getBoundContext()
+        .requestProperty("Code") as string;
+
+      if (code) return `Este documento pertence à carga ${code}. ${destination}`;
+    } catch {
+      // Sem o código a mensagem ainda serve — não vale estourar um erro técnico por causa dele.
+    }
+
+    return `Este documento pertence a uma carga. ${destination}`;
   }
 
   /**
