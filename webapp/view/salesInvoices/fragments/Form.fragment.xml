@@ -126,9 +126,16 @@
                  preço não tem peso, caminhão nem transportadora, e o cabeçalho não pode
                  reagir à natureza antes de existirem itens. A recusa vem do
                  SalesInvoicesUsageGuardService, com mensagem de negócio em pt-BR. -->
+            <!-- Na DEVOLUÇÃO o peso é somente-leitura: ele é a soma das quantidades dos itens,
+                 escrita pelo backend a cada edição de linha (SalesInvoicesReturnWeightService).
+                 Quem devolve saldo ao contrato é a Quantity do item, e deixar o peso editável
+                 ao lado dela dava dois campos dizendo "quanto voltou" com só um decidindo —
+                 uma devolução digitada como 20 estornava os 30 da origem, calada.
+                 `targetType: 'any'` é obrigatório no enum: sem ele o binding entrega texto
+                 formatado e a comparação nunca casa. -->
             <Label text="Peso Bruto"/>
             <Input
-              editable="{ui>/editable}"
+              editable="{= ${ui>/editable} &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'Return' }"
               value="{
                 path: 'GrossWeight',
                 type: 'sap.ui.model.odata.type.Double',
@@ -137,12 +144,12 @@
                     decimalSeparator: ',',
                     groupingEnabled: true,
                     groupingSeparator: '.'
-                } 
+                }
               }"
             />
             <Label text="Peso Liquido"/>
             <Input
-              editable="{ui>/editable}"
+              editable="{= ${ui>/editable} &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'Return' }"
               value="{
                 path: 'NetWeight',
                 type: 'sap.ui.model.odata.type.Double',
@@ -151,9 +158,22 @@
                     decimalSeparator: ',',
                     groupingEnabled: true,
                     groupingSeparator: '.'
-                } 
+                }
               }"
-            />
+            >
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Input>
+            <!-- Mesma linha do campo, como Cliente/Nome acima: um peso travado sem explicação
+                 ao lado vira chamado de suporte ("não consigo digitar o peso"). -->
+            <Text
+              visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Return' }"
+              text="Soma das quantidades dos itens. Para devolver menos, altere a quantidade na linha.">
+              <layoutData>
+                <l:GridData span="XL5 L5 M5 S12" />
+              </layoutData>
+            </Text>
             
             <core:Title text="Transporte" />
             <Label text="Endereço Entrega" />
