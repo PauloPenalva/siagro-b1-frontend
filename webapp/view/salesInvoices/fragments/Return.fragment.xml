@@ -1,0 +1,117 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.ui.layout.form">
+	<Dialog
+		id="returnDialog"
+		title="Retornar Documento de Saída"
+		contentWidth="82rem"
+		class="sapUiSizeCompact"
+		busy="{return>/busy}"
+		busyIndicatorDelay="0">
+		<content>
+			<f:Form editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="Destino Físico">
+								<f:fields>
+									<RadioButtonGroup
+										id="returnDestinationGroup"
+										columns="1"
+										selectedIndex="{return>/DestinationIndex}"
+										select=".onReturnDestinationChange">
+										<RadioButton text="Caminhão segue para novo destino (mercadoria continua embarcada)"/>
+										<RadioButton text="Mercadoria retorna a um armazém"/>
+									</RadioButtonGroup>
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement
+								label="Armazém de Destino"
+								visible="{= ${return>/DestinationIndex} === 1 }">
+								<f:fields>
+									<!-- editable="true" é obrigatório mesmo com valueHelpOnly: com
+									     editable="false" o ícone de value help não aparece e o campo
+									     fica impossível de preencher. -->
+									<Input
+										required="true"
+										editable="true"
+										showValueHelp="true"
+										valueHelpOnly="true"
+										valueHelpRequest=".openReturnWarehouseValueHelp"
+										value="{return>/DestinationWarehouseCode}"/>
+									<Input value="{return>/DestinationWarehouseName}" editable="false"/>
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement label="Motivo do Retorno">
+								<f:fields>
+									<TextArea
+										required="true"
+										rows="3"
+										maxLength="500"
+										placeholder="Ex.: carreta recusada na balança do cliente"
+										value="{return>/Reason}"/>
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+
+			<!-- A escolha é por ROMANEIO, e não por quantidade: cada romaneio é uma carreta, e
+			     meia carreta não volta do pátio. O volume devolvido é a soma dos escolhidos. -->
+			<t:Table
+				id="returnShipmentsTable"
+				selectionMode="MultiToggle"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCount="6"
+				rows="{returnShipments>/}">
+				<t:extension>
+					<OverflowToolbar>
+						<Title text="Romaneios do Documento"/>
+						<ToolbarSpacer/>
+						<Text text="Selecione os romaneios que retornaram."/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="Romaneio" width="10rem">
+						<t:template><Text text="{returnShipments>Code}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Data" width="8rem">
+						<t:template>
+							<Text wrapping="false" text="{ path: 'returnShipments>TransactionDate', targetType: 'any', formatter: '.formatter.formatDate' }"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Placa" width="8rem">
+						<t:template><Text text="{returnShipments>TruckCode}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Produto" width="16rem">
+						<t:template><Text text="({returnShipments>ItemCode}) {returnShipments>ItemName}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Armazém de Origem" width="16rem">
+						<t:template><Text text="({returnShipments>WarehouseCode}) {returnShipments>WarehouseName}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Peso Líquido" hAlign="End" width="10rem">
+						<t:template>
+							<ObjectNumber
+								textAlign="End"
+								number="{ path: 'returnShipments>NetWeight', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+								unit="{returnShipments>UnitOfMeasureCode}"/>
+						</t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</content>
+		<beginButton>
+			<Button text="Fechar" type="Transparent" press=".onCloseReturn"/>
+		</beginButton>
+		<endButton>
+			<Button text="Confirmar Retorno" type="Emphasized" press=".onConfirmReturn"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>
