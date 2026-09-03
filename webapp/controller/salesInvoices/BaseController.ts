@@ -296,6 +296,16 @@ export abstract class BaseController extends CommonController {
         property: "InvoiceNumber",
         type: EdmType.String,
       });
+
+      aCols.push({
+        label: "Tipo",
+        property: "InvoiceType",
+        type: EdmType.Enumeration,
+        valueMap: {
+          "Normal": "Normal",
+          "Return": "Retorno",
+        }
+      });
       
       aCols.push({
         label: "Emissão",
@@ -307,10 +317,14 @@ export abstract class BaseController extends CommonController {
         label: "Status",
         property: "InvoiceStatus",
         type: EdmType.Enumeration,
+        // "Retornado" É atribuído no documento de SAÍDA (diferente da entrada, onde o valor
+        // existe no enum compartilhado mas nenhum serviço o usa). Sem ele no mapa, todo
+        // documento retornado saía com a coluna Situação EM BRANCO na planilha.
         valueMap: {
           "Pending": "Pendente",
           "Confirmed": "Confirmado",
           "Cancelled": "Cancelado",
+          "Returned": "Retornado",
         }
       });
 

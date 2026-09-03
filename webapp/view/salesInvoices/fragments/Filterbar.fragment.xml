@@ -27,6 +27,21 @@
           </Input>
       </fb:control>
     </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="invoiceType" label="Tipo" groupName="GroupInvoiceType" visibleInFilterBar="true">
+      <fb:control>
+          <!-- Enum: o controller o compara com eq 'valor' em string crua dentro do $filter
+               estático. sap.ui.model.Filter sobre enum estoura
+               "Unsupported type: SIAGROB1.SalesInvoiceType" num diálogo, com a lista sem
+               filtrar nada. forceSelection="false" mais o item de chave vazia são o que
+               permite DESLIGAR só este filtro, sem recorrer ao Limpar que zera a barra
+               inteira. -->
+          <Select forceSelection="false" selectedKey="{filter>/InvoiceType}">
+            <core:ListItem key="" text="Todos"/>
+            <core:ListItem key="Normal" text="Normal"/>
+            <core:ListItem key="Return" text="Retorno"/>
+          </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
     <fb:FilterGroupItem name="dateFrom" label="Emissão de" groupName="GroupDateFrom" visibleInFilterBar="true">
         <fb:control>
            <DatePicker 
@@ -61,6 +76,7 @@
                 type: 'sap.ui.model.type.String'
               }"
             >
+              <core:ListItem key="" text="Todos"/>
               <core:ListItem key="Pending" text="Pendente"/>
               <core:ListItem key="Confirmed" text="Confirmado"/>
               <core:ListItem key="Cancelled" text="Cancelado"/>

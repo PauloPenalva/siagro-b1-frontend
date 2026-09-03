@@ -90,20 +90,21 @@
             width="7rem"
 						>
 						<t:template>
-							<Text text="{InvoiceNumber}" />
+							<Text text="{InvoiceNumber}" wrapping="false" />
 						</t:template>
 					</t:Column>
            <t:Column
 						label="Tipo"
+						sortProperty="InvoiceType"
 						hAlign="Center"
-            width="5rem"
+            width="7rem"
 						>
 						<t:template>
 							<Text text="{
                 path: 'InvoiceType',
                 targetType: 'any',
                 formatter: '.formatter.formatSalesInvoiceType'
-              }" />
+              }" wrapping="false" />
 						</t:template>
 					</t:Column>
           <t:Column
@@ -156,7 +157,7 @@
           <t:Column
 						label="Valor Produtos"
 						hAlign="End"
-            width="7rem"
+            width="9rem"
 						>
 						<t:template>
             <Text
@@ -181,13 +182,13 @@
             width="7rem"
 						>
 						<t:template>
-							<Text text="{TruckCode}" />
+							<Text text="{TruckCode}" wrapping="false" />
 						</t:template>
 					</t:Column>
           <t:Column
 						label="Peso Bruto"
 						hAlign="End"
-            width="8rem"
+            width="9rem"
 						>
 						<t:template>
             <ObjectNumber
@@ -210,10 +211,10 @@
 						label="Nota Fiscal"
 						sortProperty="TaxDocumentNumber"
             hAlign="Center"
-            width="10rem"
+            width="8rem"
 						>
 						<t:template>
-							<Text text="{TaxDocumentNumber}" />
+							<Text text="{TaxDocumentNumber}" wrapping="false" />
 						</t:template>
 					</t:Column>
           <t:Column
@@ -223,26 +224,25 @@
             width="5rem"
 						>
 						<t:template>
-							<Text text="{TaxDocumentSeries}" />
+							<Text text="{TaxDocumentSeries}" wrapping="false" />
 						</t:template>
 					</t:Column>
           <t:Column
 						label="Chave NF-e"
 						sortProperty="ChaveNFe"
             hAlign="Center"
-            width="25rem"
+            width="23rem"
             >
 						<t:template>
-							<Text text="{ChaveNFe}" />
+							<Text text="{ChaveNFe}" wrapping="false" />
 						</t:template>
 					</t:Column>
           <t:Column
 						label="Observações"
-					  hAlign="Center"
             width="25rem"
             >
 						<t:template>
-							<Text text="{Comments}" />
+							<Text text="{Comments}" tooltip="{Comments}" wrapping="false" />
 						</t:template>
 					</t:Column>
 				</t:columns>

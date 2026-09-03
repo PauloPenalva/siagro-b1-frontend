@@ -83,14 +83,29 @@ export default class Main extends BaseController {
     const filterData = filterModel.getData() as Record<string, string>;
     const filters: string[] = [];
 
+    // Escapa a aspa simples DOBRANDO-A, como manda o OData — sem isso um cliente com apóstrofo
+    // no nome quebra o `$filter` inteiro. Mesmo helper do `applyReconciliationFilters` no
+    // BaseController.
+    //
+    // O `String()` não é decorativo: `WithoutTaxDocument` é um CheckBox e chega aqui como boolean
+    // `true`, apesar do `Record<string, string>`. `true.replace(...)` estouraria TypeError e
+    // derrubaria a filtragem inteira. Por isso o esc só é aplicado onde o valor entra num
+    // literal entre aspas — data vai crua, sem aspas.
+    const esc = (value: string | number | boolean) => String(value).replace(/'/g, "''");
+
     Object.keys(filterData).forEach((key: string) => {
       const filterKey = key;
       const value = filterData[filterKey];
 
       if (!value) return;
 
-      if (filterKey == "InvoiceStatus" ) {
-        filters.push(`${filterKey} eq '${value}'`)
+      // `InvoiceStatus` e `InvoiceType` são ENUM e entram como string crua de propósito.
+      // `sap.ui.model.Filter` faria o UI5 montar o literal a partir do metadata, e ele não sabe
+      // formatar enum: estoura "Unsupported type: SIAGROB1.SalesInvoiceType" num diálogo, com a
+      // lista sem filtrar nada. Cair no `else` seria pior ainda — `contains(InvoiceType,'Return')`
+      // é recusado pelo backend.
+      if (filterKey == "InvoiceStatus" || filterKey == "InvoiceType") {
+        filters.push(`${filterKey} eq '${esc(value)}'`)
       } else if (filterKey == "DateFrom") {
         filters.push(`InvoiceDate ge ${value}`)
       } else if (filterKey == "DateTo") {
@@ -101,7 +116,7 @@ export default class Main extends BaseController {
         // branco para null.
         filters.push(`(TaxDocumentNumber eq null or TaxDocumentNumber eq '')`)
       } else {
-        filters.push(`contains(${filterKey},'${value}')`)
+        filters.push(`contains(${filterKey},'${esc(value)}')`)
       }
     });
 
