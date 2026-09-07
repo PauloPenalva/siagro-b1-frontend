@@ -180,6 +180,9 @@ export default class Detail extends BaseController {
         }) as Dialog;
 
         this.getView().addDependent(this._refusalDialog);
+
+        // O diálogo renderiza por conta própria e não passa pelo `onBeforeRendering` da view.
+        this.registerTableLayouts(this._refusalDialog);
       }
 
       this._refusalDialog.open();

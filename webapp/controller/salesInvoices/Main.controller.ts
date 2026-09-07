@@ -373,6 +373,9 @@ export default class Main extends BaseController {
         }) as Dialog;
 
         this.getView().addDependent(this._returnDialog);
+
+        // O diálogo renderiza por conta própria e não passa pelo `onBeforeRendering` da view.
+        this.registerTableLayouts(this._returnDialog);
       }
 
       const shipmentsTable = this.byId("returnShipmentsTable") as Table;

@@ -7,6 +7,8 @@ import ServerRoutes from "siagrob1/model/ServerRoutes";
 import SessionService, { AVAILABLE_THEMES, DEFAULT_THEME } from "siagrob1/services/SessionService";
 import FileUploader, { FileUploader$ChangeEvent } from "sap/ui/unified/FileUploader";
 import { UserProfile } from "siagrob1/types/UserIdentity";
+import TableLayoutService from "siagrob1/services/TableLayoutService";
+import DialogHelper from "siagrob1/dialogs/DialogHelper";
 
 /**
  * Manutenção que o usuário faz na própria conta: foto do avatar, tema e senha.
@@ -51,6 +53,7 @@ export default class Main extends CommonController {
       model.setProperty("/maintenanceHint", this.maintenanceHint());
       // A regra de senha vem do servidor: é configurável por ambiente.
       model.setProperty("/passwordRequirements", profile?.passwordRequirements ?? "");
+      this.refreshTableLayoutsSummary();
     } catch (error) {
       MessageBox.error("Falha ao carregar o perfil.");
       console.warn("Falha ao carregar o perfil.", error);
@@ -219,6 +222,55 @@ export default class Main extends CommonController {
     model.setProperty("/currentPassword", "");
     model.setProperty("/newPassword", "");
     model.setProperty("/confirmPassword", "");
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Tabelas                                                             */
+  /* ------------------------------------------------------------------ */
+
+  /**
+   * Restaura o layout padrão de TODAS as tabelas (GAC-1163).
+   *
+   * O serviço também devolve ao padrão as tabelas que já estão em memória. Sem isso o usuário
+   * clicaria aqui, voltaria para a tela e continuaria vendo o layout antigo: o roteador reaproveita
+   * a instância da view, e `clearControlAggregation` limpa a agregação do container, não as colunas.
+   */
+  async onResetTableLayouts(): Promise<void> {
+    const confirmed = await DialogHelper.confirmDialog(
+      "Restaurar o layout padrão de todas as tabelas?",
+      "Restaurar layout"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      this.setBusy(true);
+
+      await TableLayoutService.clearAll();
+      this.refreshTableLayoutsSummary();
+
+      MessageToast.show("Layout das tabelas restaurado.");
+    } catch (error) {
+      this.showRequestError(error, "Falha ao restaurar o layout das tabelas.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  /** Lê do cache em memória - o servidor já respondeu isso no boot. */
+  private refreshTableLayoutsSummary(): void {
+    const model = this.getView().getModel("profile") as JSONModel;
+    const count = TableLayoutService.count();
+
+    model.setProperty("/tableLayoutsCount", count);
+    model.setProperty(
+      "/tableLayoutsSummary",
+      count === 0
+        ? "Nenhuma tabela personalizada."
+        : `${count} ${count === 1 ? "tabela personalizada" : "tabelas personalizadas"}.`
+    );
   }
 
   private showRequestError(error: unknown, fallback: string): void {

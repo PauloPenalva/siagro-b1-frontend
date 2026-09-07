@@ -14,6 +14,7 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import formatter from "siagrob1/model/formatter";
+import TableLayoutService from "siagrob1/services/TableLayoutService";
 
 /**
  * Um TableSelectDialog por (view, fragmento).
@@ -105,6 +106,10 @@ export default {
       }
       oController.getView().addDependent(oDlg);
     }
+
+    // Um Dialog renderiza por conta própria e não passa pelo `onBeforeRendering` da view, então o
+    // registro do layout das tabelas (GAC-1163) precisa acontecer aqui.
+    TableLayoutService.registerTables(oDlg);
 
     return oDlg;
   },

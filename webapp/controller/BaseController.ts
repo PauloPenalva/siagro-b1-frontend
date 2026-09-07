@@ -23,11 +23,44 @@ import { BranchInfo } from "siagrob1/types/BranchInfo";
 import { SystemSetup } from "siagrob1/types/SystemSetup";
 import { SystemInfo } from "siagrob1/types/SystemInfo";
 import { SYSTEM_SETUP_KEY } from "siagrob1/services/SessionService";
+import TableLayoutService from "siagrob1/services/TableLayoutService";
+import ManagedObject from "sap/ui/base/ManagedObject";
 
 /**
  * @namespace siagrob1.controller
  */
 export default abstract class BaseController extends Controller {
+  /**
+   * Restaura a largura e a ordem das colunas que o usuário salvou (GAC-1163), em toda
+   * `sap.ui.table.Table` da view. O registro é idempotente e roda uma vez por instância de view.
+   *
+   * `onBeforeRendering` e NÃO `onAfterRendering`: aqui as colunas já existem mas a tabela ainda não
+   * pintou, então a primeira pintura já sai no layout do usuário. Em `onAfterRendering` a tabela
+   * apareceria no padrão e saltaria - visível numa tabela de 19 colunas.
+   *
+   * ⚠️ Quem sobrescrever `onBeforeRendering` num controller PRECISA chamar
+   * `super.onBeforeRendering()`, senão a persistência morre naquela tela.
+   */
+  onBeforeRendering(): void {
+    TableLayoutService.registerTables(this.getView());
+  }
+
+  /**
+   * Rede de segurança para o caso de alguém sobrescrever `onBeforeRendering` sem `super`. Idempotente
+   * - quando o caminho normal funcionou, esta chamada não faz nada.
+   */
+  onAfterRendering(): void {
+    TableLayoutService.registerTables(this.getView());
+  }
+
+  /**
+   * Registra as tabelas de um diálogo. Um `Dialog` renderiza por conta própria e não passa pelo
+   * ciclo de render da view, então quem o carrega precisa avisar.
+   */
+  public registerTableLayouts(oRoot: ManagedObject): void {
+    TableLayoutService.registerTables(oRoot);
+  }
+
   /**
    * Convenience method for accessing the component of the controller's view.
    * @returns The component of the controller's view

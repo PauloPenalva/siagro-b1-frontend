@@ -134,6 +134,9 @@ export default class Main extends BaseController {
         controller: this
       }) as unknown as Dialog;
       oView.addDependent(this._billingDialog);
+
+      // O diálogo renderiza por conta própria e não passa pelo `onBeforeRendering` da view.
+      this.registerTableLayouts(this._billingDialog);
     }
     this.setBusy(false);
   }

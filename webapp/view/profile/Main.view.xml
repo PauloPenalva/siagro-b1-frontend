@@ -95,6 +95,21 @@
 				</content>
 			</Panel>
 
+			<Panel headerText="Tabelas" expandable="false" class="sapUiSmallMarginTop">
+				<content>
+					<VBox class="sapUiSmallMargin">
+						<Text text="A largura e a ordem das colunas que você ajusta nas tabelas são gravadas no seu usuário e acompanham você em qualquer computador."/>
+						<Text text="{profile>/tableLayoutsSummary}" class="sapUiTinyMarginTop"/>
+						<Button
+							text="Restaurar layout padrão das tabelas"
+							press=".onResetTableLayouts"
+							enabled="{= ${profile>/tableLayoutsCount} > 0 }"
+							width="300px"
+							class="sapUiSmallMarginTop"/>
+					</VBox>
+				</content>
+			</Panel>
+
 			<Panel headerText="Alterar senha" expandable="false" class="sapUiSmallMarginTop">
 				<content>
 					<f:SimpleForm id="passwordForm" editable="true" layout="ResponsiveGridLayout">

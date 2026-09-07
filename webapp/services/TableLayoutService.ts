@@ -1,4 +1,5 @@
 import ManagedObject from "sap/ui/base/ManagedObject";
+import ElementRegistry from "sap/ui/core/ElementRegistry";
 import View from "sap/ui/core/mvc/View";
 import Table from "sap/ui/table/Table";
 import Column from "sap/ui/table/Column";
@@ -56,6 +57,9 @@ class TableLayoutService {
    */
   private columnDefaults = new WeakMap<Column, string>();
 
+  /** Ordem declarada no XML, por tabela. Só serve para a restauração do padrão. */
+  private declaredOrder = new WeakMap<Table, Column[]>();
+
   private timers = new Map<string, number>();
 
   /** Trava contra cascata durante a aplicação programática. */
@@ -78,7 +82,7 @@ class TableLayoutService {
 
     const response = await new RequestModel().get<TableLayoutsResponse>(ServerRoutes.myTableLayouts);
 
-    this.fill(response?.Layouts ?? []);
+    this.fill(response?.layouts ?? []);
     this.writeMirror();
   }
 
@@ -127,6 +131,38 @@ class TableLayoutService {
     this.clearTimers();
     this.layouts.clear();
     this.writeMirror();
+    this.restoreDeclaredLayout();
+  }
+
+  /**
+   * Devolve as tabelas VIVAS ao que o XML declara.
+   *
+   * Sem isto o usuário clica em "Restaurar", volta para a tela e continua vendo o layout antigo: o
+   * roteador reaproveita a instância da view, e `clearControlAggregation` limpa a agregação do
+   * container, não as colunas. Só um F5 corrigiria - e ninguém vai adivinhar isso.
+   */
+  private restoreDeclaredLayout(): void {
+    this.applying = true;
+
+    try {
+      ElementRegistry.forEach((element) => {
+        if (!this.isTable(element)) {
+          return;
+        }
+
+        const declared = this.declaredOrder.get(element);
+
+        if (!declared) {
+          return;
+        }
+
+        declared.forEach((column) => column.setWidth(this.columnDefaults.get(column) ?? ""));
+
+        this.applyOrder(element, declared);
+      });
+    } finally {
+      this.applying = false;
+    }
   }
 
   /** Zera tudo. Chamado no logout. */
@@ -180,11 +216,17 @@ class TableLayoutService {
       return;
     }
 
-    oTable.getColumns().forEach((column) => {
+    // Estado declarado no XML, capturado ANTES de aplicar o do usuário: é o que a restauração do
+    // padrão devolve, e o que permite gravar só as larguras que divergem.
+    const columns = oTable.getColumns();
+
+    columns.forEach((column) => {
       if (!this.columnDefaults.has(column)) {
         this.columnDefaults.set(column, column.getWidth() ?? "");
       }
     });
+
+    this.declaredOrder.set(oTable, columns.slice());
 
     this.applyLayout(oTable, tableKey);
 
@@ -261,6 +303,10 @@ class TableLayoutService {
    */
   private isView(oControl: ManagedObject): oControl is View {
     return oControl.isA("sap.ui.core.mvc.View");
+  }
+
+  private isTable(oControl: ManagedObject): oControl is Table {
+    return oControl.isA("sap.ui.table.Table");
   }
 
   /**
@@ -379,8 +425,8 @@ class TableLayoutService {
 
       const widths = new Map<string, string>();
       saved.forEach((entry) => {
-        if (entry.Width) {
-          widths.set(entry.Key, entry.Width);
+        if (entry.width) {
+          widths.set(entry.key, entry.width);
         }
       });
 
@@ -392,10 +438,10 @@ class TableLayoutService {
         }
       });
 
-      const order = this.mergeOrder(keys, saved.map((entry) => entry.Key));
+      const order = this.mergeOrder(keys, saved.map((entry) => entry.key));
 
       if (order) {
-        this.applyOrder(oTable, order);
+        this.applyOrder(oTable, order.map((index) => columns[index]));
       }
     } finally {
       this.applying = false;
@@ -441,9 +487,9 @@ class TableLayoutService {
       .sort((a, b) => ranks[a] - ranks[b] || a - b);
   }
 
-  private applyOrder(oTable: Table, aOrder: number[]): void {
+  private applyOrder(oTable: Table, aDesired: Column[]): void {
     const current = oTable.getColumns();
-    const desired = aOrder.map((index) => current[index]);
+    const desired = aDesired;
 
     if (desired.length !== current.length || desired.some((column) => !column)) {
       return;
@@ -501,12 +547,12 @@ class TableLayoutService {
     return columns.map((column, index) => {
       const width = column.getWidth() ?? "";
       const declared = this.columnDefaults.get(column) ?? "";
-      const entry: TableColumnLayout = { Key: keys[index] };
+      const entry: TableColumnLayout = { key: keys[index] };
 
       // Só o que diverge do XML: gravar a largura padrão a congelaria para sempre naquele usuário,
       // e uma mudança futura de default nunca chegaria a ele.
       if (width && width !== declared) {
-        entry.Width = width;
+        entry.width = width;
       }
 
       return entry;
@@ -531,7 +577,7 @@ class TableLayoutService {
    */
   private async put(sTableKey: string, aColumns: TableColumnLayout[]): Promise<void> {
     try {
-      await new RequestModel({ TableKey: sTableKey, Columns: aColumns })
+      await new RequestModel({ tableKey: sTableKey, columns: aColumns })
         .put(ServerRoutes.myTableLayouts);
     } catch (error) {
       console.warn("Falha ao salvar o layout da tabela.", sTableKey, error);
@@ -546,8 +592,8 @@ class TableLayoutService {
     this.layouts.clear();
 
     aLayouts.forEach((layout) => {
-      if (layout?.TableKey && Array.isArray(layout.Columns)) {
-        this.layouts.set(layout.TableKey, layout.Columns);
+      if (layout?.tableKey && Array.isArray(layout.columns)) {
+        this.layouts.set(layout.tableKey, layout.columns);
       }
     });
   }
@@ -559,7 +605,7 @@ class TableLayoutService {
 
     const payload: CachedTableLayouts = {
       username: this.username,
-      layouts: Array.from(this.layouts, ([TableKey, Columns]) => ({ TableKey, Columns }))
+      layouts: Array.from(this.layouts, ([tableKey, columns]) => ({ tableKey, columns }))
     };
 
     try {

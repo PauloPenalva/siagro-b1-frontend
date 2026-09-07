@@ -8,6 +8,7 @@ import Theming from "sap/ui/core/Theming";
 import RequestModel from "siagrob1/model/RequestModel";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import formatter from "siagrob1/model/formatter";
+import TableLayoutService from "siagrob1/services/TableLayoutService";
 import { BranchInfo } from "siagrob1/types/BranchInfo";
 import { SystemInfo } from "siagrob1/types/SystemInfo";
 import { AuthStatus, LoginResult, UserIdentity } from "siagrob1/types/UserIdentity";
@@ -176,11 +177,19 @@ class SessionService {
   public async hydrate(): Promise<void> {
     this.applyCachedMenu();
 
+    // Antes do GET: se o servidor não responder, o usuário ainda entra com o layout que ele tinha.
+    TableLayoutService.applyCachedLayouts(this.getSessionModel().getProperty("/userName") as string);
+
     await Promise.all([
       this.loadUserMenu(),
       this.loadSystemInfo(),
       this.loadBranchInfo(),
-      this.loadSystemSetup()
+      this.loadSystemSetup(),
+      // NUNCA rejeita: uma rejeição aqui derruba o `hydrate` inteiro e o Component deixa de chamar
+      // `startIdleWatch()`, desligando o timeout de inatividade em silêncio. O layout das tabelas
+      // não vale esse preço.
+      TableLayoutService.load().catch(error =>
+        console.warn("Falha ao carregar o layout das tabelas.", error))
     ]);
 
     this.sessionReadyHandlers.forEach(handler => handler());
@@ -316,6 +325,10 @@ class SessionService {
 
     window.localStorage.removeItem(USER_MENU_KEY);
     window.localStorage.removeItem(SYSTEM_SETUP_KEY);
+
+    // Diferente do tema, o layout das tabelas é dado da CONTA: não pode sobrar para o próximo
+    // usuário que entrar nesta máquina.
+    TableLayoutService.reset();
   }
 
   /* ------------------------------------------------------------------ */

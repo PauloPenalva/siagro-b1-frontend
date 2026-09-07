@@ -1,26 +1,30 @@
 /**
  * Layout de tabela por usuário (GAC-1163) - contrato de `/security/users/me/table-layouts`.
+ *
+ * Os campos são camelCase porque é assim que o ASP.NET Core serializa a resposta. Na ida o nome não
+ * importaria (o binding do servidor ignora caixa), mas manter os dois lados iguais evita que o
+ * mesmo tipo sirva para ler e não para escrever.
  */
 
 /** Uma coluna. A posição é a do array; não existe campo de posição. */
 export type TableColumnLayout = {
   /** Chave derivada da coluna - ver `TableLayoutService.deriveColumnKeys`. */
-  Key: string;
+  key: string;
 
-  /** Ausente/nula quando a coluna está na largura padrão declarada no XML. */
-  Width?: string;
+  /** Ausente quando a coluna está na largura padrão declarada no XML. */
+  width?: string;
 };
 
 export type TableLayout = {
   /** `<viewName>::[<escopo>--]<localId>`. */
-  TableKey: string;
-  Version?: number;
-  Columns: TableColumnLayout[];
-  UpdatedAt?: string;
+  tableKey: string;
+  version?: number;
+  columns: TableColumnLayout[];
+  updatedAt?: string;
 };
 
 export type TableLayoutsResponse = {
-  Layouts?: TableLayout[];
+  layouts?: TableLayout[];
 };
 
 /**

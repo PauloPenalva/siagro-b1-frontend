@@ -18,6 +18,9 @@ export default {
   myPhoto: '/security/users/me/photo',
   myTheme: '/security/users/me/theme',
   changePassword: '/security/users/me/change-password',
+  // Largura e ordem das colunas. A chave da tabela vai no CORPO do PUT, não na URL: ela contém
+  // `::`, `--` e `/`, que dariam trabalho de escapar num segmento de rota.
+  myTableLayouts: '/security/users/me/table-layouts',
 
   // Espelhamento do cadastro de usuários do SAP (só responde quando Erp = SAPB1).
   usersSyncFromSap: '/UsersSyncFromSap(...)',

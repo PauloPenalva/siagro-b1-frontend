@@ -21,6 +21,8 @@ export default class Detail extends PurchaseContractsBaseController {
 	}
 
   onAfterRendering(): void  {
+    super.onAfterRendering();
+
     this.viewModel = this.getModel("viewModel") as JSONModel;
   }
 
