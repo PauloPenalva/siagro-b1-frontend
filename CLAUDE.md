@@ -15,7 +15,7 @@ Package manager: yarn (yarn.lock is present; npm also works, no lockfile conflic
 ```bash
 yarn install
 yarn start          # dev server on http://localhost:8080, opens index.html, proxies backend calls (see below)
-yarn build           # quick/unoptimized build -> dist/
+yarn build           # quick/unoptimized build -> dist/ (só a aplicação: sem resources/, test/ nem test-resources/)
 yarn build:opt        # optimized self-contained build -> dist/ (bundles UI5 framework resources too)
 yarn start:dist        # serve the dist/ build
 yarn ts-typecheck      # tsc --noEmit

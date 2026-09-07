@@ -22,7 +22,10 @@ framework:
 builder:
   resources:
     excludes:
-      - "test/e2e/**"
+      # A pasta test/ só serve ao dev server (o `yarn test` roda sobre webapp/, via
+      # ui5-coverage.yaml). O dist/ inteiro é copiado para o wwwroot do Gateway,
+      # então nada de teste precisa ir junto.
+      - "test/**"
   customTasks:
     - name: ui5-tooling-transpile-task
       afterTask: replaceVersion
