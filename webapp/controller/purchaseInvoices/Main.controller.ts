@@ -229,7 +229,8 @@ export default class Main extends BaseController {
       dataSource: binding,
       fileName: "Documentos de entrada.xlsx",
       workbook: {
-        columns: this.createColumnConfig(),
+        // A planilha segue a ordem em que o usuário deixou as colunas na tela (GAC-1163).
+        columns: this.orderExportColumns(table, this.createColumnConfig()),
         hierarchyLevel: "Level",
         context: {
           sheetName: "Documentos de entrada",

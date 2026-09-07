@@ -311,7 +311,9 @@ export default class Main extends SalesContractsBaseController {
   }
 
   async onExcel() {
-    const cols = this.createColumnConfig();
+    // A planilha segue a ordem em que o usuário deixou as colunas na tela (GAC-1163).
+    const cols = this.orderExportColumns(
+      this.byId("tableSalesContracts") as Table, this.createColumnConfig());
 
     const setting: SpreadsheetSettings = {
       dataSource: await this.createExportBinding("/SalesContracts", cols, "Code", this.currentFilter),

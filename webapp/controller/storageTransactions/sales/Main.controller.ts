@@ -289,13 +289,15 @@ export default class Main extends CommonController {
   }
 
   onExcel(): void {
-    const binding = this.byId("salesTransactionsTable").getBinding("rows") as ODataListBinding;
+    const table = this.byId("salesTransactionsTable") as Table;
+    const binding = table.getBinding("rows") as ODataListBinding;
 
     const setting: SpreadsheetSettings = {
       dataSource: binding,
       fileName: "Romaneios de embarque.xlsx",
       workbook: {
-        columns: this.createColumnConfig(),
+        // A planilha segue a ordem em que o usuário deixou as colunas na tela (GAC-1163).
+        columns: this.orderExportColumns(table, this.createColumnConfig()),
         hierarchyLevel: "Level",
         context: { sheetName: "Romaneios de embarque" },
       },

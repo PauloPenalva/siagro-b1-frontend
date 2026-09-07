@@ -62,6 +62,18 @@ export default abstract class BaseController extends Controller {
   }
 
   /**
+   * Põe as colunas do export para Excel na mesma ordem em que a tabela está na tela.
+   *
+   * Sem isto o usuário reordena as colunas, exporta e recebe a planilha na ordem antiga. É só uma
+   * permutação - nenhuma coluna entra ou sai da planilha.
+   */
+  public orderExportColumns<T extends { property?: string | string[] }>(
+    oTable: Table, aColumns: T[]
+  ): T[] {
+    return TableLayoutService.orderExportColumns(oTable, aColumns);
+  }
+
+  /**
    * Convenience method for accessing the component of the controller's view.
    * @returns The component of the controller's view
    */

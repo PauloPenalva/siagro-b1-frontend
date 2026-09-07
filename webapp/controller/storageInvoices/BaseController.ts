@@ -174,7 +174,8 @@ export abstract class BaseController extends CommonController {
     onExcel() {
       const table = this.byId("storageTransactionsTable") as Table;
       const binding = table.getBinding("rows") as ODataListBinding
-      const cols = this.createColumnConfig();
+      // A planilha segue a ordem em que o usuário deixou as colunas na tela (GAC-1163).
+      const cols = this.orderExportColumns(table, this.createColumnConfig());
      
       const setting: SpreadsheetSettings = {
         dataSource: binding,
