@@ -124,6 +124,33 @@ class TableLayoutService {
     return this.layouts.size;
   }
 
+  /**
+   * Reordena as colunas de um export para Excel na ordem em que a tabela está na TELA.
+   *
+   * O casamento é entre a `property` da coluna de export e a chave derivada da coluna da tabela -
+   * as duas usam o mesmo caminho de binding (`Branch/ShortName`, `Status`, `Type`...).
+   *
+   * Nada é adicionado nem removido: é só uma permutação, então o conteúdo da planilha é o mesmo.
+   * As colunas que só existem no export (a maioria das telas tem algumas) ficam ancoradas na
+   * vizinha à esquerda pelo mesmo merge da ordem das colunas - é o que garante que, para quem NÃO
+   * personalizou nada, a planilha continue idêntica à de hoje.
+   */
+  public orderExportColumns<T extends { property?: string | string[] }>(
+    oTable: Table, aColumns: T[]
+  ): T[] {
+    if (!oTable || oTable.isDestroyed() || !aColumns?.length) {
+      return aColumns;
+    }
+
+    const tableKeys = this.deriveColumnKeys(oTable.getColumns());
+    const exportKeys = aColumns.map((column) =>
+      typeof column.property === "string" ? column.property : "");
+
+    const order = this.mergeOrder(exportKeys, tableKeys);
+
+    return order ? order.map((index) => aColumns[index]) : aColumns;
+  }
+
   /** Restauração do padrão, acionada em "Meu Perfil". */
   public async clearAll(): Promise<void> {
     await new RequestModel().delete(ServerRoutes.myTableLayouts);
