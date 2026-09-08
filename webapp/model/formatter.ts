@@ -992,11 +992,51 @@ export default {
     return m.get(value) ?? "None";
   },
 
+  /**
+   * Rótulo do campo no log de alterações do título. O backend grava o CÓDIGO
+   * (FinancialDocumentChangeLogFields), não o texto - a tradução é aqui, no molde de
+   * `formatContractChangeLogField`. Código desconhecido cai para ele mesmo, para que
+   * um campo novo no backend nunca deixe a linha em branco.
+   */
+  formatFinancialChangeLogField: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("DueDate", "Vencimento");
+    m.set("Comments", "Comentários");
+
+    return m.get(value) ?? value;
+  },
+
   formatFinancialAccountType: (value: string) => {
     const m = new Map<string, string>();
     m.set("Cash", "Caixa");
     m.set("Bank", "Banco");
 
     return m.get(value) ?? "";
+  },
+
+  /**
+   * `ReleaseOrigin` da liberação de embarque, que trafega como inteiro no OData:
+   * 0 Compra, 1 Transferência de titularidade, 2 Devolução ao armazém.
+   */
+  releaseOriginText: (value: number) => {
+    const m = new Map<number, string>();
+    m.set(0, "Compra");
+    m.set(1, "Transferência");
+    m.set(2, "Devolução");
+
+    return m.get(value) ?? "Compra";
+  },
+
+  /**
+   * Cor da origem na Expedição de Grãos. Devolução em `Warning` de propósito: é mercadoria que
+   * VOLTOU, e reembarcá-la é uma decisão diferente de embarcar uma compra nova.
+   */
+  releaseOriginState: (value: number) => {
+    const m = new Map<number, string>();
+    m.set(0, "None");
+    m.set(1, "Information");
+    m.set(2, "Warning");
+
+    return m.get(value) ?? "None";
   },
 };

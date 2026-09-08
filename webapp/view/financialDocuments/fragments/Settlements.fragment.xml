@@ -27,7 +27,7 @@
     <t:columns>
       <t:Column label="Data" width="10rem">
         <t:template>
-          <Text text="{path: 'SettlementDate', type: 'sap.ui.model.odata.type.Date', formatOptions: { style: 'short' }}" wrapping="false"/>
+          <Text text="{path: 'SettlementDate', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy' }}" wrapping="false"/>
         </t:template>
       </t:Column>
       <t:Column label="Conta" width="10rem">

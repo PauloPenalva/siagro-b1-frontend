@@ -92,8 +92,9 @@
 							<ObjectStatus
 								text="{
 									path: 'DueDate',
-									type: 'sap.ui.model.odata.type.Date',
-									formatOptions: { style: 'short' }
+									type: 'sap.ui.model.odata.type.DateTimeOffset',
+									constraints: { precision: 7 },
+									formatOptions: { pattern: 'dd/MM/yyyy' }
 								}"
 								state="{= ${path: 'IsOverdue', targetType: 'any'} ? 'Error' : 'None' }" />
 						</t:template>

@@ -92,9 +92,14 @@
               <Text text="{TruckCode}" wrapping="false"/>
 						</t:template>
 					</t:Column>
-          <t:Column label="Motorista" width="6rem">
+          <t:Column label="Cód. Motorista" sortProperty="TruckDriverCode" width="8rem">
 						<t:template>
               <Text text="{TruckDriverCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column label="Motorista" sortProperty="TruckDriverName" width="15rem">
+						<t:template>
+              <Text text="{TruckDriverName}" wrapping="false"/>
 						</t:template>
 					</t:Column>
           <t:Column label="Produto" sortProperty="ItemCode" width="15rem">

@@ -2,6 +2,9 @@
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }"
 >
   <f:Form editable="false">
     <f:layout>
@@ -38,12 +41,12 @@
         <f:formElements>
           <f:FormElement label="Emissão">
             <f:fields>
-              <Text text="{path: 'DocumentDate', type: 'sap.ui.model.odata.type.Date', formatOptions: { style: 'short' }}"/>
+              <Text text="{path: 'DocumentDate', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy' }}"/>
             </f:fields>
           </f:FormElement>
           <f:FormElement label="Vencimento">
             <f:fields>
-              <Text text="{path: 'DueDate', type: 'sap.ui.model.odata.type.Date', formatOptions: { style: 'short' }}"/>
+              <Text text="{path: 'DueDate', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy' }}"/>
             </f:fields>
           </f:FormElement>
           <f:FormElement label="Valor">

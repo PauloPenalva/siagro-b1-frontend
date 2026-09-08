@@ -11,6 +11,7 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageToast from "sap/m/MessageToast";
 import { SearchField$SearchEvent } from "sap/m/SearchField";
+import Sorter from "sap/ui/model/Sorter";
 
 /** Carga selecionada na lista — a origem do faturamento agora. */
 type LoadData = {
@@ -19,6 +20,7 @@ type LoadData = {
   ItemCode: string,
   ItemName: string,
   TruckDriverCode: string,
+  TruckDriverName: string,
   TruckCode: string,
   BranchCode: string,
   AvailableQuantity: number,
@@ -33,6 +35,9 @@ type BillingForm = {
   /** Só exibição — preenchido pelo value help, não vai no payload. */
   TruckingCompanyName?: string,
   TruckCode?: string,
+  TruckDriverCode?: string,
+  /** Só exibição — nome desnormalizado da carga, não vai no payload. */
+  TruckDriverName?: string,
   TaxPayerComments?: string,
   DeliveryCardCode?: string,
   /** Só exibição — preenchido pelo value help, não vai no payload. */
@@ -78,6 +83,13 @@ export default class Main extends BaseController {
     // OData vai para um JSONModel (a resposta é array cru, sem envelope — mesmo padrão
     // de SelectShipmentRelease; bindar a table direto na function quebra o modelo V4).
     this.getView().setModel(new JSONModel([]), "releases");
+
+    // Filiais do Select do diálogo num JSONModel estático, e não bindadas direto em /Branchs:
+    // o selectedKey vem do "viewModel" (JSONModel setado antes de abrir), e com o binding OData
+    // os itens só chegavam DEPOIS do primeiro render — o sap.m.Select reconciliava a seleção
+    // internamente (getSelectedItem() correto) sem repintar, e o campo ficava visualmente vazio.
+    // Mesmo padrão de shipmentLoads/FormController.loadBranches.
+    this.getView().setModel(new JSONModel([]), "branches");
 
     this.getRouter().getRoute("shipmentBilling")
       .attachPatternMatched(() => this.applyFilters(null));
@@ -141,7 +153,24 @@ export default class Main extends BaseController {
     this.setBusy(false);
   }
 
+  /**
+   * Carrega as filiais uma única vez, ANTES de o diálogo renderizar — é isso que garante que o
+   * Select já nasça com os itens e o selectedKey casados.
+   */
+  private async loadBranches(): Promise<void> {
+    const branchesModel = this.getModel("branches") as JSONModel;
+    if ((branchesModel.getData() as unknown[]).length > 0) return;
+
+    const contexts = await (this.getModel() as ODataModel)
+      .bindList("/Branchs", undefined, [new Sorter("Code")])
+      .requestContexts(0, 100);
+
+    branchesModel.setData(
+      contexts.map(ctx => ctx.getObject() as { Code: string, ShortName: string }));
+  }
+
   async openBillingDialog() {
+    await this.loadBranches();
     await this.createBillingDialog();
 
     const table = this.byId("shipmentBillingTable") as Table;
@@ -173,6 +202,7 @@ export default class Main extends BaseController {
       ShipmentLoadKey: load.Key,
       ShipmentLoadCode: load.Code,
       TruckDriverCode: load.TruckDriverCode,
+      TruckDriverName: load.TruckDriverName,
       TruckCode: load.TruckCode,
       FreightTerms: "",
       BranchCode: load.BranchCode,

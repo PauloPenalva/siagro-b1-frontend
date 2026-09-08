@@ -8,7 +8,7 @@
   PurchaseInvoiceContractsSelectDialog por causa de UMA diferenca que e de negocio, nao de estilo:
 
   aquele inclui ENCERRADO de proposito (a NF chega com frequencia depois de o contrato fechar),
-  enquanto o adiantamento exige contrato APROVADO -- FinancialAdvancesCreateService recusa qualquer
+  enquanto o adiantamento exige contrato APROVADO: FinancialAdvancesCreateService recusa qualquer
   outro status com "O contrato precisa estar aprovado para receber adiantamento.". Reusar o outro
   faria o encerrado aparecer na lista so para tomar 400 no confirmar.
 

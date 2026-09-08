@@ -34,14 +34,34 @@ export default class Main extends CommonController {
     const filterData = filterModel.getData() as Record<string, string>;
     const filters: string[] = [];
 
-    filters.push(`TransactionType eq 'Receipt' or TransactionType eq 'Shipment' or TransactionType eq 'TechnicalLoss'`);
+    // O tipo escolhido pelo usuário É o escopo. Duas correções aqui:
+    //
+    // 1. O termo fixo precisa de PARÊNTESES. Os filtros são unidos por ` and `, e em OData o
+    //    `and` tem precedência sobre o `or` — sem eles a expressão virava
+    //    `Receipt or Shipment or (TechnicalLoss and <filtro do usuário>)`, e o filtro "Tipo"
+    //    era silenciosamente ignorado para Entrada e Saída.
+    // 2. `SalesShipmentReturn` entrou na lista. O Filterbar já oferecia "Dev.Venda", mas o
+    //    escopo antigo a tornava inalcançável e a grid voltava sempre vazia — era por isso que
+    //    a devolução ao armazém não aparecia em tela nenhuma.
+    //
+    // Purchase/SalesShipment ficam de fora de propósito: têm telas próprias, com ações mais
+    // restritas que as desta.
+    filters.push(
+      filterData.TransactionType
+        ? `TransactionType eq '${filterData.TransactionType}'`
+        : `(TransactionType eq 'Receipt' or TransactionType eq 'Shipment' ` +
+          `or TransactionType eq 'TechnicalLoss' or TransactionType eq 'SalesShipmentReturn')`
+    );
     
     Object.keys(filterData).forEach((key: string) => {
       const value = filterData[key];
 
       if (!value) return;
 
-      if (key == "TransactionType" || key == "TransactionStatus") {
+      // Já virou o escopo acima; repetir aqui só duplicaria a condição.
+      if (key == "TransactionType") return;
+
+      if (key == "TransactionStatus") {
         filters.push(`${key} eq '${value}'`)
       } else if (key == "DateFrom") {
         filters.push(`TransactionDate ge ${value}`)

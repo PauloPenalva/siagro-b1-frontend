@@ -33,6 +33,7 @@
           <f:FormElement label="Tipo">
             <f:fields>
               <Select
+                forceSelection="false"
                 selectedKey="{path: 'Type', targetType: 'any'}"
                 required="true"
                 enabled="{ui>/editable}"
@@ -44,7 +45,7 @@
           </f:FormElement>
           <f:FormElement label="Moeda">
             <f:fields>
-              <Select selectedKey="{path: 'Currency', targetType: 'any'}" enabled="{ui>/editable}">
+              <Select forceSelection="false" selectedKey="{path: 'Currency', targetType: 'any'}" enabled="{ui>/editable}">
                 <core:ListItem key="Brl" text="Real (BRL)"/>
                 <core:ListItem key="Usd" text="Dólar (USD)"/>
               </Select>

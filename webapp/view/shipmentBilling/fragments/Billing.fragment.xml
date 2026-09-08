@@ -36,14 +36,9 @@
           forceSelection="false"
           required="true"
           selectedKey="{viewModel>/BranchCode}"
-          items="{
-            path: '/Branchs',
-            sorter: { 
-              path: 'Code'
-            }
-          }"
+          items="{branches>/}"
           >
-          <core:ListItem key="{Code}" text="{ShortName}" additionalText="{Code}"/>
+          <core:ListItem key="{branches>Code}" text="{branches>ShortName}" additionalText="{branches>Code}"/>
         </Select>
         <Label text="Emissao" />
         <DatePicker
@@ -217,6 +212,7 @@
 						<l:GridData span="XL2 L1 M3 S4" />
 					</layoutData>
 				</Input>
+				<Input value="{viewModel>/TruckDriverName}" editable="false" />
 
 				<Label text="Placa" />
 				<Input

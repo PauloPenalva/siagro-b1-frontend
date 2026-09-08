@@ -124,9 +124,12 @@
                                               text="{ path: 'contracts>StandardCashFlowDate', formatter: 'formatter.formatDate' }"
                                               wrapping="false"
                                           />
+<!-- Origem: 0 Compra, 1 Transferência, 2 Devolução. Devolução em Warning de
+                                               propósito: é mercadoria que VOLTOU, e reembarcá-la
+                                               é uma decisão diferente de embarcar compra nova. -->
                                           <ObjectStatus
-                                              text="{= ${contracts>IsOwnershipTransfer} ? 'Transferência' : 'Compra' }"
-                                              state="{= ${contracts>IsOwnershipTransfer} ? 'Information' : 'None' }"
+                                              text="{ path: 'contracts>Origin', formatter: 'formatter.releaseOriginText' }"
+                                              state="{ path: 'contracts>Origin', formatter: 'formatter.releaseOriginState' }"
                                           />
                                           <Text text="{contracts>RowId}" wrapping="false"/>
                                           <Text text="{contracts>FName}" wrapping="false" />

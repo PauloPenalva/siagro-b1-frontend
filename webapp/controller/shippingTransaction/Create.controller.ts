@@ -14,13 +14,17 @@ type routeArgs = {
   }
 }
 
-/** `ReleaseOrigin.OwnershipTransfer` — o enum trafega como inteiro no OData. */
-const RELEASE_ORIGIN_OWNERSHIP_TRANSFER = 1;
+/**
+ * Origens em que o físico JÁ está em nosso poder e a Expedição cria só a perna de saída:
+ * `OwnershipTransfer` (1) e `SalesReturn` (2). O enum trafega como inteiro no OData.
+ * Espelha `ReleaseOriginRules.ShipsWithoutPurchaseLeg` no backend.
+ */
+const RELEASE_ORIGINS_WITHOUT_PURCHASE_LEG = [1, 2];
 
 /** Liberação de entrega lida com `$expand=PurchaseContract`. */
 type ShipmentReleaseWithContract = {
   PurchaseContractKey?: string,
-  /** `ReleaseOrigin`: 0 = Standard, 1 = OwnershipTransfer. */
+  /** `ReleaseOrigin`: 0 = Standard, 1 = OwnershipTransfer, 2 = SalesReturn. */
   Origin?: number,
   DeliveryLocationCode?: string,
   DeliveryLocationName?: string,
@@ -120,13 +124,14 @@ export default class Create extends BaseController {
         const results = await this.getDocNumberInfoByTransaction("StorageTransaction")
         const docNumberInfo = results.filter(x => x.Default)[0];
 
-        // Liberação emitida por transferência de titularidade: a compra já foi
-        // registrada e alocada no confirm da transferência, então este embarque não tem
-        // contrato a informar — o backend recusa a alocação em dobro pela mesma origem.
-        const isOwnershipTransfer = data?.Origin === RELEASE_ORIGIN_OWNERSHIP_TRANSFER;
+        // Transferência de titularidade e devolução ao armazém: a entrada do grão já
+        // aconteceu antes, então este embarque não tem contrato a informar — o backend
+        // recusa a alocação em dobro pela mesma origem.
+        const semPernaDeCompra =
+          RELEASE_ORIGINS_WITHOUT_PURCHASE_LEG.includes(data?.Origin ?? 0);
 
         viewModel.setData({
-          PurchaseContractKey: isOwnershipTransfer ? null : data?.PurchaseContractKey,
+          PurchaseContractKey: semPernaDeCompra ? null : data?.PurchaseContractKey,
           StorageTransaction: {
             DocNumberKey: docNumberInfo.Key,
             BranchCode: branchInfo.code,

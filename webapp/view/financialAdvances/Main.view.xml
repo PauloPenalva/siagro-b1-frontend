@@ -78,7 +78,7 @@
 					</t:Column>
 					<t:Column label="Vencimento" width="11rem" hAlign="Center" sortProperty="DueDate">
 						<t:template>
-							<Text text="{path: 'DueDate', type: 'sap.ui.model.odata.type.Date', formatOptions: { style: 'short' }}" wrapping="false"/>
+							<Text text="{path: 'DueDate', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy' }}" wrapping="false"/>
 						</t:template>
 					</t:Column>
 					<t:Column label="Valor" width="11rem" hAlign="End" sortProperty="NetAmount">

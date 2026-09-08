@@ -2,6 +2,9 @@
     xmlns="sap.m"
     xmlns:core="sap.ui.core"
     xmlns:t="sap.ui.table"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }"
 >
   <t:Table
     id="financialChangeLogsTable"
@@ -17,14 +20,16 @@
     <t:columns>
       <t:Column label="Quando" width="14rem">
         <t:template>
-          <Text text="{path: 'ChangedAt', type: 'sap.ui.model.odata.type.DateTimeOffset', formatOptions: { style: 'short' }}" wrapping="false"/>
+          <Text text="{path: 'ChangedAt', targetType: 'any', formatter: 'formatter.formatDateTime'}" wrapping="false"/>
         </t:template>
       </t:Column>
       <t:Column label="Quem" width="14rem">
         <t:template><Text text="{ChangedBy}" wrapping="false"/></t:template>
       </t:Column>
       <t:Column label="Campo" width="12rem">
-        <t:template><Text text="{Field}" wrapping="false"/></t:template>
+        <t:template>
+          <Text text="{path: 'Field', formatter: 'formatter.formatFinancialChangeLogField'}" wrapping="false"/>
+        </t:template>
       </t:Column>
       <t:Column label="De" width="16rem">
         <t:template><Text text="{OldValue}" wrapping="false"/></t:template>
