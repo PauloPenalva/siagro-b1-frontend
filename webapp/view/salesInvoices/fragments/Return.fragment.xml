@@ -62,6 +62,15 @@
 				</f:formContainers>
 			</f:Form>
 
+			<!-- Sem esta faixa o operador só vê a coluna "Qtde a Devolver" travada, sem nada
+			     dizendo por quê — a trava não é um defeito da tela, é a regra do destino. -->
+			<MessageStrip
+				visible="{= ${return>/DestinationIndex} === 0 }"
+				type="Information"
+				showIcon="true"
+				class="sapUiSmallMarginTop sapUiSmallMarginBottom"
+				text="Com o caminhão seguindo viagem, cada romaneio volta inteiro ao faturamento, por isso a coluna 'Qtde a Devolver' fica travada no peso líquido. Para devolver apenas parte de um romaneio, escolha 'Mercadoria retorna a um armazém'."/>
+
 			<!-- A escolha é por ROMANEIO; a quantidade é opcional dentro dele. Sem ajuste, cada
 			     romaneio volta inteiro. Quantidade parcial só existe no destino armazém: em
 			     "segue viagem" o romaneio volta INTEIRO ao pool de faturamento, e devolvê-lo
