@@ -202,6 +202,7 @@ export default class Main extends SalesContractsBaseController {
       valueMap: {
         "AwaitingSignature": "Aguardando Assinatura",
         "Signed": "Assinado",
+        "NoContract": "Sem Contrato",
       }
     });
 

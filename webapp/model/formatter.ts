@@ -276,6 +276,7 @@ export default {
     const m = new Map<string, string>();
     m.set("AwaitingSignature", "Aguardando Assinatura");
     m.set("Signed"           , "Assinado");
+    m.set("NoContract"       , "Sem Contrato");
 
     return m.get(value) ?? "";
   },
@@ -284,6 +285,8 @@ export default {
     const m = new Map<string, string>();
     m.set("AwaitingSignature", "Warning");
     m.set("Signed"           , "Success");
+    // Sem Contrato é fato neutro: nada a cobrar, nada a comemorar.
+    m.set("NoContract"       , "None");
 
     return m.get(value) ?? "None";
   },

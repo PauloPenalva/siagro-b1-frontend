@@ -39,6 +39,7 @@
                     <core:ListItem key="" text="Não informado"/>
                     <core:ListItem key="AwaitingSignature" text="Aguardando Assinatura"/>
                     <core:ListItem key="Signed" text="Assinado"/>
+                    <core:ListItem key="NoContract" text="Sem Contrato"/>
                   </Select>
                 </f:fields>
               </f:FormElement>

@@ -49,6 +49,7 @@
             >
               <core:ListItem key="AwaitingSignature" text="Aguardando Assinatura"/>
               <core:ListItem key="Signed" text="Assinado"/>
+              <core:ListItem key="NoContract" text="Sem Contrato"/>
             </Select>
         </fb:control>
       </fb:FilterGroupItem>
