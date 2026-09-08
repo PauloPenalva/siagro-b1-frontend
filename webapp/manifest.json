@@ -1010,6 +1010,41 @@
           "pattern": "users/{id}/edit",
           "name": "usersEdit",
           "target": "usersEdit"
+        },
+        {
+          "pattern": "financial-accounts",
+          "name": "financialAccounts",
+          "target": "financialAccounts"
+        },
+        {
+          "pattern": "financial-accounts/add",
+          "name": "financialAccountsAdd",
+          "target": "financialAccountsAdd"
+        },
+        {
+          "pattern": "financial-accounts/{code}/edit",
+          "name": "financialAccountsEdit",
+          "target": "financialAccountsEdit"
+        },
+        {
+          "pattern": "accounts-payable",
+          "name": "accountsPayable",
+          "target": "accountsPayable"
+        },
+        {
+          "pattern": "accounts-receivable",
+          "name": "accountsReceivable",
+          "target": "accountsReceivable"
+        },
+        {
+          "pattern": "financial-advances",
+          "name": "financialAdvances",
+          "target": "financialAdvances"
+        },
+        {
+          "pattern": "financial-documents/{id}/detail",
+          "name": "financialDocumentsDetail",
+          "target": "financialDocumentsDetail"
         }
 			],
 			"targets": {
@@ -2083,6 +2118,48 @@
           "id": "usersEdit",
           "level": 2,
           "name": "siagrob1.view.users.Edit",
+          "clearControlAggregation": true
+        },
+        "financialAccounts": {
+          "id": "financialAccounts",
+          "level": 1,
+          "name": "siagrob1.view.financialAccounts.Main",
+          "clearControlAggregation": true
+        },
+        "financialAccountsAdd": {
+          "id": "financialAccountsAdd",
+          "level": 2,
+          "name": "siagrob1.view.financialAccounts.Add",
+          "clearControlAggregation": true
+        },
+        "financialAccountsEdit": {
+          "id": "financialAccountsEdit",
+          "level": 2,
+          "name": "siagrob1.view.financialAccounts.Edit",
+          "clearControlAggregation": true
+        },
+        "accountsPayable": {
+          "id": "accountsPayable",
+          "level": 1,
+          "name": "siagrob1.view.accountsPayable.Main",
+          "clearControlAggregation": true
+        },
+        "accountsReceivable": {
+          "id": "accountsReceivable",
+          "level": 1,
+          "name": "siagrob1.view.accountsReceivable.Main",
+          "clearControlAggregation": true
+        },
+        "financialAdvances": {
+          "id": "financialAdvances",
+          "level": 1,
+          "name": "siagrob1.view.financialAdvances.Main",
+          "clearControlAggregation": true
+        },
+        "financialDocumentsDetail": {
+          "id": "financialDocumentsDetail",
+          "level": 2,
+          "name": "siagrob1.view.financialDocuments.Detail",
           "clearControlAggregation": true
         }
 			}

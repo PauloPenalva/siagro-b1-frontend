@@ -1,0 +1,99 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:fb="sap.ui.comp.filterbar"
+>
+<fb:FilterBar
+  id="financialDocumentsFb"
+  search=".onSearch"
+  showClearOnFB="true"
+  clear=".onClearFilters">
+  <fb:filterGroupItems>
+
+    <fb:FilterGroupItem name="cardCode" label="Parceiro" groupName="GroupCardCode" visibleInFilterBar="true">
+      <fb:control>
+        <Input
+          showClearIcon="true"
+          showValueHelp="true"
+          valueHelpRequest=".openBusinessPartnersValueHelp"
+          value="{filter>/CardCode}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <fb:FilterGroupItem name="code" label="Número do título" groupName="GroupCode" visibleInFilterBar="true">
+      <fb:control>
+        <Input showClearIcon="true" value="{filter>/Code}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <fb:FilterGroupItem name="status" label="Situação" groupName="GroupStatus" visibleInFilterBar="true">
+      <fb:control>
+        <Select forceSelection="false" selectedKey="{filter>/Status}">
+          <core:ListItem key="" text="Todas"/>
+          <core:ListItem key="Open" text="Em aberto"/>
+          <core:ListItem key="PartiallySettled" text="Baixado parcial"/>
+          <core:ListItem key="Settled" text="Quitado"/>
+          <core:ListItem key="Canceled" text="Cancelado"/>
+        </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <fb:FilterGroupItem name="nature" label="Natureza" groupName="GroupNature" visibleInFilterBar="false">
+      <fb:control>
+        <Select forceSelection="false" selectedKey="{filter>/Nature}">
+          <core:ListItem key="" text="Todas"/>
+          <core:ListItem key="Provisional" text="Provisório"/>
+          <core:ListItem key="Advance" text="Adiantamento"/>
+        </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <fb:FilterGroupItem name="branchCode" label="Filial" groupName="GroupBranch" visibleInFilterBar="true">
+      <fb:control>
+        <Input
+          showClearIcon="true"
+          showValueHelp="true"
+          valueHelpRequest=".openBranchsValueHelp"
+          value="{filter>/BranchCode}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <fb:FilterGroupItem name="originDocNumber" label="Contrato" groupName="GroupOrigin" visibleInFilterBar="true">
+      <fb:control>
+        <Input showClearIcon="true" value="{filter>/OriginDocNumber}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <fb:FilterGroupItem name="dueFrom" label="Vencimento de" groupName="GroupDueFrom" visibleInFilterBar="true">
+      <fb:control>
+        <DatePicker
+          value="{
+            path: 'filter>/DueFrom',
+            type: 'sap.ui.model.type.String'
+          }"
+          displayFormat="dd/MM/yyyy"
+          valueFormat="yyyy-MM-dd"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <fb:FilterGroupItem name="dueTo" label="Vencimento até" groupName="GroupDueTo" visibleInFilterBar="true">
+      <fb:control>
+        <DatePicker
+          value="{
+            path: 'filter>/DueTo',
+            type: 'sap.ui.model.type.String'
+          }"
+          displayFormat="dd/MM/yyyy"
+          valueFormat="yyyy-MM-dd"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <fb:FilterGroupItem name="overdueOnly" label="Somente vencidos" groupName="GroupOverdue" visibleInFilterBar="true">
+      <fb:control>
+        <CheckBox selected="{filter>/OverdueOnly}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+  </fb:filterGroupItems>
+</fb:FilterBar>
+</core:FragmentDefinition>

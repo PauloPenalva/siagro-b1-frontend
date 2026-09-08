@@ -1,0 +1,41 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+<Dialog id="financialSetDueDateDialog" title="Corrigir vencimento">
+  <content>
+    <VBox class="sapUiSmallMargin" width="420px">
+      <f:Form editable="true">
+        <f:layout>
+          <f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+        </f:layout>
+        <f:formContainers>
+          <f:FormContainer>
+            <f:formElements>
+              <f:FormElement label="Novo vencimento">
+                <f:fields>
+                  <DatePicker
+                    value="{viewModel>/dueDateDialog/dueDate}"
+                    required="true"
+                    displayFormat="dd/MM/yyyy"
+                    valueFormat="yyyy-MM-dd"/>
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+        </f:formContainers>
+      </f:Form>
+      <Text text="A alteração fica registrada no log do título, com o valor anterior."
+            class="sapUiTinyMarginTop"/>
+    </VBox>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Salvar" type="Emphasized" press=".onConfirmSetDueDate"/>
+      <Button text="Fechar" press=".onCloseSetDueDateDialog"/>
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>

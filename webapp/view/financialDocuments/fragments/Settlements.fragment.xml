@@ -1,0 +1,84 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:t="sap.ui.table"
+>
+  <t:Table
+    id="financialSettlementsTable"
+    selectionMode="Single"
+    selectionBehavior="Row"
+    class="sapUiSizeCondensed"
+    visibleRowCountMode="Fixed"
+    visibleRowCount="6"
+    alternateRowColors="true"
+    rows="{
+      path: 'Settlements',
+      sorter: { path: 'SettlementDate' }
+    }">
+    <t:extension>
+      <OverflowToolbar>
+        <Title text="Baixas" />
+        <ToolbarSpacer />
+        <Button type="Emphasized" text="Baixar" press=".onSettle"
+                visible="{= !${path: 'IsBlockedForSettlement', targetType: 'any'} }"/>
+        <Button type="Transparent" text="Estornar baixa" press=".onReverseSettlement"/>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Data" width="10rem">
+        <t:template>
+          <Text text="{path: 'SettlementDate', type: 'sap.ui.model.odata.type.Date', formatOptions: { style: 'short' }}" wrapping="false"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Conta" width="10rem">
+        <t:template><Text text="{FinancialAccountCode}" wrapping="false"/></t:template>
+      </t:Column>
+      <t:Column label="Valor" width="11rem" hAlign="End">
+        <t:template>
+          <Text text="{
+            path: 'Amount',
+            type: 'sap.ui.model.odata.type.Decimal',
+            constraints: { precision: 18, scale: 2 },
+            formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+          }" wrapping="false"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Juros" width="9rem" hAlign="End">
+        <t:template>
+          <Text text="{
+            path: 'InterestAmount',
+            type: 'sap.ui.model.odata.type.Decimal',
+            constraints: { precision: 18, scale: 2 },
+            formatOptions: { decimalSeparator: ',', groupingEnabled: true }
+          }" wrapping="false"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Multa" width="9rem" hAlign="End">
+        <t:template>
+          <Text text="{
+            path: 'FineAmount',
+            type: 'sap.ui.model.odata.type.Decimal',
+            constraints: { precision: 18, scale: 2 },
+            formatOptions: { decimalSeparator: ',', groupingEnabled: true }
+          }" wrapping="false"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Desconto" width="9rem" hAlign="End">
+        <t:template>
+          <Text text="{
+            path: 'DiscountAmount',
+            type: 'sap.ui.model.odata.type.Decimal',
+            constraints: { precision: 18, scale: 2 },
+            formatOptions: { decimalSeparator: ',', groupingEnabled: true }
+          }" wrapping="false"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Documento" width="12rem">
+        <t:template><Text text="{DocumentReference}" wrapping="false"/></t:template>
+      </t:Column>
+      <t:Column label="Observação" width="20rem">
+        <t:template><Text text="{Notes}" wrapping="false"/></t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

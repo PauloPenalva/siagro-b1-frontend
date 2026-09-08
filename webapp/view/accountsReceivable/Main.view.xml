@@ -1,0 +1,144 @@
+<mvc:View
+	controllerName="siagrob1.controller.accountsReceivable.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.f"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="Contas a Receber"/>
+				</f:heading>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:header>
+			<f:DynamicPageHeader>
+				<f:content>
+					<core:Fragment fragmentName="siagrob1.view.financialDocuments.fragments.Filterbar" type="XML" />
+				</f:content>
+			</f:DynamicPageHeader>
+		</f:header>
+		<f:content>
+			<t:Table
+				id="accountsReceivableTable"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+				rows="{
+					path: '/FinancialDocuments',
+					sorter: {
+						path: 'DueDate'
+					}
+				}"
+			>
+				<t:extension>
+					<OverflowToolbar>
+						<Title text="Contas a Receber" />
+						<ToolbarSpacer />
+						<Button type="Transparent" text="Exportar Excel" press=".onExcel"/>
+						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
+						<Button type="Transparent" text="Atualizar" press=".onRefresh"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="Título" width="10rem" sortProperty="Code" filterProperty="Code">
+						<t:template>
+							<Text text="{Code}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Cliente" width="24rem" sortProperty="CardName">
+						<t:template>
+							<Text text="({CardCode}) {CardName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Natureza" width="10rem" hAlign="Center" sortProperty="Nature">
+						<t:template>
+							<Text text="{
+								path: 'Nature',
+								targetType: 'any',
+								formatter: 'formatter.formatFinancialNature'
+							}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Situação" width="11rem" hAlign="Center" sortProperty="Status">
+						<t:template>
+							<ObjectStatus
+								inverted="true"
+								text="{
+									path: 'Status',
+									targetType: 'any',
+									formatter: 'formatter.formatFinancialStatus'
+								}"
+								state="{
+									path: 'Status',
+									targetType: 'any',
+									formatter: 'formatter.stateFinancialStatus'
+								}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Vencimento" width="11rem" hAlign="Center" sortProperty="DueDate">
+						<t:template>
+							<ObjectStatus
+								text="{
+									path: 'DueDate',
+									type: 'sap.ui.model.odata.type.Date',
+									formatOptions: { style: 'short' }
+								}"
+								state="{= ${path: 'IsOverdue', targetType: 'any'} ? 'Error' : 'None' }" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Valor" width="11rem" hAlign="End" sortProperty="NetAmount">
+						<t:template>
+							<Text text="{
+								path: 'NetAmount',
+								type: 'sap.ui.model.odata.type.Decimal',
+								constraints: { precision: 18, scale: 2 },
+								formatOptions: {
+									decimalSeparator: ',',
+									groupingEnabled: true,
+									groupingSeparator: '.'
+								}
+							}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Em aberto" width="11rem" hAlign="End">
+						<t:template>
+							<Text text="{
+								path: 'OpenAmount',
+								type: 'sap.ui.model.odata.type.Decimal',
+								constraints: { precision: 18, scale: 2 },
+								formatOptions: {
+									decimalSeparator: ',',
+									groupingEnabled: true,
+									groupingSeparator: '.'
+								}
+							}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Contrato" width="12rem" sortProperty="OriginDocNumber">
+						<t:template>
+							<Text text="{OriginDocNumber}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Filial" width="8rem" sortProperty="BranchCode">
+						<t:template>
+							<Text text="{BranchCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</f:content>
+	</f:DynamicPage>
+
+</mvc:View>

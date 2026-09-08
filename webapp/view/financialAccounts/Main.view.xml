@@ -1,0 +1,97 @@
+<mvc:View
+	controllerName="siagrob1.controller.financialAccounts.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.f"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="Contas Financeiras"/>
+				</f:heading>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:content>
+			<t:Table
+				id="financialAccountsTable"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+				rows="{
+					path: '/FinancialAccounts',
+					sorter: {
+						path: 'Code'
+					}
+				}"
+			>
+				<t:extension>
+					<OverflowToolbar>
+						<Title text="Contas Financeiras" />
+						<ToolbarSpacer />
+						<Button type="Emphasized" icon="sap-icon://add" text="Incluir" press=".onCreate"/>
+						<Button type="Transparent" text="Editar" press=".onEdit"/>
+						<Button type="Transparent" text="Atualizar" press=".onRefresh"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="Código" width="10rem" sortProperty="Code" filterProperty="Code">
+						<t:template>
+							<Text text="{Code}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Nome" width="22rem" sortProperty="Name" filterProperty="Name">
+						<t:template>
+							<Text text="{Name}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Tipo" width="9rem" hAlign="Center" sortProperty="Type">
+						<t:template>
+							<Text text="{
+								path: 'Type',
+								targetType: 'any',
+								formatter: 'formatter.formatFinancialAccountType'
+							}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Banco" width="16rem">
+						<t:template>
+							<Text text="{BankName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Agência" width="8rem">
+						<t:template>
+							<Text text="{BankBranch}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Conta" width="10rem">
+						<t:template>
+							<Text text="{BankAccountNumber}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Filial" width="8rem">
+						<t:template>
+							<Text text="{BranchCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Inativa" width="7rem" hAlign="Center" sortProperty="Inactive">
+						<t:template>
+							<CheckBox selected="{Inactive}" editable="false"/>
+						</t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</f:content>
+	</f:DynamicPage>
+
+</mvc:View>

@@ -1,0 +1,84 @@
+<mvc:View
+	controllerName="siagrob1.controller.financialDocuments.Detail"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:uxap="sap.uxap"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+  <uxap:ObjectPageLayout
+    showFooter="true"
+    toggleHeaderOnTitleClick="true"
+    preserveHeaderStateOnScroll="false"
+    busy="{ui>/busy}"
+    busyIndicatorDelay="0"
+  >
+    <uxap:headerTitle>
+      <uxap:ObjectPageDynamicHeaderTitle>
+        <uxap:expandedHeading>
+          <Title text="Título {Code}"/>
+        </uxap:expandedHeading>
+        <uxap:snappedHeading>
+          <Title text="Título {Code}"/>
+        </uxap:snappedHeading>
+        <uxap:actions>
+          <ObjectStatus
+            inverted="true"
+            text="{ path: 'Status', targetType: 'any', formatter: 'formatter.formatFinancialStatus' }"
+            state="{ path: 'Status', targetType: 'any', formatter: 'formatter.stateFinancialStatus' }" />
+        </uxap:actions>
+      </uxap:ObjectPageDynamicHeaderTitle>
+    </uxap:headerTitle>
+
+    <uxap:sections>
+      <uxap:ObjectPageSection titleUppercase="false" title="Dados do Título">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <core:Fragment fragmentName="siagrob1.view.financialDocuments.fragments.Form" type="XML" />
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Baixas">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <core:Fragment fragmentName="siagrob1.view.financialDocuments.fragments.Settlements" type="XML" />
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Log de Alterações">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <core:Fragment fragmentName="siagrob1.view.financialDocuments.fragments.ChangeLogs" type="XML" />
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
+    </uxap:sections>
+
+    <uxap:footer>
+      <OverflowToolbar>
+        <ToolbarSpacer />
+        <Button
+          text="Corrigir vencimento"
+          icon="sap-icon://appointment-2"
+          visible="{= ${path: 'Status', targetType: 'any'} !== 'Canceled' }"
+          press=".onSetDueDate" />
+        <Button
+          text="Cancelar título"
+          icon="sap-icon://decline"
+          visible="{
+            parts: [
+              { path: 'Status', targetType: 'any' },
+              { path: 'SettledAmount', targetType: 'any' }
+            ],
+            formatter: '.formatter.formatFinancialDocumentCancelable'
+          }"
+          press=".onCancelDocument" />
+        <Button text="Voltar" press=".onBack" />
+      </OverflowToolbar>
+    </uxap:footer>
+  </uxap:ObjectPageLayout>
+
+</mvc:View>

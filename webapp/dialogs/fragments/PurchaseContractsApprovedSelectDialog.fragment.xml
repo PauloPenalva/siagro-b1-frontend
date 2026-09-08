@@ -1,0 +1,98 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+
+<!--
+  Picker de contrato de compra para ADIANTAMENTO. Existe separado do
+  PurchaseInvoiceContractsSelectDialog por causa de UMA diferenca que e de negocio, nao de estilo:
+
+  aquele inclui ENCERRADO de proposito (a NF chega com frequencia depois de o contrato fechar),
+  enquanto o adiantamento exige contrato APROVADO -- FinancialAdvancesCreateService recusa qualquer
+  outro status com "O contrato precisa estar aprovado para receber adiantamento.". Reusar o outro
+  faria o encerrado aparecer na lista so para tomar 400 no confirmar.
+
+  O $filter de status e STRING ESTATICA e nao sap.ui.model.Filter: filtro de enum montado como
+  objeto estoura "Unsupported type" no UI5.
+-->
+<TableSelectDialog
+  class=" sapUiSizeCompact"
+  growing="true"
+  growingThreshold="20"
+  items="{
+    path: '/PurchaseContracts',
+    parameters: {
+      $filter: 'Status eq \'Approved\''
+    },
+    sorter: {
+      path: 'Code',
+      descending: false
+    }
+  }"
+  rememberSelections="true"
+  title="Contratos de Compra"
+>
+<columns>
+  <Column>
+    <header>
+      <Text text="Contrato" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Início" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Fim" />
+    </header>
+  </Column>
+  <Column hAlign="End">
+    <header>
+      <Text text="Volume Total" />
+    </header>
+  </Column>
+  <Column hAlign="End">
+    <header>
+      <Text text="Saldo" />
+    </header>
+  </Column>
+</columns>
+<ColumnListItem>
+  <cells>
+    <ObjectIdentifier title="{Code}" text="{Complement}" />
+    <Text text="{path: 'DeliveryStartDate', type: 'sap.ui.model.odata.type.DateTimeOffset', formatOptions: {style: 'short'}}" />
+    <Text text="{path: 'DeliveryEndDate', type: 'sap.ui.model.odata.type.DateTimeOffset', formatOptions: {style: 'short'}}" />
+    <ObjectNumber
+      number="{
+        path: 'TotalVolume',
+        type: 'sap.ui.model.type.Float',
+        formatOptions: {
+          decimals: 3,
+          decimalSeparator: ',',
+          groupingEnabled: true,
+          groupingSeparator: '.'
+        }
+      }"
+      unit="{UnitOfMeasureCode}"
+      state="None"
+    />
+    <ObjectNumber
+      number="{
+        path: 'AvaiableVolume',
+        type: 'sap.ui.model.type.Float',
+        formatOptions: {
+          decimals: 3,
+          decimalSeparator: ',',
+          groupingEnabled: true,
+          groupingSeparator: '.'
+        }
+      }"
+      unit="{UnitOfMeasureCode}"
+      state="None"
+    />
+  </cells>
+</ColumnListItem>
+</TableSelectDialog>
+</core:FragmentDefinition>

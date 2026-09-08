@@ -408,6 +408,17 @@ export default {
     });
   },
 
+  /**
+   * O botão "Cancelar título" só deve aparecer enquanto o cancelamento é possível.
+   * FinancialDocumentsCancelService recusa em DOIS casos — já cancelado, e SettledAmount != 0
+   * ("possui baixas, estorne-as antes de cancelar") — então mostrar o botão com baixa lançada só
+   * rende um 400 evitável.
+   * `!!status` segura o piscar antes dos dados: binding indefinido avalia como verdadeiro.
+   * OData v4 serializa Edm.Decimal como string — coagir antes de comparar.
+   */
+  formatFinancialDocumentCancelable: (status: string, settledAmount: number | string) =>
+    !!status && status !== "Canceled" && !Number(settledAmount),
+
   formatPriceDifferenceState: (value: number | string) => {
     // OData v4 serializa Edm.Decimal como string — coagir antes de comparar.
     const n = Number(value);
@@ -941,5 +952,51 @@ export default {
     unitOfMeasureCode?: string,
   ): string => {
     return commercialUnitOfMeasureCode ?? unitOfMeasureCode ?? "";
+  },
+
+  formatFinancialDirection: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Payable", "A pagar");
+    m.set("Receivable", "A receber");
+
+    return m.get(value) ?? "";
+  },
+
+  formatFinancialNature: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Provisional", "Provisório");
+    m.set("Firm", "Firme");
+    m.set("Advance", "Adiantamento");
+    m.set("TaxWithholding", "Retenção");
+
+    return m.get(value) ?? "";
+  },
+
+  formatFinancialStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Open", "Em aberto");
+    m.set("PartiallySettled", "Baixado parcial");
+    m.set("Settled", "Quitado");
+    m.set("Canceled", "Cancelado");
+
+    return m.get(value) ?? "";
+  },
+
+  stateFinancialStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Open", "Information");
+    m.set("PartiallySettled", "Warning");
+    m.set("Settled", "Success");
+    m.set("Canceled", "Error");
+
+    return m.get(value) ?? "None";
+  },
+
+  formatFinancialAccountType: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Cash", "Caixa");
+    m.set("Bank", "Banco");
+
+    return m.get(value) ?? "";
   },
 };

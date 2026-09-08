@@ -1,0 +1,98 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+  <f:Form editable="false">
+    <f:layout>
+      <f:ColumnLayout columnsM="2" columnsL="3" columnsXL="4"/>
+    </f:layout>
+    <f:formContainers>
+      <f:FormContainer title="Identificação">
+        <f:formElements>
+          <f:FormElement label="Título">
+            <f:fields><Text text="{Code}"/></f:fields>
+          </f:FormElement>
+          <f:FormElement label="Direção">
+            <f:fields>
+              <Text text="{path: 'Direction', targetType: 'any', formatter: 'formatter.formatFinancialDirection'}"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Natureza">
+            <f:fields>
+              <Text text="{path: 'Nature', targetType: 'any', formatter: 'formatter.formatFinancialNature'}"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Parceiro">
+            <f:fields><Text text="({CardCode}) {CardName}"/></f:fields>
+          </f:FormElement>
+          <f:FormElement label="Filial">
+            <f:fields><Text text="{BranchCode}"/></f:fields>
+          </f:FormElement>
+          <f:FormElement label="Contrato de origem">
+            <f:fields><Text text="{OriginDocNumber}"/></f:fields>
+          </f:FormElement>
+        </f:formElements>
+      </f:FormContainer>
+      <f:FormContainer title="Valores">
+        <f:formElements>
+          <f:FormElement label="Emissão">
+            <f:fields>
+              <Text text="{path: 'DocumentDate', type: 'sap.ui.model.odata.type.Date', formatOptions: { style: 'short' }}"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Vencimento">
+            <f:fields>
+              <Text text="{path: 'DueDate', type: 'sap.ui.model.odata.type.Date', formatOptions: { style: 'short' }}"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Valor">
+            <f:fields>
+              <Text text="{
+                path: 'NetAmount',
+                type: 'sap.ui.model.odata.type.Decimal',
+                constraints: { precision: 18, scale: 2 },
+                formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Baixado">
+            <f:fields>
+              <Text text="{
+                path: 'SettledAmount',
+                type: 'sap.ui.model.odata.type.Decimal',
+                constraints: { precision: 18, scale: 2 },
+                formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Em aberto">
+            <f:fields>
+              <ObjectNumber
+                number="{
+                  path: 'OpenAmount',
+                  type: 'sap.ui.model.odata.type.Decimal',
+                  constraints: { precision: 18, scale: 2 },
+                  formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"
+                state="{= ${path: 'IsOverdue', targetType: 'any'} ? 'Error' : 'None' }"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Condição de pagamento">
+            <f:fields><Text text="{PaymentTermsText}"/></f:fields>
+          </f:FormElement>
+        </f:formElements>
+      </f:FormContainer>
+      <f:FormContainer title="Observações">
+        <f:formElements>
+          <f:FormElement label="Comentários">
+            <f:fields><Text text="{Comments}"/></f:fields>
+          </f:FormElement>
+          <f:FormElement label="Motivo do cancelamento">
+            <f:fields><Text text="{CancellationReason}"/></f:fields>
+          </f:FormElement>
+        </f:formElements>
+      </f:FormContainer>
+    </f:formContainers>
+  </f:Form>
+</core:FragmentDefinition>

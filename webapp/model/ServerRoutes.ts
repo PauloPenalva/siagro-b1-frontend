@@ -166,4 +166,13 @@ export default {
   purchaseInvoicesCommentDelete: '/PurchaseInvoicesCommentDelete(...)',
 
   storageTransactionCopy: '/StorageTransactionsCopy(...)',
+
+  // financeiro
+  financialAccounts: '/odata/FinancialAccounts',
+  financialDocuments: '/odata/FinancialDocuments',
+  financialDocumentsSettle: '/FinancialDocumentsSettle(...)',
+  financialDocumentsReverseSettlement: '/FinancialDocumentsReverseSettlement(...)',
+  financialDocumentsCancel: '/FinancialDocumentsCancel(...)',
+  financialDocumentsSetDueDate: '/FinancialDocumentsSetDueDate(...)',
+  financialAdvancesCreate: '/FinancialAdvancesCreate(...)',
 }

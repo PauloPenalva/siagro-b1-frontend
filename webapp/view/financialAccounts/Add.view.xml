@@ -1,0 +1,38 @@
+<mvc:View
+	controllerName="siagrob1.controller.financialAccounts.Add"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:uxap="sap.uxap">
+
+  <uxap:ObjectPageLayout showFooter="true" busy="{ui>/busy}" busyIndicatorDelay="0">
+    <uxap:headerTitle>
+      <uxap:ObjectPageDynamicHeaderTitle>
+        <uxap:expandedHeading>
+          <Title text="Nova Conta Financeira"/>
+        </uxap:expandedHeading>
+        <uxap:snappedHeading>
+          <Title text="Nova Conta Financeira"/>
+        </uxap:snappedHeading>
+      </uxap:ObjectPageDynamicHeaderTitle>
+    </uxap:headerTitle>
+    <uxap:sections>
+      <uxap:ObjectPageSection titleUppercase="false" title="Dados da Conta">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <core:Fragment fragmentName="siagrob1.view.financialAccounts.fragments.Form" type="XML" />
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
+    </uxap:sections>
+    <uxap:footer>
+      <OverflowToolbar>
+        <ToolbarSpacer />
+        <Button text="Salvar" type="Emphasized" press=".onSave"/>
+        <Button text="Cancelar" press=".onCancel"/>
+      </OverflowToolbar>
+    </uxap:footer>
+  </uxap:ObjectPageLayout>
+
+</mvc:View>

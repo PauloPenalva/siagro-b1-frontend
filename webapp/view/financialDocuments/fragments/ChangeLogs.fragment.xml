@@ -1,0 +1,37 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:t="sap.ui.table"
+>
+  <t:Table
+    id="financialChangeLogsTable"
+    selectionMode="None"
+    class="sapUiSizeCondensed"
+    visibleRowCountMode="Fixed"
+    visibleRowCount="5"
+    alternateRowColors="true"
+    rows="{
+      path: 'ChangeLogs',
+      sorter: { path: 'ChangedAt', descending: true }
+    }">
+    <t:columns>
+      <t:Column label="Quando" width="14rem">
+        <t:template>
+          <Text text="{path: 'ChangedAt', type: 'sap.ui.model.odata.type.DateTimeOffset', formatOptions: { style: 'short' }}" wrapping="false"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Quem" width="14rem">
+        <t:template><Text text="{ChangedBy}" wrapping="false"/></t:template>
+      </t:Column>
+      <t:Column label="Campo" width="12rem">
+        <t:template><Text text="{Field}" wrapping="false"/></t:template>
+      </t:Column>
+      <t:Column label="De" width="16rem">
+        <t:template><Text text="{OldValue}" wrapping="false"/></t:template>
+      </t:Column>
+      <t:Column label="Para" width="16rem">
+        <t:template><Text text="{NewValue}" wrapping="false"/></t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

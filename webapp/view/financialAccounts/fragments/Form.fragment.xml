@@ -1,0 +1,96 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+  <f:Form id="financialAccountForm" editable="true">
+    <f:layout>
+      <f:ColumnLayout columnsM="2" columnsL="3" columnsXL="4"/>
+    </f:layout>
+    <f:formContainers>
+      <f:FormContainer title="Identificação">
+        <f:formElements>
+          <f:FormElement label="Código">
+            <f:fields>
+              <Input
+                value="{Code}"
+                maxLength="10"
+                required="true"
+                editable="{ui>/codeEditable}"
+                liveChange=".validateField"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Nome">
+            <f:fields>
+              <Input
+                value="{Name}"
+                maxLength="100"
+                required="true"
+                editable="{ui>/editable}"
+                liveChange=".validateField"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Tipo">
+            <f:fields>
+              <Select
+                selectedKey="{path: 'Type', targetType: 'any'}"
+                required="true"
+                enabled="{ui>/editable}"
+                change=".onTypeChange">
+                <core:ListItem key="Cash" text="Caixa"/>
+                <core:ListItem key="Bank" text="Banco"/>
+              </Select>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Moeda">
+            <f:fields>
+              <Select selectedKey="{path: 'Currency', targetType: 'any'}" enabled="{ui>/editable}">
+                <core:ListItem key="Brl" text="Real (BRL)"/>
+                <core:ListItem key="Usd" text="Dólar (USD)"/>
+              </Select>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Filial">
+            <f:fields>
+              <Input
+                value="{BranchCode}"
+                showValueHelp="true"
+                valueHelpOnly="true"
+                editable="{ui>/editable}"
+                valueHelpRequest=".openBranchsValueHelp"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Inativa">
+            <f:fields>
+              <CheckBox selected="{Inactive}" editable="{ui>/editable}"/>
+            </f:fields>
+          </f:FormElement>
+        </f:formElements>
+      </f:FormContainer>
+      <f:FormContainer title="Dados bancários" visible="{ui>/isBank}">
+        <f:formElements>
+          <f:FormElement label="Código do banco">
+            <f:fields>
+              <Input value="{BankCode}" maxLength="3" editable="{ui>/editable}"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Nome do banco">
+            <f:fields>
+              <Input value="{BankName}" maxLength="100" editable="{ui>/editable}"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Agência">
+            <f:fields>
+              <Input value="{BankBranch}" maxLength="10" editable="{ui>/editable}"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Conta">
+            <f:fields>
+              <Input value="{BankAccountNumber}" maxLength="20" editable="{ui>/editable}"/>
+            </f:fields>
+          </f:FormElement>
+        </f:formElements>
+      </f:FormContainer>
+    </f:formContainers>
+  </f:Form>
+</core:FragmentDefinition>
