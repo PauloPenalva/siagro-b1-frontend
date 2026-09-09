@@ -175,4 +175,6 @@ export default {
   financialDocumentsCancel: '/FinancialDocumentsCancel(...)',
   financialDocumentsSetDueDate: '/FinancialDocumentsSetDueDate(...)',
   financialAdvancesCreate: '/FinancialAdvancesCreate(...)',
+  financialAdvancesRefund: '/FinancialAdvancesRefund(...)',
+  financialAdvancesRelinkContract: '/FinancialAdvancesRelinkContract(...)',
 }

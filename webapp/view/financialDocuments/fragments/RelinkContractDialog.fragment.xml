@@ -1,0 +1,50 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+<Dialog id="financialRelinkContractDialog" title="Vincular a outro contrato">
+  <content>
+    <VBox class="sapUiSmallMargin" width="520px">
+      <MessageStrip
+        text="O adiantamento migra INTEIRO. O contrato de destino precisa ser do mesmo parceiro, da mesma filial, na mesma moeda e estar aprovado."
+        type="Information"
+        showIcon="true"
+        class="sapUiSmallMarginBottom"/>
+      <f:Form editable="true">
+        <f:layout>
+          <f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+        </f:layout>
+        <f:formContainers>
+          <f:FormContainer>
+            <f:formElements>
+              <f:FormElement label="Contrato atual">
+                <f:fields>
+                  <Text text="{viewModel>/relinkDialog/currentContractCode}"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Novo contrato">
+                <f:fields>
+                  <Input
+                    value="{viewModel>/relinkDialog/contractCode}"
+                    required="true"
+                    showValueHelp="true"
+                    valueHelpOnly="true"
+                    valueHelpRequest=".openRelinkContractValueHelp"/>
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+        </f:formContainers>
+      </f:Form>
+    </VBox>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Vincular" type="Emphasized" press=".onConfirmRelink"/>
+      <Button text="Fechar" press=".onCloseRelinkDialog"/>
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>

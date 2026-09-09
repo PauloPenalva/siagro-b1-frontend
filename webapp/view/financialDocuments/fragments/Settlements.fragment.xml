@@ -21,7 +21,8 @@
         <ToolbarSpacer />
         <Button type="Emphasized" text="Baixar" press=".onSettle"
                 visible="{= !${path: 'IsBlockedForSettlement', targetType: 'any'} }"/>
-        <Button type="Transparent" text="Estornar baixa" press=".onReverseSettlement"/>
+        <Button type="Transparent" text="Estornar baixa" press=".onReverseSettlement"
+                visible="{= ${path: 'Status', targetType: 'any'} !== 'Canceled' }"/>
       </OverflowToolbar>
     </t:extension>
     <t:columns>

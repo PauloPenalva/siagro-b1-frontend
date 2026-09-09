@@ -1,0 +1,72 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+<Dialog id="financialRefundAdvanceDialog" title="Devolver adiantamento">
+  <content>
+    <VBox class="sapUiSmallMargin" width="560px">
+      <MessageStrip
+        text="A devolução é sempre pelo valor INTEIRO já pago. O título fica cancelado e o crédito do adiantamento deixa de existir."
+        type="Warning"
+        showIcon="true"
+        class="sapUiSmallMarginBottom"/>
+      <f:Form editable="true">
+        <f:layout>
+          <f:ColumnLayout columnsM="2" columnsL="2" columnsXL="2"/>
+        </f:layout>
+        <f:formContainers>
+          <f:FormContainer>
+            <f:formElements>
+              <f:FormElement label="Conta financeira">
+                <f:fields>
+                  <Input
+                    value="{viewModel>/refundDialog/financialAccountCode}"
+                    required="true"
+                    showValueHelp="true"
+                    valueHelpOnly="true"
+                    valueHelpRequest=".openFinancialAccountsValueHelp"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Data da devolução">
+                <f:fields>
+                  <DatePicker
+                    value="{viewModel>/refundDialog/refundDate}"
+                    required="true"
+                    displayFormat="dd/MM/yyyy"
+                    valueFormat="yyyy-MM-dd"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Valor a devolver">
+                <f:fields>
+                  <Text text="{viewModel>/refundDialog/amountText}"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Documento">
+                <f:fields>
+                  <Input value="{viewModel>/refundDialog/documentReference}" maxLength="50"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Motivo">
+                <f:fields>
+                  <TextArea
+                    value="{viewModel>/refundDialog/reason}"
+                    required="true"
+                    rows="3" width="100%" maxLength="500"/>
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+        </f:formContainers>
+      </f:Form>
+    </VBox>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Devolver" type="Emphasized" press=".onConfirmRefund"/>
+      <Button text="Fechar" press=".onCloseRefundDialog"/>
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>

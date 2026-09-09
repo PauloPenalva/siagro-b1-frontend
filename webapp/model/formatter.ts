@@ -303,6 +303,7 @@ export default {
     const m = new Map<string, string>();
     m.set("Cif" , "CIF");
     m.set("Fob" , "FOB");
+    m.set("Ter" , "TER");
     m.set("None", "SEM FRETE");
     
     return m.get(value);
@@ -1005,6 +1006,7 @@ export default {
     const m = new Map<string, string>();
     m.set("DueDate", "Vencimento");
     m.set("Comments", "Comentários");
+    m.set("Contract", "Contrato");
 
     return m.get(value) ?? value;
   },

@@ -199,7 +199,17 @@ export default class Detail extends PurchaseContractsBaseController {
         this.navToPurchaseContractsApprovalList();
       },
       error: (err: JQueryXHR) => {
-        MessageBox.error((err.responseJSON as { message?: string })?.message  || "Erro ao cancelar contrato.")
+        // O backend responde BadRequest(string), entao responseJSON e a PROPRIA string, nao um
+        // objeto. Ler so `.message` devolvia undefined e trocava a mensagem de negocio pelo texto
+        // generico: o guard de adiantamento pago nomeia o titulo e as tres saidas, e nada disso
+        // chegava ao usuario. As outras duas formas ficam aceitas por seguranca.
+        const body: unknown = err.responseJSON;
+        const message = typeof body === "string"
+          ? body
+          : (body as { message?: string })?.message
+            ?? (body as { error?: { message?: string } })?.error?.message;
+
+        MessageBox.error(message || "Erro ao cancelar contrato.")
         this.setBusy(false);
       }
     })  

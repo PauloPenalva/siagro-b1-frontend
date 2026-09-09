@@ -338,6 +338,7 @@
               >
               <core:ListItem key="Cif" text="CIF"/>
               <core:ListItem key="Fob" text="FOB"/>
+              <core:ListItem key="Ter" text="TER"/>
               <core:ListItem key="None" text="SEM FRETE"/>
             </Select>
             <Label text="Região Logistica" />

@@ -12,6 +12,7 @@ import Table from "sap/ui/table/Table";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 
 export default class Detail extends CommonController {
   formatter = { ...formatter }
@@ -274,6 +275,218 @@ export default class Detail extends CommonController {
       this.refreshDocument();
     } catch (err) {
       MessageBox.error((err as Error).message || "Erro ao cancelar o título.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  private _refundDialog: Dialog;
+
+  /**
+   * Conta financeira sugerida: a da baixa mais recente do título. É quase sempre a conta de onde
+   * o dinheiro saiu, então poupa um value help no caso comum sem impedir a troca.
+   *
+   * NÃO usar `getCurrentContexts()` aqui: por contrato do próprio framework ele devolve só os
+   * contextos "como foram pedidos pela última vez pelo controle" — e a tabela é
+   * `visibleRowCountMode="Fixed"` com `visibleRowCount="6"`, ordenada por `SettlementDate`
+   * ASCENDENTE (mais antiga primeiro). Num título com mais de 6 baixas, o "último" contexto
+   * RENDERIZADO seria uma baixa antiga, não a mais recente — sugestão de conta errada, em
+   * silêncio, dentro de um fluxo de devolução de dinheiro. `requestContexts(0, Infinity)` busca a
+   * coleção inteira e permite escolher pela data de verdade, não pela janela visível.
+   *
+   * Cai para "" (mesmo comportamento inicial do SettleDialog) quando a tabela, o binding ou
+   * qualquer baixa com conta preenchida não existir — inclusive se a seção "Baixas" ainda não
+   * tiver sido instanciada (ObjectPageSection tardia) ou a requisição falhar.
+   */
+  private async lastSettlementAccount(): Promise<string> {
+    try {
+      const table = this.byId("financialSettlementsTable") as Table;
+      const binding = table?.getBinding("rows") as ODataListBinding | undefined;
+      if (!binding) return "";
+
+      const contexts = await binding.requestContexts(0, Infinity);
+
+      let latestCode = "";
+      let latestTime = -Infinity;
+
+      for (const context of contexts) {
+        const code = context.getProperty("FinancialAccountCode") as string;
+        if (!code) continue;
+
+        const time = new Date(context.getProperty("SettlementDate") as string).getTime();
+        if (time >= latestTime) {
+          latestTime = time;
+          latestCode = code;
+        }
+      }
+
+      return latestCode;
+    } catch {
+      return "";
+    }
+  }
+
+  async onRefundAdvance(): Promise<void> {
+    const ctx = this.documentContext();
+    if (!ctx) {
+      MessageBox.error("Título não carregado.");
+      return;
+    }
+
+    const settled = Number(ctx.getProperty("SettledAmount") ?? 0);
+
+    if (!(settled > 0)) {
+      MessageBox.warning("O adiantamento não tem valor pago: não há o que devolver.");
+      return;
+    }
+
+    (this.getModel("viewModel") as JSONModel).setProperty("/refundDialog", {
+      financialAccountCode: await this.lastSettlementAccount(),
+      refundDate: new Date().toISOString().substring(0, 10),
+      amountText: formatter.formatDecimal(settled, 2),
+      documentReference: "",
+      reason: "",
+    });
+
+    this._refundDialog ??= await DialogHelper.createDialog(
+      this, "siagrob1.view.financialDocuments.fragments.RefundAdvanceDialog");
+    this._refundDialog.open();
+  }
+
+  onCloseRefundDialog(): void {
+    this._refundDialog?.close();
+  }
+
+  async onConfirmRefund(): Promise<void> {
+    const ctx = this.documentContext();
+    if (!ctx) return;
+
+    const form = (this.getModel("viewModel") as JSONModel)
+      .getProperty("/refundDialog") as {
+        financialAccountCode: string; refundDate: string;
+        documentReference: string; reason: string;
+      };
+
+    if (!form.financialAccountCode) {
+      MessageBox.alert("Informe a conta financeira que recebeu a devolução.");
+      return;
+    }
+
+    if (!form.refundDate) {
+      MessageBox.alert("Informe a data da devolução.");
+      return;
+    }
+
+    if (!form.reason?.trim()) {
+      MessageBox.alert("Informe o motivo da devolução.");
+      return;
+    }
+
+    this.onCloseRefundDialog();
+
+    try {
+      this.setBusy(true);
+      const action = (this.getModel() as ODataModel).bindContext(this.api.financialAdvancesRefund);
+      action.setParameter("DocumentKey", ctx.getProperty("Key"));
+      action.setParameter("FinancialAccountCode", form.financialAccountCode);
+      action.setParameter("RefundDate", form.refundDate);
+      action.setParameter("DocumentReference", form.documentReference ?? "");
+      action.setParameter("Reason", form.reason);
+      await action.invoke();
+
+      MessageToast.show("Devolução registrada. O título foi cancelado.");
+      this.refreshDocument();
+    } catch (err) {
+      MessageBox.error((err as Error).message || "Erro ao registrar a devolução.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  private _relinkDialog: Dialog;
+
+  async onRelinkContract(): Promise<void> {
+    const ctx = this.documentContext();
+    if (!ctx) {
+      MessageBox.error("Título não carregado.");
+      return;
+    }
+
+    (this.getModel("viewModel") as JSONModel).setProperty("/relinkDialog", {
+      currentContractCode: (ctx.getProperty("OriginDocNumber") as string) || "(sem contrato)",
+      contractCode: "",
+      contractKey: null,
+    });
+
+    this._relinkDialog ??= await DialogHelper.createDialog(
+      this, "siagrob1.view.financialDocuments.fragments.RelinkContractDialog");
+    this._relinkDialog.open();
+  }
+
+  onCloseRelinkDialog(): void {
+    this._relinkDialog?.close();
+  }
+
+  /**
+   * Value help do contrato de destino.
+   *
+   * O diálogo é escolhido pela DIREÇÃO do título, não por um campo de tela: a pagar migra para
+   * contrato de compra, a receber para contrato de venda, e a action recusa o cruzado.
+   *
+   * O filtro de parceiro vai como defaultFilters porque muda a cada abertura. CardCode é STRING,
+   * então Filter é seguro aqui; o status Approved continua no $filter estático de cada
+   * fragmento, porque filtro de enum montado como objeto estoura "Unsupported type" no UI5.
+   */
+  async openRelinkContractValueHelp(): Promise<void> {
+    const ctx = this.documentContext();
+    if (!ctx) return;
+
+    const isPayable = ctx.getProperty("Direction") === "Payable";
+    const dialogName = isPayable
+      ? "PurchaseContractsApprovedSelectDialog"
+      : "SalesContractsSelectDialog";
+
+    const cardCode = ctx.getProperty("CardCode") as string;
+
+    const oSelected = await DialogHelper.openTableSelectDialog(
+      this, dialogName, ["Code", "CardName"],
+      [new Filter("CardCode", FilterOperator.EQ, cardCode)]);
+
+    if (!oSelected) return;
+
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    viewModel.setProperty("/relinkDialog/contractCode", oSelected.getProperty("Code") as string);
+    viewModel.setProperty("/relinkDialog/contractKey", oSelected.getProperty("Key") as string);
+  }
+
+  async onConfirmRelink(): Promise<void> {
+    const ctx = this.documentContext();
+    if (!ctx) return;
+
+    const form = (this.getModel("viewModel") as JSONModel)
+      .getProperty("/relinkDialog") as { contractCode: string; contractKey: string };
+
+    if (!form.contractKey) {
+      MessageBox.alert("Selecione o contrato de destino.");
+      return;
+    }
+
+    this.onCloseRelinkDialog();
+
+    try {
+      this.setBusy(true);
+      const action = (this.getModel() as ODataModel)
+        .bindContext(this.api.financialAdvancesRelinkContract);
+      action.setParameter("DocumentKey", ctx.getProperty("Key"));
+      action.setParameter("ContractType",
+        ctx.getProperty("Direction") === "Payable" ? "Purchase" : "Sales");
+      action.setParameter("ContractKey", form.contractKey);
+      await action.invoke();
+
+      MessageToast.show(`Adiantamento vinculado ao contrato ${form.contractCode}.`);
+      this.refreshDocument();
+    } catch (err) {
+      MessageBox.error((err as Error).message || "Erro ao vincular o adiantamento.");
     } finally {
       this.setBusy(false);
     }

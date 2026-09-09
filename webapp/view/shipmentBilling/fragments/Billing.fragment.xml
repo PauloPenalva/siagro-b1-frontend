@@ -157,6 +157,10 @@
 						key="Fob"
 						text="FOB"
 					/>
+					<core:Item
+						key="Ter"
+						text="TER"
+					/>
 				</Select>
         
 

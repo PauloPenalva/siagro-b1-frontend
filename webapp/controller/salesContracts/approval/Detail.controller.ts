@@ -184,7 +184,16 @@ export default class Detail extends SalesContractsBaseController {
         this.navToSalesContractsApprovalList();
       },
       error: (err) => {
-        MessageBox.error((err.responseJSON as { error?: { message?: string } })?.error?.message  || "Erro ao cancelar contrato.")
+        // Espelho do lado compra: o backend responde BadRequest(string), entao responseJSON e a
+        // PROPRIA string. Ler so `.error.message` devolvia undefined e trocava a mensagem de
+        // negocio pelo texto generico, escondendo o guard de adiantamento pago do usuario.
+        const body: unknown = err.responseJSON;
+        const message = typeof body === "string"
+          ? body
+          : (body as { message?: string })?.message
+            ?? (body as { error?: { message?: string } })?.error?.message;
+
+        MessageBox.error(message || "Erro ao cancelar contrato.")
         this.setBusy(false);
       }
     })  
