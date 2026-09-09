@@ -1,0 +1,81 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <!--
+    Comentarios da carga: anotacoes com data, hora e autor. Editaveis a qualquer tempo,
+    inclusive em carga cancelada, porque comentario nao altera peso, saldo nem valor. Por isso
+    os botoes nao olham o Status.
+
+    A tabela e somente leitura: o texto e digitado no dialogo e gravado por action.
+
+    `$$ownRequest` e obrigatorio: sem ele o binding vira $expand no GET da carga, e
+    ShipmentLoadsGetService nao inclui CommentEntries - a tabela viria vazia.
+
+    O `sorter` tambem e obrigatorio, por menos obvio: o OrderByDescending do service SO vale na
+    consulta sem paginacao. A sap.ui.table pede $skip/$top, e ai o [EnableQuery] reordena por
+    chave para estabilizar a paginacao.
+  -->
+  <t:Table
+    id="shipmentLoadCommentsTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    busyIndicatorDelay="0"
+    visibleRowCount="6"
+    rows="{
+      path: 'CommentEntries',
+      parameters: { '$$ownRequest': true },
+      sorter: { path: 'CommentedAt', descending: true }
+    }"
+    noData="Nenhum comentário registrado nesta carga."
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Comentários" />
+          <ToolbarSpacer />
+          <Button text="Incluir" icon="sap-icon://add" type="Transparent" press=".onAddComment" />
+          <Button text="Editar" icon="sap-icon://edit" type="Transparent" press=".onEditComment" />
+          <Button text="Remover" icon="sap-icon://delete" type="Transparent" press=".onRemoveComment" />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <!--
+        Data/hora e autor da ULTIMA escrita: editar reescreve as duas colunas. A versao anterior
+        fica no Log de Alteracoes.
+
+        `targetType: 'any'` porque o datetime2 chega com 7 casas de fracao de segundo, que o
+        DateTimeOffset do UI5 recusa.
+      -->
+      <t:Column label="Data/Hora" width="11rem">
+        <t:template>
+          <Text wrapping="false" text="{
+            path: 'CommentedAt',
+            targetType: 'any',
+            formatter: '.formatter.formatDateTime'
+          }" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Usuário" width="10rem">
+        <t:template>
+          <Text wrapping="false" text="{CommentedBy}" />
+        </t:template>
+      </t:Column>
+      <!--
+        `wrapping="false"`: sem isso um comentario longo quebra a linha e estoura a altura da
+        sap.ui.table. O texto completo continua no tooltip, e a edicao abre no dialogo.
+      -->
+      <t:Column label="Comentário">
+        <t:template>
+          <Text text="{CommentText}" tooltip="{CommentText}" wrapping="false" />
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

@@ -514,6 +514,34 @@ export default {
     return m.get(value);
   },
 
+  /**
+   * Rótulo do campo no log de alterações da carga. O backend grava o código
+   * (ShipmentLoadChangeLogFields), não o texto - a tradução é aqui para não travar o i18n.
+   * Código desconhecido cai para ele mesmo: linha antiga nunca fica em branco.
+   */
+  formatShipmentLoadChangeLogField: (value: string) => {
+    const m = new Map<string, string>();
+    // Singular: e a colecao de comentarios (CommentEntries). Nao confundir com "Comments"
+    // abaixo, que e a observacao do cabecalho.
+    m.set("Comment", "Comentário");
+    m.set("Comments", "Observações");
+    m.set("LoadDate", "Data");
+    m.set("TruckCode", "Veículo");
+    m.set("TruckDriver", "Motorista");
+    m.set("Carrier", "Transportadora");
+    m.set("CardCode", "Cliente");
+    m.set("Warehouse", "Armazém");
+    m.set("Item", "Produto");
+    m.set("UnitOfMeasure", "Unidade");
+    m.set("Branch", "Filial");
+    m.set("HasExcess", "Excesso");
+    m.set("FreightPrice", "Valor do frete");
+    m.set("Status", "Situação");
+    m.set("CancellationReason", "Motivo do cancelamento");
+
+    return m.get(value) ?? value;
+  },
+
   formatOwnershipTransferStatus: (value: string) => {
     const m = new Map<string, string>();
     m.set("Open", "Em Aberto");

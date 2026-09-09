@@ -316,8 +316,176 @@ export default class Detail extends BaseController {
     this.navTo("shipmentLoads");
   }
 
+  /* ------------------------------------------------------------------ */
+  /* Comentários                                                         */
+  /* ------------------------------------------------------------------ */
+
+  private _commentDialog: Dialog;
+
+  private selectedCommentContext(): Context | null {
+    const table = this.byId("shipmentLoadCommentsTable") as Table;
+    const selected = table.getSelectedIndex();
+
+    if (selected < 0) {
+      MessageBox.alert("Selecione um comentário.");
+      return null;
+    }
+
+    return table.getContextByIndex(selected) as Context;
+  }
+
   /**
-   * Recarrega o cabeçalho e as quatro coleções. Elas só respondem a `refresh()` porque estão
+   * Autor ou admin. A permissão é decidida no SERVIDOR; isto só evita a viagem inútil.
+   */
+  private canModifyComment(context: Context): boolean {
+    const sessionModel = this.getModel("sessionModel") as JSONModel;
+
+    if (sessionModel?.getProperty("/isAdmin") === true) {
+      return true;
+    }
+
+    const userName = (sessionModel?.getProperty("/userName") as string) ?? "";
+    const author = (context.getProperty("CommentedBy") as string) ?? "";
+
+    return userName !== "" && author.toLowerCase() === userName.toLowerCase();
+  }
+
+  /**
+   * O diálogo trabalha sobre um buffer JSON, nunca sobre o contexto OData: two-way binding num
+   * Detail deixaria um PATCH pendente no update group diferido e derrubaria o batch inteiro.
+   * `key` nulo significa inclusão.
+   */
+  private prepareCommentDialog(title: string, text: string, key: string): void {
+    (this.getModel("viewModel") as JSONModel).setProperty("/commentDialog", {
+      title,
+      text: text ?? "",
+      key,
+    });
+  }
+
+  private async openCommentDialog(): Promise<void> {
+    this._commentDialog ??= await DialogHelper.createDialog(
+      this,
+      "siagrob1.view.shipmentLoads.fragments.ShipmentLoadCommentDialog"
+    );
+
+    this._commentDialog.open();
+  }
+
+  /**
+   * Recarrega a tabela de comentários (cache próprio, por `$$ownRequest`) e o log de alterações:
+   * toda mutação de comentário grava linha no log.
+   */
+  private refreshCommentsList(): void {
+    ["shipmentLoadCommentsTable", "shipmentLoadChangeLogsTable"].forEach(id => {
+      const binding = (this.byId(id) as Table)?.getBinding("rows") as ODataListBinding;
+      binding?.refresh();
+    });
+  }
+
+  async onAddComment(): Promise<void> {
+    if (!this.getView().getBindingContext()) {
+      MessageBox.alert("Carga não carregada.");
+      return;
+    }
+
+    this.prepareCommentDialog("Novo Comentário", "", null);
+    await this.openCommentDialog();
+  }
+
+  async onEditComment(): Promise<void> {
+    const context = this.selectedCommentContext();
+
+    if (!context) return;
+
+    if (!this.canModifyComment(context)) {
+      MessageBox.alert("Somente o autor do comentário pode alterá-lo.");
+      return;
+    }
+
+    this.prepareCommentDialog(
+      "Editar Comentário",
+      context.getProperty("CommentText") as string,
+      context.getProperty("Key") as string
+    );
+
+    await this.openCommentDialog();
+  }
+
+  onCloseCommentDialog(): void {
+    this._commentDialog?.close();
+  }
+
+  async onConfirmComment(): Promise<void> {
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    const text = ((viewModel.getProperty("/commentDialog/text") as string) ?? "").trim();
+
+    if (text === "") {
+      MessageBox.alert("Informe o texto do comentário.");
+      return;
+    }
+
+    const commentKey = viewModel.getProperty("/commentDialog/key") as string;
+
+    this.onCloseCommentDialog();
+    this.setBusy(true);
+
+    try {
+      const model = this.getModel() as ODataModel;
+
+      if (commentKey) {
+        const action = model.bindContext("/ShipmentLoadsCommentUpdate(...)");
+        action.setParameter("Key", commentKey);
+        action.setParameter("Text", text);
+        await action.invoke();
+        MessageToast.show("Comentário alterado.");
+      } else {
+        const action = model.bindContext("/ShipmentLoadsCommentCreate(...)");
+        action.setParameter("LoadKey", this._loadKey);
+        action.setParameter("Text", text);
+        await action.invoke();
+        MessageToast.show("Comentário incluído.");
+      }
+
+      this.refreshCommentsList();
+    } catch (e) {
+      MessageBox.error((e as Error).message || "Erro ao gravar o comentário.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  async onRemoveComment(): Promise<void> {
+    const context = this.selectedCommentContext();
+
+    if (!context) return;
+
+    if (!this.canModifyComment(context)) {
+      MessageBox.alert("Somente o autor do comentário pode excluí-lo.");
+      return;
+    }
+
+    if (!await DialogHelper.confirmDialog("Excluir o comentário selecionado ?")) return;
+
+    this.setBusy(true);
+
+    try {
+      const action = (this.getModel() as ODataModel)
+        .bindContext("/ShipmentLoadsCommentDelete(...)");
+      action.setParameter("Key", context.getProperty("Key") as string);
+      await action.invoke();
+
+      MessageToast.show("Comentário excluído.");
+      this.refreshCommentsList();
+    } catch (e) {
+      MessageBox.error((e as Error).message || "Erro ao excluir o comentário.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  /**
+   * Recarrega o cabeçalho e as coleções. Elas só respondem a `refresh()` porque estão
    * bindadas com `$$ownRequest`; como `$expand` do pai, ficariam presas ao cache do elemento.
    */
   private refreshAll(): void {
@@ -330,6 +498,8 @@ export default class Detail extends BaseController {
       "loadInvoicesTable",
       "loadMovementsTable",
       "loadRefusalReturnsTable",
+      "shipmentLoadCommentsTable",
+      "shipmentLoadChangeLogsTable",
     ].forEach(id => {
       const binding = (this.byId(id) as Table)?.getBinding("rows") as ODataListBinding;
       binding?.refresh();
