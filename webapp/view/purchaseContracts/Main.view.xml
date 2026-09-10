@@ -249,6 +249,26 @@
 						</t:template>
 					</t:Column>
           <t:Column
+						label="Cod.Armazém"
+						sortProperty="DeliveryLocationCode"
+            width="10rem"
+						>
+						<t:template>
+            <Text text="{DeliveryLocationCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Armazém"
+						sortProperty="DeliveryLocationName"
+            filterProperty="DeliveryLocationName"
+            filterOperator="Contains"
+            width="15rem"
+						>
+						<t:template>
+            <Text text="{DeliveryLocationName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
 						label="Tipo Mercado"
 						sortProperty="MarketType"
             width="10rem"

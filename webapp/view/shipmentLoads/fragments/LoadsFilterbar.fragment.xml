@@ -18,6 +18,17 @@
 
   Motorista, Transportadora e Armazém gravam CÓDIGO pelo value help, então entram como `eq` em
   applyFilters (exactMatchFields), e não como `contains`.
+
+  "Transp. Diferente de ?" é um SEGUNDO value help de transportadora, gravando em
+  filterLoads>/CarrierCardCodeNot: serve para separar carga de FROTA (Transportadora = a própria
+  empresa, pelo campo de cima) de carga de FRETE (Transp. Diferente de ? = a própria empresa), sem
+  precisar de um campo novo na carga, que o usuário poderia marcar errado na digitação. Ele inclui
+  as cargas SEM transportadora — ver applyFilters/notEqualFields em Main.controller.ts.
+
+  Os dois campos são FilterGroupItems independentes e podem ser usados juntos (mesmo groupName
+  "GroupCarrier", para ficarem lado a lado também no diálogo Filtros). Ambos usam o mesmo
+  .openSuppliersValueHelp: o applyValueHelp grava de volta no Input que disparou o evento, então
+  não há nada a diferenciar entre os dois.
 -->
 <fb:FilterBar search=".onSearchLoadFilters" showClearOnFB="true" clear=".onClearLoadFilters">
   <fb:filterGroupItems>
@@ -99,6 +110,16 @@
           showValueHelp="true"
           valueHelpRequest=".openSuppliersValueHelp"
           value="{filterLoads>/CarrierCardCode}"
+          />
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="carrierNot" label="Transp. Diferente de ?" groupName="GroupCarrier" visibleInFilterBar="true">
+      <fb:control>
+        <Input
+          showClearIcon="true"
+          showValueHelp="true"
+          valueHelpRequest=".openSuppliersValueHelp"
+          value="{filterLoads>/CarrierCardCodeNot}"
           />
       </fb:control>
     </fb:FilterGroupItem>

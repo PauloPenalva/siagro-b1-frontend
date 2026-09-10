@@ -111,7 +111,18 @@
             </Input>
         </fb:control>
       </fb:FilterGroupItem>
-     
+      <fb:FilterGroupItem name="deliveryLocation" label="Armazém" groupName="GroupDeliveryLocation" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openWarehouseValueHelp"
+              value="{filter>/DeliveryLocationCode}"
+              >
+            </Input>
+        </fb:control>
+      </fb:FilterGroupItem>
+
       <fb:FilterGroupItem name="marketType" label="Tipo de Mercado" groupName="GroupMarketType" visibleInFilterBar="true">
         <fb:control>
             <Select 

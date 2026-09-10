@@ -10,6 +10,7 @@ import BaseController from "./PurchaseContractsBaseController";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { Column, EdmType, SpreadsheetSettings } from "sap/ui/export/library";
 import Spreadsheet from "sap/ui/export/Spreadsheet";
+import { SortOrder } from "sap/ui/core/library";
 
 type FilterData = {
   Code?: string,
@@ -22,6 +23,7 @@ type FilterData = {
   Complement?: string,
   MarketType?: string,
   AgentCode?: string,
+  DeliveryLocationCode?: string,
 }
 
 /**
@@ -277,6 +279,18 @@ export default class Main extends BaseController {
     });
 
     aCols.push({
+      label: "Cod.Armazém",
+      property: "DeliveryLocationCode",
+      type: EdmType.String,
+    });
+
+    aCols.push({
+      label: "Armazém",
+      property: "DeliveryLocationName",
+      type: EdmType.String,
+    });
+
+    aCols.push({
       label: "Tipo Mercado",
       property: "MarketType",
       type: EdmType.Enumeration,
@@ -311,13 +325,34 @@ export default class Main extends BaseController {
     return aCols;
   }
 
+  /**
+   * `$orderby` do export, derivado da ordenação que o usuário aplicou nas colunas (GAC-1172).
+   *
+   * `getSortedColumns()` devolve as colunas na ordem em que foram ordenadas pelo menu, então
+   * multi-sort sai na planilha com a mesma precedência da tela. `getSorted()` está depreciado
+   * desde a 1.120 — quem manda é `sortOrder`, que vale `None` na coluna não ordenada.
+   *
+   * Sem ordenação do usuário o fallback é `RowId desc`, o sorter declarado no XML: a planilha
+   * precisa sair na ordem que está na tela, não numa terceira ordem que ninguém pediu.
+   */
+  private getExportOrderBy(oTable: Table): string {
+    const aOrder = oTable.getSortedColumns()
+      .filter((oColumn) => oColumn.getSortOrder() !== SortOrder.None && oColumn.getSortProperty())
+      .map((oColumn) => oColumn.getSortProperty()
+        + (oColumn.getSortOrder() === SortOrder.Descending ? " desc" : ""));
+
+    return aOrder.length > 0 ? aOrder.join(",") : "RowId desc";
+  }
+
   async onExcel() {
+    const oTable = this.byId("tablePurchaseContracts") as Table;
+
     // A planilha segue a ordem em que o usuário deixou as colunas na tela (GAC-1163).
-    const cols = this.orderExportColumns(
-      this.byId("tablePurchaseContracts") as Table, this.createColumnConfig());
+    const cols = this.orderExportColumns(oTable, this.createColumnConfig());
 
     const setting: SpreadsheetSettings = {
-      dataSource: await this.createExportBinding("/PurchaseContracts", cols, "Code", this.currentFilter),
+      dataSource: await this.createExportBinding(
+        "/PurchaseContracts", cols, this.getExportOrderBy(oTable), this.currentFilter),
       fileName: 'Contratos de Compra.xlsx',
       workbook: {
         columns: cols,

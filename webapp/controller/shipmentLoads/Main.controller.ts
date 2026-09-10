@@ -104,6 +104,15 @@ export default class Main extends BaseController {
    * Um valor em ARRAY (filtro multi-seleção, como a Situação da carga) vira um grupo de `or`
    * PARENTIZADO: os pedaços são unidos com `and` no fim, e um `or` solto capturaria os demais
    * filtros. Array vazio = sem restrição.
+   *
+   * `notEqualFields` mapeia uma chave do modelo de filtro para a PROPRIEDADE do EDM que ela deve
+   * EXCLUIR — hoje só `CarrierCardCodeNot` → `CarrierCardCode`, o campo "Transp. Diferente de ?"
+   * que separa carga de frete da carga de frota. Vira `(Prop eq null or Prop ne 'X')`, e os dois
+   * detalhes importam:
+   * - o parêntese, pelo mesmo motivo do grupo de `or` acima: sem ele o `or` capturaria os demais
+   *   filtros;
+   * - o `eq null` não é enfeite: a propriedade é anulável e em SQL `<> 'X'` descarta os NULL, de
+   *   modo que a carga sem transportadora sumiria tanto do campo "igual" quanto do "diferente".
    */
   private applyFilters(
     tableId: string,
@@ -111,6 +120,7 @@ export default class Main extends BaseController {
     dateProperty: string,
     exactMatchFields: string[],
     fixedScope: string[] = [],
+    notEqualFields: Record<string, string> = {},
   ): void {
     const table = this.byId(tableId) as Table;
     const binding = table?.getBinding("rows") as ODataListBinding;
@@ -135,7 +145,10 @@ export default class Main extends BaseController {
 
       const esc = value.replace(/'/g, "''");
 
-      if (exactMatchFields.includes(key)) {
+      if (notEqualFields[key]) {
+        const property = notEqualFields[key];
+        filters.push(`(${property} eq null or ${property} ne '${esc}')`);
+      } else if (exactMatchFields.includes(key)) {
         filters.push(`${key} eq '${esc}'`);
       } else if (key === "DateFrom") {
         filters.push(`${dateProperty} ge ${esc}`);
@@ -152,7 +165,9 @@ export default class Main extends BaseController {
   /** Carga cancelada continua listada: é histórico, e some só do faturamento. */
   private applyLoadFilters(): void {
     this.applyFilters("shipmentLoadsTable", "filterLoads", "LoadDate",
-      ["Status", "BranchCode", "TruckDriverCode", "CarrierCardCode", "WarehouseCode"]);
+      ["Status", "BranchCode", "TruckDriverCode", "CarrierCardCode", "WarehouseCode"],
+      [],
+      { CarrierCardCodeNot: "CarrierCardCode" });
   }
 
   // ---------------------------------------------------------------- criação e edição
