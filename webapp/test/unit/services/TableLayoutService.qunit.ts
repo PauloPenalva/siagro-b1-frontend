@@ -38,6 +38,21 @@ async function boot(): Promise<void> {
 	await TableLayoutService.load();
 }
 
+/**
+ * A tipagem do QUnit usada aqui espera callback `void`, e o lint recusa passar uma função `async`.
+ * `assert.async()` mantém o teste aberto até o corpo terminar; uma rejeição vira falha, não timeout.
+ */
+function testAsync(name: string, body: (assert: Assert) => Promise<void>): void {
+	QUnit.test(name, function (assert) {
+		const done = assert.async();
+
+		void body(assert)
+			.catch((error: unknown) =>
+				assert.ok(false, error instanceof Error ? error.message : JSON.stringify(error)))
+			.finally(done);
+	});
+}
+
 QUnit.module("TableLayoutService - espelho local x servidor", {
 	beforeEach() {
 		TableLayoutService.reset();
@@ -58,7 +73,7 @@ QUnit.module("TableLayoutService - espelho local x servidor", {
 	}
 });
 
-QUnit.test("layout que nunca chegou ao servidor sobrevive a um GET vazio", async function (assert) {
+testAsync("layout que nunca chegou ao servidor sobrevive a um GET vazio", async (assert) => {
 	seedMirror({ username: "joao", layouts: [LOCAL_LAYOUT], pending: [TABLE_KEY] });
 
 	await boot();
@@ -67,7 +82,7 @@ QUnit.test("layout que nunca chegou ao servidor sobrevive a um GET vazio", async
 	assert.deepEqual(readMirror().layouts, [LOCAL_LAYOUT], "continua no espelho");
 });
 
-QUnit.test("layout pendente é reenviado ao servidor no boot", async function (assert) {
+testAsync("layout pendente é reenviado ao servidor no boot", async (assert) => {
 	seedMirror({ username: "joao", layouts: [LOCAL_LAYOUT], pending: [TABLE_KEY] });
 
 	await boot();
@@ -75,7 +90,7 @@ QUnit.test("layout pendente é reenviado ao servidor no boot", async function (a
 	assert.deepEqual(putBodies, [{ tableKey: TABLE_KEY, columns: LOCAL_LAYOUT.columns }]);
 });
 
-QUnit.test("PUT bem-sucedido tira o layout da fila", async function (assert) {
+testAsync("PUT bem-sucedido tira o layout da fila", async (assert) => {
 	seedMirror({ username: "joao", layouts: [LOCAL_LAYOUT], pending: [TABLE_KEY] });
 
 	await boot();
@@ -83,7 +98,7 @@ QUnit.test("PUT bem-sucedido tira o layout da fila", async function (assert) {
 	assert.deepEqual(readMirror().pending, []);
 });
 
-QUnit.test("PUT que falha mantém o layout na fila", async function (assert) {
+testAsync("PUT que falha mantém o layout na fila", async (assert) => {
 	putFails = true;
 	seedMirror({ username: "joao", layouts: [LOCAL_LAYOUT], pending: [TABLE_KEY] });
 
@@ -93,7 +108,7 @@ QUnit.test("PUT que falha mantém o layout na fila", async function (assert) {
 	assert.strictEqual(TableLayoutService.count(), 1);
 });
 
-QUnit.test("layout pendente vence a versão do servidor", async function (assert) {
+testAsync("layout pendente vence a versão do servidor", async (assert) => {
 	serverLayouts = [SERVER_LAYOUT];
 	seedMirror({ username: "joao", layouts: [LOCAL_LAYOUT], pending: [TABLE_KEY] });
 
@@ -102,7 +117,7 @@ QUnit.test("layout pendente vence a versão do servidor", async function (assert
 	assert.deepEqual(readMirror().layouts, [LOCAL_LAYOUT]);
 });
 
-QUnit.test("espelho gravado antes da fila existir é tratado como pendente", async function (assert) {
+testAsync("espelho gravado antes da fila existir é tratado como pendente", async (assert) => {
 	// Formato anterior à correção: sem `pending`. Nada garante que aquilo chegou ao servidor.
 	seedMirror({ username: "joao", layouts: [LOCAL_LAYOUT] });
 
@@ -112,7 +127,7 @@ QUnit.test("espelho gravado antes da fila existir é tratado como pendente", asy
 	assert.strictEqual(putBodies.length, 1);
 });
 
-QUnit.test("layout já sincronizado que sumiu do servidor é descartado", async function (assert) {
+testAsync("layout já sincronizado que sumiu do servidor é descartado", async (assert) => {
 	// "Restaurar padrão" feito em outra máquina: o servidor manda.
 	seedMirror({ username: "joao", layouts: [LOCAL_LAYOUT], pending: [] });
 
@@ -122,7 +137,7 @@ QUnit.test("layout já sincronizado que sumiu do servidor é descartado", async 
 	assert.strictEqual(putBodies.length, 0);
 });
 
-QUnit.test("servidor vence no layout já sincronizado", async function (assert) {
+testAsync("servidor vence no layout já sincronizado", async (assert) => {
 	serverLayouts = [SERVER_LAYOUT];
 	seedMirror({ username: "joao", layouts: [LOCAL_LAYOUT], pending: [] });
 

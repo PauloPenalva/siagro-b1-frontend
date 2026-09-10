@@ -34,4 +34,10 @@ export type TableLayoutsResponse = {
 export type CachedTableLayouts = {
   username: string;
   layouts: TableLayout[];
+
+  /**
+   * Tabelas cujo layout ainda não teve um PUT confirmado. Ausente no espelho gravado antes deste
+   * campo existir - e aí nada garante que o layout chegou ao servidor.
+   */
+  pending?: string[];
 };

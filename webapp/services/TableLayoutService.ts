@@ -45,6 +45,13 @@ class TableLayoutService {
 
   private username = "";
 
+  /**
+   * Tabelas cujo layout o servidor ainda não confirmou. É o que impede o GET do boot de apagar um
+   * ajuste cujo PUT falhou: a falha é muda, então sem esta fila o espelho local era a única cópia,
+   * e a primeira resposta do servidor sem aquela tabela a jogava fora.
+   */
+  private pending = new Set<string>();
+
   /** Raízes já varridas (view ou diálogo) - a varredura é cara e só precisa rodar uma vez. */
   private scanned = new WeakSet<ManagedObject>();
 
@@ -74,6 +81,9 @@ class TableLayoutService {
   /**
    * Lê os layouts do servidor. Chamado uma única vez no boot, junto do menu e da filial - o custo de
    * uma chamada por tabela na abertura de cada tela seria muito maior.
+   *
+   * O servidor manda só no que ele já confirmou. O que está na fila de pendentes vence a resposta e
+   * é reenviado - senão um PUT que falhou em silêncio seria apagado no próximo boot.
    */
   public async load(username?: string): Promise<void> {
     if (username) {
@@ -82,8 +92,18 @@ class TableLayoutService {
 
     const response = await new RequestModel().get<TableLayoutsResponse>(ServerRoutes.myTableLayouts);
 
+    const unsynced = Array.from(this.pending)
+      .filter((tableKey) => this.layouts.has(tableKey))
+      .map((tableKey) => [tableKey, this.layouts.get(tableKey)] as const);
+
     this.fill(response?.layouts ?? []);
+
+    this.pending = new Set(unsynced.map(([tableKey]) => tableKey));
+    unsynced.forEach(([tableKey, columns]) => this.layouts.set(tableKey, columns));
+
     this.writeMirror();
+
+    await Promise.all(unsynced.map(([tableKey, columns]) => this.put(tableKey, columns)));
   }
 
   /**
@@ -112,7 +132,13 @@ class TableLayoutService {
         return;
       }
 
-      this.fill(cached.layouts ?? []);
+      const layouts = cached.layouts ?? [];
+
+      this.fill(layouts);
+
+      // Espelho sem `pending` é anterior à fila: nada garante que chegou ao servidor, então tudo
+      // conta como pendente. É o que recupera quem ainda tem o layout só no navegador.
+      this.pending = new Set(cached.pending ?? layouts.map((layout) => layout.tableKey));
     } catch (error) {
       console.warn("Espelho local do layout das tabelas ilegível.", error);
       window.localStorage.removeItem(TABLE_LAYOUTS_KEY);
@@ -157,6 +183,7 @@ class TableLayoutService {
 
     this.clearTimers();
     this.layouts.clear();
+    this.pending.clear();
     this.writeMirror();
     this.restoreDeclaredLayout();
   }
@@ -196,6 +223,7 @@ class TableLayoutService {
   public reset(): void {
     this.clearTimers();
     this.layouts.clear();
+    this.pending.clear();
     this.username = "";
 
     try {
@@ -562,6 +590,7 @@ class TableLayoutService {
       }
 
       this.layouts.set(sTableKey, columns);
+      this.pending.add(sTableKey);
       this.writeMirror();
       this.schedulePut(sTableKey, columns);
     }, 0);
@@ -600,12 +629,20 @@ class TableLayoutService {
 
   /**
    * Falha aqui é muda de propósito: um MessageBox por gravação frustrada seria insuportável, e um
-   * 401 não deve expulsar ninguém para o login por causa de um redimensionamento.
+   * 401 não deve expulsar ninguém para o login por causa de um redimensionamento. Muda, mas não
+   * perdida: a tabela fica na fila de pendentes e é reenviada no próximo boot.
    */
   private async put(sTableKey: string, aColumns: TableColumnLayout[]): Promise<void> {
     try {
       await new RequestModel({ tableKey: sTableKey, columns: aColumns })
         .put(ServerRoutes.myTableLayouts);
+
+      // Comparação por referência: se o usuário mexeu de novo enquanto este PUT voava, há outro na
+      // fila, e é ele quem decide se a tabela sai dela.
+      if (this.layouts.get(sTableKey) === aColumns) {
+        this.pending.delete(sTableKey);
+        this.writeMirror();
+      }
     } catch (error) {
       console.warn("Falha ao salvar o layout da tabela.", sTableKey, error);
     }
@@ -632,7 +669,8 @@ class TableLayoutService {
 
     const payload: CachedTableLayouts = {
       username: this.username,
-      layouts: Array.from(this.layouts, ([tableKey, columns]) => ({ tableKey, columns }))
+      layouts: Array.from(this.layouts, ([tableKey, columns]) => ({ tableKey, columns })),
+      pending: Array.from(this.pending)
     };
 
     try {
