@@ -22,6 +22,8 @@ type LoadData = {
   TruckDriverCode: string,
   TruckDriverName: string,
   TruckCode: string,
+  CarrierCardCode: string,
+  CarrierName: string,
   BranchCode: string,
   AvailableQuantity: number,
 }
@@ -32,7 +34,7 @@ type BillingForm = {
   BranchCode?: string,
   Volume?: string | number,
   TruckingCompanyCode?: string,
-  /** Só exibição — preenchido pelo value help, não vai no payload. */
+  /** Só exibição — copiado da carga junto com o código, não vai no payload. */
   TruckingCompanyName?: string,
   TruckCode?: string,
   TruckDriverCode?: string,
@@ -204,6 +206,10 @@ export default class Main extends BaseController {
       TruckDriverCode: load.TruckDriverCode,
       TruckDriverName: load.TruckDriverName,
       TruckCode: load.TruckCode,
+      // Transportadora vem da carga e o campo é somente leitura no diálogo: faturar com
+      // transportadora diferente da da carga é recusado pelo backend.
+      TruckingCompanyCode: load.CarrierCardCode,
+      TruckingCompanyName: load.CarrierName,
       FreightTerms: "",
       BranchCode: load.BranchCode,
     });

@@ -190,19 +190,14 @@
         </Input>
         <Input value="{viewModel>/DeliveryCardName}" editable="false" />
 
+        <!-- A transportadora vem da CARGA e não é escolhida aqui: o backend recusa faturar
+             com transportadora diferente da da carga. Sem value help, portanto — para trocá-la
+             o usuário edita a carga. -->
         <Label text="Transportadora" />
-        <Input
-          showValueHelp="true"
-          valueHelpOnly="true"
-          valueHelpRequest=".openSuppliersValueHelp"
-          value="{viewModel>/TruckingCompanyCode}"
-          >
+        <Input value="{viewModel>/TruckingCompanyCode}" editable="false">
           <layoutData>
             <l:GridData span="XL3 L3 M3 S8" />
           </layoutData>
-          <customData>
-            <core:CustomData key="descriptionProperty" value="TruckingCompanyName:CardName" />
-          </customData>
         </Input>
         <Input value="{viewModel>/TruckingCompanyName}" editable="false" />
         

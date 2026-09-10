@@ -33,7 +33,7 @@
         rows="{
 					path: '/ShipmentLoads',
           sorter: [ { path: 'RowId' } ],
-          parameters: { $select: 'BranchCode' }
+          parameters: { $select: 'BranchCode,CarrierCardCode,CarrierName' }
 				}"
 			>
 				<t:extension>

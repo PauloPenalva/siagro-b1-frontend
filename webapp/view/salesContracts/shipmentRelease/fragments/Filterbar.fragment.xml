@@ -10,14 +10,24 @@
             <Input showClearIcon="true" value="{filter>/Code}"/>
         </fb:control>
       </fb:FilterGroupItem>
-      <fb:FilterGroupItem name="cardName" label="Cliente" groupName="GroupCustomer" visibleInFilterBar="true">
+      <fb:FilterGroupItem name="businessPartners" label="Cliente" groupName="GroupCostumer" visibleInFilterBar="true">
         <fb:control>
-            <Input showClearIcon="true" value="{filter>/CardName}"/>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openCostumersValueHelp"
+              value="{filter>/CardCode}"
+              />
         </fb:control>
       </fb:FilterGroupItem>
-      <fb:FilterGroupItem name="itemName" label="Produto" groupName="GroupItem" visibleInFilterBar="true">
+      <fb:FilterGroupItem name="items" label="Produto" groupName="GroupItem" visibleInFilterBar="true">
         <fb:control>
-            <Input showClearIcon="true" value="{filter>/ItemName}"/>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openItemValueHelp"
+              value="{filter>/ItemCode}"
+              />
         </fb:control>
       </fb:FilterGroupItem>
       <fb:FilterGroupItem name="agent" label="Vendedor" groupName="GroupAgent" visibleInFilterBar="true">

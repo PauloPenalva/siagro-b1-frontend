@@ -53,6 +53,11 @@ export default class Edit extends FormController {
         // Produto, unidade e filial já viraram linha de nota: travam. O resto segue editável,
         // porque o caso real é "o motorista trocou depois de carregar".
         fiscalEditable: load.Status !== "PartiallyInvoiced" && load.Status !== "Invoiced",
+        // Transportadora só até o carregamento: depois que os romaneios entram, a carga
+        // deixa de ser planejamento e o documento de saída já herda essa transportadora.
+        // A carga legada sem transportadora fica de fora da trava — senão o campo seria
+        // somente-leitura E obrigatório, e ela não poderia mais ser salva nem faturada.
+        carrierEditable: load.Status === "Planned" || !load.CarrierCardCode,
         Key: id,
         BranchCode: load.BranchCode as string,
         LoadDate: (load.LoadDate as string)?.slice(0, 10),

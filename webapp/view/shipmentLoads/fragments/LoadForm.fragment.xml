@@ -7,9 +7,10 @@
 		formatter: 'siagrob1/model/formatter'
 	}">
 	<!-- Formulário do planejamento da Logística. O mesmo fragmento serve criação e edição: o que
-	     muda é `form>/fiscalEditable`, que trava produto, unidade e filial depois que a carga
-	     virou documento fiscal. Os demais campos seguem editáveis — o caso real é "o motorista
-	     trocou depois de carregar". -->
+	     muda são duas travas. `form>/fiscalEditable` trava produto, unidade e filial depois que a
+	     carga virou documento fiscal; `form>/carrierEditable` trava a transportadora depois do
+	     CARREGAMENTO, porque o documento de saída a herda da carga sem poder trocá-la. Os demais
+	     campos seguem editáveis — o caso real é "o motorista trocou depois de carregar". -->
 	<f:Form editable="true">
 		<f:layout>
 			<f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2"/>
@@ -66,11 +67,14 @@
 							<Input value="{form>/TruckDriverName}" editable="false"/>
 						</f:fields>
 					</f:FormElement>
+					<!-- Obrigatória: faturar carga sem transportadora é recusado pelo backend, e o
+					     documento de saída herda esta transportadora sem poder trocá-la. -->
 					<f:FormElement label="Transportadora">
 						<f:fields>
 							<Input
-								editable="true"
-								showValueHelp="true"
+								required="true"
+								editable="{form>/carrierEditable}"
+								showValueHelp="{form>/carrierEditable}"
 								valueHelpOnly="true"
 								valueHelpRequest=".openSuppliersValueHelp"
 								value="{form>/CarrierCardCode}">

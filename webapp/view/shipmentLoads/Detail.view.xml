@@ -202,6 +202,12 @@
 											<Text wrapping="false" text="{ path: 'TransactionDate', targetType: 'any', formatter: '.formatter.formatDate' }"/>
 										</t:template>
 									</t:Column>
+									<!-- Motorista da EXPEDIÇÃO, que pode divergir do motorista da carga: é
+									     exatamente essa divergência que a coluna existe para mostrar. Vem por
+									     navegação (TruckDriver), porque o romaneio guarda só o código. -->
+									<t:Column label="Motorista" width="16rem">
+										<t:template><Text text="{TruckDriver/Name}" wrapping="false"/></t:template>
+									</t:Column>
 									<t:Column label="Peso Bruto" hAlign="End" width="8rem">
 										<t:template>
 											<ObjectNumber
@@ -212,6 +218,16 @@
 									</t:Column>
 									<t:Column label="Armazém" width="15rem">
 										<t:template><Text text="({WarehouseCode}) {WarehouseName}" wrapping="false"/></t:template>
+									</t:Column>
+									<!-- CardCode/CardName do romaneio de expedição são o FORNECEDOR: a perna de
+									     saída é cópia da perna de compra, que nasce do parceiro do contrato. -->
+									<t:Column label="Fornecedor" width="22rem">
+										<t:template><Text text="({CardCode}) {CardName}" wrapping="false"/></t:template>
+									</t:Column>
+									<!-- Contrato de compra: o romaneio não tem FK para o contrato, chega-se a ele
+									     pela liberação de entrega que a expedição consumiu. -->
+									<t:Column label="Contrato de Compra" width="11rem">
+										<t:template><Text text="{ShipmentRelease/PurchaseContract/Code}" wrapping="false"/></t:template>
 									</t:Column>
 								</t:columns>
 							</t:Table>
@@ -254,6 +270,43 @@
 									</t:Column>
 									<t:Column label="Cliente" width="20rem">
 										<t:template><Text text="({CardCode}) {CardName}" wrapping="false"/></t:template>
+									</t:Column>
+									<!-- Quantidade do documento: o cabeçalho da nota de carga nasce com
+									     GrossWeight = NetWeight = volume faturado. -->
+									<t:Column label="Qtde" hAlign="End" width="9rem">
+										<t:template>
+											<ObjectNumber
+												textAlign="End"
+												number="{ path: 'NetWeight', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Tipo Frete" width="8rem">
+										<t:template>
+											<Text wrapping="false" text="{ path: 'FreightTerms', targetType: 'any', formatter: '.formatter.formatFreightTerms' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Valor do Frete" hAlign="End" width="9rem">
+										<t:template>
+											<ObjectNumber
+												textAlign="End"
+												number="{ path: 'FreightCostStandard', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+										</t:template>
+									</t:Column>
+									<!-- Contrato de venda: mora na LINHA da nota. As três colunas abaixo são
+									     derivadas no servidor (ver SalesInvoice), porque uma coleção não se binda
+									     em célula de linha. -->
+									<t:Column label="Contrato de Venda" width="11rem">
+										<t:template><Text text="{SalesContractCode}" wrapping="false"/></t:template>
+									</t:Column>
+									<t:Column label="Complemento" width="14rem">
+										<t:template><Text text="{SalesContractComplement}" wrapping="false"/></t:template>
+									</t:Column>
+									<t:Column label="Frete Std. Contrato" hAlign="End" width="11rem">
+										<t:template>
+											<ObjectNumber
+												textAlign="End"
+												number="{ path: 'SalesContractFreightCostStandard', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+										</t:template>
 									</t:Column>
 								</t:columns>
 							</t:Table>

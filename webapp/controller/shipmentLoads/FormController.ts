@@ -12,6 +12,13 @@ export type LoadForm = {
   isEdit: boolean,
   /** Trava produto, unidade e filial depois que a carga virou documento fiscal. */
   fiscalEditable: boolean,
+  /**
+   * Trava a transportadora depois do CARREGAMENTO: ela é escolhida no planejamento e o
+   * documento de saída a herda sem poder trocá-la. Continua liberada numa carga legada que
+   * ainda não tem transportadora — do contrário o campo ficaria somente-leitura E obrigatório,
+   * e a carga não poderia mais ser salva nem faturada.
+   */
+  carrierEditable: boolean,
   Key?: string,
   BranchCode?: string,
   LoadDate?: string,
@@ -140,11 +147,15 @@ export abstract class FormController extends BaseController {
 
   /**
    * Placa, produto e filial são obrigatórios porque são a chave de homogeneidade da vinculação:
-   * sem eles não há contra o que comparar o romaneio.
+   * sem eles não há contra o que comparar o romaneio. A transportadora entra na lista porque o
+   * faturamento a exige e a copia da carga: sem ela aqui, a carga nasce impossível de faturar.
+   *
+   * O `required` do fragmento é só o asterisco — a validação de verdade é esta.
    */
   private missingRequiredField(form: LoadForm): string {
     if (!form.BranchCode) return "Informe a filial da carga.";
     if (!form.TruckCode) return "Informe a placa do veículo.";
+    if (!form.CarrierCardCode) return "Informe a transportadora da carga.";
     if (!form.ItemCode) return "Informe o produto da carga.";
     if (!form.UnitOfMeasureCode) return "Informe a unidade de medida do produto.";
     if (!form.WarehouseCode) return "Informe o armazém de carga.";
