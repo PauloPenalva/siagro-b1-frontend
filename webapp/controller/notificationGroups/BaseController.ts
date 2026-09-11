@@ -31,10 +31,28 @@ export abstract class BaseController extends AppBaseController {
     const oBinding = (this.byId("notificationGroupSubscriptionsTable") as Table)
       .getBinding("rows") as ODataListBinding;
 
-    // Mesmo motivo do onAddMember. Os defaults também deixam a linha nova já válida,
-    // em vez de dois Selects em branco.
-    oBinding.create(
-      { DocumentType: "PurchaseContract", EventType: "Created" }, false, true, false);
+    // Mesmo motivo do onAddMember: as duas propriedades entram, mas nulas, para a linha
+    // nascer sem opção pré-selecionada. Como os enums não são anuláveis no servidor,
+    // validateSubscriptions() barra o salvar enquanto alguma linha estiver em branco.
+    oBinding.create({ DocumentType: null, EventType: null }, false, true, false);
+  }
+
+  /**
+   * Linha de evento sem documento ou sem evento vira 400 genérico no POST (enum não
+   * anulável). Varre todos os contextos, não só as linhas visíveis da tabela.
+   */
+  protected validateSubscriptions(): boolean {
+    const oBinding = (this.byId("notificationGroupSubscriptionsTable") as Table)
+      .getBinding("rows") as ODataListBinding;
+
+    const bAllFilled = oBinding.getAllCurrentContexts().every((oContext) =>
+      !!oContext.getProperty("DocumentType") && !!oContext.getProperty("EventType"));
+
+    if (!bAllFilled) {
+      MessageBox.warning("Selecione o documento e o evento em todas as linhas da aba Eventos.");
+    }
+
+    return bAllFilled;
   }
 
   onRemoveSubscription() {

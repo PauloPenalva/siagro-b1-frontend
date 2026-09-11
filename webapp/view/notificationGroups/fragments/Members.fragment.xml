@@ -1,6 +1,7 @@
 <core:FragmentDefinition
     xmlns="sap.m"
     xmlns:t="sap.ui.table"
+    xmlns:rowmodes="sap.ui.table.rowmodes"
     xmlns:core="sap.ui.core"
 >
   <t:Table
@@ -12,9 +13,11 @@
     selectionBehavior="Row"
     selectionMode="Single"
     busyIndicatorDelay="0"
-    visibleRowCountMode="Auto"
     rows="{Members}"
     >
+    <t:rowMode>
+      <rowmodes:Auto minRowCount="10" />
+    </t:rowMode>
     <t:extension>
       <OverflowToolbar>
         <content>

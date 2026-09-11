@@ -39,6 +39,10 @@ export default class Add extends BaseController {
       return;
     }
 
+    if (!this.validateSubscriptions()) {
+      return;
+    }
+
     const oModel = this.getView().getModel() as ODataModel;
 
     try {
