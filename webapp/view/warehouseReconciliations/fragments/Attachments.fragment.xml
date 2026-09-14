@@ -1,0 +1,35 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <t:Table
+    id="warehouseReconciliationAttachmentsTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    visibleRowCount="5"
+    rows="{attachments>/}">
+    <t:extension>
+      <OverflowToolbar>
+        <Title text="Anexos (extrato do armazém)"/>
+        <ToolbarSpacer/>
+        <Button visible="{= !${wr>/attachmentsReadonly} }" text="Anexar" type="Transparent" icon="sap-icon://attachment" press=".onOpenAttachmentUpload"/>
+        <Button text="Download" type="Transparent" icon="sap-icon://download" press=".onDownloadAttachment"/>
+        <Button visible="{= !${wr>/attachmentsReadonly} }" text="Remover" type="Transparent" icon="sap-icon://delete" press=".onDeleteAttachment"/>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Descrição">
+        <t:template><Text text="{attachments>Description}" wrapping="false"/></t:template>
+      </t:Column>
+      <t:Column label="Arquivo">
+        <t:template><Text text="{attachments>FileName}" wrapping="false"/></t:template>
+      </t:Column>
+      <t:Column label="Enviado por">
+        <t:template><Text text="{attachments>CreatedBy}" wrapping="false"/></t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

@@ -46,11 +46,15 @@ export default class Main extends CommonController {
     //
     // Purchase/SalesShipment ficam de fora de propósito: têm telas próprias, com ações mais
     // restritas que as desta.
+    //
+    // 3. WarehouseLoss/WarehouseGain (Conferência de Saldo de Armazém, GAC-1164) entram no escopo
+    //    para CONSULTA. Cancelar/estornar por esta tela é recusado pelo backend (origem 13).
     filters.push(
       filterData.TransactionType
         ? `TransactionType eq '${filterData.TransactionType}'`
         : `(TransactionType eq 'Receipt' or TransactionType eq 'Shipment' ` +
-          `or TransactionType eq 'TechnicalLoss' or TransactionType eq 'SalesShipmentReturn')`
+          `or TransactionType eq 'TechnicalLoss' or TransactionType eq 'SalesShipmentReturn' ` +
+          `or TransactionType eq 'WarehouseLoss' or TransactionType eq 'WarehouseGain')`
     );
     
     Object.keys(filterData).forEach((key: string) => {

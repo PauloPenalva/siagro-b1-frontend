@@ -1,0 +1,114 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:core="sap.ui.core"
+>
+  <!--
+    Somente leitura: washout muda por action (registrar, aprovar na fila, estornar), nunca por
+    edição na grade. A tabela tem cache próprio ($$ownRequest) para ser refrescada sozinha.
+    O título vem pela navegação FinancialDocument; o autoExpandSelect monta o $expand.
+  -->
+  <t:Table
+    id="purchaseContractWashoutsTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    busyIndicatorDelay="0"
+    rows="{
+      path: 'Washouts',
+      parameters: { '$$ownRequest': true, '$orderby': 'Sequence desc' }
+    }"
+    >
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Washouts do Contrato de Compra" />
+          <ToolbarSpacer />
+          <Button
+            visible="{= ${path: 'Status', targetType: 'any'} === 'Approved' &amp;&amp; !${ui>/readonly} }"
+            text="Registrar Washout"
+            tooltip="Registrar a desistência de volume não entregue pelo produtor"
+            type="Transparent"
+            icon="sap-icon://add"
+            press=".onOpenWashoutDialog"
+          />
+          <Button
+            visible="{= ${path: 'Status', targetType: 'any'} === 'Approved' &amp;&amp; !${ui>/readonly} }"
+            text="Estornar"
+            tooltip="Estornar washout aprovado: cancela o título a receber e restaura o provisório"
+            type="Transparent"
+            icon="sap-icon://undo"
+            press=".onReverseWashout"
+          />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Código" width="6rem">
+        <t:template>
+          <Text text="{path: 'Sequence', formatter: '.formatter.formatWashoutCode'}" wrapping="false"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Status" width="8rem">
+        <t:template>
+          <ObjectStatus
+            text="{path: 'Status', targetType: 'any', formatter: '.formatter.formatWashoutStatus'}"
+            state="{path: 'Status', targetType: 'any', formatter: '.formatter.stateWashoutStatus'}"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Vol. Fixado" hAlign="End">
+        <t:template>
+          <Text text="{path: 'FixedVolume', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }}"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Vol. Não Fixado" hAlign="End">
+        <t:template>
+          <Text text="{path: 'UnfixedVolume', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }}"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Preço Contrato" hAlign="End">
+        <t:template>
+          <Text text="{path: 'ContractPrice', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 8, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }}"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Preço Mercado" hAlign="End">
+        <t:template>
+          <Text text="{path: 'MarketPrice', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 8, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }}"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Multa" hAlign="End">
+        <t:template>
+          <Text text="{path: 'PenaltyAmount', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }}"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Valor a Receber" hAlign="End">
+        <t:template>
+          <Text text="{path: 'Amount', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }}"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Vencimento">
+        <t:template>
+          <Text text="{path: 'DueDate', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy' }}"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Título">
+        <t:template>
+          <Text text="{FinancialDocument/Code}" wrapping="false"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Motivo" width="14rem">
+        <t:template>
+          <Text text="{Reason}" wrapping="false" tooltip="{Reason}"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Registrado por">
+        <t:template>
+          <Text text="{CreatedBy}" wrapping="false"/>
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

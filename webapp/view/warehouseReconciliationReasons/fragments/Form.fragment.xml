@@ -1,0 +1,32 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+  <f:Form id="warehouseReconciliationReasonForm" editable="true">
+    <f:layout>
+      <f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2"/>
+    </f:layout>
+    <f:formContainers>
+      <f:FormContainer title="Motivo">
+        <f:formElements>
+          <f:FormElement label="Código">
+            <f:fields>
+              <Input value="{Code}" maxLength="20" required="true" liveChange=".validateField"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Descrição">
+            <f:fields>
+              <Input value="{Description}" maxLength="100" required="true" liveChange=".validateField"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Ativo" visible="{ui>/reasonActiveVisible}">
+            <f:fields>
+              <CheckBox selected="{Active}"/>
+            </f:fields>
+          </f:FormElement>
+        </f:formElements>
+      </f:FormContainer>
+    </f:formContainers>
+  </f:Form>
+</core:FragmentDefinition>

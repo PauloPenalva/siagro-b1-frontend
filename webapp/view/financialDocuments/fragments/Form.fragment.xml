@@ -32,6 +32,11 @@
           <f:FormElement label="Filial">
             <f:fields><Text text="{BranchCode}"/></f:fields>
           </f:FormElement>
+          <f:FormElement label="Origem">
+            <f:fields>
+              <Text text="{path: 'OriginType', targetType: 'any', formatter: 'formatter.formatFinancialOrigin'}"/>
+            </f:fields>
+          </f:FormElement>
           <f:FormElement label="Contrato de origem">
             <f:fields><Text text="{OriginDocNumber}"/></f:fields>
           </f:FormElement>

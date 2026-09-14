@@ -1,0 +1,31 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+<Dialog id="washoutDecisionDialog" title="{viewModel>/washoutDecision/title}">
+  <content>
+    <VBox class="sapUiSmallMargin" width="460px">
+      <MessageStrip
+        text="{viewModel>/washoutDecision/summary}"
+        type="Information"
+        showIcon="true"
+        class="sapUiSmallMarginBottom"
+      />
+      <TextArea
+        value="{viewModel>/washoutDecision/comments}"
+        rows="5"
+        width="100%"
+        maxLength="500"
+        placeholder="{viewModel>/washoutDecision/placeholder}"
+      />
+    </VBox>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="{viewModel>/washoutDecision/confirmText}" type="Emphasized" press=".onConfirmWashoutDecision"/>
+      <Button text="Fechar" press=".onCloseWashoutDecisionDialog" />
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>

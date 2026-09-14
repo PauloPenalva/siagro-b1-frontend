@@ -371,6 +371,11 @@
           "target": "purchaseContractsPriceFixationApproval"
         },
         {
+          "pattern": "purchase-contracts/washout-approval",
+          "name": "purchaseContractsWashoutApproval",
+          "target": "purchaseContractsWashoutApproval"
+        },
+        {
           "pattern": "sales-contracts/price-fixation-approval",
           "name": "salesContractsPriceFixationApproval",
           "target": "salesContractsPriceFixationApproval"
@@ -519,6 +524,51 @@
           "pattern": "ownership-transfers/{id}/detail",
           "name": "ownershipTransfersDetail",
           "target": "ownershipTransfersDetail"
+        },
+        {
+          "pattern": "warehouse-reconciliations",
+          "name": "warehouseReconciliations",
+          "target": "warehouseReconciliations"
+        },
+        {
+          "pattern": "warehouse-reconciliations/new",
+          "name": "warehouseReconciliationsNew",
+          "target": "warehouseReconciliationsNew"
+        },
+        {
+          "pattern": "warehouse-reconciliations/{id}/edit",
+          "name": "warehouseReconciliationsEdit",
+          "target": "warehouseReconciliationsEdit"
+        },
+        {
+          "pattern": "warehouse-reconciliations/{id}/detail",
+          "name": "warehouseReconciliationsDetail",
+          "target": "warehouseReconciliationsDetail"
+        },
+        {
+          "pattern": "warehouse-reconciliations-approval",
+          "name": "warehouseReconciliationsApproval",
+          "target": "warehouseReconciliationsApproval"
+        },
+        {
+          "pattern": "warehouse-reconciliations-approval/{id}",
+          "name": "warehouseReconciliationsApprovalDetail",
+          "target": "warehouseReconciliationsApprovalDetail"
+        },
+        {
+          "pattern": "warehouse-reconciliation-reasons",
+          "name": "warehouseReconciliationReasons",
+          "target": "warehouseReconciliationReasons"
+        },
+        {
+          "pattern": "warehouse-reconciliation-reasons/new",
+          "name": "warehouseReconciliationReasonsAdd",
+          "target": "warehouseReconciliationReasonsAdd"
+        },
+        {
+          "pattern": "warehouse-reconciliation-reasons/{id}/edit",
+          "name": "warehouseReconciliationReasonsEdit",
+          "target": "warehouseReconciliationReasonsEdit"
         },
         {
           "pattern": "shipping-transaction:?query:",
@@ -1321,6 +1371,12 @@
 					"name": "siagrob1.view.purchaseContracts.priceFixationApproval.Main",
           "clearControlAggregation": true
 				},
+        "purchaseContractsWashoutApproval": {
+          "id": "purchaseContractsWashoutApproval",
+          "level": 1,
+          "name": "siagrob1.view.purchaseContracts.washoutApproval.Main",
+          "clearControlAggregation": true
+        },
         "salesContractsPriceFixationApproval": {
 					"id": "salesContractsPriceFixationApproval",
           "level": 1,
@@ -1469,6 +1525,60 @@
 					"id": "ownershipTransfersDetail",
           "level": 2,
 					"name": "siagrob1.view.ownershipTransfers.Detail",
+          "clearControlAggregation": true
+				},
+        "warehouseReconciliations": {
+					"id": "warehouseReconciliations",
+          "level": 1,
+					"name": "siagrob1.view.warehouseReconciliations.Main",
+          "clearControlAggregation": true
+				},
+        "warehouseReconciliationsNew": {
+					"id": "warehouseReconciliationsNew",
+          "level": 2,
+					"name": "siagrob1.view.warehouseReconciliations.Add",
+          "clearControlAggregation": true
+				},
+        "warehouseReconciliationsEdit": {
+					"id": "warehouseReconciliationsEdit",
+          "level": 2,
+					"name": "siagrob1.view.warehouseReconciliations.Edit",
+          "clearControlAggregation": true
+				},
+        "warehouseReconciliationsDetail": {
+					"id": "warehouseReconciliationsDetail",
+          "level": 2,
+					"name": "siagrob1.view.warehouseReconciliations.Detail",
+          "clearControlAggregation": true
+				},
+        "warehouseReconciliationsApproval": {
+					"id": "warehouseReconciliationsApproval",
+          "level": 1,
+					"name": "siagrob1.view.warehouseReconciliations.approval.Main",
+          "clearControlAggregation": true
+				},
+        "warehouseReconciliationsApprovalDetail": {
+					"id": "warehouseReconciliationsApprovalDetail",
+          "level": 2,
+					"name": "siagrob1.view.warehouseReconciliations.approval.Detail",
+          "clearControlAggregation": true
+				},
+        "warehouseReconciliationReasons": {
+					"id": "warehouseReconciliationReasons",
+          "level": 1,
+					"name": "siagrob1.view.warehouseReconciliationReasons.Main",
+          "clearControlAggregation": true
+				},
+        "warehouseReconciliationReasonsAdd": {
+					"id": "warehouseReconciliationReasonsAdd",
+          "level": 2,
+					"name": "siagrob1.view.warehouseReconciliationReasons.Add",
+          "clearControlAggregation": true
+				},
+        "warehouseReconciliationReasonsEdit": {
+					"id": "warehouseReconciliationReasonsEdit",
+          "level": 2,
+					"name": "siagrob1.view.warehouseReconciliationReasons.Edit",
           "clearControlAggregation": true
 				},
         "storageTransactions": {

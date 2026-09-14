@@ -8,4 +8,5 @@ export type PurchaseContractsTotals = {
   TotalAvailableToRelease?: number,
   TotalVolume?: number,
   TotalStandard?: number,
+  WashedOutVolume?: number,
 }

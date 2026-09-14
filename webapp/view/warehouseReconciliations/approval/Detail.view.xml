@@ -1,0 +1,80 @@
+<mvc:View
+	controllerName="siagrob1.controller.warehouseReconciliations.approval.Detail"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:uxap="sap.uxap"
+	core:require="{ formatter: 'siagrob1/model/formatter' }">
+
+  <uxap:ObjectPageLayout showFooter="false" busy="{ui>/busy}" busyIndicatorDelay="0">
+    <uxap:headerTitle>
+      <uxap:ObjectPageDynamicHeaderTitle>
+        <uxap:expandedHeading>
+          <Title text="Aprovar Conferência de Saldo"/>
+        </uxap:expandedHeading>
+        <uxap:snappedHeading>
+          <Title text="Conferência {Code}"/>
+        </uxap:snappedHeading>
+        <uxap:actions>
+          <Button text="Voltar para a lista" type="Transparent" press=".onBackToList"/>
+          <Button text="Aprovar" type="Accept" press=".onApprove"
+            visible="{= ${path: 'Status', targetType: 'any'} === 'InApproval' }"/>
+          <Button text="Rejeitar" type="Reject" press=".onReject"
+            visible="{= ${path: 'Status', targetType: 'any'} === 'InApproval' }"/>
+        </uxap:actions>
+      </uxap:ObjectPageDynamicHeaderTitle>
+    </uxap:headerTitle>
+    <uxap:headerContent>
+      <HBox>
+        <ObjectIdentifier title="{Code}" text="Enviado por {SentBy}" class="sapUiMediumMarginEnd"/>
+        <ObjectStatus inverted="true" class="sapUiMediumMarginEnd"
+          state="{ path: 'Status', targetType: 'any', formatter: 'formatter.stateWarehouseReconciliationStatus' }"
+          text="{ path: 'Status', targetType: 'any', formatter: 'formatter.formatWarehouseReconciliationStatus' }"/>
+        <ObjectStatus
+          state="{ path: 'Difference', targetType: 'any', formatter: 'formatter.stateWarehouseReconciliationDirection' }"
+          text="{ path: 'Difference', targetType: 'any', formatter: 'formatter.formatWarehouseReconciliationDirection' }"/>
+      </HBox>
+    </uxap:headerContent>
+    <uxap:sections>
+      <uxap:ObjectPageSection titleUppercase="false" title="Dados da Conferência">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <core:Fragment fragmentName="siagrob1.view.warehouseReconciliations.fragments.Form" type="XML" />
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Aprovação">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <f:Form editable="false">
+              <f:layout>
+                <f:ColumnLayout columnsM="2" columnsL="3" columnsXL="3"/>
+              </f:layout>
+              <f:formContainers>
+                <f:FormContainer>
+                  <f:formElements>
+                    <f:FormElement label="Enviado por"><f:fields><Text text="{SentBy}"/></f:fields></f:FormElement>
+                    <f:FormElement label="Aprovado por"><f:fields><Text text="{ApprovedBy}"/></f:fields></f:FormElement>
+                    <f:FormElement label="Comentários da aprovação"><f:fields><Text text="{ApprovalComments}"/></f:fields></f:FormElement>
+                    <f:FormElement label="Cancelado/Rejeitado por"><f:fields><Text text="{CanceledBy}"/></f:fields></f:FormElement>
+                    <f:FormElement label="Motivo do cancelamento"><f:fields><Text text="{CancellationReason}"/></f:fields></f:FormElement>
+                  </f:formElements>
+                </f:FormContainer>
+              </f:formContainers>
+            </f:Form>
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
+
+      <uxap:ObjectPageSection titleUppercase="false" title="Anexos">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <core:Fragment fragmentName="siagrob1.view.warehouseReconciliations.fragments.Attachments" type="XML" />
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
+    </uxap:sections>
+  </uxap:ObjectPageLayout>
+</mvc:View>

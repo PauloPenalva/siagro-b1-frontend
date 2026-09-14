@@ -1,0 +1,31 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+<Dialog id="purchaseContractWashoutReverseDialog" title="Estornar Washout">
+  <content>
+    <VBox class="sapUiSmallMargin" width="460px">
+      <MessageStrip
+        text="{viewModel>/washoutReverse/summary}"
+        type="Warning"
+        showIcon="true"
+        class="sapUiSmallMarginBottom"
+      />
+      <TextArea
+        value="{viewModel>/washoutReverse/reason}"
+        rows="4"
+        width="100%"
+        maxLength="500"
+        placeholder="Motivo do estorno (obrigatório)"
+      />
+    </VBox>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Estornar" type="Emphasized" press=".onConfirmWashoutReverse"/>
+      <Button text="Fechar" press=".onCloseWashoutReverseDialog" />
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>

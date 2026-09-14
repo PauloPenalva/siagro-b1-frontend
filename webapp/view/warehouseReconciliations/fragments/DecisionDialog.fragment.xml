@@ -1,0 +1,20 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+  <Dialog title="{wr>/dialog/title}" contentWidth="30rem">
+    <content>
+      <VBox class="sapUiSmallMargin">
+        <Label text="{wr>/dialog/textLabel}" required="{wr>/dialog/textRequired}"/>
+        <TextArea value="{wr>/dialog/text}" rows="5" width="100%" maxLength="500"/>
+      </VBox>
+    </content>
+    <footer>
+      <OverflowToolbar>
+        <ToolbarSpacer/>
+        <Button text="{wr>/dialog/confirmText}" type="Emphasized" press=".onConfirmDecision"/>
+        <Button text="Fechar" press=".onCloseDecision"/>
+      </OverflowToolbar>
+    </footer>
+  </Dialog>
+</core:FragmentDefinition>

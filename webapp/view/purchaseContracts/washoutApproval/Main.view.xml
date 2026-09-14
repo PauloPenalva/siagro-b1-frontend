@@ -1,0 +1,89 @@
+<mvc:View
+	controllerName="siagrob1.controller.purchaseContracts.washoutApproval.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+  xmlns:f="sap.f"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Aprovação de Washouts"/>
+        </f:heading>
+      </f:DynamicPageTitle>
+    </f:title>
+    <f:content>
+      <!-- O backend (PurchaseContractsWashoutsGetService.QueryPending) já restringe a InApproval. -->
+      <Table
+        id="washoutApprovalTable"
+        growing="true"
+        growingThreshold="20"
+        growingScrollToLoad="true"
+        alternateRowColors="true"
+        fixedLayout="Strict"
+        busyIndicatorDelay="0"
+        mode="SingleSelectLeft"
+        items="{
+          path: '/PurchaseContractsWashouts',
+          parameters: {
+            $expand: 'PurchaseContract',
+            $orderby: 'CreatedAt',
+            $count: true
+          }
+        }"
+        >
+        <headerToolbar>
+          <OverflowToolbar>
+            <Title text="Washouts Aguardando Aprovação"/>
+            <ToolbarSpacer/>
+            <Button
+              text="Ver Contrato"
+              tooltip="Abrir o contrato de compra do washout selecionado"
+              icon="sap-icon://document"
+              press=".onViewContract"/>
+            <Button text="Aprovar" type="Accept" icon="sap-icon://accept" press=".onApprove"/>
+            <Button text="Rejeitar" type="Reject" icon="sap-icon://decline" press=".onReject"/>
+            <Button tooltip="Atualizar" icon="sap-icon://refresh" press=".onRefresh"/>
+          </OverflowToolbar>
+        </headerToolbar>
+        <columns>
+          <Column><Text text="Contrato"/></Column>
+          <Column><Text text="Fornecedor"/></Column>
+          <Column hAlign="End"><Text text="Vol. Fixado"/></Column>
+          <Column hAlign="End"><Text text="Vol. Não Fixado"/></Column>
+          <Column hAlign="End"><Text text="Contrato / Mercado"/></Column>
+          <Column hAlign="End"><Text text="Multa"/></Column>
+          <Column hAlign="End"><Text text="Valor a Receber"/></Column>
+          <Column><Text text="Vencimento"/></Column>
+          <Column><Text text="Motivo"/></Column>
+          <Column><Text text="Registrado por"/></Column>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <cells>
+              <ObjectIdentifier
+                title="{PurchaseContract/Code}"
+                text="{path: 'Sequence', formatter: '.formatter.formatWashoutCode'}"/>
+              <Text text="{PurchaseContract/CardName}"/>
+              <Text text="{path: 'FixedVolume', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }}"/>
+              <Text text="{path: 'UnfixedVolume', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }}"/>
+              <Text text="{path: 'ContractPrice', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 8, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }} / {path: 'MarketPrice', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 8, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }}"/>
+              <Text text="{path: 'PenaltyAmount', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }}"/>
+              <ObjectNumber
+                number="{path: 'Amount', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }}"
+                unit="BRL"
+                emphasized="true"/>
+              <Text text="{path: 'DueDate', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy' }}"/>
+              <Text text="{Reason}"/>
+              <Text text="{CreatedBy}"/>
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </f:content>
+  </f:DynamicPage>
+</mvc:View>

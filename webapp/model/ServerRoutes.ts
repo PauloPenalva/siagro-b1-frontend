@@ -107,6 +107,13 @@ export default {
   purchaseContractsPriceFixationReject: '/PurchaseContractsPriceFixationReject(...)',
   purchaseContractsPriceFixationCancel: '/PurchaseContractsPriceFixationCancel(...)',
 
+  // Washout do contrato de compra, invocado por bindContext. Nas actions de decisão e de
+  // estorno, Key é a chave do WASHOUT, não a do contrato.
+  purchaseContractsWashoutCreate: '/PurchaseContractsWashoutCreate(...)',
+  purchaseContractsWashoutApproval: '/PurchaseContractsWashoutApproval(...)',
+  purchaseContractsWashoutReject: '/PurchaseContractsWashoutReject(...)',
+  purchaseContractsWashoutReverse: '/PurchaseContractsWashoutReverse(...)',
+
   // Comentários do contrato: no Update/Delete a chave é a do COMENTÁRIO, não a do contrato.
   purchaseContractsCommentCreate: '/PurchaseContractsCommentCreate(...)',
   purchaseContractsCommentUpdate: '/PurchaseContractsCommentUpdate(...)',
@@ -177,4 +184,16 @@ export default {
   financialAdvancesCreate: '/FinancialAdvancesCreate(...)',
   financialAdvancesRefund: '/FinancialAdvancesRefund(...)',
   financialAdvancesRelinkContract: '/FinancialAdvancesRelinkContract(...)',
+
+  // Conferência de Saldo de Armazém (GAC-1164). Chamadas por fetch: o backend responde
+  // BadRequest(string) e a mensagem de negócio precisa chegar inteira ao usuário.
+  warehouseReconciliationsSendApproval: '/odata/WarehouseReconciliationsSendApproval',
+  warehouseReconciliationsWithdrawApproval: '/odata/WarehouseReconciliationsWithdrawApproval',
+  warehouseReconciliationsApproval: '/odata/WarehouseReconciliationsApproval',
+  warehouseReconciliationsReject: '/odata/WarehouseReconciliationsReject',
+  warehouseReconciliationsCancel: '/odata/WarehouseReconciliationsCancel',
+  warehouseReconciliationsGetBalancePreview: '/odata/WarehouseReconciliationsGetBalancePreview',
+  warehouseReconciliationsAttachmentsList: '/odata/WarehouseReconciliationsAttachmentsList',
+  warehouseReconciliationsAttachmentUpload: '/odata/WarehouseReconciliationsAttachmentUpload',
+  warehouseReconciliationsAttachmentsDownload: '/odata/WarehouseReconciliationsAttachmentsDownload',
 }

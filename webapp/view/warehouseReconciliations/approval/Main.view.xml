@@ -1,0 +1,80 @@
+<mvc:View
+	controllerName="siagrob1.controller.warehouseReconciliations.approval.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.f"
+	core:require="{ formatter: 'siagrob1/model/formatter' }">
+  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Aprovação de Conferências de Saldo"/>
+        </f:heading>
+      </f:DynamicPageTitle>
+    </f:title>
+    <f:content>
+      <IconTabBar id="warehouseReconciliationsApprovalIconTabBar" expanded="true" expandable="false" select=".onFilterSelect">
+        <items>
+          <IconTabFilter icon="sap-icon://inspection" iconColor="Critical" text="Em aprovação" key="InApproval"
+            count="{ path: '/WarehouseReconciliations/$count', parameters: { $filter: 'Status eq \'InApproval\'' } }"/>
+          <IconTabFilter icon="sap-icon://accounting-document-verification" iconColor="Positive" text="Aprovadas" key="Approved"
+            count="{ path: '/WarehouseReconciliations/$count', parameters: { $filter: 'Status eq \'Approved\'' } }"/>
+          <IconTabFilter icon="sap-icon://document-text" iconColor="Negative" text="Rejeitadas" key="Rejected"
+            count="{ path: '/WarehouseReconciliations/$count', parameters: { $filter: 'Status eq \'Rejected\'' } }"/>
+        </items>
+        <content>
+          <Table
+            id="warehouseReconciliationsApprovalTable"
+            growing="true"
+            growingThreshold="20"
+            growingScrollToLoad="true"
+            alternateRowColors="true"
+            busyIndicatorDelay="0"
+            items="{
+              path: '/WarehouseReconciliations',
+              parameters: { $filter: 'Status eq \'InApproval\'', $count: true },
+              sorter: { path: 'SentAt', descending: true }
+            }">
+            <headerToolbar>
+              <OverflowToolbar>
+                <Title text="Conferências"/>
+                <ToolbarSpacer/>
+                <SearchField id="warehouseReconciliationsApprovalSearchField" width="30%" placeholder="Pesquisar..." search=".onSearch"/>
+                <Button tooltip="Atualizar" icon="sap-icon://refresh" press=".onRefresh"/>
+              </OverflowToolbar>
+            </headerToolbar>
+            <columns>
+              <Column><Text text="Filial"/></Column>
+              <Column><Text text="Status"/></Column>
+              <Column width="25%"><Text text="Conferência"/></Column>
+              <Column><Text text="Referência"/></Column>
+              <Column hAlign="End"><Text text="Diferença"/></Column>
+              <Column><Text text="Motivo"/></Column>
+              <Column><Text text="Enviado por"/></Column>
+            </columns>
+            <items>
+              <ColumnListItem type="Navigation" press=".onNavigateToDetail">
+                <cells>
+                  <Text text="{Branch/ShortName}"/>
+                  <ObjectStatus inverted="true"
+                    state="{ path: 'Status', targetType: 'any', formatter: 'formatter.stateWarehouseReconciliationStatus' }"
+                    text="{ path: 'Status', targetType: 'any', formatter: 'formatter.formatWarehouseReconciliationStatus' }"/>
+                  <ObjectIdentifier title="{WarehouseName} - {ItemName}" text="{Code}"/>
+                  <Text text="{ path: 'ReferenceDate', targetType: 'any', formatter: 'formatter.formatDate' }"/>
+                  <ObjectNumber
+                    state="{ path: 'Difference', targetType: 'any', formatter: 'formatter.stateWarehouseReconciliationDirection' }"
+                    number="{ path: 'Difference', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+                    unit="{UnitOfMeasureCode}"/>
+                  <Text text="{Reason/Description}"/>
+                  <Text text="{SentBy}"/>
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </content>
+      </IconTabBar>
+    </f:content>
+  </f:DynamicPage>
+</mvc:View>

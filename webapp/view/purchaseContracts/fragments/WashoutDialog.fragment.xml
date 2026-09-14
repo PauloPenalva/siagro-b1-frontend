@@ -1,0 +1,112 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+<!--
+  Estado em viewModel>/washout (WashoutDialogState). Os itens do Select são gravados no modelo
+  ANTES de abrir: selectedKey de JSONModel com itens chegando depois renderiza vazio.
+-->
+<Dialog id="purchaseContractWashoutDialog" title="Registrar Washout">
+  <content>
+    <VBox class="sapUiSmallMargin" width="480px">
+      <MessageStrip
+        text="Saldo físico: {path: 'viewModel>/washout/availablePhysical', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, groupingEnabled: true }} · Não liberado: {path: 'viewModel>/washout/availableToRelease', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, groupingEnabled: true }}"
+        type="Information"
+        showIcon="true"
+        class="sapUiSmallMarginBottom"
+      />
+      <f:Form editable="true">
+        <f:layout>
+          <f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+        </f:layout>
+        <f:formContainers>
+          <f:FormContainer>
+            <f:formElements>
+              <f:FormElement label="Fixação" visible="{= ${viewModel>/washout/fixations}.length > 0 }">
+                <f:fields>
+                  <Select
+                    width="100%"
+                    forceSelection="false"
+                    items="{viewModel>/washout/fixations}"
+                    selectedKey="{viewModel>/washout/priceFixationKey}"
+                    change=".onWashoutValuesChange">
+                    <core:Item key="{viewModel>Key}" text="{viewModel>Text}"/>
+                  </Select>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Preço da Fixação" visible="{= ${viewModel>/washout/fixations}.length > 0 }">
+                <f:fields>
+                  <Text text="{path: 'viewModel>/washout/contractPrice', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 8, groupingEnabled: true }}"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Volume Fixado" visible="{= ${viewModel>/washout/fixations}.length > 0 }">
+                <f:fields>
+                  <Input
+                    value="{path: 'viewModel>/washout/fixedVolume', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, groupingEnabled: true }}"
+                    change=".onWashoutValuesChange"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Volume Não Fixado" visible="{viewModel>/washout/isPaf}">
+                <f:fields>
+                  <Input
+                    value="{path: 'viewModel>/washout/unfixedVolume', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, groupingEnabled: true }}"
+                    description="a fixar: {path: 'viewModel>/washout/availableToPricing', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, groupingEnabled: true }}"
+                    change=".onWashoutValuesChange"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Preço de Mercado">
+                <f:fields>
+                  <Input
+                    value="{path: 'viewModel>/washout/marketPrice', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 8, groupingEnabled: true }}"
+                    change=".onWashoutValuesChange"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Multa">
+                <f:fields>
+                  <Input
+                    value="{path: 'viewModel>/washout/penaltyAmount', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 2, groupingEnabled: true }}"
+                    change=".onWashoutValuesChange"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Valor a Receber">
+                <f:fields>
+                  <ObjectNumber
+                    number="{path: 'viewModel>/washout/amount', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 2, groupingEnabled: true }}"
+                    unit="BRL"
+                    emphasized="true"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Vencimento do Título">
+                <f:fields>
+                  <DatePicker
+                    value="{path: 'viewModel>/washout/dueDate', type: 'sap.ui.model.type.Date', formatOptions: { pattern: 'dd/MM/yyyy' }}"
+                    required="{= ${viewModel>/washout/amount} > 0 }"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Motivo">
+                <f:fields>
+                  <TextArea
+                    value="{viewModel>/washout/reason}"
+                    rows="3"
+                    width="100%"
+                    maxLength="500"
+                    required="true"
+                    placeholder="Por que o produtor não vai entregar"/>
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+        </f:formContainers>
+      </f:Form>
+    </VBox>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Registrar" type="Emphasized" press=".onConfirmWashout"/>
+      <Button text="Fechar" press=".onCloseWashoutDialog" />
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>

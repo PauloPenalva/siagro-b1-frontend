@@ -1,0 +1,23 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:u="sap.ui.unified"
+>
+  <Dialog title="Anexar arquivo" contentWidth="30rem">
+    <content>
+      <VBox class="sapUiSmallMargin">
+        <Label text="Descrição" required="true"/>
+        <Input value="{wr>/attachment/description}" maxLength="100"/>
+        <Label text="Arquivo" required="true" class="sapUiSmallMarginTop"/>
+        <u:FileUploader id="attachmentFileUploader" width="100%" change=".onAttachmentFileChange"/>
+      </VBox>
+    </content>
+    <footer>
+      <OverflowToolbar>
+        <ToolbarSpacer/>
+        <Button text="Enviar" type="Emphasized" press=".onConfirmAttachmentUpload"/>
+        <Button text="Fechar" press=".onCloseAttachmentUpload"/>
+      </OverflowToolbar>
+    </footer>
+  </Dialog>
+</core:FragmentDefinition>

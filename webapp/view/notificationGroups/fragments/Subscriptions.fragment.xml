@@ -59,6 +59,10 @@
             <core:ListItem key="PriceFixationApproved" text="Fixação de preço aprovada" />
             <core:ListItem key="PriceFixationRejected" text="Fixação de preço rejeitada" />
             <core:ListItem key="PriceFixationReversed" text="Fixação de preço estornada" />
+            <core:ListItem key="WashoutCreated" text="Washout incluído" />
+            <core:ListItem key="WashoutApproved" text="Washout aprovado" />
+            <core:ListItem key="WashoutRejected" text="Washout rejeitado" />
+            <core:ListItem key="WashoutReversed" text="Washout estornado" />
           </Select>
         </t:template>
       </t:Column>

@@ -210,9 +210,22 @@
               }
             }" unit="{UnitOfMeasureCode}"  />
           </HBox>
+          <HBox class="sapUiTinyMarginBottom">
+            <Text text="Washout:" class="sapUiMediumMarginEnd" />
+            <ObjectNumber number="{
+              path: 'viewModel>/WashedOutVolume',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions:{
+                decimals: 3,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+              }
+            }" unit="{UnitOfMeasureCode}"  />
+          </HBox>
         </VBox>
-      </HBox> 
-   	</uxap:headerContent> 
+      </HBox>
+   	</uxap:headerContent>
     
     <uxap:sections>
       <uxap:ObjectPageSection titleUppercase="false" title="Dados do Contrato">
@@ -233,6 +246,13 @@
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection titleUppercase="false">
 						 <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractPriceFixations" type="XML" />
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Washouts">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection titleUppercase="false">
+						 <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractWashouts" type="XML" />
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>

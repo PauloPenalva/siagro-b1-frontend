@@ -243,6 +243,30 @@ export default {
     return m.get(value);
   },
 
+  /** Código de exibição do washout: "WO-" + sequencial do contrato. */
+  formatWashoutCode: (sequence: number | string) =>
+    sequence === null || sequence === undefined || sequence === "" ? "" : `WO-${sequence}`,
+
+  formatWashoutStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("InApproval", "Em Aprovação");
+    m.set("Approved", "Aprovado");
+    m.set("Rejected", "Rejeitado");
+    m.set("Reversed", "Estornado");
+
+    return m.get(value) ?? "";
+  },
+
+  stateWashoutStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("InApproval", "Warning");
+    m.set("Approved", "Success");
+    m.set("Rejected", "Error");
+    m.set("Reversed", "None");
+
+    return m.get(value) ?? "None";
+  },
+
   formatContractStatus: (value: string) => {
     const m = new Map<string, string>();
     m.set("Draft"     , "Rascunho");
@@ -441,7 +465,9 @@ export default {
     m.set("PurchaseReturn", "Dev.Compra");
     m.set("PurchaseQtyComplement", "Compl.Qtd.");
     m.set("PurchasePriceComplement", "Compl.Preço");
-    
+    m.set("WarehouseLoss", "Perda Armazém");
+    m.set("WarehouseGain", "Sobra Armazém");
+
     return m.get(value);
   },
 
@@ -556,8 +582,46 @@ export default {
     m.set("Open", "None");
     m.set("Closed", "Information");
     m.set("Cancelled", "Error");
-    
+
     return m.get(value);
+  },
+
+  formatWarehouseReconciliationStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Draft", "Rascunho");
+    m.set("InApproval", "Em aprovação");
+    m.set("Approved", "Aprovada");
+    m.set("Rejected", "Rejeitada");
+    m.set("Cancelled", "Cancelada");
+
+    return m.get(value);
+  },
+
+  stateWarehouseReconciliationStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Draft", "None");
+    m.set("InApproval", "Warning");
+    m.set("Approved", "Success");
+    m.set("Rejected", "Error");
+    m.set("Cancelled", "Error");
+
+    return m.get(value);
+  },
+
+  /** Diferença negativa = Perda, positiva = Sobra. Aceita número ou string (JSON model/OData). */
+  formatWarehouseReconciliationDirection: (difference: number | string) => {
+    const n = Number(difference);
+    if (!difference && difference !== 0) return "";
+    if (n < 0) return "Perda";
+    if (n > 0) return "Sobra";
+    return "Sem diferença";
+  },
+
+  stateWarehouseReconciliationDirection: (difference: number | string) => {
+    const n = Number(difference);
+    if (n < 0) return "Error";
+    if (n > 0) return "Success";
+    return "None";
   },
 
   formatShipmentReleaseStatus: (value: string) => {
@@ -682,6 +746,7 @@ export default {
     m.set("DeliveryLocation", "Local de entrega");
     m.set("Attachment", "Anexo");
     m.set("PriceFixation", "Fixação de preço");
+    m.set("Washout", "Washout");
     // Singular: é a coleção de comentários do Detail (CommentEntries). Não confundir com
     // "Comments" abaixo, que é a observação do cabeçalho.
     m.set("Comment", "Comentário");
@@ -892,6 +957,10 @@ export default {
     m.set("PriceFixationRejected", "Fixação de preço rejeitada");
     // Estornada, não cancelada: a fixação volta para "Em aprovação".
     m.set("PriceFixationReversed", "Fixação de preço estornada");
+    m.set("WashoutCreated", "Washout incluído");
+    m.set("WashoutApproved", "Washout aprovado");
+    m.set("WashoutRejected", "Washout rejeitado");
+    m.set("WashoutReversed", "Washout estornado");
 
     return m.get(value) ?? value;
   },
@@ -1035,8 +1104,24 @@ export default {
     m.set("DueDate", "Vencimento");
     m.set("Comments", "Comentários");
     m.set("Contract", "Contrato");
+    // Provisório ajustado no lugar pelo washout.
+    m.set("NetAmount", "Valor");
 
     return m.get(value) ?? value;
+  },
+
+  /** Origem do documento financeiro (enum FinancialDocumentOrigin). */
+  formatFinancialOrigin: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Manual", "Manual");
+    m.set("PurchaseContractPriceFixation", "Fixação de contrato de compra");
+    m.set("SalesContractPriceFixation", "Fixação de contrato de venda");
+    m.set("PurchaseInvoice", "Documento de entrada");
+    m.set("SalesInvoice", "Documento de saída");
+    m.set("FinancialDocument", "Documento financeiro");
+    m.set("PurchaseContractWashout", "Washout de contrato de compra");
+
+    return m.get(value) ?? value ?? "";
   },
 
   formatFinancialAccountType: (value: string) => {

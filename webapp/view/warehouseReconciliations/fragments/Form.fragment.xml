@@ -1,0 +1,190 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    core:require="{ formatter: 'siagrob1/model/formatter' }"
+>
+  <f:Form id="warehouseReconciliationForm" editable="true">
+    <f:layout>
+      <f:ColumnLayout columnsM="2" columnsL="3" columnsXL="3"/>
+    </f:layout>
+    <f:formContainers>
+      <f:FormContainer title="Identificação">
+        <f:formElements>
+          <f:FormElement label="Número">
+            <f:fields>
+              <Input value="{Code}" editable="false"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Status">
+            <f:fields>
+              <ObjectStatus
+                inverted="true"
+                state="{ path: 'Status', targetType: 'any', formatter: 'formatter.stateWarehouseReconciliationStatus' }"
+                text="{ path: 'Status', targetType: 'any', formatter: 'formatter.formatWarehouseReconciliationStatus' }"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Filial">
+            <f:fields>
+              <Select
+                editable="{ui>/editable}"
+                forceSelection="false"
+                required="true"
+                selectedKey="{BranchCode}"
+                items="{ path: '/Branchs', sorter: { path: 'Code' } }">
+                <core:ListItem key="{Code}" text="{ShortName}" additionalText="{Code}"/>
+              </Select>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Data de referência">
+            <f:fields>
+              <DatePicker
+                value="{
+                  path: 'ReferenceDate',
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
+                  formatOptions: { pattern: 'dd/MM/yyyy' }
+                }"
+                editable="{ui>/editable}"
+                required="true"
+                change=".onReferenceDateChange"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Motivo">
+            <f:fields>
+              <Select
+                visible="{ui>/editable}"
+                forceSelection="false"
+                required="true"
+                selectedKey="{ReasonKey}"
+                items="{ path: '/WarehouseReconciliationReasons', parameters: { $filter: 'Active eq true' }, sorter: { path: 'Description' } }">
+                <core:ListItem key="{Key}" text="{Description}"/>
+              </Select>
+              <Input visible="{= !${ui>/editable} }" value="{Reason/Description}" editable="false"/>
+            </f:fields>
+          </f:FormElement>
+        </f:formElements>
+      </f:FormContainer>
+
+      <f:FormContainer title="Armazém e produto">
+        <f:formElements>
+          <f:FormElement label="Armazém de terceiros">
+            <f:fields>
+              <Input
+                value="{WarehouseCode}"
+                editable="{ui>/editable}"
+                required="true"
+                showValueHelp="true"
+                valueHelpOnly="true"
+                valueHelpRequest=".onWarehouseValueHelp">
+                <customData>
+                  <core:CustomData key="descriptionProperty" value="WarehouseName:Name"/>
+                </customData>
+              </Input>
+              <Input value="{WarehouseName}" editable="false"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Produto">
+            <f:fields>
+              <Input
+                value="{ItemCode}"
+                editable="{ui>/editable}"
+                required="true"
+                showValueHelp="true"
+                valueHelpOnly="true"
+                valueHelpRequest=".onItemValueHelp">
+                <customData>
+                  <core:CustomData key="descriptionProperty" value="ItemName"/>
+                </customData>
+              </Input>
+              <Input value="{ItemName}" editable="false"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Un. Med.">
+            <f:fields>
+              <Input
+                value="{UnitOfMeasureCode}"
+                editable="{ui>/editable}"
+                required="true"
+                showValueHelp="true"
+                valueHelpOnly="true"
+                valueHelpRequest=".openUnitsOfMeasureValueHelp"/>
+            </f:fields>
+          </f:FormElement>
+        </f:formElements>
+      </f:FormContainer>
+
+      <f:FormContainer title="Saldos">
+        <f:formElements>
+          <f:FormElement label="Saldo informado pelo armazém">
+            <f:fields>
+              <Input
+                required="true"
+                editable="{ui>/editable}"
+                change=".onReportedBalanceChange"
+                value="{
+                  path: 'ReportedBalance',
+                  type: 'sap.ui.model.odata.type.Double',
+                  formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"
+                description="{UnitOfMeasureCode}"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Saldo do sistema na data (prévia)"
+            visible="{= ${ui>/editable} || ${path: 'Status', targetType: 'any'} === 'Draft' || ${path: 'Status', targetType: 'any'} === 'InApproval' }">
+            <f:fields>
+              <ObjectNumber
+                number="{
+                  path: 'wr>/preview/systemBalance',
+                  type: 'sap.ui.model.type.Float',
+                  formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"
+                unit="{UnitOfMeasureCode}"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Diferença (prévia)"
+            visible="{= ${ui>/editable} || ${path: 'Status', targetType: 'any'} === 'InApproval' }">
+            <f:fields>
+              <ObjectNumber
+                state="{ path: 'wr>/preview/difference', formatter: 'formatter.stateWarehouseReconciliationDirection' }"
+                number="{
+                  path: 'wr>/preview/difference',
+                  type: 'sap.ui.model.type.Float',
+                  formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"
+                unit="{ path: 'wr>/preview/difference', formatter: 'formatter.formatWarehouseReconciliationDirection' }"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Saldo do sistema (snapshot)" visible="{= !${ui>/editable} }">
+            <f:fields>
+              <ObjectNumber
+                number="{
+                  path: 'SystemBalance',
+                  type: 'sap.ui.model.type.Float',
+                  formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"
+                unit="{UnitOfMeasureCode}"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Diferença (snapshot)" visible="{= !${ui>/editable} }">
+            <f:fields>
+              <ObjectNumber
+                state="{ path: 'Difference', targetType: 'any', formatter: 'formatter.stateWarehouseReconciliationDirection' }"
+                number="{
+                  path: 'Difference',
+                  type: 'sap.ui.model.type.Float',
+                  formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"
+                unit="{ path: 'Difference', targetType: 'any', formatter: 'formatter.formatWarehouseReconciliationDirection' }"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Observações">
+            <f:fields>
+              <TextArea value="{Comments}" editable="{ui>/editable}" rows="3" maxLength="500"/>
+            </f:fields>
+          </f:FormElement>
+        </f:formElements>
+      </f:FormContainer>
+    </f:formContainers>
+  </f:Form>
+</core:FragmentDefinition>

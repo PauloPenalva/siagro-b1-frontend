@@ -61,6 +61,8 @@
               <core:ListItem key="PurchaseReturn" text="Dev.Compra"/>
               <core:ListItem key="PurchaseQtyComplement" text="Compl.Qtd."/>
               <core:ListItem key="PurchasePriceComplement" text="Compl.Preço"/>
+              <core:ListItem key="WarehouseLoss" text="Perda Armazém"/>
+              <core:ListItem key="WarehouseGain" text="Sobra Armazém"/>
             </Select>
         </fb:control>
       </fb:FilterGroupItem>

@@ -45,7 +45,9 @@ export abstract class BaseController extends CommonController {
         Purchase: "Compra",
         PurchaseReturn: "Dev.Compra",
         PurchaseQtyComplement: "Compl.Qtd.",
-        PurchasePriceComplement: "Compl.Preço"
+        PurchasePriceComplement: "Compl.Preço",
+        WarehouseLoss: "Perda Armazém",
+        WarehouseGain: "Sobra Armazém"
       }
     });
 

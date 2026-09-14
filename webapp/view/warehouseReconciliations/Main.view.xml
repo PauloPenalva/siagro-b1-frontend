@@ -1,0 +1,98 @@
+<mvc:View
+	controllerName="siagrob1.controller.warehouseReconciliations.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.f"
+	core:require="{ formatter: 'siagrob1/model/formatter' }">
+  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Conferências de Saldo de Armazém"/>
+        </f:heading>
+      </f:DynamicPageTitle>
+    </f:title>
+    <f:header>
+      <f:DynamicPageHeader>
+        <f:content>
+          <core:Fragment fragmentName="siagrob1.view.warehouseReconciliations.fragments.Filterbar" type="XML" />
+        </f:content>
+      </f:DynamicPageHeader>
+    </f:header>
+    <f:content>
+      <t:Table
+        id="warehouseReconciliationsTable"
+        busyIndicatorDelay="0"
+        selectionMode="Single"
+        selectionBehavior="Row"
+        class="sapUiSizeCondensed"
+        visibleRowCountMode="Auto"
+        alternateRowColors="true"
+        rows="{
+          path: '/WarehouseReconciliations',
+          sorter: [ { path: 'RowId', descending: true } ]
+        }">
+        <t:extension>
+          <OverflowToolbar>
+            <Title text="Conferências" />
+            <ToolbarSpacer />
+            <Button type="Transparent" text="Exportar Excel" icon="sap-icon://excel-attachment" press=".onExcel"/>
+            <Button type="Transparent" text="Visualizar" press=".onDetail"/>
+            <Button type="Emphasized" icon="sap-icon://add" text="Criar" press=".onCreate"/>
+          </OverflowToolbar>
+        </t:extension>
+        <t:columns>
+          <t:Column label="Filial" width="6rem">
+            <t:template><Text text="{Branch/ShortName}" wrapping="false"/></t:template>
+          </t:Column>
+          <t:Column label="Status" hAlign="Center" width="9rem" sortProperty="Status">
+            <t:template>
+              <ObjectStatus inverted="true"
+                state="{ path: 'Status', targetType: 'any', formatter: 'formatter.stateWarehouseReconciliationStatus' }"
+                text="{ path: 'Status', targetType: 'any', formatter: 'formatter.formatWarehouseReconciliationStatus' }"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Número" width="9rem" sortProperty="Code">
+            <t:template><Text text="{Code}" wrapping="false"/></t:template>
+          </t:Column>
+          <t:Column label="Referência" width="8rem" sortProperty="ReferenceDate">
+            <t:template><Text wrapping="false" text="{ path: 'ReferenceDate', targetType: 'any', formatter: 'formatter.formatDate' }"/></t:template>
+          </t:Column>
+          <t:Column label="Armazém" width="18rem" sortProperty="WarehouseName">
+            <t:template><Text wrapping="false" text="{WarehouseCode} - {WarehouseName}"/></t:template>
+          </t:Column>
+          <t:Column label="Produto" width="16rem" sortProperty="ItemName">
+            <t:template><Text wrapping="false" text="{ItemCode} - {ItemName}"/></t:template>
+          </t:Column>
+          <t:Column label="Saldo Informado" hAlign="End" width="10rem">
+            <t:template>
+              <ObjectNumber number="{ path: 'ReportedBalance', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" unit="{UnitOfMeasureCode}"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Saldo Sistema" hAlign="End" width="10rem">
+            <t:template>
+              <ObjectNumber number="{ path: 'SystemBalance', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" unit="{UnitOfMeasureCode}"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Diferença" hAlign="End" width="10rem" sortProperty="Difference">
+            <t:template>
+              <ObjectNumber
+                state="{ path: 'Difference', targetType: 'any', formatter: 'formatter.stateWarehouseReconciliationDirection' }"
+                number="{ path: 'Difference', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+                unit="{ path: 'Difference', targetType: 'any', formatter: 'formatter.formatWarehouseReconciliationDirection' }"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Motivo" width="14rem">
+            <t:template><Text text="{Reason/Description}" wrapping="false"/></t:template>
+          </t:Column>
+          <t:Column label="Criado por" width="10rem">
+            <t:template><Text text="{CreatedBy}" wrapping="false"/></t:template>
+          </t:Column>
+        </t:columns>
+      </t:Table>
+    </f:content>
+  </f:DynamicPage>
+</mvc:View>
