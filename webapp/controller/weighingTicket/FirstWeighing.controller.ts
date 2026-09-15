@@ -80,6 +80,7 @@ export default class FirstWeighing extends GenericController {
       action.setParameter("Value", value);
       action.setParameter("Comments", ctx.getProperty("Comments"));
       action.setParameter("CaptureId", (this.getModel("ui") as JSONModel).getProperty("/captureId"));
+      action.setParameter("ScaleCode", (this.getModel("ui") as JSONModel).getProperty("/scaleCode"));
 
       await action.invoke();
 

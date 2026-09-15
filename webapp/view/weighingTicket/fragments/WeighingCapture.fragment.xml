@@ -4,6 +4,19 @@
     xmlns:core="sap.ui.core"
 >
   <VBox class="sapUiSmallMargin">
+    <Label
+      text="Balança"
+      labelFor="weighingCaptureScaleSelect"
+      visible="{= ${ui>/scales}.length > 1 }" />
+    <Select
+      id="weighingCaptureScaleSelect"
+      width="16rem"
+      selectedKey="{ui>/scaleCode}"
+      items="{ui>/scales}"
+      change=".onCaptureScaleChange"
+      visible="{= ${ui>/scales}.length > 1 }">
+      <core:ListItem key="{ui>code}" text="{ui>code} - {ui>name}" />
+    </Select>
     <ObjectNumber
       class="siagroLiveWeight"
       number="{

@@ -18,6 +18,10 @@ import ScaleLiveService from 'siagrob1/services/ScaleLiveService';
 import RequestModel from 'siagrob1/model/RequestModel';
 import ServerRoutes from 'siagrob1/model/ServerRoutes';
 import { CaptureResult } from 'siagrob1/types/ScaleLive';
+import { Select$ChangeEvent } from 'sap/m/Select';
+
+/** Balança oferecida no painel de captura. */
+type CaptureScale = { code: string; name: string };
 
 /**
  * @namespace siagrob1.controller.weighingTicket
@@ -30,7 +34,10 @@ export default class GenericController extends CommonController {
   private captureRouteName: string;
 
   private captureRouteWatchAttached: boolean;
-  
+
+  /** Etapa do peso ao vivo em curso; a escolha de balança é lembrada por etapa. */
+  private captureScalePurpose: "Opening" | "Closing";
+
   async onCancel() {
      if(!await DialogHelper.confirmDialog("Confirma cancelar ticket ?"))
       return;
@@ -146,16 +153,24 @@ export default class GenericController extends CommonController {
 
     this.watchCaptureRouteExit(routeName);
 
-    uiModel.setProperty("/canTypeWeight", SessionService.hasPermission("WEIGHING_MANUAL_ENTRY"));
+    // Mesma regra do WeighingCaptureValidator: a permissão ou o papel ADMIN.
+    uiModel.setProperty("/canTypeWeight",
+      SessionService.hasPermission("WEIGHING_MANUAL_ENTRY") || SessionService.hasRole("ADMIN"));
     uiModel.setProperty("/captureId", null);
+    uiModel.setProperty("/scales", []);
     uiModel.setProperty("/liveWeight", 0);
     uiModel.setProperty("/liveStable", false);
     uiModel.setProperty("/liveOnline", false);
     uiModel.setProperty("/liveStatusText", "Localizando a balança...");
     uiModel.setProperty("/liveStatusState", "None");
 
-    const scaleCode = await this.resolveUserScaleCode(purpose);
+    this.captureScalePurpose = purpose;
 
+    const scales = await this.resolveUserScales(purpose);
+    const remembered = this.readRememberedScaleCode(purpose);
+    const scaleCode = scales.some(s => s.code === remembered) ? remembered : scales[0]?.code ?? null;
+
+    uiModel.setProperty("/scales", scales);
     uiModel.setProperty("/scaleCode", scaleCode);
     uiModel.setProperty("/scaleConfigured", !!scaleCode);
 
@@ -164,6 +179,36 @@ export default class GenericController extends CommonController {
       uiModel.setProperty("/liveStatusState", "Warning");
       return;
     }
+
+    this.connectLiveWeight(scaleCode);
+  }
+
+  /**
+   * Troca de balança no painel. A captura já feita é descartada: o comprovante é da balança
+   * anterior, e gravá-lo junto com a nova escolha registraria a balança errada no romaneio.
+   */
+  onCaptureScaleChange(ev: Select$ChangeEvent): void {
+    const uiModel = this.getModel("ui") as JSONModel;
+    const scaleCode = ev.getParameter("selectedItem")?.getKey();
+
+    if (!scaleCode) {
+      return;
+    }
+
+    uiModel.setProperty("/scaleCode", scaleCode);
+    uiModel.setProperty("/captureId", null);
+    this.rememberScaleCode(this.captureScalePurpose, scaleCode);
+    this.connectLiveWeight(scaleCode);
+  }
+
+  private connectLiveWeight(scaleCode: string): void {
+    const uiModel = this.getModel("ui") as JSONModel;
+
+    uiModel.setProperty("/liveWeight", 0);
+    uiModel.setProperty("/liveStable", false);
+    uiModel.setProperty("/liveOnline", false);
+    uiModel.setProperty("/liveStatusText", "Localizando a balança...");
+    uiModel.setProperty("/liveStatusState", "None");
 
     ScaleLiveService.subscribe(scaleCode, live => {
       uiModel.setProperty("/liveWeight", live.weight);
@@ -205,24 +250,56 @@ export default class GenericController extends CommonController {
   }
 
   /**
-   * Busca a balança do usuário para a etapa. O $filter é montado como texto porque
-   * `sap.ui.model.Filter` sobre enum estoura "Unsupported type".
+   * Busca as balanças do usuário para a etapa - pode haver mais de uma (quem opera duas balanças
+   * na mesma etapa). Ordenadas pelo código, a mesma ordem que o servidor usa quando nenhuma é
+   * informada. O $filter é montado como texto porque `sap.ui.model.Filter` sobre enum estoura
+   * "Unsupported type".
    */
-  private async resolveUserScaleCode(purpose: "Opening" | "Closing"): Promise<string> {
-    const username = (this.getModel("sessionModel") as JSONModel).getProperty("/userName") as string;
+  private async resolveUserScales(purpose: "Opening" | "Closing"): Promise<CaptureScale[]> {
+    const username = this.getSessionUsername();
 
     if (!username) {
-      return null;
+      return [];
     }
 
     const model = this.getView().getModel() as ODataModel;
     const binding = model.bindList("/UserTruckScales", null, [], [], {
-      $filter: `Username eq '${username.replace(/'/g, "''")}' and Purpose eq '${purpose}'`
+      $filter: `Username eq '${username.replace(/'/g, "''")}' and Purpose eq '${purpose}'`,
+      $expand: "TruckScale($select=Name)",
+      $orderby: "TruckScaleCode"
     });
 
-    const contexts = await binding.requestContexts(0, 1);
+    const contexts = await binding.requestContexts(0, 100);
 
-    return contexts.length > 0 ? contexts[0].getProperty("TruckScaleCode") as string : null;
+    return contexts.map(ctx => ({
+      code: ctx.getProperty("TruckScaleCode") as string,
+      name: (ctx.getProperty("TruckScale/Name") as string) ?? ""
+    }));
+  }
+
+  private getSessionUsername(): string {
+    return (this.getModel("sessionModel") as JSONModel).getProperty("/userName") as string;
+  }
+
+  /** A escolha fica no navegador: cada posto de pesagem costuma ficar ao lado de uma balança. */
+  private scaleStorageKey(purpose: "Opening" | "Closing"): string {
+    return `siagrob1.weighingScale.${this.getSessionUsername()}.${purpose}`;
+  }
+
+  private readRememberedScaleCode(purpose: "Opening" | "Closing"): string {
+    try {
+      return window.localStorage.getItem(this.scaleStorageKey(purpose));
+    } catch {
+      return null;
+    }
+  }
+
+  private rememberScaleCode(purpose: "Opening" | "Closing", scaleCode: string): void {
+    try {
+      window.localStorage.setItem(this.scaleStorageKey(purpose), scaleCode);
+    } catch {
+      // Sem armazenamento (janela privada, bloqueio): a tela só não lembra a escolha.
+    }
   }
 
   /** Pede a captura ao servidor e guarda o comprovante junto do peso. */

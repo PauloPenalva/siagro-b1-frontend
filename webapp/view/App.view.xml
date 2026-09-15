@@ -77,11 +77,14 @@
             Aviso de nova versão publicada. Fica no subHeader para aparecer em
             qualquer tela; enquanto invisível o ToolPage não renderiza a faixa,
             então não sobra espaço em branco.
+            `=== true` e não o valor puro: várias telas zeram o modelo `ui` com
+            `setData({})` (as de pesagem, por exemplo), a propriedade some e um
+            binding `undefined` cai no padrão de `visible`, que é `true`.
         -->
         <tnt:subHeader>
             <MessageStrip
                 id="updateAvailableStrip"
-                visible="{ui>/updateAvailable}"
+                visible="{= ${ui>/updateAvailable} === true }"
                 type="Information"
                 showIcon="true"
                 class="sapUiTinyMargin"

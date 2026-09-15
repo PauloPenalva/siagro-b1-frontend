@@ -16,6 +16,8 @@ export type UserIdentity = {
   hasPhoto?: boolean;
   /** Permissões efetivas. A tela usa para não oferecer o que o servidor recusaria. */
   permissions?: string[];
+  /** Papéis atribuídos pelos perfis (ex.: `ADMIN`). Mesma finalidade das permissões. */
+  roles?: string[];
 };
 
 /** Resposta de `/security/auth/status`. */

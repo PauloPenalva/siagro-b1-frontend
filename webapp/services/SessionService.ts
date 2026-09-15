@@ -210,6 +210,7 @@ class SessionService {
     sessionModel.setProperty("/email", identity?.email ?? null);
     sessionModel.setProperty("/initials", formatter.formatInitials(identity?.fullName));
     sessionModel.setProperty("/permissions", identity?.permissions ?? []);
+    sessionModel.setProperty("/roles", identity?.roles ?? []);
     // Parâmetro à parte porque a regra não é identidade: ela vem no mesmo par de respostas
     // (login e /status), mas fora do objeto do usuário.
     sessionModel.setProperty("/passwordRequirements", passwordRequirements ?? "");
@@ -229,6 +230,13 @@ class SessionService {
     const permissions = (sessionModel.getProperty("/permissions") ?? []) as string[];
 
     return permissions.includes(code);
+  }
+
+  /** Papel atribuído pelo perfil, sem o bypass de `isAdmin` - espelha o `HasRoleAsync` do servidor. */
+  public hasRole(code: string): boolean {
+    const roles = (this.getSessionModel().getProperty("/roles") ?? []) as string[];
+
+    return roles.includes(code);
   }
 
   /**
