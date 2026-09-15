@@ -23,18 +23,13 @@
       </fb:FilterGroupItem>
       <fb:FilterGroupItem name="transactionStatus" label="Status" groupName="GroupTransactionStatus" visibleInFilterBar="true">
         <fb:control>
-            <Select 
-              forceSelection="false"
-              selectedKey="{
-                path: 'filter>/TransactionStatus',
-                type: 'sap.ui.model.type.String'
-              }"
-            >
-              <core:ListItem key="Pending" text="Pendente"/>
-              <core:ListItem key="Confirmed" text="Confirmado"/>
-              <core:ListItem key="Cancelled" text="Cancelado"/>
-              <core:ListItem key="Invoiced" text="Faturado"/>
-            </Select>
+            <MultiComboBox width="100%" selectedKeys="{filter>/TransactionStatus}">
+              <core:Item key="Pending" text="Pendente"/>
+              <core:Item key="Confirmed" text="Confirmado"/>
+              <core:Item key="Cancelled" text="Cancelado"/>
+              <core:Item key="Invoiced" text="Faturado"/>
+              <core:Item key="Returned" text="Devolvido"/>
+            </MultiComboBox>
         </fb:control>
       </fb:FilterGroupItem>
       <fb:FilterGroupItem name="code" label="Codigo" groupName="GroupCode" visibleInFilterBar="true">

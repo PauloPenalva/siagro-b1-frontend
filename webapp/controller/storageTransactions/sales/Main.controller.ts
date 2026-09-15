@@ -9,6 +9,7 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Table from "sap/ui/table/Table";
 import CommonController from "siagrob1/controller/common/CommonController";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import { anyOfFilter } from "siagrob1/helpers/FilterHelpers";
 import formatter from "siagrob1/model/formatter";
 
 /** Romaneio selecionado, com o vínculo de carga que decide o que a tela pode fazer com ele. */
@@ -58,7 +59,7 @@ export default class Main extends CommonController {
   private _actionInFlight = false;
 
   onInit(): void {
-    this.createFilterModel();
+    this.createFilterModel({ TransactionStatus: [] });
     this.getView().setModel(new JSONModel({ items: SHIPMENT_LOAD_STATUSES }), "loadStatuses");
 
     this.getRouter().getRoute("storageTransactionsSales")
@@ -90,19 +91,21 @@ export default class Main extends CommonController {
     const binding = this.byId("salesTransactionsTable")?.getBinding("rows") as ODataListBinding;
     if (!binding) return;
 
-    const filterData = ((this.getModel("filter") as JSONModel)?.getData()
-      ?? {}) as Record<string, string>;
-    const filters: string[] = ["TransactionType eq 'SalesShipment'"];
+    const filterModel = this.getModel("filter") as JSONModel;
+    const filterData = (filterModel?.getData() ?? {}) as Record<string, string>;
+    // O Status é de múltipla seleção (array): entra como grupo de `or`, fora do laço dos demais campos.
+    const filters: string[] = [
+      "TransactionType eq 'SalesShipment'",
+      anyOfFilter("TransactionStatus", filterModel?.getProperty("/TransactionStatus") as string[]),
+    ].filter(Boolean);
 
     Object.keys(filterData).forEach((key) => {
       const value = filterData[key];
-      if (!value) return;
+      if (!value || key === "TransactionStatus") return;
 
       const esc = value.replace(/'/g, "''");
 
-      if (key === "TransactionStatus") {
-        filters.push(`${key} eq '${esc}'`);
-      } else if (key === "HasLoad") {
+      if (key === "HasLoad") {
         // O filtro mais útil da tela: "Sem carga" isola de imediato o que é estornável direto.
         filters.push(esc === "with" ? "ShipmentLoadKey ne null" : "ShipmentLoadKey eq null");
       } else if (key === "ShipmentLoadCode") {

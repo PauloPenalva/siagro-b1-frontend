@@ -6,6 +6,7 @@ import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import CommonController from "../common/CommonController";
+import { anyOfFilter } from "siagrob1/helpers/FilterHelpers";
 import JSONModel from "sap/ui/model/json/JSONModel";
 
 /**
@@ -14,7 +15,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 export default class Main extends CommonController {
 
 	onInit(): void  {
-    this.createFilterModel();
+    this.createFilterModel({ TransferStatus: [] });
     this.getRouter().getRoute("ownershipTransfers")
     .attachPatternMatched(() => this.applyFilters())
 	}
@@ -32,16 +33,17 @@ export default class Main extends CommonController {
     const oBinding = this.getView().byId("ownershipTransfersTable").getBinding("rows") as ODataListBinding;
     const filterModel = this.getModel("filter") as JSONModel;
     const filterData = filterModel.getData() as Record<string, string>;
-    const filters: string[] = [];
+    // Status é de múltipla seleção (array): entra como um grupo de `or`, fora do laço dos demais campos.
+    const filters: string[] = [
+      anyOfFilter("TransferStatus", filterModel.getProperty("/TransferStatus") as string[]),
+    ].filter(Boolean);
 
     Object.keys(filterData).forEach((key: string) => {
       const value = filterData[key];
 
-      if (!value) return;
+      if (!value || key == "TransferStatus") return;
 
-      if (key == "TransferStatus") {
-        filters.push(`${key} eq '${value}'`)
-      } else if (key == "CustomerOriginCode") {
+      if (key == "CustomerOriginCode") {
         filters.push(`StorageAddressOrigin/CardCode eq '${value}'`)
       } else if (key == "CustomerDestinationCode") {
         filters.push(`StorageAddressDestination/CardCode eq '${value}'`)

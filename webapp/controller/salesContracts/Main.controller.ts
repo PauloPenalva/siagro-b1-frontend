@@ -4,6 +4,7 @@ import formatter from "siagrob1/model/formatter";
 import MessageBox from "sap/m/MessageBox";
 import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import { anyOfFilter } from "siagrob1/helpers/FilterHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import JSONModel from "sap/ui/model/json/JSONModel";
@@ -15,13 +16,15 @@ type FilterData = {
   Code?: string,
   CardCode?: string,
   ItemCode?: string,
-  Status?: string,
-  SignatureStatus?: string,
+  Status?: string[],
+  SignatureStatus?: string[],
   Type?:string,
   DocTypeCode?: string,
   Complement?: string,
   MarketType?: string,
   AgentCode?: string,
+  StandardCashFlowDateFrom?: string,
+  StandardCashFlowDateTo?: string,
 }
 
 /**
@@ -35,7 +38,7 @@ export default class Main extends SalesContractsBaseController {
   private currentFilter: string;
 
 	onInit(): void  {
-    this.createFilterModel();
+    this.createFilterModel({ Status: [], SignatureStatus: [] });
 
     this.getRouter().getRoute("salesContracts")
       .attachPatternMatched(() => this.applyFilters());
@@ -54,20 +57,31 @@ export default class Main extends SalesContractsBaseController {
     const oBinding = this.getView().byId("tableSalesContracts").getBinding("rows") as ODataListBinding;
     const filterModel = this.getModel("filter") as JSONModel;
     const filterData = filterModel.getData() as FilterData;
-    const filters: string[] = [];
+    // Status e Assinatura são de múltipla seleção: cada um entra como um grupo de `or`.
+    const filters: string[] = [
+      anyOfFilter("Status", filterData.Status),
+      anyOfFilter("SignatureStatus", filterData.SignatureStatus),
+    ].filter(Boolean);
 
     Object.keys(filterData).forEach((key: string) => {
       const filterKey = key as keyof FilterData;
+
+      if (filterKey == "Status" || filterKey == "SignatureStatus") return;
+
       const value = filterData[filterKey];
 
       if (!value) return;
 
-      if (filterKey == "Status" || filterKey == "SignatureStatus" || filterKey == "Type" || filterKey == "MarketType") {
+      if (filterKey == "Type" || filterKey == "MarketType") {
         filters.push(`${filterKey} eq '${value}'`)
       } else if (filterKey == "AgentCode") {
         // Edm.Int32: só dígitos. Number() aceitaria "1e3"/"0x10"/" " e filtraria
         // o agente errado ou zeraria a lista em vez de ignorar o valor inválido.
         if (/^\d+$/.test(value.trim())) filters.push(`AgentCode eq ${Number(value)}`)
+      } else if (filterKey == "StandardCashFlowDateFrom") {
+        filters.push(`StandardCashFlowDate ge ${value}`)
+      } else if (filterKey == "StandardCashFlowDateTo") {
+        filters.push(`StandardCashFlowDate le ${value}`)
       } else {
         filters.push(`contains(${filterKey},'${value}')`)
       }
@@ -244,6 +258,18 @@ export default class Main extends SalesContractsBaseController {
       label: "Termino Entrega",
       property: "DeliveryEndDate",
       type: EdmType.Date,
+    });
+
+    aCols.push({
+      label: "Prev. Pagto.",
+      property: "StandardCashFlowDate",
+      type: EdmType.Date,
+    });
+
+    aCols.push({
+      label: "Cond. Pagamento",
+      property: "PaymentTerms",
+      type: EdmType.String,
     });
 
     aCols.push({

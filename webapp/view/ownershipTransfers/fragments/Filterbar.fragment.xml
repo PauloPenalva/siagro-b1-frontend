@@ -23,17 +23,11 @@
       </fb:FilterGroupItem>
       <fb:FilterGroupItem name="status" label="Status" groupName="GroupStatus" visibleInFilterBar="true">
         <fb:control>
-            <Select 
-              forceSelection="false"
-              selectedKey="{
-                path: 'filter>/TransferStatus',
-                type: 'sap.ui.model.type.String'
-              }"
-            >
-              <core:ListItem key="Open" text="Em aberto"/>
-              <core:ListItem key="Closed" text="Encerrado"/>
-              <core:ListItem key="Cancelled" text="Cancelado"/>
-            </Select>
+            <MultiComboBox width="100%" selectedKeys="{filter>/TransferStatus}">
+              <core:Item key="Open" text="Em aberto"/>
+              <core:Item key="Closed" text="Encerrado"/>
+              <core:Item key="Cancelled" text="Cancelado"/>
+            </MultiComboBox>
         </fb:control>
       </fb:FilterGroupItem>
       <fb:FilterGroupItem name="code" label="Codigo" groupName="GroupCode" visibleInFilterBar="true">

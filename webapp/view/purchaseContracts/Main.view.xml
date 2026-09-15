@@ -198,6 +198,32 @@
 						</t:template>
 					</t:Column>
           <t:Column
+						label="Prev. Pagto."
+						sortProperty="StandardCashFlowDate"
+            width="10rem"
+						>
+						<t:template>
+            <Text
+              wrapping="false"
+              text="{
+                path: 'StandardCashFlowDate',
+                targetType: 'any',
+                formatter: '.formatter.formatDate'
+              }"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Cond. Pagamento"
+						sortProperty="PaymentTerms"
+            width="15rem"
+						>
+						<t:template>
+            <!-- Texto livre de várias linhas: a célula corta, o tooltip mostra inteiro -->
+            <Text text="{PaymentTerms}" tooltip="{PaymentTerms}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
 						label="Cod.Fornecedor"
 						sortProperty="CardCode"
             width="10rem"

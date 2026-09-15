@@ -3,6 +3,7 @@ import formatter from "siagrob1/model/formatter";
 import MessageBox from "sap/m/MessageBox";
 import Table, { Table$RowSelectionChangeEvent } from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import { anyOfFilter } from "siagrob1/helpers/FilterHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 
@@ -19,7 +20,7 @@ export default class Main extends BaseController {
   formatter = formatter;
 
   onInit(): void {
-    this.createFilterModel();
+    this.createFilterModel({ Status: [] });
     this.getView().setModel(new JSONModel({ canCancel: false, canClose: false }), "selection");
 
     this.getRouter().getRoute("salesShipmentReleases")
@@ -79,17 +80,16 @@ export default class Main extends BaseController {
     const oBinding = this.getView().byId("tableSalesShipmentReleases").getBinding("rows") as ODataListBinding;
     const filterModel = this.getModel("filter") as JSONModel;
     const filterData = filterModel.getData() as Record<string, string>;
-    const filters: string[] = [];
+    // Status é de múltipla seleção (array): entra como um grupo de `or`, fora do laço dos demais campos.
+    const filters: string[] = [anyOfFilter("Status", filterModel.getProperty("/Status") as string[])].filter(Boolean);
 
     Object.keys(filterData).forEach((key: string) => {
       const filterKey = key;
       const value = filterData[filterKey];
 
-      if (!value) return;
+      if (!value || filterKey == "Status") return;
 
-      if (filterKey == "Status") {
-        filters.push(`${filterKey} eq '${value}'`);
-      } else if (filterKey == "MarketType") {
+      if (filterKey == "MarketType") {
         filters.push(`SalesContract/MarketType eq '${value}'`);
       } else if (filterKey == "ReleaseDateFrom") {
         filters.push(`ReleaseDate ge ${value}`);

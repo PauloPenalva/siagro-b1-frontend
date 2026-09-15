@@ -27,8 +27,17 @@ export default abstract class CommonController extends BaseController {
 
   reportDialog: Dialog;
 
-  createFilterModel() {
-    const filterModel = new JSONModel();
+  /** Estado inicial do modelo `filter`, reaplicado por `clearFilters`. */
+  private filterDefaults: object = {};
+
+  /**
+   * `defaults` é o estado inicial do filtro — necessário nos de múltipla seleção, cujo
+   * `selectedKeys` precisa de um array para gravar. É copiado a cada criação para que limpar os
+   * filtros não reaproveite o array que o MultiComboBox já preencheu.
+   */
+  createFilterModel(defaults: object = this.filterDefaults) {
+    this.filterDefaults = defaults;
+    const filterModel = new JSONModel(JSON.parse(JSON.stringify(defaults)) as object);
     this.getView().setModel(filterModel, "filter");
   }
 

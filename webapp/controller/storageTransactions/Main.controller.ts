@@ -6,6 +6,7 @@ import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import CommonController from "../common/CommonController";
+import { anyOfFilter } from "siagrob1/helpers/FilterHelpers";
 import JSONModel from "sap/ui/model/json/JSONModel";
 
 /**
@@ -14,7 +15,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 export default class Main extends CommonController {
 
 	onInit(): void  {
-    this.createFilterModel();
+    this.createFilterModel({ TransactionStatus: [] });
     this.getRouter().getRoute("storageTransactions")
     .attachPatternMatched(() => this.applyFilters())
 	}
@@ -32,7 +33,10 @@ export default class Main extends CommonController {
     const oBinding = this.getView().byId("storageTransactionsTable").getBinding("rows") as ODataListBinding;
     const filterModel = this.getModel("filter") as JSONModel;
     const filterData = filterModel.getData() as Record<string, string>;
-    const filters: string[] = [];
+    // Status é de múltipla seleção (array): entra como um grupo de `or`, fora do laço dos demais campos.
+    const filters: string[] = [
+      anyOfFilter("TransactionStatus", filterModel.getProperty("/TransactionStatus") as string[]),
+    ].filter(Boolean);
 
     // O tipo escolhido pelo usuário É o escopo. Duas correções aqui:
     //
@@ -62,12 +66,10 @@ export default class Main extends CommonController {
 
       if (!value) return;
 
-      // Já virou o escopo acima; repetir aqui só duplicaria a condição.
-      if (key == "TransactionType") return;
+      // Tipo e Status já viraram condição acima; repetir aqui só duplicaria.
+      if (key == "TransactionType" || key == "TransactionStatus") return;
 
-      if (key == "TransactionStatus") {
-        filters.push(`${key} eq '${value}'`)
-      } else if (key == "DateFrom") {
+      if (key == "DateFrom") {
         filters.push(`TransactionDate ge ${value}`)
       } else if (key == "DateTo") {
         filters.push(`TransactionDate le ${value}`)

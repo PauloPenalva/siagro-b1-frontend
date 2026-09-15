@@ -23,18 +23,13 @@
       </fb:FilterGroupItem>
       <fb:FilterGroupItem name="status" label="Status" groupName="GroupStatus" visibleInFilterBar="true">
         <fb:control>
-            <Select 
-              forceSelection="false"
-              selectedKey="{
-                path: 'filter>/Status',
-                type: 'sap.ui.model.type.String'
-              }"
-            >
-              <core:ListItem key="Pending" text="Pendente"/>
-              <core:ListItem key="Actived" text="Ativo"/>
-              <core:ListItem key="Cancelled" text="Cancelado"/>
-              <core:ListItem key="Paused" text="Pausado"/>
-            </Select>
+            <MultiComboBox width="100%" selectedKeys="{filter>/Status}">
+              <core:Item key="Pending" text="Pendente"/>
+              <core:Item key="Actived" text="Ativo"/>
+              <core:Item key="Cancelled" text="Cancelado"/>
+              <core:Item key="Paused" text="Pausado"/>
+              <core:Item key="Completed" text="Finalizado"/>
+            </MultiComboBox>
         </fb:control>
       </fb:FilterGroupItem>
       <fb:FilterGroupItem name="releaseDateFrom" label="Dt.Liberação de" groupName="GroupReleaseDateFrom" visibleInFilterBar="true">
