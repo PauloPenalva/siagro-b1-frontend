@@ -50,9 +50,11 @@ export default class Edit extends FormController {
       this.formModel().setData({
         title: `Editar Carga ${load.Code as string}`,
         isEdit: true,
-        // Produto, unidade e filial já viraram linha de nota: travam. O resto segue editável,
-        // porque o caso real é "o motorista trocou depois de carregar".
-        fiscalEditable: load.Status !== "PartiallyInvoiced" && load.Status !== "Invoiced",
+        // GAC-1180: placa, data e produto só enquanto Planejada — depois do carregamento os
+        // romaneios já refletem essas decisões. Sem escapatória para carga legada, ao contrário
+        // da transportadora: os três são obrigatórios desde a criação, nunca estão vazios. O resto
+        // segue editável, porque o caso real é "o motorista trocou depois de carregar".
+        planningEditable: load.Status === "Planned",
         // Transportadora só até o carregamento: depois que os romaneios entram, a carga
         // deixa de ser planejamento e o documento de saída já herda essa transportadora.
         // A carga legada sem transportadora fica de fora da trava — senão o campo seria

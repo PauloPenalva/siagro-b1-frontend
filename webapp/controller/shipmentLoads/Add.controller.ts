@@ -23,8 +23,9 @@ export default class Add extends FormController {
     this.formModel().setData({
       title: "Nova Carga",
       isEdit: false,
-      fiscalEditable: true,
-      // A carga nasce Planejada, então a transportadora ainda pode ser escolhida.
+      // A carga nasce Planejada, então placa, data, produto e transportadora ainda podem ser
+      // escolhidos.
+      planningEditable: true,
       carrierEditable: true,
       LoadDate: new Date().toISOString().slice(0, 10),
       HasExcess: false,

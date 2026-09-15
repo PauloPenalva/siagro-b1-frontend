@@ -10,8 +10,11 @@ import { BaseController } from "./BaseController";
 export type LoadForm = {
   title: string,
   isEdit: boolean,
-  /** Trava produto, unidade e filial depois que a carga virou documento fiscal. */
-  fiscalEditable: boolean,
+  /**
+   * GAC-1180: placa, data e produto são decisões do planejamento e só mudam enquanto a carga é
+   * Planejada. O backend recusa a alteração nos demais status.
+   */
+  planningEditable: boolean,
   /**
    * Trava a transportadora depois do CARREGAMENTO: ela é escolhida no planejamento e o
    * documento de saída a herda sem poder trocá-la. Continua liberada numa carga legada que

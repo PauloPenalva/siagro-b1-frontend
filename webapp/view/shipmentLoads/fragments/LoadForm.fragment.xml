@@ -7,8 +7,8 @@
 		formatter: 'siagrob1/model/formatter'
 	}">
 	<!-- Formulário do planejamento da Logística. O mesmo fragmento serve criação e edição: o que
-	     muda são duas travas. `form>/fiscalEditable` trava produto, unidade e filial depois que a
-	     carga virou documento fiscal; `form>/carrierEditable` trava a transportadora depois do
+	     muda são duas travas. `form>/planningEditable` trava placa, data e produto fora de
+	     Planejada (GAC-1180); `form>/carrierEditable` trava a transportadora depois do
 	     CARREGAMENTO, porque o documento de saída a herda da carga sem poder trocá-la. Os demais
 	     campos seguem editáveis — o caso real é "o motorista trocou depois de carregar". -->
 	<f:Form editable="true">
@@ -36,6 +36,7 @@
 						<f:fields>
 							<DatePicker
 								required="true"
+								editable="{form>/planningEditable}"
 								valueFormat="yyyy-MM-dd"
 								displayFormat="dd/MM/yyyy"
 								value="{form>/LoadDate}"/>
@@ -45,8 +46,8 @@
 						<f:fields>
 							<Input
 								required="true"
-								editable="true"
-								showValueHelp="true"
+								editable="{form>/planningEditable}"
+								showValueHelp="{form>/planningEditable}"
 								valueHelpOnly="true"
 								valueHelpRequest=".openTrucksValueHelp"
 								value="{form>/TruckCode}"/>
@@ -116,8 +117,8 @@
 						<f:fields>
 							<Input
 								required="true"
-								editable="{form>/fiscalEditable}"
-								showValueHelp="true"
+								editable="{form>/planningEditable}"
+								showValueHelp="{form>/planningEditable}"
 								valueHelpOnly="true"
 								valueHelpRequest=".openItemValueHelp"
 								value="{form>/ItemCode}">
