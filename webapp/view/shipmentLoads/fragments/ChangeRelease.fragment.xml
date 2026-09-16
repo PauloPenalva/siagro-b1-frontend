@@ -1,0 +1,94 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<Dialog
+		id="changeReleaseDialog"
+		title="{= ${changeRelease>/IsSwap} ? 'Inverter Liberações' : 'Trocar Liberação' }"
+		contentWidth="60rem"
+		class="sapUiSizeCompact"
+		busy="{changeRelease>/busy}"
+		busyIndicatorDelay="0">
+		<content>
+			<!-- Situação atual de cada romaneio selecionado e, na inversão, o destino de cada um. -->
+			<Table items="{changeRelease>/Rows}">
+				<headerToolbar>
+					<OverflowToolbar><Title text="Romaneios"/></OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column width="8rem"><Text text="Romaneio"/></Column>
+					<Column hAlign="End" width="9rem"><Text text="Peso Bruto"/></Column>
+					<Column><Text text="Contrato Atual"/></Column>
+					<Column visible="{changeRelease>/IsSwap}"><Text text="Novo Contrato"/></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<Text text="{changeRelease>Code}"/>
+						<ObjectNumber
+							number="{ path: 'changeRelease>GrossWeight', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+						<Text text="{changeRelease>ContractCode} {changeRelease>CardName}"/>
+						<Text text="{changeRelease>NewContractCode} {changeRelease>NewCardName}"/>
+					</ColumnListItem>
+				</items>
+			</Table>
+
+			<!-- Troca simples: escolher a liberação de destino. Na inversão o destino é o outro romaneio. -->
+			<Table
+				id="changeReleaseTargets"
+				visible="{= !${changeRelease>/IsSwap} }"
+				mode="SingleSelectLeft"
+				growing="true"
+				noDataText="Nenhuma outra liberação ativa com saldo para este produto e armazém."
+				items="{changeRelease>/Targets}">
+				<headerToolbar>
+					<OverflowToolbar><Title text="Liberação de Destino"/></OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column width="8rem"><Text text="Contrato"/></Column>
+					<Column width="8rem"><Text text="Prev. Pagto."/></Column>
+					<Column width="9rem"><Text text="Origem"/></Column>
+					<Column><Text text="Fornecedor"/></Column>
+					<Column hAlign="End" width="9rem"><Text text="Saldo"/></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<Text text="{changeRelease>PurchaseContractCode}"/>
+						<Text text="{ path: 'changeRelease>StandardCashFlowDate', targetType: 'any', formatter: '.formatter.formatDate' }"/>
+						<Text text="{ path: 'changeRelease>Origin', targetType: 'any', formatter: '.formatter.releaseOriginText' }"/>
+						<Text text="{changeRelease>FName}"/>
+						<ObjectNumber
+							number="{ path: 'changeRelease>AvailableQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+							unit="{changeRelease>UnitOfMeasureCode}"/>
+					</ColumnListItem>
+				</items>
+			</Table>
+
+			<f:Form editable="true">
+				<f:layout><f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/></f:layout>
+				<f:formContainers>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="Motivo">
+								<f:fields>
+									<TextArea
+										value="{changeRelease>/Reason}"
+										required="true"
+										rows="3"
+										maxLength="500"
+										width="100%"
+										placeholder="Ex.: relatório do armazém, ordem do financeiro"/>
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<beginButton>
+			<Button type="Emphasized" text="Confirmar" press=".onConfirmChangeRelease"/>
+		</beginButton>
+		<endButton>
+			<Button text="Cancelar" press=".onCloseChangeRelease"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>
