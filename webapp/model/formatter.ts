@@ -536,6 +536,7 @@ export default {
     m.set("Updated", "Dados Alterados");
     m.set("Refused", "Recusa Registrada");
     m.set("ReturnedToWarehouse", "Devolvida ao Armazém");
+    m.set("ReleaseChanged", "Troca de Liberação");
 
     return m.get(value);
   },
@@ -1159,5 +1160,38 @@ export default {
     m.set(2, "Warning");
 
     return m.get(value) ?? "None";
+  },
+
+  /**
+   * Situação do romaneio no grid "Romaneios da Carga" (GAC-1177 v2: troca de liberação).
+   * Substituída: era a Expedição vigente da carga, mas uma troca a tirou de circulação
+   * (ReplacedByShippingReleaseChangeKey preenchido) — continua listada para contexto.
+   * Estorno de troca / Expedição de troca: as duas pernas que a própria troca gerou.
+   * Vigente: o caso comum, nunca passou por uma troca.
+   *
+   * TransactionType chega como nome de enum (string) — precisa de targetType 'any' no
+   * binding, como todo enum nesta tela. As duas chaves de troca são Edm.Guid nuláveis.
+   */
+  formatShipmentLoadTransactionSituation: (
+    type?: string,
+    replacedBy?: string,
+    changeKey?: string,
+  ): string => {
+    if (replacedBy) return "Substituída";
+    if (type === "SalesShipmentReturn") return "Estorno de troca";
+    if (changeKey && type === "SalesShipment") return "Expedição de troca";
+    return "Vigente";
+  },
+
+  /** Estado visual que acompanha formatShipmentLoadTransactionSituation — mesma regra. */
+  stateShipmentLoadTransactionSituation: (
+    type?: string,
+    replacedBy?: string,
+    changeKey?: string,
+  ): string => {
+    if (replacedBy) return "Warning";
+    if (type === "SalesShipmentReturn") return "Information";
+    if (changeKey && type === "SalesShipment") return "Success";
+    return "None";
   },
 };

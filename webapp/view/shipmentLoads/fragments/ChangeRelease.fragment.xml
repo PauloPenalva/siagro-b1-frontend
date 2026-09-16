@@ -10,6 +10,14 @@
 		busy="{changeRelease>/busy}"
 		busyIndicatorDelay="0">
 		<content>
+			<!-- A troca em si: gera estorno na origem e nova Expedição no destino, com a data da
+			     carga; o total da carga pode ajustar pela regra da quantidade. -->
+			<MessageStrip
+				text="A troca gera um estorno na origem e uma nova Expedição no destino, com a data da carga. Se a carga tiver uma única Expedição vigente, a nova Expedição recebe a quantidade faturada da carga."
+				type="Information"
+				showIcon="true"
+				class="sapUiSmallMarginBottom"/>
+
 			<!-- Situação atual de cada romaneio selecionado e, na inversão, o destino de cada um. -->
 			<Table items="{changeRelease>/Rows}">
 				<headerToolbar>
@@ -20,6 +28,8 @@
 					<Column hAlign="End" width="9rem"><Text text="Peso Bruto"/></Column>
 					<Column><Text text="Contrato Atual"/></Column>
 					<Column visible="{changeRelease>/IsSwap}"><Text text="Novo Contrato"/></Column>
+					<Column><Text text="Armazém Atual"/></Column>
+					<Column visible="{changeRelease>/IsSwap}"><Text text="Novo Armazém"/></Column>
 				</columns>
 				<items>
 					<ColumnListItem>
@@ -28,6 +38,8 @@
 							number="{ path: 'changeRelease>GrossWeight', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
 						<Text text="{changeRelease>ContractCode} {changeRelease>CardName}"/>
 						<Text text="{changeRelease>NewContractCode} {changeRelease>NewCardName}"/>
+						<Text text="({changeRelease>WarehouseCode}) {changeRelease>WarehouseName}"/>
+						<Text text="({changeRelease>NewWarehouseCode}) {changeRelease>NewWarehouseName}"/>
 					</ColumnListItem>
 				</items>
 			</Table>
@@ -38,7 +50,7 @@
 				visible="{= !${changeRelease>/IsSwap} }"
 				mode="SingleSelectLeft"
 				growing="true"
-				noDataText="Nenhuma outra liberação ativa com saldo para este produto e armazém."
+				noDataText="Nenhuma outra liberação ativa com saldo para este produto, em qualquer armazém."
 				items="{changeRelease>/Targets}">
 				<headerToolbar>
 					<OverflowToolbar><Title text="Liberação de Destino"/></OverflowToolbar>
@@ -48,6 +60,7 @@
 					<Column width="8rem"><Text text="Prev. Pagto."/></Column>
 					<Column width="9rem"><Text text="Origem"/></Column>
 					<Column><Text text="Fornecedor"/></Column>
+					<Column><Text text="Armazém"/></Column>
 					<Column hAlign="End" width="9rem"><Text text="Saldo"/></Column>
 				</columns>
 				<items>
@@ -56,6 +69,7 @@
 						<Text text="{ path: 'changeRelease>StandardCashFlowDate', targetType: 'any', formatter: '.formatter.formatDate' }"/>
 						<Text text="{ path: 'changeRelease>Origin', targetType: 'any', formatter: '.formatter.releaseOriginText' }"/>
 						<Text text="{changeRelease>FName}"/>
+						<Text text="({changeRelease>DeliveryLocationCode}) {changeRelease>DeliveryLocationName}"/>
 						<ObjectNumber
 							number="{ path: 'changeRelease>AvailableQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
 							unit="{changeRelease>UnitOfMeasureCode}"/>

@@ -177,12 +177,19 @@
 								selectionBehavior="Row"
 								class="sapUiSizeCondensed"
 								visibleRowCount="6"
-								rows="{ path: 'Transactions', parameters: { '$$ownRequest': true } }">
+								rows="{ path: 'Transactions', parameters: { '$$ownRequest': true, '$select': 'Key,ShipmentReleaseKey,ItemCode,WarehouseCode,TransactionType,ReplacedByShippingReleaseChangeKey,ShippingReleaseChangeKey,WarehouseName' } }">
 								<t:extension>
 									<OverflowToolbar>
 										<Title text="Romaneios da Carga"/>
 										<ToolbarSpacer/>
 										<Button type="Transparent" text="Desvincular" icon="sap-icon://chain-link" press=".onDetachShipments"/>
+										<Button
+											type="Transparent"
+											text="Trocar Liberação"
+											icon="sap-icon://switch-views"
+											tooltip="Troca o contrato de compra baixado (1 romaneio) ou inverte os contratos de 2 romaneios"
+											visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' }"
+											press=".onChangeRelease"/>
 									</OverflowToolbar>
 								</t:extension>
 								<t:columns>
@@ -195,6 +202,31 @@
 												inverted="true"
 												state="{ path: 'TransactionStatus', targetType: 'any', formatter: '.formatter.stateStorageTransactionStatus' }"
 												text="{ path: 'TransactionStatus', targetType: 'any', formatter: '.formatter.formatStorageTransactionStatus' }"/>
+										</t:template>
+									</t:Column>
+									<!-- Situação da troca de liberação (GAC-1177 v2): Vigente/Substituída/Estorno
+									     de troca/Expedição de troca. As três partes precisam de targetType 'any',
+									     TransactionType por ser enum e as duas chaves por serem Edm.Guid nulável. -->
+									<t:Column label="Situação" hAlign="Center" width="10rem">
+										<t:template>
+											<ObjectStatus
+												inverted="true"
+												state="{
+													parts: [
+														{ path: 'TransactionType', targetType: 'any' },
+														{ path: 'ReplacedByShippingReleaseChangeKey', targetType: 'any' },
+														{ path: 'ShippingReleaseChangeKey', targetType: 'any' }
+													],
+													formatter: '.formatter.stateShipmentLoadTransactionSituation'
+												}"
+												text="{
+													parts: [
+														{ path: 'TransactionType', targetType: 'any' },
+														{ path: 'ReplacedByShippingReleaseChangeKey', targetType: 'any' },
+														{ path: 'ShippingReleaseChangeKey', targetType: 'any' }
+													],
+													formatter: '.formatter.formatShipmentLoadTransactionSituation'
+												}"/>
 										</t:template>
 									</t:Column>
 									<t:Column label="Emissão" width="8rem">

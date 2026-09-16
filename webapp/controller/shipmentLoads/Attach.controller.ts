@@ -105,6 +105,15 @@ export default class Attach extends BaseController {
       "TransactionType eq 'SalesShipment'",
       "TransactionStatus eq 'Confirmed'",
       "ShipmentLoadKey eq null",
+      // GAC-1177 v2: a Original substituída por uma troca de liberação também fica com
+      // ShipmentLoadKey nulo, mas não é reaproveitável — ela só existe para contexto
+      // histórico, e ReplacedByShippingReleaseChangeKey eq null é o que a exclui daqui.
+      // Já a Expedição NOVA gerada pela troca tem ShippingReleaseChangeKey preenchido e
+      // PODE voltar a esta lista: se a carga de destino for cancelada ou o romaneio for
+      // desvinculado, ela solta (ShipmentLoadKey volta a null) e precisa reaparecer na
+      // Montagem para ser vinculada a outra carga — por isso não filtramos por
+      // ShippingReleaseChangeKey.
+      "ReplacedByShippingReleaseChangeKey eq null",
       `TruckCode eq '${(target.TruckCode ?? "").replace(/'/g, "''")}'`,
       `ItemCode eq '${(target.ItemCode ?? "").replace(/'/g, "''")}'`,
       `BranchCode eq '${(target.BranchCode ?? "").replace(/'/g, "''")}'`,

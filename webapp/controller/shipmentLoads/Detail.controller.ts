@@ -7,6 +7,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
+import SapMTable from "sap/m/Table";
 import Table from "sap/ui/table/Table";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import formatter from "siagrob1/model/formatter";
@@ -28,6 +29,33 @@ type RefusalForm = {
   busy: boolean;
 };
 
+/** Romaneio selecionado no grid, lido do contexto (getObject + acesso opcional). */
+type ChangeReleaseRow = {
+  Key: string;
+  Code: string;
+  GrossWeight: number;
+  ItemCode: string;
+  WarehouseCode: string;
+  WarehouseName?: string;
+  ShipmentReleaseKey: string;
+  ContractCode?: string;
+  CardName?: string;
+  NewContractCode?: string;
+  NewCardName?: string;
+  NewWarehouseCode?: string;
+  NewWarehouseName?: string;
+};
+
+type ReleaseTarget = { ShipmentReleaseKey: string };
+
+type ChangeReleaseForm = {
+  IsSwap: boolean;
+  Rows: ChangeReleaseRow[];
+  Targets: ReleaseTarget[];
+  Reason: string;
+  busy: boolean;
+};
+
 /**
  * @namespace siagrob1.controller.shipmentLoads
  */
@@ -40,6 +68,10 @@ export default class Detail extends BaseController {
   private _refusalDialog: Dialog;
 
   private _refusalInFlight = false;
+
+  private _changeReleaseDialog: Dialog;
+
+  private _changeReleaseInFlight = false;
 
   onInit(): void {
     this.getRouter().getRoute("shipmentLoadsDetail")
@@ -93,6 +125,18 @@ export default class Detail extends BaseController {
   }
 
   /**
+   * Só romaneios VIGENTES (Expedição, sem terem sido substituídos por uma troca de liberação)
+   * podem ser desvinculados ou trocados — a Original substituída, o Estorno e a Expedição de
+   * troca de outra troca já não representam o embarque corrente da carga (GAC-1177 v2).
+   */
+  private isVigenteRow(context: Context): boolean {
+    const type = context.getProperty("TransactionType") as string;
+    const replacedBy = context.getProperty("ReplacedByShippingReleaseChangeKey") as string;
+
+    return type === "SalesShipment" && !replacedBy;
+  }
+
+  /**
    * Desvincula romaneios, devolvendo-os à lista de disponíveis.
    *
    * O backend recusa se houver documento de saída vivo na carga: encolher o volume por baixo de
@@ -108,11 +152,17 @@ export default class Detail extends BaseController {
       return;
     }
 
+    const contexts = selected.map(i => table.getContextByIndex(i) as Context);
+
+    if (contexts.some(c => !this.isVigenteRow(c))) {
+      MessageBox.warning("Selecione apenas romaneios vigentes da carga.");
+      return;
+    }
+
     if (!await DialogHelper.confirmDialog(
       `Desvincular ${selected.length} romaneio(s) desta carga ?`)) return;
 
-    const keys = selected.map(i =>
-      (table.getContextByIndex(i) as Context).getProperty("Key") as string);
+    const keys = contexts.map(c => c.getProperty("Key") as string);
 
     const action = (this.getModel() as ODataModel)
       .bindContext("/ShipmentLoadsDetachTransactions(...)");
@@ -130,6 +180,167 @@ export default class Detail extends BaseController {
     } finally {
       this.setBusy(false);
     }
+  }
+
+  /**
+   * Troca a liberação (contrato de compra) de 1 romaneio, ou inverte a de 2 (GAC-1177 v2).
+   * Gera um estorno (12) na origem e uma nova Expedição (7) no destino, com a data da carga;
+   * pode ajustar o peso total da carga pela regra da quantidade. O backend valida saldo,
+   * contrato encerrado e liberação ativa, e registra o motivo na Movimentação.
+   */
+  async onChangeRelease(): Promise<void> {
+    const table = this.byId("loadTransactionsTable") as Table;
+    const selected = table.getSelectedIndices();
+
+    if (selected.length < 1 || selected.length > 2) {
+      MessageBox.warning(
+        "Selecione 1 romaneio para trocar a liberação ou 2 romaneios para inverter as liberações entre eles.");
+      return;
+    }
+
+    const contexts = selected.map(i => table.getContextByIndex(i) as Context);
+
+    if (contexts.some(c => !this.isVigenteRow(c))) {
+      MessageBox.warning("Selecione apenas romaneios vigentes da carga.");
+      return;
+    }
+
+    // getObject + acesso opcional: getProperty("Nav/Campo") estoura com navegação nula.
+    const rows: ChangeReleaseRow[] = contexts.map(context => {
+      const o = context.getObject() as {
+        Key: string; Code: string; GrossWeight: number; ItemCode: string; WarehouseCode: string;
+        WarehouseName?: string; ShipmentReleaseKey: string; CardName?: string;
+        ShipmentRelease?: { PurchaseContract?: { Code?: string } };
+      };
+      return {
+        Key: o.Key,
+        Code: o.Code,
+        GrossWeight: o.GrossWeight,
+        ItemCode: o.ItemCode,
+        WarehouseCode: o.WarehouseCode,
+        WarehouseName: o.WarehouseName,
+        ShipmentReleaseKey: o.ShipmentReleaseKey,
+        ContractCode: o.ShipmentRelease?.PurchaseContract?.Code,
+        CardName: o.CardName,
+      };
+    });
+
+    if (rows.some(r => !r.ShipmentReleaseKey)) {
+      MessageBox.warning("Há romaneio selecionado sem liberação de embarque.");
+      return;
+    }
+
+    const isSwap = rows.length === 2;
+
+    if (isSwap) {
+      if (rows[0].ShipmentReleaseKey === rows[1].ShipmentReleaseKey) {
+        MessageBox.warning("Os dois romaneios já estão na mesma liberação: não há o que inverter.");
+        return;
+      }
+      rows[0].NewContractCode = rows[1].ContractCode;
+      rows[0].NewCardName = rows[1].CardName;
+      rows[0].NewWarehouseCode = rows[1].WarehouseCode;
+      rows[0].NewWarehouseName = rows[1].WarehouseName;
+      rows[1].NewContractCode = rows[0].ContractCode;
+      rows[1].NewCardName = rows[0].CardName;
+      rows[1].NewWarehouseCode = rows[0].WarehouseCode;
+      rows[1].NewWarehouseName = rows[0].WarehouseName;
+    }
+
+    this.setBusy(true);
+    try {
+      let targets: ReleaseTarget[] = [];
+
+      if (!isSwap) {
+        const func = (this.getModel() as ODataModel)
+          .bindContext("/ShipmentReleasesGetPurchaseContracts(...)");
+        func.setParameter("ItemCode", rows[0].ItemCode);
+        // "" = todos os armazéns: a troca simples não fica presa ao armazém da Expedição
+        // original, e a function exige o parâmetro explícito (não aceita omiti-lo).
+        func.setParameter("WarehouseCode", "");
+        await func.invoke();
+
+        // Coleção pode chegar como array ou como envelope { value: [...] }.
+        const result = func.getBoundContext().getObject() as ReleaseTarget[] | { value?: ReleaseTarget[] };
+        const all = Array.isArray(result) ? result : result?.value ?? [];
+        targets = all.filter(t => t.ShipmentReleaseKey?.toLowerCase() !== rows[0].ShipmentReleaseKey.toLowerCase());
+      }
+
+      this.getView().setModel(new JSONModel({
+        IsSwap: isSwap, Rows: rows, Targets: targets, Reason: "", busy: false,
+      } as ChangeReleaseForm), "changeRelease");
+
+      if (!this._changeReleaseDialog) {
+        this._changeReleaseDialog = await Fragment.load({
+          id: this.getView().getId(),
+          name: "siagrob1.view.shipmentLoads.fragments.ChangeRelease",
+          controller: this,
+        }) as Dialog;
+        this.getView().addDependent(this._changeReleaseDialog);
+      }
+
+      (this.byId("changeReleaseTargets") as SapMTable).removeSelections(true);
+      this._changeReleaseDialog.open();
+    } catch (e) {
+      MessageBox.error((e as Error).message);
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  async onConfirmChangeRelease(): Promise<void> {
+    // Trava ANTES do primeiro await: duplo clique dispararia duas trocas.
+    if (this._changeReleaseInFlight) return;
+
+    const form = this.getView().getModel("changeRelease") as JSONModel;
+    const data = form.getData() as ChangeReleaseForm;
+
+    if (!data.Reason?.trim()) {
+      MessageBox.warning("Informe o motivo da troca.");
+      return;
+    }
+
+    let salesKeys: string[];
+    let targetKeys: string[];
+
+    if (data.IsSwap) {
+      salesKeys = [data.Rows[0].Key, data.Rows[1].Key];
+      targetKeys = [data.Rows[1].ShipmentReleaseKey, data.Rows[0].ShipmentReleaseKey];
+    } else {
+      const item = (this.byId("changeReleaseTargets") as SapMTable).getSelectedItem();
+      if (!item) {
+        MessageBox.warning("Selecione a liberação de destino.");
+        return;
+      }
+      const target = item.getBindingContext("changeRelease").getObject() as ReleaseTarget;
+      salesKeys = [data.Rows[0].Key];
+      targetKeys = [target.ShipmentReleaseKey];
+    }
+
+    this._changeReleaseInFlight = true;
+    form.setProperty("/busy", true);
+
+    const action = (this.getModel() as ODataModel).bindContext("/ShippingTransactionsChangeRelease(...)");
+    action.setParameter("SalesStorageTransactionKeys", salesKeys);
+    action.setParameter("TargetShipmentReleaseKeys", targetKeys);
+    action.setParameter("Reason", data.Reason.trim());
+
+    try {
+      await action.invoke();
+      this._changeReleaseDialog.close();
+      (this.byId("loadTransactionsTable") as Table).clearSelection();
+      this.refreshAll();
+      MessageToast.show(data.IsSwap ? "Liberações invertidas." : "Liberação trocada.");
+    } catch (e) {
+      MessageBox.error((e as Error).message);
+    } finally {
+      form.setProperty("/busy", false);
+      this._changeReleaseInFlight = false;
+    }
+  }
+
+  onCloseChangeRelease(): void {
+    this._changeReleaseDialog.close();
   }
 
   /**
