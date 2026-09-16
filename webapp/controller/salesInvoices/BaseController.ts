@@ -382,6 +382,14 @@ export abstract class BaseController extends CommonController {
       });
 
       aCols.push({
+        label: "Sem Nota Fiscal",
+        property: "WithoutTaxDocument",
+        type: EdmType.Boolean,
+        trueValue: "Sim",
+        falseValue: "Não",
+      });
+
+      aCols.push({
         label: "Observações",
         property: "Comments",
         type: EdmType.String,

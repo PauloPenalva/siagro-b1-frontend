@@ -113,8 +113,9 @@ export default class Main extends BaseController {
       } else if (filterKey == "WithoutTaxDocument") {
         // Checkbox: só entra quando marcado (desmarcado é `false`, já descartado acima).
         // O `eq ''` cobre documentos antigos, gravados antes de o serviço normalizar
-        // branco para null.
-        filters.push(`(TaxDocumentNumber eq null or TaxDocumentNumber eq '')`)
+        // branco para null. Documento marcado como operação sem nota fiscal (GAC-1174) já foi
+        // conferido e sai da lista: o filtro mostra só o que ainda falta informar.
+        filters.push(`(TaxDocumentNumber eq null or TaxDocumentNumber eq '') and WithoutTaxDocument eq false`)
       } else {
         filters.push(`contains(${filterKey},'${esc(value)}')`)
       }
@@ -203,10 +204,24 @@ export default class Main extends BaseController {
       TaxDocumentNumber: ctx.getProperty("TaxDocumentNumber") as string,
       TaxDocumentSeries: ctx.getProperty("TaxDocumentSeries") as string,
       ChaveNFe: ctx.getProperty("ChaveNFe") as string,
-
+      WithoutTaxDocument: ctx.getProperty("WithoutTaxDocument") === true,
     });
 
     void this.openNotaFiscalDialog();
+  }
+
+  /**
+   * Operação sem nota fiscal e nota fiscal se excluem: marcar a caixa esvazia os campos da NF
+   * (que ficam bloqueados), para o diálogo não exibir um número que não será gravado.
+   */
+  onWithoutTaxDocumentSelect() {
+    const viewModel = this.getModel("viewModel") as JSONModel;
+
+    if (viewModel.getProperty("/WithoutTaxDocument") !== true) return;
+
+    viewModel.setProperty("/ChaveNFe", "");
+    viewModel.setProperty("/TaxDocumentSeries", "");
+    viewModel.setProperty("/TaxDocumentNumber", "");
   }
 
   private openNotaFiscalDialog(){
@@ -241,6 +256,13 @@ export default class Main extends BaseController {
 
   onNotaFiscalConfirm() {
     const viewModel = this.getModel("viewModel") as JSONModel;
+
+    if (viewModel.getProperty("/WithoutTaxDocument") === true) {
+      this.sendDocumentNumber(
+        "", "", "", true, "Documento de saída marcado como operação sem nota fiscal.");
+      return;
+    }
+
     const notaFiscal = ((viewModel.getProperty("/TaxDocumentNumber") as string) || "").trim();
     const serie = ((viewModel.getProperty("/TaxDocumentSeries") as string) || "").trim();
     const chaveNfe = ((viewModel.getProperty("/ChaveNFe") as string) || "").trim();
@@ -250,22 +272,25 @@ export default class Main extends BaseController {
       return;
     }
 
-    this.sendDocumentNumber(notaFiscal, serie, chaveNfe, "Documento de saída atualizado com sucesso.");
+    this.sendDocumentNumber(notaFiscal, serie, chaveNfe, false, "Documento de saída atualizado com sucesso.");
   }
 
   /**
    * Limpar é a mesma action com os três campos em branco: o backend já normaliza vazio para
-   * null, então não há uma segunda regra de negócio a manter aqui.
+   * null, então não há uma segunda regra de negócio a manter aqui. Também desmarca a operação
+   * sem nota fiscal — o documento volta a aparecer no filtro "Sem Nota Fiscal".
    */
   async onNotaFiscalClear() {
-    if (!await DialogHelper.confirmDialog("Limpar nota fiscal, série e chave de acesso deste documento ?"))
+    if (!await DialogHelper.confirmDialog(
+      "Limpar nota fiscal, série, chave de acesso e a marcação de operação sem nota fiscal deste documento ?"))
       return;
 
-    this.sendDocumentNumber("", "", "", "Dados da nota fiscal removidos com sucesso.");
+    this.sendDocumentNumber("", "", "", false, "Dados da nota fiscal removidos com sucesso.");
   }
 
   private sendDocumentNumber(
-    documentNumber: string, documentSeries: string, chaveNFe: string, successMessage: string
+    documentNumber: string, documentSeries: string, chaveNFe: string,
+    withoutTaxDocument: boolean, successMessage: string
   ) {
     const viewModel = this.getModel("viewModel") as JSONModel;
     const table = this.byId("tableSalesInvoices") as Table;
@@ -279,6 +304,9 @@ export default class Main extends BaseController {
     action.setParameter("DocumentNumber", documentNumber);
     action.setParameter("DocumentSeries", documentSeries);
     action.setParameter("ChaveNFe", chaveNFe);
+    // SEMPRE boolean, nunca undefined: JSON.stringify omite chave undefined e o OData rejeita o
+    // corpo inteiro por parâmetro faltando, sem dizer qual.
+    action.setParameter("WithoutTaxDocument", withoutTaxDocument);
 
     this.setBusy(true);
     void action.invoke()

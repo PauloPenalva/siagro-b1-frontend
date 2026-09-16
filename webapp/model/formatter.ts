@@ -761,6 +761,9 @@ export default {
 
     m.set("SignatureStatus", "Situação da assinatura");
 
+    // Documento de saída: operação sem nota fiscal (GAC-1174).
+    m.set("WithoutTaxDocument", "Operação sem nota fiscal");
+
     return m.get(value) ?? value;
   },
 

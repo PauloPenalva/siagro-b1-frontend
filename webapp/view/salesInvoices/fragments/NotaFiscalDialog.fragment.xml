@@ -15,9 +15,15 @@
 		    busyIndicatorDelay="0"
       >
       <core:Title text="Dados da Nota Fiscal" />
+        <Label text="Operação sem nota fiscal" />
+        <CheckBox
+          selected="{viewModel>/WithoutTaxDocument}"
+          select=".onWithoutTaxDocumentSelect"
+        />
         <Label text="Chave de Acesso" />
-        <Input 
+        <Input
           value="{viewModel>/ChaveNFe}"
+          editable="{= !${viewModel>/WithoutTaxDocument} }"
           maxLength="44"
           placeholder="Informe a chave de acesso para preencher número e série"
           liveChange=".onChaveNFeLiveChange"

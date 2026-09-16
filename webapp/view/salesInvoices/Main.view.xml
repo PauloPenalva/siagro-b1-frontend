@@ -31,7 +31,9 @@
 		<f:content>
       <!-- O $select traz ShipmentLoadKey, que nenhuma coluna exibe: é o guard de "Retornar" no
            controller que a lê. Com autoExpandSelect, o que não é ligado por um controle não é
-           pedido, e sem ela o guard passaria batido. -->
+           pedido, e sem ela o guard passaria batido. WithoutTaxDocument entra pelo mesmo motivo:
+           o diálogo "Informar Nota Fiscal" o lê do contexto da linha, e a coluna que o exibe pode
+           estar oculta. -->
       <t:Table
 				id="tableSalesInvoices"
 				busyIndicatorDelay="0"
@@ -43,7 +45,7 @@
 				alternateRowColors="true"
         rows="{
 					path: '/SalesInvoices',
-          parameters: { $select: 'ShipmentLoadKey' },
+          parameters: { $select: 'ShipmentLoadKey,WithoutTaxDocument' },
           sorter: [
             { path: 'RowId', descending: true }
           ]
@@ -218,7 +220,13 @@
             width="8rem"
 						>
 						<t:template>
-							<Text text="{TaxDocumentNumber}" wrapping="false" />
+							<!-- Operação marcada como sem nota fiscal (GAC-1174) mostra "Sem NF" no lugar do
+							     número, que nesse caso é sempre vazio.
+							     ⚠️ O targetType 'any' é obrigatório: sem ele o tipo OData Boolean entrega o texto
+							     localizado ("Não"), que é truthy, e TODA linha virava "Sem NF". -->
+							<Text
+								text="{= ${path: 'WithoutTaxDocument', targetType: 'any'} ? 'Sem NF' : ${TaxDocumentNumber} }"
+								wrapping="false" />
 						</t:template>
 					</t:Column>
           <t:Column
