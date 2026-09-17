@@ -1,6 +1,6 @@
 {
 	"name": "siagrob1",
-	"version": "1.1.244",
+	"version": "1.1.245",
 	"description": "UI5 Application: siagrob1",
 	"author": "Paulo Penalva",
 	"license": "Apache-2.0",
@@ -24,7 +24,7 @@
 	},
 	"devDependencies": {
 		"@sapui5/types": "1.141.0",
-		"@ui5/cli": "^4.0.53",
+		"@ui5/cli": "^4.0.69",
 		"@ui5/linter": "^1.20.0",
 		"babel-plugin-istanbul": "^7.0.1",
 		"eslint": "^9.36.0",
