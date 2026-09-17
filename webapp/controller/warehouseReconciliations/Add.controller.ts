@@ -21,6 +21,7 @@ export default class Add extends BaseController {
     (this.getModel("ui") as JSONModel).setProperty("/editable", true);
     this.resetModelChanges();
     this.resetPreview();
+    this.wr().setProperty("/savedLines", []);
 
     this.setBusy(true);
     try {
@@ -59,8 +60,17 @@ export default class Add extends BaseController {
       await oModel.submitBatch(oModel.getUpdateGroupId());
       if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) return;
 
+      const key = ctx.getProperty("Key") as string;
+
+      // A distribuição só pode ser gravada depois que a conferência existe. Se o servidor recusar,
+      // a conferência já está salva em rascunho: leva para a edição, onde o usuário corrige.
+      if (!(await this.saveDistribution(key))) {
+        this.navTo("warehouseReconciliationsEdit", { id: key });
+        return;
+      }
+
       MessageToast.show("Conferência gravada em rascunho.");
-      this.navTo("warehouseReconciliationsDetail", { id: ctx.getProperty("Key") as string });
+      this.navTo("warehouseReconciliationsDetail", { id: key });
     } catch (err) {
       MessageBox.error((err as Error).message || "Erro ao gravar a conferência.");
     } finally {

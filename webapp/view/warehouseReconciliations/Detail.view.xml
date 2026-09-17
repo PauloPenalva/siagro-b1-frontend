@@ -22,7 +22,8 @@
           <Button text="Editar" type="Emphasized" press=".onEdit"
             visible="{= ${path: 'Status', targetType: 'any'} === 'Draft' }"/>
           <Button text="Enviar para aprovação" type="Accept" press=".onSendApproval"
-            visible="{= ${path: 'Status', targetType: 'any'} === 'Draft' }"/>
+            visible="{= ${path: 'Status', targetType: 'any'} === 'Draft' }"
+            enabled="{= ${wr>/distributionInfo/closed} &amp;&amp; !${wr>/distributionInfo/isGain} }"/>
           <Button text="Retirar da aprovação" type="Transparent" press=".onWithdrawApproval"
             visible="{= ${path: 'Status', targetType: 'any'} === 'InApproval' }"/>
           <Button text="Cancelar" type="Reject" press=".onCancelReconciliation"
@@ -48,6 +49,14 @@
         <uxap:subSections>
           <uxap:ObjectPageSubSection title=" " titleUppercase="false">
             <core:Fragment fragmentName="siagrob1.view.warehouseReconciliations.fragments.Form" type="XML" />
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
+
+      <uxap:ObjectPageSection titleUppercase="false" title="Distribuição da perda">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <core:Fragment fragmentName="siagrob1.view.warehouseReconciliations.fragments.LossDistribution" type="XML" />
           </uxap:ObjectPageSubSection>
         </uxap:subSections>
       </uxap:ObjectPageSection>

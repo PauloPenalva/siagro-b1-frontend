@@ -625,6 +625,15 @@ export default {
     return "None";
   },
 
+  /** Frase da distribuição da perda na tela de Conferência de Saldo, com números em pt-BR (3 casas). */
+  formatLossDistributionInfo: (distributed: number | string, loss: number | string): string => {
+    const fmt = (n: number | string) =>
+      Number(n ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+
+    return `Distribuído ${fmt(distributed)} de ${fmt(loss)}. A soma precisa fechar com a perda ` +
+      `para enviar à aprovação. Liberação pausada ou sem saldo hoje não recebe perda.`;
+  },
+
   formatShipmentReleaseStatus: (value: string) => {
     const m = new Map<string, string>();
     m.set("Pending", "Pendente");

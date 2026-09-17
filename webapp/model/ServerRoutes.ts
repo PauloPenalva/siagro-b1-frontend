@@ -196,4 +196,6 @@ export default {
   warehouseReconciliationsAttachmentsList: '/odata/WarehouseReconciliationsAttachmentsList',
   warehouseReconciliationsAttachmentUpload: '/odata/WarehouseReconciliationsAttachmentUpload',
   warehouseReconciliationsAttachmentsDownload: '/odata/WarehouseReconciliationsAttachmentsDownload',
+  warehouseReconciliationsDistributeLoss: '/odata/WarehouseReconciliationsDistributeLoss',
+  warehouseReconciliationsListReleases: '/odata/WarehouseReconciliationsListReleases',
 }

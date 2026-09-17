@@ -25,6 +25,14 @@
           </uxap:ObjectPageSubSection>
         </uxap:subSections>
       </uxap:ObjectPageSection>
+
+      <uxap:ObjectPageSection titleUppercase="false" title="Distribuição da perda">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <core:Fragment fragmentName="siagrob1.view.warehouseReconciliations.fragments.LossDistribution" type="XML" />
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
     </uxap:sections>
     <uxap:footer>
       <OverflowToolbar>

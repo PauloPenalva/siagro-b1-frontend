@@ -6,7 +6,9 @@ import CommonController from "../common/CommonController";
 import { sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
   normalizeBalancePreview,
+  normalizeReleaseLines,
   WarehouseReconciliationBalancePreview,
+  WarehouseReconciliationReleaseBalance,
 } from "siagrob1/types/WarehouseReconciliationBalancePreview";
 import Dialog from "sap/m/Dialog";
 import MessageToast from "sap/m/MessageToast";
@@ -34,6 +36,9 @@ export abstract class BaseController extends CommonController {
       dialog: { title: "", confirmText: "", action: "", text: "", textLabel: "", textRequired: false },
       attachment: { description: "" },
       attachmentsReadonly: false,
+      distribution: [],
+      distributionInfo: { loss: 0, distributed: 0, closed: true, isGain: false },
+      savedLines: [],
     });
     this.getView().setModel(model, "wr");
     return model;
@@ -47,6 +52,8 @@ export abstract class BaseController extends CommonController {
     this.wr().setProperty("/preview", {
       systemBalance: null, difference: null, lastApprovedReferenceDate: null, hasOpenReconciliation: false,
     });
+    this.wr().setProperty("/distribution", []);
+    this.updateDistributionInfo();
   }
 
   /**
@@ -84,6 +91,125 @@ export abstract class BaseController extends CommonController {
       "/preview/difference",
       system === null ? null : Math.round((reported - system) * 1000) / 1000
     );
+    this.updateDistributionInfo();
+  }
+
+  /** Tolerância de arredondamento igual à do backend (0,001). */
+  private static readonly TOLERANCE = 0.001;
+
+  /**
+   * Monta a grade de distribuição a partir das liberações da prévia, preservando o que o usuário já
+   * digitou (ou o que estava gravado, na edição) para a mesma liberação. Com UMA liberação elegível
+   * a perda inteira vai para ela sozinha (spec §9.4).
+   */
+  protected applyDistributionRows(releases: WarehouseReconciliationReleaseBalance[]): void {
+    const typed = new Map<string, number>();
+    ((this.wr().getProperty("/savedLines") ?? []) as { shipmentReleaseKey: string; quantity: number }[])
+      .forEach((l) => typed.set(l.shipmentReleaseKey, l.quantity));
+    ((this.wr().getProperty("/distribution") ?? []) as { shipmentReleaseKey: string; quantity: number }[])
+      .forEach((l) => typed.set(l.shipmentReleaseKey, l.quantity));
+
+    const rows = releases.map((r) => ({
+      ...r,
+      quantity: r.canReceiveLoss ? (typed.get(r.shipmentReleaseKey) ?? 0) : 0,
+    }));
+
+    this.wr().setProperty("/distribution", rows);
+    this.autoFillSingleRelease();
+    this.updateDistributionInfo();
+  }
+
+  private lossOf(): number {
+    const difference = this.wr().getProperty("/preview/difference") as number;
+    return difference !== null && difference < 0 ? Math.round(-difference * 1000) / 1000 : 0;
+  }
+
+  private autoFillSingleRelease(): void {
+    const rows = (this.wr().getProperty("/distribution") ?? []) as { canReceiveLoss: boolean; quantity: number }[];
+    const eligible = rows.filter((r) => r.canReceiveLoss);
+    if (eligible.length === 1 && this.lossOf() > 0) {
+      eligible[0].quantity = this.lossOf();
+      this.wr().refresh(true);
+    }
+  }
+
+  protected updateDistributionInfo(): void {
+    const rows = (this.wr().getProperty("/distribution") ?? []) as { quantity: number }[];
+    const distributed = Math.round(rows.reduce((s, r) => s + (Number(r.quantity) || 0), 0) * 1000) / 1000;
+    const loss = this.lossOf();
+    const difference = this.wr().getProperty("/preview/difference") as number;
+
+    this.wr().setProperty("/distributionInfo", {
+      loss,
+      distributed,
+      closed: Math.abs(distributed - loss) <= BaseController.TOLERANCE,
+      isGain: difference !== null && difference > 0,
+    });
+  }
+
+  /**
+   * Mesmo cálculo de `updateDistributionInfo`, mas a partir da distribuição JÁ GRAVADA
+   * (`/savedLines`), não da grade digitável (`/distribution`). O Detail em rascunho não mostra a
+   * grade — mostra os romaneios já gerados —, então é essa soma que precisa fechar com a perda
+   * para liberar o envio para aprovação (§9.9).
+   */
+  protected updateSavedDistributionInfo(): void {
+    const rows = (this.wr().getProperty("/savedLines") ?? []) as { quantity: number }[];
+    const distributed = Math.round(rows.reduce((s, r) => s + (Number(r.quantity) || 0), 0) * 1000) / 1000;
+    const loss = this.lossOf();
+    const difference = this.wr().getProperty("/preview/difference") as number;
+
+    this.wr().setProperty("/distributionInfo", {
+      loss,
+      distributed,
+      closed: Math.abs(distributed - loss) <= BaseController.TOLERANCE,
+      isGain: difference !== null && difference > 0,
+    });
+  }
+
+  onDistributionQuantityChange(): void {
+    this.updateDistributionInfo();
+  }
+
+  /**
+   * Grava a distribuição digitada. A conferência precisa já existir (Key).
+   *
+   * Diferença positiva (Sobra) não distribui nada — envia as duas listas vazias, o que limpa
+   * qualquer distribuição gravada antes de o usuário corrigir o saldo informado para uma perda.
+   */
+  protected async saveDistribution(key: string): Promise<boolean> {
+    const isGain = this.wr().getProperty("/distributionInfo/isGain") as boolean;
+
+    const rows: { shipmentReleaseKey: string; quantity: number }[] = isGain
+      ? []
+      : ((this.wr().getProperty("/distribution") ?? []) as { shipmentReleaseKey: string; quantity: number }[])
+          // Arredonda para a mesma tolerância do backend (0,001) antes de filtrar e enviar: sem
+          // isto, um resto de ponto flutuante (0.0004999...) tanto escapava do filtro `> 0`
+          // quanto chegava ao servidor com mais casas do que o DECIMAL(18,3) da coluna.
+          .map((r) => ({ ...r, quantity: Math.round(Number(r.quantity) * 1000) / 1000 }))
+          .filter((r) => r.quantity > 0);
+
+    const result = await sendJson("POST", this.api.warehouseReconciliationsDistributeLoss, {
+      Key: key,
+      ShipmentReleaseKeys: rows.map((r) => r.shipmentReleaseKey),
+      Quantities: rows.map((r) => r.quantity),
+    });
+
+    if (!result.ok) {
+      MessageBox.error(result.message);
+      return false;
+    }
+    return true;
+  }
+
+  protected async loadSavedLines(key: string): Promise<void> {
+    this.wr().setProperty("/savedLines", []);
+    const result = await sendJson("GET", `${this.api.warehouseReconciliationsListReleases}(Key=${key})`);
+    if (!result.ok) {
+      MessageBox.error(result.message);
+      return;
+    }
+    this.wr().setProperty("/savedLines", normalizeReleaseLines(result.data));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
@@ -103,6 +229,9 @@ export abstract class BaseController extends CommonController {
 
     const result = await sendJson("GET", url);
     if (!result.ok) {
+      // Sem isto, uma grade/linhas gravadas do armazém+produto anterior ficavam na tela junto
+      // com a mensagem de erro, como se ainda valessem para o novo contexto.
+      this.resetPreview();
       MessageBox.error(result.message);
       return null;
     }
@@ -122,7 +251,11 @@ export abstract class BaseController extends CommonController {
     this.wr().setProperty("/preview/systemBalance", preview.systemBalance);
     this.wr().setProperty("/preview/lastApprovedReferenceDate", preview.lastApprovedReferenceDate);
     this.wr().setProperty("/preview/hasOpenReconciliation", preview.hasOpenReconciliation);
+    // A diferença precisa estar atualizada ANTES de montar a grade: com uma única liberação
+    // elegível, `applyDistributionRows` preenche a linha sozinha com base na perda (`lossOf()`),
+    // que deriva da diferença — calculá-la depois usaria a diferença do registro/prévia anterior.
     this.updateDifference(ctx);
+    this.applyDistributionRows(preview.releases);
     return preview;
   }
 
@@ -164,6 +297,8 @@ export abstract class BaseController extends CommonController {
 
   onReportedBalanceChange(): void {
     this.updateDifference(this.getView().getBindingContext() as Context);
+    this.autoFillSingleRelease();
+    this.updateDistributionInfo();
   }
 
   /** Obrigatórios lidos do contexto: o Form com ColumnLayout não tem `getContent()`. */

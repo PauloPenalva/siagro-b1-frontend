@@ -27,28 +27,40 @@ export default class Detail extends BaseController {
 
     (this.getModel("ui") as JSONModel).setProperty("/editable", false);
     this.resetPreview();
+    // Trava o botão de envio até a prévia e as linhas gravadas da conferência NOVA chegarem —
+    // sem isto ele herdava o `closed` (fechado) da conferência anterior, aberta até então.
+    this.wr().setProperty("/distributionInfo", { loss: 0, distributed: 0, closed: false, isGain: false });
 
     this.bindElement(`/WarehouseReconciliations(${id})`);
-    this.afterDataReceived();
+    const savedLinesPromise = this.loadSavedLines(id);
+    this.afterDataReceived(savedLinesPromise);
     void this.loadAttachments(id);
   }
 
   /** A prévia depende de armazém, produto e data, que só existem depois da leitura. */
-  private afterDataReceived(): void {
+  private afterDataReceived(savedLinesPromise: Promise<void>): void {
     this.getView().getElementBinding()?.attachEventOnce("dataReceived", () => {
       const ctx = this.getView().getBindingContext() as Context;
+      const status = String(ctx?.getProperty("Status"));
 
       // Anexar/Remover só ficam disponíveis enquanto a conferência ainda pode ser alterada; o
       // backend já recusa o upload/exclusão fora de Draft/InApproval (400), então a tela
       // simplesmente esconde os botões para Approved/Rejected/Cancelled.
-      const isOpen = ["Draft", "InApproval"].includes(String(ctx?.getProperty("Status")));
+      const isOpen = ["Draft", "InApproval"].includes(status);
       this.wr().setProperty("/attachmentsReadonly", !isOpen);
 
       // A prévia é "saldo de hoje até a data de referência": uma vez decidida (Approved,
       // Rejected, Cancelled), o que vale é o snapshot gravado — mostrar a prévia ao lado
       // dele confundiria o usuário com dois números diferentes para a mesma conferência.
       if (isOpen) {
-        void this.refreshPreview(ctx);
+        // A prévia (grade) e as linhas gravadas chegam em paralelo: só depois que as DUAS
+        // resolverem dá para saber se a distribuição gravada fecha com a perda (§9.9). Calcular
+        // a partir de qualquer uma isolada usaria um valor stale.
+        void Promise.all([this.refreshPreview(ctx), savedLinesPromise]).then(() => {
+          if (status === "Draft") {
+            this.updateSavedDistributionInfo();
+          }
+        });
       } else {
         this.resetPreview();
       }
@@ -56,7 +68,8 @@ export default class Detail extends BaseController {
   }
 
   private reload(): void {
-    this.afterDataReceived();
+    const savedLinesPromise = this.loadSavedLines(this.currentKey());
+    this.afterDataReceived(savedLinesPromise);
     this.getView().getElementBinding()?.refresh();
   }
 

@@ -27,6 +27,7 @@
           <f:FormElement label="Filial">
             <f:fields>
               <Select
+                width="100%"
                 editable="{ui>/editable}"
                 forceSelection="false"
                 required="true"
@@ -50,17 +51,23 @@
                 change=".onReferenceDateChange"/>
             </f:fields>
           </f:FormElement>
-          <f:FormElement label="Motivo">
+          <!-- Duas FormElement em vez de dois campos na mesma: o ColumnLayout divide a largura da
+               linha pelo número de campos, e o Motivo ficava com metade da largura dos demais -->
+          <f:FormElement label="Motivo" visible="{ui>/editable}">
             <f:fields>
               <Select
-                visible="{ui>/editable}"
+                width="100%"
                 forceSelection="false"
                 required="true"
                 selectedKey="{ReasonKey}"
                 items="{ path: '/WarehouseReconciliationReasons', parameters: { $filter: 'Active eq true' }, sorter: { path: 'Description' } }">
                 <core:ListItem key="{Key}" text="{Description}"/>
               </Select>
-              <Input visible="{= !${ui>/editable} }" value="{Reason/Description}" editable="false"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Motivo" visible="{= !${ui>/editable} }">
+            <f:fields>
+              <Input width="100%" value="{Reason/Description}" editable="false"/>
             </f:fields>
           </f:FormElement>
         </f:formElements>
@@ -102,13 +109,11 @@
           </f:FormElement>
           <f:FormElement label="Un. Med.">
             <f:fields>
+              <!-- Só leitura: a unidade vem do padrão do sistema na inclusão e não é escolhida pelo usuário -->
               <Input
                 value="{UnitOfMeasureCode}"
-                editable="{ui>/editable}"
-                required="true"
-                showValueHelp="true"
-                valueHelpOnly="true"
-                valueHelpRequest=".openUnitsOfMeasureValueHelp"/>
+                editable="false"
+                required="true"/>
             </f:fields>
           </f:FormElement>
         </f:formElements>

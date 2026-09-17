@@ -1,0 +1,85 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    core:require="{ formatter: 'siagrob1/model/formatter' }">
+  <VBox>
+    <MessageStrip
+      visible="{= (${ui>/editable} || ${path: 'Status', targetType: 'any'} === 'Draft') &amp;&amp; ${wr>/distributionInfo/isGain} }"
+      type="Error"
+      showIcon="true"
+      class="sapUiSmallMarginBottom"
+      text="A conferência de saldo aceita apenas perda: o saldo informado precisa ser menor que o saldo do sistema."/>
+    <MessageStrip
+      visible="{= (${ui>/editable} || ${path: 'Status', targetType: 'any'} === 'Draft') &amp;&amp; !${wr>/distributionInfo/isGain} &amp;&amp; ${wr>/distributionInfo/loss} > 0 }"
+      type="{= ${wr>/distributionInfo/closed} ? 'Success' : 'Warning' }"
+      showIcon="true"
+      class="sapUiSmallMarginBottom"
+      text="{
+        parts: [
+          { path: 'wr>/distributionInfo/distributed' },
+          { path: 'wr>/distributionInfo/loss' }
+        ],
+        formatter: 'formatter.formatLossDistributionInfo'
+      }"/>
+
+    <!-- Rascunho em edicao: grade digitavel montada pela previa do saldo -->
+    <Table
+      visible="{ui>/editable}"
+      items="{ path: 'wr>/distribution' }"
+      noDataText="Nenhuma liberação com saldo neste armazém e produto na data de referência.">
+      <columns>
+        <Column><Text text="Contrato"/></Column>
+        <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Produtor"/></Column>
+        <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Liberação"/></Column>
+        <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Situação"/></Column>
+        <Column hAlign="End"><Text text="Saldo na data"/></Column>
+        <Column hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="Saldo hoje"/></Column>
+        <Column hAlign="End" width="12rem"><Text text="Quantidade da perda"/></Column>
+      </columns>
+      <items>
+        <ColumnListItem>
+          <cells>
+            <Text text="{wr>purchaseContractCode}"/>
+            <Text text="{wr>cardName}"/>
+            <Text text="{ path: 'wr>releaseDate', formatter: 'formatter.formatDate' }"/>
+            <Text text="{ path: 'wr>status', formatter: 'formatter.formatShipmentReleaseStatus' }"/>
+            <ObjectNumber number="{ path: 'wr>balanceAtReferenceDate', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+            <ObjectNumber number="{ path: 'wr>currentBalance', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+            <Input
+              textAlign="End"
+              editable="{wr>canReceiveLoss}"
+              change=".onDistributionQuantityChange"
+              value="{ path: 'wr>quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }, constraints: { minimum: 0 } }"/>
+          </cells>
+        </ColumnListItem>
+      </items>
+    </Table>
+
+    <!-- Detalhe e aprovacao: distribuicao gravada, com os romaneios gerados -->
+    <Table
+      visible="{= !${ui>/editable} }"
+      items="{ path: 'wr>/savedLines' }"
+      noDataText="Perda ainda não distribuída entre as liberações.">
+      <columns>
+        <Column><Text text="Contrato"/></Column>
+        <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Produtor"/></Column>
+        <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Liberação"/></Column>
+        <Column hAlign="End"><Text text="Quantidade da perda"/></Column>
+        <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Romaneio de compra"/></Column>
+        <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Romaneio de perda"/></Column>
+      </columns>
+      <items>
+        <ColumnListItem>
+          <cells>
+            <Text text="{wr>purchaseContractCode}"/>
+            <Text text="{wr>cardName}"/>
+            <Text text="{ path: 'wr>releaseDate', formatter: 'formatter.formatDate' }"/>
+            <ObjectNumber number="{ path: 'wr>quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+            <Text text="{wr>purchaseTransactionCode}"/>
+            <Text text="{wr>lossTransactionCode}"/>
+          </cells>
+        </ColumnListItem>
+      </items>
+    </Table>
+  </VBox>
+</core:FragmentDefinition>

@@ -1,6 +1,7 @@
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Context from "sap/ui/model/odata/v4/Context";
+import MessageBox from "sap/m/MessageBox";
 import { BaseController } from "../BaseController";
 
 /**
@@ -42,6 +43,7 @@ export default class Detail extends BaseController {
       }
     });
     void this.loadAttachments(id);
+    void this.loadSavedLines(id);
   }
 
   onBackToList(): void {
@@ -49,6 +51,13 @@ export default class Detail extends BaseController {
   }
 
   onApprove(): void {
+    const ctx = this.getView().getBindingContext() as Context;
+    // `Difference` é Edm.Decimal e chega como string (ver formatter.formatWarehouseReconciliationDirection).
+    const raw = ctx?.getProperty("Difference") as unknown;
+    if (raw !== null && raw !== undefined && raw !== "" && !Number.isNaN(Number(raw)) && Number(raw) >= 0) {
+      MessageBox.warning("A conferência de saldo aceita apenas perda.");
+      return;
+    }
     void this.openDecision("Approval", "Aprovar a conferência ?", "Aprovar", "Comentários (opcional)", false);
   }
 
@@ -65,7 +74,7 @@ export default class Detail extends BaseController {
     if (!url) return super.executeDecision(action, text);
 
     const ok = await this.runAction(url, { Key: this.currentKey(), Comments: text },
-      action === "Approval" ? "Conferência aprovada. Romaneio de perda/sobra gerado." : "Conferência rejeitada.");
+      action === "Approval" ? "Conferência aprovada. A perda foi baixada das liberações." : "Conferência rejeitada.");
 
     if (ok) {
       this.navTo("warehouseReconciliationsApproval");

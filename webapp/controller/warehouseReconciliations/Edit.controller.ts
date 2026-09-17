@@ -24,6 +24,7 @@ export default class Edit extends BaseController {
     (this.getModel("ui") as JSONModel).setProperty("/editable", true);
     this.resetModelChanges();
     this.resetPreview();
+    this.wr().setProperty("/savedLines", []);
 
     this.bindElement(`/WarehouseReconciliations(${id})`);
     this.getView().getElementBinding()?.attachEventOnce("dataReceived", () => {
@@ -33,7 +34,7 @@ export default class Edit extends BaseController {
         this.navTo("warehouseReconciliationsDetail", { id });
         return;
       }
-      void this.refreshPreview(ctx);
+      void this.loadSavedLines(id).then(() => this.refreshPreview(ctx));
     });
   }
 
@@ -46,6 +47,8 @@ export default class Edit extends BaseController {
       this.setBusy(true);
       await oModel.submitBatch(oModel.getUpdateGroupId());
       if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) return;
+
+      if (!(await this.saveDistribution(ctx.getProperty("Key") as string))) return;
 
       MessageToast.show("Conferência alterada.");
       this.navTo("warehouseReconciliationsDetail", { id: ctx.getProperty("Key") as string });
