@@ -15,6 +15,7 @@ type SelectedLoad = {
   Key: string,
   Code: string,
   Status: string,
+  LoadType: string,
 }
 
 /** Situações da carga oferecidas no filtro — mesmos rótulos de formatter.formatShipmentLoadStatus. */
@@ -24,7 +25,14 @@ const SHIPMENT_LOAD_STATUSES = [
   { key: "PartiallyInvoiced", text: "Faturada Parcial" },
   { key: "Invoiced", text: "Faturada" },
   { key: "Returned", text: "Devolvida" },
+  { key: "Completed", text: "Concluída" },
   { key: "Cancelled", text: "Cancelada" },
+];
+
+/** Tipos de carga oferecidos no filtro (GAC-1175). */
+const SHIPMENT_LOAD_TYPES = [
+  { key: "Normal", text: "Normal" },
+  { key: "Removal", text: "Remoção" },
 ];
 
 /**
@@ -47,8 +55,9 @@ export default class Main extends BaseController {
   onInit(): void {
     // Status nasce como array porque o filtro é multi-seleção: com `undefined` o selectedKeys do
     // MultiComboBox não teria onde gravar.
-    this.getView().setModel(new JSONModel({ Status: [] }), "filterLoads");
+    this.getView().setModel(new JSONModel({ Status: [], LoadType: "" }), "filterLoads");
     this.getView().setModel(new JSONModel({ items: SHIPMENT_LOAD_STATUSES }), "loadStatuses");
+    this.getView().setModel(new JSONModel({ items: SHIPMENT_LOAD_TYPES }), "loadTypes");
     this.getView().setModel(new JSONModel([]), "branches");
 
     this.getRouter().getRoute("shipmentLoads")
@@ -90,7 +99,7 @@ export default class Main extends BaseController {
   }
 
   onClearLoadFilters(): void {
-    (this.getModel("filterLoads") as JSONModel).setData({ Status: [] });
+    (this.getModel("filterLoads") as JSONModel).setData({ Status: [], LoadType: "" });
     this.applyLoadFilters();
   }
 
@@ -165,7 +174,7 @@ export default class Main extends BaseController {
   /** Carga cancelada continua listada: é histórico, e some só do faturamento. */
   private applyLoadFilters(): void {
     this.applyFilters("shipmentLoadsTable", "filterLoads", "LoadDate",
-      ["Status", "BranchCode", "TruckDriverCode", "CarrierCardCode", "WarehouseCode"],
+      ["Status", "LoadType", "BranchCode", "TruckDriverCode", "CarrierCardCode", "WarehouseCode"],
       [],
       { CarrierCardCodeNot: "CarrierCardCode" });
   }
@@ -239,7 +248,7 @@ export default class Main extends BaseController {
 
     if (load.Status !== "Planned" && load.Status !== "Open") {
       MessageBox.warning(
-        `A carga ${load.Code} já foi faturada ou cancelada e não aceita novos romaneios.`);
+        `A carga ${load.Code} já foi encerrada ou cancelada e não aceita novos documentos.`);
       return;
     }
 
@@ -298,6 +307,7 @@ export default class Main extends BaseController {
       Key: ctx.getProperty("Key") as string,
       Code: ctx.getProperty("Code") as string,
       Status: ctx.getProperty("Status") as string,
+      LoadType: ctx.getProperty("LoadType") as string,
     };
   }
 

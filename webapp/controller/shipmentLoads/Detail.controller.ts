@@ -125,6 +125,41 @@ export default class Detail extends BaseController {
   }
 
   /**
+   * Conclui a carga de remoção (GAC-1175). O encerramento é manual porque a remoção não tem
+   * faturamento que a feche — e por isso vem com Reabrir ao lado, para o clique errado não
+   * custar o cancelamento da carga.
+   */
+  async onCompleteLoad(): Promise<void> {
+    if (!await DialogHelper.confirmDialog(
+      "Concluir esta carga de remoção ? Ela deixará de aceitar novas entradas.")) return;
+
+    await this.invokeLoadAction("/ShipmentLoadsComplete(...)", "Carga concluída.");
+  }
+
+  async onReopenLoad(): Promise<void> {
+    if (!await DialogHelper.confirmDialog("Reabrir esta carga de remoção ?")) return;
+
+    await this.invokeLoadAction("/ShipmentLoadsReopen(...)", "Carga reaberta.");
+  }
+
+  /** Action que só recebe a chave da carga — o formato de Concluir e Reabrir. */
+  private async invokeLoadAction(actionPath: string, successMessage: string): Promise<void> {
+    const action = (this.getModel() as ODataModel).bindContext(actionPath);
+    action.setParameter("Key", this._loadKey);
+
+    this.setBusy(true);
+    try {
+      await action.invoke();
+      this.refreshAll();
+      MessageToast.show(successMessage);
+    } catch (e) {
+      MessageBox.error((e as Error).message);
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  /**
    * Só romaneios VIGENTES (Expedição, sem terem sido substituídos por uma troca de liberação)
    * podem ser desvinculados ou trocados — a Original substituída, o Estorno e a Expedição de
    * troca de outra troca já não representam o embarque corrente da carga (GAC-1177 v2).
@@ -133,7 +168,12 @@ export default class Detail extends BaseController {
     const type = context.getProperty("TransactionType") as string;
     const replacedBy = context.getProperty("ReplacedByShippingReleaseChangeKey") as string;
 
-    return type === "SalesShipment" && !replacedBy;
+    // GAC-1175: cada natureza de carga tem o seu tipo de romaneio, e só ele é desvinculável.
+    // Na Remoção não existe troca de liberação, então `replacedBy` é sempre nulo lá.
+    const loadType = this.getView().getBindingContext()?.getProperty("LoadType") as string;
+    const expected = loadType === "Removal" ? "Receipt" : "SalesShipment";
+
+    return type === expected && !replacedBy;
   }
 
   /**

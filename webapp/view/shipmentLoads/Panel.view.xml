@@ -110,6 +110,19 @@
 						</CustomListItem>
 					</List>
 				</Panel>
+				<!-- GAC-1175: raia da carga de REMOÇÃO encerrada. Fica no fim porque é o estado
+				     terminal de um ciclo paralelo ao do faturamento. -->
+				<Panel headerText="Concluída ({panel>/countCompleted})" expandable="false">
+					<List
+						id="listCompleted"
+						updateFinished=".onLaneUpdated"
+						noDataText="Nenhuma carga concluída."
+						items="{ path: '/ShipmentLoads', parameters: { $orderby: 'Code' } }">
+						<CustomListItem type="Navigation" press=".onOpenLoad">
+							<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.LoadCard" type="XML"/>
+						</CustomListItem>
+					</List>
+				</Panel>
 			</l:Grid>
 		</f:content>
 	</f:DynamicPage>

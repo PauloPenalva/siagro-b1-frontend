@@ -27,6 +27,9 @@ export default class Add extends FormController {
       // escolhidos.
       planningEditable: true,
       carrierEditable: true,
+      // GAC-1175: a criação é a única chance de escolher o tipo.
+      typeEditable: true,
+      LoadType: "Normal",
       LoadDate: new Date().toISOString().slice(0, 10),
       HasExcess: false,
     } as LoadForm);

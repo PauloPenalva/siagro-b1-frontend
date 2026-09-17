@@ -40,7 +40,7 @@
 				rows="{
 					path: '/ShipmentLoads',
 					sorter: [ { path: 'RowId', descending: true } ],
-					parameters: { $select: 'Key,Code,Status,TruckCode,ItemCode,BranchCode,UnitOfMeasureCode' }
+					parameters: { $select: 'Key,Code,Status,LoadType,TruckCode,ItemCode,BranchCode,UnitOfMeasureCode' }
 				}">
 				<t:extension>
 					<OverflowToolbar>
@@ -73,6 +73,17 @@
 									path: 'LoadDate',
 									targetType: 'any',
 									formatter: '.formatter.formatDate'
+								}"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Tipo" sortProperty="LoadType" hAlign="Center" width="7rem">
+						<t:template>
+							<Text
+								wrapping="false"
+								text="{
+									path: 'LoadType',
+									targetType: 'any',
+									formatter: '.formatter.formatShipmentLoadType'
 								}"/>
 						</t:template>
 					</t:Column>

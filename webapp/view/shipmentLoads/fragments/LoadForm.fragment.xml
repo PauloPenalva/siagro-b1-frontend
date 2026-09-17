@@ -18,6 +18,22 @@
 		<f:formContainers>
 			<f:FormContainer title="Carregamento">
 				<f:formElements>
+					<f:FormElement label="Tipo de Carga">
+						<f:fields>
+							<!-- GAC-1175: o tipo decide que documento a carga aceita (romaneio de embarque na
+							     Normal, Entrada em Armazenagem na Remoção) e se ela fatura. Por isso só é
+							     editável na criação — mesmo padrão do tipo do contrato de compra.
+							     forceSelection="false" evita o Select escolher o primeiro item sozinho. -->
+							<Select
+								required="true"
+								editable="{form>/typeEditable}"
+								forceSelection="false"
+								selectedKey="{form>/LoadType}">
+								<core:Item key="Normal" text="Normal"/>
+								<core:Item key="Removal" text="Remoção"/>
+							</Select>
+						</f:fields>
+					</f:FormElement>
 					<f:FormElement label="Filial">
 						<f:fields>
 							<!-- Filial e unidade de medida são preenchidas pelo sistema, como no contrato de
@@ -137,7 +153,9 @@
 								value="{form>/UnitOfMeasureCode}"/>
 						</f:fields>
 					</f:FormElement>
-					<f:FormElement label="Armazém de Carga">
+					<!-- Na Remoção o armazém é de ONDE a mercadoria sai; na Normal é de onde ela é
+					     carregada para embarque. Mesmo campo, leitura diferente. -->
+					<f:FormElement label="{= ${form>/LoadType} === 'Removal' ? 'Armazém de Origem' : 'Armazém de Carga' }">
 						<f:fields>
 							<Input
 								required="true"

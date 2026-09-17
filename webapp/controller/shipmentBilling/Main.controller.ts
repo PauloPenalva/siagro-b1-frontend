@@ -119,7 +119,10 @@ export default class Main extends BaseController {
     // mercadoria voltou para um armazém. Ela tem saldo zero e o grão já está creditado em outro
     // lugar — oferecê-la aqui seria vender duas vezes o mesmo volume. A carga recusada que
     // SEGUE viagem volta para 'Open'/'PartiallyInvoiced' e reaparece por este mesmo filtro.
-    filters.push("(Status eq 'Open' or Status eq 'PartiallyInvoiced') and TotalQuantity gt 0");
+    // GAC-1175: a carga de REMOÇÃO não fatura — ela traz mercadoria para a armazenagem. Sem o
+    // corte por tipo ela apareceria aqui em 'Open', com volume, como se estivesse a faturar.
+    filters.push("LoadType eq 'Normal' and " +
+      "(Status eq 'Open' or Status eq 'PartiallyInvoiced') and TotalQuantity gt 0");
 
     if (query) {
       filters.push(`(contains(Code,'${query}') or contains(TruckCode,'${query}'))`);

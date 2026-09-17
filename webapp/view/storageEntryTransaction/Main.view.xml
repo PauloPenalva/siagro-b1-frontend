@@ -99,7 +99,7 @@
                 $filter: 'Status eq \'Cancelled\''
               }
             }"
-            text="Canceladas"
+            text="Estornadas"
             key="Cancelled" />
         </items>
         <content>
@@ -192,9 +192,14 @@
                   <ObjectStatus
                     text="{
                       path: 'Status',
-                      targetType: 'any'
+                      targetType: 'any',
+                      formatter: 'formatter.formatStorageEntryTransactionStatus'
                     }"
-                    state="{= ${path: 'Status', targetType: 'any'} === 'Cancelled' ? 'Error' : 'Success' }"
+                    state="{
+                      path: 'Status',
+                      targetType: 'any',
+                      formatter: 'formatter.stateStorageEntryTransactionStatus'
+                    }"
                   />
                 </cells>
               </ColumnListItem>

@@ -2,6 +2,9 @@
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
+    core:require="{
+        formatter: 'siagrob1/model/formatter'
+    }"
 >
     <!--
       Caminhos RELATIVOS: quem define de qual romaneio vêm os dados é o
@@ -21,12 +24,24 @@
 
             <!-- Enums chegam como tipo Raw: targetType 'any' é obrigatório. -->
             <Label text="Tipo"/>
-            <Text text="{ path: 'TransactionType', targetType: 'any' }"/>
+            <Text text="{
+                path: 'TransactionType',
+                targetType: 'any',
+                formatter: 'formatter.formatStorageTransactionType'
+            }"/>
 
             <Label text="Situação"/>
             <ObjectStatus
-                text="{ path: 'TransactionStatus', targetType: 'any' }"
-                state="{= ${path: 'TransactionStatus', targetType: 'any'} === 'Cancelled' ? 'Error' : 'Success' }"/>
+                text="{
+                    path: 'TransactionStatus',
+                    targetType: 'any',
+                    formatter: 'formatter.formatStorageTransactionStatus'
+                }"
+                state="{
+                    path: 'TransactionStatus',
+                    targetType: 'any',
+                    formatter: 'formatter.stateStorageTransactionStatus'
+                }"/>
 
             <Label text="Parceiro"/>
             <Text text="({CardCode}) {CardName}"/>

@@ -14,9 +14,18 @@ type TargetLoad = {
   title: string,
   Key: string,
   Code: string,
+  LoadType: string,
   TruckCode: string,
   ItemCode: string,
   BranchCode: string,
+}
+
+/**
+ * Tipo de romaneio que cada natureza de carga aceita (GAC-1175) - espelha
+ * ShipmentLoadsAttachTransactionsService.ExpectedTransactionType no backend.
+ */
+function expectedTransactionType(loadType: string): string {
+  return loadType === "Removal" ? "Receipt" : "SalesShipment";
 }
 
 /**
@@ -57,11 +66,11 @@ export default class Attach extends BaseController {
         .bindContext(`/ShipmentLoads(${id})`)
         .requestObject() as Record<string, unknown>;
 
-      // A lista já barra a carga faturada ou cancelada antes de navegar; aqui a guarda vale para
-      // quem chega pela URL.
+      // A lista já barra a carga encerrada ou cancelada antes de navegar; aqui a guarda vale
+      // para quem chega pela URL.
       if (load.Status !== "Planned" && load.Status !== "Open") {
         MessageBox.warning(
-          `A carga ${load.Code as string} já foi faturada ou cancelada e não aceita novos romaneios.`);
+          `A carga ${load.Code as string} já foi encerrada ou cancelada e não aceita novos romaneios.`);
         this.onNavBack();
         return;
       }
@@ -73,6 +82,7 @@ export default class Attach extends BaseController {
           + ` · Produto (${load.ItemCode as string}) ${load.ItemName as string}`,
         Key: id,
         Code: load.Code as string,
+        LoadType: load.LoadType as string,
         TruckCode: load.TruckCode as string,
         ItemCode: load.ItemCode as string,
         BranchCode: load.BranchCode as string,
@@ -102,7 +112,8 @@ export default class Attach extends BaseController {
     const target = this.targetModel().getData() as Partial<TargetLoad>;
 
     const scope = [
-      "TransactionType eq 'SalesShipment'",
+      // GAC-1175: a carga Normal lista embarques; a de Remoção, recebimentos.
+      `TransactionType eq '${expectedTransactionType(target.LoadType ?? "Normal")}'`,
       "TransactionStatus eq 'Confirmed'",
       "ShipmentLoadKey eq null",
       // GAC-1177 v2: a Original substituída por uma troca de liberação também fica com

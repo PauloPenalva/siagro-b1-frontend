@@ -25,14 +25,30 @@
 					<Title text="Carga {Code}"/>
 				</uxap:snappedHeading>
 				<uxap:actions>
-					<Button text="Recalcular Saldo" type="Transparent" press=".onRecalculate"/>
+					<Button
+						text="Recalcular Saldo"
+						type="Transparent"
+						press=".onRecalculate"
+						visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' }"/>
 					<!-- targetType 'any' em toda expressão sobre enum: sem ele o valor não chega
 					     como string e a comparação nunca casa, deixando o botão invisível. -->
 					<Button
 						text="Registrar Recusa"
 						type="Transparent"
 						press=".onRefuse"
-						visible="{= ${path: 'Status', targetType: 'any'} === 'PartiallyInvoiced' || ${path: 'Status', targetType: 'any'} === 'Invoiced' }"/>
+						visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' &amp;&amp; (${path: 'Status', targetType: 'any'} === 'PartiallyInvoiced' || ${path: 'Status', targetType: 'any'} === 'Invoiced') }"/>
+					<!-- GAC-1175: encerramento MANUAL da carga de remoção, com o desfazer ao lado.
+					     A remoção não tem faturamento que a encerre sozinha. -->
+					<Button
+						text="Concluir Carga"
+						type="Transparent"
+						press=".onCompleteLoad"
+						visible="{= ${path: 'LoadType', targetType: 'any'} === 'Removal' &amp;&amp; ${path: 'Status', targetType: 'any'} === 'Open' }"/>
+					<Button
+						text="Reabrir Carga"
+						type="Transparent"
+						press=".onReopenLoad"
+						visible="{= ${path: 'LoadType', targetType: 'any'} === 'Removal' &amp;&amp; ${path: 'Status', targetType: 'any'} === 'Completed' }"/>
 					<Button text="Cancelar Carga" type="Transparent" press=".onCancelLoad"/>
 					<Button text="Voltar" type="Transparent" press=".onNavBack"/>
 				</uxap:actions>
@@ -79,6 +95,11 @@
 										<f:formElements>
 											<f:FormElement label="Código">
 												<f:fields><Text text="{Code}"/></f:fields>
+											</f:FormElement>
+											<f:FormElement label="Tipo">
+												<f:fields>
+													<Text text="{ path: 'LoadType', targetType: 'any', formatter: '.formatter.formatShipmentLoadType' }"/>
+												</f:fields>
 											</f:FormElement>
 											<f:FormElement label="Data">
 												<f:fields>
@@ -130,7 +151,10 @@
 														unit="{UnitOfMeasureCode}"/>
 												</f:fields>
 											</f:FormElement>
-											<f:FormElement label="Qtd. Faturada">
+											<!-- A carga de remoção não fatura: o campo leria 0,000 para sempre e
+											     sugeriria um faturamento pendente que não existe (GAC-1175). -->
+											<f:FormElement label="Qtd. Faturada"
+												visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' }">
 												<f:fields>
 													<ObjectNumber
 														number="{ path: 'InvoicedQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
@@ -180,7 +204,7 @@
 								rows="{ path: 'Transactions', parameters: { '$$ownRequest': true, '$select': 'Key,ShipmentReleaseKey,ItemCode,WarehouseCode,TransactionType,ReplacedByShippingReleaseChangeKey,ShippingReleaseChangeKey,WarehouseName' } }">
 								<t:extension>
 									<OverflowToolbar>
-										<Title text="Romaneios da Carga"/>
+										<Title text="{= ${path: 'LoadType', targetType: 'any'} === 'Removal' ? 'Recebimentos da Carga' : 'Romaneios da Carga' }"/>
 										<ToolbarSpacer/>
 										<Button type="Transparent" text="Desvincular" icon="sap-icon://chain-link" press=".onDetachShipments"/>
 										<Button
@@ -188,7 +212,7 @@
 											text="Trocar Liberação"
 											icon="sap-icon://switch-views"
 											tooltip="Troca o contrato de compra baixado (1 romaneio) ou inverte os contratos de 2 romaneios"
-											visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' }"
+											visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' }"
 											press=".onChangeRelease"/>
 									</OverflowToolbar>
 								</t:extension>
@@ -268,7 +292,8 @@
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
 
-			<uxap:ObjectPageSection titleUppercase="false" title="Documentos de Saída">
+			<uxap:ObjectPageSection titleUppercase="false" title="Documentos de Saída"
+				visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' }">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection>
 						<uxap:blocks>
@@ -347,7 +372,8 @@
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
 
-			<uxap:ObjectPageSection titleUppercase="false" title="Devoluções ao Armazém">
+			<uxap:ObjectPageSection titleUppercase="false" title="Devoluções ao Armazém"
+				visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' }">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection>
 						<uxap:blocks>

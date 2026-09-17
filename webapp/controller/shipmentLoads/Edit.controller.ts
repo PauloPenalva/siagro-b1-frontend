@@ -60,6 +60,10 @@ export default class Edit extends FormController {
         // A carga legada sem transportadora fica de fora da trava — senão o campo seria
         // somente-leitura E obrigatório, e ela não poderia mais ser salva nem faturada.
         carrierEditable: load.Status === "Planned" || !load.CarrierCardCode,
+        // GAC-1175: o tipo é imutável depois da criação — o campo só é exibido, e
+        // ShipmentLoadsUpdate nem sequer o recebe.
+        typeEditable: false,
+        LoadType: load.LoadType as string,
         Key: id,
         BranchCode: load.BranchCode as string,
         LoadDate: (load.LoadDate as string)?.slice(0, 10),

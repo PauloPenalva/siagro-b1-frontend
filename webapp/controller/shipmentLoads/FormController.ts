@@ -22,7 +22,14 @@ export type LoadForm = {
    * e a carga não poderia mais ser salva nem faturada.
    */
   carrierEditable: boolean,
+  /**
+   * GAC-1175: o tipo da carga decide que documento ela aceita e se ela fatura, e por isso só
+   * pode ser escolhido na CRIAÇÃO — trocá-lo com documentos já vinculados deixaria a carga com
+   * uma composição que o próprio tipo proíbe. Mesmo padrão de `ui>/typeEditable` no contrato.
+   */
+  typeEditable: boolean,
   Key?: string,
+  LoadType?: string,
   BranchCode?: string,
   LoadDate?: string,
   TruckCode?: string,
@@ -125,6 +132,12 @@ export abstract class FormController extends BaseController {
       action.setParameter("HasExcess", !!form.HasExcess);
       action.setParameter("FreightPrice", Number(form.FreightPrice ?? 0));
       action.setParameter("Comments", form.Comments ?? "");
+
+      // Só na criação: ShipmentLoadsUpdate não declara LoadType no EDM, e mandá-lo ali faria o
+      // OData rejeitar o corpo inteiro.
+      if (!form.isEdit) {
+        action.setParameter("LoadType", form.LoadType ?? "Normal");
+      }
 
       this.setBusy(true);
       await action.invoke();

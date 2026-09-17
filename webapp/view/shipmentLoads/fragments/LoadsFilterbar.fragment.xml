@@ -72,6 +72,20 @@
         </MultiComboBox>
       </fb:control>
     </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="loadType" label="Tipo" groupName="GroupLoadType" visibleInFilterBar="true">
+      <fb:control>
+        <Select
+          width="100%"
+          forceSelection="false"
+          selectedKey="{filterLoads>/LoadType}"
+          items="{path: 'loadTypes>/items', templateShareable: false}"
+        >
+          <!-- Sem item "Todos": o binding de `items` substitui itens estáticos. Vazio já é
+               "todos os tipos", e o botão Limpar da FilterBar devolve o campo a esse estado. -->
+          <core:ListItem key="{loadTypes>key}" text="{loadTypes>text}"/>
+        </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
     <fb:FilterGroupItem name="branchCode" label="Filial" groupName="GroupBranchCode" visibleInFilterBar="true">
       <fb:control>
         <Select

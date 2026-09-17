@@ -22,7 +22,13 @@
 				}"/>
 		</HBox>
 
-		<Text text="{Code} · {Branch/ShortName}" class="sapUiTinyMarginTop"/>
+		<Text
+			class="sapUiTinyMarginTop"
+			text="{Code} · {Branch/ShortName} · {
+				path: 'LoadType',
+				targetType: 'any',
+				formatter: '.formatter.formatShipmentLoadType'
+			}"/>
 		<Text text="{ItemName}"/>
 		<!-- targetType 'any' nos dois `visible`: numa expression binding a parte única é
 		     convertida para o tipo da propriedade alvo ANTES de a expressão rodar, e uma razão

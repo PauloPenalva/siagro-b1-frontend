@@ -494,6 +494,27 @@ export default {
     return m.get(value);
   },
 
+  /**
+   * Situacao da Entrada em Armazenagem. O enum so tem Confirmed/Cancelled, mas o termo da tela
+   * e ESTORNO: a acao chama "Estornar" e a auditoria grava "Estornado por/em". Feminino porque
+   * concorda com "entrada".
+   */
+  formatStorageEntryTransactionStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Confirmed", "Confirmada");
+    m.set("Cancelled", "Estornada");
+
+    return m.get(value);
+  },
+
+  stateStorageEntryTransactionStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Confirmed", "Success");
+    m.set("Cancelled", "Error");
+
+    return m.get(value);
+  },
+
   formatShipmentLoadStatus: (value: string) => {
     const m = new Map<string, string>();
     m.set("Planned", "Planejada");
@@ -502,6 +523,19 @@ export default {
     m.set("Invoiced", "Faturada");
     m.set("Cancelled", "Cancelada");
     m.set("Returned", "Devolvida");
+    m.set("Completed", "Concluída");
+
+    return m.get(value);
+  },
+
+  /**
+   * Natureza da carga (GAC-1175). Normal e a expedicao de sempre; Remocao e a carga que traz
+   * mercadoria de um armazem para a armazenagem propria e nao fatura.
+   */
+  formatShipmentLoadType: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Normal", "Normal");
+    m.set("Removal", "Remoção");
 
     return m.get(value);
   },
@@ -516,6 +550,8 @@ export default {
     // Warning, e não Error: devolver ao armazém é um encerramento legítimo, não uma falha — mas
     // precisa saltar aos olhos na lista, porque a mercadoria mudou de lugar.
     m.set("Returned", "Warning");
+    // A remocao concluida e um encerramento bem-sucedido, como a carga faturada.
+    m.set("Completed", "Success");
 
     return m.get(value);
   },
@@ -537,6 +573,10 @@ export default {
     m.set("Refused", "Recusa Registrada");
     m.set("ReturnedToWarehouse", "Devolvida ao Armazém");
     m.set("ReleaseChanged", "Troca de Liberação");
+    m.set("Completed", "Carga Concluída");
+    m.set("Reopened", "Carga Reaberta");
+    m.set("StorageEntriesAttached", "Entradas Vinculadas");
+    m.set("StorageEntriesDetached", "Entradas Desvinculadas");
 
     return m.get(value);
   },
@@ -565,6 +605,7 @@ export default {
     m.set("FreightPrice", "Valor do frete");
     m.set("Status", "Situação");
     m.set("CancellationReason", "Motivo do cancelamento");
+    m.set("LoadType", "Tipo de carga");
 
     return m.get(value) ?? value;
   },

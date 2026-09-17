@@ -52,8 +52,8 @@
         <ObjectStatus
           class="sapUiMediumMarginEnd"
           inverted="true"
-          text="{ path: 'Status', targetType: 'any' }"
-          state="{= ${path: 'Status', targetType: 'any'} === 'Cancelled' ? 'Error' : 'Success' }"/>
+          text="{ path: 'Status', targetType: 'any', formatter: 'formatter.formatStorageEntryTransactionStatus' }"
+          state="{ path: 'Status', targetType: 'any', formatter: 'formatter.stateStorageEntryTransactionStatus' }"/>
         <ObjectNumber
           class="sapUiMediumMarginEnd"
           number="{

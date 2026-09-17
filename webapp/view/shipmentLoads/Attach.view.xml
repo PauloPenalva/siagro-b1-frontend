@@ -27,7 +27,7 @@
 				}">
 				<t:extension>
 					<OverflowToolbar>
-						<Title text="Romaneios de Embarque Disponíveis"/>
+						<Title text="{= ${target>/LoadType} === 'Removal' ? 'Romaneios de Recebimento Disponíveis' : 'Romaneios de Embarque Disponíveis' }"/>
 						<ToolbarSpacer/>
 						<Button type="Emphasized" text="Vincular à Carga" icon="sap-icon://chain-link" press=".onAttachShipments"/>
 					</OverflowToolbar>

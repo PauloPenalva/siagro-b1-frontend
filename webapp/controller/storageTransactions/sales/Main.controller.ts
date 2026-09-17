@@ -29,6 +29,7 @@ const SHIPMENT_LOAD_STATUSES = [
   { key: "PartiallyInvoiced", text: "Faturada Parcial" },
   { key: "Invoiced", text: "Faturada" },
   { key: "Returned", text: "Devolvida" },
+  { key: "Completed", text: "Concluída" },
   { key: "Cancelled", text: "Cancelada" },
 ];
 
@@ -329,6 +330,8 @@ export default class Main extends CommonController {
         Open: "Carregada",
         PartiallyInvoiced: "Faturada Parcial",
         Invoiced: "Faturada",
+        Returned: "Devolvida",
+        Completed: "Concluída",
         Cancelled: "Cancelada",
       },
     });
