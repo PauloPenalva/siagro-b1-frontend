@@ -29,8 +29,19 @@ builder:
   customTasks:
     - name: ui5-tooling-transpile-task
       afterTask: replaceVersion
+      configuration:
+        # O dist/ inteiro é publicado no wwwroot do Gateway. Os .js.map (12 MB) e os .ts
+        # que eles referenciam (2,2 MB) não são usados pela aplicação em execução — só
+        # pelo DevTools aberto — e deixavam o fonte TypeScript exposto publicamente.
+        # Para depurar um build, gere um dist local sem estas duas opções.
+        omitSourceMaps: true
+        omitTSFromBuildResult: true
     - name: ui5-task-cachebuster-indexing
       afterTask: generateCachebusterInfo
+    # O cachebuster clona cada recurso para ~<timestamp>~/... e o clone perde as tags do
+    # original, trazendo os .ts de volta ao dist/. Tem que rodar depois dele.
+    - name: omit-typescript-sources
+      afterTask: ui5-task-cachebuster-indexing
 server:
   customMiddleware:
     - name: ui5-tooling-transpile-middleware
@@ -72,3 +83,11 @@ metadata:
   name: scales-sse-proxy
 middleware:
   path: lib/middleware/scalesSseProxy.js
+---
+specVersion: "4.0"
+kind: extension
+type: task
+metadata:
+  name: omit-typescript-sources
+task:
+  path: lib/tasks/omitTypeScriptSources.js
