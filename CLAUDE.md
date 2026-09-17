@@ -58,3 +58,42 @@ Routing (`manifest.json`) uses `sap.m.routing.Router` against the `app`/`pages` 
 `tsconfig.json`: `strict: true` but with `strictNullChecks: false` and `strictPropertyInitialization: false` explicitly turned back off (a common UI5-TS pattern) — don't assume full null-safety from the compiler. Path aliases: `siagrob1/*` → `./webapp/*`, `unit/*` → `./webapp/test/unit/*`, `integration/*` → `./webapp/test/integration/*`.
 
 `eslint.config.mjs` is a flat config extending `typescript-eslint`'s `recommendedTypeChecked` (type-aware linting) with no project-specific rule overrides — if lint fails, it's the standard typescript-eslint recommended rules, not a custom rule.
+
+## Commit messages
+
+Enforced by `.githooks/commit-msg` (wired via `core.hooksPath`; `.gitmessage` is the editor
+template). The hook rejects only degenerate subjects — it does not validate body or footer.
+
+```
+tipo(escopo): descrição em pt-BR, imperativo, minúscula, sem ponto final
+
+Por que a mudança foi necessária e qual regra de negócio ela implementa.
+O diff já mostra o QUÊ — o corpo existe para o PORQUÊ.
+
+Atenção: a armadilha que vai morder daqui a 6 meses, se houver.
+
+Refs: GAC-1177
+```
+
+- **Types** (closed): `feat` `fix` `refactor` `perf` `chore` `docs` `test`
+- **Scopes** (closed): `purchase-contract` `sales-contract` `shipment` `storage` `invoice`
+  `financial` `weighing` `partner` `master-data` `security` `reports` `sap` `platform`
+- **Language**: type and scope in English (they mirror the code); subject and body in **pt-BR**.
+- Only the subject is mandatory. Target 72 characters.
+- `Refs: GAC-####` whenever the change traces to a ticket.
+- The `DB:` trailer exists in the backend repo only (migrations do not live here).
+
+A change spanning both repos is two commits; keep the same subject wording and the same
+`Refs:` on both so the pair can be found later.
+
+**When Claude did the work, Claude drafts the full message** at the end of the task, without
+being asked, then commits it once the user has reviewed the change — see Version control in
+`SiagroB1/CLAUDE.md`. Never push.
+
+**After a fresh clone**, the hook file is present but inert — `core.hooksPath` lives in
+`.git/config`, which is not versioned. Re-arm it with:
+
+```bash
+git config --local core.hooksPath .githooks
+git config --local commit.template .gitmessage
+```
