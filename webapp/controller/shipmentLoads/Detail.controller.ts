@@ -84,6 +84,10 @@ export default class Detail extends BaseController {
 
     this._loadKey = id;
     this.bindElement(`/ShipmentLoads(${id})`);
+
+    // Passa a chave explícita: bindElement não espera a resposta, e currentLoadKey() leria a
+    // Key de um contexto ainda sem dados nesta primeira chamada.
+    void this.refreshAttachments(id);
   }
 
   async onRecalculate(): Promise<void> {

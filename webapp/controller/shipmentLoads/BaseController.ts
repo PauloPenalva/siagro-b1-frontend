@@ -10,6 +10,7 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Table from "sap/ui/table/Table";
 import FileUploader from "sap/ui/unified/FileUploader";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
 import CommonController from "siagrob1/controller/common/CommonController";
 
 /** Linha das listas do diálogo de descarga, em JSONModel estático. */
@@ -420,5 +421,155 @@ export abstract class BaseController extends CommonController {
       const binding = (this.byId(id) as Table)?.getBinding("rows") as ODataListBinding;
       binding?.refresh();
     });
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Anexos (GAC-1171)                                                   */
+  /* ------------------------------------------------------------------ */
+
+  private _attachmentDialog?: Dialog;
+
+  /**
+   * Carrega o grid de anexos pela Function `ShipmentLoadsAttachmentsList`. Chamar na rota casada
+   * da página e depois de gravar/excluir um anexo.
+   *
+   * Aceita a chave explícita porque, no primeiro carregamento, `bindElement` é síncrono e não
+   * espera a resposta: `currentLoadKey()` leria a Key do contexto OData ainda não resolvido e
+   * mandaria `LoadKey=undefined` para o servidor. Nas chamadas depois de gravar/excluir a carga
+   * já está aberta há tempo, então omitir o parâmetro e cair no contexto funciona normalmente.
+   *
+   * ⚠️ A Function é `Returns<IActionResult>()`, fora do pipeline OData que capitaliza por EDM:
+   * o DTO sai em camelCase (mesmo caso já visto na Conferência de Armazém), então normaliza para
+   * o Pascal que o grid lê, tolerando as duas caixas.
+   */
+  protected async refreshAttachments(loadKey: string = this.currentLoadKey()): Promise<void> {
+    const response = await fetch(
+      `${ServerRoutes.shipmentLoadsAttachmentsList}(LoadKey=${loadKey})`);
+
+    if (!response.ok) {
+      this.viewModel().setProperty("/attachments", []);
+      return;
+    }
+
+    const payload = await response.json() as { value?: unknown[] } | unknown[];
+    const rows = (Array.isArray(payload) ? payload : payload.value ?? []) as Record<string, unknown>[];
+
+    this.viewModel().setProperty("/attachments", rows.map(row => ({
+      Key: row.Key ?? row.key,
+      AttachmentType: row.AttachmentType ?? row.attachmentType,
+      Description: row.Description ?? row.description,
+      FileName: row.FileName ?? row.fileName,
+      CreatedBy: row.CreatedBy ?? row.createdBy,
+      CreatedAt: row.CreatedAt ?? row.createdAt,
+    })));
+  }
+
+  async onAddAttachment(): Promise<void> {
+    this.viewModel().setProperty("/attachmentDialog", {
+      attachmentType: "DischargeTicket",
+      description: "",
+    });
+
+    this._attachmentDialog ??= await Fragment.load({
+      id: this.getView().getId(),
+      name: "siagrob1.view.shipmentLoads.fragments.ShipmentLoadAttachmentDialog",
+      controller: this,
+    }) as Dialog;
+
+    this.getView().addDependent(this._attachmentDialog);
+    this._attachmentDialog.open();
+  }
+
+  onCloseAttachmentDialog(): void {
+    this._attachmentDialog?.close();
+  }
+
+  async onConfirmAttachment(): Promise<void> {
+    const form = this.viewModel().getProperty("/attachmentDialog") as {
+      attachmentType?: string;
+      description?: string;
+    };
+
+    const description = (form.description ?? "").trim();
+
+    if (description === "") {
+      MessageBox.alert("Informe a descrição do anexo.");
+      return;
+    }
+
+    const file = await this.loadAttachmentBase64(
+      this.byId("attachmentFileUploader") as FileUploader);
+
+    if (!file) {
+      MessageBox.alert("Selecione o arquivo.");
+      return;
+    }
+
+    this.setBusy(true);
+
+    try {
+      const action = (this.getModel() as ODataModel)
+        .bindContext("/ShipmentLoadsAttachmentUpload(...)");
+      action.setParameter("LoadKey", this.currentLoadKey());
+      action.setParameter("AttachmentType", form.attachmentType ?? "Other");
+      action.setParameter("Description", description);
+      action.setParameter("File", file.File);
+      action.setParameter("FileName", file.FileName);
+      action.setParameter("ContentType", file.ContentType);
+      await action.invoke();
+
+      MessageToast.show("Documento anexado.");
+      this.onCloseAttachmentDialog();
+      await this.refreshAttachments();
+    } catch (e) {
+      MessageBox.error((e as Error).message || "Erro ao anexar o documento.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  onDownloadAttachment(): void {
+    const row = this.selectedAttachmentRow();
+
+    if (!row) return;
+
+    window.open(`${ServerRoutes.shipmentLoadsAttachmentsDownload}(Key=${row.Key})`, "_blank");
+  }
+
+  async onRemoveAttachment(): Promise<void> {
+    const row = this.selectedAttachmentRow();
+
+    if (!row) return;
+
+    if (!await DialogHelper.confirmDialog("Excluir o anexo selecionado ?")) return;
+
+    this.setBusy(true);
+
+    try {
+      const action = (this.getModel() as ODataModel)
+        .bindContext("/ShipmentLoadsAttachmentDelete(...)");
+      action.setParameter("Key", row.Key);
+      await action.invoke();
+
+      MessageToast.show("Anexo excluído.");
+      await this.refreshAttachments();
+    } catch (e) {
+      MessageBox.error((e as Error).message || "Erro ao excluir o anexo.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  private selectedAttachmentRow(): { Key: string } | null {
+    const table = this.byId("loadAttachmentsTable") as Table;
+    const index = table?.getSelectedIndex?.() ?? -1;
+
+    if (index < 0) {
+      MessageBox.alert("Selecione um anexo.");
+      return null;
+    }
+
+    return table.getContextByIndex(index)?.getObject() as { Key: string };
   }
 }

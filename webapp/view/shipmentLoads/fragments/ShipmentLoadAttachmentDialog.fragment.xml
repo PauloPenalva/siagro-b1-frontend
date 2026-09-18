@@ -1,0 +1,55 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:u="sap.ui.unified">
+	<!-- Anexar documento à carga (GAC-1171). O buffer é um JSONModel próprio
+	     (`viewModel>/attachmentDialog/...`), nunca o contexto OData: a carga não tem essas
+	     propriedades no EDM, e o upload sempre vai por action. -->
+	<Dialog id="shipmentLoadAttachmentDialog" title="Anexar Documento" contentWidth="32rem">
+		<content>
+			<f:Form editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="Tipo">
+								<f:fields>
+									<Select forceSelection="false" selectedKey="{viewModel>/attachmentDialog/attachmentType}">
+										<core:ListItem key="LoadingTicket" text="Ticket de Carga"/>
+										<core:ListItem key="DischargeTicket" text="Ticket de Descarga"/>
+										<core:ListItem key="TaxDocument" text="Nota Fiscal"/>
+										<core:ListItem key="FreightDocument" text="Conhecimento de Frete"/>
+										<core:ListItem key="Other" text="Outro"/>
+									</Select>
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement label="Descrição">
+								<f:fields>
+									<Input value="{viewModel>/attachmentDialog/description}" maxLength="100"/>
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement label="Arquivo">
+								<f:fields>
+									<u:FileUploader
+										id="attachmentFileUploader"
+										placeholder="Selecione o arquivo"
+										buttonText="Procurar"
+										uploadOnChange="false"/>
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<beginButton>
+			<Button text="Anexar" type="Emphasized" press=".onConfirmAttachment"/>
+		</beginButton>
+		<endButton>
+			<Button text="Cancelar" press=".onCloseAttachmentDialog"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

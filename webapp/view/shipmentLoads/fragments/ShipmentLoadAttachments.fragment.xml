@@ -1,0 +1,50 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table">
+	<!-- Anexos tipados da carga (GAC-1171): ticket de carga, ticket de descarga, nota fiscal,
+	     conhecimento de frete ou outro. Não muda peso nem status — é só documento.
+
+	     Lido pela Function ShipmentLoadsAttachmentsList, não pelo modelo OData: a lista não é
+	     coleção componível ($filter/$orderby/$top não se aplicam) e não pode arrastar o binário.
+	     Por isso a linha vem de um JSONModel próprio (`viewModel>/attachments`), povoado pelo
+	     controller a cada `refreshAttachments()`. -->
+	<t:Table
+		id="loadAttachmentsTable"
+		selectionMode="Single"
+		selectionBehavior="Row"
+		class="sapUiSizeCondensed"
+		visibleRowCount="5"
+		rows="{viewModel>/attachments}">
+		<t:extension>
+			<OverflowToolbar>
+				<Title text="Anexos"/>
+				<ToolbarSpacer/>
+				<Button type="Transparent" text="Anexar" icon="sap-icon://add" press=".onAddAttachment"/>
+				<Button type="Transparent" text="Baixar" icon="sap-icon://download" press=".onDownloadAttachment"/>
+				<Button type="Transparent" text="Excluir" icon="sap-icon://delete" press=".onRemoveAttachment"/>
+			</OverflowToolbar>
+		</t:extension>
+		<t:columns>
+			<t:Column label="Tipo" width="12rem">
+				<t:template>
+					<Text wrapping="false" text="{ path: 'viewModel>AttachmentType', formatter: '.formatter.formatShipmentLoadAttachmentType' }"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Descrição" width="22rem">
+				<t:template><Text text="{viewModel>Description}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Arquivo" width="18rem">
+				<t:template><Text text="{viewModel>FileName}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Data" width="11rem">
+				<t:template>
+					<Text wrapping="false" text="{ path: 'viewModel>CreatedAt', formatter: '.formatter.formatDateTime' }"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Usuário" width="12rem">
+				<t:template><Text text="{viewModel>CreatedBy}" wrapping="false"/></t:template>
+			</t:Column>
+		</t:columns>
+	</t:Table>
+</core:FragmentDefinition>

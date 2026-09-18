@@ -399,6 +399,18 @@
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
 
+			<!-- Anexos (GAC-1171): grid de anexos tipados da carga. Sem `visible` condicional de
+			     propósito: anexo vale em qualquer carga, inclusive de Remoção e cancelada. -->
+			<uxap:ObjectPageSection titleUppercase="false" title="Anexos">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<uxap:blocks>
+							<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.ShipmentLoadAttachments" type="XML"/>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
 			<uxap:ObjectPageSection titleUppercase="false" title="Devoluções ao Armazém"
 				visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' }">
 				<uxap:subSections>

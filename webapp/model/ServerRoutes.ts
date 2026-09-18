@@ -198,4 +198,10 @@ export default {
   warehouseReconciliationsAttachmentsDownload: '/odata/WarehouseReconciliationsAttachmentsDownload',
   warehouseReconciliationsDistributeLoss: '/odata/WarehouseReconciliationsDistributeLoss',
   warehouseReconciliationsListReleases: '/odata/WarehouseReconciliationsListReleases',
+
+  // Anexos da carga (GAC-1171): sem EntitySet no EDM de propósito — Function/actions dedicadas,
+  // e o download é sempre por Key.
+  shipmentLoadsAttachmentsList: '/odata/ShipmentLoadsAttachmentsList',
+  shipmentLoadsAttachmentUpload: '/odata/ShipmentLoadsAttachmentUpload',
+  shipmentLoadsAttachmentsDownload: '/odata/ShipmentLoadsAttachmentsDownload',
 }
