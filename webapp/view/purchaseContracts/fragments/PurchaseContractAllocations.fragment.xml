@@ -40,30 +40,30 @@
       </OverflowToolbar>
     </t:extension>
     <t:columns>
-      <t:Column label="Filial">
+      <t:Column label="Filial" tooltip="Filial">
         <t:template>
-          <Text text="{allocationModel>BranchName}" />
+          <Text text="{allocationModel>BranchName}" tooltip="{allocationModel>BranchName}" wrapping="false" />
         </t:template>
       </t:Column>
-      <t:Column label="Romaneio">
+      <t:Column label="Romaneio" tooltip="Romaneio">
         <t:template>
-          <Text text="{allocationModel>StorageTransactionCode}" />
+          <Text text="{allocationModel>StorageTransactionCode}" tooltip="{allocationModel>StorageTransactionCode}" wrapping="false" />
         </t:template>
       </t:Column>
-      <t:Column label="Data">
+      <t:Column label="Data" tooltip="Data">
         <t:template>
-          <Text text="{
+          <Text wrapping="false" text="{
             path: 'allocationModel>StorageTransactionDate',
             formatter: '.formatter.formatDate'
           }" />
         </t:template>
       </t:Column>
-      <t:Column label="Tipo">
+      <t:Column label="Tipo" tooltip="Tipo">
         <t:template>
-          <Text text="{allocationModel>StorageTransactionTypeName}" />
+          <Text text="{allocationModel>StorageTransactionTypeName}" tooltip="{allocationModel>StorageTransactionTypeName}" wrapping="false" />
         </t:template>
       </t:Column>
-      <t:Column label="Origem" width="10rem">
+      <t:Column label="Origem" tooltip="Origem" width="10rem">
         <t:template>
           <ObjectStatus
             text="{ path: 'allocationModel>Origin', formatter: '.formatter.allocationOriginText' }"
@@ -75,14 +75,14 @@
             }" />
         </t:template>
       </t:Column>
-      <t:Column label="Motivo" width="12rem">
+      <t:Column label="Motivo" tooltip="Motivo" width="12rem">
         <t:template>
-          <Text text="{allocationModel>ReasonDescription}" wrapping="false" />
+          <Text text="{allocationModel>ReasonDescription}" tooltip="{allocationModel>ReasonDescription}" wrapping="false" />
         </t:template>
       </t:Column>
-      <t:Column label="Quantidade" hAlign="End">
+      <t:Column label="Quantidade" tooltip="Quantidade" hAlign="End">
         <t:template>
-          <Text text="{
+          <Text wrapping="false" text="{
             path: 'allocationModel>Volume',
             type: 'sap.ui.model.type.Float',
             formatOptions: {
@@ -94,29 +94,29 @@
           }" />   
         </t:template>
       </t:Column>
-      <t:Column label="Un.Med.">
+      <t:Column label="Un.Med." tooltip="Un.Med.">
         <t:template>
-          <Text text="{allocationModel>UnitOfMeasureCode}" />
+          <Text text="{allocationModel>UnitOfMeasureCode}" tooltip="{allocationModel>UnitOfMeasureCode}" wrapping="false" />
         </t:template>
       </t:Column>
-      <t:Column label="Armazem">
+      <t:Column label="Armazem" tooltip="Armazem">
         <t:template>
-          <Text text="{allocationModel>WarehouseCode}" />
+          <Text text="{allocationModel>WarehouseCode}" tooltip="{allocationModel>WarehouseCode}" wrapping="false" />
         </t:template>
       </t:Column>
-      <t:Column label="Nome" width="15rem">
+      <t:Column label="Nome" tooltip="Nome" width="15rem">
         <t:template>
-          <Text text="{allocationModel>WarehouseName}" wrapping="false" />
+          <Text text="{allocationModel>WarehouseName}" tooltip="{allocationModel>WarehouseName}" wrapping="false" />
         </t:template>
       </t:Column>
-      <t:Column label="Placa">
+      <t:Column label="Placa" tooltip="Placa">
         <t:template>
-          <Text text="{allocationModel>TruckCode}" />
+          <Text text="{allocationModel>TruckCode}" tooltip="{allocationModel>TruckCode}" wrapping="false" />
         </t:template>
       </t:Column>
-      <t:Column label="Nota Fiscal Venda">
+      <t:Column label="Nota Fiscal Venda" tooltip="Nota Fiscal Venda">
         <t:template>
-          <Text text="{allocationModel>NotaFiscalVenda}" />
+          <Text text="{allocationModel>NotaFiscalVenda}" tooltip="{allocationModel>NotaFiscalVenda}" wrapping="false" />
         </t:template>
       </t:Column>
     </t:columns>
