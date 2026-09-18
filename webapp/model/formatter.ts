@@ -243,6 +243,45 @@ const formatter = {
   },
 
   /**
+   * Peso em 3 casas decimais — a escala em que a balança grava o peso (GAC-1171).
+   *
+   * Ao contrário de formatDecimal, NÃO lança em valor inválido: um formatter que lança quebra
+   * a tabela inteira, e aqui um vazio basta.
+   */
+  formatDecimal3: (value: number | string): string => {
+    const num = Number(value ?? 0);
+    return Number.isFinite(num) ? formatter.formatDecimal(num, 3) : "";
+  },
+
+  /**
+   * Diferença entre o peso dos TICKETS e o peso conferido do relatório da trading, exibida
+   * SOMENTE quando os dois são maiores que zero (GAC-1171).
+   *
+   * Vazio e zero dizem coisas diferentes: sem os dois lados não há confronto, e um "0,000" ali
+   * afirmaria que os números batem. Por isso a ausência devolve string vazia.
+   */
+  formatTicketDifference: (ticketQuantity: number | string, deliveredQuantity: number | string): string => {
+    const ticket = Number(ticketQuantity ?? 0);
+    const delivered = Number(deliveredQuantity ?? 0);
+
+    if (!(ticket > 0) || !(delivered > 0)) return "";
+
+    const difference = ticket - delivered;
+
+    return `${difference > 0 ? "+" : ""}${formatter.formatDecimal3(difference)}`;
+  },
+
+  /** Vermelho quando ticket e relatório divergem; neutro quando batem ou falta um lado. */
+  stateTicketDifference: (ticketQuantity: number | string, deliveredQuantity: number | string): string => {
+    const ticket = Number(ticketQuantity ?? 0);
+    const delivered = Number(deliveredQuantity ?? 0);
+
+    if (!(ticket > 0) || !(delivered > 0)) return "None";
+
+    return ticket === delivered ? "Success" : "Error";
+  },
+
+  /**
    * "39.500,000 de 40.000,000 (-500,000)" — descarregado, embarcado e a diferença entre os dois
    * (GAC-1171). Vazio enquanto nenhum ticket foi registrado: zero aqui pareceria "chegou nada".
    *

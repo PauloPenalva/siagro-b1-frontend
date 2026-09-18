@@ -213,6 +213,52 @@
 						</t:template>
 					</t:Column>
           <t:Column
+						label="Qtd. Ticket"
+						hAlign="Center"
+            width="7rem"
+						>
+						<t:template>
+							<!--
+								Peso dos TICKETS de descarga, somado pelo backend. Somente leitura: o numero
+								vem do documento do transportador e nao se confunde com o relatorio da trading
+								ao lado. Wrapping desligado porque em sap.ui.table texto sem ele e CORTADO.
+							-->
+							<Text
+								wrapping="false"
+								text="{ path: 'TicketDeliveredQuantity', targetType: 'any', formatter: '.formatter.formatDecimal3' }"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Diferença Ticket"
+						hAlign="Center"
+            width="8rem"
+						>
+						<t:template>
+							<!--
+								Ticket menos conferido, so quando os DOIS sao maiores que zero. Vazio significa
+								"ainda nao ha confronto"; zero significaria "confere", que e outra afirmacao.
+								targetType 'any' nas duas partes: sao Edm.Decimal e sem isso chega string,
+								fazendo a comparacao com zero mentir.
+							-->
+							<ObjectStatus
+								inverted="true"
+								state="{
+                  parts: [
+                    { path: 'TicketDeliveredQuantity', targetType: 'any' },
+                    { path: 'DeliveredQuantity', targetType: 'any' }
+                  ],
+                  formatter: '.formatter.stateTicketDifference'
+                }"
+								text="{
+                  parts: [
+                    { path: 'TicketDeliveredQuantity', targetType: 'any' },
+                    { path: 'DeliveredQuantity', targetType: 'any' }
+                  ],
+                  formatter: '.formatter.formatTicketDifference'
+                }"/>
+						</t:template>
+					</t:Column>
+          <t:Column
 						label="Diferença"
 						hAlign="Center"
             width="7rem"
