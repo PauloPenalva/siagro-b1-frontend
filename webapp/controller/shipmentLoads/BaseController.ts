@@ -414,6 +414,14 @@ export abstract class BaseController extends CommonController {
    * alterações, porque toda mutação de descarga grava linha nele.
    */
   protected refreshDischarges(): void {
+    // ⚠️ Lida ANTES do `context.refresh()` logo abaixo: o `refresh()` invalida o cache da entidade
+    // e, no mesmo tick, `getProperty("Key")` passa a devolver `undefined` até a nova resposta
+    // chegar. `refreshAttachments()` chamado depois disso sem chave explícita mandava
+    // `LoadKey=undefined` ao servidor (404 confirmado no navegador) — currentLoadKey() aqui, ANTES
+    // do refresh, ainda lê o mesmo contexto já carregado que serviu de LoadKey/Key para a action
+    // que acabou de gravar/excluir o ticket, logo acima na pilha de chamada.
+    const loadKey = this.currentLoadKey();
+
     (this.getView().getBindingContext() as Context)?.refresh();
 
     ["loadDischargesTable", "shipmentLoadChangeLogsTable"].forEach(id => {
@@ -426,7 +434,7 @@ export abstract class BaseController extends CommonController {
     // no-op, porque não há requisição nenhuma por trás dela. Sem chamar `refreshAttachments()` de
     // verdade, o anexo que sobe junto com o ticket só apareceria recarregando a página (F5).
     if (this.byId("loadAttachmentsTable")) {
-      this.refreshAttachments().catch(
+      this.refreshAttachments(loadKey).catch(
         () => MessageBox.error("Erro ao atualizar a lista de anexos."));
     }
   }
