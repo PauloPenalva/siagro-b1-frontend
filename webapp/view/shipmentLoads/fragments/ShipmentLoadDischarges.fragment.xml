@@ -16,6 +16,12 @@
 	     refresh() depois de gravar não recarrega nada. O $expand de um nível na nota fica aqui
 	     mesmo, porque o número dela é atribuído depois e denormalizar daria um snapshot velho.
 
+	     O contrato vem de um $expand de DOIS níveis (SalesInvoiceItem/SalesContract/Code), que
+	     ainda cabe no MaxExpansionDepth padrão do [EnableQuery] — medido contra o servidor: esta
+	     consulta responde 200 e só o terceiro nível devolve 400 "$expand path which is too deep".
+	     Um nível a mais aqui exigiria MaxExpansionDepth explícito no controller, como o
+	     GetTransactions de ShipmentLoadsController.
+
 	     O `$select` explícito também é obrigatório, e é a armadilha menos visível das três: com
 	     `autoExpandSelect`, ele é montado a partir dos BINDINGS DE CONTROLE. `SalesInvoiceKey` e
 	     `SalesInvoiceItemKey` não são lidos por nenhuma coluna, só pelo controller ao abrir a
@@ -41,7 +47,7 @@
 			parameters: {
 				'$$ownRequest': true,
 				'$select': 'Key,TicketNumber,DischargeDate,DischargedQuantity,AttachmentKey,Comments,CreatedBy,SalesInvoiceKey,SalesInvoiceItemKey',
-				'$expand': 'SalesInvoice($select=Key,InvoiceNumber),SalesInvoiceItem($select=Key,ItemCode,ItemName)'
+				'$expand': 'SalesInvoice($select=Key,InvoiceNumber),SalesInvoiceItem($select=Key,ItemCode,ItemName,SalesContractKey;$expand=SalesContract($select=Key,Code))'
 			},
 			sorter: { path: 'DischargeDate', descending: true }
 		}">
@@ -89,6 +95,9 @@
 			</t:Column>
 			<t:Column label="Produto" width="18rem">
 				<t:template><Text text="({SalesInvoiceItem/ItemCode}) {SalesInvoiceItem/ItemName}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Contrato" width="10rem">
+				<t:template><Text text="{SalesInvoiceItem/SalesContract/Code}" wrapping="false"/></t:template>
 			</t:Column>
 			<t:Column label="Peso Descarregado" hAlign="End" width="10rem">
 				<t:template>
