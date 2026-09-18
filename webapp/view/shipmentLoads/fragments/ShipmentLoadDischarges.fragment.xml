@@ -16,6 +16,12 @@
 	     refresh() depois de gravar não recarrega nada. O $expand de um nível na nota fica aqui
 	     mesmo, porque o número dela é atribuído depois e denormalizar daria um snapshot velho.
 
+	     O `$select` explícito também é obrigatório, e é a armadilha menos visível das três: com
+	     `autoExpandSelect`, ele é montado a partir dos BINDINGS DE CONTROLE. `SalesInvoiceKey` e
+	     `SalesInvoiceItemKey` não são lidos por nenhuma coluna, só pelo controller ao abrir a
+	     edição — sem listá-los aqui chegam `undefined`, e os dois Select do diálogo abrem em
+	     branco, sem erro nenhum. Mesmo motivo do `$select` do `loadTransactionsTable`.
+
 	     O `sorter` também é obrigatório, por menos óbvio: o OrderByDescending do service só vale
 	     na consulta sem paginação. A sap.ui.table pede $skip/$top, e aí o [EnableQuery] reordena
 	     por chave para estabilizar a paginação. -->
@@ -34,6 +40,7 @@
 			path: 'Discharges',
 			parameters: {
 				'$$ownRequest': true,
+				'$select': 'Key,TicketNumber,DischargeDate,DischargedQuantity,AttachmentKey,Comments,CreatedBy,SalesInvoiceKey,SalesInvoiceItemKey',
 				'$expand': 'SalesInvoice($select=Key,InvoiceNumber),SalesInvoiceItem($select=Key,ItemCode,ItemName)'
 			},
 			sorter: { path: 'DischargeDate', descending: true }

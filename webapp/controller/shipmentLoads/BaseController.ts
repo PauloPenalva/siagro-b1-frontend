@@ -94,6 +94,19 @@ export abstract class BaseController extends CommonController {
   }
 
   /**
+   * Hoje em `yyyy-MM-dd`, montado com os getters LOCAIS.
+   *
+   * ⚠️ Nunca `toISOString()`: ele devolve o dia em UTC, e das 21h em diante no horário de
+   * Brasília o diálogo abriria com a data de amanhã.
+   */
+  private todayIso(): string {
+    const today = new Date();
+    const pad = (value: number) => String(value).padStart(2, "0");
+
+    return `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+  }
+
+  /**
    * Carrega notas e itens da carga para um JSONModel ANTES de abrir o diálogo: Select com
    * `selectedKey` sobre coleção OData renderiza vazio, com o estado interno correto e o DOM
    * desatualizado.
@@ -113,7 +126,7 @@ export abstract class BaseController extends CommonController {
       undefined,
       {
         $select: "Key,InvoiceNumber,InvoiceStatus",
-        $expand: "Items($select=Key,ItemCode,ItemName,Quantity)",
+        $expand: "Items($select=Key,ItemCode,ItemName)",
       }
     );
 
@@ -173,7 +186,7 @@ export abstract class BaseController extends CommonController {
         key: null,
         ticketNumber: "",
         // A action exige yyyy-MM-dd, que é o `valueFormat` do DatePicker.
-        dischargeDate: new Date().toISOString().slice(0, 10),
+        dischargeDate: this.todayIso(),
         quantity: null,
         comments: "",
         salesInvoiceKey: firstInvoice,

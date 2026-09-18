@@ -47,12 +47,16 @@
 									<f:fields>
 										<!-- Itens vindos de JSONModel estático, carregado ANTES de abrir:
 										     Select com selectedKey sobre coleção OData renderiza vazio, com
-										     o estado interno certo e o DOM desatualizado. -->
+										     o estado interno certo e o DOM desatualizado.
+
+										     `items` vem ANTES de `selectedKey` de propósito: na reabertura
+										     do diálogo os bindings são atualizados na ordem em que estão
+										     escritos, e a seleção precisa encontrar a lista já montada. -->
 										<Select
 											forceSelection="false"
 											required="true"
-											selectedKey="{viewModel>/dischargeDialog/salesInvoiceKey}"
 											items="{viewModel>/dischargeDialog/invoices}"
+											selectedKey="{viewModel>/dischargeDialog/salesInvoiceKey}"
 											change=".onDischargeInvoiceChange"
 											enabled="{= !${viewModel>/dischargeDialog/key} }">
 											<core:ListItem key="{viewModel>Key}" text="{viewModel>Text}"/>
@@ -64,8 +68,8 @@
 										<Select
 											forceSelection="false"
 											required="true"
-											selectedKey="{viewModel>/dischargeDialog/salesInvoiceItemKey}"
 											items="{viewModel>/dischargeDialog/items}"
+											selectedKey="{viewModel>/dischargeDialog/salesInvoiceItemKey}"
 											enabled="{= !${viewModel>/dischargeDialog/key} }">
 											<core:ListItem key="{viewModel>Key}" text="{viewModel>Text}"/>
 										</Select>

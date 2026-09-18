@@ -6,15 +6,10 @@ import {
   allocationOriginTooltip,
 } from "siagrob1/helpers/AllocationOriginHelpers";
 
-/** Peso em pt-BR com as 3 casas que a balança grava. Uso interno dos formatters daqui. */
-const formatWeight = (value: number): string =>
-  Number(value ?? 0).toLocaleString("pt-BR", {
-    minimumFractionDigits: 3,
-    maximumFractionDigits: 3,
-  });
-
-
-export default {
+// O objeto tem nome para que um formatter possa chamar outro (ver
+// `formatDischargedAgainstLoaded`, que reusa `formatDecimal`); a exportação default continua
+// sendo ele mesmo, então nenhum import muda.
+const formatter = {
 	formatValue: (value: string) => {
 		return value?.toUpperCase();
 	},
@@ -262,11 +257,17 @@ export default {
 
     if (!(dischargedValue > 0)) return "";
 
-    const loadedValue = Number(loaded ?? 0);
+    // `formatDecimal` LANÇA quando o número não é válido, e um formatter que lança quebra o
+    // binding inteiro — daí o embarcado ilegível virar 0 em vez de subir a exceção. O
+    // descarregado já saiu por cima, no early return.
+    const parsedLoaded = Number(loaded ?? 0);
+    const loadedValue = Number.isFinite(parsedLoaded) ? parsedLoaded : 0;
     const difference = dischargedValue - loadedValue;
 
-    return `${formatWeight(dischargedValue)} de ${formatWeight(loadedValue)} `
-      + `(${difference > 0 ? "+" : ""}${formatWeight(difference)})`;
+    // 3 casas: é a escala em que a balança grava o peso.
+    return `${formatter.formatDecimal(dischargedValue, 3)} `
+      + `de ${formatter.formatDecimal(loadedValue, 3)} `
+      + `(${difference > 0 ? "+" : ""}${formatter.formatDecimal(difference, 3)})`;
   },
 
   /** Rótulo pt-BR do tipo de anexo da carga. O código fica em inglês, no enum do backend. */
@@ -1300,3 +1301,5 @@ export default {
   allocationOriginText,
   allocationOriginTooltip,
 };
+
+export default formatter;
