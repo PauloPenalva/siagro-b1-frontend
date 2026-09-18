@@ -47,6 +47,20 @@
 				unit="{UnitOfMeasureCode}"/>
 		</HBox>
 
+		<!-- Descarregado x embarcado (GAC-1171): a soma dos tickets de descarga contra o peso
+		     que saiu daqui. Vazio enquanto nenhum ticket foi registrado, porque zero no cartão
+		     pareceria "não chegou nada". -->
+		<ObjectAttribute
+			title="Descarregado (tickets)"
+			visible="{= ${path: 'DischargedQuantity', targetType: 'any'} > 0 }"
+			text="{
+				parts: [
+					{ path: 'DischargedQuantity', targetType: 'any' },
+					{ path: 'TotalQuantity', targetType: 'any' }
+				],
+				formatter: '.formatter.formatDischargedAgainstLoaded'
+			}"/>
+
 		<Text text="{CarrierName}" visible="{= !!${path: 'CarrierName', targetType: 'any'} }"/>
 	</VBox>
 </core:FragmentDefinition>

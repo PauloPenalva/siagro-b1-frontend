@@ -1,8 +1,411 @@
+import Dialog from "sap/m/Dialog";
+import MessageBox from "sap/m/MessageBox";
+import MessageToast from "sap/m/MessageToast";
+import { Button$PressEvent } from "sap/m/Button";
+import Fragment from "sap/ui/core/Fragment";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import Context from "sap/ui/model/odata/v4/Context";
+import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
+import ODataModel from "sap/ui/model/odata/v4/ODataModel";
+import Table from "sap/ui/table/Table";
+import FileUploader from "sap/ui/unified/FileUploader";
+import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
 
+/** Linha das listas do diálogo de descarga, em JSONModel estático. */
+type DischargeOption = { Key: string; Text: string; InvoiceKey?: string };
+
+/** Arquivo do anexo já em base64, no formato que as actions da carga esperam. */
+type AttachmentPayload = { File: string; FileName: string; ContentType: string };
+
+/** Buffer JSON do diálogo de descarga. `key` nulo significa inclusão. */
+type DischargeForm = {
+  title: string;
+  key?: string;
+  ticketNumber?: string;
+  dischargeDate?: string;
+  quantity?: number;
+  comments?: string;
+  salesInvoiceKey?: string;
+  salesInvoiceItemKey?: string;
+  invoices: DischargeOption[];
+  allItems: DischargeOption[];
+  items: DischargeOption[];
+};
+
 /**
- * Ponto de extensão da Montagem de Carga, no mesmo formato do `shipmentBilling`.
+ * Ponto de extensão da Montagem de Carga, no mesmo formato do `shipmentBilling`. Guarda as
+ * descargas (GAC-1171) e os anexos, para não engordar mais o `Detail.controller`.
  */
 export abstract class BaseController extends CommonController {
 
+  private _dischargeDialog: Dialog;
+
+  /** Trava ANTES do primeiro await: duplo clique gravaria o ticket duas vezes. */
+  private _dischargeInFlight = false;
+
+  /** Chave da carga aberta, lida do contexto do elemento da página. */
+  protected currentLoadKey(): string {
+    const context = this.getView().getBindingContext() as Context;
+    return context?.getProperty("Key") as string;
+  }
+
+  /**
+   * Lê o arquivo escolhido no FileUploader como base64, sem o prefixo `data:`.
+   *
+   * Resolve com `null` quando nada foi escolhido — registrar o ticket SEM anexo é o caminho
+   * feliz. O `| null` não entra na assinatura porque o projeto compila com `strictNullChecks`
+   * desligado, e o eslint recusa a união redundante.
+   */
+  protected loadAttachmentBase64(uploader?: FileUploader): Promise<AttachmentPayload> {
+    // `oFileUpload` é o <input type="file"> que o FileUploader renderiza: não há getter público
+    // para o arquivo escolhido quando o upload não passa pelo próprio controle.
+    const input = (uploader as unknown as { oFileUpload?: HTMLInputElement })?.oFileUpload;
+    const file = input?.files?.[0];
+
+    if (!file) return Promise.resolve(null);
+
+    return new Promise<AttachmentPayload>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        // `readAsDataURL` sempre resolve com string; o tipo do FileReader é o genérico.
+        const text = reader.result as string;
+        resolve({
+          File: text.includes(",") ? text.split(",")[1] : text,
+          FileName: file.name,
+          ContentType: file.type || "application/octet-stream",
+        });
+      };
+      reader.onerror = () => reject(new Error("Não foi possível ler o arquivo selecionado."));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  private dischargesTable(): Table {
+    return this.byId("loadDischargesTable") as Table;
+  }
+
+  private dischargeFileUploader(): FileUploader {
+    return this.byId("dischargeFileUploader") as FileUploader;
+  }
+
+  private viewModel(): JSONModel {
+    return this.getModel("viewModel") as JSONModel;
+  }
+
+  /**
+   * Carrega notas e itens da carga para um JSONModel ANTES de abrir o diálogo: Select com
+   * `selectedKey` sobre coleção OData renderiza vazio, com o estado interno correto e o DOM
+   * desatualizado.
+   *
+   * Nota cancelada fica de fora — o ticket dela não teria em que somar.
+   */
+  private async loadInvoiceOptionsAsync(): Promise<{
+    invoices: DischargeOption[];
+    items: DischargeOption[];
+  }> {
+    const model = this.getModel() as ODataModel;
+
+    const binding = model.bindList(
+      `/ShipmentLoads(${this.currentLoadKey()})/Invoices`,
+      undefined,
+      undefined,
+      undefined,
+      {
+        $select: "Key,InvoiceNumber,InvoiceStatus",
+        $expand: "Items($select=Key,ItemCode,ItemName,Quantity)",
+      }
+    );
+
+    // A coleção inteira, e não a janela visível: a lista alimenta um Select, não uma tabela.
+    const contexts = await binding.requestContexts(0, Infinity);
+
+    const invoices: DischargeOption[] = [];
+    const items: DischargeOption[] = [];
+
+    contexts.forEach(context => {
+      const invoice = context.getObject() as {
+        Key: string;
+        InvoiceNumber?: string;
+        InvoiceStatus?: string;
+        Items?: { Key: string; ItemCode?: string; ItemName?: string }[];
+      };
+
+      if (invoice.InvoiceStatus === "Cancelled") return;
+
+      invoices.push({ Key: invoice.Key, Text: invoice.InvoiceNumber || "(sem número)" });
+
+      (invoice.Items ?? []).forEach(item => {
+        items.push({
+          Key: item.Key,
+          InvoiceKey: invoice.Key,
+          Text: `(${item.ItemCode ?? ""}) ${item.ItemName ?? ""}`.trim(),
+        });
+      });
+    });
+
+    return { invoices, items };
+  }
+
+  async onAddDischarge(): Promise<void> {
+    if (!this.getView().getBindingContext()) {
+      MessageBox.alert("Carga não carregada.");
+      return;
+    }
+
+    this.setBusy(true);
+
+    try {
+      const options = await this.loadInvoiceOptionsAsync();
+
+      if (options.invoices.length === 0) {
+        MessageBox.alert(
+          "Esta carga ainda não tem documento de saída. O ticket de descarga é registrado "
+          + "contra uma nota da carga.");
+        return;
+      }
+
+      const firstInvoice = options.invoices[0].Key;
+      const itemsOfFirst = options.items.filter(i => i.InvoiceKey === firstInvoice);
+
+      this.viewModel().setProperty("/dischargeDialog", {
+        title: "Registrar Descarga",
+        key: null,
+        ticketNumber: "",
+        // A action exige yyyy-MM-dd, que é o `valueFormat` do DatePicker.
+        dischargeDate: new Date().toISOString().slice(0, 10),
+        quantity: null,
+        comments: "",
+        salesInvoiceKey: firstInvoice,
+        salesInvoiceItemKey: itemsOfFirst.length === 1 ? itemsOfFirst[0].Key : null,
+        invoices: options.invoices,
+        allItems: options.items,
+        items: itemsOfFirst,
+      } as DischargeForm);
+
+      await this.openDischargeDialog();
+    } catch (e) {
+      MessageBox.error((e as Error).message || "Erro ao preparar o registro de descarga.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  async onEditDischarge(): Promise<void> {
+    const context = this.selectedDischargeContext();
+
+    if (!context) return;
+
+    this.setBusy(true);
+
+    try {
+      const options = await this.loadInvoiceOptionsAsync();
+      const invoiceKey = context.getProperty("SalesInvoiceKey") as string;
+
+      this.viewModel().setProperty("/dischargeDialog", {
+        title: "Editar Descarga",
+        key: context.getProperty("Key") as string,
+        ticketNumber: context.getProperty("TicketNumber") as string,
+        // A data chega com hora (datetime2); a action só aceita o dia.
+        dischargeDate: ((context.getProperty("DischargeDate") as string) ?? "").slice(0, 10),
+        // Edm.Decimal chega como STRING: sem o Number() o tipo Float do campo recusaria o valor.
+        quantity: Number(context.getProperty("DischargedQuantity") ?? 0),
+        comments: (context.getProperty("Comments") as string) ?? "",
+        salesInvoiceKey: invoiceKey,
+        salesInvoiceItemKey: context.getProperty("SalesInvoiceItemKey") as string,
+        invoices: options.invoices,
+        allItems: options.items,
+        items: options.items.filter(i => i.InvoiceKey === invoiceKey),
+      } as DischargeForm);
+
+      await this.openDischargeDialog();
+    } catch (e) {
+      MessageBox.error((e as Error).message || "Erro ao abrir a descarga.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  /** Troca de nota refiltra os itens em memória — nada volta ao servidor. */
+  onDischargeInvoiceChange(): void {
+    const viewModel = this.viewModel();
+    const invoiceKey = viewModel.getProperty("/dischargeDialog/salesInvoiceKey") as string;
+    const all = (viewModel.getProperty("/dischargeDialog/allItems") as DischargeOption[]) ?? [];
+    const items = all.filter(i => i.InvoiceKey === invoiceKey);
+
+    viewModel.setProperty("/dischargeDialog/items", items);
+    viewModel.setProperty(
+      "/dischargeDialog/salesInvoiceItemKey", items.length === 1 ? items[0].Key : null);
+  }
+
+  /**
+   * O fragmento é carregado com o id da VIEW, e não com um id próprio: é assim que o
+   * `this.byId("dischargeFileUploader")` alcança o campo de arquivo depois.
+   */
+  private async openDischargeDialog(): Promise<void> {
+    if (!this._dischargeDialog) {
+      this._dischargeDialog = await Fragment.load({
+        id: this.getView().getId(),
+        name: "siagrob1.view.shipmentLoads.fragments.ShipmentLoadDischargeDialog",
+        controller: this,
+      }) as Dialog;
+
+      this.getView().addDependent(this._dischargeDialog);
+    }
+
+    // O FileUploader guarda o arquivo da abertura anterior: sem limpar, o ticket seguinte
+    // subiria com o anexo do ticket passado.
+    this.dischargeFileUploader()?.clear();
+
+    this._dischargeDialog.open();
+  }
+
+  onCloseDischargeDialog(): void {
+    this._dischargeDialog?.close();
+  }
+
+  async onConfirmDischarge(): Promise<void> {
+    if (this._dischargeInFlight) return;
+
+    const form = this.viewModel().getProperty("/dischargeDialog") as DischargeForm;
+
+    const ticketNumber = (form.ticketNumber ?? "").trim();
+    const dischargeDate = (form.dischargeDate ?? "").trim();
+    const quantity = Number(form.quantity ?? 0);
+
+    if (ticketNumber === "") {
+      MessageBox.alert("Informe o número do ticket.");
+      return;
+    }
+
+    if (dischargeDate === "") {
+      MessageBox.alert("Informe a data da descarga.");
+      return;
+    }
+
+    if (!(quantity > 0)) {
+      MessageBox.alert("Informe o peso descarregado.");
+      return;
+    }
+
+    if (!form.key && (!form.salesInvoiceKey || !form.salesInvoiceItemKey)) {
+      MessageBox.alert("Selecione o documento de saída e o item.");
+      return;
+    }
+
+    this._dischargeInFlight = true;
+    this._dischargeDialog?.setBusy(true);
+    this.setBusy(true);
+
+    try {
+      const model = this.getModel() as ODataModel;
+
+      if (form.key) {
+        const action = model.bindContext("/ShipmentLoadsDischargeUpdate(...)");
+        action.setParameter("Key", form.key);
+        action.setParameter("TicketNumber", ticketNumber);
+        action.setParameter("DischargeDate", dischargeDate);
+        action.setParameter("Quantity", quantity);
+        action.setParameter("Comments", form.comments ?? "");
+        await action.invoke();
+        MessageToast.show("Descarga alterada.");
+      } else {
+        const file = await this.loadAttachmentBase64(this.dischargeFileUploader());
+
+        const action = model.bindContext("/ShipmentLoadsDischargeCreate(...)");
+        action.setParameter("LoadKey", this.currentLoadKey());
+        action.setParameter("SalesInvoiceKey", form.salesInvoiceKey);
+        action.setParameter("SalesInvoiceItemKey", form.salesInvoiceItemKey);
+        action.setParameter("TicketNumber", ticketNumber);
+        action.setParameter("DischargeDate", dischargeDate);
+        action.setParameter("Quantity", quantity);
+        action.setParameter("Comments", form.comments ?? "");
+
+        if (file) {
+          action.setParameter("File", file.File);
+          action.setParameter("FileName", file.FileName);
+          action.setParameter("ContentType", file.ContentType);
+        }
+
+        await action.invoke();
+        MessageToast.show("Descarga registrada.");
+      }
+
+      // O diálogo só fecha DEPOIS do resolve: fechar antes descartaria o que foi digitado se a
+      // action recusasse o ticket.
+      this.onCloseDischargeDialog();
+      this.refreshDischarges();
+    } catch (e) {
+      MessageBox.error((e as Error).message || "Erro ao gravar a descarga.");
+    } finally {
+      this._dischargeInFlight = false;
+      this._dischargeDialog?.setBusy(false);
+      this.setBusy(false);
+    }
+  }
+
+  async onRemoveDischarge(): Promise<void> {
+    const context = this.selectedDischargeContext();
+
+    if (!context) return;
+
+    if (!await DialogHelper.confirmDialog("Excluir o registro de descarga selecionado ?")) return;
+
+    this.setBusy(true);
+
+    try {
+      const action = (this.getModel() as ODataModel)
+        .bindContext("/ShipmentLoadsDischargeDelete(...)");
+      action.setParameter("Key", context.getProperty("Key") as string);
+      await action.invoke();
+
+      MessageToast.show("Descarga excluída.");
+      this.refreshDischarges();
+    } catch (e) {
+      MessageBox.error((e as Error).message || "Erro ao excluir a descarga.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  /**
+   * O binário sai fora da leitura normal do OData, por uma rota própria: não existe
+   * `EntitySet<ShipmentLoadAttachment>` no EDM, e a tela chega ao arquivo pela AttachmentKey
+   * que o próprio ticket guarda.
+   */
+  onDownloadDischargeAttachment(event: Button$PressEvent): void {
+    const key = event.getSource().getBindingContext()?.getProperty("AttachmentKey") as string;
+
+    if (!key) return;
+
+    window.open(`/odata/ShipmentLoadsAttachmentsDownload(Key=${key})`, "_blank");
+  }
+
+  private selectedDischargeContext(): Context | null {
+    const table = this.dischargesTable();
+    const index = table?.getSelectedIndex() ?? -1;
+
+    if (index < 0) {
+      MessageBox.alert("Selecione um registro de descarga.");
+      return null;
+    }
+
+    return table.getContextByIndex(index) as Context;
+  }
+
+  /**
+   * Recarrega a lista de tickets e o que anda junto com ela: o cabeçalho, porque
+   * `ShipmentLoad.DischargedQuantity` é recalculado no servidor a cada escrita, e o log de
+   * alterações, porque toda mutação de descarga grava linha nele.
+   */
+  protected refreshDischarges(): void {
+    (this.getView().getBindingContext() as Context)?.refresh();
+
+    // `loadAttachmentsTable` só existe depois da aba de anexos; o `?.` tolera o id ausente, e o
+    // anexo que sobe junto com o ticket precisa aparecer lá.
+    ["loadDischargesTable", "loadAttachmentsTable", "shipmentLoadChangeLogsTable"].forEach(id => {
+      const binding = (this.byId(id) as Table)?.getBinding("rows") as ODataListBinding;
+      binding?.refresh();
+    });
+  }
 }

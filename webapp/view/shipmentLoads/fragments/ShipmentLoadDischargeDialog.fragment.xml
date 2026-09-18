@@ -1,0 +1,120 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:u="sap.ui.unified">
+	<!-- Registro e edição do ticket de descarga (GAC-1171).
+
+	     Os campos escrevem num BUFFER JSON (`viewModel>/dischargeDialog/...`), nunca no contexto
+	     OData: two way binding num Detail deixaria PATCH pendente no update group diferido e
+	     derrubaria o batch inteiro. Ao confirmar, tudo vai por action.
+
+	     Nota e item ficam desabilitados na edição, espelhando o backend: apontar o ticket para
+	     outra linha é excluir e registrar de novo, senão a soma da linha antiga fica órfã. -->
+	<Dialog
+		id="shipmentLoadDischargeDialog"
+		title="{viewModel>/dischargeDialog/title}"
+		contentWidth="34rem">
+		<content>
+			<VBox class="sapUiSmallMargin">
+				<f:Form editable="true">
+					<f:layout>
+						<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+					</f:layout>
+					<f:formContainers>
+						<f:FormContainer>
+							<f:formElements>
+								<f:FormElement label="Nº do Ticket">
+									<f:fields>
+										<Input
+											value="{viewModel>/dischargeDialog/ticketNumber}"
+											required="true"
+											maxLength="50"/>
+									</f:fields>
+								</f:FormElement>
+								<f:FormElement label="Data da Descarga">
+									<f:fields>
+										<!-- O buffer guarda a data no formato que a action exige
+										     (yyyy-MM-dd); o usuário vê dd/MM/yyyy. -->
+										<DatePicker
+											value="{viewModel>/dischargeDialog/dischargeDate}"
+											required="true"
+											valueFormat="yyyy-MM-dd"
+											displayFormat="dd/MM/yyyy"/>
+									</f:fields>
+								</f:FormElement>
+								<f:FormElement label="Documento de Saída">
+									<f:fields>
+										<!-- Itens vindos de JSONModel estático, carregado ANTES de abrir:
+										     Select com selectedKey sobre coleção OData renderiza vazio, com
+										     o estado interno certo e o DOM desatualizado. -->
+										<Select
+											forceSelection="false"
+											required="true"
+											selectedKey="{viewModel>/dischargeDialog/salesInvoiceKey}"
+											items="{viewModel>/dischargeDialog/invoices}"
+											change=".onDischargeInvoiceChange"
+											enabled="{= !${viewModel>/dischargeDialog/key} }">
+											<core:ListItem key="{viewModel>Key}" text="{viewModel>Text}"/>
+										</Select>
+									</f:fields>
+								</f:FormElement>
+								<f:FormElement label="Item">
+									<f:fields>
+										<Select
+											forceSelection="false"
+											required="true"
+											selectedKey="{viewModel>/dischargeDialog/salesInvoiceItemKey}"
+											items="{viewModel>/dischargeDialog/items}"
+											enabled="{= !${viewModel>/dischargeDialog/key} }">
+											<core:ListItem key="{viewModel>Key}" text="{viewModel>Text}"/>
+										</Select>
+									</f:fields>
+								</f:FormElement>
+								<f:FormElement label="Peso Descarregado">
+									<f:fields>
+										<!-- Modelo JSON, então sap.ui.model.type.Float é o tipo certo aqui,
+										     como na Recusa: ele formata e lê o número em pt-BR. A regra
+										     "Double, nunca Decimal" vale para o PAYLOAD da action, que o
+										     controller monta com número cru. -->
+										<Input
+											value="{ path: 'viewModel>/dischargeDialog/quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+											required="true"
+											textAlign="End"/>
+									</f:fields>
+								</f:FormElement>
+								<f:FormElement label="Observação">
+									<f:fields>
+										<TextArea
+											value="{viewModel>/dischargeDialog/comments}"
+											rows="3"
+											width="100%"
+											maxLength="500"/>
+									</f:fields>
+								</f:FormElement>
+								<!-- O arquivo sobe junto com o ticket, num único POST. Na edição o campo
+								     some: trocar o anexo é assunto da aba de anexos da carga. -->
+								<f:FormElement label="Ticket digitalizado" visible="{= !${viewModel>/dischargeDialog/key} }">
+									<f:fields>
+										<u:FileUploader
+											id="dischargeFileUploader"
+											width="100%"
+											placeholder="Selecione o arquivo do ticket"
+											buttonText="Procurar"
+											uploadOnChange="false"/>
+									</f:fields>
+								</f:FormElement>
+							</f:formElements>
+						</f:FormContainer>
+					</f:formContainers>
+				</f:Form>
+			</VBox>
+		</content>
+		<beginButton>
+			<Button text="Gravar" type="Emphasized" press=".onConfirmDischarge"/>
+		</beginButton>
+		<endButton>
+			<Button text="Cancelar" press=".onCloseDischargeDialog"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

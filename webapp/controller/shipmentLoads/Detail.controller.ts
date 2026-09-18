@@ -749,6 +749,8 @@ export default class Detail extends BaseController {
       "loadInvoicesTable",
       "loadMovementsTable",
       "loadRefusalReturnsTable",
+      "loadDischargesTable",
+      "loadAttachmentsTable",
       "shipmentLoadCommentsTable",
       "shipmentLoadChangeLogsTable",
     ].forEach(id => {

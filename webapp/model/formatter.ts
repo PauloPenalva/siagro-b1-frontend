@@ -6,6 +6,12 @@ import {
   allocationOriginTooltip,
 } from "siagrob1/helpers/AllocationOriginHelpers";
 
+/** Peso em pt-BR com as 3 casas que a balança grava. Uso interno dos formatters daqui. */
+const formatWeight = (value: number): string =>
+  Number(value ?? 0).toLocaleString("pt-BR", {
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3,
+  });
 
 
 export default {
@@ -239,6 +245,40 @@ export default {
       minimumFractionDigits: 0,
       maximumFractionDigits: 3,
     });
+  },
+
+  /**
+   * "39.500,000 de 40.000,000 (-500,000)" — descarregado, embarcado e a diferença entre os dois
+   * (GAC-1171). Vazio enquanto nenhum ticket foi registrado: zero aqui pareceria "chegou nada".
+   *
+   * ⚠️ Os dois valores chegam como Edm.Decimal, ou seja STRING. Sem `targetType: 'any'` nas
+   * partes do binding o modelo entrega o decimal já formatado em pt-BR e Number() devolve NaN.
+   */
+  formatDischargedAgainstLoaded: (
+    discharged: number | string,
+    loaded: number | string
+  ): string => {
+    const dischargedValue = Number(discharged ?? 0);
+
+    if (!(dischargedValue > 0)) return "";
+
+    const loadedValue = Number(loaded ?? 0);
+    const difference = dischargedValue - loadedValue;
+
+    return `${formatWeight(dischargedValue)} de ${formatWeight(loadedValue)} `
+      + `(${difference > 0 ? "+" : ""}${formatWeight(difference)})`;
+  },
+
+  /** Rótulo pt-BR do tipo de anexo da carga. O código fica em inglês, no enum do backend. */
+  formatShipmentLoadAttachmentType: (type: string): string => {
+    switch (type) {
+      case "LoadingTicket": return "Ticket de Carga";
+      case "DischargeTicket": return "Ticket de Descarga";
+      case "TaxDocument": return "Nota Fiscal";
+      case "FreightDocument": return "Conhecimento de Frete";
+      case "Other": return "Outro";
+      default: return type ?? "";
+    }
   },
 
   formatPriceFixationStatus: (value: string) => {

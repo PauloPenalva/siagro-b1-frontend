@@ -79,6 +79,20 @@
 						formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
 					}"
 					unit="{UnitOfMeasureCode}"/>
+				<!-- Descarregado x embarcado (GAC-1171): a soma dos tickets de descarga contra o
+				     peso que saiu daqui. Fica vazio enquanto nenhum ticket foi registrado, porque
+				     zero pareceria "não chegou nada". -->
+				<ObjectAttribute
+					class="sapUiMediumMarginBegin"
+					title="Descarregado (tickets)"
+					visible="{= ${path: 'DischargedQuantity', targetType: 'any'} > 0 }"
+					text="{
+						parts: [
+							{ path: 'DischargedQuantity', targetType: 'any' },
+							{ path: 'TotalQuantity', targetType: 'any' }
+						],
+						formatter: '.formatter.formatDischargedAgainstLoaded'
+					}"/>
 			</HBox>
 		</uxap:headerContent>
 		<uxap:sections>
@@ -367,6 +381,19 @@
 									</t:Column>
 								</t:columns>
 							</t:Table>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
+			<!-- Descargas (GAC-1171): o ticket da balança do DESTINO. Carga de Remoção não
+			     fatura, então não tem nota para o ticket apontar e a aba não aparece nela. -->
+			<uxap:ObjectPageSection titleUppercase="false" title="Descargas"
+				visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' }">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<uxap:blocks>
+							<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.ShipmentLoadDischarges" type="XML"/>
 						</uxap:blocks>
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>

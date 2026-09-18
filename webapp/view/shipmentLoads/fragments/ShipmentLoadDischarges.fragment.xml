@@ -1,0 +1,113 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table">
+	<!-- Tickets de descarga da carga (GAC-1171): o que a balança do DESTINO pesou, segundo o
+	     documento que o transportador entregou. Serve para liberar o pagamento do frete e para
+	     confrontar o relatório de descarga do cliente.
+
+	     ⚠️ O peso do ticket NÃO é o peso conferido: ele soma em colunas próprias e nenhuma
+	     operação desta aba mexe na conferência de entrega da nota.
+
+	     A tabela é somente leitura: tudo é gravado por action, que carimba o autor, recalcula as
+	     somas e grava o log na mesma transação.
+
+	     `$$ownRequest` é obrigatório: sem ele a coleção vira $expand no GET da carga e o
+	     refresh() depois de gravar não recarrega nada. O $expand de um nível na nota fica aqui
+	     mesmo, porque o número dela é atribuído depois e denormalizar daria um snapshot velho.
+
+	     O `sorter` também é obrigatório, por menos óbvio: o OrderByDescending do service só vale
+	     na consulta sem paginação. A sap.ui.table pede $skip/$top, e aí o [EnableQuery] reordena
+	     por chave para estabilizar a paginação. -->
+	<t:Table
+		id="loadDischargesTable"
+		class="sapUiSizeCondensed"
+		alternateRowColors="true"
+		enableBusyIndicator="true"
+		enableSelectAll="false"
+		selectionMode="Single"
+		selectionBehavior="Row"
+		busyIndicatorDelay="0"
+		visibleRowCount="6"
+		noData="Nenhuma descarga registrada nesta carga."
+		rows="{
+			path: 'Discharges',
+			parameters: {
+				'$$ownRequest': true,
+				'$expand': 'SalesInvoice($select=Key,InvoiceNumber),SalesInvoiceItem($select=Key,ItemCode,ItemName)'
+			},
+			sorter: { path: 'DischargeDate', descending: true }
+		}">
+		<t:extension>
+			<OverflowToolbar>
+				<content>
+					<Title text="Descargas"/>
+					<ToolbarSpacer/>
+					<!-- Mesmo guard do servidor (ShipmentLoadDischargeRules.EnsureLoadAcceptsChanges):
+					     carga cancelada ou devolvida está congelada. `targetType: 'any'` em toda
+					     expressão sobre enum, senão o valor não chega como string e a comparação
+					     nunca casa. -->
+					<Button
+						type="Transparent"
+						text="Registrar Descarga"
+						icon="sap-icon://add"
+						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' }"
+						press=".onAddDischarge"/>
+					<Button
+						type="Transparent"
+						text="Editar"
+						icon="sap-icon://edit"
+						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' }"
+						press=".onEditDischarge"/>
+					<Button
+						type="Transparent"
+						text="Excluir"
+						icon="sap-icon://delete"
+						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' }"
+						press=".onRemoveDischarge"/>
+				</content>
+			</OverflowToolbar>
+		</t:extension>
+		<t:columns>
+			<t:Column label="Ticket" width="10rem">
+				<t:template><Text text="{TicketNumber}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Data da Descarga" width="9rem">
+				<t:template>
+					<Text wrapping="false" text="{ path: 'DischargeDate', targetType: 'any', formatter: '.formatter.formatDate' }"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Documento de Saída" width="11rem">
+				<t:template><Text text="{SalesInvoice/InvoiceNumber}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Produto" width="18rem">
+				<t:template><Text text="({SalesInvoiceItem/ItemCode}) {SalesInvoiceItem/ItemName}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Peso Descarregado" hAlign="End" width="10rem">
+				<t:template>
+					<ObjectNumber
+						textAlign="End"
+						number="{ path: 'DischargedQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Anexo" hAlign="Center" width="6rem">
+				<t:template>
+					<!-- `targetType: 'any'` no Edm.Guid anulável: sem ele a chave chega convertida e
+					     o `!!` nem chega a executar. -->
+					<Button
+						type="Transparent"
+						icon="sap-icon://attachment"
+						tooltip="Baixar o ticket anexado"
+						visible="{= !!${path: 'AttachmentKey', targetType: 'any'} }"
+						press=".onDownloadDischargeAttachment"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Observação" width="20rem">
+				<t:template><Text text="{Comments}" tooltip="{Comments}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Registrado por" width="12rem">
+				<t:template><Text text="{CreatedBy}" wrapping="false"/></t:template>
+			</t:Column>
+		</t:columns>
+	</t:Table>
+</core:FragmentDefinition>
