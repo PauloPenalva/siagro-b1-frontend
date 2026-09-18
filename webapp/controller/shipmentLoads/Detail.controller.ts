@@ -746,6 +746,11 @@ export default class Detail extends BaseController {
    * bindadas com `$$ownRequest`; como `$expand` do pai, ficariam presas ao cache do elemento.
    */
   private refreshAll(): void {
+    // ⚠️ Lida ANTES do `refresh()` abaixo: o refresh invalida o cache da entidade e, no mesmo
+    // tick, `getProperty("Key")` volta `undefined` — o que já mandou `LoadKey=undefined` ao
+    // servidor e devolveu 404 na cara do usuário. Mesmo cuidado de `refreshDischarges()`.
+    const loadKey = this.currentLoadKey();
+
     // O contexto do elemento é o do modelo V4 e sabe se recarregar; o tipo devolvido pela
     // view é o genérico, daí o cast.
     (this.getView().getBindingContext() as Context)?.refresh();
@@ -756,12 +761,19 @@ export default class Detail extends BaseController {
       "loadMovementsTable",
       "loadRefusalReturnsTable",
       "loadDischargesTable",
-      "loadAttachmentsTable",
       "shipmentLoadCommentsTable",
       "shipmentLoadChangeLogsTable",
     ].forEach(id => {
       const binding = (this.byId(id) as Table)?.getBinding("rows") as ODataListBinding;
       binding?.refresh();
     });
+
+    // `loadAttachmentsTable` NÃO entra na lista acima: o grid de anexos é JSONModel, e
+    // `getBinding("rows").refresh()` sobre ele é no-op — não há requisição nenhuma por trás.
+    // Só `refreshAttachments()` recarrega a lista de verdade.
+    if (this.byId("loadAttachmentsTable")) {
+      this.refreshAttachments(loadKey).catch(
+        () => MessageBox.error("Erro ao atualizar a lista de anexos."));
+    }
   }
 }

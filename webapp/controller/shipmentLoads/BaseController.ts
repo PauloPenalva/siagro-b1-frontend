@@ -118,6 +118,8 @@ export abstract class BaseController extends CommonController {
   private async loadInvoiceOptionsAsync(): Promise<{
     invoices: DischargeOption[];
     items: DischargeOption[];
+    /** Quantas notas a carga tem ao todo, canceladas inclusive — só para a mensagem de vazio. */
+    totalInvoices: number;
   }> {
     const model = this.getModel() as ODataModel;
 
@@ -159,7 +161,7 @@ export abstract class BaseController extends CommonController {
       });
     });
 
-    return { invoices, items };
+    return { invoices, items, totalInvoices: contexts.length };
   }
 
   async onAddDischarge(): Promise<void> {
@@ -173,10 +175,14 @@ export abstract class BaseController extends CommonController {
     try {
       const options = await this.loadInvoiceOptionsAsync();
 
+      // Duas situações diferentes chegam aqui com a lista vazia, e dizer "ainda não tem
+      // documento de saída" quando a carga tem notas — todas canceladas — é simplesmente falso.
       if (options.invoices.length === 0) {
-        MessageBox.alert(
-          "Esta carga ainda não tem documento de saída. O ticket de descarga é registrado "
-          + "contra uma nota da carga.");
+        MessageBox.alert(options.totalInvoices > 0
+          ? "Todos os documentos de saída desta carga estão cancelados. O ticket de descarga é "
+            + "registrado contra uma nota válida da carga."
+          : "Esta carga ainda não tem documento de saída. O ticket de descarga é registrado "
+            + "contra uma nota da carga.");
         return;
       }
 
@@ -393,7 +399,7 @@ export abstract class BaseController extends CommonController {
 
     if (!key) return;
 
-    window.open(`/odata/ShipmentLoadsAttachmentsDownload(Key=${key})`, "_blank");
+    window.open(`${ServerRoutes.shipmentLoadsAttachmentsDownload}(Key=${key})`, "_blank");
   }
 
   private selectedDischargeContext(): Context | null {
