@@ -12,6 +12,7 @@ import RequestModel from "siagrob1/model/RequestModel";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { sendJson } from "siagrob1/helpers/FetchHelpers";
 import { calculateWashoutAmount, formatNumberPtBr } from "siagrob1/helpers/WashoutHelpers";
+import { ALLOCATION_ORIGINS } from "siagrob1/helpers/AllocationOriginHelpers";
 import { WashoutDialogState, WashoutFixationOption, WashoutReverseState } from "siagrob1/types/PurchaseContractWashout";
 
 /**
@@ -1290,6 +1291,8 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
     funcImport.setParameter("PurchaseContractKey", key);
 
     oView.setModel(allocationModel, "allocationModel");
+    // Legenda das origens da entrega (GAC-1164): normal x perda de conferência de armazém.
+    oView.setModel(new JSONModel(ALLOCATION_ORIGINS), "allocationOrigins");
 
     this.setBusy(true);
     void funcImport.invoke()

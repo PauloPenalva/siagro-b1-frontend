@@ -1,3 +1,11 @@
+import {
+  allocationOriginHighlight,
+  allocationOriginIcon,
+  allocationOriginState,
+  allocationOriginText,
+  allocationOriginTooltip,
+} from "siagrob1/helpers/AllocationOriginHelpers";
+
 
 
 export default {
@@ -1244,4 +1252,11 @@ export default {
     if (changeKey && type === "SalesShipment") return "Success";
     return "None";
   },
+
+  // Origem da entrega do contrato de compra (GAC-1164): perda de conferência de armazém x normal.
+  allocationOriginHighlight,
+  allocationOriginIcon,
+  allocationOriginState,
+  allocationOriginText,
+  allocationOriginTooltip,
 };

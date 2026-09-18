@@ -17,11 +17,25 @@
     rows="{allocationModel>/allocations}"
     visible="true"
     >
+    <t:rowSettingsTemplate>
+      <t:RowSettings highlight="{
+        path: 'allocationModel>Origin',
+        formatter: '.formatter.allocationOriginHighlight'
+      }" />
+    </t:rowSettingsTemplate>
     <t:extension>
       <OverflowToolbar>
         <content>
           <Title text="Entregas do Contrato de Compra" />
           <ToolbarSpacer />
+          <!-- Legenda das faixas de cor: uma entrada por origem (helpers/AllocationOriginHelpers) -->
+          <HBox items="{allocationOrigins>/}" alignItems="Center">
+            <ObjectStatus
+              class="sapUiSmallMarginBegin"
+              text="{allocationOrigins>legend}"
+              state="{allocationOrigins>state}"
+              icon="sap-icon://color-fill" />
+          </HBox>
         </content>
       </OverflowToolbar>
     </t:extension>
@@ -47,6 +61,23 @@
       <t:Column label="Tipo">
         <t:template>
           <Text text="{allocationModel>StorageTransactionTypeName}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Origem" width="10rem">
+        <t:template>
+          <ObjectStatus
+            text="{ path: 'allocationModel>Origin', formatter: '.formatter.allocationOriginText' }"
+            state="{ path: 'allocationModel>Origin', formatter: '.formatter.allocationOriginState' }"
+            icon="{ path: 'allocationModel>Origin', formatter: '.formatter.allocationOriginIcon' }"
+            tooltip="{
+              parts: ['allocationModel>Origin', 'allocationModel>WarehouseReconciliationCode'],
+              formatter: '.formatter.allocationOriginTooltip'
+            }" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Motivo" width="12rem">
+        <t:template>
+          <Text text="{allocationModel>ReasonDescription}" wrapping="false" />
         </t:template>
       </t:Column>
       <t:Column label="Quantidade" hAlign="End">

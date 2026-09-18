@@ -2,3 +2,4 @@
 import "./controller/Main.qunit";
 import "./services/TableLayoutService.qunit";
 import "./helpers/FilterHelpers.qunit";
+import "./helpers/AllocationOriginHelpers.qunit";
