@@ -492,13 +492,24 @@ export abstract class BaseController extends CommonController {
       description: "",
     });
 
-    this._attachmentDialog ??= await Fragment.load({
-      id: this.getView().getId(),
-      name: "siagrob1.view.shipmentLoads.fragments.ShipmentLoadAttachmentDialog",
-      controller: this,
-    }) as Dialog;
+    // `addDependent` DENTRO do if, como no diálogo de descarga: fora dele, cada abertura
+    // re-inseria o mesmo controle na agregação de dependentes da view.
+    if (!this._attachmentDialog) {
+      this._attachmentDialog = await Fragment.load({
+        id: this.getView().getId(),
+        name: "siagrob1.view.shipmentLoads.fragments.ShipmentLoadAttachmentDialog",
+        controller: this,
+      }) as Dialog;
 
-    this.getView().addDependent(this._attachmentDialog);
+      this.getView().addDependent(this._attachmentDialog);
+    }
+
+    // O fragmento é carregado uma única vez, então o <input type="file"> guarda o arquivo da
+    // abertura anterior. Sem limpar, o segundo anexo sobe com o arquivo do primeiro — e em
+    // silêncio, porque `loadAttachmentBase64` encontra o arquivo velho e o alerta "Selecione o
+    // arquivo." nunca dispara. Mesmo motivo do `clear()` do diálogo de descarga.
+    (this.byId("attachmentFileUploader") as FileUploader)?.clear();
+
     this._attachmentDialog.open();
   }
 
