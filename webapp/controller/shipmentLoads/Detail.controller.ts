@@ -86,8 +86,10 @@ export default class Detail extends BaseController {
     this.bindElement(`/ShipmentLoads(${id})`);
 
     // Passa a chave explícita: bindElement não espera a resposta, e currentLoadKey() leria a
-    // Key de um contexto ainda sem dados nesta primeira chamada.
-    void this.refreshAttachments(id);
+    // Key de um contexto ainda sem dados nesta primeira chamada. `.catch()` em vez de `void`: uma
+    // falha aqui não pode virar uma rejeição não tratada silenciosa.
+    this.refreshAttachments(id).catch(
+      () => MessageBox.error("Erro ao carregar os anexos da carga."));
   }
 
   async onRecalculate(): Promise<void> {

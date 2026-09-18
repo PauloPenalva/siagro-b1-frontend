@@ -11,6 +11,7 @@ import Table from "sap/ui/table/Table";
 import FileUploader from "sap/ui/unified/FileUploader";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
+import { sendJson } from "siagrob1/helpers/FetchHelpers";
 import CommonController from "siagrob1/controller/common/CommonController";
 
 /** Linha das listas do diálogo de descarga, em JSONModel estático. */
@@ -415,12 +416,19 @@ export abstract class BaseController extends CommonController {
   protected refreshDischarges(): void {
     (this.getView().getBindingContext() as Context)?.refresh();
 
-    // `loadAttachmentsTable` só existe depois da aba de anexos; o `?.` tolera o id ausente, e o
-    // anexo que sobe junto com o ticket precisa aparecer lá.
-    ["loadDischargesTable", "loadAttachmentsTable", "shipmentLoadChangeLogsTable"].forEach(id => {
+    ["loadDischargesTable", "shipmentLoadChangeLogsTable"].forEach(id => {
       const binding = (this.byId(id) as Table)?.getBinding("rows") as ODataListBinding;
       binding?.refresh();
     });
+
+    // `loadAttachmentsTable` só existe depois da aba de anexos; o `?.` tolera o id ausente. O
+    // grid de anexos NÃO é coleção OData — `.refresh()` sobre a binding do JSONModel acima seria
+    // no-op, porque não há requisição nenhuma por trás dela. Sem chamar `refreshAttachments()` de
+    // verdade, o anexo que sobe junto com o ticket só apareceria recarregando a página (F5).
+    if (this.byId("loadAttachmentsTable")) {
+      this.refreshAttachments().catch(
+        () => MessageBox.error("Erro ao atualizar a lista de anexos."));
+    }
   }
 
   /* ------------------------------------------------------------------ */
@@ -439,20 +447,26 @@ export abstract class BaseController extends CommonController {
    * já está aberta há tempo, então omitir o parâmetro e cair no contexto funciona normalmente.
    *
    * ⚠️ A Function é `Returns<IActionResult>()`, fora do pipeline OData que capitaliza por EDM:
-   * o DTO sai em camelCase (mesmo caso já visto na Conferência de Armazém), então normaliza para
-   * o Pascal que o grid lê, tolerando as duas caixas.
+   * o DTO já foi corrigido para sair em PascalCase com `AttachmentType` como string (backend
+   * `9892e82`), mas a normalização abaixo tolera as duas caixas como defesa — sem custo e sem
+   * conflito com o formato atual.
+   *
+   * Usa `sendJson`/`readErrorMessage` (o mesmo par da Conferência de Armazém) em vez de `fetch`
+   * cru: uma falha aqui precisa aparecer para o usuário, não deixar a aba simplesmente vazia
+   * como se não houvesse anexo nenhum.
    */
   protected async refreshAttachments(loadKey: string = this.currentLoadKey()): Promise<void> {
-    const response = await fetch(
-      `${ServerRoutes.shipmentLoadsAttachmentsList}(LoadKey=${loadKey})`);
+    const result = await sendJson(
+      "GET", `${ServerRoutes.shipmentLoadsAttachmentsList}(LoadKey=${loadKey})`);
 
-    if (!response.ok) {
+    if (!result.ok) {
       this.viewModel().setProperty("/attachments", []);
+      MessageBox.error(result.message);
       return;
     }
 
-    const payload = await response.json() as { value?: unknown[] } | unknown[];
-    const rows = (Array.isArray(payload) ? payload : payload.value ?? []) as Record<string, unknown>[];
+    const data = result.data;
+    const rows = (Array.isArray(data) ? data : ((data as { value?: unknown[] })?.value ?? [])) as Record<string, unknown>[];
 
     this.viewModel().setProperty("/attachments", rows.map(row => ({
       Key: row.Key ?? row.key,
