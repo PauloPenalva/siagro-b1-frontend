@@ -555,6 +555,8 @@ const formatter = {
     m.set("PurchasePriceComplement", "Compl.Preço");
     m.set("WarehouseLoss", "Perda Armazém");
     m.set("WarehouseGain", "Sobra Armazém");
+    m.set("PurchaseDischargeLoss", "Quebra Descarga");
+    m.set("PurchaseDischargeGain", "Sobra Descarga");
 
     return m.get(value);
   },
