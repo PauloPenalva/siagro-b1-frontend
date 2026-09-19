@@ -1,5 +1,6 @@
 /**
- * Origem de cada entrega na tabela "Entregas do Contrato de Compra" (GAC-1164).
+ * Origem de cada entrega na tabela "Entregas do Contrato de Compra" (GAC-1164) e os romaneios de
+ * quebra/sobra de descarga da troca nota (tipos 16/17).
  *
  * O Tipo do romaneio continua "Compra" mesmo quando ele nasce da aprovação de uma Conferência de
  * Saldo de Armazém: a perda é custo da Yokotobi e o contrato conta o volume como entregue. A origem
@@ -36,6 +37,22 @@ export const ALLOCATION_ORIGINS: AllocationOrigin[] = [
     state: "Warning",
     icon: "sap-icon://warning2",
   },
+  {
+    key: "DischargeLoss",
+    legend: "Quebra de descarga",
+    text: "Quebra de descarga",
+    highlight: "Error",
+    state: "Error",
+    icon: "sap-icon://trend-down",
+  },
+  {
+    key: "DischargeGain",
+    legend: "Sobra de descarga",
+    text: "Sobra de descarga",
+    highlight: "Success",
+    state: "Success",
+    icon: "sap-icon://trend-up",
+  },
 ];
 
 const STANDARD = ALLOCATION_ORIGINS[0];
@@ -62,10 +79,22 @@ export function allocationOriginIcon(key: string): string {
 
 export function allocationOriginTooltip(
   key: string,
-  reconciliationCode: string
+  reconciliationCode: string,
+  dischargeInvoiceNumber?: string,
+  dischargeLoadCode?: string
 ): string {
-  if (originOf(key).key === "WarehouseLoss" && reconciliationCode) {
+  const origin = originOf(key).key;
+
+  if (origin === "WarehouseLoss" && reconciliationCode) {
     return `Conferência de saldo de armazém ${reconciliationCode}`;
   }
+
+  // Troca nota: o romaneio 16/17 nasce da Conferência de Entregas da nota de venda.
+  if ((origin === "DischargeLoss" || origin === "DischargeGain") && dischargeInvoiceNumber) {
+    return dischargeLoadCode
+      ? `Conferência da nota ${dischargeInvoiceNumber} (carga ${dischargeLoadCode})`
+      : `Conferência da nota ${dischargeInvoiceNumber}`;
+  }
+
   return "";
 }
