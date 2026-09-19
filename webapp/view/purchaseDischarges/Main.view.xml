@@ -64,7 +64,7 @@
             <t:template><Text wrapping="false" text="{ path: 'discharges>TransactionDate', formatter: 'formatter.formatDate' }"/></t:template>
           </t:Column>
           <t:Column label="Fornecedor" width="18rem" sortProperty="SupplierName">
-            <t:template><Text wrapping="false" text="{discharges>SupplierCode} - {discharges>SupplierName}" tooltip="{discharges>SupplierCode} - {discharges>SupplierName}"/></t:template>
+            <t:template><Text wrapping="false" text="{= ${discharges>SupplierCode} + (${discharges>SupplierName} ? ' - ' + ${discharges>SupplierName} : '') }" tooltip="{= ${discharges>SupplierCode} + (${discharges>SupplierName} ? ' - ' + ${discharges>SupplierName} : '') }"/></t:template>
           </t:Column>
           <t:Column label="Contrato de compra" width="10rem" sortProperty="PurchaseContractCode">
             <t:template><Text text="{discharges>PurchaseContractCode}" wrapping="false"/></t:template>

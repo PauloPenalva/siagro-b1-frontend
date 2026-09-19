@@ -49,7 +49,9 @@ export default class Main extends CommonController {
     //    a devolução ao armazém não aparecia em tela nenhuma.
     //
     // Purchase/SalesShipment ficam de fora de propósito: têm telas próprias, com ações mais
-    // restritas que as desta.
+    // restritas que as desta. PurchaseDischargeLoss/PurchaseDischargeGain (quebra/sobra de
+    // descarga da troca nota) também ficam fora: têm a tela própria "Ajustes de Descarga"
+    // e aparecem aqui só ao filtrar pelo Tipo.
     //
     // 3. WarehouseLoss/WarehouseGain (Conferência de Saldo de Armazém, GAC-1164) entram no escopo
     //    para CONSULTA. Cancelar/estornar por esta tela é recusado pelo backend (origem 13).
