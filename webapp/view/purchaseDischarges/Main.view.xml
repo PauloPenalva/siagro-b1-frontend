@@ -1,0 +1,92 @@
+<mvc:View
+	controllerName="siagrob1.controller.purchaseDischarges.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.f"
+	core:require="{ formatter: 'siagrob1/model/formatter' }">
+  <f:DynamicPage busyIndicatorDelay="0" busy="{discharges>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Ajustes de Descarga"/>
+        </f:heading>
+        <f:snappedContent>
+          <Text text="Quebra e sobra de descarga da troca nota, lançadas no contrato de compra CIF ao encerrar a Conferência de Entregas."/>
+        </f:snappedContent>
+      </f:DynamicPageTitle>
+    </f:title>
+    <f:header>
+      <f:DynamicPageHeader>
+        <f:content>
+          <core:Fragment fragmentName="siagrob1.view.purchaseDischarges.fragments.Filterbar" type="XML" />
+        </f:content>
+      </f:DynamicPageHeader>
+    </f:header>
+    <f:content>
+      <t:Table
+        id="purchaseDischargesTable"
+        busyIndicatorDelay="0"
+        selectionMode="Single"
+        selectionBehavior="Row"
+        class="sapUiSizeCondensed"
+        visibleRowCountMode="Auto"
+        alternateRowColors="true"
+        rows="{ path: 'discharges>/rows' }">
+        <t:extension>
+          <OverflowToolbar>
+            <Title text="Romaneios de descarga ({= ${discharges>/count} })" />
+            <ToolbarSpacer />
+            <Button type="Transparent" text="Abrir contrato" icon="sap-icon://display" press=".onOpenContract"/>
+          </OverflowToolbar>
+        </t:extension>
+        <t:columns>
+          <t:Column label="Tipo" width="10rem" sortProperty="TransactionType">
+            <t:template>
+              <ObjectStatus
+                text="{ path: 'discharges>TransactionType', formatter: 'formatter.formatStorageTransactionType' }"
+                state="{= ${discharges>TransactionType} === 'PurchaseDischargeLoss' ? 'Error' : 'Success' }"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Status" width="8rem" sortProperty="Status">
+            <t:template>
+              <ObjectStatus inverted="true"
+                text="{ path: 'discharges>Status', formatter: 'formatter.formatStorageTransactionStatus' }"
+                state="{ path: 'discharges>Status', formatter: 'formatter.stateStorageTransactionStatus' }"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Romaneio" width="9rem" sortProperty="Code">
+            <t:template><Text text="{discharges>Code}" wrapping="false"/></t:template>
+          </t:Column>
+          <t:Column label="Data" width="7rem" sortProperty="TransactionDate">
+            <t:template><Text wrapping="false" text="{ path: 'discharges>TransactionDate', formatter: 'formatter.formatDate' }"/></t:template>
+          </t:Column>
+          <t:Column label="Fornecedor" width="18rem" sortProperty="SupplierName">
+            <t:template><Text wrapping="false" text="{discharges>SupplierCode} - {discharges>SupplierName}" tooltip="{discharges>SupplierCode} - {discharges>SupplierName}"/></t:template>
+          </t:Column>
+          <t:Column label="Contrato de compra" width="10rem" sortProperty="PurchaseContractCode">
+            <t:template><Text text="{discharges>PurchaseContractCode}" wrapping="false"/></t:template>
+          </t:Column>
+          <t:Column label="Carga" width="8rem" sortProperty="ShipmentLoadCode">
+            <t:template><Text text="{discharges>ShipmentLoadCode}" wrapping="false"/></t:template>
+          </t:Column>
+          <t:Column label="Nota de venda" width="9rem" sortProperty="SalesInvoiceNumber">
+            <t:template><Text text="{discharges>SalesInvoiceNumber}" wrapping="false"/></t:template>
+          </t:Column>
+          <t:Column label="Volume" hAlign="End" width="10rem" sortProperty="Volume">
+            <t:template>
+              <ObjectNumber
+                number="{ path: 'discharges>Volume', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+                unit="{discharges>UnitOfMeasureCode}"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Criado por" width="10rem">
+            <t:template><Text text="{discharges>CreatedBy}" wrapping="false"/></t:template>
+          </t:Column>
+        </t:columns>
+      </t:Table>
+    </f:content>
+  </f:DynamicPage>
+</mvc:View>

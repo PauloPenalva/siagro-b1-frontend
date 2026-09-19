@@ -204,4 +204,7 @@ export default {
   shipmentLoadsAttachmentsList: '/odata/ShipmentLoadsAttachmentsList',
   shipmentLoadsAttachmentUpload: '/odata/ShipmentLoadsAttachmentUpload',
   shipmentLoadsAttachmentsDownload: '/odata/ShipmentLoadsAttachmentsDownload',
+
+  // Troca nota: romaneios de quebra/sobra de descarga (tela "Ajustes de Descarga").
+  purchaseDischargesList: '/odata/PurchaseDischargesList',
 }
