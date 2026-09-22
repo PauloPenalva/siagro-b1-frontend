@@ -731,17 +731,30 @@ export abstract class BaseController extends CommonController {
     warehouseCode: string
   ): Promise<TransshipmentReceiptOption[]> {
     const load = this.getView().getBindingContext() as Context;
-    const itemCode = load.getProperty("ItemCode") as string;
-    const branchCode = load.getProperty("BranchCode") as string;
-    const unitOfMeasureCode = load.getProperty("UnitOfMeasureCode") as string;
+
+    // requestProperty, NUNCA getProperty: com autoExpandSelect, o $select do bindElement da
+    // página é montado a partir dos bindings de CONTROLE existentes na view, e nenhum deles
+    // exibe ItemCode/BranchCode/UnitOfMeasureCode como escalar (a filial só aparece via
+    // {Branch/ShortName}, que expande a navegação, não o escalar). getProperty devolveria
+    // undefined em silêncio, e o filtro casaria a string "undefined" com nada — falha muda,
+    // com cara de regra de negócio (o diálogo diria sempre "não há Entrada em Armazenagem").
+    const [itemCode, branchCode, unitOfMeasureCode] = await Promise.all([
+      load.requestProperty("ItemCode") as Promise<string>,
+      load.requestProperty("BranchCode") as Promise<string>,
+      load.requestProperty("UnitOfMeasureCode") as Promise<string>,
+    ]);
+
+    // Escapa aspas simples no literal do $filter — mesma convenção de
+    // Attach.controller#applyShipmentFilters e Panel.controller (`.replace(/'/g, "''")`).
+    const escape = (value: string) => (value ?? "").replace(/'/g, "''");
 
     const filter = [
       "TransactionType eq 'Receipt'",
       "TransactionStatus eq 'Confirmed'",
-      `WarehouseCode eq '${warehouseCode}'`,
-      `ItemCode eq '${itemCode}'`,
-      `BranchCode eq '${branchCode}'`,
-      `UnitOfMeasureCode eq '${unitOfMeasureCode}'`,
+      `WarehouseCode eq '${escape(warehouseCode)}'`,
+      `ItemCode eq '${escape(itemCode)}'`,
+      `BranchCode eq '${escape(branchCode)}'`,
+      `UnitOfMeasureCode eq '${escape(unitOfMeasureCode)}'`,
       "ShipmentLoadKey eq null",
       "ShipmentLoadTransshipmentKey eq null",
     ].join(" and ");
