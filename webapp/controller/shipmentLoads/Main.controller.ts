@@ -22,6 +22,8 @@ type SelectedLoad = {
 const SHIPMENT_LOAD_STATUSES = [
   { key: "Planned", text: "Planejada" },
   { key: "Open", text: "Carregada" },
+  // GAC-1181, Task 11: descarregada num armazém intermediário, aguardando a saída do transbordo.
+  { key: "InTransshipment", text: "Em Transbordo" },
   { key: "PartiallyInvoiced", text: "Faturada Parcial" },
   { key: "Invoiced", text: "Faturada" },
   { key: "Returned", text: "Devolvida" },

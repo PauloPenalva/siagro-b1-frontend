@@ -73,6 +73,20 @@
 					</List>
 				</Panel>
 
+				<!-- GAC-1181, Task 11: carga descarregada num armazém intermediário, aguardando a
+				     saída do transbordo — entre Carregada e Faturada Parcial, como a carga anda. -->
+				<Panel headerText="Em Transbordo ({panel>/countInTransshipment})" expandable="false">
+					<List
+						id="listInTransshipment"
+						updateFinished=".onLaneUpdated"
+						noDataText="Nenhuma carga em transbordo."
+						items="{ path: '/ShipmentLoads', parameters: { $orderby: 'Code' } }">
+						<CustomListItem type="Navigation" press=".onOpenLoad">
+							<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.LoadCard" type="XML"/>
+						</CustomListItem>
+					</List>
+				</Panel>
+
 				<Panel headerText="Faturada Parcial ({panel>/countPartiallyInvoiced})" expandable="false">
 					<List
 						id="listPartiallyInvoiced"

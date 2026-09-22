@@ -14,11 +14,13 @@
 	     aqui, mas entra na lista porque uma coluna invisível NÃO cria binding neste projeto — se
 	     algum dia o controller precisar dele (ex.: tooltip), o campo já chega pronto.
 
-	     `Situação` é derivada só de `EntryStorageTransactionKey`, no cliente: o backend ainda não
-	     expõe se a SAÍDA do transbordo já foi vinculada a este registro — esse vínculo por papel
-	     é a Task 11. Por isso hoje só dois estados são alcançáveis por aqui (Aguardando entrada /
-	     Aguardando saída); "Concluído" já existe em formatTransshipmentStatus para quando aquele
-	     sinal chegar. -->
+	     `Situação` é derivada no cliente a partir de `EntryStorageTransactionKey` e de
+	     `viewModel>/transshipmentLinkage/linkedKeys` (Task 11): o backend não expõe, num único
+	     campo, se a SAÍDA do transbordo já foi vinculada a este registro — esse vínculo por papel
+	     é `ShipmentLoadsAttachTransactions` com `TransshipmentKey`, e `linkedKeys` é montado por
+	     `BaseController#refreshTransshipmentLinkage` cruzando os romaneios da carga contra os
+	     transbordos. Os três estados (Aguardando entrada / Aguardando saída / Concluído) são
+	     alcançáveis por aqui. -->
 	<t:Table
 		id="loadTransshipmentsTable"
 		class="sapUiSizeCondensed"
@@ -110,7 +112,14 @@
 			</t:Column>
 			<t:Column label="Situação" width="11rem">
 				<t:template>
-					<Text wrapping="false" text="{ path: 'EntryStorageTransactionKey', targetType: 'any', formatter: '.formatter.formatTransshipmentStatus' }"/>
+					<Text wrapping="false" text="{
+						parts: [
+							{ path: 'EntryStorageTransactionKey', targetType: 'any' },
+							{ path: 'Key', targetType: 'any' },
+							{ path: 'viewModel>/transshipmentLinkage/linkedKeys', targetType: 'any' }
+						],
+						formatter: '.formatter.formatTransshipmentStatus'
+					}"/>
 				</t:template>
 			</t:Column>
 		</t:columns>

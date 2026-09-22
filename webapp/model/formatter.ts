@@ -692,13 +692,29 @@ const formatter = {
   },
 
   /**
-   * Situação do transbordo (GAC-1181), derivada só de `EntryStorageTransactionKey`: o backend
-   * ainda não expõe (via EDM) se a SAÍDA do transbordo já foi vinculada a este registro — esse
-   * vínculo por papel é a Task 11. Por isso, hoje, só os dois primeiros estados são alcançáveis
-   * pela tela; "Concluído" fica pronto para quando aquele sinal existir.
+   * Situação do transbordo (GAC-1181). Sem entrada registrada, "Aguardando entrada". Com
+   * entrada, o terceiro estado ("Concluído") depende de a SAÍDA já ter sido vinculada a este
+   * registro — sinal que não existe num único campo do EDM (Task 11): `linkedTransshipmentKeys`
+   * é o array de chaves de transbordo já referenciadas por algum romaneio da carga
+   * (`ShipmentLoadTransshipmentKey`), montado por `BaseController#refreshTransshipmentLinkage` a
+   * partir da coleção `Transactions`.
    */
-  formatTransshipmentStatus: (entryStorageTransactionKey: string) =>
-    entryStorageTransactionKey ? "Aguardando saída" : "Aguardando entrada",
+  formatTransshipmentStatus: (
+    entryStorageTransactionKey: string, key: string, linkedTransshipmentKeys: string[]
+  ) => {
+    if (!entryStorageTransactionKey) return "Aguardando entrada";
+    return (linkedTransshipmentKeys ?? []).includes(key) ? "Concluído" : "Aguardando saída";
+  },
+
+  /**
+   * Etapa do romaneio dentro da carga (GAC-1181, Task 11): sem `ShipmentLoadTransshipmentKey` o
+   * romaneio é a saída de ORIGEM; com ele, é a saída de um transbordo — o texto pronto (sequência
+   * + armazém) vem de `lookup` (chave do transbordo → texto), montado por
+   * `BaseController#refreshTransshipmentLinkage`.
+   */
+  formatShipmentLoadTransactionStage: (
+    transshipmentKey: string, lookup: Record<string, string>
+  ) => (transshipmentKey ? ((lookup ?? {})[transshipmentKey] ?? "Transbordo") : "Origem"),
 
   /**
    * Rótulo do campo no log de alterações da carga. O backend grava o código

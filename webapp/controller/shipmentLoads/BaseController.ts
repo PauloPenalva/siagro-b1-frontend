@@ -974,5 +974,75 @@ export abstract class BaseController extends CommonController {
       const binding = (this.byId(id) as Table)?.getBinding("rows") as ODataListBinding;
       binding?.refresh();
     });
+
+    this.refreshTransshipmentLinkage().catch(
+      () => MessageBox.error("Erro ao atualizar a situação dos transbordos."));
+  }
+
+  /**
+   * Estado derivado no CLIENTE (GAC-1181, Task 11): o backend ainda não expõe, num único campo,
+   * se a SAÍDA de um transbordo já foi vinculada — esse vínculo por papel é a própria Task 11
+   * (`ShipmentLoadsAttachTransactions` com `TransshipmentKey`). Por isso o cliente cruza as duas
+   * coleções da carga a cada mudança relevante:
+   * - `linkedKeys`: as chaves de transbordo já referenciadas por algum romaneio
+   *   (`StorageTransaction.ShipmentLoadTransshipmentKey`) — fecha o terceiro estado
+   *   ("Concluído") de `formatter.formatTransshipmentStatus`.
+   * - `lookup`: chave do transbordo → texto pronto ("Transbordo N — armazém (X) Nome"), para a
+   *   coluna "Etapa" do grid de romaneios (`formatter.formatShipmentLoadTransactionStage`).
+   *
+   * Grava em `viewModel` (Component model, global ao app) em vez de num model próprio da view:
+   * é o mesmo lugar onde os diálogos deste módulo já guardam buffer, e as duas colunas que leem
+   * este estado vivem em fragments diferentes (`ShipmentLoadTransshipments` e a seção Romaneios
+   * do `Detail.view.xml`), sem um ancestral comum mais próximo.
+   *
+   * Duas consultas independentes, e não o binding visível das tabelas: `$$ownRequest` mantém o
+   * ciclo de vida da UI, e ler o binding de uma tabela que pode nem estar renderizada ainda
+   * (`byId` cedo demais) devolveria `undefined` em silêncio — o mesmo cuidado do resto do módulo.
+   */
+  protected async refreshTransshipmentLinkage(
+    loadKey: string = this.currentLoadKey()
+  ): Promise<void> {
+    if (!loadKey) return;
+
+    const model = this.getModel() as ODataModel;
+
+    const transshipmentsBinding = model.bindList(
+      `/ShipmentLoads(${loadKey})/Transshipments`,
+      undefined,
+      undefined,
+      undefined,
+      { $select: "Key,Sequence,WarehouseCode,WarehouseName" }
+    );
+
+    const transactionsBinding = model.bindList(
+      `/ShipmentLoads(${loadKey})/Transactions`,
+      undefined,
+      undefined,
+      undefined,
+      {
+        $select: "ShipmentLoadTransshipmentKey",
+        $filter: "ShipmentLoadTransshipmentKey ne null",
+      }
+    );
+
+    const [transshipmentContexts, transactionContexts] = await Promise.all([
+      transshipmentsBinding.requestContexts(0, Infinity),
+      transactionsBinding.requestContexts(0, Infinity),
+    ]);
+
+    const lookup: Record<string, string> = {};
+
+    transshipmentContexts.forEach(context => {
+      const row = context.getObject() as {
+        Key: string; Sequence?: number; WarehouseCode?: string; WarehouseName?: string;
+      };
+      lookup[row.Key] =
+        `Transbordo ${row.Sequence ?? ""} — armazém (${row.WarehouseCode ?? ""}) ${row.WarehouseName ?? ""}`;
+    });
+
+    const linkedKeys = transactionContexts.map(
+      context => context.getProperty("ShipmentLoadTransshipmentKey") as string);
+
+    this.viewModel().setProperty("/transshipmentLinkage", { lookup, linkedKeys });
   }
 }
