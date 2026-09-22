@@ -77,7 +77,8 @@ export default class Attach extends BaseController {
 
       // A lista já barra a carga encerrada ou cancelada antes de navegar; aqui a guarda vale
       // para quem chega pela URL.
-      if (load.Status !== "Planned" && load.Status !== "Open") {
+      if (load.Status !== "Planned" && load.Status !== "Open" &&
+          load.Status !== "InTransshipment") {
         MessageBox.warning(
           `A carga ${load.Code as string} já foi encerrada ou cancelada e não aceita novos romaneios.`);
         this.onNavBack();
