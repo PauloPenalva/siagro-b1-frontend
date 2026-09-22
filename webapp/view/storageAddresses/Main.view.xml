@@ -72,6 +72,21 @@
 						</t:template>
 					</t:Column>
 					<t:Column
+						label="Natureza"
+						sortProperty="Nature"
+						filterProperty="Nature"
+            visible="true"
+            width="8rem"
+						>
+						<t:template>
+							<Text text="{
+                path: 'Nature',
+                targetType: 'any',
+                formatter: '.formatter.formatStorageAddressNature'
+              }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column
 						label="Data"
 						sortProperty="CreationDate"
 						filterProperty="CreationDate"

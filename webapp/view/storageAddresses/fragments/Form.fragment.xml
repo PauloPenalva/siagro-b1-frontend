@@ -155,6 +155,26 @@
               </layoutData>
             </Input>
             <Input value="{WarehouseName}" editable="false" />
+            <Label text="Natureza" />
+            <!-- Imutável depois de criada (GAC-1181 fase 2): editable vem de ui>/natureEditable,
+                 nunca de ui>/editable — mesmo padrão de ui>/typeEditable no Tipo do Contrato.
+                 Itens só por este caminho (items bound a ui>/storageAddressNatureOptions):
+                 misturar com <core:ListItem> estático faz a agregação descartar os itens
+                 fixos quando o binding chega, deixando o Select vazio (já aconteceu na fase 1
+                 desta feature). "Transbordo" só entra na lista quando o armazém escolhido é
+                 PRÓPRIO — ver LoteArmazenagemBaseController#buildNatureOptions. -->
+            <Select
+              editable="{ui>/natureEditable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{
+                path: 'Nature',
+                targetType: 'any'
+              }"
+              items="{ui>/storageAddressNatureOptions}"
+            >
+              <core:ListItem key="{ui>Key}" text="{ui>Text}" />
+            </Select>
             <Label visible="true" text="Tabela de Custos" />
             <Input 
               visible="true"

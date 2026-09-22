@@ -167,6 +167,24 @@ const formatter = {
   },
 
   /**
+   * Para que o lote de armazenagem SERVE (GAC-1181 fase 2) — eixo independente de
+   * `formatStorageOwnershipType` (de quem é a mercadoria).
+   *
+   * Aceita o nome do enum (binding OData) e o índice numérico, mesmo cuidado de
+   * `formatStorageOwnershipType`.
+   */
+  formatStorageAddressNature: (value: string | number) => {
+    const m = new Map<string, string>();
+    m.set("Regular", "Comum");
+    m.set("Transshipment", "Transbordo");
+
+    const byIndex = ["Regular", "Transshipment"];
+    const key = typeof value === "number" ? byIndex[value] : value;
+
+    return m.get(key);
+  },
+
+  /**
    * Valor financeiro da fixação (volume × preço). É o número que a diretoria
    * de fato aprova — nem volume nem preço isolados dizem o tamanho do compromisso.
    */
