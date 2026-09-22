@@ -14,13 +14,16 @@
 	     aqui, mas entra na lista porque uma coluna invisível NÃO cria binding neste projeto — se
 	     algum dia o controller precisar dele (ex.: tooltip), o campo já chega pronto.
 
-	     `Situação` é derivada no cliente a partir de `EntryStorageTransactionKey` e de
-	     `viewModel>/transshipmentLinkage/linkedKeys` (Task 11): o backend não expõe, num único
-	     campo, se a SAÍDA do transbordo já foi vinculada a este registro — esse vínculo por papel
-	     é `ShipmentLoadsAttachTransactions` com `TransshipmentKey`, e `linkedKeys` é montado por
-	     `BaseController#refreshTransshipmentLinkage` cruzando os romaneios da carga contra os
-	     transbordos. Os três estados (Aguardando entrada / Aguardando saída / Concluído) são
-	     alcançáveis por aqui. -->
+	     `Situação` é derivada no cliente a partir de `EntryStorageTransactionKey`,
+	     `LotExitStorageTransactionKey` (GAC-1181 fase 2, Task 10 — direto no registro, sem
+	     cruzamento nenhum) e de `viewModel>/transshipmentLinkage/linkedKeys` (Task 11): o backend
+	     não expõe, num único campo, se a Expedição de venda já foi vinculada a este transbordo —
+	     esse vínculo por papel é `ShipmentLoadsAttachTransactions` com `TransshipmentKey`, e
+	     `linkedKeys` é montado por `BaseController#refreshTransshipmentLinkage` cruzando os
+	     romaneios da carga (`ShipmentLoadKey` gravado) contra os transbordos — por isso NÃO
+	     enxerga a saída do lote, que fica só com `ShipmentLoadTransshipmentKey`, sem
+	     `ShipmentLoadKey`. Os quatro estados (Aguardando entrada / Aguardando saída / Aguardando
+	     expedição / Concluído) são alcançáveis por aqui. -->
 	<t:Table
 		id="loadTransshipmentsTable"
 		class="sapUiSizeCondensed"
@@ -36,7 +39,7 @@
 			path: 'Transshipments',
 			parameters: {
 				'$$ownRequest': true,
-				'$select': 'Key,Sequence,Origin,WarehouseCode,WarehouseName,TransshipmentDate,OutgoingQuantity,EntryQuantity,ShrinkageQuantity,EntryStorageTransactionKey,Comments'
+				'$select': 'Key,Sequence,Origin,WarehouseCode,WarehouseName,TransshipmentDate,OutgoingQuantity,EntryQuantity,ShrinkageQuantity,EntryStorageTransactionKey,LotExitStorageTransactionKey,Comments'
 			},
 			sorter: { path: 'Sequence' }
 		}">
@@ -55,14 +58,28 @@
 						icon="sap-icon://add"
 						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Completed' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'InTransshipment' }"
 						press=".onStartTransshipment"/>
-					<!-- Registrar Entrada/Estornar só fazem sentido enquanto HÁ transbordo aberto —
-					     exatamente quando a carga está InTransshipment. -->
+					<!-- Registrar Entrada/Vincular Saída do Lote/Estornar só fazem sentido enquanto HÁ
+					     transbordo aberto — exatamente quando a carga está InTransshipment. Mesma
+					     convenção dos dois vizinhos: o botão fica visível pelo Status da CARGA (não
+					     há como amarrar visibilidade ao transbordo selecionado sem um listener de
+					     seleção, que este módulo não usa em lugar nenhum), e quem valida o registro
+					     escolhido é o handler no clique — igual a onRegisterTransshipmentEntry, que
+					     já alerta se a entrada estiver registrada demais. -->
 					<Button
 						type="Transparent"
 						text="Registrar Entrada"
 						icon="sap-icon://accept"
 						visible="{= ${path: 'Status', targetType: 'any'} === 'InTransshipment' }"
 						press=".onRegisterTransshipmentEntry"/>
+					<!-- GAC-1181 fase 2, Task 10: só o armazém PRÓPRIO passa por aqui — em armazém
+					     de terceiro a "saída" É a Expedição, vinculada direto pelo caminho de
+					     sempre (Attach + `transshipmentKey`). -->
+					<Button
+						type="Transparent"
+						text="Vincular Saída do Lote"
+						icon="sap-icon://chain-link"
+						visible="{= ${path: 'Status', targetType: 'any'} === 'InTransshipment' }"
+						press=".onAttachTransshipmentLotExit"/>
 					<Button
 						type="Transparent"
 						text="Estornar"
@@ -115,6 +132,7 @@
 					<Text wrapping="false" text="{
 						parts: [
 							{ path: 'EntryStorageTransactionKey', targetType: 'any' },
+							{ path: 'LotExitStorageTransactionKey', targetType: 'any' },
 							{ path: 'Key', targetType: 'any' },
 							{ path: 'viewModel>/transshipmentLinkage/linkedKeys', targetType: 'any' }
 						],

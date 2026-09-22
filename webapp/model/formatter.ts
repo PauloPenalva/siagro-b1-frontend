@@ -710,18 +710,34 @@ const formatter = {
   },
 
   /**
-   * Situação do transbordo (GAC-1181). Sem entrada registrada, "Aguardando entrada". Com
-   * entrada, o terceiro estado ("Concluído") depende de a SAÍDA já ter sido vinculada a este
-   * registro — sinal que não existe num único campo do EDM (Task 11): `linkedTransshipmentKeys`
-   * é o array de chaves de transbordo já referenciadas por algum romaneio da carga
-   * (`ShipmentLoadTransshipmentKey`), montado por `BaseController#refreshTransshipmentLinkage` a
-   * partir da coleção `Transactions`.
+   * Situação do transbordo (GAC-1181, quatro estados desde a fase 2/Task 10). Sem entrada
+   * registrada, "Aguardando entrada".
+   *
+   * Com entrada registrada, a ORDEM importa:
+   * 1. `linkedTransshipmentKeys` inclui esta chave → "Concluído". É o array de chaves de
+   *    transbordo já referenciadas por um romaneio DA CARGA (`ShipmentLoadKey` gravado,
+   *    `ShipmentLoadTransshipmentKey` apontando aqui), montado por
+   *    `BaseController#refreshTransshipmentLinkage` a partir da coleção `Transactions` — sinal
+   *    de que a Expedição de venda (o vínculo por papel, `ShipmentLoadsAttachTransactions` com
+   *    `TransshipmentKey`) já foi vinculada. Verificado ANTES do item 2 porque a saída do lote
+   *    continua vinculada (item 2) mesmo depois de a Expedição concluir o transbordo.
+   * 2. Senão, `lotExitStorageTransactionKey` preenchido → "Aguardando expedição": a saída do
+   *    LOTE (armazém PRÓPRIO, `ShipmentLoadTransshipment.LotExitStorageTransactionKey`, Task 10)
+   *    já foi vinculada e emitiu a liberação, mas a Expedição de Grãos ainda não — a carga NÃO é
+   *    faturável neste estado, por desenho. Em armazém de TERCEIRO este campo nunca é
+   *    preenchido: lá a "saída" É a própria Expedição, vinculada direto pelo item 1.
+   * 3. Senão, "Aguardando saída".
    */
   formatTransshipmentStatus: (
-    entryStorageTransactionKey: string, key: string, linkedTransshipmentKeys: string[]
+    entryStorageTransactionKey: string,
+    lotExitStorageTransactionKey: string,
+    key: string,
+    linkedTransshipmentKeys: string[]
   ) => {
     if (!entryStorageTransactionKey) return "Aguardando entrada";
-    return (linkedTransshipmentKeys ?? []).includes(key) ? "Concluído" : "Aguardando saída";
+    if ((linkedTransshipmentKeys ?? []).includes(key)) return "Concluído";
+    if (lotExitStorageTransactionKey) return "Aguardando expedição";
+    return "Aguardando saída";
   },
 
   /**
