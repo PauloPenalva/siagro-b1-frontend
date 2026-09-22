@@ -1036,8 +1036,7 @@ export abstract class BaseController extends CommonController {
       const row = context.getObject() as {
         Key: string; Sequence?: number; WarehouseCode?: string; WarehouseName?: string;
       };
-      lookup[row.Key] =
-        `Transbordo ${row.Sequence ?? ""} — armazém (${row.WarehouseCode ?? ""}) ${row.WarehouseName ?? ""}`;
+      lookup[row.Key] = formatter.formatTransshipmentLabel(row);
     });
 
     const linkedKeys = transactionContexts.map(

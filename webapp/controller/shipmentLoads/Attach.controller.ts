@@ -146,7 +146,7 @@ export default class Attach extends BaseController {
 
       return {
         Key: row.Key,
-        Text: `Transbordo ${row.Sequence ?? ""} — armazém (${row.WarehouseCode ?? ""}) ${row.WarehouseName ?? ""}`,
+        Text: formatter.formatTransshipmentLabel(row),
         WarehouseCode: row.WarehouseCode ?? "",
       };
     });

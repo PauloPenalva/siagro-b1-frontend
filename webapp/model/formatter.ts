@@ -717,6 +717,18 @@ const formatter = {
   ) => (transshipmentKey ? ((lookup ?? {})[transshipmentKey] ?? "Transbordo") : "Origem"),
 
   /**
+   * Rótulo padrão de um transbordo (GAC-1181, Task 11): "Transbordo N — armazém (X) Nome".
+   * Extraído porque o mesmo texto era montado em dois lugares (o Select "Vincular como" da
+   * página `Attach` e o `lookup` de `BaseController#refreshTransshipmentLinkage`) — uma mudança
+   * futura de formato só precisa mexer aqui.
+   */
+  formatTransshipmentLabel: (
+    transshipment: { Sequence?: number; WarehouseCode?: string; WarehouseName?: string }
+  ) => (
+    `Transbordo ${transshipment.Sequence ?? ""} — armazém (${transshipment.WarehouseCode ?? ""}) ${transshipment.WarehouseName ?? ""}`
+  ),
+
+  /**
    * Rótulo do campo no log de alterações da carga. O backend grava o código
    * (ShipmentLoadChangeLogFields), não o texto - a tradução é aqui para não travar o i18n.
    * Código desconhecido cai para ele mesmo: linha antiga nunca fica em branco.
