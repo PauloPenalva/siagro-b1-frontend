@@ -1335,26 +1335,32 @@ const formatter = {
 
   /**
    * `ReleaseOrigin` da liberação de embarque, que trafega como inteiro no OData:
-   * 0 Compra, 1 Transferência de titularidade, 2 Devolução ao armazém.
+   * 0 Compra, 1 Transferência de titularidade, 2 Devolução ao armazém,
+   * 3 Transbordo (GAC-1181). Sem o `case` 3 o valor caía no fallback e a liberação de
+   * transbordo lia "Compra" na Expedição de Grãos.
    */
   releaseOriginText: (value: number) => {
     const m = new Map<number, string>();
     m.set(0, "Compra");
     m.set(1, "Transferência");
     m.set(2, "Devolução");
+    m.set(3, "Transbordo");
 
     return m.get(value) ?? "Compra";
   },
 
   /**
    * Cor da origem na Expedição de Grãos. Devolução em `Warning` de propósito: é mercadoria que
-   * VOLTOU, e reembarcá-la é uma decisão diferente de embarcar uma compra nova.
+   * VOLTOU, e reembarcá-la é uma decisão diferente de embarcar uma compra nova. Transbordo (3)
+   * recebe o mesmo tratamento de Transferência (1): a mercadoria já está fisicamente em nosso
+   * poder (armazém intermediário), não é uma devolução/recusa que peça atenção redobrada.
    */
   releaseOriginState: (value: number) => {
     const m = new Map<number, string>();
     m.set(0, "None");
     m.set(1, "Information");
     m.set(2, "Warning");
+    m.set(3, "Information");
 
     return m.get(value) ?? "None";
   },
