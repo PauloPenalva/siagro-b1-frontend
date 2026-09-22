@@ -1,0 +1,118 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table">
+	<!-- Transbordos da carga (GAC-1181): a mercadoria é descarregada num armazém intermediário e
+	     recarregada dali, sem que a viagem vire duas cargas. Só aparece na carga Normal — a
+	     Remoção não tem transbordo (ShipmentLoadTransshipmentRules.EnsureLoadAcceptsTransshipment),
+	     e é o próprio Detail.view.xml que esconde a seção inteira nesse caso.
+
+	     `$$ownRequest` é obrigatório: sem ele a coleção vira $expand do GET da carga e o
+	     refresh() depois de gravar não recarrega nada. Mesmo motivo do `loadDischargesTable`.
+
+	     `$select` explícito pela mesma armadilha das Descargas: `Comments` não tem coluna própria
+	     aqui, mas entra na lista porque uma coluna invisível NÃO cria binding neste projeto — se
+	     algum dia o controller precisar dele (ex.: tooltip), o campo já chega pronto.
+
+	     `Situação` é derivada só de `EntryStorageTransactionKey`, no cliente: o backend ainda não
+	     expõe se a SAÍDA do transbordo já foi vinculada a este registro — esse vínculo por papel
+	     é a Task 11. Por isso hoje só dois estados são alcançáveis por aqui (Aguardando entrada /
+	     Aguardando saída); "Concluído" já existe em formatTransshipmentStatus para quando aquele
+	     sinal chegar. -->
+	<t:Table
+		id="loadTransshipmentsTable"
+		class="sapUiSizeCondensed"
+		alternateRowColors="true"
+		enableBusyIndicator="true"
+		enableSelectAll="false"
+		selectionMode="Single"
+		selectionBehavior="Row"
+		busyIndicatorDelay="0"
+		visibleRowCount="5"
+		noData="Nenhum transbordo registrado nesta carga."
+		rows="{
+			path: 'Transshipments',
+			parameters: {
+				'$$ownRequest': true,
+				'$select': 'Key,Sequence,Origin,WarehouseCode,WarehouseName,TransshipmentDate,OutgoingQuantity,EntryQuantity,ShrinkageQuantity,EntryStorageTransactionKey,Comments'
+			},
+			sorter: { path: 'Sequence' }
+		}">
+		<t:extension>
+			<OverflowToolbar>
+				<content>
+					<Title text="Transbordos"/>
+					<ToolbarSpacer/>
+					<!-- Espelha EnsureLoadAcceptsTransshipment + EnsureIsLastAsync: carga encerrada não
+					     aceita transbordo, e um transbordo já aberto (Status InTransshipment) bloqueia
+					     o início de outro. `targetType: 'any'` em toda expressão sobre enum, senão o
+					     valor não chega como string e a comparação nunca casa. -->
+					<Button
+						type="Transparent"
+						text="Iniciar Transbordo"
+						icon="sap-icon://add"
+						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Completed' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'InTransshipment' }"
+						press=".onStartTransshipment"/>
+					<!-- Registrar Entrada/Estornar só fazem sentido enquanto HÁ transbordo aberto —
+					     exatamente quando a carga está InTransshipment. -->
+					<Button
+						type="Transparent"
+						text="Registrar Entrada"
+						icon="sap-icon://accept"
+						visible="{= ${path: 'Status', targetType: 'any'} === 'InTransshipment' }"
+						press=".onRegisterTransshipmentEntry"/>
+					<Button
+						type="Transparent"
+						text="Estornar"
+						icon="sap-icon://undo"
+						visible="{= ${path: 'Status', targetType: 'any'} === 'InTransshipment' }"
+						press=".onReverseTransshipment"/>
+				</content>
+			</OverflowToolbar>
+		</t:extension>
+		<t:columns>
+			<t:Column label="Seq." hAlign="Center" width="5rem">
+				<t:template><Text text="{Sequence}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Origem" width="9rem">
+				<t:template>
+					<Text wrapping="false" text="{ path: 'Origin', targetType: 'any', formatter: '.formatter.formatTransshipmentOrigin' }"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Armazém" width="16rem">
+				<t:template><Text text="({WarehouseCode}) {WarehouseName}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Data" width="8rem">
+				<t:template>
+					<Text wrapping="false" text="{ path: 'TransshipmentDate', targetType: 'any', formatter: '.formatter.formatDate' }"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Saída" hAlign="End" width="9rem">
+				<t:template>
+					<ObjectNumber
+						textAlign="End"
+						number="{ path: 'OutgoingQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Entrada" hAlign="End" width="9rem">
+				<t:template>
+					<ObjectNumber
+						textAlign="End"
+						number="{ path: 'EntryQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Quebra" hAlign="End" width="9rem">
+				<t:template>
+					<ObjectNumber
+						textAlign="End"
+						number="{ path: 'ShrinkageQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Situação" width="11rem">
+				<t:template>
+					<Text wrapping="false" text="{ path: 'EntryStorageTransactionKey', targetType: 'any', formatter: '.formatter.formatTransshipmentStatus' }"/>
+				</t:template>
+			</t:Column>
+		</t:columns>
+	</t:Table>
+</core:FragmentDefinition>

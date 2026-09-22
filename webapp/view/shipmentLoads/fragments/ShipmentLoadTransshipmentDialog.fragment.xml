@@ -1,0 +1,118 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<!-- Transbordos da carga (GAC-1181): um único diálogo cobre Iniciar Transbordo e Registrar
+	     Entrada, alternando os campos por `viewModel>/transshipmentDialog/mode` ('start'/'entry').
+
+	     Buffer JSON (`viewModel>/transshipmentDialog/...`), nunca two-way no contexto OData: num
+	     Detail isso deixaria PATCH pendente no update group diferido e derrubaria o batch. Mesmo
+	     molde dos diálogos de Descarga e Recusa.
+
+	     Armazém PRÓPRIO x de TERCEIRO é decidido ANTES de abrir, em
+	     BaseController#onRegisterTransshipmentEntry (via WarehousesGetComplement) — o diálogo só
+	     alterna os dois campos abaixo pela flag `isOwn` já resolvida; nunca os dois ao mesmo tempo:
+	     terceiro digita o peso pesado, próprio escolhe o romaneio de Entrada em Armazenagem já
+	     lançado (o peso vem dele). -->
+	<Dialog
+		id="shipmentLoadTransshipmentDialog"
+		title="{viewModel>/transshipmentDialog/title}"
+		contentWidth="34rem">
+		<content>
+			<VBox class="sapUiSmallMargin">
+				<f:Form editable="true">
+					<f:layout>
+						<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+					</f:layout>
+					<f:formContainers>
+						<f:FormContainer>
+							<f:formElements>
+								<!-- Só no início: em Registrar Entrada o armazém já é o do transbordo
+								     selecionado, e o registro de entrada não o troca. -->
+								<f:FormElement label="Armazém do Transbordo"
+									visible="{= ${viewModel>/transshipmentDialog/mode} === 'start' }">
+									<f:fields>
+										<!-- editable="true" é obrigatório mesmo com valueHelpOnly: com
+										     editable="false" o ícone de value help não aparece. Value help
+										     ESCRITO À MÃO (não o openWarehouseValueHelp genérico): esta view
+										     tem element binding OData (/ShipmentLoads(...)), que recusaria
+										     gravar uma propriedade solta — mesmo motivo de
+										     Detail.controller#openRefusalWarehouseValueHelp. -->
+										<Input
+											required="true"
+											editable="true"
+											showValueHelp="true"
+											valueHelpOnly="true"
+											valueHelpRequest=".openTransshipmentWarehouseValueHelp"
+											value="{viewModel>/transshipmentDialog/warehouseCode}"/>
+										<Input value="{viewModel>/transshipmentDialog/warehouseName}" editable="false"/>
+									</f:fields>
+								</f:FormElement>
+								<f:FormElement
+									label="{= ${viewModel>/transshipmentDialog/mode} === 'start' ? 'Data do Transbordo' : 'Data da Entrada' }">
+									<f:fields>
+										<!-- O buffer guarda a data no formato que as actions exigem
+										     (yyyy-MM-dd); o usuário vê dd/MM/yyyy. -->
+										<DatePicker
+											value="{viewModel>/transshipmentDialog/date}"
+											required="true"
+											valueFormat="yyyy-MM-dd"
+											displayFormat="dd/MM/yyyy"/>
+									</f:fields>
+								</f:FormElement>
+								<!-- Só no início: a action de registrar entrada não tem parâmetro de
+								     observação. -->
+								<f:FormElement label="Observação"
+									visible="{= ${viewModel>/transshipmentDialog/mode} === 'start' }">
+									<f:fields>
+										<TextArea
+											value="{viewModel>/transshipmentDialog/comments}"
+											rows="3"
+											width="100%"
+											maxLength="500"/>
+									</f:fields>
+								</f:FormElement>
+								<!-- Armazém de TERCEIRO: peso pesado na entrada. Único Input de peso do
+								     diálogo — não existe tara aqui, como não existe no romaneio 15 (só
+								     GrossWeight/NetWeight): a quebra de transporte já é OutgoingQuantity
+								     menos este peso. -->
+								<f:FormElement label="Peso Pesado na Entrada"
+									visible="{= ${viewModel>/transshipmentDialog/mode} === 'entry' &amp;&amp; !${viewModel>/transshipmentDialog/isOwn} }">
+									<f:fields>
+										<Input
+											value="{ path: 'viewModel>/transshipmentDialog/grossWeight', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+											required="true"
+											textAlign="End"/>
+									</f:fields>
+								</f:FormElement>
+								<!-- Armazém PRÓPRIO: a entrada não nasce aqui — já existe, lançada pela
+								     tela de Entrada em Armazenagem de sempre. Itens vindos de JSONModel
+								     estático, carregado ANTES de abrir o diálogo (mesmo motivo do Select
+								     de nota/item da Descarga): Select com selectedKey sobre coleção OData
+								     renderiza vazio, com o estado interno certo e o DOM desatualizado. -->
+								<f:FormElement label="Entrada em Armazenagem"
+									visible="{= ${viewModel>/transshipmentDialog/mode} === 'entry' &amp;&amp; ${viewModel>/transshipmentDialog/isOwn} }">
+									<f:fields>
+										<Select
+											forceSelection="false"
+											required="true"
+											items="{viewModel>/transshipmentDialog/receipts}"
+											selectedKey="{viewModel>/transshipmentDialog/receiptKey}">
+											<core:ListItem key="{viewModel>Key}" text="{viewModel>Text}"/>
+										</Select>
+									</f:fields>
+								</f:FormElement>
+							</f:formElements>
+						</f:FormContainer>
+					</f:formContainers>
+				</f:Form>
+			</VBox>
+		</content>
+		<beginButton>
+			<Button text="Gravar" type="Emphasized" press=".onConfirmTransshipmentDialog"/>
+		</beginButton>
+		<endButton>
+			<Button text="Cancelar" press=".onCloseTransshipmentDialog"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

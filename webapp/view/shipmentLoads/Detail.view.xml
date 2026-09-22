@@ -399,6 +399,20 @@
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
 
+			<!-- Transbordos (GAC-1181): descarregar num armazém intermediário e recarregar, sem que
+			     a viagem vire duas cargas. Carga de Remoção não passa por transbordo
+			     (ShipmentLoadTransshipmentRules.EnsureLoadAcceptsTransshipment). -->
+			<uxap:ObjectPageSection titleUppercase="false" title="Transbordos"
+				visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' }">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<uxap:blocks>
+							<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.ShipmentLoadTransshipments" type="XML"/>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
 			<!-- Anexos (GAC-1171): grid de anexos tipados da carga. Sem `visible` condicional de
 			     propósito: anexo vale em qualquer carga, inclusive de Remoção e cancelada. -->
 			<uxap:ObjectPageSection titleUppercase="false" title="Anexos">

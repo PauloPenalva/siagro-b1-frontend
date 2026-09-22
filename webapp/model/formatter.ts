@@ -555,6 +555,8 @@ const formatter = {
     m.set("PurchasePriceComplement", "Compl.Preço");
     m.set("WarehouseLoss", "Perda Armazém");
     m.set("WarehouseGain", "Sobra Armazém");
+    // Romaneio 15 (GAC-1181): entrada do transbordo em armazém de TERCEIRO.
+    m.set("TransshipmentReceipt", "Entrada em Transbordo");
 
     return m.get(value);
   },
@@ -612,6 +614,8 @@ const formatter = {
     m.set("Cancelled", "Cancelada");
     m.set("Returned", "Devolvida");
     m.set("Completed", "Concluída");
+    // GAC-1181: descarregada num armazém intermediário, aguardando a saída do transbordo.
+    m.set("InTransshipment", "Em Transbordo");
 
     return m.get(value);
   },
@@ -640,6 +644,9 @@ const formatter = {
     m.set("Returned", "Warning");
     // A remocao concluida e um encerramento bem-sucedido, como a carga faturada.
     m.set("Completed", "Success");
+    // GAC-1181: mercadoria fora da carga, no armazém intermediário — chama atenção como a
+    // devolução, mas não é encerramento: a carga ainda vai receber a saída do transbordo.
+    m.set("InTransshipment", "Warning");
 
     return m.get(value);
   },
@@ -665,9 +672,33 @@ const formatter = {
     m.set("Reopened", "Carga Reaberta");
     m.set("StorageEntriesAttached", "Entradas Vinculadas");
     m.set("StorageEntriesDetached", "Entradas Desvinculadas");
+    m.set("TransshipmentStarted", "Transbordo Iniciado");
+    m.set("TransshipmentEntered", "Entrada do Transbordo Registrada");
+    m.set("TransshipmentReversed", "Transbordo Estornado");
 
     return m.get(value);
   },
+
+  /**
+   * De onde o transbordo (GAC-1181) nasceu: Planejado sai da origem já sabendo que vai passar
+   * por um armazém intermediário; Recusa nasce de uma carga faturada e devolvida (Task 8).
+   */
+  formatTransshipmentOrigin: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Planned", "Planejado");
+    m.set("Refusal", "Recusa");
+
+    return m.get(value);
+  },
+
+  /**
+   * Situação do transbordo (GAC-1181), derivada só de `EntryStorageTransactionKey`: o backend
+   * ainda não expõe (via EDM) se a SAÍDA do transbordo já foi vinculada a este registro — esse
+   * vínculo por papel é a Task 11. Por isso, hoje, só os dois primeiros estados são alcançáveis
+   * pela tela; "Concluído" fica pronto para quando aquele sinal existir.
+   */
+  formatTransshipmentStatus: (entryStorageTransactionKey: string) =>
+    entryStorageTransactionKey ? "Aguardando saída" : "Aguardando entrada",
 
   /**
    * Rótulo do campo no log de alterações da carga. O backend grava o código
