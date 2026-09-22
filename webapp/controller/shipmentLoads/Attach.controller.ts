@@ -201,8 +201,11 @@ export default class Attach extends BaseController {
       `BranchCode eq '${(target.BranchCode ?? "").replace(/'/g, "''")}'`,
     ];
 
+    // ⚠️ A restrição de armazém é do TRANSBORDO, não do papel em si: "Origem" também está em
+    // `roles` (para o Select ter o item), mas com `WarehouseCode` vazio — testar só a existência
+    // do papel geraria `WarehouseCode eq ''`, que não casa com nada e esvazia a lista.
     const role = (target.roles ?? []).find(r => r.Key === target.role);
-    if (role) {
+    if (role?.WarehouseCode) {
       scope.push(`WarehouseCode eq '${role.WarehouseCode.replace(/'/g, "''")}'`);
     }
 
