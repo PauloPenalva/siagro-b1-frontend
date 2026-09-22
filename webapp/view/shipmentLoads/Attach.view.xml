@@ -31,17 +31,18 @@
 						<ToolbarSpacer/>
 						<!-- Vincular por papel (GAC-1181, Task 11): "Origem" (chave vazia) é o vínculo comum
 						     de sempre; um transbordo só aparece aqui com entrada JÁ REGISTRADA. Some para a
-						     carga de Remoção, que nunca tem transbordo. -->
+						     carga de Remoção, que nunca tem transbordo.
+						     ⚠️ "Origem" vem do CONTROLLER, dentro de target>/roles, e não como item estático:
+						     agregação bindada descarta o conteúdo declarado ao lado do template, e o Select
+						     aparecia VAZIO na carga sem transbordo. -->
 						<Label text="Vincular como" labelFor="attachRoleSelect"
 							visible="{= ${target>/LoadType} !== 'Removal' }"/>
 						<Select
 							id="attachRoleSelect"
-							forceSelection="false"
 							selectedKey="{target>/role}"
 							change=".onRoleChange"
 							visible="{= ${target>/LoadType} !== 'Removal' }"
 							items="{ path: 'target>/roles', templateShareable: false }">
-							<core:Item key="" text="Origem"/>
 							<core:Item key="{target>Key}" text="{target>Text}"/>
 						</Select>
 						<Button type="Emphasized" text="Vincular à Carga" icon="sap-icon://chain-link" press=".onAttachShipments"/>

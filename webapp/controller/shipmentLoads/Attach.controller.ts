@@ -88,9 +88,15 @@ export default class Attach extends BaseController {
       // GAC-1181, Task 11: só a carga Normal tem transbordo (a Remoção nunca abre um — mesma
       // guarda de ShipmentLoadTransshipmentRules.EnsureLoadAcceptsTransshipment); evita uma
       // consulta cuja resposta seria sempre vazia.
-      const roles = load.LoadType === "Removal"
-        ? []
-        : await this.loadTransshipmentRolesAsync(id);
+      //
+      // ⚠️ "Origem" entra AQUI, na lista, e não como item estático no XML: o Select tem a
+      // agregação `items` bindada, e agregação bindada descarta o que for declarado ao lado do
+      // template — o item estático sumia e a carga sem transbordo mostrava um Select VAZIO.
+      const roles: AttachRoleOption[] = [{ Key: "", Text: "Origem", WarehouseCode: "" }];
+
+      if (load.LoadType !== "Removal") {
+        roles.push(...await this.loadTransshipmentRolesAsync(id));
+      }
 
       this.targetModel().setData({
         // Placa e produto vão no TÍTULO em vez de num MessageStrip: a faixa comia a altura da
