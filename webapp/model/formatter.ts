@@ -715,12 +715,13 @@ const formatter = {
    *
    * Com entrada registrada, a ORDEM importa:
    * 1. `linkedTransshipmentKeys` inclui esta chave → "Concluído". É o array de chaves de
-   *    transbordo já referenciadas por um romaneio DA CARGA (`ShipmentLoadKey` gravado,
-   *    `ShipmentLoadTransshipmentKey` apontando aqui), montado por
-   *    `BaseController#refreshTransshipmentLinkage` a partir da coleção `Transactions` — sinal
-   *    de que a Expedição de venda (o vínculo por papel, `ShipmentLoadsAttachTransactions` com
-   *    `TransshipmentKey`) já foi vinculada. Verificado ANTES do item 2 porque a saída do lote
-   *    continua vinculada (item 2) mesmo depois de a Expedição concluir o transbordo.
+   *    transbordo cuja Expedição de venda (`SalesShipment`, o 7) já foi vinculada, montado por
+   *    `BaseController#refreshTransshipmentLinkage` a partir da coleção `Transactions`,
+   *    restringindo por `TransactionType eq 'SalesShipment'` — o MESMO
+   *    `ShipmentLoadTransshipmentKey` também alcança a entrada e (fase 2) a saída do lote, que
+   *    NÃO concluem o transbordo, por isso o filtro de tipo. Verificado ANTES do item 2 porque a
+   *    saída do lote continua vinculada (item 2) mesmo depois de a Expedição concluir o
+   *    transbordo.
    * 2. Senão, `lotExitStorageTransactionKey` preenchido → "Aguardando expedição": a saída do
    *    LOTE (armazém PRÓPRIO, `ShipmentLoadTransshipment.LotExitStorageTransactionKey`, Task 10)
    *    já foi vinculada e emitiu a liberação, mas a Expedição de Grãos ainda não — a carga NÃO é

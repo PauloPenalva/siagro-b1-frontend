@@ -1189,11 +1189,15 @@ export abstract class BaseController extends CommonController {
    * (fase 2, Task 10) já é direta — `ShipmentLoadTransshipment.LotExitStorageTransactionKey` —
    * e não precisa deste cruzamento. Por isso o cliente cruza as duas coleções da carga a cada
    * mudança relevante:
-   * - `linkedKeys`: as chaves de transbordo já referenciadas por algum romaneio DA CARGA
-   *   (`ShipmentLoadKey` gravado, `StorageTransaction.ShipmentLoadTransshipmentKey` apontando
-   *   aqui) — fecha o último estado ("Concluído") de `formatter.formatTransshipmentStatus`. A
-   *   saída do lote NÃO entra aqui: fica só com `ShipmentLoadTransshipmentKey`, sem
-   *   `ShipmentLoadKey`, então nunca aparece em `Transactions`.
+   * - `linkedKeys`: as chaves de transbordo cuja Expedição de venda (`SalesShipment`, o 7) já foi
+   *   vinculada — fecha o último estado ("Concluído") de `formatter.formatTransshipmentStatus`.
+   *   `Transactions` traz, pelo MESMO `ShipmentLoadTransshipmentKey`, também a entrada
+   *   (`Receipt`/`TransshipmentReceipt`) e, desde a fase 2, a saída do lote (`Shipment`) — nenhum
+   *   dos dois conclui o transbordo, por isso o `$filter` da consulta abaixo restringe a
+   *   `TransactionType eq 'SalesShipment'`, o mesmo critério de
+   *   `ShipmentLoadsRecalculateTransshippedService.HasOpenTransshipmentAsync` no servidor. Sem
+   *   esse filtro, `linkedKeys` fica verdadeiro assim que a entrada é registrada (passo 3) e os
+   *   estados "Aguardando saída"/"Aguardando expedição" nunca aparecem.
    * - `lookup`: chave do transbordo → texto pronto ("Transbordo N — armazém (X) Nome"), para a
    *   coluna "Etapa" do grid de romaneios (`formatter.formatShipmentLoadTransactionStage`).
    *
@@ -1228,7 +1232,15 @@ export abstract class BaseController extends CommonController {
       undefined,
       {
         $select: "ShipmentLoadTransshipmentKey",
-        $filter: "ShipmentLoadTransshipmentKey ne null",
+        // Espelha exatamente o critério de conclusão do servidor
+        // (`ShipmentLoadsRecalculateTransshippedService.HasOpenTransshipmentAsync`): só o
+        // `SalesShipment (7)` fecha o transbordo. `QueryTransactions` traz também, pelo MESMO
+        // `ShipmentLoadTransshipmentKey`, a entrada (`Receipt`/`TransshipmentReceipt`) e, desde a
+        // fase 2, a saída do lote (`Shipment`) — sem este filtro de tipo, `linkedKeys` fica
+        // verdadeiro assim que a entrada é registrada, e "Aguardando saída"/"Aguardando
+        // expedição" nunca aparecem.
+        $filter: "ShipmentLoadTransshipmentKey ne null and TransactionType eq 'SalesShipment' " +
+          "and TransactionStatus ne 'Cancelled'",
       }
     );
 
