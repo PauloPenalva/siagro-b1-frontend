@@ -15,8 +15,10 @@
 	     algum dia o controller precisar dele (ex.: tooltip), o campo já chega pronto.
 
 	     `Situação` é derivada no cliente a partir de `EntryStorageTransactionKey`,
-	     `LotExitStorageTransactionKey` (GAC-1181 fase 2, Task 10 — direto no registro, sem
-	     cruzamento nenhum) e de `viewModel>/transshipmentLinkage/linkedKeys` (Task 11): o backend
+	     `LotExitStorageTransactionKey` (GAC-1181 fase 2 — direto no registro, sem cruzamento
+	     nenhum; gravado pelo próprio armazém ao confirmar a pesagem de saída do romaneio, não mais
+	     por uma ação do escritório na carga) e de `viewModel>/transshipmentLinkage/linkedKeys`
+	     (Task 11): o backend
 	     não expõe, num único campo, se a Expedição de venda já foi vinculada a este transbordo —
 	     esse vínculo por papel é `ShipmentLoadsAttachTransactions` com `TransshipmentKey`, e
 	     `linkedKeys` é montado por `BaseController#refreshTransshipmentLinkage` cruzando os
@@ -58,28 +60,21 @@
 						icon="sap-icon://add"
 						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Completed' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'InTransshipment' }"
 						press=".onStartTransshipment"/>
-					<!-- Registrar Entrada/Vincular Saída do Lote/Estornar só fazem sentido enquanto HÁ
-					     transbordo aberto — exatamente quando a carga está InTransshipment. Mesma
-					     convenção dos dois vizinhos: o botão fica visível pelo Status da CARGA (não
-					     há como amarrar visibilidade ao transbordo selecionado sem um listener de
-					     seleção, que este módulo não usa em lugar nenhum), e quem valida o registro
-					     escolhido é o handler no clique — igual a onRegisterTransshipmentEntry, que
-					     já alerta se a entrada estiver registrada demais. -->
+					<!-- Registrar Entrada/Estornar só fazem sentido enquanto HÁ transbordo aberto —
+					     exatamente quando a carga está InTransshipment. Mesma convenção do vizinho: o
+					     botão fica visível pelo Status da CARGA (não há como amarrar visibilidade ao
+					     transbordo selecionado sem um listener de seleção, que este módulo não usa em
+					     lugar nenhum), e quem valida o registro escolhido é o handler no clique — igual
+					     a onRegisterTransshipmentEntry, que já alerta se a entrada estiver registrada
+					     demais. Vincular a saída do lote NÃO é mais um botão daqui: desde a fase 2, o
+					     próprio armazém grava LotExitStorageTransactionKey ao confirmar a pesagem de
+					     saída do romaneio — sem ação nenhuma do escritório na carga. -->
 					<Button
 						type="Transparent"
 						text="Registrar Entrada"
 						icon="sap-icon://accept"
 						visible="{= ${path: 'Status', targetType: 'any'} === 'InTransshipment' }"
 						press=".onRegisterTransshipmentEntry"/>
-					<!-- GAC-1181 fase 2, Task 10: só o armazém PRÓPRIO passa por aqui — em armazém
-					     de terceiro a "saída" É a Expedição, vinculada direto pelo caminho de
-					     sempre (Attach + `transshipmentKey`). -->
-					<Button
-						type="Transparent"
-						text="Vincular Saída do Lote"
-						icon="sap-icon://chain-link"
-						visible="{= ${path: 'Status', targetType: 'any'} === 'InTransshipment' }"
-						press=".onAttachTransshipmentLotExit"/>
 					<Button
 						type="Transparent"
 						text="Estornar"
