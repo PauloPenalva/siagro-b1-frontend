@@ -13,6 +13,9 @@ import { BaseController } from "./BaseController";
 const LANES = [
   { id: "listPlanned", status: "Planned", count: "countPlanned" },
   { id: "listOpen", status: "Open", count: "countOpen" },
+  // GAC-1181, Task 11: entre Carregada e Faturada Parcial — a carga descarregou num armazém
+  // intermediário e aguarda a saída do transbordo antes de seguir o ciclo de faturamento.
+  { id: "listInTransshipment", status: "InTransshipment", count: "countInTransshipment" },
   { id: "listPartiallyInvoiced", status: "PartiallyInvoiced", count: "countPartiallyInvoiced" },
   { id: "listInvoiced", status: "Invoiced", count: "countInvoiced" },
   { id: "listReturned", status: "Returned", count: "countReturned" },

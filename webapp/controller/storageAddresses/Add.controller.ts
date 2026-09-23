@@ -1,6 +1,9 @@
 import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import Context from "sap/ui/model/odata/v4/Context";
+import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import LoteArmazenagemBaseController from "./LoteArmazenagemBaseController";
 
 /**
@@ -29,6 +32,13 @@ export default class Add extends LoteArmazenagemBaseController {
     const results = await this.getDocNumberInfoByTransaction("StorageAddress")
     const docNumberInfo = results.filter(x => x.Default)[0];
 
+    // Natureza é escolhida na inclusão e imutável depois (GAC-1181 fase 2): o campo fica
+    // habilitado só aqui, nunca em ui>/editable — mesmo padrão de ui>/typeEditable no Tipo do
+    // Contrato. Sem armazém escolhido ainda, Transbordo não pode ser oferecido.
+    const uiModel = this.getModel("ui") as JSONModel;
+    uiModel.setProperty("/natureEditable", true);
+    uiModel.setProperty("/storageAddressNatureOptions", this.buildNatureOptions(false));
+
     const oContext = oBinding.create({
       "DocNumberKey": docNumberInfo.Key,
       "BranchCode": branchInfo.code,
@@ -38,11 +48,51 @@ export default class Add extends LoteArmazenagemBaseController {
       // String vazia aqui quebraria a desserialização do enum se o usuário não
       // tocasse no campo.
       "OwnershipType": "ThirdParty",
+      // Nasce Comum, igual ao default da entidade (GAC-1181 fase 2): Transbordo é uma escolha
+      // deliberada do operador, só depois de escolher um armazém PRÓPRIO.
+      "Nature": "Regular",
     }, false, false, false);
 
     oView.setBindingContext(oContext);
     this.setBusy(false);
 	}
+
+  /**
+   * Sobrepõe o value help genérico do armazém (`CommonController#openWarehouseValueHelp`), que
+   * é `void` — o `press`/`valueHelpRequest` da XML espera esse contrato, então o trabalho
+   * assíncrono fica isolado em `openWarehouseValueHelpAsync` e entra aqui com `void`, mesmo
+   * padrão de `onInit`/`attachPatternMatched` logo acima.
+   */
+  openWarehouseValueHelp(ev: Input$ValueHelpRequestEvent): void {
+    void this.openWarehouseValueHelpAsync(ev);
+  }
+
+  /**
+   * Além de gravar código/nome do armazém como sempre, recalcula a oferta do Select de
+   * Natureza (GAC-1181 fase 2) — "Transbordo" só é oferecido para armazém PRÓPRIO. Se o
+   * usuário já tinha escolhido Transbordo e troca para um armazém que não é próprio, a escolha
+   * recua para Comum: a opção que não existe mais na lista não pode continuar selecionada.
+   */
+  private async openWarehouseValueHelpAsync(ev: Input$ValueHelpRequestEvent): Promise<void> {
+    await this.applyValueHelp(
+      ev, "WarehousesSelectDialog", ["Code", "Name", "TaxId", "FName"], "Code");
+
+    const context = this.getView().getBindingContext() as Context;
+    if (!context) return;
+
+    // requestProperty, não getProperty: o valor acabou de ser gravado por applyValueHelp, mas
+    // o mesmo cuidado do resto do módulo contra undefined silencioso vale aqui.
+    const warehouseCode = await (context.requestProperty("WarehouseCode") as Promise<string>);
+    const isOwn = await this.isOwnWarehouseAsync(warehouseCode);
+    const options = this.buildNatureOptions(isOwn);
+
+    (this.getModel("ui") as JSONModel).setProperty("/storageAddressNatureOptions", options);
+
+    const currentNature = context.getProperty("Nature") as string;
+    if (!options.some(option => option.Key === currentNature)) {
+      await context.setProperty("Nature", "Regular");
+    }
+  }
 
 	async onSave() {
 		

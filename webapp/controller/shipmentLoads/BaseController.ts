@@ -11,6 +11,7 @@ import Table from "sap/ui/table/Table";
 import FileUploader from "sap/ui/unified/FileUploader";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
+import formatter from "siagrob1/model/formatter";
 import { sendJson } from "siagrob1/helpers/FetchHelpers";
 import CommonController from "siagrob1/controller/common/CommonController";
 
@@ -35,6 +36,30 @@ type DischargeForm = {
   items: DischargeOption[];
 };
 
+/** Linha do Select de Entrada em Armazenagem, no diálogo de transbordo (armazém próprio). */
+type TransshipmentReceiptOption = { Key: string; Text: string };
+
+/**
+ * Buffer JSON do diálogo de transbordo (GAC-1181). Um único diálogo cobre os dois modos:
+ * `mode: 'start'` é Iniciar Transbordo, `mode: 'entry'` é Registrar Entrada — `key` é sempre o
+ * transbordo (nunca nulo em `entry`, sempre nulo em `start`, que ainda não existe).
+ */
+type TransshipmentDialogForm = {
+  mode: "start" | "entry";
+  title: string;
+  key?: string;
+  warehouseCode?: string;
+  warehouseName?: string;
+  /** yyyy-MM-dd — data do transbordo em `start`, data da entrada em `entry`. */
+  date?: string;
+  comments?: string;
+  /** Resolvido ANTES de abrir o diálogo (WarehousesGetComplement), só vale em `entry`. */
+  isOwn: boolean;
+  grossWeight?: number;
+  receiptKey?: string;
+  receipts: TransshipmentReceiptOption[];
+};
+
 /**
  * Ponto de extensão da Montagem de Carga, no mesmo formato do `shipmentBilling`. Guarda as
  * descargas (GAC-1171) e os anexos, para não engordar mais o `Detail.controller`.
@@ -45,6 +70,11 @@ export abstract class BaseController extends CommonController {
 
   /** Trava ANTES do primeiro await: duplo clique gravaria o ticket duas vezes. */
   private _dischargeInFlight = false;
+
+  private _transshipmentDialog: Dialog;
+
+  /** Trava ANTES do primeiro await: duplo clique iniciaria/registraria o transbordo duas vezes. */
+  private _transshipmentInFlight = false;
 
   /** Chave da carga aberta, lida do contexto do elemento da página. */
   protected currentLoadKey(): string {
@@ -610,5 +640,452 @@ export abstract class BaseController extends CommonController {
     }
 
     return table.getContextByIndex(index)?.getObject() as { Key: string };
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Transbordos (GAC-1181)                                              */
+  /* ------------------------------------------------------------------ */
+
+  private transshipmentsTable(): Table {
+    return this.byId("loadTransshipmentsTable") as Table;
+  }
+
+  private selectedTransshipmentContext(): Context | null {
+    const table = this.transshipmentsTable();
+    const index = table?.getSelectedIndex() ?? -1;
+
+    if (index < 0) {
+      MessageBox.alert("Selecione um transbordo.");
+      return null;
+    }
+
+    return table.getContextByIndex(index) as Context;
+  }
+
+  async onStartTransshipment(): Promise<void> {
+    if (!this.getView().getBindingContext()) {
+      MessageBox.alert("Carga não carregada.");
+      return;
+    }
+
+    this.viewModel().setProperty("/transshipmentDialog", {
+      mode: "start",
+      title: "Iniciar Transbordo",
+      key: null,
+      warehouseCode: "",
+      warehouseName: "",
+      date: this.todayIso(),
+      comments: "",
+      isOwn: false,
+      grossWeight: null,
+      receiptKey: null,
+      receipts: [],
+    } as TransshipmentDialogForm);
+
+    await this.openTransshipmentDialog();
+  }
+
+  /**
+   * Value help do armazém do transbordo, escrito à mão no buffer do diálogo — não o
+   * `openWarehouseValueHelp` genérico, pelo mesmo motivo de
+   * `Detail.controller#openRefusalWarehouseValueHelp`: esta view tem element binding OData
+   * (`/ShipmentLoads(...)`), e aquele helper tentaria gravar a descrição na entidade da carga.
+   */
+  async openTransshipmentWarehouseValueHelp(): Promise<void> {
+    const selected = await DialogHelper.openTableSelectDialog(
+      this, "WarehousesSelectDialog", ["Code", "Name", "TaxId", "FName"], []);
+
+    if (!selected) return;
+
+    const viewModel = this.viewModel();
+    viewModel.setProperty(
+      "/transshipmentDialog/warehouseCode", selected.getProperty("Code") as string);
+    viewModel.setProperty(
+      "/transshipmentDialog/warehouseName", selected.getProperty("Name") as string);
+  }
+
+  /**
+   * Descobre se o armazém é PRÓPRIO (WarehousesGetComplement, mesmo caminho de
+   * `armazem/Complement.controller`). Armazém sem registro de complemento equivale a NÃO —
+   * mesma leitura de `ShipmentLoadsTransshipmentRegisterEntryService` no servidor.
+   */
+  private async isOwnWarehouseAsync(warehouseCode: string): Promise<boolean> {
+    const func = (this.getModel() as ODataModel).bindContext(this.api.warehousesGetComplement);
+    func.setParameter("WarehouseCode", warehouseCode);
+    await func.invoke();
+
+    const complement = func.getBoundContext().getObject() as { IsOwn?: boolean };
+    return complement?.IsOwn === true;
+  }
+
+  /**
+   * Romaneios de Entrada em Armazenagem elegíveis para vincular à entrada do transbordo, no
+   * armazém PRÓPRIO informado — as mesmas condições de
+   * `ShipmentLoadTransshipmentRules.EnsureOwnWarehouseReceiptIsUsable`, aplicadas aqui para o
+   * Select nunca oferecer um romaneio que a action recusaria depois. Isso inclui o lote ser de
+   * natureza Transbordo (`StorageAddress/Nature eq 'Transshipment'`) — sem essa condição, o
+   * Select oferecia Entradas de lote COMUM que `EnsureReceiptIsFromTransshipmentLotAsync`
+   * recusa depois no servidor.
+   *
+   * Filtro por navigation property (`StorageAddress/Nature`), NÃO em dois passos: verificado
+   * contra o backend rodando que o OData aceita `$filter` atravessando a navigation property
+   * (join implícito) — `$select` com o mesmo caminho pontilhado é que o OData rejeita com 400
+   * ("Found a path with multiple navigation properties..."), por isso o lote vem via `$expand`
+   * abaixo, não via `$select`.
+   *
+   * Filtro de ENUM como string crua no `$filter`, nunca `new Filter(...)`: o UI5 não sabe
+   * formatar o literal de um enum a partir do metadata e estoura "Unsupported type".
+   */
+  private async loadEligibleTransshipmentReceiptsAsync(
+    warehouseCode: string
+  ): Promise<TransshipmentReceiptOption[]> {
+    const load = this.getView().getBindingContext() as Context;
+
+    // requestProperty, NUNCA getProperty: com autoExpandSelect, o $select do bindElement da
+    // página é montado a partir dos bindings de CONTROLE existentes na view, e nenhum deles
+    // exibe ItemCode/BranchCode/UnitOfMeasureCode como escalar (a filial só aparece via
+    // {Branch/ShortName}, que expande a navegação, não o escalar). getProperty devolveria
+    // undefined em silêncio, e o filtro casaria a string "undefined" com nada — falha muda,
+    // com cara de regra de negócio (o diálogo diria sempre "não há Entrada em Armazenagem").
+    const [itemCode, branchCode, unitOfMeasureCode] = await Promise.all([
+      load.requestProperty("ItemCode") as Promise<string>,
+      load.requestProperty("BranchCode") as Promise<string>,
+      load.requestProperty("UnitOfMeasureCode") as Promise<string>,
+    ]);
+
+    // Escapa aspas simples no literal do $filter — mesma convenção de
+    // Attach.controller#applyShipmentFilters e Panel.controller (`.replace(/'/g, "''")`).
+    const escape = (value: string) => (value ?? "").replace(/'/g, "''");
+
+    const filter = [
+      "TransactionType eq 'Receipt'",
+      "TransactionStatus eq 'Confirmed'",
+      `WarehouseCode eq '${escape(warehouseCode)}'`,
+      `ItemCode eq '${escape(itemCode)}'`,
+      `BranchCode eq '${escape(branchCode)}'`,
+      `UnitOfMeasureCode eq '${escape(unitOfMeasureCode)}'`,
+      "ShipmentLoadKey eq null",
+      "ShipmentLoadTransshipmentKey eq null",
+      "StorageAddress/Nature eq 'Transshipment'",
+    ].join(" and ");
+
+    const binding = (this.getModel() as ODataModel).bindList(
+      "/StorageTransactions",
+      undefined,
+      undefined,
+      undefined,
+      {
+        $filter: filter,
+        $select: "Key,Code,GrossWeight,TransactionDate",
+        // Lote via $expand, não $select: um $select com caminho pontilhado por navigation
+        // property ("StorageAddress/Code") estoura 400 no OData — só $expand com $select
+        // ANINHADO é aceito.
+        $expand: "StorageAddress($select=Code,Description)",
+        $orderby: "TransactionDate desc",
+      }
+    );
+
+    const contexts = await binding.requestContexts(0, Infinity);
+
+    return contexts.map(context => {
+      const row = context.getObject() as {
+        Key: string; Code?: string; GrossWeight?: number | string; TransactionDate?: string;
+        StorageAddress?: { Code?: string; Description?: string };
+      };
+      // Edm.Decimal chega como STRING — mesmo cuidado de onEditDischarge.
+      const weight = formatter.formatDecimal(Number(row.GrossWeight ?? 0), 3);
+      // Mostra o lote na linha: com o filtro só oferecendo lotes de Transbordo, ainda pode
+      // haver mais de um no mesmo armazém, e o operador precisa CONFERIR qual escolheu, não só
+      // confiar que o sistema filtrou certo.
+      const lotCode = row.StorageAddress?.Code ?? "";
+      const lotDescription = row.StorageAddress?.Description ?? "";
+      const lot = lotDescription ? `${lotCode} - ${lotDescription}` : lotCode;
+
+      return {
+        Key: row.Key,
+        Text:
+          `${row.Code ?? ""} - ${formatter.formatDate(row.TransactionDate)} - ${weight}` +
+          ` - Lote ${lot}`,
+      };
+    });
+  }
+
+  async onRegisterTransshipmentEntry(): Promise<void> {
+    const context = this.selectedTransshipmentContext();
+
+    if (!context) return;
+
+    if (context.getProperty("EntryStorageTransactionKey")) {
+      MessageBox.alert(
+        "A entrada deste transbordo já foi registrada. Estorne-o para corrigir.");
+      return;
+    }
+
+    const key = context.getProperty("Key") as string;
+    const warehouseCode = context.getProperty("WarehouseCode") as string;
+    const warehouseName = context.getProperty("WarehouseName") as string;
+
+    this.setBusy(true);
+
+    try {
+      const isOwn = await this.isOwnWarehouseAsync(warehouseCode);
+      let receipts: TransshipmentReceiptOption[] = [];
+
+      if (isOwn) {
+        receipts = await this.loadEligibleTransshipmentReceiptsAsync(warehouseCode);
+
+        if (receipts.length === 0) {
+          // A mensagem precisa citar o LOTE DE TRANSBORDO: desde a fase 2 do GAC-1181 a entrada
+          // só aceita romaneio pesado num lote de natureza Transbordo, e sem isso o operador
+          // lança a entrada num lote comum e volta a esbarrar na mesma parede.
+          MessageBox.alert(
+            "Não há Entrada em Armazenagem confirmada, sem vínculo, pesada num lote de " +
+            "TRANSBORDO do armazém, produto, filial e unidade desta carga. Pese a entrada " +
+            "num lote de natureza Transbordo antes de registrar o transbordo — se ele ainda " +
+            "não existe, cadastre-o em Armazenagem > Lotes de Armazenagem.");
+          return;
+        }
+      }
+
+      this.viewModel().setProperty("/transshipmentDialog", {
+        mode: "entry",
+        title: "Registrar Entrada do Transbordo",
+        key,
+        warehouseCode,
+        warehouseName,
+        date: this.todayIso(),
+        comments: "",
+        isOwn,
+        grossWeight: null,
+        receiptKey: null,
+        receipts,
+      } as TransshipmentDialogForm);
+
+      await this.openTransshipmentDialog();
+    } catch (e) {
+      MessageBox.error((e as Error).message || "Erro ao preparar o registro de entrada.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  /**
+   * O fragmento é carregado com o id da VIEW, como o diálogo de descarga: `addDependent` DENTRO
+   * do `if`, senão cada abertura re-insere o mesmo controle na agregação de dependentes.
+   */
+  private async openTransshipmentDialog(): Promise<void> {
+    if (!this._transshipmentDialog) {
+      this._transshipmentDialog = await Fragment.load({
+        id: this.getView().getId(),
+        name: "siagrob1.view.shipmentLoads.fragments.ShipmentLoadTransshipmentDialog",
+        controller: this,
+      }) as Dialog;
+
+      this.getView().addDependent(this._transshipmentDialog);
+    }
+
+    this._transshipmentDialog.open();
+  }
+
+  onCloseTransshipmentDialog(): void {
+    this._transshipmentDialog?.close();
+  }
+
+  async onConfirmTransshipmentDialog(): Promise<void> {
+    // Trava ANTES do primeiro await: duplo clique dispararia duas actions.
+    if (this._transshipmentInFlight) return;
+
+    const form = this.viewModel().getProperty("/transshipmentDialog") as TransshipmentDialogForm;
+    const date = (form.date ?? "").trim();
+
+    if (date === "") {
+      MessageBox.alert(
+        form.mode === "start" ? "Informe a data do transbordo." : "Informe a data da entrada.");
+      return;
+    }
+
+    if (form.mode === "start") {
+      if (!(form.warehouseCode ?? "").trim()) {
+        MessageBox.alert("Informe o armazém do transbordo.");
+        return;
+      }
+    } else if (form.isOwn) {
+      if (!form.receiptKey) {
+        MessageBox.alert("Selecione o romaneio de Entrada em Armazenagem.");
+        return;
+      }
+    } else if (!(Number(form.grossWeight ?? 0) > 0)) {
+      MessageBox.alert("Informe o peso pesado na entrada do transbordo.");
+      return;
+    }
+
+    this._transshipmentInFlight = true;
+    this._transshipmentDialog?.setBusy(true);
+    this.setBusy(true);
+
+    try {
+      const model = this.getModel() as ODataModel;
+
+      if (form.mode === "start") {
+        const action = model.bindContext("/ShipmentLoadsTransshipmentStart(...)");
+        action.setParameter("LoadKey", this.currentLoadKey());
+        action.setParameter("WarehouseCode", form.warehouseCode.trim());
+        action.setParameter("TransshipmentDate", date);
+        action.setParameter("Comments", (form.comments ?? "").trim());
+        await action.invoke();
+        MessageToast.show("Transbordo iniciado.");
+      } else {
+        const action = model.bindContext("/ShipmentLoadsTransshipmentRegisterEntry(...)");
+        action.setParameter("Key", form.key);
+        action.setParameter("EntryDate", date);
+
+        // Só um dos dois: GrossWeight (terceiro) ou ReceiptStorageTransactionKey (próprio), como
+        // o backend decide pelo IsOwn do complemento — nunca os dois, nunca nenhum.
+        if (form.isOwn) {
+          action.setParameter("ReceiptStorageTransactionKey", form.receiptKey);
+        } else {
+          action.setParameter("GrossWeight", Number(form.grossWeight));
+        }
+
+        await action.invoke();
+        MessageToast.show("Entrada do transbordo registrada.");
+      }
+
+      // O diálogo só fecha DEPOIS do resolve: fechar antes descartaria o que foi digitado se a
+      // action recusasse o transbordo.
+      this.onCloseTransshipmentDialog();
+      this.refreshTransshipments();
+    } catch (e) {
+      MessageBox.error((e as Error).message || "Erro ao gravar o transbordo.");
+    } finally {
+      this._transshipmentInFlight = false;
+      this._transshipmentDialog?.setBusy(false);
+      this.setBusy(false);
+    }
+  }
+
+  async onReverseTransshipment(): Promise<void> {
+    const context = this.selectedTransshipmentContext();
+
+    if (!context) return;
+
+    if (!await DialogHelper.confirmDialog("Estornar o transbordo selecionado ?")) return;
+
+    this.setBusy(true);
+
+    try {
+      const action = (this.getModel() as ODataModel)
+        .bindContext("/ShipmentLoadsTransshipmentReverse(...)");
+      action.setParameter("Key", context.getProperty("Key") as string);
+      await action.invoke();
+
+      MessageToast.show("Transbordo estornado.");
+      this.refreshTransshipments();
+    } catch (e) {
+      MessageBox.error((e as Error).message || "Erro ao estornar o transbordo.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  /**
+   * Recarrega a lista de transbordos e o que anda junto dela: o cabeçalho, porque
+   * `ShipmentLoad.Status`/`TransshippedQuantity`/`AvailableQuantity` são recalculados no
+   * servidor a cada escrita, e a Movimentação, porque toda action do módulo grava linha nela
+   * (`TransshipmentStarted`/`TransshipmentEntered`/`TransshipmentReversed`) — diferente das
+   * Descargas, que gravam no Log de Alterações.
+   */
+  protected refreshTransshipments(): void {
+    (this.getView().getBindingContext() as Context)?.refresh();
+
+    ["loadTransshipmentsTable", "loadMovementsTable"].forEach(id => {
+      const binding = (this.byId(id) as Table)?.getBinding("rows") as ODataListBinding;
+      binding?.refresh();
+    });
+
+    this.refreshTransshipmentLinkage().catch(
+      () => MessageBox.error("Erro ao atualizar a situação dos transbordos."));
+  }
+
+  /**
+   * Estado derivado no CLIENTE (GAC-1181, Task 11): o backend ainda não expõe, num único campo,
+   * se a Expedição de venda de um transbordo já foi vinculada — esse vínculo por papel é a
+   * própria Task 11 (`ShipmentLoadsAttachTransactions` com `TransshipmentKey`). A saída do LOTE
+   * (fase 2, Task 10) já é direta — `ShipmentLoadTransshipment.LotExitStorageTransactionKey` —
+   * e não precisa deste cruzamento. Por isso o cliente cruza as duas coleções da carga a cada
+   * mudança relevante:
+   * - `linkedKeys`: as chaves de transbordo cuja Expedição de venda (`SalesShipment`, o 7) já foi
+   *   vinculada — fecha o último estado ("Concluído") de `formatter.formatTransshipmentStatus`.
+   *   `Transactions` traz, pelo MESMO `ShipmentLoadTransshipmentKey`, também a entrada
+   *   (`Receipt`/`TransshipmentReceipt`) e, desde a fase 2, a saída do lote (`Shipment`) — nenhum
+   *   dos dois conclui o transbordo, por isso o `$filter` da consulta abaixo restringe a
+   *   `TransactionType eq 'SalesShipment'`, o mesmo critério de
+   *   `ShipmentLoadsRecalculateTransshippedService.HasOpenTransshipmentAsync` no servidor. Sem
+   *   esse filtro, `linkedKeys` fica verdadeiro assim que a entrada é registrada (passo 3) e os
+   *   estados "Aguardando saída"/"Aguardando expedição" nunca aparecem.
+   * - `lookup`: chave do transbordo → texto pronto ("Transbordo N — armazém (X) Nome"), para a
+   *   coluna "Etapa" do grid de romaneios (`formatter.formatShipmentLoadTransactionStage`).
+   *
+   * Grava em `viewModel` (Component model, global ao app) em vez de num model próprio da view:
+   * é o mesmo lugar onde os diálogos deste módulo já guardam buffer, e as duas colunas que leem
+   * este estado vivem em fragments diferentes (`ShipmentLoadTransshipments` e a seção Romaneios
+   * do `Detail.view.xml`), sem um ancestral comum mais próximo.
+   *
+   * Duas consultas independentes, e não o binding visível das tabelas: `$$ownRequest` mantém o
+   * ciclo de vida da UI, e ler o binding de uma tabela que pode nem estar renderizada ainda
+   * (`byId` cedo demais) devolveria `undefined` em silêncio — o mesmo cuidado do resto do módulo.
+   */
+  protected async refreshTransshipmentLinkage(
+    loadKey: string = this.currentLoadKey()
+  ): Promise<void> {
+    if (!loadKey) return;
+
+    const model = this.getModel() as ODataModel;
+
+    const transshipmentsBinding = model.bindList(
+      `/ShipmentLoads(${loadKey})/Transshipments`,
+      undefined,
+      undefined,
+      undefined,
+      { $select: "Key,Sequence,WarehouseCode,WarehouseName" }
+    );
+
+    const transactionsBinding = model.bindList(
+      `/ShipmentLoads(${loadKey})/Transactions`,
+      undefined,
+      undefined,
+      undefined,
+      {
+        $select: "ShipmentLoadTransshipmentKey",
+        // Espelha exatamente o critério de conclusão do servidor
+        // (`ShipmentLoadsRecalculateTransshippedService.HasOpenTransshipmentAsync`): só o
+        // `SalesShipment (7)` fecha o transbordo. `QueryTransactions` traz também, pelo MESMO
+        // `ShipmentLoadTransshipmentKey`, a entrada (`Receipt`/`TransshipmentReceipt`) e, desde a
+        // fase 2, a saída do lote (`Shipment`) — sem este filtro de tipo, `linkedKeys` fica
+        // verdadeiro assim que a entrada é registrada, e "Aguardando saída"/"Aguardando
+        // expedição" nunca aparecem.
+        $filter: "ShipmentLoadTransshipmentKey ne null and TransactionType eq 'SalesShipment' " +
+          "and TransactionStatus ne 'Cancelled'",
+      }
+    );
+
+    const [transshipmentContexts, transactionContexts] = await Promise.all([
+      transshipmentsBinding.requestContexts(0, Infinity),
+      transactionsBinding.requestContexts(0, Infinity),
+    ]);
+
+    const lookup: Record<string, string> = {};
+
+    transshipmentContexts.forEach(context => {
+      const row = context.getObject() as {
+        Key: string; Sequence?: number; WarehouseCode?: string; WarehouseName?: string;
+      };
+      lookup[row.Key] = formatter.formatTransshipmentLabel(row);
+    });
+
+    const linkedKeys = transactionContexts.map(
+      context => context.getProperty("ShipmentLoadTransshipmentKey") as string);
+
+    this.viewModel().setProperty("/transshipmentLinkage", { lookup, linkedKeys });
   }
 }

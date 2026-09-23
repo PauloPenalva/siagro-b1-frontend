@@ -9,6 +9,12 @@ import Table from "sap/ui/table/Table";
 import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 
+/**
+ * Papel do romaneio ao ser vinculado (GAC-1181, Task 11). `Key` vazia é a Origem — sem
+ * restrição extra de armazém, como sempre foi; um transbordo restringe ao `WarehouseCode` DELE.
+ */
+type AttachRoleOption = { Key: string; Text: string; WarehouseCode: string };
+
 /** Carga alvo da vinculação, lida do servidor no início da página. */
 type TargetLoad = {
   title: string,
@@ -18,6 +24,9 @@ type TargetLoad = {
   TruckCode: string,
   ItemCode: string,
   BranchCode: string,
+  /** Chave do papel selecionado no Select "Vincular como" — "" é Origem. */
+  role: string,
+  roles: AttachRoleOption[],
 }
 
 /**
@@ -68,11 +77,25 @@ export default class Attach extends BaseController {
 
       // A lista já barra a carga encerrada ou cancelada antes de navegar; aqui a guarda vale
       // para quem chega pela URL.
-      if (load.Status !== "Planned" && load.Status !== "Open") {
+      if (load.Status !== "Planned" && load.Status !== "Open" &&
+          load.Status !== "InTransshipment") {
         MessageBox.warning(
           `A carga ${load.Code as string} já foi encerrada ou cancelada e não aceita novos romaneios.`);
         this.onNavBack();
         return;
+      }
+
+      // GAC-1181, Task 11: só a carga Normal tem transbordo (a Remoção nunca abre um — mesma
+      // guarda de ShipmentLoadTransshipmentRules.EnsureLoadAcceptsTransshipment); evita uma
+      // consulta cuja resposta seria sempre vazia.
+      //
+      // ⚠️ "Origem" entra AQUI, na lista, e não como item estático no XML: o Select tem a
+      // agregação `items` bindada, e agregação bindada descarta o que for declarado ao lado do
+      // template — o item estático sumia e a carga sem transbordo mostrava um Select VAZIO.
+      const roles: AttachRoleOption[] = [{ Key: "", Text: "Origem", WarehouseCode: "" }];
+
+      if (load.LoadType !== "Removal") {
+        roles.push(...await this.loadTransshipmentRolesAsync(id));
       }
 
       this.targetModel().setData({
@@ -86,6 +109,8 @@ export default class Attach extends BaseController {
         TruckCode: load.TruckCode as string,
         ItemCode: load.ItemCode as string,
         BranchCode: load.BranchCode as string,
+        role: "",
+        roles,
       } as TargetLoad);
 
       this.applyShipmentFilters();
@@ -98,6 +123,47 @@ export default class Attach extends BaseController {
   }
 
   /**
+   * Transbordos da carga com entrada JÁ REGISTRADA (GAC-1181, Task 11) — os únicos que
+   * `ShipmentLoadsAttachTransactionsService#ValidateTransshipmentRoleAsync` aceita como papel de
+   * uma saída vinculada; um transbordo sem entrada é recusado pela action com mensagem própria,
+   * então nem entra aqui como opção.
+   *
+   * `$filter` como string crua, mesma convenção do resto do módulo: `EntryStorageTransactionKey`
+   * é Edm.Guid nulável, mas `ne null` não precisa de escape (não há literal de string).
+   */
+  private async loadTransshipmentRolesAsync(loadKey: string): Promise<AttachRoleOption[]> {
+    const binding = (this.getModel() as ODataModel).bindList(
+      `/ShipmentLoads(${loadKey})/Transshipments`,
+      undefined,
+      undefined,
+      undefined,
+      {
+        $filter: "EntryStorageTransactionKey ne null",
+        $select: "Key,Sequence,WarehouseCode,WarehouseName",
+        $orderby: "Sequence",
+      }
+    );
+
+    const contexts = await binding.requestContexts(0, Infinity);
+
+    return contexts.map(context => {
+      const row = context.getObject() as {
+        Key: string; Sequence?: number; WarehouseCode?: string; WarehouseName?: string;
+      };
+
+      return {
+        Key: row.Key,
+        Text: formatter.formatTransshipmentLabel(row),
+        WarehouseCode: row.WarehouseCode ?? "",
+      };
+    });
+  }
+
+  onRoleChange(): void {
+    this.applyShipmentFilters();
+  }
+
+  /**
    * Romaneio de embarque ainda SOLTO e COMPATÍVEL com a carga alvo.
    *
    * `ShipmentLoadKey eq null` é o que faz o romaneio sumir daqui assim que entra numa carga — e
@@ -107,6 +173,11 @@ export default class Attach extends BaseController {
    * A página não tem filtros próprios: o escopo já reduz a lista ao que é compatível, então o
    * `$filter` é montado inteiro aqui, como string crua — `sap.ui.model.Filter` sobre enum estoura
    * "Unsupported type", porque o modelo V4 não serializa o literal.
+   *
+   * GAC-1181, Task 11: o armazém só entra no escopo quando o papel selecionado é um TRANSBORDO —
+   * a Origem segue sem restrição de armazém, como sempre foi
+   * (`ShipmentLoadsAttachTransactionsService#EnsureNoneIsATransshipmentWarehouseAsync` é quem
+   * barra, no servidor, o romaneio do armazém errado entrando como Origem).
    */
   private applyShipmentFilters(): void {
     const target = this.targetModel().getData() as Partial<TargetLoad>;
@@ -129,6 +200,14 @@ export default class Attach extends BaseController {
       `ItemCode eq '${(target.ItemCode ?? "").replace(/'/g, "''")}'`,
       `BranchCode eq '${(target.BranchCode ?? "").replace(/'/g, "''")}'`,
     ];
+
+    // ⚠️ A restrição de armazém é do TRANSBORDO, não do papel em si: "Origem" também está em
+    // `roles` (para o Select ter o item), mas com `WarehouseCode` vazio — testar só a existência
+    // do papel geraria `WarehouseCode eq ''`, que não casa com nada e esvazia a lista.
+    const role = (target.roles ?? []).find(r => r.Key === target.role);
+    if (role?.WarehouseCode) {
+      scope.push(`WarehouseCode eq '${role.WarehouseCode.replace(/'/g, "''")}'`);
+    }
 
     this.shipmentsBinding()?.changeParameters({ $filter: scope.join(" and ") });
   }
@@ -157,6 +236,10 @@ export default class Attach extends BaseController {
         .bindContext("/ShipmentLoadsAttachTransactions(...)");
       action.setParameter("Key", target.Key);
       action.setParameter("StorageTransactionKeys", keys);
+      // SEMPRE definido, nunca undefined (mesma regra da Refusal, Task 11): null é o papel
+      // Origem — TransshipmentKey é Optional no EDM, mas `undefined` faz o JSON.stringify do
+      // corpo omitir a chave e o OData recusar o corpo inteiro.
+      action.setParameter("TransshipmentKey", target.role || null);
 
       this.setBusy(true);
       await action.invoke();

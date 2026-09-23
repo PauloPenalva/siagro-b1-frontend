@@ -87,9 +87,12 @@ export default class Detail extends BaseController {
 
     // Passa a chave explícita: bindElement não espera a resposta, e currentLoadKey() leria a
     // Key de um contexto ainda sem dados nesta primeira chamada. `.catch()` em vez de `void`: uma
-    // falha aqui não pode virar uma rejeição não tratada silenciosa.
+    // falha aqui não pode virar uma rejeição não tratada silenciosa. Mesmo motivo para a
+    // situação dos transbordos (GAC-1181, Task 11) — precisa da chave explícita pelo mesmo motivo.
     this.refreshAttachments(id).catch(
       () => MessageBox.error("Erro ao carregar os anexos da carga."));
+    this.refreshTransshipmentLinkage(id).catch(
+      () => MessageBox.error("Erro ao carregar a situação dos transbordos."));
   }
 
   async onRecalculate(): Promise<void> {
@@ -475,12 +478,14 @@ export default class Detail extends BaseController {
 
   /**
    * Trocar para "segue para novo destino" limpa o armazém: deixá-lo preenchido e invisível
-   * mandaria um código de armazém junto de uma recusa que não devolve nada a armazém nenhum.
+   * mandaria um código de armazém junto de uma recusa que não devolve nada a armazém nenhum. Os
+   * índices 1 (armazém) e 2 (transbordo, GAC-1181 Task 11) são os dois que MANTÊM o armazém.
    */
   onRefusalDestinationChange(): void {
     const refusal = this.getView().getModel("refusal") as JSONModel;
+    const index = refusal.getProperty("/DestinationIndex") as number;
 
-    if (refusal.getProperty("/DestinationIndex") !== 1) {
+    if (index !== 1 && index !== 2) {
       refusal.setProperty("/DestinationWarehouseCode", "");
       refusal.setProperty("/DestinationWarehouseName", "");
     }
@@ -524,16 +529,21 @@ export default class Detail extends BaseController {
       }
 
       const toWarehouse = form.DestinationIndex === 1;
+      // GAC-1181, Task 11: terceiro destino — mesma exigência de armazém do índice 1.
+      const toTransshipment = form.DestinationIndex === 2;
+      const needsWarehouse = toWarehouse || toTransshipment;
 
-      if (toWarehouse && !form.DestinationWarehouseCode?.trim()) {
+      if (needsWarehouse && !form.DestinationWarehouseCode?.trim()) {
         MessageBox.warning("Informe o armazém de destino da mercadoria devolvida.");
         return;
       }
 
       const confirmed = await DialogHelper.confirmDialog(
-        toWarehouse
-          ? "Confirma a recusa, devolvendo a mercadoria ao armazém informado ?"
-          : "Confirma a recusa ? A carga voltará a ficar disponível para faturamento.");
+        toTransshipment
+          ? "Confirma a recusa ? A mercadoria seguirá para transbordo no armazém informado."
+          : toWarehouse
+            ? "Confirma a recusa, devolvendo a mercadoria ao armazém informado ?"
+            : "Confirma a recusa ? A carga voltará a ficar disponível para faturamento.");
 
       if (!confirmed) return;
 
@@ -541,12 +551,14 @@ export default class Detail extends BaseController {
       action.setParameter("Key", this._loadKey);
       action.setParameter("SalesInvoiceKeys", lines.map(l => l.SalesInvoiceKey));
       action.setParameter("Quantities", lines.map(l => Number(l.ReturnQuantity)));
-      action.setParameter("Destination", toWarehouse ? "Warehouse" : "Rebilling");
+      action.setParameter(
+        "Destination", toTransshipment ? "Transshipment" : toWarehouse ? "Warehouse" : "Rebilling");
       action.setParameter("Reason", form.Reason.trim());
       // SEMPRE definido, nunca undefined: JSON.stringify omite chave undefined e o OData
-      // rejeita o corpo inteiro por parâmetro faltando, sem dizer qual.
+      // rejeita o corpo inteiro por parâmetro faltando, sem dizer qual. O terceiro destino segue
+      // a mesma regra do armazém comum.
       action.setParameter(
-        "DestinationWarehouseCode", toWarehouse ? form.DestinationWarehouseCode.trim() : "");
+        "DestinationWarehouseCode", needsWarehouse ? form.DestinationWarehouseCode.trim() : "");
 
       refusalModel.setProperty("/busy", true);
       try {
@@ -559,9 +571,11 @@ export default class Detail extends BaseController {
       this.refreshAll();
 
       MessageToast.show(
-        toWarehouse
-          ? "Recusa registrada. Mercadoria devolvida ao armazém."
-          : "Recusa registrada. Carga disponível para novo faturamento.");
+        toTransshipment
+          ? "Recusa registrada. Mercadoria seguirá para transbordo no armazém informado."
+          : toWarehouse
+            ? "Recusa registrada. Mercadoria devolvida ao armazém."
+            : "Recusa registrada. Carga disponível para novo faturamento.");
     } catch (e) {
       MessageBox.error((e as Error).message);
     } finally {
@@ -761,6 +775,7 @@ export default class Detail extends BaseController {
       "loadMovementsTable",
       "loadRefusalReturnsTable",
       "loadDischargesTable",
+      "loadTransshipmentsTable",
       "shipmentLoadCommentsTable",
       "shipmentLoadChangeLogsTable",
     ].forEach(id => {
@@ -775,5 +790,11 @@ export default class Detail extends BaseController {
       this.refreshAttachments(loadKey).catch(
         () => MessageBox.error("Erro ao atualizar a lista de anexos."));
     }
+
+    // Mesmo motivo: desvincular romaneio (GAC-1181, Task 11) zera o papel do transbordo dele, e
+    // a recusa com destino Transbordo abre uma linha nova — a situação/etapa derivadas no
+    // cliente (`BaseController#refreshTransshipmentLinkage`) precisam dos dois lados frescos.
+    this.refreshTransshipmentLinkage(loadKey).catch(
+      () => MessageBox.error("Erro ao atualizar a situação dos transbordos."));
   }
 }

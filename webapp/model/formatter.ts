@@ -167,6 +167,24 @@ const formatter = {
   },
 
   /**
+   * Para que o lote de armazenagem SERVE (GAC-1181 fase 2) — eixo independente de
+   * `formatStorageOwnershipType` (de quem é a mercadoria).
+   *
+   * Aceita o nome do enum (binding OData) e o índice numérico, mesmo cuidado de
+   * `formatStorageOwnershipType`.
+   */
+  formatStorageAddressNature: (value: string | number) => {
+    const m = new Map<string, string>();
+    m.set("Regular", "Comum");
+    m.set("Transshipment", "Transbordo");
+
+    const byIndex = ["Regular", "Transshipment"];
+    const key = typeof value === "number" ? byIndex[value] : value;
+
+    return m.get(key);
+  },
+
+  /**
    * Valor financeiro da fixação (volume × preço). É o número que a diretoria
    * de fato aprova — nem volume nem preço isolados dizem o tamanho do compromisso.
    */
@@ -555,6 +573,8 @@ const formatter = {
     m.set("PurchasePriceComplement", "Compl.Preço");
     m.set("WarehouseLoss", "Perda Armazém");
     m.set("WarehouseGain", "Sobra Armazém");
+    // Romaneio 15 (GAC-1181): entrada do transbordo em armazém de TERCEIRO.
+    m.set("TransshipmentReceipt", "Entrada em Transbordo");
 
     return m.get(value);
   },
@@ -612,6 +632,8 @@ const formatter = {
     m.set("Cancelled", "Cancelada");
     m.set("Returned", "Devolvida");
     m.set("Completed", "Concluída");
+    // GAC-1181: descarregada num armazém intermediário, aguardando a saída do transbordo.
+    m.set("InTransshipment", "Em Transbordo");
 
     return m.get(value);
   },
@@ -640,6 +662,9 @@ const formatter = {
     m.set("Returned", "Warning");
     // A remocao concluida e um encerramento bem-sucedido, como a carga faturada.
     m.set("Completed", "Success");
+    // GAC-1181: mercadoria fora da carga, no armazém intermediário — chama atenção como a
+    // devolução, mas não é encerramento: a carga ainda vai receber a saída do transbordo.
+    m.set("InTransshipment", "Warning");
 
     return m.get(value);
   },
@@ -665,9 +690,78 @@ const formatter = {
     m.set("Reopened", "Carga Reaberta");
     m.set("StorageEntriesAttached", "Entradas Vinculadas");
     m.set("StorageEntriesDetached", "Entradas Desvinculadas");
+    m.set("TransshipmentStarted", "Transbordo Iniciado");
+    m.set("TransshipmentEntered", "Entrada do Transbordo Registrada");
+    m.set("TransshipmentReversed", "Transbordo Estornado");
 
     return m.get(value);
   },
+
+  /**
+   * De onde o transbordo (GAC-1181) nasceu: Planejado sai da origem já sabendo que vai passar
+   * por um armazém intermediário; Recusa nasce de uma carga faturada e devolvida (Task 8).
+   */
+  formatTransshipmentOrigin: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Planned", "Planejado");
+    m.set("Refusal", "Recusa");
+
+    return m.get(value);
+  },
+
+  /**
+   * Situação do transbordo (GAC-1181, quatro estados desde a fase 2/Task 10). Sem entrada
+   * registrada, "Aguardando entrada".
+   *
+   * Com entrada registrada, a ORDEM importa:
+   * 1. `linkedTransshipmentKeys` inclui esta chave → "Concluído". É o array de chaves de
+   *    transbordo cuja Expedição de venda (`SalesShipment`, o 7) já foi vinculada, montado por
+   *    `BaseController#refreshTransshipmentLinkage` a partir da coleção `Transactions`,
+   *    restringindo por `TransactionType eq 'SalesShipment'` — o MESMO
+   *    `ShipmentLoadTransshipmentKey` também alcança a entrada e (fase 2) a saída do lote, que
+   *    NÃO concluem o transbordo, por isso o filtro de tipo. Verificado ANTES do item 2 porque a
+   *    saída do lote continua vinculada (item 2) mesmo depois de a Expedição concluir o
+   *    transbordo.
+   * 2. Senão, `lotExitStorageTransactionKey` preenchido → "Aguardando expedição": a saída do
+   *    LOTE (armazém PRÓPRIO, `ShipmentLoadTransshipment.LotExitStorageTransactionKey`, Task 10)
+   *    já foi vinculada e emitiu a liberação, mas a Expedição de Grãos ainda não — a carga NÃO é
+   *    faturável neste estado, por desenho. Em armazém de TERCEIRO este campo nunca é
+   *    preenchido: lá a "saída" É a própria Expedição, vinculada direto pelo item 1.
+   * 3. Senão, "Aguardando saída".
+   */
+  formatTransshipmentStatus: (
+    entryStorageTransactionKey: string,
+    lotExitStorageTransactionKey: string,
+    key: string,
+    linkedTransshipmentKeys: string[]
+  ) => {
+    if (!entryStorageTransactionKey) return "Aguardando entrada";
+    if ((linkedTransshipmentKeys ?? []).includes(key)) return "Concluído";
+    if (lotExitStorageTransactionKey) return "Aguardando expedição";
+    return "Aguardando saída";
+  },
+
+  /**
+   * Etapa do romaneio dentro da carga (GAC-1181, Task 11): sem `ShipmentLoadTransshipmentKey` o
+   * romaneio é a saída de ORIGEM; com ele, é a saída de um transbordo — o texto pronto (sequência
+   * + armazém) vem de `lookup` (chave do transbordo → texto), montado por
+   * `BaseController#refreshTransshipmentLinkage`.
+   */
+  formatShipmentLoadTransactionStage: (
+    transshipmentKey: string, lookup: Record<string, string>
+  ) => (transshipmentKey ? ((lookup ?? {})[transshipmentKey] ?? "Transbordo") : "Origem"),
+
+  /**
+   * Rótulo padrão de um transbordo (GAC-1181, Task 11): "Transbordo N — armazém (X) Nome".
+   * Extraído porque o mesmo texto era montado em dois lugares (o Select "Vincular como" da
+   * página `Attach` e o `lookup` de `BaseController#refreshTransshipmentLinkage`) — uma mudança
+   * futura de formato só precisa mexer aqui.
+   */
+  formatTransshipmentLabel: (
+    transshipment: { Sequence?: number; WarehouseCode?: string; WarehouseName?: string }
+  ) => (
+    `Transbordo ${transshipment.Sequence ?? ""} — armazém (${transshipment.WarehouseCode ?? ""}) ${transshipment.WarehouseName ?? ""}`
+  ),
 
   /**
    * Rótulo do campo no log de alterações da carga. O backend grava o código
@@ -1276,26 +1370,32 @@ const formatter = {
 
   /**
    * `ReleaseOrigin` da liberação de embarque, que trafega como inteiro no OData:
-   * 0 Compra, 1 Transferência de titularidade, 2 Devolução ao armazém.
+   * 0 Compra, 1 Transferência de titularidade, 2 Devolução ao armazém,
+   * 3 Transbordo (GAC-1181). Sem o `case` 3 o valor caía no fallback e a liberação de
+   * transbordo lia "Compra" na Expedição de Grãos.
    */
   releaseOriginText: (value: number) => {
     const m = new Map<number, string>();
     m.set(0, "Compra");
     m.set(1, "Transferência");
     m.set(2, "Devolução");
+    m.set(3, "Transbordo");
 
     return m.get(value) ?? "Compra";
   },
 
   /**
    * Cor da origem na Expedição de Grãos. Devolução em `Warning` de propósito: é mercadoria que
-   * VOLTOU, e reembarcá-la é uma decisão diferente de embarcar uma compra nova.
+   * VOLTOU, e reembarcá-la é uma decisão diferente de embarcar uma compra nova. Transbordo (3)
+   * recebe o mesmo tratamento de Transferência (1): a mercadoria já está fisicamente em nosso
+   * poder (armazém intermediário), não é uma devolução/recusa que peça atenção redobrada.
    */
   releaseOriginState: (value: number) => {
     const m = new Map<number, string>();
     m.set(0, "None");
     m.set(1, "Information");
     m.set(2, "Warning");
+    m.set(3, "Information");
 
     return m.get(value) ?? "None";
   },

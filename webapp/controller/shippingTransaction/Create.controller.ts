@@ -16,15 +16,16 @@ type routeArgs = {
 
 /**
  * Origens em que o físico JÁ está em nosso poder e a Expedição cria só a perna de saída:
- * `OwnershipTransfer` (1) e `SalesReturn` (2). O enum trafega como inteiro no OData.
+ * `OwnershipTransfer` (1), `SalesReturn` (2) e `Transshipment` (3). O enum trafega como
+ * inteiro no OData.
  * Espelha `ReleaseOriginRules.ShipsWithoutPurchaseLeg` no backend.
  */
-const RELEASE_ORIGINS_WITHOUT_PURCHASE_LEG = [1, 2];
+const RELEASE_ORIGINS_WITHOUT_PURCHASE_LEG = [1, 2, 3];
 
 /** Liberação de entrega lida com `$expand=PurchaseContract`. */
 type ShipmentReleaseWithContract = {
   PurchaseContractKey?: string,
-  /** `ReleaseOrigin`: 0 = Standard, 1 = OwnershipTransfer, 2 = SalesReturn. */
+  /** `ReleaseOrigin`: 0 = Standard, 1 = OwnershipTransfer, 2 = SalesReturn, 3 = Transshipment. */
   Origin?: number,
   DeliveryLocationCode?: string,
   DeliveryLocationName?: string,

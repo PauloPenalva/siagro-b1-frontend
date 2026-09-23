@@ -22,6 +22,8 @@ type SelectedLoad = {
 const SHIPMENT_LOAD_STATUSES = [
   { key: "Planned", text: "Planejada" },
   { key: "Open", text: "Carregada" },
+  // GAC-1181, Task 11: descarregada num armazém intermediário, aguardando a saída do transbordo.
+  { key: "InTransshipment", text: "Em Transbordo" },
   { key: "PartiallyInvoiced", text: "Faturada Parcial" },
   { key: "Invoiced", text: "Faturada" },
   { key: "Returned", text: "Devolvida" },
@@ -246,7 +248,10 @@ export default class Main extends BaseController {
       return;
     }
 
-    if (load.Status !== "Planned" && load.Status !== "Open") {
+    // GAC-1181: "Em Transbordo" também aceita romaneio — é justamente a situação da carga no
+    // momento em que a saída do armazém de transbordo é vinculada. Espelha
+    // ShipmentLoadsAttachTransactionsService.EnsureLoadAcceptsShipments no servidor.
+    if (load.Status !== "Planned" && load.Status !== "Open" && load.Status !== "InTransshipment") {
       MessageBox.warning(
         `A carga ${load.Code} já foi encerrada ou cancelada e não aceita novos documentos.`);
       return;

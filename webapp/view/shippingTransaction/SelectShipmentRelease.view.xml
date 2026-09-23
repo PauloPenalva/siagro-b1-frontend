@@ -124,8 +124,8 @@
                                               text="{ path: 'contracts>StandardCashFlowDate', formatter: 'formatter.formatDate' }"
                                               wrapping="false"
                                           />
-<!-- Origem: 0 Compra, 1 Transferência, 2 Devolução. Devolução em Warning de
-                                               propósito: é mercadoria que VOLTOU, e reembarcá-la
+<!-- Origem: 0 Compra, 1 Transferência, 2 Devolução, 3 Transbordo (GAC-1181). Devolução em
+                                               Warning de propósito: é mercadoria que VOLTOU, e reembarcá-la
                                                é uma decisão diferente de embarcar compra nova. -->
                                           <ObjectStatus
                                               text="{ path: 'contracts>Origin', formatter: 'formatter.releaseOriginText' }"

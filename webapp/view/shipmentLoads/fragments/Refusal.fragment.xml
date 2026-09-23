@@ -27,12 +27,13 @@
 										select=".onRefusalDestinationChange">
 										<RadioButton text="Caminhão segue para novo destino (mercadoria fica na carga)"/>
 										<RadioButton text="Mercadoria retorna a um armazém"/>
+										<RadioButton text="Mercadoria segue para transbordo em outro armazém"/>
 									</RadioButtonGroup>
 								</f:fields>
 							</f:FormElement>
 							<f:FormElement
 								label="Armazém de Destino"
-								visible="{= ${refusal>/DestinationIndex} === 1 }">
+								visible="{= ${refusal>/DestinationIndex} === 1 || ${refusal>/DestinationIndex} === 2 }">
 								<f:fields>
 									<!-- editable="true" é obrigatório mesmo com valueHelpOnly: com
 									     editable="false" o ícone de value help não aparece e o campo

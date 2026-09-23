@@ -215,7 +215,7 @@
 								selectionBehavior="Row"
 								class="sapUiSizeCondensed"
 								visibleRowCount="6"
-								rows="{ path: 'Transactions', parameters: { '$$ownRequest': true, '$select': 'Key,ShipmentReleaseKey,ItemCode,WarehouseCode,TransactionType,ReplacedByShippingReleaseChangeKey,ShippingReleaseChangeKey,WarehouseName' } }">
+								rows="{ path: 'Transactions', parameters: { '$$ownRequest': true, '$select': 'Key,ShipmentReleaseKey,ItemCode,WarehouseCode,TransactionType,ReplacedByShippingReleaseChangeKey,ShippingReleaseChangeKey,WarehouseName,ShipmentLoadTransshipmentKey' } }">
 								<t:extension>
 									<OverflowToolbar>
 										<Title text="{= ${path: 'LoadType', targetType: 'any'} === 'Removal' ? 'Recebimentos da Carga' : 'Romaneios da Carga' }"/>
@@ -288,6 +288,22 @@
 									</t:Column>
 									<t:Column label="Armazém" width="15rem">
 										<t:template><Text text="({WarehouseCode}) {WarehouseName}" wrapping="false"/></t:template>
+									</t:Column>
+									<!-- Etapa (GAC-1181, Task 11): sem ShipmentLoadTransshipmentKey o romaneio é a
+									     saída de ORIGEM; com ele, é a saída de um transbordo — texto pronto
+									     (sequência + armazém) vindo do lookup montado por
+									     BaseController#refreshTransshipmentLinkage. targetType 'any' nas duas
+									     partes: a chave é Edm.Guid nulável, e o lookup é um objeto do viewModel. -->
+									<t:Column label="Etapa" width="16rem">
+										<t:template>
+											<Text wrapping="false" text="{
+												parts: [
+													{ path: 'ShipmentLoadTransshipmentKey', targetType: 'any' },
+													{ path: 'viewModel>/transshipmentLinkage/lookup', targetType: 'any' }
+												],
+												formatter: '.formatter.formatShipmentLoadTransactionStage'
+											}"/>
+										</t:template>
 									</t:Column>
 									<!-- CardCode/CardName do romaneio de expedição são o FORNECEDOR: a perna de
 									     saída é cópia da perna de compra, que nasce do parceiro do contrato. -->
@@ -394,6 +410,20 @@
 					<uxap:ObjectPageSubSection>
 						<uxap:blocks>
 							<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.ShipmentLoadDischarges" type="XML"/>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
+			<!-- Transbordos (GAC-1181): descarregar num armazém intermediário e recarregar, sem que
+			     a viagem vire duas cargas. Carga de Remoção não passa por transbordo
+			     (ShipmentLoadTransshipmentRules.EnsureLoadAcceptsTransshipment). -->
+			<uxap:ObjectPageSection titleUppercase="false" title="Transbordos"
+				visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' }">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<uxap:blocks>
+							<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.ShipmentLoadTransshipments" type="XML"/>
 						</uxap:blocks>
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
