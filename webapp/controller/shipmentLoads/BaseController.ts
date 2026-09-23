@@ -1038,9 +1038,14 @@ export abstract class BaseController extends CommonController {
         receipts = await this.loadEligibleTransshipmentReceiptsAsync(warehouseCode);
 
         if (receipts.length === 0) {
+          // A mensagem precisa citar o LOTE DE TRANSBORDO: desde a fase 2 do GAC-1181 a entrada
+          // só aceita romaneio pesado num lote de natureza Transbordo, e sem isso o operador
+          // lança a entrada num lote comum e volta a esbarrar na mesma parede.
           MessageBox.alert(
-            "Não há Entrada em Armazenagem confirmada, sem vínculo, para o armazém, produto, " +
-            "filial e unidade desta carga. Lance a entrada antes de registrar o transbordo.");
+            "Não há Entrada em Armazenagem confirmada, sem vínculo, pesada num lote de " +
+            "TRANSBORDO do armazém, produto, filial e unidade desta carga. Pese a entrada " +
+            "num lote de natureza Transbordo antes de registrar o transbordo — se ele ainda " +
+            "não existe, cadastre-o em Armazenagem > Lotes de Armazenagem.");
           return;
         }
       }
