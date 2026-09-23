@@ -741,7 +741,16 @@ export abstract class BaseController extends CommonController {
    * Romaneios de Entrada em Armazenagem elegíveis para vincular à entrada do transbordo, no
    * armazém PRÓPRIO informado — as mesmas condições de
    * `ShipmentLoadTransshipmentRules.EnsureOwnWarehouseReceiptIsUsable`, aplicadas aqui para o
-   * Select nunca oferecer um romaneio que a action recusaria depois.
+   * Select nunca oferecer um romaneio que a action recusaria depois. Isso inclui o lote ser de
+   * natureza Transbordo (`StorageAddress/Nature eq 'Transshipment'`) — sem essa condição, o
+   * Select oferecia Entradas de lote COMUM que `EnsureReceiptIsFromTransshipmentLotAsync`
+   * recusa depois no servidor.
+   *
+   * Filtro por navigation property (`StorageAddress/Nature`), NÃO em dois passos: verificado
+   * contra o backend rodando que o OData aceita `$filter` atravessando a navigation property
+   * (join implícito) — `$select` com o mesmo caminho pontilhado é que o OData rejeita com 400
+   * ("Found a path with multiple navigation properties..."), por isso o lote vem via `$expand`
+   * abaixo, não via `$select`.
    *
    * Filtro de ENUM como string crua no `$filter`, nunca `new Filter(...)`: o UI5 não sabe
    * formatar o literal de um enum a partir do metadata e estoura "Unsupported type".
@@ -776,6 +785,7 @@ export abstract class BaseController extends CommonController {
       `UnitOfMeasureCode eq '${escape(unitOfMeasureCode)}'`,
       "ShipmentLoadKey eq null",
       "ShipmentLoadTransshipmentKey eq null",
+      "StorageAddress/Nature eq 'Transshipment'",
     ].join(" and ");
 
     const binding = (this.getModel() as ODataModel).bindList(
@@ -786,6 +796,10 @@ export abstract class BaseController extends CommonController {
       {
         $filter: filter,
         $select: "Key,Code,GrossWeight,TransactionDate",
+        // Lote via $expand, não $select: um $select com caminho pontilhado por navigation
+        // property ("StorageAddress/Code") estoura 400 no OData — só $expand com $select
+        // ANINHADO é aceito.
+        $expand: "StorageAddress($select=Code,Description)",
         $orderby: "TransactionDate desc",
       }
     );
@@ -795,13 +809,22 @@ export abstract class BaseController extends CommonController {
     return contexts.map(context => {
       const row = context.getObject() as {
         Key: string; Code?: string; GrossWeight?: number | string; TransactionDate?: string;
+        StorageAddress?: { Code?: string; Description?: string };
       };
       // Edm.Decimal chega como STRING — mesmo cuidado de onEditDischarge.
       const weight = formatter.formatDecimal(Number(row.GrossWeight ?? 0), 3);
+      // Mostra o lote na linha: com o filtro só oferecendo lotes de Transbordo, ainda pode
+      // haver mais de um no mesmo armazém, e o operador precisa CONFERIR qual escolheu, não só
+      // confiar que o sistema filtrou certo.
+      const lotCode = row.StorageAddress?.Code ?? "";
+      const lotDescription = row.StorageAddress?.Description ?? "";
+      const lot = lotDescription ? `${lotCode} - ${lotDescription}` : lotCode;
 
       return {
         Key: row.Key,
-        Text: `${row.Code ?? ""} - ${formatter.formatDate(row.TransactionDate)} - ${weight}`,
+        Text:
+          `${row.Code ?? ""} - ${formatter.formatDate(row.TransactionDate)} - ${weight}` +
+          ` - Lote ${lot}`,
       };
     });
   }
