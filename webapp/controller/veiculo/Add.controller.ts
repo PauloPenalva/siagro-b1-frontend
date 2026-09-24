@@ -1,6 +1,7 @@
 import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
+import { INVALID_PLATE_MESSAGE } from "siagrob1/helpers/PlateHelpers";
 import VeiculoBaseController from "./VeiculoBaseController";
 
 /**
@@ -34,7 +35,13 @@ export default class Add extends VeiculoBaseController {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }
-    
+
+    // Depois do validateForm, que limpa o erro de todo campo obrigatório preenchido.
+    if (!this.validatePlate()) {
+      MessageBox.warning(INVALID_PLATE_MESSAGE);
+      return;
+    }
+
     const oModel = this.getView().getModel() as ODataModel;
 
 		try {
