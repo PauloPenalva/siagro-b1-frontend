@@ -335,6 +335,8 @@ export default class Main extends CommonController {
         Open: "Carregada",
         PartiallyInvoiced: "Faturada Parcial",
         Invoiced: "Faturada",
+        // GAC-1171 (melhorias): faturada e marcada à mão como descarregada no destino.
+        Discharged: "Descarregada",
         Returned: "Devolvida",
         Completed: "Concluída",
         Cancelled: "Cancelada",
