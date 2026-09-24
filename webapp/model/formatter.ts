@@ -5,6 +5,11 @@ import {
   allocationOriginText,
   allocationOriginTooltip,
 } from "siagrob1/helpers/AllocationOriginHelpers";
+import {
+  calculateFreightPrice,
+  FreightCalculationMethod,
+  freightUnitDescription,
+} from "siagrob1/helpers/FreightHelpers";
 
 // O objeto tem nome para que um formatter possa chamar outro (ver
 // `formatDischargedAgainstLoaded`, que reusa `formatDecimal`); a exportação default continua
@@ -1456,6 +1461,19 @@ const formatter = {
   allocationOriginState,
   allocationOriginText,
   allocationOriginTooltip,
+
+  /**
+   * Total do Frete/Remoção (GAC-1191) mostrado em "Valores". Binding composto sobre método,
+   * unitário e peso bruto, para acompanhar a digitação — o `FreightPrice` gravado é o que o
+   * backend recalcula no save, pela mesma regra.
+   */
+  formatFreightPrice: (
+    method: FreightCalculationMethod,
+    unitPrice: number | string,
+    grossWeight: number | string,
+  ): string => formatter.formatDecimal(calculateFreightPrice(method, unitPrice, grossWeight), 2),
+
+  freightUnitDescription,
 };
 
 export default formatter;

@@ -5,6 +5,9 @@
     xmlns:t="sap.ui.table"
     xmlns:core="sap.ui.core"
     xmlns:custom="siagrob1.control"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }"
 >
     <f:SimpleForm
       id="formCreateWeighingTicket"
@@ -221,28 +224,60 @@
               editable="false"
           />
           
-          <Label visible="{ui>/visible}" text="Frete/Remoção" />
+          <Label visible="{ui>/visible}" text="Cálculo do Frete" />
+          <Select
+            visible="{ui>/visible}"
+            editable="{ui>/editableStorageAddress}"
+            required="{ui>/required}"
+            forceSelection="false"
+            selectedKey="{
+              path: 'FreightCalculationMethod',
+              targetType: 'any'
+            }"
+            >
+            <core:ListItem key="Fixed" text="Fixo"/>
+            <core:ListItem key="PerBag" text="Saco (60 kg)"/>
+          </Select>
+          <Label visible="{ui>/visible}" text="Frete/Remoção Unit." />
           <Input
             visible="{ui>/visible}"
             editable="{ui>/editableStorageAddress}"
             required="{ui>/required}"
             liveChange=".validateField"
             value="{
-              path: 'FreightPrice',
+              path: 'FreightUnitPrice',
               type: 'sap.ui.model.odata.type.Double',
               formatOptions: {
                   decimals: 2,
                   decimalSeparator: ',',
                   groupingEnabled: true,
                   groupingSeparator: '.'
-              } 
+              }
+            }"
+            description="{
+              path: 'FreightCalculationMethod',
+              targetType: 'any',
+              formatter: 'formatter.freightUnitDescription'
             }"
           />
-          <core:Icon visible="{ui>/visible}" tooltip="Informar o valor total do serviço de frete/remoção" src="sap-icon://information" >
+          <core:Icon visible="{ui>/visible}" tooltip="Fixo: valor da viagem. Saco: valor por saco de 60 kg, multiplicado pelo peso bruto." src="sap-icon://information" >
             <core:layoutData>
               <l:GridData span="XL1 L1 M1 S1" />
             </core:layoutData>
           </core:Icon>
+          <Label visible="{ui>/visible}" text="Frete/Remoção Total" />
+          <Input
+            visible="{ui>/visible}"
+            editable="false"
+            value="{
+              parts: [
+                { path: 'FreightCalculationMethod', targetType: 'any' },
+                { path: 'FreightUnitPrice', targetType: 'any' },
+                { path: 'GrossWeight', targetType: 'any' }
+              ],
+              formatter: 'formatter.formatFreightPrice'
+            }"
+          />
 
           <Label visible="{ui>/visible}" text="Observações"/>
           <TextArea 

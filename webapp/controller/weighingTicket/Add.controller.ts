@@ -43,6 +43,8 @@ export default class Add extends GenericController {
       "Type": "",
       "DocNumberKey": docNumberInfo.Key,
       "BranchCode": branchInfo.code,
+      // O frete só é informado na tela Confirmar; o tipo já nasce com o padrão da empresa.
+      "FreightCalculationMethod": systemSetup.DefaultFreightCalculationMethod ?? "Fixed",
     }, false, false, false);
 
     oView.setBindingContext(oContext);

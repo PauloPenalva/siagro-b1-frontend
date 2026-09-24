@@ -26,6 +26,7 @@ export default class Add extends BaseController {
 
 		const oContext = oBinding.create({
       "DefaultCurrency": "",
+      "DefaultFreightCalculationMethod": "Fixed",
       "IsActive": false,
     }, false, false, false);
 
