@@ -371,6 +371,14 @@
 									<t:Column label="Cliente" width="20rem">
 										<t:template><Text text="({CardCode}) {CardName}" wrapping="false"/></t:template>
 									</t:Column>
+									<!-- Local de entrega (GAC-1189): o "Endereço Entrega" escolhido no faturamento.
+									     Só a tela exige o campo, então nota sem ele fica em branco, e não "()". -->
+									<t:Column label="Local de Entrega" width="20rem">
+										<t:template>
+											<Text wrapping="false"
+												text="{= ${DeliveryCardCode} ? '(' + ${DeliveryCardCode} + ') ' + (${DeliveryCardName} || '') : '' }"/>
+										</t:template>
+									</t:Column>
 									<!-- Quantidade do documento: o cabeçalho da nota de carga nasce com
 									     GrossWeight = NetWeight = volume faturado. -->
 									<t:Column label="Qtde" hAlign="End" width="9rem">
