@@ -111,6 +111,20 @@
 					</List>
 				</Panel>
 
+				<!-- GAC-1171 (melhorias): carga faturada e marcada como descarregada no destino.
+				     A Concluída da carga Normal cai na raia Concluída, junto da Remoção. -->
+				<Panel headerText="Descarregada ({panel>/countDischarged})" expandable="false">
+					<List
+						id="listDischarged"
+						updateFinished=".onLaneUpdated"
+						noDataText="Nenhuma carga descarregada."
+						items="{ path: '/ShipmentLoads', parameters: { $orderby: 'Code' } }">
+						<CustomListItem type="Navigation" press=".onOpenLoad">
+							<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.LoadCard" type="XML"/>
+						</CustomListItem>
+					</List>
+				</Panel>
+
 				<!-- Sem esta raia a carga recusada some do painel sem explicação: ela sai de
 				     "Faturada" e não entra em lugar nenhum. -->
 				<Panel headerText="Devolvida ({panel>/countReturned})" expandable="false">
@@ -124,7 +138,8 @@
 						</CustomListItem>
 					</List>
 				</Panel>
-				<!-- GAC-1175: raia da carga de REMOÇÃO encerrada. Fica no fim porque é o estado
+				<!-- Raia das cargas concluídas: a Remoção encerrada à mão e a Normal com a
+				     conferência de entrega encerrada (GAC-1171). Fica no fim porque é o estado
 				     terminal de um ciclo paralelo ao do faturamento. -->
 				<Panel headerText="Concluída ({panel>/countCompleted})" expandable="false">
 					<List

@@ -30,6 +30,8 @@ const SHIPMENT_LOAD_STATUSES = [
   { key: "InTransshipment", text: "Em Transbordo" },
   { key: "PartiallyInvoiced", text: "Faturada Parcial" },
   { key: "Invoiced", text: "Faturada" },
+  // GAC-1171 (melhorias): faturada e marcada à mão como descarregada no destino.
+  { key: "Discharged", text: "Descarregada" },
   { key: "Returned", text: "Devolvida" },
   { key: "Completed", text: "Concluída" },
   { key: "Cancelled", text: "Cancelada" },
@@ -227,7 +229,8 @@ export default class Main extends CommonController {
       return false;
     }
 
-    if (shipment.LoadStatus === "PartiallyInvoiced" || shipment.LoadStatus === "Invoiced") {
+    // Descarregada e Concluída vêm depois de Faturada (GAC-1171): o mesmo aviso vale.
+    if (["PartiallyInvoiced", "Invoiced", "Discharged", "Completed"].includes(shipment.LoadStatus)) {
       MessageBox.warning(
         `A carga ${shipment.LoadCode} já tem faturamento `
         + `(${formatter.formatShipmentLoadStatus(shipment.LoadStatus)}). `

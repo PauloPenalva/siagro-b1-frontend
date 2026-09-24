@@ -151,6 +151,20 @@ export default class Detail extends BaseController {
     await this.invokeLoadAction("/ShipmentLoadsReopen(...)", "Carga reaberta.");
   }
 
+  /** GAC-1171 (melhorias): marca a carga como descarregada no destino. */
+  async onMarkDischarged(): Promise<void> {
+    if (!await DialogHelper.confirmDialog("Marcar a carga como descarregada ?")) return;
+
+    await this.invokeLoadAction("/ShipmentLoadsMarkDischarged(...)", "Carga marcada como descarregada.");
+  }
+
+  /** GAC-1171 (melhorias): desfaz a marca. O status volta ao que o recálculo der. */
+  async onUndoDischarged(): Promise<void> {
+    if (!await DialogHelper.confirmDialog("Desfazer a marcação de descarregada ?")) return;
+
+    await this.invokeLoadAction("/ShipmentLoadsUndoDischarged(...)", "Marcação de descarregada desfeita.");
+  }
+
   /** Action que só recebe a chave da carga — o formato de Concluir e Reabrir. */
   private async invokeLoadAction(actionPath: string, successMessage: string): Promise<void> {
     const action = (this.getModel() as ODataModel).bindContext(actionPath);

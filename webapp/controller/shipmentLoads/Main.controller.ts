@@ -26,6 +26,8 @@ const SHIPMENT_LOAD_STATUSES = [
   { key: "InTransshipment", text: "Em Transbordo" },
   { key: "PartiallyInvoiced", text: "Faturada Parcial" },
   { key: "Invoiced", text: "Faturada" },
+  // GAC-1171 (melhorias): faturada e marcada à mão como descarregada no destino.
+  { key: "Discharged", text: "Descarregada" },
   { key: "Returned", text: "Devolvida" },
   { key: "Completed", text: "Concluída" },
   { key: "Cancelled", text: "Cancelada" },

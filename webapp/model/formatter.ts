@@ -634,6 +634,8 @@ const formatter = {
     m.set("Completed", "Concluída");
     // GAC-1181: descarregada num armazém intermediário, aguardando a saída do transbordo.
     m.set("InTransshipment", "Em Transbordo");
+    // GAC-1171 (melhorias): faturada e marcada à mão como descarregada no destino.
+    m.set("Discharged", "Descarregada");
 
     return m.get(value);
   },
@@ -665,6 +667,9 @@ const formatter = {
     // GAC-1181: mercadoria fora da carga, no armazém intermediário — chama atenção como a
     // devolução, mas não é encerramento: a carga ainda vai receber a saída do transbordo.
     m.set("InTransshipment", "Warning");
+    // GAC-1171 (melhorias): Information, e não Success, para não se confundir com Faturada na
+    // lista. A Concluída (Success) é o fecho, e a Descarregada é o passo intermediário.
+    m.set("Discharged", "Information");
 
     return m.get(value);
   },
@@ -693,6 +698,8 @@ const formatter = {
     m.set("TransshipmentStarted", "Transbordo Iniciado");
     m.set("TransshipmentEntered", "Entrada do Transbordo Registrada");
     m.set("TransshipmentReversed", "Transbordo Estornado");
+    m.set("Discharged", "Carga Descarregada");
+    m.set("DischargeUndone", "Descarregada Desfeita");
 
     return m.get(value);
   },
