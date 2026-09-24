@@ -113,9 +113,9 @@
 					<Button
 						type="Transparent"
 						icon="sap-icon://attachment"
-						tooltip="Baixar o ticket anexado"
+						tooltip="Visualizar o ticket anexado"
 						visible="{= !!${path: 'AttachmentKey', targetType: 'any'} }"
-						press=".onDownloadDischargeAttachment"/>
+						press=".onViewDischargeAttachment"/>
 				</t:template>
 			</t:Column>
 			<t:Column label="Observação" width="20rem">

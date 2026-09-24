@@ -18,6 +18,8 @@ const LANES = [
   { id: "listInTransshipment", status: "InTransshipment", count: "countInTransshipment" },
   { id: "listPartiallyInvoiced", status: "PartiallyInvoiced", count: "countPartiallyInvoiced" },
   { id: "listInvoiced", status: "Invoiced", count: "countInvoiced" },
+  // GAC-1171 (melhorias): entre Faturada e Devolvida, a carga marcada como descarregada no destino.
+  { id: "listDischarged", status: "Discharged", count: "countDischarged" },
   { id: "listReturned", status: "Returned", count: "countReturned" },
   { id: "listCompleted", status: "Completed", count: "countCompleted" },
 ];

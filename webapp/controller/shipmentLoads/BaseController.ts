@@ -2,6 +2,7 @@ import Dialog from "sap/m/Dialog";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import { Button$PressEvent } from "sap/m/Button";
+import { Link$PressEvent } from "sap/m/Link";
 import Fragment from "sap/ui/core/Fragment";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Context from "sap/ui/model/odata/v4/Context";
@@ -10,6 +11,7 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Table from "sap/ui/table/Table";
 import FileUploader from "sap/ui/unified/FileUploader";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import { openAttachmentViewer } from "siagrob1/dialogs/AttachmentViewer";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import formatter from "siagrob1/model/formatter";
 import { sendJson } from "siagrob1/helpers/FetchHelpers";
@@ -423,13 +425,17 @@ export abstract class BaseController extends CommonController {
    * O binário sai fora da leitura normal do OData, por uma rota própria: não existe
    * `EntitySet<ShipmentLoadAttachment>` no EDM, e a tela chega ao arquivo pela AttachmentKey
    * que o próprio ticket guarda.
+   *
+   * O clip do ticket abre o visualizador (GAC-1171, melhorias). O ticket só guarda a
+   * AttachmentKey: o nome do arquivo vem do Content-Disposition, e o `$select` do grid não
+   * precisa mudar.
    */
-  onDownloadDischargeAttachment(event: Button$PressEvent): void {
+  async onViewDischargeAttachment(event: Button$PressEvent): Promise<void> {
     const key = event.getSource().getBindingContext()?.getProperty("AttachmentKey") as string;
 
     if (!key) return;
 
-    window.open(`${ServerRoutes.shipmentLoadsAttachmentsDownload}(Key=${key})`, "_blank");
+    await openAttachmentViewer({ url: `${ServerRoutes.shipmentLoadsAttachmentsDownload}(Key=${key})` });
   }
 
   private selectedDischargeContext(): Context | null {
@@ -605,6 +611,34 @@ export abstract class BaseController extends CommonController {
     window.open(`${ServerRoutes.shipmentLoadsAttachmentsDownload}(Key=${row.Key})`, "_blank");
   }
 
+  /** GAC-1171 (melhorias): visualiza o anexo selecionado, sem baixar. */
+  async onViewAttachment(): Promise<void> {
+    const row = this.selectedAttachmentRow();
+
+    if (!row) return;
+
+    await this.viewShipmentLoadAttachment(row.Key, row.FileName);
+  }
+
+  /** O Link da coluna Arquivo: usa o contexto da PRÓPRIA linha, não a seleção. */
+  async onViewAttachmentFromRow(event: Link$PressEvent): Promise<void> {
+    // Sem `| undefined` no cast: com strictNullChecks desligado o lint o acusa como redundante. O
+    // `?.` abaixo cobre a linha sem contexto do mesmo jeito.
+    const row = event.getSource().getBindingContext("viewModel")?.getObject() as
+      { Key: string; FileName?: string };
+
+    if (!row?.Key) return;
+
+    await this.viewShipmentLoadAttachment(row.Key, row.FileName);
+  }
+
+  private viewShipmentLoadAttachment(key: string, fileName?: string): Promise<void> {
+    return openAttachmentViewer({
+      url: `${ServerRoutes.shipmentLoadsAttachmentsDownload}(Key=${key})`,
+      fileName,
+    });
+  }
+
   async onRemoveAttachment(): Promise<void> {
     const row = this.selectedAttachmentRow();
 
@@ -630,7 +664,7 @@ export abstract class BaseController extends CommonController {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-  private selectedAttachmentRow(): { Key: string } | null {
+  private selectedAttachmentRow(): { Key: string; FileName?: string } | null {
     const table = this.byId("loadAttachmentsTable") as Table;
     const index = table?.getSelectedIndex?.() ?? -1;
 
@@ -639,7 +673,7 @@ export abstract class BaseController extends CommonController {
       return null;
     }
 
-    return table.getContextByIndex(index)?.getObject() as { Key: string };
+    return table.getContextByIndex(index)?.getObject() as { Key: string; FileName?: string };
   }
 
   /* ------------------------------------------------------------------ */

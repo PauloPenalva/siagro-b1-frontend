@@ -30,6 +30,12 @@
             press=".onUpload"
           />
           <Button
+            text="Visualizar"
+            type="Transparent"
+            icon="sap-icon://show"
+            press=".onViewAttachment"
+          />
+          <Button
             text="Download"
             type="Transparent"
             icon="sap-icon://download"
@@ -58,7 +64,8 @@
       </t:Column>
       <t:Column label="Arquivo">
         <t:template>
-          <Text text="{attachmentsModel>FileName}" />
+          <!-- GAC-1171 (melhorias): o nome abre o visualizador direto da linha. -->
+          <Link text="{attachmentsModel>FileName}" press=".onViewAttachmentFromRow" />
         </t:template>
       </t:Column>
       <t:Column label="Enviado por">

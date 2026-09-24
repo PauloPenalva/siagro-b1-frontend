@@ -58,7 +58,7 @@
 						type="Transparent"
 						text="Iniciar Transbordo"
 						icon="sap-icon://add"
-						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Completed' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'InTransshipment' }"
+						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Completed' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'InTransshipment' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Discharged' }"
 						press=".onStartTransshipment"/>
 					<!-- Registrar Entrada/Estornar só fazem sentido enquanto HÁ transbordo aberto —
 					     exatamente quando a carga está InTransshipment. Mesma convenção do vizinho: o

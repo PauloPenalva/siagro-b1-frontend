@@ -49,6 +49,19 @@
 						type="Transparent"
 						press=".onReopenLoad"
 						visible="{= ${path: 'LoadType', targetType: 'any'} === 'Removal' &amp;&amp; ${path: 'Status', targetType: 'any'} === 'Completed' }"/>
+					<!-- GAC-1171 (melhorias): marca MANUAL de descarga no destino, com o desfazer ao
+					     lado. O status resultante sai do recálculo no servidor: com a conferência
+					     de entrega toda encerrada, marcar leva direto a Concluída. -->
+					<Button
+						text="Marcar como Descarregada"
+						type="Transparent"
+						press=".onMarkDischarged"
+						visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' &amp;&amp; ${path: 'Status', targetType: 'any'} === 'Invoiced' }"/>
+					<Button
+						text="Desfazer Descarregada"
+						type="Transparent"
+						press=".onUndoDischarged"
+						visible="{= ${path: 'Status', targetType: 'any'} === 'Discharged' }"/>
 					<Button text="Cancelar Carga" type="Transparent" press=".onCancelLoad"/>
 					<Button text="Voltar" type="Transparent" press=".onNavBack"/>
 				</uxap:actions>
@@ -226,7 +239,7 @@
 											text="Trocar Liberação"
 											icon="sap-icon://switch-views"
 											tooltip="Troca o contrato de compra baixado (1 romaneio) ou inverte os contratos de 2 romaneios"
-											visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' }"
+											visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Discharged' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Completed' }"
 											press=".onChangeRelease"/>
 									</OverflowToolbar>
 								</t:extension>
