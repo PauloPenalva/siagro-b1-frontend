@@ -151,11 +151,15 @@ export default class Detail extends BaseController {
     await this.invokeLoadAction("/ShipmentLoadsReopen(...)", "Carga reaberta.");
   }
 
-  /** GAC-1171 (melhorias): marca a carga como descarregada no destino. */
+  /**
+   * GAC-1171 (melhorias): marca a carga como descarregada no destino. O aviso é neutro porque
+   * quem decide o status é o recálculo no servidor: com a conferência de entrega toda encerrada,
+   * a carga vai direto a Concluída, e não a Descarregada.
+   */
   async onMarkDischarged(): Promise<void> {
     if (!await DialogHelper.confirmDialog("Marcar a carga como descarregada ?")) return;
 
-    await this.invokeLoadAction("/ShipmentLoadsMarkDischarged(...)", "Carga marcada como descarregada.");
+    await this.invokeLoadAction("/ShipmentLoadsMarkDischarged(...)", "Situação da carga atualizada.");
   }
 
   /** GAC-1171 (melhorias): desfaz a marca. O status volta ao que o recálculo der. */

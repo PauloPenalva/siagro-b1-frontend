@@ -21,10 +21,11 @@ const EXTENSION_TYPES: Record<string, string> = {
 /**
  * `Content-Type` sem parâmetros (`; charset=...`), minúsculo e sem espaços nas pontas. Usado
  * tanto para achar o tipo (`resolveContentType`) quanto para decidir se ele é exibível
- * (`resolveViewerKind`), para as duas funções concordarem sobre o que é "o mesmo tipo".
+ * (`resolveViewerKind`), para as duas funções concordarem sobre o que é "o mesmo tipo". O
+ * diálogo também a usa para saber se o blob recebido já tem o tipo resolvido.
  */
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- idem: aceita o mesmo contrato nulável dos chamadores.
-function normalizeContentType(contentType: string | null | undefined): string {
+export function normalizeContentType(contentType: string | null | undefined): string {
   return (contentType ?? "").split(";")[0].trim().toLowerCase();
 }
 

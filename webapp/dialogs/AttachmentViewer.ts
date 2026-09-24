@@ -10,6 +10,7 @@ import Device from "sap/ui/Device";
 import { readErrorMessage } from "siagrob1/helpers/FetchHelpers";
 import {
   AttachmentViewerKind,
+  normalizeContentType,
   parseContentDispositionFileName,
   resolveContentType,
   resolveViewerKind,
@@ -69,9 +70,13 @@ export async function openAttachmentViewer(options: AttachmentViewerOptions): Pr
   const contentType = resolveContentType(blob.type || response.headers.get("Content-Type"), fileName);
   const kind = resolveViewerKind(contentType);
 
-  // O blob é refeito com o tipo resolvido: com octet-stream o iframe BAIXARIA o PDF em vez de
-  // exibi-lo, que é justamente o defeito que o diálogo existe para resolver.
-  const typedBlob = blob.type === contentType ? blob : new Blob([blob], { type: contentType });
+  // O blob só é refeito quando o tipo dele difere do resolvido: com octet-stream o iframe
+  // BAIXARIA o PDF em vez de exibi-lo, que é justamente o defeito que o diálogo existe para
+  // resolver. Quando o tipo já bate, fica o blob ORIGINAL, que guarda o charset do texto
+  // ("text/plain;charset=utf-8"); refeito só com "text/plain", o acento sairia trocado.
+  const typedBlob = normalizeContentType(blob.type) === contentType
+    ? blob
+    : new Blob([blob], { type: contentType });
   const objectUrl = URL.createObjectURL(typedBlob);
 
   const dialog = new Dialog({
@@ -99,6 +104,8 @@ export async function openAttachmentViewer(options: AttachmentViewerOptions): Pr
     },
   });
 
+  // Mesma densidade dos diálogos do DialogHelper.
+  dialog.addStyleClass("sapUiSizeCompact");
   dialog.open();
 }
 

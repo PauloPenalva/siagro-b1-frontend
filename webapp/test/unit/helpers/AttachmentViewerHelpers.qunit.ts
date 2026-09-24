@@ -1,4 +1,5 @@
 import {
+	normalizeContentType,
 	parseContentDispositionFileName,
 	resolveContentType,
 	resolveViewerKind
@@ -9,6 +10,17 @@ QUnit.module("AttachmentViewerHelpers - visualizador de anexos (GAC-1171)");
 QUnit.test("o Content-Type informado decide, sem parâmetros e sem caixa", function (assert) {
 	assert.strictEqual(resolveContentType("application/PDF; charset=binary", "x.bin"), "application/pdf");
 	assert.strictEqual(resolveContentType("image/png", "sem-extensao"), "image/png");
+});
+
+QUnit.test("normalizeContentType tira parâmetros, caixa e espaços: o diálogo mantém o blob original quando o tipo bate", function (assert) {
+	assert.strictEqual(normalizeContentType("text/plain;charset=utf-8"), "text/plain");
+	assert.strictEqual(normalizeContentType(" Application/PDF "), "application/pdf");
+	assert.strictEqual(normalizeContentType(""), "");
+	assert.strictEqual(normalizeContentType(null), "");
+	assert.strictEqual(normalizeContentType(undefined), "");
+	// É a comparação do diálogo: igual ao tipo resolvido, o blob (com charset) fica como veio.
+	assert.strictEqual(normalizeContentType("text/plain;charset=utf-8"), resolveContentType("text/plain;charset=utf-8", "nota.txt"));
+	assert.notStrictEqual(normalizeContentType("application/octet-stream"), resolveContentType("application/octet-stream", "nota.pdf"));
 });
 
 QUnit.test("octet-stream ou vazio cai na extensão do arquivo (anexos antigos dos contratos)", function (assert) {
