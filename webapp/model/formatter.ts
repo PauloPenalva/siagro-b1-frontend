@@ -24,6 +24,16 @@ const formatter = {
     return m.get(value);
   },
 
+  /**
+   * Célula "(código) nome" de um cadastro opcional (ex.: Região Logística do contrato). O texto
+   * composto direto no XML — `({Code}) {Name}` — pinta "() " quando o registro não tem o cadastro.
+   */
+  formatCodeAndName: (code: string, name: string): string => {
+    if (!code) return "";
+
+    return name ? `(${code}) ${name}` : `(${code})`;
+  },
+
   formatDecimal: (
     number: number | string, 
     decimals: number = 4,
