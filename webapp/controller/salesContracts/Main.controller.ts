@@ -23,6 +23,7 @@ type FilterData = {
   Complement?: string,
   MarketType?: string,
   AgentCode?: string,
+  LogisticRegionCode?: string,
   StandardCashFlowDateFrom?: string,
   StandardCashFlowDateTo?: string,
 }
@@ -78,6 +79,9 @@ export default class Main extends SalesContractsBaseController {
         // Edm.Int32: só dígitos. Number() aceitaria "1e3"/"0x10"/" " e filtraria
         // o agente errado ou zeraria a lista em vez de ignorar o valor inválido.
         if (/^\d+$/.test(value.trim())) filters.push(`AgentCode eq ${Number(value)}`)
+      } else if (filterKey == "LogisticRegionCode") {
+        // Igualdade, não `contains`: o value help grava o código, e "1" não pode trazer "10".
+        filters.push(anyOfFilter("LogisticRegionCode", [value]))
       } else if (filterKey == "StandardCashFlowDateFrom") {
         filters.push(`StandardCashFlowDate ge ${value}`)
       } else if (filterKey == "StandardCashFlowDateTo") {
@@ -299,6 +303,18 @@ export default class Main extends SalesContractsBaseController {
     aCols.push({
       label: "Produto",
       property: "ItemName",
+      type: EdmType.String,
+    });
+
+    aCols.push({
+      label: "Cod.Região Logística",
+      property: "LogisticRegionCode",
+      type: EdmType.String,
+    });
+
+    aCols.push({
+      label: "Região Logística",
+      property: "LogisticRegion/Name",
       type: EdmType.String,
     });
 
