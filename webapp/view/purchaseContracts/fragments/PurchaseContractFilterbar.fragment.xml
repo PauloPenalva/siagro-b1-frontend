@@ -111,6 +111,16 @@
             </Input>
         </fb:control>
       </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="logisticRegion" label="Região Logística" groupName="GroupLogisticRegion" visibleInFilterBar="true">
+        <fb:control>
+            <Input
+              showClearIcon="true"
+              showValueHelp="true"
+              valueHelpRequest=".openLogisticRegionsValueHelp"
+              value="{filter>/LogisticRegionCode}"
+              />
+        </fb:control>
+      </fb:FilterGroupItem>
 
       <fb:FilterGroupItem name="marketType" label="Tipo de Mercado" groupName="GroupMarketType" visibleInFilterBar="true">
         <fb:control>

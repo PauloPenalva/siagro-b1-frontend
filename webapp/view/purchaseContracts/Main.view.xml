@@ -295,6 +295,21 @@
 						</t:template>
 					</t:Column>
           <t:Column
+						label="Região Logística"
+						sortProperty="LogisticRegionCode"
+            width="15rem"
+						>
+						<t:template>
+            <Text
+              wrapping="false"
+              text="{
+                parts: ['LogisticRegionCode', 'LogisticRegion/Name'],
+                formatter: '.formatter.formatCodeAndName'
+              }"
+            />
+						</t:template>
+					</t:Column>
+          <t:Column
 						label="Tipo Mercado"
 						sortProperty="MarketType"
             width="10rem"
