@@ -38,6 +38,14 @@ QUnit.test("tipo ativo NÃO é exibido: blob herda a origem da aplicação", fun
 	assert.strictEqual(resolveViewerKind("application/vnd.openxmlformats-officedocument.wordprocessingml.document"), "unsupported");
 });
 
+QUnit.test("resolveViewerKind normaliza o próprio tipo: não depende do chamador já ter usado resolveContentType", function (assert) {
+	assert.strictEqual(resolveViewerKind("image/svg+xml; charset=utf-8"), "unsupported");
+	assert.strictEqual(resolveViewerKind("IMAGE/SVG+XML"), "unsupported");
+	assert.strictEqual(resolveViewerKind(" text/html "), "unsupported");
+	assert.strictEqual(resolveViewerKind("Application/PDF"), "pdf");
+	assert.strictEqual(resolveViewerKind("text/plain; charset=utf-8"), "text");
+});
+
 QUnit.test("nome do arquivo pelo Content-Disposition do ASP.NET", function (assert) {
 	assert.strictEqual(
 		parseContentDispositionFileName("attachment; filename=ticket.pdf; filename*=UTF-8''Ticket%20descarga%20a%C3%A7%C3%A3o.pdf"),
@@ -56,4 +64,14 @@ QUnit.test("filename* malformado cai no filename simples", function (assert) {
 	assert.strictEqual(
 		parseContentDispositionFileName("attachment; filename=reserva.pdf; filename*=UTF-8''%E0%A4%A"),
 		"reserva.pdf");
+});
+
+QUnit.test("filename* sem valor e sem filename simples devolve null", function (assert) {
+	assert.strictEqual(parseContentDispositionFileName("attachment; filename*=UTF-8''"), null);
+});
+
+QUnit.test("filename* com aspas percent-encoded preserva as aspas no nome decodificado", function (assert) {
+	assert.strictEqual(
+		parseContentDispositionFileName("attachment; filename*=UTF-8''%22Relat%C3%B3rio%22.pdf"),
+		"\"Relatório\".pdf");
 });

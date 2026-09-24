@@ -19,6 +19,16 @@ const EXTENSION_TYPES: Record<string, string> = {
 };
 
 /**
+ * `Content-Type` sem parâmetros (`; charset=...`), minúsculo e sem espaços nas pontas. Usado
+ * tanto para achar o tipo (`resolveContentType`) quanto para decidir se ele é exibível
+ * (`resolveViewerKind`), para as duas funções concordarem sobre o que é "o mesmo tipo".
+ */
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- idem: aceita o mesmo contrato nulável dos chamadores.
+function normalizeContentType(contentType: string | null | undefined): string {
+  return (contentType ?? "").split(";")[0].trim().toLowerCase();
+}
+
+/**
  * Tipo do arquivo: o `Content-Type` da resposta, ou a extensão do nome quando ele vier vazio ou
  * genérico. Anexos antigos de contrato foram gravados como `application/octet-stream`, e sem o
  * fallback nenhum PDF deles abriria.
@@ -29,7 +39,7 @@ export function resolveContentType(
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- idem: o backend pode devolver o fileName vazio.
   fileName: string | null | undefined,
 ): string {
-  const type = (contentType ?? "").split(";")[0].trim().toLowerCase();
+  const type = normalizeContentType(contentType);
 
   if (type && type !== "application/octet-stream") return type;
 
@@ -48,12 +58,20 @@ export function resolveContentType(
  * imagem raster e `text/plain` são exibidos; o resto, inclusive `text/html` e `image/svg+xml`,
  * cai no aviso com o botão Baixar. `sandbox` no iframe não resolve, porque bloqueia o leitor de
  * PDF do Chrome.
+ *
+ * Self-defending: normaliza o próprio `contentType` (parâmetros, caixa, espaços) em vez de
+ * confiar que o chamador já passou por `resolveContentType`. Sem isso, um `Content-Type` com
+ * parâmetro como `image/svg+xml; charset=utf-8` não batia com o `===` exato, caía no
+ * `startsWith("image/")` seguinte e era classificado (e exibido) como imagem — justo a exclusão
+ * que esta função existe para garantir.
  */
 export function resolveViewerKind(contentType: string): AttachmentViewerKind {
-  if (contentType === "application/pdf") return "pdf";
-  if (contentType === "image/svg+xml") return "unsupported";
-  if (contentType.startsWith("image/")) return "image";
-  if (contentType === "text/plain") return "text";
+  const type = normalizeContentType(contentType);
+
+  if (type === "application/pdf") return "pdf";
+  if (type === "image/svg+xml") return "unsupported";
+  if (type.startsWith("image/")) return "image";
+  if (type === "text/plain") return "text";
   return "unsupported";
 }
 
