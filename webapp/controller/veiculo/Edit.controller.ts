@@ -1,4 +1,5 @@
 import MessageToast from "sap/m/MessageToast";
+import Input from "sap/m/Input";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
@@ -9,7 +10,9 @@ import VeiculoBaseController from "./VeiculoBaseController";
  */
 export default class Edit extends VeiculoBaseController {
 
-	onInit(): void {	
+	onInit(): void {
+		// A placa é a chave do veículo: o backend recusa alterá-la (GAC-1190).
+		(this.byId("plateInput") as Input).setEditable(false);
 		this.getRouter().getRoute("veiculosEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 

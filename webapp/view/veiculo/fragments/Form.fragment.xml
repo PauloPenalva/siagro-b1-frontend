@@ -29,11 +29,15 @@
             emphasized="true"
           />
           <Label text="Codigo" />
+          <!-- maxLength 8, não 7: colar "CUD 1H57" tem de chegar inteiro ao change, que tira o espaço (GAC-1190) -->
           <Input
+            id="plateInput"
             value="{Code}"
             editable="true"
-            maxLength="7"
+            maxLength="8"
             required="true"
+            liveChange=".onPlateLiveChange"
+            change=".onPlateChange"
           />
           <Label text="Modelo" />
           <Input
