@@ -10,6 +10,8 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageToast from "sap/m/MessageToast";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import RequestModel from "siagrob1/model/RequestModel";
+import { openAttachmentViewer } from "siagrob1/dialogs/AttachmentViewer";
+import { Link$PressEvent } from "sap/m/Link";
 
 /**
  * @namespace siagrob1.controller.salesContracts
@@ -67,6 +69,37 @@ export default abstract class SalesContractsBaseController extends CommonControl
         .catch(() => {
             MessageToast.show("Erro ao baixar o anexo");
         });
+  }
+
+  /** GAC-1171 (melhorias): visualiza o anexo selecionado, sem baixar. */
+  async onViewAttachment(): Promise<void> {
+    const table = this.byId("salesContractAttachmentsTable") as Table;
+    const selected = table.getSelectedIndex();
+
+    if (selected < 0) {
+      MessageBox.alert("Selecione um item na tabela.");
+      return;
+    }
+
+    const ctx = table.getContextByIndex(selected);
+    await this.viewContractAttachment(ctx.getProperty("Key") as string, ctx.getProperty("FileName") as string);
+  }
+
+  /** O Link da coluna Arquivo: usa o contexto da PRÓPRIA linha, não a seleção. */
+  async onViewAttachmentFromRow(event: Link$PressEvent): Promise<void> {
+    const ctx = event.getSource().getBindingContext("attachmentsModel");
+    const key = ctx?.getProperty("Key") as string;
+
+    if (!key) return;
+
+    await this.viewContractAttachment(key, ctx.getProperty("FileName") as string);
+  }
+
+  private viewContractAttachment(key: string, fileName?: string): Promise<void> {
+    return openAttachmentViewer({
+      url: `/odata/SalesContractsAttachmentsDownload(Key=${key})`,
+      fileName,
+    });
   }
 
   async onDeleteAttachment() {

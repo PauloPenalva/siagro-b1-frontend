@@ -14,6 +14,8 @@ import { sendJson } from "siagrob1/helpers/FetchHelpers";
 import { calculateWashoutAmount, formatNumberPtBr } from "siagrob1/helpers/WashoutHelpers";
 import { ALLOCATION_ORIGINS } from "siagrob1/helpers/AllocationOriginHelpers";
 import { WashoutDialogState, WashoutFixationOption, WashoutReverseState } from "siagrob1/types/PurchaseContractWashout";
+import { openAttachmentViewer } from "siagrob1/dialogs/AttachmentViewer";
+import { Link$PressEvent } from "sap/m/Link";
 
 /**
  * @namespace siagrob1.controller.purchaseContracts
@@ -71,6 +73,37 @@ export default abstract class PurchaseContractsBaseController extends CommonCont
         .catch(() => {
             MessageToast.show("Erro ao baixar o anexo");
         });
+  }
+
+  /** GAC-1171 (melhorias): visualiza o anexo selecionado, sem baixar. */
+  async onViewAttachment(): Promise<void> {
+    const table = this.byId("purchaseContractAttachmentsTable") as Table;
+    const selected = table.getSelectedIndex();
+
+    if (selected < 0) {
+      MessageBox.alert("Selecione um item na tabela.");
+      return;
+    }
+
+    const ctx = table.getContextByIndex(selected);
+    await this.viewContractAttachment(ctx.getProperty("Key") as string, ctx.getProperty("FileName") as string);
+  }
+
+  /** O Link da coluna Arquivo: usa o contexto da PRÓPRIA linha, não a seleção. */
+  async onViewAttachmentFromRow(event: Link$PressEvent): Promise<void> {
+    const ctx = event.getSource().getBindingContext("attachmentsModel");
+    const key = ctx?.getProperty("Key") as string;
+
+    if (!key) return;
+
+    await this.viewContractAttachment(key, ctx.getProperty("FileName") as string);
+  }
+
+  private viewContractAttachment(key: string, fileName?: string): Promise<void> {
+    return openAttachmentViewer({
+      url: `/odata/PurchaseContractsAttachmentsDownload(Key=${key})`,
+      fileName,
+    });
   }
 
   async onDeleteAttachment() {
