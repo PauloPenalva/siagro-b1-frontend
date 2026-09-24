@@ -115,6 +115,10 @@ export default class Main extends BaseController {
         // Edm.Int32 navegado: só dígitos. Number() aceitaria "1e3"/"0x10"/" " e
         // filtraria o agente errado ou zeraria a lista em vez de ignorar o valor inválido.
         if (/^\d+$/.test(value.trim())) filters.push(`SalesContract/AgentCode eq ${Number(value)}`);
+      } else if (filterKey == "LogisticRegionCode") {
+        // A liberação não tem região própria: vale a do contrato. Igualdade, não `contains` —
+        // o value help grava o código, e "1" não pode trazer "10".
+        filters.push(anyOfFilter("SalesContract/LogisticRegionCode", [value]));
       } else {
         filters.push(`contains(${filterKey},'${value}')`);
       }

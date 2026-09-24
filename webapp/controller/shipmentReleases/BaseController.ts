@@ -94,7 +94,19 @@ export abstract class BaseController extends CommonController {
           property: "PurchaseContract/ItemName",
           type: EdmType.String,
         });
-  
+
+        aCols.push({
+          label: "Cod.Região Logística",
+          property: "PurchaseContract/LogisticRegionCode",
+          type: EdmType.String,
+        });
+
+        aCols.push({
+          label: "Região Logística",
+          property: "PurchaseContract/LogisticRegion/Name",
+          type: EdmType.String,
+        });
+
         aCols.push({
           label: "Tipo Mercado",
           property: "PurchaseContract/MarketType",

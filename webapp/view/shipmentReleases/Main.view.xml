@@ -201,6 +201,16 @@
                 text="({PurchaseContract/ItemCode}) {PurchaseContract/ItemName}" />
           	</t:template>
 					</t:Column>
+          <t:Column label="Região Logística" sortProperty="PurchaseContract/LogisticRegionCode" width="15rem">
+						<t:template>
+              <Text
+                wrapping="false"
+                text="{
+                  parts: ['PurchaseContract/LogisticRegionCode', 'PurchaseContract/LogisticRegion/Name'],
+                  formatter: '.formatter.formatCodeAndName'
+                }" />
+          	</t:template>
+					</t:Column>
            <t:Column
 						label="Tipo Mercado"
 						sortProperty="PurchaseContract/MarketType"

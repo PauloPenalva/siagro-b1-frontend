@@ -155,6 +155,14 @@
               <Text text="({SalesContract/ItemCode}) {SalesContract/ItemName}" />
         	</t:template>
 					</t:Column>
+          <t:Column label="Região Logística" sortProperty="SalesContract/LogisticRegionCode" width="15rem">
+						<t:template>
+              <Text wrapping="false" text="{
+                parts: ['SalesContract/LogisticRegionCode', 'SalesContract/LogisticRegion/Name'],
+                formatter: '.formatter.formatCodeAndName'
+              }"/>
+        	</t:template>
+					</t:Column>
            <t:Column label="Saldo" hAlign="End" width="10rem">
 						<t:template>
             <ObjectNumber

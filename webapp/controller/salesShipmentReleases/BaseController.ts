@@ -96,6 +96,18 @@ export abstract class BaseController extends CommonController {
     });
 
     aCols.push({
+      label: "Cod.Região Logística",
+      property: "SalesContract/LogisticRegionCode",
+      type: EdmType.String,
+    });
+
+    aCols.push({
+      label: "Região Logística",
+      property: "SalesContract/LogisticRegion/Name",
+      type: EdmType.String,
+    });
+
+    aCols.push({
       label: "Saldo",
       property: "AvailableQuantity",
       type: EdmType.Number,
