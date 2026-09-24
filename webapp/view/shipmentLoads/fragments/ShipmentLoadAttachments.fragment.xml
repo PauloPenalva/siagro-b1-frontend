@@ -21,6 +21,7 @@
 				<Title text="Anexos"/>
 				<ToolbarSpacer/>
 				<Button type="Transparent" text="Anexar" icon="sap-icon://add" press=".onAddAttachment"/>
+				<Button type="Transparent" text="Visualizar" icon="sap-icon://show" press=".onViewAttachment"/>
 				<Button type="Transparent" text="Baixar" icon="sap-icon://download" press=".onDownloadAttachment"/>
 				<Button type="Transparent" text="Excluir" icon="sap-icon://delete" press=".onRemoveAttachment"/>
 			</OverflowToolbar>
@@ -35,7 +36,11 @@
 				<t:template><Text text="{viewModel>Description}" wrapping="false"/></t:template>
 			</t:Column>
 			<t:Column label="Arquivo" width="18rem">
-				<t:template><Text text="{viewModel>FileName}" wrapping="false"/></t:template>
+				<t:template>
+					<!-- GAC-1171 (melhorias): o nome abre o visualizador direto da linha, sem exigir
+					     seleção. Antes o único caminho era selecionar e Baixar. -->
+					<Link text="{viewModel>FileName}" wrapping="false" press=".onViewAttachmentFromRow"/>
+				</t:template>
 			</t:Column>
 			<t:Column label="Data" width="11rem">
 				<t:template>
