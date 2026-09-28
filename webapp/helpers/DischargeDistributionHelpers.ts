@@ -168,7 +168,9 @@ export function noEligibleLinesMessage(invoices: LoadInvoice[]): string {
     return "Todos os documentos de saída desta carga estão cancelados.";
   }
 
-  if (!normal.some(invoice => invoice.InvoiceStatus === "Confirmed")) {
+  // Só manda confirmar quando há o que confirmar: nota Retornada não está "não confirmada", voltou.
+  if (!normal.some(invoice => invoice.InvoiceStatus === "Confirmed")
+    && normal.some(invoice => invoice.InvoiceStatus === "Pending")) {
     return "Nenhum documento de saída desta carga está confirmado. Confirme o documento antes de "
       + "registrar a descarga.";
   }

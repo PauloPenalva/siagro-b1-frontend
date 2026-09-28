@@ -103,3 +103,18 @@ QUnit.test("noEligibleLinesMessage diz por que o diálogo não abre", function (
 	assert.ok(noEligibleLinesMessage([{ Key: "a", InvoiceType: "Normal", InvoiceStatus: "Confirmed" }])
 		.startsWith("Os documentos de saída confirmados desta carga foram devolvidos por inteiro."));
 });
+
+QUnit.test("carga devolvida por inteiro não manda confirmar documento (achado no navegador)", function (assert) {
+	const returned = "Os documentos de saída confirmados desta carga foram devolvidos por inteiro.";
+
+	assert.ok(noEligibleLinesMessage([{ Key: "a", InvoiceType: "Normal", InvoiceStatus: "Returned" }])
+		.startsWith(returned));
+	assert.ok(noEligibleLinesMessage([
+		{ Key: "a", InvoiceType: "Normal", InvoiceStatus: "Returned" },
+		{ Key: "b", InvoiceType: "Normal", InvoiceStatus: "Cancelled" }
+	]).startsWith(returned));
+	assert.ok(noEligibleLinesMessage([
+		{ Key: "a", InvoiceType: "Normal", InvoiceStatus: "Returned" },
+		{ Key: "b", InvoiceType: "Normal", InvoiceStatus: "Pending" }
+	]).startsWith("Nenhum documento de saída desta carga está confirmado."));
+});
