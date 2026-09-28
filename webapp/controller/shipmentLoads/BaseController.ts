@@ -18,12 +18,13 @@ import { sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
   buildDistributionLines,
   describeDistribution,
-  distributeProportionally,
   DistributionInfo,
   DistributionLine,
   LoadInvoice,
   noEligibleLinesMessage,
+  redistributeShares,
   round3,
+  savedSharesNotice,
   summarizeDistribution
 } from "siagrob1/helpers/DischargeDistributionHelpers";
 import CommonController from "siagrob1/controller/common/CommonController";
@@ -44,6 +45,8 @@ type DischargeForm = {
   comments?: string;
   lines: DistributionLine[];
   info: DistributionInfo;
+  /** Na edição, o aviso sobre a parcela travada ou que saiu do rateio (`savedSharesNotice`). */
+  notice: string;
 };
 
 /** Parcela gravada, como o `$expand=Items` do grid de tickets a entrega. */
@@ -204,6 +207,7 @@ export abstract class BaseController extends CommonController {
         comments: "",
         lines,
         info: describeDistribution(0, lines.map(line => line.share)),
+        notice: "",
       } as DischargeForm);
 
       await this.openDischargeDialog();
@@ -249,6 +253,7 @@ export abstract class BaseController extends CommonController {
         comments: (context.getProperty("Comments") as string) ?? "",
         lines,
         info: describeDistribution(quantity, lines.map(line => line.share)),
+        notice: savedSharesNotice(invoices, ownShares, lines),
       } as DischargeForm);
 
       await this.openDischargeDialog();
@@ -278,7 +283,8 @@ export abstract class BaseController extends CommonController {
     const viewModel = this.viewModel();
     const total = round3(viewModel.getProperty("/dischargeDialog/quantity"));
     const lines = (viewModel.getProperty("/dischargeDialog/lines") as DistributionLine[]) ?? [];
-    const shares = distributeProportionally(total, lines.map(line => line.remainingQuantity));
+    // A parcela travada (nota que voltou a Pendente) fica; o resto do total é rateado nas demais.
+    const shares = redistributeShares(total, lines);
 
     // Por caminho, e não reescrevendo o array: o JSONModel avisa só as células que mudaram.
     shares.forEach((share, index) =>

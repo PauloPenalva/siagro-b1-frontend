@@ -42,6 +42,11 @@ export type DistributionLine = {
   /** Peso de ticket que a linha já recebeu de OUTROS tickets. */
   otherTickets: number;
   share: number;
+  /**
+   * Parcela gravada numa nota que voltou a Pendente (confirmação estornada depois do ticket): volta
+   * como está e não é editável — o servidor só a aceita igual.
+   */
+  locked: boolean;
 };
 
 export type DistributionSummary = { distributed: number; remaining: number; closed: boolean };
@@ -117,7 +122,8 @@ export function describeDistribution(total: number, shares: number[]): Distribut
  * elegibilidade que o servidor confere (`ShipmentLoadDischargeRules.ResolveLinesAsync`).
  *
  * `ownShares` é o rateio gravado do ticket em edição (chave = linha da nota): preenche o Peso
- * Rateado e é descontado do "Já descarregado", que mostra só o que veio de OUTROS tickets.
+ * Rateado e é descontado do "Já descarregado", que mostra só o que veio de OUTROS tickets. A parcela
+ * gravada em nota que voltou a Pendente volta TRAVADA (`locked`); Cancelada ou devolvida sai.
  */
 export function buildDistributionLines(
   invoices: LoadInvoice[],
@@ -126,8 +132,11 @@ export function buildDistributionLines(
   const lines: DistributionLine[] = [];
 
   invoices
-    .filter(invoice => invoice.InvoiceType === "Normal" && invoice.InvoiceStatus === "Confirmed")
+    .filter(invoice => invoice.InvoiceType === "Normal"
+      && (invoice.InvoiceStatus === "Confirmed" || invoice.InvoiceStatus === "Pending"))
     .forEach(invoice => {
+      const locked = invoice.InvoiceStatus === "Pending";
+
       (invoice.Items ?? []).forEach(item => {
         const quantity = round3(item.Quantity);
         const returnedQuantity = round3(item.ReturnedQuantity);
@@ -136,6 +145,8 @@ export function buildDistributionLines(
         if (remainingQuantity <= DISTRIBUTION_TOLERANCE) return;
 
         const own = ownShares.get(item.Key) ?? 0;
+
+        if (locked && !(own > 0)) return;
 
         lines.push({
           salesInvoiceKey: invoice.Key,
@@ -148,11 +159,70 @@ export function buildDistributionLines(
           remainingQuantity,
           otherTickets: Math.max(0, round3(round3(item.TicketDeliveredQuantity) - own)),
           share: own,
+          locked,
         });
       });
     });
 
   return lines;
+}
+
+/**
+ * Rateio proporcional que respeita as parcelas travadas: elas ficam como estão, e o que sobra do
+ * total é rateado entre as demais linhas. Sem sobra, as demais ficam zeradas.
+ */
+export function redistributeShares(total: number, lines: DistributionLine[]): number[] {
+  const lockedSum = round3(lines
+    .filter(line => line.locked)
+    .reduce((sum, line) => sum + round3(line.share), 0));
+
+  const free = lines.filter(line => !line.locked);
+  const freeShares = distributeProportionally(round3(total) - lockedSum, free.map(line => line.remainingQuantity));
+
+  let next = 0;
+
+  return lines.map(line => line.locked ? round3(line.share) : freeShares[next++]);
+}
+
+/**
+ * Aviso da edição sobre o rateio gravado que não volta editável: a parcela travada (nota que voltou a
+ * Pendente) e a que saiu (nota cancelada ou devolvida). Vazio quando nada disso acontece.
+ */
+export function savedSharesNotice(
+  invoices: LoadInvoice[],
+  ownShares: Map<string, number>,
+  lines: DistributionLine[]
+): string {
+  const numberOf = new Map<string, string>();
+
+  invoices.forEach(invoice => (invoice.Items ?? []).forEach(item =>
+    numberOf.set(item.Key, invoice.InvoiceNumber || "(sem número)")));
+
+  const describe = (key: string, share: number): string =>
+    `${numberOf.get(key) ?? "(sem número)"} (${formatWeight(round3(share))})`;
+
+  const offered = new Set(lines.map(line => line.salesInvoiceItemKey));
+
+  const kept = lines
+    .filter(line => line.locked)
+    .map(line => describe(line.salesInvoiceItemKey, line.share));
+
+  const dropped = [...ownShares.entries()]
+    .filter(([key, share]) => share > 0 && !offered.has(key))
+    .map(([key, share]) => describe(key, share));
+
+  const parts: string[] = [];
+
+  if (kept.length > 0) {
+    parts.push(`Mantida como gravada, porque o documento voltou a Pendente: ${kept.join("; ")}. `
+      + "Confirme o documento de novo para mudar essa parcela.");
+  }
+
+  if (dropped.length > 0) {
+    parts.push(`Saiu do rateio, porque o documento não recebe mais descarga: ${dropped.join("; ")}.`);
+  }
+
+  return parts.join(" ");
 }
 
 /** Por que não há linha elegível: a mensagem do diálogo que não abre. */

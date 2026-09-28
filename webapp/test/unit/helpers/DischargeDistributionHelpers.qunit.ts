@@ -4,7 +4,9 @@ import {
 	distributeProportionally,
 	LoadInvoice,
 	noEligibleLinesMessage,
+	redistributeShares,
 	round3,
+	savedSharesNotice,
 	summarizeDistribution
 } from "siagrob1/helpers/DischargeDistributionHelpers";
 
@@ -91,6 +93,61 @@ QUnit.test("na edição, o rateio gravado preenche o Peso Rateado e sai do Já d
 
 	assert.strictEqual(lines[0].share, 9000);
 	assert.strictEqual(lines[0].otherTickets, 0);
+});
+
+QUnit.test("linha elegível não é travada", function (assert) {
+	assert.ok(buildDistributionLines(invoices).every(line => line.locked === false));
+});
+
+// Revisão final: o ticket rateou 19.750 na 000101, e depois a confirmação dela foi ESTORNADA.
+const withPending: LoadInvoice[] = [
+	{
+		Key: "inv-a", InvoiceNumber: "000100", InvoiceType: "Normal", InvoiceStatus: "Confirmed",
+		Items: [{ Key: "item-a", Quantity: "20000.000", TicketDeliveredQuantity: "19750.000" }]
+	},
+	{
+		Key: "inv-b", InvoiceNumber: "000101", InvoiceType: "Normal", InvoiceStatus: "Pending",
+		Items: [{ Key: "item-b", Quantity: "20000.000", TicketDeliveredQuantity: "19750.000" }]
+	},
+	{
+		Key: "inv-c", InvoiceNumber: "000102", InvoiceType: "Normal", InvoiceStatus: "Cancelled",
+		Items: [{ Key: "item-c", Quantity: "5000.000", TicketDeliveredQuantity: "5000.000" }]
+	}
+];
+const savedShares = new Map([["item-a", 19750], ["item-b", 19750], ["item-c", 5000]]);
+
+QUnit.test("na edição, a parcela gravada em nota que voltou a Pendente volta travada", function (assert) {
+	const lines = buildDistributionLines(withPending, savedShares);
+
+	assert.deepEqual(lines.map(line => line.salesInvoiceItemKey), ["item-a", "item-b"]);
+	assert.strictEqual(lines[1].locked, true);
+	assert.strictEqual(lines[1].share, 19750);
+	assert.strictEqual(lines[1].otherTickets, 0);
+	assert.strictEqual(lines[0].locked, false);
+});
+
+QUnit.test("nota Pendente sem parcela gravada continua fora do rateio", function (assert) {
+	const lines = buildDistributionLines(withPending, new Map([["item-a", 19750]]));
+
+	assert.deepEqual(lines.map(line => line.salesInvoiceItemKey), ["item-a"]);
+});
+
+QUnit.test("redistributeShares preserva a parcela travada e rateia só o resto", function (assert) {
+	const lines = buildDistributionLines(withPending, savedShares);
+
+	assert.deepEqual(redistributeShares(39600, lines), [19850, 19750]);
+	assert.deepEqual(redistributeShares(10000, lines), [0, 19750]);
+});
+
+QUnit.test("savedSharesNotice explica a parcela travada e a que saiu do rateio", function (assert) {
+	const lines = buildDistributionLines(withPending, savedShares);
+
+	assert.strictEqual(
+		savedSharesNotice(withPending, savedShares, lines),
+		"Mantida como gravada, porque o documento voltou a Pendente: 000101 (19.750,000). Confirme o "
+		+ "documento de novo para mudar essa parcela. Saiu do rateio, porque o documento não recebe mais "
+		+ "descarga: 000102 (5.000,000).");
+	assert.strictEqual(savedSharesNotice(invoices, new Map(), buildDistributionLines(invoices)), "");
 });
 
 QUnit.test("noEligibleLinesMessage diz por que o diálogo não abre", function (assert) {
