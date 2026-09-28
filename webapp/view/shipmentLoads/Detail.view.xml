@@ -342,12 +342,20 @@
 											<Text wrapping="false" text="{ path: 'InvoiceType', targetType: 'any', formatter: '.formatter.formatSalesInvoiceType' }"/>
 										</t:template>
 									</t:Column>
-									<t:Column label="Status" hAlign="Center" width="9rem">
+									<t:Column label="Status" hAlign="Center" width="14rem">
 										<t:template>
-											<ObjectStatus
-												inverted="true"
-												state="{ path: 'InvoiceStatus', targetType: 'any', formatter: '.formatter.stateSalesInvoiceStatus' }"
-												text="{ path: 'InvoiceStatus', targetType: 'any', formatter: '.formatter.formatSalesInvoiceStatus' }"/>
+											<!-- GAC-1171 (rateio): nota Confirmada com parte devolvida pela Recusa. -->
+											<HBox justifyContent="Center" alignItems="Center">
+												<ObjectStatus
+													inverted="true"
+													state="{ path: 'InvoiceStatus', targetType: 'any', formatter: '.formatter.stateSalesInvoiceStatus' }"
+													text="{ path: 'InvoiceStatus', targetType: 'any', formatter: '.formatter.formatSalesInvoiceStatus' }"/>
+												<ObjectStatus
+													class="sapUiTinyMarginBegin"
+													state="Warning"
+													text="Dev. parcial"
+													visible="{ parts: [ { path: 'InvoiceStatus', targetType: 'any' }, { path: 'ReturnedQuantity', targetType: 'any' } ], formatter: '.formatter.isPartiallyReturned' }"/>
+											</HBox>
 										</t:template>
 									</t:Column>
 									<t:Column label="Emissão" width="8rem">
@@ -373,6 +381,13 @@
 											<ObjectNumber
 												textAlign="End"
 												number="{ path: 'NetWeight', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Qtd. Devolvida" hAlign="End" width="9rem">
+										<t:template>
+											<ObjectNumber
+												textAlign="End"
+												number="{ path: 'ReturnedQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
 										</t:template>
 									</t:Column>
 									<t:Column label="Tipo Frete" width="8rem">

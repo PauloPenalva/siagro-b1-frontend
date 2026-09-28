@@ -50,7 +50,15 @@
             formatter: '.formatter.formatSalesInvoiceStatus',
             targetType: 'any'
           }" />
-      </HBox> 
+        <!-- GAC-1171 (rateio): parte da nota voltou numa devolução confirmada. O status continua
+             Confirmada; o selo mostra quanto voltou. -->
+        <ObjectStatus
+          class="sapUiSmallMarginBegin"
+          state="Warning"
+          inverted="true"
+          text="{ path: 'ReturnedQuantity', targetType: 'any', formatter: '.formatter.formatPartialReturn' }"
+          visible="{ parts: [ { path: 'InvoiceStatus', targetType: 'any' }, { path: 'ReturnedQuantity', targetType: 'any' } ], formatter: '.formatter.isPartiallyReturned' }"/>
+      </HBox>
    	</uxap:headerContent> 
     
     <uxap:sections>
