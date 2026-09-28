@@ -15,15 +15,26 @@ import { openAttachmentViewer } from "siagrob1/dialogs/AttachmentViewer";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import formatter from "siagrob1/model/formatter";
 import { sendJson } from "siagrob1/helpers/FetchHelpers";
+import {
+  buildDistributionLines,
+  describeDistribution,
+  distributeProportionally,
+  DistributionInfo,
+  DistributionLine,
+  LoadInvoice,
+  noEligibleLinesMessage,
+  round3,
+  summarizeDistribution
+} from "siagrob1/helpers/DischargeDistributionHelpers";
 import CommonController from "siagrob1/controller/common/CommonController";
-
-/** Linha das listas do diálogo de descarga, em JSONModel estático. */
-type DischargeOption = { Key: string; Text: string; InvoiceKey?: string };
 
 /** Arquivo do anexo já em base64, no formato que as actions da carga esperam. */
 type AttachmentPayload = { File: string; FileName: string; ContentType: string };
 
-/** Buffer JSON do diálogo de descarga. `key` nulo significa inclusão. */
+/**
+ * Buffer JSON do diálogo de descarga (GAC-1171, rateio). `key` nulo significa inclusão; `lines` é o
+ * grid de rateio e `info`, a faixa "Rateado X de Y".
+ */
 type DischargeForm = {
   title: string;
   key?: string;
@@ -31,12 +42,12 @@ type DischargeForm = {
   dischargeDate?: string;
   quantity?: number;
   comments?: string;
-  salesInvoiceKey?: string;
-  salesInvoiceItemKey?: string;
-  invoices: DischargeOption[];
-  allItems: DischargeOption[];
-  items: DischargeOption[];
+  lines: DistributionLine[];
+  info: DistributionInfo;
 };
+
+/** Parcela gravada, como o `$expand=Items` do grid de tickets a entrega. */
+type SavedDischargeItem = { SalesInvoiceItemKey: string; Quantity: number | string };
 
 /** Linha do Select de Entrada em Armazenagem, no diálogo de transbordo (armazém próprio). */
 type TransshipmentReceiptOption = { Key: string; Text: string };
@@ -141,18 +152,11 @@ export abstract class BaseController extends CommonController {
   }
 
   /**
-   * Carrega notas e itens da carga para um JSONModel ANTES de abrir o diálogo: Select com
-   * `selectedKey` sobre coleção OData renderiza vazio, com o estado interno correto e o DOM
-   * desatualizado.
-   *
-   * Nota cancelada fica de fora — o ticket dela não teria em que somar.
+   * Documentos de saída da carga com as linhas, lidos ANTES de abrir o diálogo (GAC-1171, rateio).
+   * O grid é um JSONModel estático: o que o usuário digita não pode virar PATCH pendente no update
+   * group diferido da página.
    */
-  private async loadInvoiceOptionsAsync(): Promise<{
-    invoices: DischargeOption[];
-    items: DischargeOption[];
-    /** Quantas notas a carga tem ao todo, canceladas inclusive — só para a mensagem de vazio. */
-    totalInvoices: number;
-  }> {
+  private async loadLoadInvoicesAsync(): Promise<LoadInvoice[]> {
     const model = this.getModel() as ODataModel;
 
     const binding = model.bindList(
@@ -161,39 +165,16 @@ export abstract class BaseController extends CommonController {
       undefined,
       undefined,
       {
-        $select: "Key,InvoiceNumber,InvoiceStatus",
-        $expand: "Items($select=Key,ItemCode,ItemName)",
+        $select: "Key,InvoiceNumber,InvoiceType,InvoiceStatus",
+        $expand: "Items($select=Key,ItemCode,ItemName,Quantity,ReturnedQuantity,TicketDeliveredQuantity;"
+          + "$expand=SalesContract($select=Key,Code))",
       }
     );
 
-    // A coleção inteira, e não a janela visível: a lista alimenta um Select, não uma tabela.
+    // A coleção inteira, e não a janela visível: a lista alimenta o grid do diálogo.
     const contexts = await binding.requestContexts(0, Infinity);
 
-    const invoices: DischargeOption[] = [];
-    const items: DischargeOption[] = [];
-
-    contexts.forEach(context => {
-      const invoice = context.getObject() as {
-        Key: string;
-        InvoiceNumber?: string;
-        InvoiceStatus?: string;
-        Items?: { Key: string; ItemCode?: string; ItemName?: string }[];
-      };
-
-      if (invoice.InvoiceStatus === "Cancelled") return;
-
-      invoices.push({ Key: invoice.Key, Text: invoice.InvoiceNumber || "(sem número)" });
-
-      (invoice.Items ?? []).forEach(item => {
-        items.push({
-          Key: item.Key,
-          InvoiceKey: invoice.Key,
-          Text: `(${item.ItemCode ?? ""}) ${item.ItemName ?? ""}`.trim(),
-        });
-      });
-    });
-
-    return { invoices, items, totalInvoices: contexts.length };
+    return contexts.map(context => context.getObject() as LoadInvoice);
   }
 
   async onAddDischarge(): Promise<void> {
@@ -205,21 +186,13 @@ export abstract class BaseController extends CommonController {
     this.setBusy(true);
 
     try {
-      const options = await this.loadInvoiceOptionsAsync();
+      const invoices = await this.loadLoadInvoicesAsync();
+      const lines = buildDistributionLines(invoices);
 
-      // Duas situações diferentes chegam aqui com a lista vazia, e dizer "ainda não tem
-      // documento de saída" quando a carga tem notas — todas canceladas — é simplesmente falso.
-      if (options.invoices.length === 0) {
-        MessageBox.alert(options.totalInvoices > 0
-          ? "Todos os documentos de saída desta carga estão cancelados. O ticket de descarga é "
-            + "registrado contra uma nota válida da carga."
-          : "Esta carga ainda não tem documento de saída. O ticket de descarga é registrado "
-            + "contra uma nota da carga.");
+      if (lines.length === 0) {
+        MessageBox.alert(noEligibleLinesMessage(invoices));
         return;
       }
-
-      const firstInvoice = options.invoices[0].Key;
-      const itemsOfFirst = options.items.filter(i => i.InvoiceKey === firstInvoice);
 
       this.viewModel().setProperty("/dischargeDialog", {
         title: "Registrar Descarga",
@@ -229,11 +202,8 @@ export abstract class BaseController extends CommonController {
         dischargeDate: this.todayIso(),
         quantity: null,
         comments: "",
-        salesInvoiceKey: firstInvoice,
-        salesInvoiceItemKey: itemsOfFirst.length === 1 ? itemsOfFirst[0].Key : null,
-        invoices: options.invoices,
-        allItems: options.items,
-        items: itemsOfFirst,
+        lines,
+        info: describeDistribution(0, lines.map(line => line.share)),
       } as DischargeForm);
 
       await this.openDischargeDialog();
@@ -252,8 +222,22 @@ export abstract class BaseController extends CommonController {
     this.setBusy(true);
 
     try {
-      const options = await this.loadInvoiceOptionsAsync();
-      const invoiceKey = context.getProperty("SalesInvoiceKey") as string;
+      // O rateio gravado vem do `$expand=Items` do grid de tickets, já em cache.
+      const saved = ((await context.requestObject("Items")) ?? []) as SavedDischargeItem[];
+      // A tupla anotada é obrigatória: sem ela o TS infere (string | number)[] e o Map não compila.
+      const ownShares = new Map<string, number>(
+        saved.map((item): [string, number] => [item.SalesInvoiceItemKey, round3(item.Quantity)]));
+
+      const invoices = await this.loadLoadInvoicesAsync();
+      const lines = buildDistributionLines(invoices, ownShares);
+
+      if (lines.length === 0) {
+        MessageBox.alert(`${noEligibleLinesMessage(invoices)} Exclua o ticket se ele não vale mais.`);
+        return;
+      }
+
+      // Edm.Decimal chega como STRING: `round3` converte antes do tipo Float do campo.
+      const quantity = round3(context.getProperty("DischargedQuantity"));
 
       this.viewModel().setProperty("/dischargeDialog", {
         title: "Editar Descarga",
@@ -261,14 +245,10 @@ export abstract class BaseController extends CommonController {
         ticketNumber: context.getProperty("TicketNumber") as string,
         // A data chega com hora (datetime2); a action só aceita o dia.
         dischargeDate: ((context.getProperty("DischargeDate") as string) ?? "").slice(0, 10),
-        // Edm.Decimal chega como STRING: sem o Number() o tipo Float do campo recusaria o valor.
-        quantity: Number(context.getProperty("DischargedQuantity") ?? 0),
+        quantity,
         comments: (context.getProperty("Comments") as string) ?? "",
-        salesInvoiceKey: invoiceKey,
-        salesInvoiceItemKey: context.getProperty("SalesInvoiceItemKey") as string,
-        invoices: options.invoices,
-        allItems: options.items,
-        items: options.items.filter(i => i.InvoiceKey === invoiceKey),
+        lines,
+        info: describeDistribution(quantity, lines.map(line => line.share)),
       } as DischargeForm);
 
       await this.openDischargeDialog();
@@ -279,16 +259,40 @@ export abstract class BaseController extends CommonController {
     }
   }
 
-  /** Troca de nota refiltra os itens em memória — nada volta ao servidor. */
-  onDischargeInvoiceChange(): void {
-    const viewModel = this.viewModel();
-    const invoiceKey = viewModel.getProperty("/dischargeDialog/salesInvoiceKey") as string;
-    const all = (viewModel.getProperty("/dischargeDialog/allItems") as DischargeOption[]) ?? [];
-    const items = all.filter(i => i.InvoiceKey === invoiceKey);
+  /** Peso total digitado: rateia de novo, proporcional à Qtd. Líquida (sobrescreve o grid). */
+  onDischargeQuantityChange(): void {
+    this.redistributeDischarge();
+  }
 
-    viewModel.setProperty("/dischargeDialog/items", items);
-    viewModel.setProperty(
-      "/dischargeDialog/salesInvoiceItemKey", items.length === 1 ? items[0].Key : null);
+  /** Botão "Ratear proporcionalmente": refaz a sugestão depois de um ajuste à mão. */
+  onRedistributeDischarge(): void {
+    this.redistributeDischarge();
+  }
+
+  /** Uma parcela editada: só a faixa de fechamento muda. */
+  onDischargeShareChange(): void {
+    this.updateDischargeInfo();
+  }
+
+  private redistributeDischarge(): void {
+    const viewModel = this.viewModel();
+    const total = round3(viewModel.getProperty("/dischargeDialog/quantity"));
+    const lines = (viewModel.getProperty("/dischargeDialog/lines") as DistributionLine[]) ?? [];
+    const shares = distributeProportionally(total, lines.map(line => line.remainingQuantity));
+
+    // Por caminho, e não reescrevendo o array: o JSONModel avisa só as células que mudaram.
+    shares.forEach((share, index) =>
+      viewModel.setProperty(`/dischargeDialog/lines/${index}/share`, share));
+
+    this.updateDischargeInfo();
+  }
+
+  private updateDischargeInfo(): void {
+    const viewModel = this.viewModel();
+    const total = round3(viewModel.getProperty("/dischargeDialog/quantity"));
+    const lines = (viewModel.getProperty("/dischargeDialog/lines") as DistributionLine[]) ?? [];
+
+    viewModel.setProperty("/dischargeDialog/info", describeDistribution(total, lines.map(line => line.share)));
   }
 
   /**
@@ -324,7 +328,7 @@ export abstract class BaseController extends CommonController {
 
     const ticketNumber = (form.ticketNumber ?? "").trim();
     const dischargeDate = (form.dischargeDate ?? "").trim();
-    const quantity = Number(form.quantity ?? 0);
+    const quantity = round3(form.quantity);
 
     if (ticketNumber === "") {
       MessageBox.alert("Informe o número do ticket.");
@@ -341,8 +345,19 @@ export abstract class BaseController extends CommonController {
       return;
     }
 
-    if (!form.key && (!form.salesInvoiceKey || !form.salesInvoiceItemKey)) {
-      MessageBox.alert("Selecione o documento de saída e o item.");
+    // Mesma normalização do servidor: 3 casas e sem as parcelas zero.
+    const shares = (form.lines ?? [])
+      .map(line => ({ key: line.salesInvoiceItemKey, share: round3(line.share) }))
+      .filter(line => line.share > 0);
+
+    if (shares.length === 0) {
+      MessageBox.alert("Distribua o peso descarregado entre os documentos de saída.");
+      return;
+    }
+
+    if (!summarizeDistribution(quantity, shares.map(line => line.share)).closed) {
+      MessageBox.alert(
+        `${describeDistribution(quantity, shares.map(line => line.share)).text} Ajuste o rateio antes de gravar.`);
       return;
     }
 
@@ -360,6 +375,8 @@ export abstract class BaseController extends CommonController {
         action.setParameter("DischargeDate", dischargeDate);
         action.setParameter("Quantity", quantity);
         action.setParameter("Comments", form.comments ?? "");
+        action.setParameter("SalesInvoiceItemKeys", shares.map(line => line.key));
+        action.setParameter("Quantities", shares.map(line => line.share));
         await action.invoke();
         MessageToast.show("Descarga alterada.");
       } else {
@@ -367,12 +384,12 @@ export abstract class BaseController extends CommonController {
 
         const action = model.bindContext("/ShipmentLoadsDischargeCreate(...)");
         action.setParameter("LoadKey", this.currentLoadKey());
-        action.setParameter("SalesInvoiceKey", form.salesInvoiceKey);
-        action.setParameter("SalesInvoiceItemKey", form.salesInvoiceItemKey);
         action.setParameter("TicketNumber", ticketNumber);
         action.setParameter("DischargeDate", dischargeDate);
         action.setParameter("Quantity", quantity);
         action.setParameter("Comments", form.comments ?? "");
+        action.setParameter("SalesInvoiceItemKeys", shares.map(line => line.key));
+        action.setParameter("Quantities", shares.map(line => line.share));
 
         if (file) {
           action.setParameter("File", file.File);

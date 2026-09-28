@@ -3,34 +3,24 @@
 	xmlns:core="sap.ui.core"
 	xmlns:t="sap.ui.table">
 	<!-- Tickets de descarga da carga (GAC-1171): o que a balança do DESTINO pesou, segundo o
-	     documento que o transportador entregou. Serve para liberar o pagamento do frete e para
-	     confrontar o relatório de descarga do cliente.
+	     documento que o transportador entregou, com o RATEIO entre os documentos de saída.
 
 	     ⚠️ O peso do ticket NÃO é o peso conferido: ele soma em colunas próprias e nenhuma
 	     operação desta aba mexe na conferência de entrega da nota.
 
-	     A tabela é somente leitura: tudo é gravado por action, que carimba o autor, recalcula as
-	     somas e grava o log na mesma transação.
+	     Uma linha por TICKET. A tabela é somente leitura: tudo é gravado por action, que carimba o
+	     autor, recalcula as somas e a situação da carga e grava o log na mesma transação.
 
-	     `$$ownRequest` é obrigatório: sem ele a coleção vira $expand no GET da carga e o
-	     refresh() depois de gravar não recarrega nada. O $expand de um nível na nota fica aqui
-	     mesmo, porque o número dela é atribuído depois e denormalizar daria um snapshot velho.
+	     `$$ownRequest` é obrigatório: sem ele a coleção vira $expand no GET da carga e o refresh()
+	     depois de gravar não recarrega nada. O `$expand` de Items/SalesInvoice tem profundidade 2,
+	     que cabe no MaxExpansionDepth padrão.
 
-	     O contrato vem de um $expand de DOIS níveis (SalesInvoiceItem/SalesContract/Code), que
-	     ainda cabe no MaxExpansionDepth padrão do [EnableQuery] — medido contra o servidor: esta
-	     consulta responde 200 e só o terceiro nível devolve 400 "$expand path which is too deep".
-	     Um nível a mais aqui exigiria MaxExpansionDepth explícito no controller, como o
-	     GetTransactions de ShipmentLoadsController.
+	     O `$select` explícito também é obrigatório: com `autoExpandSelect` ele é montado a partir dos
+	     BINDINGS DE CONTROLE, e `Items/SalesInvoiceItemKey` só é lido pelo controller ao abrir a
+	     edição. Sem ele o rateio gravado chegaria sem a linha e o grid do diálogo abriria zerado.
 
-	     O `$select` explícito também é obrigatório, e é a armadilha menos visível das três: com
-	     `autoExpandSelect`, ele é montado a partir dos BINDINGS DE CONTROLE. `SalesInvoiceKey` e
-	     `SalesInvoiceItemKey` não são lidos por nenhuma coluna, só pelo controller ao abrir a
-	     edição — sem listá-los aqui chegam `undefined`, e os dois Select do diálogo abrem em
-	     branco, sem erro nenhum. Mesmo motivo do `$select` do `loadTransactionsTable`.
-
-	     O `sorter` também é obrigatório, por menos óbvio: o OrderByDescending do service só vale
-	     na consulta sem paginação. A sap.ui.table pede $skip/$top, e aí o [EnableQuery] reordena
-	     por chave para estabilizar a paginação. -->
+	     O `sorter` também é obrigatório: o OrderByDescending do service só vale na consulta sem
+	     paginação. -->
 	<t:Table
 		id="loadDischargesTable"
 		class="sapUiSizeCondensed"
@@ -46,8 +36,8 @@
 			path: 'Discharges',
 			parameters: {
 				'$$ownRequest': true,
-				'$select': 'Key,TicketNumber,DischargeDate,DischargedQuantity,AttachmentKey,Comments,CreatedBy,SalesInvoiceKey,SalesInvoiceItemKey',
-				'$expand': 'SalesInvoice($select=Key,InvoiceNumber),SalesInvoiceItem($select=Key,ItemCode,ItemName,SalesContractKey;$expand=SalesContract($select=Key,Code))'
+				'$select': 'Key,TicketNumber,DischargeDate,DischargedQuantity,AttachmentKey,Comments,CreatedBy',
+				'$expand': 'Items($select=Key,Quantity,SalesInvoiceItemKey;$expand=SalesInvoice($select=Key,InvoiceNumber))'
 			},
 			sorter: { path: 'DischargeDate', descending: true }
 		}">
@@ -57,26 +47,26 @@
 					<Title text="Descargas"/>
 					<ToolbarSpacer/>
 					<!-- Mesmo guard do servidor (ShipmentLoadDischargeRules.EnsureLoadAcceptsChanges):
-					     carga cancelada ou devolvida está congelada. `targetType: 'any'` em toda
-					     expressão sobre enum, senão o valor não chega como string e a comparação
-					     nunca casa. -->
+					     só a carga cancelada está congelada. A Devolvida entra: a carga mista tem parte
+					     entregue, e o ticket dela libera o frete. `targetType: 'any'` em toda expressão
+					     sobre enum, senão o valor não chega como string. -->
 					<Button
 						type="Transparent"
 						text="Registrar Descarga"
 						icon="sap-icon://add"
-						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' }"
+						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' }"
 						press=".onAddDischarge"/>
 					<Button
 						type="Transparent"
 						text="Editar"
 						icon="sap-icon://edit"
-						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' }"
+						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' }"
 						press=".onEditDischarge"/>
 					<Button
 						type="Transparent"
 						text="Excluir"
 						icon="sap-icon://delete"
-						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' }"
+						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' }"
 						press=".onRemoveDischarge"/>
 				</content>
 			</OverflowToolbar>
@@ -90,20 +80,24 @@
 					<Text wrapping="false" text="{ path: 'DischargeDate', targetType: 'any', formatter: '.formatter.formatDate' }"/>
 				</t:template>
 			</t:Column>
-			<t:Column label="Documento de Saída" width="11rem">
-				<t:template><Text text="{SalesInvoice/InvoiceNumber}" wrapping="false"/></t:template>
-			</t:Column>
-			<t:Column label="Produto" width="18rem">
-				<t:template><Text text="({SalesInvoiceItem/ItemCode}) {SalesInvoiceItem/ItemName}" wrapping="false"/></t:template>
-			</t:Column>
-			<t:Column label="Contrato" width="10rem">
-				<t:template><Text text="{SalesInvoiceItem/SalesContract/Code}" wrapping="false"/></t:template>
-			</t:Column>
 			<t:Column label="Peso Descarregado" hAlign="End" width="10rem">
 				<t:template>
 					<ObjectNumber
 						textAlign="End"
 						number="{ path: 'DischargedQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Documentos" width="24rem">
+				<t:template>
+					<!-- Lista aninhada RELATIVA à linha: lê o `$expand=Items` que o grid já trouxe, sem
+					     requisição própria, e acompanha a reciclagem de linhas da sap.ui.table (um
+					     binding OneTime não acompanharia). -->
+					<HBox items="{ path: 'Items', templateShareable: false }" wrap="NoWrap">
+						<Text
+							class="sapUiTinyMarginEnd"
+							wrapping="false"
+							text="{ parts: [ { path: 'SalesInvoice/InvoiceNumber' }, { path: 'Quantity', targetType: 'any' } ], formatter: '.formatter.formatDischargeShare' }"/>
+					</HBox>
 				</t:template>
 			</t:Column>
 			<t:Column label="Anexo" hAlign="Center" width="6rem">
