@@ -5,4 +5,5 @@ import "./helpers/FilterHelpers.qunit";
 import "./helpers/AllocationOriginHelpers.qunit";
 import "./helpers/AttachmentViewerHelpers.qunit";
 import "./helpers/PlateHelpers.qunit";
+import "./helpers/DischargeDistributionHelpers.qunit";
 import "./model/formatter.qunit";

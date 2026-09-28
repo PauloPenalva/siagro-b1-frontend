@@ -912,9 +912,24 @@ const formatter = {
     m.set("Confirmed", "Success");
     m.set("Cancelled", "Error");
     m.set("Returned", "Warning");
-    
+
     return m.get(value);
   },
+
+  /**
+   * GAC-1171 (rateio): uma parcela do ticket na aba Descargas — "000100 (20.000,000)". Nota ainda
+   * sem número aparece como "(sem número)". Edm.Decimal chega como string.
+   */
+  formatDischargeShare: (invoiceNumber: string, quantity: number | string): string =>
+    `${invoiceNumber || "(sem número)"} (${Number(quantity ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 })})`,
+
+  /** GAC-1171 (rateio): nota Confirmada com parte dela devolvida — o selo "Dev. parcial". */
+  isPartiallyReturned: (status: string, returnedQuantity: number | string): boolean =>
+    status === "Confirmed" && Number(returnedQuantity ?? 0) > 0,
+
+  /** Texto do selo no cabeçalho do documento: quanto voltou. */
+  formatPartialReturn: (returnedQuantity: number | string): string =>
+    `Devolução parcial: ${Number(returnedQuantity ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 })}`,
 
   formatSalesInvoiceType: (value: string) => {
     const m = new Map<string, string>();
