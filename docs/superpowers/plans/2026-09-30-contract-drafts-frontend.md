@@ -24,7 +24,8 @@
 - **Stage imediato** de arquivo novo com `git add`. **Nunca `git push`.** Branch `feature/contract-drafts-frontend`.
 - **Mensagem de commit:** `tipo(escopo): descrição em pt-BR, imperativo, minúscula, sem ponto final`. Rodapé `Co-Authored-By:` com o modelo que escreveu.
 - ⚠️ **O escopo vem de uma LISTA FECHADA** validada pelo hook `.githooks/commit-msg` (ligado por `core.hooksPath`), que rejeita o commit inteiro se o escopo não estiver nela: `purchase-contract`, `sales-contract`, `shipment`, `storage`, `invoice`, `financial`, `weighing`, `partner`, `master-data`, `security`, `reports`, `sap`, `platform`. **Use `platform`** — é o que o backend usou nesta mesma feature, e ela é transversal a compra e venda. O hook também exige assunto com no mínimo 15 caracteres e um dos tipos `feat|fix|refactor|perf|chore|docs|test`.
-- Gates: `yarn ts-typecheck`, `yarn lint`, `yarn ui5lint`. **`yarn test` NÃO é gate aqui** — ver "O que não usar como prova" abaixo.
+- **TDD no que o harness alcança.** Lógica de negócio — rótulos, guardas de habilitação de botão, montagem de parâmetro de action, leitura do array cru das functions — mora em `webapp/helpers/` ou `webapp/model/` e **nasce de um teste que você viu falhar**. View XML, fragment e controller com OData não são unit-testáveis aqui; o gate deles é linters + navegador. Mantenha view e controller finos: se uma regra é difícil de testar, é porque está no lugar errado.
+- Gates de código: `yarn ts-typecheck`, `yarn lint`, `yarn ui5lint`. **`yarn test` NÃO é gate aqui** — ver "O que não usar como prova" abaixo.
 
 ### Armadilhas do projeto que valem mais que qualquer amostra deste plano
 
@@ -67,7 +68,15 @@ Enums que chegam como string: `ContractDraftStatus` (`Draft`, `AwaitingSignature
 
 ### O que não usar como prova
 
-- **`yarn test` não passa neste projeto** e não é gate: o script roda lint + QUnit com portão de cobertura irreal, e `webapp/test/` só tem o teste de exemplo do gerador. Não escreva testes "para o gate"; se escrever teste, que seja porque cobre algo.
+- **`yarn test` não passa neste projeto** e não é gate: roda lint + QUnit com limiar de cobertura de 50% contra ~2,4% reais, então falha sempre, independentemente do que você mudou. Não persiga esse número.
+- **Mas QUnit funciona, e dá RED/GREEN de verdade.** O `CLAUDE.md` do repo está desatualizado ao dizer que só existe o teste do template: há 6 arquivos de teste reais (`helpers/`, `model/formatter`, `services/TableLayoutService`). Comando verificado em 30/09, baseline **39/39** — com `npx ui5 serve --port 8080` de pé:
+
+```
+npx ui5-test-runner --url "http://localhost:8080/test/Test.qunit.html?testsuite=test-resources/siagrob1/testsuite.qunit&test=unit/unitTests" --report-dir <scratchpad>/qunit-report
+```
+
+  `--report-dir` **fora do repo**: `report/`, `.nyc_output/` e `coverage/` não são ignorados pelo git. E pare o dev server antes de qualquer `yarn test`, senão o runner acerta o servidor não instrumentado e falha com `[COVMIS]`, sintoma enganoso.
+- Teste novo entra em `webapp/test/unit/...` e precisa ser registrado em `webapp/test/unit/unitTests.qunit.ts` — senão não roda e você não percebe.
 - **Os três gates reais são `yarn ts-typecheck`, `yarn lint` e `yarn ui5lint`** — e as sete armadilhas acima passam nos três. **A única prova de que uma tela funciona é abrir no navegador.**
 - O **`ui5-mcp-server` está fora do ar** nesta máquina (timeout). Sem `get_api_reference`/`run_ui5_linter` por MCP; use `yarn ui5lint` local e a documentação oficial.
 
@@ -375,12 +384,16 @@ git commit -m "feat(platform): editar modelo de contrato com placeholders e prev
 ## Task 6: Seção "Minutas" no contrato de compra
 
 **Files:**
+- Create: `webapp/helpers/contractDraftActions.ts` — **a lógica testável da seção**
+- Test: `webapp/test/unit/helpers/ContractDraftActions.qunit.ts` (registrar em `unitTests.qunit.ts`)
 - Create: `webapp/view/purchaseContracts/fragments/PurchaseContractDrafts.fragment.xml`
 - Create: `webapp/view/purchaseContracts/fragments/ContractDraftDialog.fragment.xml` (nova minuta)
 - Create: `webapp/view/purchaseContracts/fragments/ContractDraftBodyDialog.fragment.xml` (editar texto)
 - Modify: `webapp/view/purchaseContracts/Detail.view.xml` (uma `ObjectPageSection` a mais)
 - Modify: `webapp/controller/purchaseContracts/Detail.controller.ts`
 - Modify: `webapp/i18n/i18n.properties`
+
+**O helper vem primeiro, por TDD.** Ele concentra o que dá para provar sem navegador e o que a Task 7 vai reusar: quais botões ficam habilitados em cada `ContractDraftStatus` (incluindo o caso `Signed` sem `SignedAttachmentKey`, que habilita "Atualizar situação"), a montagem dos parâmetros de cada action, e a extração do array cru devolvido pelas functions. O controller só orquestra: chama o helper, invoca a action, mostra toast, recarrega.
 
 **Interfaces:**
 - Consumes: Tasks 1 e 4.
@@ -477,7 +490,7 @@ Só depois de a Task 6 ter passado pela revisão. Mesma estrutura, `ContractType
 
 **Antes de copiar, compare os dois controllers de detalhe.** `salesContracts` pode divergir de `purchaseContracts` em coisas que importam aqui. Se divergir, **siga o vizinho de venda** e diga no relatório o que mudou.
 
-⚠️ **Se aparecer duplicação real de lógica** — o mesmo tratamento de action e recarga em dois controllers —, extraia para um helper compartilhado (`webapp/helpers/`) e use nos dois. Duplicar bloco de lógica verbatim é defeito, não simetria. Mas **não** extraia antes de existir a segunda cópia: até a Task 6 há um caso só.
+O helper `webapp/helpers/contractDraftActions.ts` **já existe desde a Task 6, com teste** — consuma-o, não reimplemente. Se algo dele precisar mudar para servir venda, mude no helper e no teste, não no controller.
 
 - [ ] **Step 2: Gates, navegador e commit**
 
