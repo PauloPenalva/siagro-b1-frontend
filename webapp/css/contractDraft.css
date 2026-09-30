@@ -1,0 +1,59 @@
+/*
+ * Preview da minuta de contrato.
+ *
+ * Espelho exato de ContractDraftPdfLayout.Css no backend
+ * (SiagroB1.Application/Services/ContractDrafts/ContractDraftPdfLayout.cs), que é o CSS aplicado
+ * na geração do PDF. O que se vê aqui é o que se imprime — se mudar lá, mude aqui.
+ *
+ * Tudo fica sob a classe raiz para não vazar nas demais telas: o corpo da minuta é HTML livre,
+ * vindo do editor, e seletores de elemento soltos pegariam a aplicação inteira.
+ */
+
+.siagroContractDraftPreview {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11pt;
+  line-height: 1.45;
+  color: #000;
+}
+
+.siagroContractDraftPreview h1,
+.siagroContractDraftPreview h2,
+.siagroContractDraftPreview h3 {
+  font-weight: bold;
+}
+
+.siagroContractDraftPreview h1 {
+  font-size: 14pt;
+  text-align: center;
+}
+
+.siagroContractDraftPreview h2 {
+  font-size: 12pt;
+}
+
+.siagroContractDraftPreview p {
+  margin: 0 0 8pt;
+  text-align: justify;
+}
+
+.siagroContractDraftPreview table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 6pt 0;
+}
+
+.siagroContractDraftPreview td,
+.siagroContractDraftPreview th {
+  padding: 2pt 4pt;
+  vertical-align: top;
+}
+
+.siagroContractDraftPreview table.signature {
+  width: auto;
+  margin: 18pt 0 6pt;
+}
+
+.siagroContractDraftPreview table.signature td:first-child {
+  font-weight: bold;
+  padding-right: 8pt;
+}

@@ -172,6 +172,20 @@ export default {
   purchaseInvoicesCommentUpdate: '/PurchaseInvoicesCommentUpdate(...)',
   purchaseInvoicesCommentDelete: '/PurchaseInvoicesCommentDelete(...)',
 
+  // Minutas de contrato (assinatura eletrônica). As FUNCTIONS do EDM
+  // (ContractDraftsListByContract, ContractDraftsGetBody, ContractDraftsDownloadPdf,
+  // ContractDraftsRefreshState, ContractTemplatesListPlaceholders) não entram aqui: levam os
+  // parâmetros na própria URL e são montadas no controller, com encodeURIComponent onde couber.
+  contractTemplates: '/odata/ContractTemplates',
+  companySignatories: '/odata/CompanySignatories',
+  businessPartnerSignatories: '/odata/BusinessPartnerSignatories',
+
+  contractDraftsCreate: '/ContractDraftsCreate(...)',
+  contractDraftsUpdate: '/ContractDraftsUpdate(...)',
+  contractDraftsDelete: '/ContractDraftsDelete(...)',
+  contractDraftsSendToSignature: '/ContractDraftsSendToSignature(...)',
+  contractDraftsCancel: '/ContractDraftsCancel(...)',
+
   storageTransactionCopy: '/StorageTransactionsCopy(...)',
 
   // financeiro
