@@ -1,0 +1,74 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+<!--
+  O Form é o PRIMEIRO e único filho de `content`: o controller o alcança por
+  `getContent()[0]`, e não por `Fragment.byId`, porque o DialogHelper prefixa os ids com
+  `idDaView_nomeDoFragmento` — reproduzir esse prefixo aqui quebraria calado se ele mudasse lá.
+-->
+<Dialog
+  id="businessPartnerSignatoryDialog"
+  title="{viewModel>/signatoryDialog/title}"
+  contentWidth="460px"
+  class="sapUiContentPadding">
+  <content>
+    <f:Form id="formBusinessPartnerSignatory" editable="true">
+      <f:layout>
+        <f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+      </f:layout>
+      <f:formContainers>
+        <f:FormContainer>
+          <f:formElements>
+            <f:FormElement label="Nome">
+              <f:fields>
+                <Input value="{Name}" maxLength="100" required="true" liveChange=".validateField"/>
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="CPF/CNPJ">
+              <f:fields>
+                <Input value="{TaxId}" maxLength="14" required="true" liveChange=".validateField"/>
+              </f:fields>
+            </f:FormElement>
+            <!-- É por este e-mail que o webhook do provedor identifica quem assinou. -->
+            <f:FormElement label="E-mail">
+              <f:fields>
+                <Input value="{Email}" type="Email" maxLength="200" required="true" liveChange=".validateField"/>
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Papel">
+              <f:fields>
+                <Select
+                  forceSelection="false"
+                  required="true"
+                  selectedKey="{path: 'Role', targetType: 'any'}"
+                  items="{options>/roles}">
+                  <core:ListItem key="{options>key}" text="{options>text}"/>
+                </Select>
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Ordem">
+              <f:fields>
+                <StepInput value="{Order}" min="0" max="99" step="1" width="8rem"/>
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Ativo">
+              <f:fields>
+                <CheckBox selected="{Active}"/>
+              </f:fields>
+            </f:FormElement>
+          </f:formElements>
+        </f:FormContainer>
+      </f:formContainers>
+    </f:Form>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Salvar" type="Emphasized" press=".onConfirmSignatory"/>
+      <Button text="Cancelar" press=".onCancelSignatory"/>
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>

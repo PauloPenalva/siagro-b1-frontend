@@ -1,0 +1,87 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:rowmodes="sap.ui.table.rowmodes"
+    xmlns:core="sap.ui.core"
+>
+  <!--
+    Sem `rows="{Signatories}"`: BusinessPartnerSignatory NÃO é navegação do parceiro — a tabela
+    é nossa e se liga ao parceiro só pelo CardCode, sem FK, justamente para funcionar também em
+    modo SAPB1, onde BUSINESS_PARTNERS local está vazia. A ligação é absoluta e filtrada no
+    controller (`bindSignatories`), que é onde o CardCode é conhecido.
+  -->
+  <t:Table
+    id="businessPartnerSignatoriesTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    enableBusyIndicator="true"
+    enableSelectAll="false"
+    selectionBehavior="Row"
+    selectionMode="Single"
+    busyIndicatorDelay="0"
+  >
+    <t:rowMode>
+      <rowmodes:Auto minRowCount="5" />
+    </t:rowMode>
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Signatários" />
+          <ToolbarSpacer />
+          <Button
+            text="Incluir"
+            type="Transparent"
+            icon="sap-icon://add"
+            press=".onAddSignatory"
+          />
+          <Button
+            text="Editar"
+            type="Transparent"
+            icon="sap-icon://edit"
+            press=".onEditSignatory"
+          />
+          <Button
+            text="Excluir"
+            type="Transparent"
+            icon="sap-icon://delete"
+            press=".onDeleteSignatory"
+          />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Nome" sortProperty="Name">
+        <t:template>
+          <Text text="{Name}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="CPF/CNPJ" sortProperty="TaxId" width="11rem">
+        <t:template>
+          <Text text="{TaxId}" wrapping="false"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="E-mail" sortProperty="Email">
+        <t:template>
+          <Text text="{Email}" wrapping="false"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Papel" sortProperty="Role" width="16rem">
+        <t:template>
+          <Text text="{path: 'Role', targetType: 'any', formatter: '.formatter.signatoryRoleText'}" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Ordem" sortProperty="Order" hAlign="End" width="6rem">
+        <t:template>
+          <Text text="{Order}" wrapping="false"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Ativo" width="7rem">
+        <t:template>
+          <ObjectStatus
+            text="{path: 'Active', targetType: 'any', formatter: '.formatter.formatActive'}"
+            state="{path: 'Active', targetType: 'any', formatter: '.formatter.stateActive'}" />
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>
