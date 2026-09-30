@@ -23,8 +23,9 @@ const DRAFTS_TABLE = "contractDraftsTable";
 const SIGNERS_TABLE = "contractDraftSignersTable";
 const BODY_EDITOR = "contractDraftBodyEditor";
 
-const NEW_DIALOG = "ContractDraftDialog";
-const BODY_DIALOG = "ContractDraftBodyDialog";
+// Diálogos em dialogs/fragments porque compra e venda usam exatamente os mesmos.
+const NEW_DIALOG = "siagrob1.dialogs.fragments.ContractDraftDialog";
+const BODY_DIALOG = "siagrob1.dialogs.fragments.ContractDraftBodyDialog";
 
 /**
  * Seção "Minutas" das páginas de contrato.
@@ -139,7 +140,7 @@ export default abstract class ContractDraftsSectionController extends CommonCont
       return;
     }
 
-    this.newDraftDialog ??= await DialogHelper.createDialog(this, this.draftFragment(NEW_DIALOG));
+    this.newDraftDialog ??= await DialogHelper.createDialog(this, NEW_DIALOG);
     this.newDraftDialog.open();
   }
 
@@ -225,7 +226,7 @@ export default abstract class ContractDraftsSectionController extends CommonCont
     // A function devolve a string do corpo, não um objeto.
     this.draftUi().setProperty("/body", { html: (result.data as string) ?? "" });
 
-    this.bodyDialog ??= await DialogHelper.createDialog(this, this.draftFragment(BODY_DIALOG));
+    this.bodyDialog ??= await DialogHelper.createDialog(this, BODY_DIALOG);
     this.bodyDialog.open();
   }
 
@@ -397,12 +398,5 @@ export default abstract class ContractDraftsSectionController extends CommonCont
     } finally {
       this.setBusy(false);
     }
-  }
-
-  /** Compra e venda têm cópias próprias dos fragmentos de diálogo, na sua própria pasta de view. */
-  private draftFragment(name: string): string {
-    const folder = this.contractDraftType() === "Sales" ? "salesContracts" : "purchaseContracts";
-
-    return `siagrob1.view.${folder}.fragments.${name}`;
   }
 }

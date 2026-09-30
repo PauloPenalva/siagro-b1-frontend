@@ -259,7 +259,7 @@
       <uxap:ObjectPageSection titleUppercase="false" title="Minutas">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection titleUppercase="false">
-						 <core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractDrafts" type="XML" />
+						 <core:Fragment fragmentName="siagrob1.view.contractDrafts.fragments.ContractDraftsSection" type="XML" />
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
