@@ -107,3 +107,21 @@ export const signatoryRoleLabel: Record<SignatoryRole, string> = {
   SignAsJointDebtor: "Assinar como responsável solidário",
   SignAsPartyAndJointDebtor: "Assinar como parte e responsável solidário",
 };
+
+/**
+ * Rótulo do papel para célula de tabela. Papel vazio sai vazio; papel que o backend passou a
+ * emitir e que ainda não tem tradução sai cru — sumir da tela seria pior que sair em inglês.
+ */
+export function signatoryRoleText(role: string): string {
+  if (!role) return "";
+
+  return signatoryRoleLabel[role as SignatoryRole] ?? role;
+}
+
+/**
+ * Itens do Select de papel, na ordem dos códigos do provedor (1 a 13). Derivado do mapa de
+ * rótulos para não haver duas listas a manter.
+ */
+export const SIGNATORY_ROLE_OPTIONS: { key: SignatoryRole; text: string }[] = (
+  Object.keys(signatoryRoleLabel) as SignatoryRole[]
+).map((key) => ({ key, text: signatoryRoleLabel[key] }));

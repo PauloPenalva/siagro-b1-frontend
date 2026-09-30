@@ -729,6 +729,21 @@
           "target": "taxesEdit"
         },
         {
+          "pattern": "company-signatories",
+          "name": "companySignatories",
+          "target": "companySignatories"
+        },
+        {
+          "pattern": "company-signatories/new",
+          "name": "companySignatoriesNew",
+          "target": "companySignatoriesNew"
+        },
+        {
+          "pattern": "company-signatories/{id}/edit",
+          "name": "companySignatoriesEdit",
+          "target": "companySignatoriesEdit"
+        },
+        {
           "pattern": "notification-groups",
           "name": "notificationGroups",
           "target": "notificationGroups"
@@ -1799,6 +1814,24 @@
 					"id": "taxesEdit",
           "level": 2,
 					"name": "siagrob1.view.taxes.Edit",
+          "clearControlAggregation": true
+				},
+        "companySignatories": {
+					"id": "companySignatories",
+          "level": 1,
+					"name": "siagrob1.view.companySignatories.Main",
+          "clearControlAggregation": true
+				},
+        "companySignatoriesNew": {
+					"id": "companySignatoriesNew",
+          "level": 2,
+					"name": "siagrob1.view.companySignatories.Add",
+          "clearControlAggregation": true
+				},
+        "companySignatoriesEdit": {
+					"id": "companySignatoriesEdit",
+          "level": 2,
+					"name": "siagrob1.view.companySignatories.Edit",
           "clearControlAggregation": true
 				},
         "notificationGroups": {
