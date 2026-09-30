@@ -1,0 +1,85 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:rte="sap.ui.richtexteditor"
+>
+  <VBox class="sapUiSmallMargin">
+    <f:Form id="formContractTemplate" editable="true">
+      <f:layout>
+        <f:ColumnLayout columnsM="2" columnsL="3" columnsXL="4"/>
+      </f:layout>
+      <f:formContainers>
+        <f:FormContainer title="Dados do Modelo">
+          <f:formElements>
+            <f:FormElement label="Nome">
+              <f:fields>
+                <Input value="{Name}" maxLength="100" required="true" liveChange=".validateField"/>
+              </f:fields>
+            </f:FormElement>
+            <!-- Vira o nome do arquivo enviado ao provedor de assinatura. -->
+            <f:FormElement label="Título do documento">
+              <f:fields>
+                <Input value="{Title}" maxLength="200" required="true" liveChange=".validateField"/>
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Aplica-se a">
+              <f:fields>
+                <Select
+                  forceSelection="false"
+                  required="true"
+                  selectedKey="{path: 'ContractType', targetType: 'any'}"
+                  change=".onScopeChange"
+                  items="{options>/scopes}">
+                  <core:ListItem key="{options>key}" text="{options>text}"/>
+                </Select>
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Ativo">
+              <f:fields>
+                <CheckBox selected="{Active}"/>
+              </f:fields>
+            </f:FormElement>
+          </f:formElements>
+        </f:FormContainer>
+      </f:formContainers>
+    </f:Form>
+
+    <HBox class="sapUiSmallMarginTop" alignItems="Stretch" fitContainer="true">
+      <VBox width="20rem" class="sapUiTinyMarginEnd">
+        <core:Fragment fragmentName="siagrob1.view.contractTemplates.fragments.PlaceholderPanel" type="XML" />
+      </VBox>
+
+      <IconTabBar expandable="false" stretchContentHeight="true" class="sapUiResponsiveContentPadding" width="100%">
+        <items>
+          <IconTabFilter text="Texto do modelo" icon="sap-icon://edit">
+            <rte:RichTextEditor
+              id="contractTemplateEditor"
+              value="{BodyHtml}"
+              editorType="TinyMCE7"
+              width="100%"
+              height="32rem"
+              showGroupFont="true"
+              showGroupInsert="true"
+              showGroupTextAlign="true"
+              showGroupStructure="true"
+              showGroupClipboard="true"
+              showGroupUndo="true"/>
+          </IconTabFilter>
+          <!--
+            sanitizeContent: o corpo é HTML digitado por gente. Hoje só ADMIN edita modelos, mas
+            um perfil menos privilegiado com essa permissão tornaria isto XSS armazenado.
+            A classe do embrulho é a mesma do PDF, para o que se vê ser o que se imprime.
+          -->
+          <IconTabFilter text="Pré-visualização" icon="sap-icon://document-text">
+            <ScrollContainer height="32rem" width="100%" vertical="true" class="sapUiSmallMargin">
+              <core:HTML
+                content="{path: 'BodyHtml', formatter: '.formatter.previewHtml'}"
+                sanitizeContent="true"/>
+            </ScrollContainer>
+          </IconTabFilter>
+        </items>
+      </IconTabBar>
+    </HBox>
+  </VBox>
+</core:FragmentDefinition>

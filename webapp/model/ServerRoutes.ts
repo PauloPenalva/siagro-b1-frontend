@@ -180,6 +180,10 @@ export default {
   companySignatories: '/odata/CompanySignatories',
   businessPartnerSignatories: '/odata/BusinessPartnerSignatories',
 
+  // Function custom: responde ARRAY JSON cru, sem o envelope { value: [...] } do OData. Por isso
+  // é lida por fetch (FetchHelpers), e não pelo ODataModel. O parâmetro vai na própria URL.
+  contractTemplatesListPlaceholders: '/odata/ContractTemplatesListPlaceholders',
+
   contractDraftsCreate: '/ContractDraftsCreate(...)',
   contractDraftsUpdate: '/ContractDraftsUpdate(...)',
   contractDraftsDelete: '/ContractDraftsDelete(...)',

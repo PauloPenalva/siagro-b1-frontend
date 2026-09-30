@@ -734,6 +734,16 @@
           "target": "contractTemplates"
         },
         {
+          "pattern": "contract-templates/new",
+          "name": "contractTemplatesNew",
+          "target": "contractTemplatesNew"
+        },
+        {
+          "pattern": "contract-templates/{id}/edit",
+          "name": "contractTemplatesEdit",
+          "target": "contractTemplatesEdit"
+        },
+        {
           "pattern": "company-signatories",
           "name": "companySignatories",
           "target": "companySignatories"
@@ -1825,6 +1835,18 @@
 					"id": "contractTemplates",
           "level": 1,
 					"name": "siagrob1.view.contractTemplates.Main",
+          "clearControlAggregation": true
+				},
+        "contractTemplatesNew": {
+					"id": "contractTemplatesNew",
+          "level": 2,
+					"name": "siagrob1.view.contractTemplates.Add",
+          "clearControlAggregation": true
+				},
+        "contractTemplatesEdit": {
+					"id": "contractTemplatesEdit",
+          "level": 2,
+					"name": "siagrob1.view.contractTemplates.Edit",
           "clearControlAggregation": true
 				},
         "companySignatories": {
