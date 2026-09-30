@@ -6,5 +6,6 @@ import "./helpers/AllocationOriginHelpers.qunit";
 import "./helpers/AttachmentViewerHelpers.qunit";
 import "./helpers/PlateHelpers.qunit";
 import "./helpers/FormValidation.qunit";
+import "./helpers/ContractTemplateFilters.qunit";
 import "./model/contractDrafts.qunit";
 import "./model/formatter.qunit";

@@ -729,6 +729,11 @@
           "target": "taxesEdit"
         },
         {
+          "pattern": "contract-templates",
+          "name": "contractTemplates",
+          "target": "contractTemplates"
+        },
+        {
           "pattern": "company-signatories",
           "name": "companySignatories",
           "target": "companySignatories"
@@ -1814,6 +1819,12 @@
 					"id": "taxesEdit",
           "level": 2,
 					"name": "siagrob1.view.taxes.Edit",
+          "clearControlAggregation": true
+				},
+        "contractTemplates": {
+					"id": "contractTemplates",
+          "level": 1,
+					"name": "siagrob1.view.contractTemplates.Main",
           "clearControlAggregation": true
 				},
         "companySignatories": {

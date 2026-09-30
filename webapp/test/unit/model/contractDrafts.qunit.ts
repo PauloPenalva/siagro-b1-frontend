@@ -1,7 +1,9 @@
 import {
+	TEMPLATE_SCOPE_OPTIONS,
 	SIGNATORY_ROLE_OPTIONS,
 	signatoryRoleLabel,
 	signatoryRoleText,
+	templateScopeText,
 } from "siagrob1/model/contractDrafts";
 
 QUnit.module("contractDrafts - papel do signatário");
@@ -47,4 +49,32 @@ QUnit.test("a ordem das opções é a dos códigos do provedor, começando por A
 	assert.strictEqual(keys[0], "Sign");
 	assert.strictEqual(keys[3], "SignAsParty");
 	assert.strictEqual(keys[12], "SignAsPartyAndJointDebtor");
+});
+
+QUnit.module("contractDrafts - escopo do modelo de contrato");
+
+QUnit.test("traduz o escopo para o rótulo da coluna 'Aplica-se a'", function (assert) {
+	assert.strictEqual(templateScopeText("Purchase"), "Compra");
+	assert.strictEqual(templateScopeText("Sales"), "Venda");
+	assert.strictEqual(templateScopeText("Both"), "Compra e venda");
+});
+
+QUnit.test("escopo ausente deixa a célula vazia", function (assert) {
+	assert.strictEqual(templateScopeText(undefined), "");
+	assert.strictEqual(templateScopeText(""), "");
+});
+
+QUnit.test("escopo novo no backend aparece cru, não some da tela", function (assert) {
+	assert.strictEqual(templateScopeText("Leasing"), "Leasing");
+});
+
+QUnit.test("o filtro de escopo oferece os três valores, com rótulo igual ao da coluna", function (assert) {
+	assert.deepEqual(
+		TEMPLATE_SCOPE_OPTIONS,
+		[
+			{ key: "Purchase", text: "Compra" },
+			{ key: "Sales", text: "Venda" },
+			{ key: "Both", text: "Compra e venda" },
+		]
+	);
 });

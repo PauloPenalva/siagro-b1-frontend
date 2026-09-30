@@ -125,3 +125,15 @@ export function signatoryRoleText(role: string): string {
 export const SIGNATORY_ROLE_OPTIONS: { key: SignatoryRole; text: string }[] = (
   Object.keys(signatoryRoleLabel) as SignatoryRole[]
 ).map((key) => ({ key, text: signatoryRoleLabel[key] }));
+
+/** Rótulo do escopo para a coluna "Aplica-se a". Mesma regra de `signatoryRoleText`. */
+export function templateScopeText(scope: string): string {
+  if (!scope) return "";
+
+  return templateScopeLabel[scope as ContractTemplateScope] ?? scope;
+}
+
+/** Itens do filtro de escopo, derivados do mapa de rótulos. */
+export const TEMPLATE_SCOPE_OPTIONS: { key: ContractTemplateScope; text: string }[] = (
+  Object.keys(templateScopeLabel) as ContractTemplateScope[]
+).map((key) => ({ key, text: templateScopeLabel[key] }));
