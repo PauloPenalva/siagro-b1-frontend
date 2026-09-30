@@ -1,3 +1,4 @@
+import { odataCollection } from "siagrob1/helpers/FetchHelpers";
 import { ContractDraftStatus } from "siagrob1/model/contractDrafts";
 
 /**
@@ -11,6 +12,8 @@ export type DraftRow = {
   Key?: string;
   ContractCode?: string;
   Sequence?: number;
+  DraftType?: string;
+  Description?: string;
   Status?: string;
   SignedAttachmentKey?: string;
 };
@@ -66,19 +69,43 @@ export function draftButtonState(draft: DraftRow): DraftButtonState {
 }
 
 /**
- * As functions deste backend respondem ARRAY JSON cru, sem o envelope `{ value: [...] }`.
- * Bindar direto no retorno quebrava com "Cannot read properties of undefined (reading 'length')",
- * mesmo com o servidor devolvendo 200 e dados. O envelope também é aceito, para o dia em que a
- * function passar a ser servida pelo formatador OData.
+ * Linhas da function `ContractDraftsListByContract`.
+ *
+ * Ela é declarada `ReturnsCollection<ContractDraftDto>()` no EDM, então passa pelo formatador
+ * do OData e responde **com** envelope `{ value: [...] }` — `odataCollection` aceita as duas
+ * formas e explica a regra. Bindar `rows` direto numa function continua proibido: o
+ * `ODataListBinding` não sabe ler o que vem por `fetch`.
  */
 export function draftsFromResponse(data: unknown): DraftRow[] {
-  if (Array.isArray(data)) {
-    return data as DraftRow[];
+  return odataCollection<DraftRow>(data);
+}
+
+/**
+ * Parâmetros do `ContractDraftsUpdate`.
+ *
+ * `DraftType` e `Description` VÃO junto com o texto, lidos da própria minuta. O servidor hoje
+ * preserva o que está gravado quando o parâmetro falta, mas já houve o contrário: omitir
+ * `DraftType` rebaixava um Aditivo a Contrato, calado. Mandar o que se sabe é a defesa barata.
+ * Campo vazio é omitido, não enviado em branco. O texto não é aparado: espaço entre tags é do
+ * editor, e aparar mudaria o documento.
+ */
+export function updateDraftParameters(
+  draft: DraftRow,
+  bodyHtml: string
+): Record<string, string> {
+  const parameters: Record<string, string> = { Key: draft?.Key };
+
+  if (draft?.DraftType) {
+    parameters.DraftType = draft.DraftType;
   }
 
-  const envelope = (data as { value?: unknown })?.value;
+  if (draft?.Description) {
+    parameters.Description = draft.Description;
+  }
 
-  return Array.isArray(envelope) ? (envelope as DraftRow[]) : [];
+  parameters.BodyHtml = bodyHtml;
+
+  return parameters;
 }
 
 /**

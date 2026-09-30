@@ -180,13 +180,15 @@ export default {
   companySignatories: '/odata/CompanySignatories',
   businessPartnerSignatories: '/odata/BusinessPartnerSignatories',
 
-  // Function custom: responde ARRAY JSON cru, sem o envelope { value: [...] } do OData. Por isso
-  // é lida por fetch (FetchHelpers), e não pelo ODataModel. O parâmetro vai na própria URL.
+  // Function do EDM com retorno tipado: vem com envelope `{ value: [...] }` (ver `odataCollection`).
+  // Lida por fetch (FetchHelpers), e não pelo ODataModel, com o parâmetro na própria URL.
   contractTemplatesListPlaceholders: '/odata/ContractTemplatesListPlaceholders',
 
-  // As FUNCTIONS das minutas são controllers [HttpGet] comuns: respondem JSON cru (array, string
-  // ou arquivo), sem o envelope do OData. São lidas por fetch/FetchHelpers, com os parâmetros na
-  // própria URL — o ODataModel não sabe ler o que está fora do contrato dele.
+  // FUNCTIONS das minutas, lidas por fetch/FetchHelpers com os parâmetros na própria URL.
+  // Quem manda no formato da resposta é o TIPO DE RETORNO declarado no EDM, não o fato de o
+  // controller ser [HttpGet]: ListByContract, GetBody e RefreshState têm retorno tipado, passam
+  // pelo formatador do OData e vêm com envelope `{ value: … }` (ver `odataValue`); só o
+  // DownloadPdf é `Returns<IActionResult>()` e responde o arquivo cru.
   contractDraftsListByContract: '/odata/ContractDraftsListByContract',
   contractDraftsGetBody: '/odata/ContractDraftsGetBody',
   contractDraftsDownloadPdf: '/odata/ContractDraftsDownloadPdf',

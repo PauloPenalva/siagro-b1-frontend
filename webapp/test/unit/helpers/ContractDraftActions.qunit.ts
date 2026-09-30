@@ -4,6 +4,7 @@ import {
 	draftFileName,
 	draftsFromResponse,
 	templatePickerFilter,
+	updateDraftParameters,
 } from "siagrob1/helpers/contractDraftActions";
 
 const NOTHING = {
@@ -160,4 +161,29 @@ QUnit.test("modelo inativo nunca aparece", function (assert) {
 	// Inativo continua valendo para minutas antigas, mas não pode originar minuta nova.
 	assert.ok(templatePickerFilter("Purchase").includes("Active eq true"));
 	assert.ok(templatePickerFilter("Sales").includes("Active eq true"));
+});
+
+QUnit.module("contractDraftActions - parâmetros da edição do texto");
+
+QUnit.test("carrega o tipo e a descrição atuais junto com o texto novo", function (assert) {
+	// Regressão: mandar só Key e BodyHtml rebaixava um Aditivo a Contrato. O servidor foi
+	// corrigido para preservar quando o parâmetro falta, mas a tela manda o que sabe.
+	assert.deepEqual(
+		updateDraftParameters({ Key: "k", DraftType: "Amendment", Description: "Aditivo 1" }, "<p>novo</p>"),
+		{ Key: "k", DraftType: "Amendment", Description: "Aditivo 1", BodyHtml: "<p>novo</p>" }
+	);
+});
+
+QUnit.test("campos vazios na minuta são omitidos, não enviados em branco", function (assert) {
+	assert.deepEqual(
+		updateDraftParameters({ Key: "k" }, "<p>novo</p>"),
+		{ Key: "k", BodyHtml: "<p>novo</p>" }
+	);
+});
+
+QUnit.test("o texto vai como veio do editor, sem aparar", function (assert) {
+	// Aparar HTML mudaria o documento; espaço entre tags é do editor, não sujeira.
+	const params = updateDraftParameters({ Key: "k" }, "  <p>a</p> ");
+
+	assert.strictEqual(params.BodyHtml, "  <p>a</p> ");
 });

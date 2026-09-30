@@ -4,7 +4,7 @@ import RichTextEditor from "sap/ui/richtexteditor/RichTextEditor";
 import Form from "sap/ui/layout/form/Form";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import PropertyBinding from "sap/ui/model/PropertyBinding";
-import { sendJson } from "siagrob1/helpers/FetchHelpers";
+import { odataCollection, sendJson } from "siagrob1/helpers/FetchHelpers";
 import { clearFieldStates, validateRequiredFields } from "siagrob1/helpers/FormValidation";
 import { placeholderToken } from "siagrob1/helpers/ContractDraftPreview";
 import { TEMPLATE_SCOPE_OPTIONS } from "siagrob1/model/contractDrafts";
@@ -44,10 +44,11 @@ export abstract class BaseController extends AppBaseController {
   /**
    * Catálogo de placeholders do escopo, por `fetch` e não pelo ODataModel.
    *
-   * `ContractTemplatesListPlaceholders` é uma function custom deste backend: responde um ARRAY
-   * JSON cru, sem o envelope `{ value: [...] }` do OData. `FetchHelpers` existe exatamente para
-   * os endpoints sem envelope, e a autenticação é por cookie — o `fetch` de mesma origem a leva
-   * igual ao modelo.
+   * `ContractTemplatesListPlaceholders` é declarada `ReturnsCollection<Dto>()` no EDM, então
+   * passa pelo formatador do OData e responde **com** envelope `{ value: [...] }` —
+   * `odataCollection` desembrulha e explica a regra. Ler por `fetch` (e não pelo ODataModel) é
+   * o que `FetchHelpers` existe para fazer; a autenticação é por cookie, e o `fetch` de mesma
+   * origem leva a sessão igual ao modelo.
    *
    * A raiz do JSONModel É o array, então a lista binda `placeholders>/`.
    */
@@ -68,7 +69,7 @@ export abstract class BaseController extends AppBaseController {
       return;
     }
 
-    model.setData((result.data as Placeholder[]) ?? []);
+    model.setData(odataCollection<Placeholder>(result.data));
   }
 
   /** O catálogo depende do escopo: trocar de Compra para Venda troca os campos disponíveis. */

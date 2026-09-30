@@ -9,5 +9,6 @@ import "./helpers/FormValidation.qunit";
 import "./helpers/ContractTemplateFilters.qunit";
 import "./helpers/ContractDraftPreview.qunit";
 import "./helpers/ContractDraftActions.qunit";
+import "./helpers/FetchHelpers.qunit";
 import "./model/contractDrafts.qunit";
 import "./model/formatter.qunit";

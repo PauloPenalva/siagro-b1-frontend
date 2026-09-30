@@ -12,7 +12,8 @@
   id="businessPartnerSignatoryDialog"
   title="{viewModel>/signatoryDialog/title}"
   contentWidth="460px"
-  class="sapUiContentPadding">
+  class="sapUiContentPadding"
+  afterClose=".onSignatoryDialogClosed">
   <content>
     <f:Form id="formBusinessPartnerSignatory" editable="true">
       <f:layout>

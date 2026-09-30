@@ -5,10 +5,10 @@
     xmlns:core="sap.ui.core"
 >
   <!--
-    A lista NÃO é uma ligação OData: vem da function ContractDraftsListByContract, que responde
-    array JSON cru, sem o envelope { value: [...] }. O controller a carrega num JSONModel cuja
-    RAIZ é o array — daí `drafts>/`. Ligar direto na function quebrava em
-    "Cannot read properties of undefined (reading 'length')", com 200 e dados no servidor.
+    A lista NÃO é uma ligação OData: vem da function ContractDraftsListByContract, lida por
+    fetch e desembrulhada do envelope do OData num JSONModel cuja RAIZ é o array — daí
+    `drafts>/`. Ligar `rows` direto numa function quebra em "Cannot read properties of undefined
+    (reading 'length')", com 200 e dados no servidor: o ODataListBinding não a invoca.
 
     As datas passam por formatDateTime (string): o datetime2 do SQL Server serializa 7 casas de
     fração de segundo, e o tipo OData as rejeita sem a faceta Precision — que num JSONModel nem

@@ -3,8 +3,8 @@
     xmlns:core="sap.ui.core"
 >
   <!--
-    A raiz do JSONModel "placeholders" É o array (a function do backend responde array cru, sem
-    envelope OData), então a lista se liga a `placeholders>/` e os campos a `placeholders>Name`.
+    A raiz do JSONModel "placeholders" É o array (o controller desembrulha o envelope do OData
+    antes de gravar), então a lista se liga a `placeholders>/` e os campos a `placeholders>Name`.
   -->
   <List
     id="contractTemplatePlaceholders"

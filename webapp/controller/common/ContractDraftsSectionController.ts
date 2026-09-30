@@ -7,7 +7,7 @@ import RichTextEditor from "sap/ui/richtexteditor/RichTextEditor";
 import Table from "sap/ui/table/Table";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
-import { sendJson } from "siagrob1/helpers/FetchHelpers";
+import { odataValue, readErrorMessage, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
   createDraftParameters,
   draftButtonState,
@@ -15,13 +15,13 @@ import {
   draftFileName,
   draftsFromResponse,
   templatePickerFilter,
+  updateDraftParameters,
 } from "siagrob1/helpers/contractDraftActions";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import CommonController from "./CommonController";
 
 const DRAFTS_TABLE = "contractDraftsTable";
 const SIGNERS_TABLE = "contractDraftSignersTable";
-const BODY_EDITOR = "contractDraftBodyEditor";
 
 // Diálogos em dialogs/fragments porque compra e venda usam exatamente os mesmos.
 const NEW_DIALOG = "siagrob1.dialogs.fragments.ContractDraftDialog";
@@ -110,7 +110,10 @@ export default abstract class ContractDraftsSectionController extends CommonCont
 
   private clearDraftSelection(): void {
     this.draftsTable()?.clearSelection();
-    this.byId(SIGNERS_TABLE)?.unbindElement("drafts");
+    // setBindingContext(null) e não unbindElement: o contexto foi POSTO com setBindingContext,
+    // e unbindObject é no-op quando não houve bindElement. Sem isto a tabela de signatários
+    // continuava mostrando os da minuta anterior — que, depois do recarregamento, é outra.
+    this.byId(SIGNERS_TABLE)?.setBindingContext(null, "drafts");
     this.draftUi().setProperty("/buttons", draftButtonState(undefined));
   }
 
@@ -124,7 +127,7 @@ export default abstract class ContractDraftsSectionController extends CommonCont
     const signers = this.byId(SIGNERS_TABLE);
 
     if (index < 0) {
-      signers?.unbindElement("drafts");
+      signers?.setBindingContext(null, "drafts");
       return;
     }
 
@@ -223,8 +226,10 @@ export default abstract class ContractDraftsSectionController extends CommonCont
       return;
     }
 
-    // A function devolve a string do corpo, não um objeto.
-    this.draftUi().setProperty("/body", { html: (result.data as string) ?? "" });
+    // `ContractDraftsGetBody` é `Returns<string>()` no EDM: passa pelo formatador do OData e
+    // responde `{ value: "<html>" }`. Sem desembrulhar, o RichTextEditor recebia um objeto e
+    // estourava em validateProperty ("is of type object, expected string").
+    this.draftUi().setProperty("/body", { html: odataValue<string>(result.data) ?? "" });
 
     this.bodyDialog ??= await DialogHelper.createDialog(this, BODY_DIALOG);
     this.bodyDialog.open();
@@ -243,13 +248,18 @@ export default abstract class ContractDraftsSectionController extends CommonCont
 
     // Lido do editor, e não do modelo: a propriedade `value` do RichTextEditor só volta ao
     // modelo no blur, e Salvar pode ser clicado com o cursor ainda dentro do texto.
-    const editor = this.byId(BODY_EDITOR) as RichTextEditor;
+    //
+    // Pelo conteúdo do diálogo, e NÃO por `byId`: o DialogHelper carrega o fragmento com
+    // `id = idDaView + "_" + nomeDoFragmento`, então `byId("contractDraftBodyEditor")` nunca
+    // resolve — e o `??` abaixo escondia isso, deixando o código fazer justamente o que este
+    // comentário diz ser inseguro.
+    const editor = this.bodyDialog?.getContent()[0] as RichTextEditor;
     const html = (editor?.getNativeApi() as { getContent?: () => string })?.getContent?.()
       ?? (this.draftUi().getProperty("/body/html") as string);
 
     const ok = await this.invokeDraftAction(
       ServerRoutes.contractDraftsUpdate,
-      { Key: draft.Key, BodyHtml: html },
+      updateDraftParameters(draft, html),
       "Minuta atualizada."
     );
 
@@ -324,7 +334,11 @@ export default abstract class ContractDraftsSectionController extends CommonCont
         return;
       }
 
-      MessageToast.show(result.data ? "Situação atualizada." : "Nada mudou desde a última consulta.");
+      // `Returns<bool>()` também vem embrulhado: sem desembrulhar, o objeto é sempre truthy
+      // e a mensagem "nada mudou" nunca aparecia.
+      const changed = odataValue<boolean>(result.data);
+
+      MessageToast.show(changed ? "Situação atualizada." : "Nada mudou desde a última consulta.");
       await this.reloadContractDrafts();
     } finally {
       this.setBusy(false);
@@ -348,7 +362,9 @@ export default abstract class ContractDraftsSectionController extends CommonCont
       const response = await fetch(`${ServerRoutes.contractDraftsDownloadPdf}(Key=${draft.Key})`, { method: "GET" });
 
       if (!response.ok) {
-        MessageBox.error((await response.text())?.trim() || "Não foi possível baixar o PDF da minuta.");
+        // readErrorMessage e não response.text(): o backend responde o erro no envelope do
+        // OData, e o texto cru jogaria `{"error":{"code":"404",…}}` na cara do usuário.
+        MessageBox.error(await readErrorMessage(response) || "Não foi possível baixar o PDF da minuta.");
         return;
       }
 

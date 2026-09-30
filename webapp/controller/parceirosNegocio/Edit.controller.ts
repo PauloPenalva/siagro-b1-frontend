@@ -192,15 +192,23 @@ export default class Edit extends BaseController {
 	}
 
 	onCancelSignatory() {
+		this.signatoryDialog.close();
+	}
+
+	/**
+	 * A limpeza mora no `afterClose`, e não no Cancelar: o `sap.m.Dialog` fecha sozinho no Esc,
+	 * e por ali a inclusão deixava na tabela a linha em branco que o `create()` acabou de pôr,
+	 * com a alteração pendente. Repetindo o Esc, as linhas se empilhavam.
+	 *
+	 * Descarta só o signatário: o grupo é dele. Depois de um Salvar bem-sucedido não há pendência
+	 * nenhuma, então isto não desfaz o que foi gravado.
+	 */
+	onSignatoryDialogClosed() {
 		const oModel = this.getView().getModel() as ODataModel;
 
-		// Descarta só o signatário: o grupo é dele. Numa inclusão, isto também remove da tabela
-		// a linha transitória que o create() acabou de pôr.
 		if (oModel.hasPendingChanges(SIGNATORIES_GROUP)) {
 			oModel.resetChanges(SIGNATORIES_GROUP);
 		}
-
-		this.signatoryDialog.close();
 	}
 
 	async onDeleteSignatory() {
