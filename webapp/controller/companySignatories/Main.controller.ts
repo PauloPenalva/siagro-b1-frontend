@@ -7,7 +7,6 @@ import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
-import { signatoryRoleText } from "siagrob1/model/contractDrafts";
 import formatter from "siagrob1/model/formatter";
 import AppBaseController from "../BaseController";
 
@@ -17,7 +16,7 @@ const TABLE_ID = "tableCompanySignatories";
  * @namespace siagrob1.controller.companySignatories
  */
 export default class Main extends AppBaseController {
-  formatter = { ...formatter, signatoryRoleText };
+  formatter = { ...formatter };
 
   onInit(): void {
     this.getRouter().getRoute("companySignatories")

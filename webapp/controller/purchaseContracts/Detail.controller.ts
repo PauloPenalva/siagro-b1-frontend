@@ -15,6 +15,7 @@ import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 export default class Detail extends PurchaseContractsBaseController {
 
 	onInit(): void  {	
+		this.initContractDrafts();
 		this.getRouter().getRoute("purchaseContractsDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
 	}
 
@@ -42,6 +43,7 @@ export default class Detail extends PurchaseContractsBaseController {
 
       this.getAllocations(id);
       this.getAttachments(id);
+      void this.reloadContractDrafts(id);
 
       const requestModel = new RequestModel({Key: id});
       requestModel.post(this.api.purchaseContractsTotals)

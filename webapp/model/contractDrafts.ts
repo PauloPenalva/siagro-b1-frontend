@@ -137,3 +137,39 @@ export function templateScopeText(scope: string): string {
 export const TEMPLATE_SCOPE_OPTIONS: { key: ContractTemplateScope; text: string }[] = (
   Object.keys(templateScopeLabel) as ContractTemplateScope[]
 ).map((key) => ({ key, text: templateScopeLabel[key] }));
+
+// Rótulos da tabela de minutas. Todos seguem a mesma regra dos demais: vazio sai vazio, e valor
+// que o backend passou a emitir sem tradução aqui sai cru — sumir da tela seria pior.
+
+export function draftStatusText(status: string): string {
+  if (!status) return "";
+
+  return draftStatusLabel[status as ContractDraftStatus] ?? status;
+}
+
+/** Situação desconhecida fica sem cor: pintar de verde ou vermelho por engano é pior que não pintar. */
+export function draftStatusValueState(status: string): string {
+  return draftStatusState[status as ContractDraftStatus] ?? "None";
+}
+
+export function draftTypeText(type: string): string {
+  if (!type) return "";
+
+  return draftTypeLabel[type as ContractDraftType] ?? type;
+}
+
+export function signerStatusText(status: string): string {
+  if (!status) return "";
+
+  return signerStatusLabel[status as SignerStatus] ?? status;
+}
+
+export function signerStatusValueState(status: string): string {
+  return signerStatusState[status as SignerStatus] ?? "None";
+}
+
+export function signerSideText(side: string): string {
+  if (!side) return "";
+
+  return signerSideLabel[side as SignerSide] ?? side;
+}

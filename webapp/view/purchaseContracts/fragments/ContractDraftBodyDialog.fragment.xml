@@ -1,0 +1,39 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:rte="sap.ui.richtexteditor"
+>
+<Dialog
+  id="contractDraftBodyDialog"
+  title="Texto da minuta"
+  contentWidth="64rem"
+  contentHeight="40rem"
+  resizable="true"
+  class="sapUiContentPadding">
+  <content>
+    <!--
+      O texto já vem renderizado: os placeholders do modelo foram substituídos pelos dados do
+      contrato quando a minuta nasceu. O que se edita aqui é o documento, não o modelo.
+    -->
+    <rte:RichTextEditor
+      id="contractDraftBodyEditor"
+      value="{draftUi>/body/html}"
+      editorType="TinyMCE7"
+      width="100%"
+      height="32rem"
+      showGroupFont="true"
+      showGroupInsert="true"
+      showGroupTextAlign="true"
+      showGroupStructure="true"
+      showGroupClipboard="true"
+      showGroupUndo="true"/>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Salvar" type="Emphasized" press=".onConfirmDraftBody"/>
+      <Button text="Cancelar" press=".onCancelDraftBody"/>
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>

@@ -1,7 +1,6 @@
 import MessageToast from "sap/m/MessageToast";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
-import { previewHtml } from "siagrob1/helpers/ContractDraftPreview";
 import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 
@@ -9,7 +8,7 @@ import { BaseController } from "./BaseController";
  * @namespace siagrob1.controller.contractTemplates
  */
 export default class Edit extends BaseController {
-  formatter = { ...formatter, previewHtml };
+  formatter = { ...formatter };
 
   onInit(): void {
     this.initOptions();

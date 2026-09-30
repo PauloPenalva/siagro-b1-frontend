@@ -1,6 +1,5 @@
 import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
-import { previewHtml } from "siagrob1/helpers/ContractDraftPreview";
 import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 
@@ -11,7 +10,7 @@ const DEFAULT_SCOPE = "Both";
  * @namespace siagrob1.controller.contractTemplates
  */
 export default class Add extends BaseController {
-  formatter = { ...formatter, previewHtml };
+  formatter = { ...formatter };
 
   onInit(): void {
     this.initOptions();

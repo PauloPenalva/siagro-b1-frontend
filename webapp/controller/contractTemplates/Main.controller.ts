@@ -7,7 +7,7 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import { contractTemplateFilter } from "siagrob1/helpers/ContractTemplateFilters";
-import { TEMPLATE_SCOPE_OPTIONS, templateScopeText } from "siagrob1/model/contractDrafts";
+import { TEMPLATE_SCOPE_OPTIONS } from "siagrob1/model/contractDrafts";
 import formatter from "siagrob1/model/formatter";
 import BaseController from "../BaseController";
 
@@ -17,7 +17,7 @@ const TABLE_ID = "tableContractTemplates";
  * @namespace siagrob1.controller.contractTemplates
  */
 export default class Main extends BaseController {
-  formatter = { ...formatter, templateScopeText };
+  formatter = { ...formatter };
 
   onInit(): void {
     // "Todos" entra aqui, e não como item solto no XML: um Select com `items` ligado usa o

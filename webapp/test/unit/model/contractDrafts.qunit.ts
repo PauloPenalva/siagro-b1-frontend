@@ -1,6 +1,12 @@
 import {
 	TEMPLATE_SCOPE_OPTIONS,
 	SIGNATORY_ROLE_OPTIONS,
+	draftStatusText,
+	draftStatusValueState,
+	draftTypeText,
+	signerSideText,
+	signerStatusText,
+	signerStatusValueState,
 	signatoryRoleLabel,
 	signatoryRoleText,
 	templateScopeText,
@@ -77,4 +83,43 @@ QUnit.test("o filtro de escopo oferece os três valores, com rótulo igual ao da
 			{ key: "Both", text: "Compra e venda" },
 		]
 	);
+});
+
+QUnit.module("contractDrafts - rótulos da tabela de minutas");
+
+QUnit.test("situação da minuta em português, com o estado visual certo", function (assert) {
+	assert.strictEqual(draftStatusText("Draft"), "Rascunho");
+	assert.strictEqual(draftStatusText("AwaitingSignature"), "Aguardando assinatura");
+	assert.strictEqual(draftStatusText("Signed"), "Assinada");
+
+	assert.strictEqual(draftStatusValueState("Draft"), "None");
+	assert.strictEqual(draftStatusValueState("AwaitingSignature"), "Warning");
+	assert.strictEqual(draftStatusValueState("PartiallySigned"), "Warning");
+	assert.strictEqual(draftStatusValueState("Signed"), "Success");
+	assert.strictEqual(draftStatusValueState("Canceled"), "Error");
+});
+
+QUnit.test("situação desconhecida sai crua e sem cor, em vez de sumir", function (assert) {
+	assert.strictEqual(draftStatusText("AlgoNovo"), "AlgoNovo");
+	assert.strictEqual(draftStatusValueState("AlgoNovo"), "None");
+	assert.strictEqual(draftStatusText(undefined), "");
+	assert.strictEqual(draftStatusValueState(undefined), "None");
+});
+
+QUnit.test("tipo da minuta", function (assert) {
+	assert.strictEqual(draftTypeText("Contract"), "Contrato");
+	assert.strictEqual(draftTypeText("Amendment"), "Aditivo");
+	assert.strictEqual(draftTypeText("Termination"), "Distrato");
+	assert.strictEqual(draftTypeText(undefined), "");
+});
+
+QUnit.test("situação e lado do signatário", function (assert) {
+	assert.strictEqual(signerStatusText("Pending"), "Pendente");
+	assert.strictEqual(signerStatusText("EmailFailed"), "Falha no e-mail");
+	assert.strictEqual(signerStatusValueState("EmailFailed"), "Error");
+	assert.strictEqual(signerStatusValueState("Signed"), "Success");
+
+	assert.strictEqual(signerSideText("Company"), "Empresa");
+	assert.strictEqual(signerSideText("Partner"), "Parceiro");
+	assert.strictEqual(signerSideText(""), "");
 });

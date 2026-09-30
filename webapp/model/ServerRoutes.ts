@@ -184,6 +184,14 @@ export default {
   // é lida por fetch (FetchHelpers), e não pelo ODataModel. O parâmetro vai na própria URL.
   contractTemplatesListPlaceholders: '/odata/ContractTemplatesListPlaceholders',
 
+  // As FUNCTIONS das minutas são controllers [HttpGet] comuns: respondem JSON cru (array, string
+  // ou arquivo), sem o envelope do OData. São lidas por fetch/FetchHelpers, com os parâmetros na
+  // própria URL — o ODataModel não sabe ler o que está fora do contrato dele.
+  contractDraftsListByContract: '/odata/ContractDraftsListByContract',
+  contractDraftsGetBody: '/odata/ContractDraftsGetBody',
+  contractDraftsDownloadPdf: '/odata/ContractDraftsDownloadPdf',
+  contractDraftsRefreshState: '/odata/ContractDraftsRefreshState',
+
   contractDraftsCreate: '/ContractDraftsCreate(...)',
   contractDraftsUpdate: '/ContractDraftsUpdate(...)',
   contractDraftsDelete: '/ContractDraftsDelete(...)',

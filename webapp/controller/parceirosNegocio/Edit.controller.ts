@@ -13,7 +13,7 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import { anyOfFilter } from "siagrob1/helpers/FilterHelpers";
 import { clearFieldStates, validateRequiredFields } from "siagrob1/helpers/FormValidation";
-import { SIGNATORY_ROLE_OPTIONS, signatoryRoleText } from "siagrob1/model/contractDrafts";
+import { SIGNATORY_ROLE_OPTIONS } from "siagrob1/model/contractDrafts";
 import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 
@@ -33,7 +33,7 @@ const SIGNATORIES_GROUP = "BusinessPartnerSignatoriesGroup";
  * @namespace siagrob1.controller.parceirosNegocio
  */
 export default class Edit extends BaseController {
-	formatter = { ...formatter, signatoryRoleText };
+	formatter = { ...formatter };
 
 	private signatoryDialog: Dialog;
 	private cardCode: string;
