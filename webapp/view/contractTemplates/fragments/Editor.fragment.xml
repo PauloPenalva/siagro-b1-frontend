@@ -45,12 +45,25 @@
       </f:formContainers>
     </f:Form>
 
-    <HBox class="sapUiSmallMarginTop" alignItems="Stretch" fitContainer="true">
+    <!--
+      HBox de duas colunas: painel com largura fixa, editor ocupando o resto.
+
+      O editor NÃO leva `width="100%"`: num flex row isso vira `flex-basis` de 100% do
+      contêiner, que somado aos 20rem do painel transborda e encolhe o item até ZERO — medido,
+      com o editor em 0px de largura e a barra do TinyMCE espremida. O jeito UI5 de dizer "ocupe
+      o que sobrar" é `FlexItemData growFactor` com `baseSize="0"`, como nas telas de relatório.
+
+      Sem `fitContainer`: o pai não tem altura definida, e as duas colunas já têm a sua.
+    -->
+    <HBox class="sapUiSmallMarginTop">
       <VBox width="20rem" class="sapUiTinyMarginEnd">
         <core:Fragment fragmentName="siagrob1.view.contractTemplates.fragments.PlaceholderPanel" type="XML" />
       </VBox>
 
-      <IconTabBar expandable="false" stretchContentHeight="true" class="sapUiResponsiveContentPadding" width="100%">
+      <IconTabBar expandable="false" stretchContentHeight="true" class="sapUiResponsiveContentPadding">
+        <layoutData>
+          <FlexItemData growFactor="1" baseSize="0" />
+        </layoutData>
         <items>
           <IconTabFilter text="Texto do modelo" icon="sap-icon://edit">
             <rte:RichTextEditor

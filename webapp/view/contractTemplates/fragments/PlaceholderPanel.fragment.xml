@@ -6,6 +6,11 @@
     A raiz do JSONModel "placeholders" É o array (o controller desembrulha o envelope do OData
     antes de gravar), então a lista se liga a `placeholders>/` e os campos a `placeholders>Name`.
   -->
+  <!--
+    Altura limitada e rolagem própria, casando com a do editor ao lado: sem isso a lista cresce
+    com o catálogo inteiro (medidos 2604px) e empurra a página toda para baixo.
+  -->
+  <ScrollContainer height="32rem" width="100%" vertical="true">
   <List
     id="contractTemplatePlaceholders"
     items="{placeholders>/}"
@@ -28,4 +33,5 @@
       tooltip="Inserir no texto, na posição do cursor"
       press=".onInsertPlaceholder"/>
   </List>
+  </ScrollContainer>
 </core:FragmentDefinition>
