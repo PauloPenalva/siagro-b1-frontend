@@ -5,9 +5,10 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import CkDocumentEditor from "siagrob1/control/CkDocumentEditor";
 import Table from "sap/ui/table/Table";
+import { openAttachmentViewer } from "siagrob1/dialogs/AttachmentViewer";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
-import { odataValue, readErrorMessage, sendJson } from "siagrob1/helpers/FetchHelpers";
+import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
   createDraftParameters,
   draftButtonState,
@@ -352,40 +353,24 @@ export default abstract class ContractDraftsSectionController extends CommonCont
   }
 
   /**
-   * Download binário por `fetch`, como o anexo do contrato: o `bindContext` do OData espera JSON
-   * e engasgaria com o arquivo.
+   * Abre o PDF num diálogo, em vez de baixá-lo.
+   *
+   * Reusa o `openAttachmentViewer`, o mesmo visualizador dos anexos do contrato e da carga: ele
+   * busca o binário, exibe o PDF em iframe, mostra a mensagem do servidor quando falha e já traz
+   * um "Baixar" no rodapé — por isso aqui há um botão só, e não um para ver e outro para baixar.
    */
-  async onDownloadDraftPdf(): Promise<void> {
+  async onOpenDraftPdf(): Promise<void> {
     const draft = this.selectedDraft();
 
     if (!draft) {
       return;
     }
 
-    try {
-      this.setBusy(true);
-
-      const response = await fetch(`${ServerRoutes.contractDraftsDownloadPdf}(Key=${draft.Key})`, { method: "GET" });
-
-      if (!response.ok) {
-        // readErrorMessage e não response.text(): o backend responde o erro no envelope do
-        // OData, e o texto cru jogaria `{"error":{"code":"404",…}}` na cara do usuário.
-        MessageBox.error(await readErrorMessage(response) || "Não foi possível baixar o PDF da minuta.");
-        return;
-      }
-
-      const url = window.URL.createObjectURL(await response.blob());
-      const link = document.createElement("a");
-
-      link.href = url;
-      link.download = draftFileName(draft);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } finally {
-      this.setBusy(false);
-    }
+    await openAttachmentViewer({
+      url: `${ServerRoutes.contractDraftsDownloadPdf}(Key=${draft.Key})`,
+      fileName: draftFileName(draft),
+      title: draft.Sequence ? `Minuta ${draft.Sequence}` : "Minuta",
+    });
   }
 
   // ---------------------------------------------------------------- infraestrutura

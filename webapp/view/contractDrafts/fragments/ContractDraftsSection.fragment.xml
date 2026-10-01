@@ -52,11 +52,11 @@
               press=".onEditDraftBody" />
             <Button
               text="PDF"
-              tooltip="Baixar o PDF da minuta"
+              tooltip="Abrir o PDF da minuta; o visualizador também permite baixar"
               type="Transparent"
               icon="sap-icon://pdf-attachment"
               enabled="{draftUi>/buttons/pdf}"
-              press=".onDownloadDraftPdf" />
+              press=".onOpenDraftPdf" />
             <Button
               text="Enviar para assinatura"
               tooltip="Enviar aos signatários pelo provedor de assinatura eletrônica"
