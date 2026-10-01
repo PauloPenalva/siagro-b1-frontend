@@ -12,4 +12,5 @@ import "./helpers/ContractDraftActions.qunit";
 import "./helpers/FetchHelpers.qunit";
 import "./helpers/PlaceholderSearch.qunit";
 import "./model/contractDrafts.qunit";
+import "./helpers/DischargeDistributionHelpers.qunit";
 import "./model/formatter.qunit";

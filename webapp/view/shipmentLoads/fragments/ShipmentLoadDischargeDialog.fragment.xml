@@ -3,23 +3,25 @@
 	xmlns:core="sap.ui.core"
 	xmlns:f="sap.ui.layout.form"
 	xmlns:u="sap.ui.unified">
-	<!-- Registro e edição do ticket de descarga (GAC-1171).
+	<!-- Registro e edição do ticket de descarga (GAC-1171), com o RATEIO do peso entre as linhas dos
+	     documentos de saída Normais e Confirmados da carga.
 
 	     Os campos escrevem num BUFFER JSON (`viewModel>/dischargeDialog/...`), nunca no contexto
 	     OData: two way binding num Detail deixaria PATCH pendente no update group diferido e
 	     derrubaria o batch inteiro. Ao confirmar, tudo vai por action.
 
-	     Nota e item ficam desabilitados na edição, espelhando o backend: apontar o ticket para
-	     outra linha é excluir e registrar de novo, senão a soma da linha antiga fica órfã. -->
+	     Digitar o Peso Descarregado rateia na hora, proporcional à Qtd. Líquida (faturado menos
+	     devolvido). Editar uma parcela só atualiza a faixa "Rateado X de Y". A soma tem de fechar
+	     com o peso do ticket: a tela recusa antes, e o servidor confere de novo. -->
 	<Dialog
 		id="shipmentLoadDischargeDialog"
 		title="{viewModel>/dischargeDialog/title}"
-		contentWidth="34rem">
+		contentWidth="60rem">
 		<content>
 			<VBox class="sapUiSmallMargin">
 				<f:Form editable="true">
 					<f:layout>
-						<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+						<f:ColumnLayout columnsM="2" columnsL="2" columnsXL="2"/>
 					</f:layout>
 					<f:formContainers>
 						<f:FormContainer>
@@ -43,55 +45,26 @@
 											displayFormat="dd/MM/yyyy"/>
 									</f:fields>
 								</f:FormElement>
-								<f:FormElement label="Documento de Saída">
-									<f:fields>
-										<!-- Itens vindos de JSONModel estático, carregado ANTES de abrir:
-										     Select com selectedKey sobre coleção OData renderiza vazio, com
-										     o estado interno certo e o DOM desatualizado.
-
-										     `items` vem ANTES de `selectedKey` de propósito: na reabertura
-										     do diálogo os bindings são atualizados na ordem em que estão
-										     escritos, e a seleção precisa encontrar a lista já montada. -->
-										<Select
-											forceSelection="false"
-											required="true"
-											items="{viewModel>/dischargeDialog/invoices}"
-											selectedKey="{viewModel>/dischargeDialog/salesInvoiceKey}"
-											change=".onDischargeInvoiceChange"
-											enabled="{= !${viewModel>/dischargeDialog/key} }">
-											<core:ListItem key="{viewModel>Key}" text="{viewModel>Text}"/>
-										</Select>
-									</f:fields>
-								</f:FormElement>
-								<f:FormElement label="Item">
-									<f:fields>
-										<Select
-											forceSelection="false"
-											required="true"
-											items="{viewModel>/dischargeDialog/items}"
-											selectedKey="{viewModel>/dischargeDialog/salesInvoiceItemKey}"
-											enabled="{= !${viewModel>/dischargeDialog/key} }">
-											<core:ListItem key="{viewModel>Key}" text="{viewModel>Text}"/>
-										</Select>
-									</f:fields>
-								</f:FormElement>
 								<f:FormElement label="Peso Descarregado">
 									<f:fields>
-										<!-- Modelo JSON, então sap.ui.model.type.Float é o tipo certo aqui,
-										     como na Recusa: ele formata e lê o número em pt-BR. A regra
-										     "Double, nunca Decimal" vale para o PAYLOAD da action, que o
-										     controller monta com número cru. -->
+										<!-- O change (e não o liveChange) rateia: é quando o valor já
+										     foi lido em pt-BR e gravado no buffer. -->
 										<Input
 											value="{ path: 'viewModel>/dischargeDialog/quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
 											required="true"
-											textAlign="End"/>
+											textAlign="End"
+											change=".onDischargeQuantityChange"/>
 									</f:fields>
 								</f:FormElement>
+							</f:formElements>
+						</f:FormContainer>
+						<f:FormContainer>
+							<f:formElements>
 								<f:FormElement label="Observação">
 									<f:fields>
 										<TextArea
 											value="{viewModel>/dischargeDialog/comments}"
-											rows="3"
+											rows="2"
 											width="100%"
 											maxLength="500"/>
 									</f:fields>
@@ -112,6 +85,63 @@
 						</f:FormContainer>
 					</f:formContainers>
 				</f:Form>
+				<!-- Na edição: parcela travada (nota que voltou a Pendente) ou que saiu do rateio. -->
+				<MessageStrip
+					class="sapUiSmallMarginTop"
+					showIcon="true"
+					type="Information"
+					visible="{= !!${viewModel>/dischargeDialog/notice} }"
+					text="{viewModel>/dischargeDialog/notice}"/>
+				<MessageStrip
+					class="sapUiSmallMarginTop"
+					showIcon="true"
+					visible="{= ${viewModel>/dischargeDialog/quantity} > 0 }"
+					type="{= ${viewModel>/dischargeDialog/info/closed} ? 'Success' : 'Warning' }"
+					text="{viewModel>/dischargeDialog/info/text}"/>
+				<Table
+					class="sapUiSmallMarginTop"
+					items="{viewModel>/dischargeDialog/lines}"
+					noDataText="Nenhum documento de saída confirmado nesta carga.">
+					<headerToolbar>
+						<OverflowToolbar>
+							<Title text="Rateio entre os documentos de saída"/>
+							<ToolbarSpacer/>
+							<Button
+								text="Ratear proporcionalmente"
+								type="Transparent"
+								icon="sap-icon://synchronize"
+								press=".onRedistributeDischarge"/>
+						</OverflowToolbar>
+					</headerToolbar>
+					<columns>
+						<Column width="7rem"><Text text="Documento"/></Column>
+						<Column width="7rem" minScreenWidth="Tablet" demandPopin="true"><Text text="Contrato"/></Column>
+						<Column minScreenWidth="Tablet" demandPopin="true"><Text text="Produto"/></Column>
+						<Column hAlign="End" minScreenWidth="Desktop" demandPopin="true"><Text text="Qtd. Faturada"/></Column>
+						<Column hAlign="End" minScreenWidth="Desktop" demandPopin="true"><Text text="Qtd. Devolvida"/></Column>
+						<Column hAlign="End"><Text text="Qtd. Líquida"/></Column>
+						<Column hAlign="End" minScreenWidth="Desktop" demandPopin="true"><Text text="Já descarregado"/></Column>
+						<Column hAlign="End" width="10rem"><Text text="Peso Rateado"/></Column>
+					</columns>
+					<items>
+						<ColumnListItem>
+							<cells>
+								<Text text="{viewModel>invoiceNumber}" wrapping="false"/>
+								<Text text="{viewModel>contractCode}" wrapping="false"/>
+								<Text text="{viewModel>itemText}"/>
+								<ObjectNumber number="{ path: 'viewModel>quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+								<ObjectNumber number="{ path: 'viewModel>returnedQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+								<ObjectNumber number="{ path: 'viewModel>remainingQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+								<ObjectNumber number="{ path: 'viewModel>otherTickets', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+								<Input
+									textAlign="End"
+									editable="{= !${viewModel>locked} }"
+									change=".onDischargeShareChange"
+									value="{ path: 'viewModel>share', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }, constraints: { minimum: 0 } }"/>
+							</cells>
+						</ColumnListItem>
+					</items>
+				</Table>
 			</VBox>
 		</content>
 		<beginButton>
