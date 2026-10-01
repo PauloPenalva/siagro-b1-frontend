@@ -1,24 +1,18 @@
 /*
- * Tipografia da minuta de contrato, nos dois lugares em que ela aparece: a pré-visualização e
- * a área editável do CKEditor.
+ * Aparência do documento no editor de minutas e de modelos de contrato.
  *
- * Espelho exato de ContractDraftPdfLayout.Css no backend
+ * A tipografia é espelho exato de ContractDraftPdfLayout.Css no backend
  * (SiagroB1.Application/Services/ContractDrafts/ContractDraftPdfLayout.cs), que é o CSS aplicado
- * na geração do PDF. O que se vê aqui é o que se imprime — se mudar lá, mude aqui.
+ * na geração do PDF. O que se vê no editor é o que se imprime — se mudar lá, mude aqui.
  *
- * Os dois seletores andam SEMPRE juntos, em cada regra, de propósito: é o que mantém uma única
- * fonte de verdade: editar o preview sem editar o editor faria os dois divergirem em silêncio.
- *
- * Tudo fica sob classe raiz para não vazar nas demais telas: o corpo da minuta é HTML livre,
- * vindo do editor, e seletores de elemento soltos pegariam a aplicação inteira.
+ * Tudo fica sob a classe raiz do editor para não vazar nas demais telas: o corpo da minuta é
+ * HTML livre, e seletores de elemento soltos pegariam a aplicação inteira.
  */
 
 /*
- * O fundo branco e o respiro NÃO vêm do backend: lá o papel do PDF já é branco por definição.
- * Aqui eles são o papel. Sem isso, o `color: #000` herdado do PDF fica preto sobre o tema
- * escuro da aplicação e o texto some.
+ * O fundo branco não vem do backend: lá o papel do PDF já é branco por definição. Aqui ele é o
+ * papel. Sem isso, o `color: #000` herdado do PDF fica preto sobre o tema escuro da aplicação.
  */
-.siagroContractDraftPreview,
 .siagroCkEditable .ck-editor__editable {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 11pt;
@@ -27,64 +21,49 @@
   background: #fff;
 }
 
-.siagroContractDraftPreview {
-  padding: 16pt;
-}
-
-.siagroContractDraftPreview h1,
-.siagroContractDraftPreview h2,
-.siagroContractDraftPreview h3,
 .siagroCkEditable .ck-editor__editable h1,
 .siagroCkEditable .ck-editor__editable h2,
 .siagroCkEditable .ck-editor__editable h3 {
   font-weight: bold;
 }
 
-.siagroContractDraftPreview h1,
 .siagroCkEditable .ck-editor__editable h1 {
   font-size: 14pt;
   text-align: center;
 }
 
-.siagroContractDraftPreview h2,
 .siagroCkEditable .ck-editor__editable h2 {
   font-size: 12pt;
 }
 
-.siagroContractDraftPreview p,
 .siagroCkEditable .ck-editor__editable p {
   margin: 0 0 8pt;
   text-align: justify;
 }
 
-.siagroContractDraftPreview table,
 .siagroCkEditable .ck-editor__editable table {
   border-collapse: collapse;
   width: 100%;
   margin: 6pt 0;
 }
 
-.siagroContractDraftPreview td,
-.siagroContractDraftPreview th,
 .siagroCkEditable .ck-editor__editable td,
 .siagroCkEditable .ck-editor__editable th {
   padding: 2pt 4pt;
   vertical-align: top;
 }
 
-.siagroContractDraftPreview table.signature,
 .siagroCkEditable .ck-editor__editable table.signature {
   width: auto;
   margin: 18pt 0 6pt;
 }
 
-.siagroContractDraftPreview table.signature td:first-child,
 .siagroCkEditable .ck-editor__editable table.signature td:first-child {
   font-weight: bold;
   padding-right: 8pt;
 }
 
-/* ------------------------------------------------------------------ editor de documento */
+/* ------------------------------------------------------------------ moldura do editor */
 
 /*
  * O build *decoupled* do CKEditor não desenha moldura nenhuma: a barra e a área editável são

@@ -6,7 +6,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import CkDocumentEditor from "siagrob1/control/CkDocumentEditor";
 import { odataCollection, sendJson } from "siagrob1/helpers/FetchHelpers";
 import { clearFieldStates, validateRequiredFields } from "siagrob1/helpers/FormValidation";
-import { placeholderToken } from "siagrob1/helpers/ContractDraftPreview";
+import { placeholderToken } from "siagrob1/helpers/ContractDraftPlaceholders";
 import { filterPlaceholders, Placeholder } from "siagrob1/helpers/PlaceholderSearch";
 import { TEMPLATE_SCOPE_OPTIONS } from "siagrob1/model/contractDrafts";
 import ServerRoutes from "siagrob1/model/ServerRoutes";

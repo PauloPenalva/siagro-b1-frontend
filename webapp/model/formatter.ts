@@ -5,7 +5,6 @@ import {
   allocationOriginText,
   allocationOriginTooltip,
 } from "siagrob1/helpers/AllocationOriginHelpers";
-import { previewHtml } from "siagrob1/helpers/ContractDraftPreview";
 import {
   draftStatusText,
   draftStatusValueState,
@@ -1478,7 +1477,6 @@ const formatter = {
   signerStatusText,
   signerStatusValueState,
   templateScopeText,
-  previewHtml,
 };
 
 export default formatter;

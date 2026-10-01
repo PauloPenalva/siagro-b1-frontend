@@ -58,27 +58,14 @@
         <layoutData>
           <FlexItemData growFactor="3" baseSize="0" />
         </layoutData>
-        <IconTabBar expandable="false" stretchContentHeight="true">
-          <items>
-            <IconTabFilter text="Texto do modelo" icon="sap-icon://edit">
-              <ck:CkDocumentEditor
-                id="contractTemplateEditor"
-                value="{BodyHtml}"
-                height="32rem"/>
-            </IconTabFilter>
-            <!--
-              O editor já mostra o texto com a cara do PDF, mas o preview continua: é ele que
-              passa o HTML pelo sanitizador, e é essa a versão fiel ao que se imprime.
-            -->
-            <IconTabFilter text="Pré-visualização" icon="sap-icon://document-text">
-              <ScrollContainer height="32rem" width="100%" vertical="true" class="sapUiSmallMargin">
-                <core:HTML
-                  content="{path: 'BodyHtml', formatter: '.formatter.previewHtml'}"
-                  sanitizeContent="true"/>
-              </ScrollContainer>
-            </IconTabFilter>
-          </items>
-        </IconTabBar>
+        <!--
+          Sem abas: o editor já mostra o texto com a tipografia do PDF, então a
+          pré-visualização não acrescentava nada — foi removida a pedido do usuário.
+        -->
+        <ck:CkDocumentEditor
+          id="contractTemplateEditor"
+          value="{BodyHtml}"
+          height="32rem"/>
       </VBox>
 
       <VBox>

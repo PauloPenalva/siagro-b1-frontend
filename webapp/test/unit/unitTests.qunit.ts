@@ -7,7 +7,7 @@ import "./helpers/AttachmentViewerHelpers.qunit";
 import "./helpers/PlateHelpers.qunit";
 import "./helpers/FormValidation.qunit";
 import "./helpers/ContractTemplateFilters.qunit";
-import "./helpers/ContractDraftPreview.qunit";
+import "./helpers/ContractDraftPlaceholders.qunit";
 import "./helpers/ContractDraftActions.qunit";
 import "./helpers/FetchHelpers.qunit";
 import "./helpers/PlaceholderSearch.qunit";
