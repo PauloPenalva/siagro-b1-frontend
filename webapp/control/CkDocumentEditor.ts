@@ -45,15 +45,6 @@ function loadLibrary(): Promise<CkEditorClass> {
 }
 
 /**
- * A mesma barra do editor de minutas do Siagro Angular (`modelo-contrato-text`), menos o
- * `custom-element-pagebreak`, que lá é plugin próprio e não vem neste build.
- */
-const TOOLBAR = [
-  "bold", "italic", "link", "bulletedList", "numberedList", "blockQuote", "code", "alignment",
-  "|", "indent", "outdent", "|", "undo", "redo", "|", "removeFormat",
-];
-
-/**
  * Editor de documento, sobre o CKEditor 5 build *decoupled*.
  *
  * "Decoupled" quer dizer que a barra de ferramentas é um elemento separado da área editável: a
@@ -197,10 +188,15 @@ export default class CkDocumentEditor extends Control {
       // insere nada no DOM — nem a barra, nem a área editável. Passar um elemento só serviria
       // para ler o conteúdo dele, e a área editável continuaria fora da página. Quem monta as
       // duas é este controle, logo abaixo.
-      const editor = await EditorClass.create(this.getValue() ?? "", {
-        toolbar: TOOLBAR,
-        language: "pt-br",
-      });
+      // SEM `toolbar`: vale a barra padrão do build — desfazer/refazer, parágrafo, fonte,
+      // tamanho, cor, fundo, negrito, itálico, sublinhado, tachado, link, imagem, tabela,
+      // citação, mídia, alinhamento, listas e recuo.
+      //
+      // É de propósito que ela não é customizada: o editor do Siagro Angular declara um
+      // `editorConfig` com uma barra reduzida, mas o template dele NUNCA passa esse config ao
+      // `<ckeditor>` — não há `[config]`. Na prática, lá roda a barra padrão, e é essa que os
+      // usuários conhecem. Copiar o `editorConfig` reproduziria a intenção do código, não a tela.
+      const editor = await EditorClass.create(this.getValue() ?? "", { language: "pt-br" });
 
       if (!this.getDomRef()) {
         void editor.destroy();
