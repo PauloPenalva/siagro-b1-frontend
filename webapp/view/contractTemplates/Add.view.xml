@@ -1,0 +1,21 @@
+<mvc:View
+	controllerName="siagrob1.controller.contractTemplates.Add"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core">
+
+	<Page title="Novo Modelo de Contrato" busy="{ui>/busy}">
+		<content>
+			<core:Fragment fragmentName="siagrob1.view.contractTemplates.fragments.Editor" type="XML" />
+		</content>
+		<footer>
+			<Toolbar>
+				<ToolbarSpacer />
+				<Button text="Cancelar" press=".onCancel" />
+				<Button text="Salvar" type="Emphasized" press=".onSave"/>
+			</Toolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

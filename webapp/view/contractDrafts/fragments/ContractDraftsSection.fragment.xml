@@ -1,0 +1,208 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:rowmodes="sap.ui.table.rowmodes"
+    xmlns:core="sap.ui.core"
+>
+  <!--
+    A lista NÃO é uma ligação OData: vem da function ContractDraftsListByContract, lida por
+    fetch e desembrulhada do envelope do OData num JSONModel cuja RAIZ é o array — daí
+    `drafts>/`. Ligar `rows` direto numa function quebra em "Cannot read properties of undefined
+    (reading 'length')", com 200 e dados no servidor: o ODataListBinding não a invoca.
+
+    As datas passam por formatDateTime (string): o datetime2 do SQL Server serializa 7 casas de
+    fração de segundo, e o tipo OData as rejeita sem a faceta Precision — que num JSONModel nem
+    se aplica. Situação e tipo usam targetType 'any' pelo mesmo motivo dos enums no resto da tela.
+  -->
+  <VBox>
+    <t:Table
+      id="contractDraftsTable"
+      class="sapUiSizeCondensed"
+      alternateRowColors="true"
+      enableBusyIndicator="true"
+      enableSelectAll="false"
+      selectionBehavior="Row"
+      selectionMode="Single"
+      busyIndicatorDelay="0"
+      rowSelectionChange=".onDraftSelectionChange"
+      rows="{drafts>/}"
+      >
+      <t:rowMode>
+        <rowmodes:Auto minRowCount="3" maxRowCount="10" />
+      </t:rowMode>
+      <t:extension>
+        <OverflowToolbar>
+          <content>
+            <Title text="Minutas do Contrato" />
+            <ToolbarSpacer />
+            <Button
+              text="Nova minuta"
+              tooltip="Gerar uma minuta a partir de um modelo de contrato"
+              type="Transparent"
+              icon="sap-icon://add"
+              visible="{= !${ui>/readonly} }"
+              press=".onNewDraft" />
+            <Button
+              text="Editar texto"
+              tooltip="Ajustar o texto antes de enviar para assinatura"
+              type="Transparent"
+              icon="sap-icon://edit"
+              visible="{= !${ui>/readonly} }"
+              enabled="{draftUi>/buttons/editBody}"
+              press=".onEditDraftBody" />
+            <Button
+              text="PDF"
+              tooltip="Abrir o PDF da minuta; o visualizador também permite baixar"
+              type="Transparent"
+              icon="sap-icon://pdf-attachment"
+              enabled="{draftUi>/buttons/pdf}"
+              press=".onOpenDraftPdf" />
+            <Button
+              text="Enviar para assinatura"
+              tooltip="Enviar aos signatários pelo provedor de assinatura eletrônica"
+              type="Transparent"
+              icon="sap-icon://signature"
+              visible="{= !${ui>/readonly} }"
+              enabled="{draftUi>/buttons/send}"
+              press=".onSendDraftToSignature" />
+            <Button
+              text="Atualizar situação"
+              tooltip="Consultar o provedor e trazer o que mudou, inclusive o PDF assinado"
+              type="Transparent"
+              icon="sap-icon://synchronize"
+              enabled="{draftUi>/buttons/refresh}"
+              press=".onRefreshDraftState" />
+            <Button
+              text="Cancelar assinatura"
+              tooltip="Cancelar no provedor a assinatura em andamento"
+              type="Transparent"
+              icon="sap-icon://cancel"
+              visible="{= !${ui>/readonly} }"
+              enabled="{draftUi>/buttons/cancel}"
+              press=".onCancelDraft" />
+            <Button
+              text="Excluir"
+              type="Transparent"
+              icon="sap-icon://delete"
+              visible="{= !${ui>/readonly} }"
+              enabled="{draftUi>/buttons/remove}"
+              press=".onDeleteDraft" />
+          </content>
+        </OverflowToolbar>
+      </t:extension>
+      <t:columns>
+        <t:Column label="Seq." width="5rem" hAlign="End">
+          <t:template>
+            <Text text="{drafts>Sequence}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Tipo" width="8rem">
+          <t:template>
+            <Text text="{path: 'drafts>DraftType', targetType: 'any', formatter: '.formatter.draftTypeText'}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Descrição">
+          <t:template>
+            <Text text="{drafts>Description}"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Modelo" width="14rem">
+          <t:template>
+            <Text text="{drafts>TemplateName}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Situação" width="12rem">
+          <t:template>
+            <ObjectStatus
+              text="{path: 'drafts>Status', targetType: 'any', formatter: '.formatter.draftStatusText'}"
+              state="{path: 'drafts>Status', targetType: 'any', formatter: '.formatter.draftStatusValueState'}"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Enviada em" width="10rem">
+          <t:template>
+            <Text text="{path: 'drafts>SentAt', formatter: '.formatter.formatDateTime'}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Assinada em" width="10rem">
+          <t:template>
+            <Text text="{path: 'drafts>SignedAt', formatter: '.formatter.formatDateTime'}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <!-- Último erro do provedor: só aparece quando existe, para não poluir a linha normal. -->
+        <t:Column label="Última falha" width="16rem">
+          <t:template>
+            <ObjectStatus
+              text="{drafts>LastError}"
+              state="Error"
+              visible="{= !!${path: 'drafts>LastError', targetType: 'any'} }"/>
+          </t:template>
+        </t:Column>
+      </t:columns>
+    </t:Table>
+
+    <!--
+      Signatários da minuta SELECIONADA. Já vêm dentro do DTO da linha (`Signers`), então a
+      ligação é relativa ao contexto que o controller aponta — sem chamada extra ao servidor.
+    -->
+    <t:Table
+      id="contractDraftSignersTable"
+      class="sapUiSizeCondensed sapUiSmallMarginTop"
+      alternateRowColors="true"
+      enableSelectAll="false"
+      selectionMode="None"
+      busyIndicatorDelay="0"
+      rows="{drafts>Signers}"
+      >
+      <t:rowMode>
+        <rowmodes:Auto minRowCount="2" maxRowCount="8" />
+      </t:rowMode>
+      <t:extension>
+        <OverflowToolbar>
+          <content>
+            <Title text="Signatários da minuta selecionada" level="H4"/>
+            <ToolbarSpacer />
+          </content>
+        </OverflowToolbar>
+      </t:extension>
+      <t:columns>
+        <t:Column label="Ordem" width="5rem" hAlign="End">
+          <t:template>
+            <Text text="{drafts>Order}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Lado" width="8rem">
+          <t:template>
+            <Text text="{path: 'drafts>Side', targetType: 'any', formatter: '.formatter.signerSideText'}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Nome">
+          <t:template>
+            <Text text="{drafts>Name}"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="E-mail" width="18rem">
+          <t:template>
+            <Text text="{drafts>Email}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Papel" width="16rem">
+          <t:template>
+            <Text text="{path: 'drafts>Role', targetType: 'any', formatter: '.formatter.signatoryRoleText'}"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Situação" width="10rem">
+          <t:template>
+            <ObjectStatus
+              text="{path: 'drafts>Status', targetType: 'any', formatter: '.formatter.signerStatusText'}"
+              state="{path: 'drafts>Status', targetType: 'any', formatter: '.formatter.signerStatusValueState'}"/>
+          </t:template>
+        </t:Column>
+        <t:Column label="Assinado em" width="10rem">
+          <t:template>
+            <Text text="{path: 'drafts>SignedAt', formatter: '.formatter.formatDateTime'}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+      </t:columns>
+    </t:Table>
+  </VBox>
+</core:FragmentDefinition>

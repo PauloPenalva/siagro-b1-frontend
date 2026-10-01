@@ -4,7 +4,7 @@ import Table from "sap/ui/table/Table";
 import MessageBox from "sap/m/MessageBox";
 import Dialog from "sap/m/Dialog";
 import Context from "sap/ui/model/odata/v4/Context";
-import CommonController from "../common/CommonController";
+import ContractDraftsSectionController from "../common/ContractDraftsSectionController";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageToast from "sap/m/MessageToast";
@@ -16,7 +16,12 @@ import { Link$PressEvent } from "sap/m/Link";
 /**
  * @namespace siagrob1.controller.salesContracts
  */
-export default abstract class SalesContractsBaseController extends CommonController {
+export default abstract class SalesContractsBaseController extends ContractDraftsSectionController {
+
+  /** Lado do contrato para a seção "Minutas" (ver ContractDraftsSectionController). */
+  protected contractDraftType(): string {
+    return "Sales";
+  }
   
   onUpload() {
     const ctx = this.getView().getBindingContext() as Context;

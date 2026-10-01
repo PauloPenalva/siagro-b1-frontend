@@ -16,6 +16,6 @@
 			"integration/*": ["./webapp/test/integration/*"]
 		}
 	},
-	"exclude": ["./webapp/test/e2e/**/*"],
+	"exclude": ["./webapp/test/e2e/**/*", "./webapp/thirdparty/**/*"],
 	"include": ["./webapp/**/*"]
 }

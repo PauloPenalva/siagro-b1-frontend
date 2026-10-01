@@ -16,6 +16,7 @@ framework:
     - name: sap.ui.comp
     - name: sap.uxap
     - name: sap.ui.export
+    - name: sap.ui.richtexteditor
     - name: themelib_sap_horizon
     - name: themelib_sap_fiori_3
     - name: themelib_sap_bluecrystal

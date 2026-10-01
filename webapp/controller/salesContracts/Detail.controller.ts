@@ -16,6 +16,7 @@ import { SalesContractRecalcResult } from "siagrob1/types/SalesContractRecalcRes
 export default class Detail extends SalesContractsBaseController {
 
 	onInit(): void  {	
+		this.initContractDrafts();
 		this.getRouter().getRoute("salesContractsDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
 	}
 
@@ -45,6 +46,7 @@ export default class Detail extends SalesContractsBaseController {
 			this.bindElement(sPath);
       this.getInvoices(id);
       this.getAttachments(id);
+      void this.reloadContractDrafts(id);
       void this.applyPostApprovalEditable(sPath);
 
       const requestModel = new RequestModel({Key: id});

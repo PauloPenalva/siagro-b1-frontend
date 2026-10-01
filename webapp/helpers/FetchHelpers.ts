@@ -56,3 +56,31 @@ export async function sendJson(
     return { ok: false, message: "Não foi possível comunicar com o servidor." };
   }
 }
+
+/**
+ * Desembrulha o envelope do OData de uma resposta lida por `fetch`.
+ *
+ * A regra deste backend é o **tipo de retorno declarado** da Function no `ODataConfigurations`,
+ * não o fato de ela ser um controller `[HttpGet]`:
+ *
+ * - `ReturnsCollection<Dto>()`, `Returns<string>()`, `Returns<bool>()` → passa pelo formatador
+ *   do OData e vem `{ "@odata.context": …, "value": … }`;
+ * - `Returns<IActionResult>()` → escapa do formatador e responde o corpo cru (é o caso de
+ *   `ShipmentLoadsAttachmentsList` e de `ContractDraftsDownloadPdf`).
+ *
+ * As duas formas convivem, então quem lê por `fetch` aceita as duas.
+ */
+export function odataValue<T>(data: unknown): T {
+  if (data && typeof data === "object" && "value" in data) {
+    return (data as { value: T }).value;
+  }
+
+  return data as T;
+}
+
+/** Versão de coleção de {@link odataValue}: sempre devolve array, nunca `undefined`. */
+export function odataCollection<T>(data: unknown): T[] {
+  const value = odataValue<unknown>(data);
+
+  return Array.isArray(value) ? (value as T[]) : [];
+}

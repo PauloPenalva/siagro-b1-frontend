@@ -172,6 +172,34 @@ export default {
   purchaseInvoicesCommentUpdate: '/PurchaseInvoicesCommentUpdate(...)',
   purchaseInvoicesCommentDelete: '/PurchaseInvoicesCommentDelete(...)',
 
+  // Minutas de contrato (assinatura eletrônica). As FUNCTIONS do EDM
+  // (ContractDraftsListByContract, ContractDraftsGetBody, ContractDraftsDownloadPdf,
+  // ContractDraftsRefreshState, ContractTemplatesListPlaceholders) não entram aqui: levam os
+  // parâmetros na própria URL e são montadas no controller, com encodeURIComponent onde couber.
+  contractTemplates: '/odata/ContractTemplates',
+  companySignatories: '/odata/CompanySignatories',
+  businessPartnerSignatories: '/odata/BusinessPartnerSignatories',
+
+  // Function do EDM com retorno tipado: vem com envelope `{ value: [...] }` (ver `odataCollection`).
+  // Lida por fetch (FetchHelpers), e não pelo ODataModel, com o parâmetro na própria URL.
+  contractTemplatesListPlaceholders: '/odata/ContractTemplatesListPlaceholders',
+
+  // FUNCTIONS das minutas, lidas por fetch/FetchHelpers com os parâmetros na própria URL.
+  // Quem manda no formato da resposta é o TIPO DE RETORNO declarado no EDM, não o fato de o
+  // controller ser [HttpGet]: ListByContract, GetBody e RefreshState têm retorno tipado, passam
+  // pelo formatador do OData e vêm com envelope `{ value: … }` (ver `odataValue`); só o
+  // DownloadPdf é `Returns<IActionResult>()` e responde o arquivo cru.
+  contractDraftsListByContract: '/odata/ContractDraftsListByContract',
+  contractDraftsGetBody: '/odata/ContractDraftsGetBody',
+  contractDraftsDownloadPdf: '/odata/ContractDraftsDownloadPdf',
+  contractDraftsRefreshState: '/odata/ContractDraftsRefreshState',
+
+  contractDraftsCreate: '/ContractDraftsCreate(...)',
+  contractDraftsUpdate: '/ContractDraftsUpdate(...)',
+  contractDraftsDelete: '/ContractDraftsDelete(...)',
+  contractDraftsSendToSignature: '/ContractDraftsSendToSignature(...)',
+  contractDraftsCancel: '/ContractDraftsCancel(...)',
+
   storageTransactionCopy: '/StorageTransactionsCopy(...)',
 
   // financeiro

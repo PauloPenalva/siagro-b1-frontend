@@ -1,0 +1,31 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:ck="siagrob1.control"
+>
+<Dialog
+  id="contractDraftBodyDialog"
+  title="Texto da minuta"
+  contentWidth="64rem"
+  contentHeight="40rem"
+  resizable="true"
+  class="sapUiContentPadding">
+  <content>
+    <!--
+      O texto já vem renderizado: os placeholders do modelo foram substituídos pelos dados do
+      contrato quando a minuta nasceu. O que se edita aqui é o documento, não o modelo.
+    -->
+    <ck:CkDocumentEditor
+      id="contractDraftBodyEditor"
+      value="{draftUi>/body/html}"
+      height="32rem"/>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Salvar" type="Emphasized" press=".onConfirmDraftBody"/>
+      <Button text="Cancelar" press=".onCancelDraftBody"/>
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>

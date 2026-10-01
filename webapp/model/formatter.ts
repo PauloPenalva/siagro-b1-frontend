@@ -5,6 +5,16 @@ import {
   allocationOriginText,
   allocationOriginTooltip,
 } from "siagrob1/helpers/AllocationOriginHelpers";
+import {
+  draftStatusText,
+  draftStatusValueState,
+  draftTypeText,
+  signatoryRoleText,
+  signerSideText,
+  signerStatusText,
+  signerStatusValueState,
+  templateScopeText,
+} from "siagrob1/model/contractDrafts";
 
 // O objeto tem nome para que um formatter possa chamar outro (ver
 // `formatDischargedAgainstLoaded`, que reusa `formatDecimal`); a exportação default continua
@@ -1456,6 +1466,17 @@ const formatter = {
   allocationOriginState,
   allocationOriginText,
   allocationOriginTooltip,
+
+  // Minutas de contrato e assinatura eletrônica: rótulos pt-BR dos enums do backend, que chegam
+  // como o NOME do membro. Os mapas vivem em model/contractDrafts.
+  draftStatusText,
+  draftStatusValueState,
+  draftTypeText,
+  signatoryRoleText,
+  signerSideText,
+  signerStatusText,
+  signerStatusValueState,
+  templateScopeText,
 };
 
 export default formatter;

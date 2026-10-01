@@ -1,0 +1,65 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+<Dialog
+  id="contractDraftDialog"
+  title="Nova minuta"
+  contentWidth="34rem"
+  class="sapUiContentPadding">
+  <content>
+    <f:Form editable="true">
+      <f:layout>
+        <f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+      </f:layout>
+      <f:formContainers>
+        <f:FormContainer>
+          <f:formElements>
+            <!--
+              Só modelos deste lado (ou de escopo Ambos) e ativos. O $filter vem do
+              helper templatePickerFilter e é montado pelo controller, porque ContractType é
+              enum e o Filter do modelo V4 não serializa literal de enum.
+            -->
+            <f:FormElement label="Modelo de contrato">
+              <f:fields>
+                <Select
+                  forceSelection="false"
+                  required="true"
+                  selectedKey="{draftUi>/newDraft/templateKey}"
+                  items="{draftUi>/templates}">
+                  <core:ListItem key="{draftUi>Key}" text="{draftUi>Name}"/>
+                </Select>
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Tipo">
+              <f:fields>
+                <Select forceSelection="false" required="true" selectedKey="{draftUi>/newDraft/draftType}">
+                  <core:ListItem key="Contract" text="Contrato"/>
+                  <core:ListItem key="Amendment" text="Aditivo"/>
+                  <core:ListItem key="Termination" text="Distrato"/>
+                </Select>
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Descrição">
+              <f:fields>
+                <Input value="{draftUi>/newDraft/description}" maxLength="200"/>
+              </f:fields>
+            </f:FormElement>
+          </f:formElements>
+        </f:FormContainer>
+      </f:formContainers>
+    </f:Form>
+    <Text
+      text="O texto é gerado a partir do modelo com os dados atuais do contrato. Se o contrato mudar depois, a minuta não muda — gere outra."
+      class="sapUiTinyMarginTop"/>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Gerar" type="Emphasized" press=".onConfirmNewDraft"/>
+      <Button text="Cancelar" press=".onCancelNewDraft"/>
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>

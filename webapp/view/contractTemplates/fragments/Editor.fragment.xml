@@ -1,0 +1,79 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:ck="siagrob1.control"
+>
+  <VBox class="sapUiSmallMargin">
+    <f:Form id="formContractTemplate" editable="true">
+      <f:layout>
+        <f:ColumnLayout columnsM="2" columnsL="3" columnsXL="4"/>
+      </f:layout>
+      <f:formContainers>
+        <f:FormContainer title="Dados do Modelo">
+          <f:formElements>
+            <f:FormElement label="Nome">
+              <f:fields>
+                <Input value="{Name}" maxLength="100" required="true" liveChange=".validateField"/>
+              </f:fields>
+            </f:FormElement>
+            <!-- Vira o nome do arquivo enviado ao provedor de assinatura. -->
+            <f:FormElement label="Título do documento">
+              <f:fields>
+                <Input value="{Title}" maxLength="200" required="true" liveChange=".validateField"/>
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Aplica-se a">
+              <f:fields>
+                <Select
+                  forceSelection="false"
+                  required="true"
+                  selectedKey="{path: 'ContractType', targetType: 'any'}"
+                  change=".onScopeChange"
+                  items="{options>/scopes}">
+                  <core:ListItem key="{options>key}" text="{options>text}"/>
+                </Select>
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Ativo">
+              <f:fields>
+                <CheckBox selected="{Active}"/>
+              </f:fields>
+            </f:FormElement>
+          </f:formElements>
+        </f:FormContainer>
+      </f:formContainers>
+    </f:Form>
+
+    <!--
+      Duas colunas 9/3, como no editor de minutas do Siagro Angular: o documento à esquerda e os
+      campos à direita.
+
+      Nenhuma das duas leva `width`: num flex row, `width:100%` vira `flex-basis` de 100% do
+      contêiner e, somado à irmã, transborda e encolhe o item a ZERO. O jeito UI5 de repartir é
+      `FlexItemData` com `growFactor` e `baseSize="0"` — 3 para 1 é o 9/3 do PO-UI.
+    -->
+    <HBox class="sapUiSmallMarginTop" alignItems="Start">
+      <VBox class="sapUiTinyMarginEnd">
+        <layoutData>
+          <FlexItemData growFactor="3" baseSize="0" />
+        </layoutData>
+        <!--
+          Sem abas: o editor já mostra o texto com a tipografia do PDF, então a
+          pré-visualização não acrescentava nada — foi removida a pedido do usuário.
+        -->
+        <ck:CkDocumentEditor
+          id="contractTemplateEditor"
+          value="{BodyHtml}"
+          height="32rem"/>
+      </VBox>
+
+      <VBox>
+        <layoutData>
+          <FlexItemData growFactor="1" baseSize="0" />
+        </layoutData>
+        <core:Fragment fragmentName="siagrob1.view.contractTemplates.fragments.PlaceholderPanel" type="XML" />
+      </VBox>
+    </HBox>
+  </VBox>
+</core:FragmentDefinition>
