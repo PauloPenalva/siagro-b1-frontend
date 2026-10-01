@@ -20,6 +20,7 @@ export default tseslint.config(
 		}
 	},
 	{
-		ignores: ["eslint.config.mjs", "webapp/test/e2e/**"]
+		// O bundle do CKEditor e minificado e de terceiros: nao e nosso codigo para lintar.
+		ignores: ["eslint.config.mjs", "webapp/test/e2e/**", "webapp/thirdparty/**"]
 	}
 );

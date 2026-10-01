@@ -2,36 +2,45 @@
     xmlns="sap.m"
     xmlns:core="sap.ui.core"
 >
-  <!--
-    A raiz do JSONModel "placeholders" É o array (o controller desembrulha o envelope do OData
-    antes de gravar), então a lista se liga a `placeholders>/` e os campos a `placeholders>Name`.
-  -->
-  <!--
-    Altura limitada e rolagem própria, casando com a do editor ao lado: sem isso a lista cresce
-    com o catálogo inteiro (medidos 2604px) e empurra a página toda para baixo.
-  -->
-  <ScrollContainer height="32rem" width="100%" vertical="true">
-  <List
-    id="contractTemplatePlaceholders"
-    items="{placeholders>/}"
-    mode="None"
-    growing="false"
-    noDataText="Escolha o tipo de contrato para ver os campos disponíveis."
-    class="sapUiSizeCompact">
-    <headerToolbar>
-      <OverflowToolbar>
-        <Title text="Campos disponíveis" level="H3"/>
-        <ToolbarSpacer />
-      </OverflowToolbar>
-    </headerToolbar>
-    <StandardListItem
-      title="{placeholders>Name}"
-      description="{placeholders>Description}"
-      icon="sap-icon://insert-text"
-      iconInset="false"
-      type="Active"
-      tooltip="Inserir no texto, na posição do cursor"
-      press=".onInsertPlaceholder"/>
-  </List>
-  </ScrollContainer>
+  <VBox class="siagroPlaceholderPanel" fitContainer="true">
+    <SearchField
+      id="contractTemplatePlaceholderSearch"
+      placeholder="Pesquisar campo personalizado..."
+      value="{options>/placeholderSearch}"
+      liveChange=".onPlaceholderSearch"
+      search=".onPlaceholderSearch"
+      class="sapUiTinyMarginBottom"/>
+
+    <!--
+      A raiz do JSONModel "placeholders" É o array (o controller desembrulha o envelope do OData
+      antes de gravar), então a lista se liga a `placeholders>/` e os campos a `placeholders>Name`.
+
+      Altura limitada e rolagem própria: sem isso a lista cresce com o catálogo inteiro e empurra
+      a página toda para baixo.
+
+      Cada item é arrastável para dentro do texto, como no editor do Siagro Angular. O arrasto é
+      HTML5 puro, montado no controller: o destino é o DOM do CKEditor, não um controle UI5, e a
+      API de drag-and-drop do UI5 só fala entre controles UI5. O clique continua inserindo no
+      cursor, para quem preferir.
+    -->
+    <ScrollContainer height="32rem" width="100%" vertical="true">
+      <List
+        id="contractTemplatePlaceholders"
+        items="{placeholders>/}"
+        mode="None"
+        growing="false"
+        noDataText="Nenhum campo encontrado."
+          updateFinished=".onPlaceholderListUpdated"
+      class="sapUiSizeCompact siagroPlaceholderList">
+        <StandardListItem
+          title="{placeholders>Name}"
+          description="{placeholders>Description}"
+          icon="sap-icon://insert-text"
+          iconInset="false"
+          type="Active"
+          tooltip="Arraste para o texto, ou clique para inserir no cursor"
+          press=".onInsertPlaceholder"/>
+      </List>
+    </ScrollContainer>
+  </VBox>
 </core:FragmentDefinition>

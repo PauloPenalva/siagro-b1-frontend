@@ -3,7 +3,7 @@ import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
-import RichTextEditor from "sap/ui/richtexteditor/RichTextEditor";
+import CkDocumentEditor from "siagrob1/control/CkDocumentEditor";
 import Table from "sap/ui/table/Table";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
@@ -254,16 +254,14 @@ export default abstract class ContractDraftsSectionController extends CommonCont
       return;
     }
 
-    // Lido do editor, e não do modelo: a propriedade `value` do RichTextEditor só volta ao
-    // modelo no blur, e Salvar pode ser clicado com o cursor ainda dentro do texto.
-    //
     // Pelo conteúdo do diálogo, e NÃO por `byId`: o DialogHelper carrega o fragmento com
     // `id = idDaView + "_" + nomeDoFragmento`, então `byId("contractDraftBodyEditor")` nunca
-    // resolve — e o `??` abaixo escondia isso, deixando o código fazer justamente o que este
-    // comentário diz ser inseguro.
-    const editor = this.bodyDialog?.getContent()[0] as RichTextEditor;
-    const html = (editor?.getNativeApi() as { getContent?: () => string })?.getContent?.()
-      ?? (this.draftUi().getProperty("/body/html") as string);
+    // resolveria.
+    //
+    // O CkDocumentEditor empurra o valor para o modelo a cada mudança, sem esperar o blur, mas
+    // ler direto do controle elimina qualquer dúvida sobre o que está sendo gravado.
+    const editor = this.bodyDialog?.getContent()[0] as CkDocumentEditor;
+    const html = editor?.getValue() ?? (this.draftUi().getProperty("/body/html") as string);
 
     const ok = await this.invokeDraftAction(
       ServerRoutes.contractDraftsUpdate,

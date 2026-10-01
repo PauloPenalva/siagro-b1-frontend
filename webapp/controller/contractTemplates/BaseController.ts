@@ -1,23 +1,20 @@
 import MessageBox from "sap/m/MessageBox";
+import List from "sap/m/List";
 import { ListItemBase$PressEvent } from "sap/m/ListItemBase";
-import RichTextEditor from "sap/ui/richtexteditor/RichTextEditor";
 import Form from "sap/ui/layout/form/Form";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import PropertyBinding from "sap/ui/model/PropertyBinding";
+import CkDocumentEditor from "siagrob1/control/CkDocumentEditor";
 import { odataCollection, sendJson } from "siagrob1/helpers/FetchHelpers";
 import { clearFieldStates, validateRequiredFields } from "siagrob1/helpers/FormValidation";
 import { placeholderToken } from "siagrob1/helpers/ContractDraftPreview";
+import { filterPlaceholders, Placeholder } from "siagrob1/helpers/PlaceholderSearch";
 import { TEMPLATE_SCOPE_OPTIONS } from "siagrob1/model/contractDrafts";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import AppBaseController from "../BaseController";
 
 export const FORM_ID = "formContractTemplate";
 export const EDITOR_ID = "contractTemplateEditor";
-
-type Placeholder = { Name: string; Description: string };
-
-/** O que interessa da API nativa do TinyMCE — só o necessário para inserir no cursor. */
-type TinyMceLike = { insertContent?: (html: string) => void; getContent?: () => string };
+export const PLACEHOLDER_LIST = "contractTemplatePlaceholders";
 
 /**
  * Base das telas de Modelo de Contrato (inclusão e edição).
@@ -28,8 +25,14 @@ type TinyMceLike = { insertContent?: (html: string) => void; getContent?: () => 
  */
 export abstract class BaseController extends AppBaseController {
 
+  /** Catálogo completo do escopo. A lista exibida é um recorte dele, pela busca. */
+  private allPlaceholders: Placeholder[] = [];
+
   protected initOptions(): void {
-    this.getView().setModel(new JSONModel({ scopes: TEMPLATE_SCOPE_OPTIONS }), "options");
+    this.getView().setModel(
+      new JSONModel({ scopes: TEMPLATE_SCOPE_OPTIONS, placeholderSearch: "" }),
+      "options"
+    );
     this.getView().setModel(new JSONModel([]), "placeholders");
   }
 
@@ -37,8 +40,8 @@ export abstract class BaseController extends AppBaseController {
     return this.byId(FORM_ID) as Form;
   }
 
-  protected editor(): RichTextEditor {
-    return this.byId(EDITOR_ID) as RichTextEditor;
+  protected editor(): CkDocumentEditor {
+    return this.byId(EDITOR_ID) as CkDocumentEditor;
   }
 
   /**
@@ -69,7 +72,52 @@ export abstract class BaseController extends AppBaseController {
       return;
     }
 
-    model.setData(odataCollection<Placeholder>(result.data));
+    this.allPlaceholders = odataCollection<Placeholder>(result.data);
+    this.applyPlaceholderSearch();
+  }
+
+  /** Busca do painel, pela mesma regra do editor Angular: nome e descrição, sem acento. */
+  onPlaceholderSearch(): void {
+    this.applyPlaceholderSearch();
+  }
+
+  private applyPlaceholderSearch(): void {
+    const query = (this.getModel("options") as JSONModel).getProperty("/placeholderSearch") as string;
+
+    (this.getModel("placeholders") as JSONModel)
+      .setData(filterPlaceholders(this.allPlaceholders, query));
+  }
+
+  /**
+   * Torna cada campo arrastável para dentro do texto.
+   *
+   * HTML5 puro, e não a API de drag-and-drop do UI5: o destino é o DOM do CKEditor, que não é um
+   * controle UI5 — a `DragInfo`/`DropInfo` do UI5 só conversa entre controles dele. O CKEditor
+   * recebe o `text/plain` pelo próprio pipeline de colagem.
+   *
+   * Religado a cada `updateFinished` porque filtrar a lista recria os itens.
+   */
+  onPlaceholderListUpdated(): void {
+    const list = this.byId(PLACEHOLDER_LIST) as List;
+
+    list?.getItems().forEach((item) => {
+      // getDomRef() devolve Element; o arrasto é de HTMLElement.
+      const element = item.getDomRef() as HTMLElement;
+      const name = item.getBindingContext("placeholders")?.getProperty("Name") as string;
+      const token = placeholderToken(name);
+
+      if (!element || !token) {
+        return;
+      }
+
+      element.setAttribute("draggable", "true");
+      element.ondragstart = (ev: DragEvent) => {
+        ev.dataTransfer?.setData("text/plain", token);
+        if (ev.dataTransfer) {
+          ev.dataTransfer.effectAllowed = "copy";
+        }
+      };
+    });
   }
 
   /** O catálogo depende do escopo: trocar de Compra para Venda troca os campos disponíveis. */
@@ -77,33 +125,14 @@ export abstract class BaseController extends AppBaseController {
     await this.loadPlaceholders(this.getView().getBindingContext()?.getProperty("ContractType") as string);
   }
 
+  /** Clique insere no cursor — a alternativa ao arrasto, para quem preferir. */
   onInsertPlaceholder(ev: ListItemBase$PressEvent): void {
     const name = ev.getSource().getBindingContext("placeholders")?.getProperty("Name") as string;
     const token = placeholderToken(name);
 
-    if (!token) {
-      return;
+    if (token) {
+      this.editor()?.insertText(token);
     }
-
-    const editor = this.editor();
-    const native = editor?.getNativeApi() as TinyMceLike;
-
-    if (native?.insertContent && native?.getContent) {
-      native.insertContent(token);
-      // O insertContent mexe no TinyMCE, não na propriedade `value` do controle: sem empurrar
-      // de volta, o modelo não veria o texto até o próximo blur do editor.
-      this.pushEditorValue(editor, native.getContent());
-      return;
-    }
-
-    // Editor ainda não inicializado: acrescenta ao fim, para o clique não virar nada.
-    this.pushEditorValue(editor, (editor?.getValue() ?? "") + token);
-  }
-
-  private pushEditorValue(editor: RichTextEditor, value: string): void {
-    const binding = editor?.getBinding("value") as PropertyBinding;
-
-    binding?.setValue(value);
   }
 
   protected clearFormStates(): void {

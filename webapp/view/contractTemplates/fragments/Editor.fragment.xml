@@ -2,7 +2,7 @@
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
-    xmlns:rte="sap.ui.richtexteditor"
+    xmlns:ck="siagrob1.control"
 >
   <VBox class="sapUiSmallMargin">
     <f:Form id="formContractTemplate" editable="true">
@@ -46,53 +46,47 @@
     </f:Form>
 
     <!--
-      HBox de duas colunas: painel com largura fixa, editor ocupando o resto.
+      Duas colunas 9/3, como no editor de minutas do Siagro Angular: o documento à esquerda e os
+      campos à direita.
 
-      O editor NÃO leva `width="100%"`: num flex row isso vira `flex-basis` de 100% do
-      contêiner, que somado aos 20rem do painel transborda e encolhe o item até ZERO — medido,
-      com o editor em 0px de largura e a barra do TinyMCE espremida. O jeito UI5 de dizer "ocupe
-      o que sobrar" é `FlexItemData growFactor` com `baseSize="0"`, como nas telas de relatório.
-
-      Sem `fitContainer`: o pai não tem altura definida, e as duas colunas já têm a sua.
+      Nenhuma das duas leva `width`: num flex row, `width:100%` vira `flex-basis` de 100% do
+      contêiner e, somado à irmã, transborda e encolhe o item a ZERO. O jeito UI5 de repartir é
+      `FlexItemData` com `growFactor` e `baseSize="0"` — 3 para 1 é o 9/3 do PO-UI.
     -->
-    <HBox class="sapUiSmallMarginTop">
-      <VBox width="20rem" class="sapUiTinyMarginEnd">
-        <core:Fragment fragmentName="siagrob1.view.contractTemplates.fragments.PlaceholderPanel" type="XML" />
+    <HBox class="sapUiSmallMarginTop" alignItems="Start">
+      <VBox class="sapUiTinyMarginEnd">
+        <layoutData>
+          <FlexItemData growFactor="3" baseSize="0" />
+        </layoutData>
+        <IconTabBar expandable="false" stretchContentHeight="true">
+          <items>
+            <IconTabFilter text="Texto do modelo" icon="sap-icon://edit">
+              <ck:CkDocumentEditor
+                id="contractTemplateEditor"
+                value="{BodyHtml}"
+                height="32rem"/>
+            </IconTabFilter>
+            <!--
+              O editor já mostra o texto com a cara do PDF, mas o preview continua: é ele que
+              passa o HTML pelo sanitizador, e é essa a versão fiel ao que se imprime.
+            -->
+            <IconTabFilter text="Pré-visualização" icon="sap-icon://document-text">
+              <ScrollContainer height="32rem" width="100%" vertical="true" class="sapUiSmallMargin">
+                <core:HTML
+                  content="{path: 'BodyHtml', formatter: '.formatter.previewHtml'}"
+                  sanitizeContent="true"/>
+              </ScrollContainer>
+            </IconTabFilter>
+          </items>
+        </IconTabBar>
       </VBox>
 
-      <IconTabBar expandable="false" stretchContentHeight="true" class="sapUiResponsiveContentPadding">
+      <VBox>
         <layoutData>
           <FlexItemData growFactor="1" baseSize="0" />
         </layoutData>
-        <items>
-          <IconTabFilter text="Texto do modelo" icon="sap-icon://edit">
-            <rte:RichTextEditor
-              id="contractTemplateEditor"
-              value="{BodyHtml}"
-              editorType="TinyMCE7"
-              width="100%"
-              height="32rem"
-              showGroupFont="true"
-              showGroupInsert="true"
-              showGroupTextAlign="true"
-              showGroupStructure="true"
-              showGroupClipboard="true"
-              showGroupUndo="true"/>
-          </IconTabFilter>
-          <!--
-            sanitizeContent: o corpo é HTML digitado por gente. Hoje só ADMIN edita modelos, mas
-            um perfil menos privilegiado com essa permissão tornaria isto XSS armazenado.
-            A classe do embrulho é a mesma do PDF, para o que se vê ser o que se imprime.
-          -->
-          <IconTabFilter text="Pré-visualização" icon="sap-icon://document-text">
-            <ScrollContainer height="32rem" width="100%" vertical="true" class="sapUiSmallMargin">
-              <core:HTML
-                content="{path: 'BodyHtml', formatter: '.formatter.previewHtml'}"
-                sanitizeContent="true"/>
-            </ScrollContainer>
-          </IconTabFilter>
-        </items>
-      </IconTabBar>
+        <core:Fragment fragmentName="siagrob1.view.contractTemplates.fragments.PlaceholderPanel" type="XML" />
+      </VBox>
     </HBox>
   </VBox>
 </core:FragmentDefinition>
