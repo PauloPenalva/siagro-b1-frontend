@@ -37,6 +37,14 @@ const BODY_DIALOG = "siagrob1.dialogs.fragments.ContractDraftBodyDialog";
  *
  * Os fragmentos de compra e de venda usam os MESMOS ids (`contractDraftsTable`, …) — estão em
  * views diferentes, então não colidem, e é o que permite este código servir aos dois.
+ *
+ * ⚠️ O `@namespace` NÃO é enfeite: sem ele o transpilador emite uma classe ES comum, que o UI5
+ * não registra. As bases de compra e de venda são geradas como `Pai.extend("nome", …)`, e o
+ * `extend` resolve a superclasse pela METADATA do UI5 — uma classe não registrada é pulada, e a
+ * cadeia de protótipos vai direto ao `CommonController`. Resultado medido no navegador:
+ * `this.initContractDrafts is not a function`, com a página inteira do contrato sem abrir.
+ *
+ * @namespace siagrob1.controller.common
  */
 export default abstract class ContractDraftsSectionController extends CommonController {
 
