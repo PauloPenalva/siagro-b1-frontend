@@ -804,6 +804,11 @@
           "target": "usagesNew"
         },
         {
+          "pattern": "usages/ibs-cbs-rates",
+          "name": "ibsCbsRates",
+          "target": "ibsCbsRates"
+        },
+        {
           "pattern": "usages/{id}/edit",
           "name": "usagesEdit",
           "target": "usagesEdit"
@@ -1925,6 +1930,12 @@
 					"id": "usagesEdit",
           "level": 2,
 					"name": "siagrob1.view.usages.Edit",
+          "clearControlAggregation": true
+				},
+        "ibsCbsRates": {
+					"id": "ibsCbsRates",
+          "level": 2,
+					"name": "siagrob1.view.ibsCbsRates.Main",
           "clearControlAggregation": true
 				},
          "costCenters": {
