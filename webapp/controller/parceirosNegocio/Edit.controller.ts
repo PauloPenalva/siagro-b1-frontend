@@ -69,6 +69,12 @@ export default class Edit extends BaseController {
 				}
 			})
 
+			void (async () => {
+				const oContext = this.getView().getBindingContext() as Context;
+				const code = oContext ? await oContext.requestProperty("PaymentConditionCode") as number : undefined;
+				await this.refreshPaymentConditionName(code);
+			})();
+
 			this.cardCode = id;
 			this.bindSignatories(id);
 			return;

@@ -126,6 +126,14 @@ export abstract class BaseController extends CommonController {
       await this.refreshTaxLock(branchCode);
     }
 
+    /** Modo (campos da NF-e) e nome da condição de pagamento do documento ligado à view. */
+    protected async refreshNfeHeaderFromContext() {
+      void this.refreshStandaloneFlag();
+      const oContext = this.getView().getBindingContext() as Context;
+      const code = oContext ? await oContext.requestProperty("PaymentConditionCode") as number : undefined;
+      await this.refreshPaymentConditionName(code);
+    }
+
     async onOpenItemFiscal() {
       const oTable = this.byId("tableSalesInvoicesItems") as Table;
       const i = oTable.getSelectedIndex();

@@ -82,6 +82,14 @@
           <Input value="{NfeEmail}" maxLength="250" type="Email" visible="{ui>/standalone}" />
           <Label text="Telefone" visible="{ui>/standalone}" />
           <Input value="{Phone}" maxLength="14" placeholder="Só dígitos" visible="{ui>/standalone}" />
+          <Label text="Condição de pagamento padrão" visible="{ui>/standalone}" />
+          <Input
+              visible="{ui>/standalone}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openPaymentConditionsValueHelp"
+              value="{PaymentConditionCode}" />
+          <Input value="{ui>/paymentConditionName}" editable="false" visible="{ui>/standalone}" />
           <core:Title text="Observações"/>
           <Label text="Observações" />
           <TextArea

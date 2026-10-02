@@ -249,6 +249,20 @@
               }"
             >
             </Input>
+            <!-- NF-e STANDALONE: vira cobr/dup e pag do XML. Padrão vem do cliente na criação. -->
+            <Label text="Condição de pagamento" visible="{ui>/standalone}" />
+            <Input
+              visible="{ui>/standalone}"
+              editable="{ui>/editable}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openPaymentConditionsValueHelp"
+              value="{PaymentConditionCode}">
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Input>
+            <Input value="{ui>/paymentConditionName}" editable="false" visible="{ui>/standalone}" />
             <core:Title text="Dados da NF-e"/>
             <Label text="Numero" />
             <Input 

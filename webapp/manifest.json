@@ -794,6 +794,11 @@
           "target": "logisticRegionsEdit"
         },
         {
+          "pattern": "payment-conditions",
+          "name": "paymentConditions",
+          "target": "paymentConditions"
+        },
+        {
           "pattern": "usages",
           "name": "usages",
           "target": "usages"
@@ -1914,6 +1919,12 @@
 					"name": "siagrob1.view.logisticRegions.Edit",
           "clearControlAggregation": true
 				},
+        "paymentConditions": {
+          "id": "paymentConditions",
+          "level": 1,
+          "name": "siagrob1.view.paymentConditions.Main",
+          "clearControlAggregation": true
+        },
         "usages": {
 					"id": "usages",
           "level": 1,

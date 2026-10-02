@@ -33,6 +33,7 @@ export default class Detail extends BaseController {
 			this.bindElement(sPath);
 			this.attachDocumentTotalRefresh();
 			void this.refreshTaxLockFromContext();
+			void this.refreshNfeHeaderFromContext();
 
 			return;
 		}

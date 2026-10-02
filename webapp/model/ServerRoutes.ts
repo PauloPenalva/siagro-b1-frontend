@@ -235,4 +235,7 @@ export default {
   shipmentLoadsAttachmentsList: '/odata/ShipmentLoadsAttachmentsList',
   shipmentLoadsAttachmentUpload: '/odata/ShipmentLoadsAttachmentUpload',
   shipmentLoadsAttachmentsDownload: '/odata/ShipmentLoadsAttachmentsDownload',
+
+  // NF-e STANDALONE (sub-projeto 2a).
+  paymentConditions: '/odata/PaymentConditions',
 }

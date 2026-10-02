@@ -42,6 +42,8 @@ export default class Add extends BaseController {
     // navegado (SalesContract/Code), que não é gravável.
     uiModel.setProperty("/canPickContract", true);
     uiModel.setProperty("/documentTotal", "0,00");
+    void this.refreshStandaloneFlag();
+    uiModel.setProperty("/paymentConditionName", "");
 
     const oView = this.getView();
     const oModel = this.getModel() as ODataModel;

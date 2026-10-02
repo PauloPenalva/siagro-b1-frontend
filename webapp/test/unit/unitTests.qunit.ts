@@ -16,3 +16,4 @@ import "./helpers/DischargeDistributionHelpers.qunit";
 import "./model/formatter.qunit";
 import "./model/fiscalCodes.qunit";
 import "./dialogs/DialogHelper.qunit";
+import "./helpers/NfeHelpers.qunit";

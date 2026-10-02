@@ -5,6 +5,7 @@ import Context from "sap/ui/model/odata/v4/Context";
 import MessageBox from "sap/m/MessageBox";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
+import { sendJson } from "siagrob1/helpers/FetchHelpers";
 import formatter from "siagrob1/model/formatter";
 import RequestModel from "siagrob1/model/RequestModel";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
@@ -480,4 +481,34 @@ export default abstract class CommonController extends BaseController {
   
     }
 
-} 
+  /**
+   * Condição de pagamento (NF-e STANDALONE). O documento e o parceiro guardam só o código, sem
+   * navegação: o nome vai para `ui>/paymentConditionName`. Só condições ativas aparecem.
+   */
+  async openPaymentConditionsValueHelp(ev: Input$ValueHelpRequestEvent) {
+    const oInput = ev.getSource();
+    const oContext = await DialogHelper.openTableSelectDialog(
+      this, "PaymentConditionsSelectDialog", ["Name", "Days"], [], undefined, "Inactive eq false");
+
+    if (!oContext) {
+      return;
+    }
+
+    oInput.setValue(String(oContext.getProperty("Code")));
+    (this.getModel("ui") as JSONModel).setProperty("/paymentConditionName", oContext.getProperty("Name"));
+  }
+
+  /** Nome da condição gravada (o campo guarda só o código). */
+  protected async refreshPaymentConditionName(code?: number | string): Promise<void> {
+    const uiModel = this.getModel("ui") as JSONModel;
+    uiModel.setProperty("/paymentConditionName", "");
+
+    if (code == null || code === "") {
+      return;
+    }
+
+    const result = await sendJson("GET", `${ServerRoutes.paymentConditions}(${code})`);
+    uiModel.setProperty("/paymentConditionName", result.ok ? (result.data as { Name?: string })?.Name ?? "" : "");
+  }
+
+}
