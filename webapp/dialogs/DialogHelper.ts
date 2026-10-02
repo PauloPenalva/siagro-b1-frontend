@@ -92,13 +92,20 @@ export default {
 
   formatter: formatter,
 
-  createDialog: async (oController: Controller, name: string): Promise<Dialog> => {
+  createDialog: async (oController: Controller, name: string, bindingContext?: Context): Promise<Dialog> => {
     const id = oController.getView().getId() + "_" + name;
     const oDlg = await Fragment.load({
       name,
       controller: oController,
       id
     }) as Dialog;
+
+    // Contexto próprio ANTES de virar dependente da view. Sem isso o diálogo herda o contexto da
+    // view (ex.: o documento) e cada campo relativo vira uma late property do objeto errado —
+    // um 404 na cara do usuário na primeira abertura.
+    if (bindingContext) {
+      oDlg.setBindingContext(bindingContext);
+    }
 
     if (oController.getView().indexOfDependent(oDlg) < 0) {
        if (Device.system.desktop) {
