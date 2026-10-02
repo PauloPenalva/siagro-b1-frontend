@@ -2,9 +2,9 @@ import { PIS_COFINS_INCOMING_CSTS, PIS_COFINS_OUTGOING_CSTS } from "siagrob1/mod
 
 QUnit.module("fiscalCodes - listas de CST de PIS/COFINS (NF-e STANDALONE)");
 
-QUnit.test("a lista de saída só tem 01 a 09 e 49, além do vazio", function (assert) {
+QUnit.test("a lista de saída tem 01, 02, 04 a 09 e 49 — sem o 03, que é por unidade", function (assert) {
 	const keys = PIS_COFINS_OUTGOING_CSTS.map((o) => o.key);
-	assert.deepEqual(keys, ["", "01", "02", "03", "04", "05", "06", "07", "08", "09", "49"]);
+	assert.deepEqual(keys, ["", "01", "02", "04", "05", "06", "07", "08", "09", "49"]);
 });
 
 QUnit.test("a lista de entrada só tem códigos de 50 em diante, além do vazio", function (assert) {

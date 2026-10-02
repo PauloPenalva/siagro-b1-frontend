@@ -9,12 +9,14 @@ export type FiscalCodeOption = { key: string; text: string };
 
 const empty: FiscalCodeOption = { key: "", text: "" };
 
-/** CST de PIS/COFINS de documento de SAÍDA. */
+/**
+ * CST de PIS/COFINS de documento de SAÍDA. Sem o 03 (alíquota por unidade, R$/unidade): o cálculo
+ * é percentual sobre a base e o servidor o recusa.
+ */
 export const PIS_COFINS_OUTGOING_CSTS: FiscalCodeOption[] = [
   empty,
   { key: "01", text: "01 - Alíquota básica" },
   { key: "02", text: "02 - Alíquota diferenciada" },
-  { key: "03", text: "03 - Alíquota por unidade de medida" },
   { key: "04", text: "04 - Monofásica, revenda a alíquota zero" },
   { key: "05", text: "05 - Substituição tributária" },
   { key: "06", text: "06 - Alíquota zero" },
