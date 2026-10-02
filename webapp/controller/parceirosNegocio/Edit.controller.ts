@@ -44,6 +44,7 @@ export default class Edit extends BaseController {
 	}
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
+		void this.refreshStandaloneFlag();
 		this.clearStates("businessPartnerForm");
 
     const oModel = this.getView().getModel() as ODataModel;

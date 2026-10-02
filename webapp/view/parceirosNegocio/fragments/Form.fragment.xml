@@ -66,6 +66,22 @@
               editable="true"
               maxLength="14"
           />
+          <!-- Destinatário/transportadora da NF-e STANDALONE (ocultos em SAPB1). -->
+          <Label text="Indicador da IE" visible="{ui>/standalone}" />
+          <Select
+              visible="{ui>/standalone}"
+              selectedKey="{ path: 'StateRegistrationIndicator', targetType: 'any' }"
+              forceSelection="false">
+            <core:ListItem key="Taxpayer" text="1 - Contribuinte do ICMS" />
+            <core:ListItem key="Exempt" text="2 - Contribuinte isento" />
+            <core:ListItem key="NonTaxpayer" text="9 - Não contribuinte" />
+          </Select>
+          <Label text="Inscrição estadual" visible="{ui>/standalone}" />
+          <Input value="{StateRegistration}" maxLength="14" placeholder="Só dígitos" visible="{ui>/standalone}" />
+          <Label text="E-mail da NF-e" visible="{ui>/standalone}" />
+          <Input value="{NfeEmail}" maxLength="250" type="Email" visible="{ui>/standalone}" />
+          <Label text="Telefone" visible="{ui>/standalone}" />
+          <Input value="{Phone}" maxLength="14" placeholder="Só dígitos" visible="{ui>/standalone}" />
           <core:Title text="Observações"/>
           <Label text="Observações" />
           <TextArea

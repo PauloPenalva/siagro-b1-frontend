@@ -12,6 +12,7 @@ export default class Add extends BaseController {
 		this.getRouter().getRoute("parceirosNegocioAdd").attachPatternMatched(() => this.newRouteMatched());
 	}
 	private newRouteMatched() {
+		void this.refreshStandaloneFlag();
 		
     this.clearStates("businessPartnerForm");
     

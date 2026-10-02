@@ -70,7 +70,20 @@
           </Input>
         </t:template>
       </t:Column>
-      <t:Column label="Complemento">
+      <t:Column label="Número" width="6rem" visible="{ui>/standalone}">
+        <t:template>
+          <Input editable="{ui>/editable}" value="{StreetNumber}" maxLength="60" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Complemento" visible="{ui>/standalone}">
+        <t:template>
+          <Input editable="{ui>/editable}" value="{Complement}" maxLength="60" />
+        </t:template>
+      </t:Column>
+      <t:Column>
+        <t:label>
+          <Label text="{= ${ui>/standalone} ? 'Bairro' : 'Complemento' }" />
+        </t:label>
         <t:template>
           <Input
             editable="{ui>/editable}"
@@ -78,6 +91,25 @@
             value="{Block}" 
           >
           </Input>
+        </t:template>
+      </t:Column>
+      <t:Column label="Município (IBGE)" width="9rem" visible="{ui>/standalone}">
+        <t:template>
+          <Input
+            editable="{ui>/editable}"
+            value="{MunicipalityCode}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openMunicipalitiesValueHelp">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="City:Name,State:StateAbbreviation" />
+            </customData>
+          </Input>
+        </t:template>
+      </t:Column>
+      <t:Column label="CEP" width="7rem" visible="{ui>/standalone}">
+        <t:template>
+          <Input editable="{ui>/editable}" value="{ZipCode}" maxLength="8" />
         </t:template>
       </t:Column>
       <t:Column label="Cidade">

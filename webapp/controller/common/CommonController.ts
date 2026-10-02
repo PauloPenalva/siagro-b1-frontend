@@ -334,6 +334,15 @@ export default abstract class CommonController extends BaseController {
     void this.applyValueHelp(ev, "StatesSelectDialog", ['Code', 'Name', 'Abbreviation'], "Abbreviation");
   }
 
+  /**
+   * Município do IBGE (NF-e STANDALONE). Grava o código; a descrição vai pelo
+   * `descriptionProperty` do Input. Na filial e no endereço quem manda em cidade/UF é o
+   * servidor, que as deriva do município.
+   */
+  openMunicipalitiesValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "MunicipalitiesSelectDialog", ["Code", "Name", "StateAbbreviation"], "Code");
+  }
+
   openAgentsValueHelp(ev: Input$ValueHelpRequestEvent) {
     void this.applyValueHelp(ev, "AgentsSelectDialog", ['Name'], "Code",
       [ new Filter("Inactive", FilterOperator.EQ, "N") ]);

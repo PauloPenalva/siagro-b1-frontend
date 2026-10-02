@@ -81,6 +81,38 @@
           </Select>
           <Label text="Emite NF-e pelo Siagro ?" visible="{ui>/standalone}" />
           <CheckBox selected="{IssuesNfe}" visible="{ui>/standalone}" />
+          <!-- Emitente da NF-e STANDALONE. Ocultos em SAPB1. Obrigatórios só na hora de emitir:
+               a emissão lista o que faltar. -->
+          <core:Title text="Emitente da NF-e" visible="{ui>/standalone}" />
+          <Label text="Razão social" visible="{ui>/standalone}" />
+          <Input value="{LegalName}" maxLength="60" visible="{ui>/standalone}" />
+          <Label text="Nome fantasia" visible="{ui>/standalone}" />
+          <Input value="{TradeName}" maxLength="60" visible="{ui>/standalone}" />
+          <Label text="Inscrição estadual" visible="{ui>/standalone}" />
+          <Input value="{StateRegistration}" maxLength="14" visible="{ui>/standalone}" />
+          <Label text="Logradouro" visible="{ui>/standalone}" />
+          <Input value="{Street}" maxLength="60" visible="{ui>/standalone}" />
+          <Label text="Número / Complemento" visible="{ui>/standalone}" />
+          <Input value="{StreetNumber}" maxLength="60" visible="{ui>/standalone}" />
+          <Input value="{Complement}" maxLength="60" visible="{ui>/standalone}" />
+          <Label text="Bairro" visible="{ui>/standalone}" />
+          <Input value="{District}" maxLength="60" visible="{ui>/standalone}" />
+          <Label text="Município" visible="{ui>/standalone}" />
+          <Input
+              value="{MunicipalityCode}"
+              visible="{ui>/standalone}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openMunicipalitiesValueHelp"
+              maxLength="7">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="Municipality/Name:Name" />
+            </customData>
+          </Input>
+          <Input value="{Municipality/Name}" editable="false" visible="{ui>/standalone}" />
+          <Label text="CEP / Telefone" visible="{ui>/standalone}" />
+          <Input value="{ZipCode}" maxLength="8" placeholder="Só dígitos" visible="{ui>/standalone}" />
+          <Input value="{Phone}" maxLength="14" placeholder="Só dígitos" visible="{ui>/standalone}" />
         </f:content>
         <core:Title />
         <core:Title />
