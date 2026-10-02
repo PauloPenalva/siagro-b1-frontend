@@ -55,6 +55,7 @@ export default class Add extends BaseController {
       this.setBusy(true);
 
       const branchInfo = await this.getBranchInfo();
+      void this.refreshTaxLock(branchInfo?.code);
       const results = await this.getDocNumberInfoByTransaction("SalesInvoice");
       const docNumberInfo = results.filter(x => x.Default)[0];
 

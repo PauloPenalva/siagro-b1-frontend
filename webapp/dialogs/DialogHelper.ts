@@ -131,9 +131,14 @@ export default {
     name: string,
     filters: string[],
     defaultFilters: Filter[] = [],
-    elementPath?: string
+    elementPath?: string,
+    staticFilter?: string
   ): Promise<Context | undefined> => {
     const oDlg = await getSelectDialog(oController, name, filters, defaultFilters);
+
+    // $filter estático (ex.: enum, que sap.ui.model.Filter não sabe formatar). Aplicado em toda
+    // abertura porque o diálogo é reaproveitado; undefined remove o parâmetro.
+    (oDlg.getBinding("items") as ODataListBinding).changeParameters({ $filter: staticFilter });
 
     if (elementPath) {
       oDlg.bindElement(elementPath);

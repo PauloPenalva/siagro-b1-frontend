@@ -22,6 +22,9 @@ export default {
   // `::`, `--` e `/`, que dariam trabalho de escapar num segmento de rota.
   myTableLayouts: '/security/users/me/table-layouts',
 
+  // Regra de ativação da tributação da NF-e STANDALONE (Erp STANDALONE + filial que emite NF-e).
+  taxCalculationIsActive: '/TaxCalculationIsActive(...)',
+
   // Espelhamento do cadastro de usuários do SAP (só responde quando Erp = SAPB1).
   usersSyncFromSap: '/UsersSyncFromSap(...)',
 

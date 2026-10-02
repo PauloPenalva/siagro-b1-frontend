@@ -32,6 +32,7 @@ export default class Detail extends BaseController {
 			const sPath = `/SalesInvoices(${id})`;
 			this.bindElement(sPath);
 			this.attachDocumentTotalRefresh();
+			void this.refreshTaxLockFromContext();
 
 			return;
 		}

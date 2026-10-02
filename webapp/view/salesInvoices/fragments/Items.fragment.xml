@@ -48,6 +48,20 @@
           <ToolbarSpacer />
           <!-- Total geral do documento. Somado no cliente pelo mesmo motivo do total da
                linha: TotalInvoiceItems é [NotMapped] e não existe antes de salvar. -->
+          <!-- IBS/CBS: informativo em 2026, fora do total do documento. Só com a tributação
+               STANDALONE ativa; vem do servidor (NotMapped), então aparece depois de gravar. -->
+          <ObjectNumber
+            visible="{ui>/taxLocked}"
+            class="sapUiSmallMarginEnd"
+            number="{
+              path: 'TotalInvoiceIbsCbs',
+              type: 'sap.ui.model.odata.type.Decimal',
+              constraints: { precision: 18, scale: 2 },
+              formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"
+            unit="IBS/CBS"
+            state="None"
+          />
           <ObjectNumber
             id="salesInvoiceDocumentTotal"
             number="{ui>/documentTotal}"
