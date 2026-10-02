@@ -1,6 +1,7 @@
 import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
+import JSONModel from "sap/ui/model/json/JSONModel";
 import { BaseController } from "./BaseController";
 
 /**
@@ -13,6 +14,7 @@ export default class Add extends BaseController {
 	}
 	private newRouteMatched() {
 		void this.refreshStandaloneFlag();
+		(this.getModel("ui") as JSONModel).setProperty("/paymentConditionName", "");
 		
     this.clearStates("businessPartnerForm");
     
