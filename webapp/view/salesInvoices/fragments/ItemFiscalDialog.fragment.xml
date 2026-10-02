@@ -45,17 +45,17 @@
                   <Input value="{Ncm}" editable="{= ${ui>/editable} &amp;&amp; !${ui>/taxLocked} }" maxLength="8" />
                 </f:fields>
               </f:FormElement>
-              <f:FormElement label="Origem" visible="{ui>/taxLocked}">
+              <f:FormElement label="Origem" visible="{= ${ui>/taxLocked} === true }">
                 <f:fields>
                   <Text text="{GoodsOrigin}" />
                 </f:fields>
               </f:FormElement>
-              <f:FormElement label="Movimenta estoque" visible="{ui>/taxLocked}">
+              <f:FormElement label="Movimenta estoque" visible="{= ${ui>/taxLocked} === true }">
                 <f:fields>
                   <Text text="{ path: 'MovesFiscalInventory', targetType: 'any', formatter: 'formatter.formatBooleanYesNo' }" />
                 </f:fields>
               </f:FormElement>
-              <f:FormElement label="Gera financeiro" visible="{ui>/taxLocked}">
+              <f:FormElement label="Gera financeiro" visible="{= ${ui>/taxLocked} === true }">
                 <f:fields>
                   <Text text="{ path: 'CreatesFinancialDocument', targetType: 'any', formatter: 'formatter.formatBooleanYesNo' }" />
                 </f:fields>
@@ -117,7 +117,7 @@
                     }" />
                 </f:fields>
               </f:FormElement>
-              <f:FormElement label="Redução de base %" visible="{ui>/taxLocked}">
+              <f:FormElement label="Redução de base %" visible="{= ${ui>/taxLocked} === true }">
                 <f:fields>
                   <Text text="{
                     path: 'IcmsBaseReduction',
@@ -127,7 +127,7 @@
                   }" />
                 </f:fields>
               </f:FormElement>
-              <f:FormElement label="ICMS da operação" visible="{ui>/taxLocked}">
+              <f:FormElement label="ICMS da operação" visible="{= ${ui>/taxLocked} === true }">
                 <f:fields>
                   <Text text="{
                     path: 'IcmsOperationValue',
@@ -137,7 +137,7 @@
                   }" />
                 </f:fields>
               </f:FormElement>
-              <f:FormElement label="Diferimento %" visible="{ui>/taxLocked}">
+              <f:FormElement label="Diferimento %" visible="{= ${ui>/taxLocked} === true }">
                 <f:fields>
                   <Text text="{
                     path: 'IcmsDeferral',
@@ -147,7 +147,7 @@
                   }" />
                 </f:fields>
               </f:FormElement>
-              <f:FormElement label="ICMS diferido" visible="{ui>/taxLocked}">
+              <f:FormElement label="ICMS diferido" visible="{= ${ui>/taxLocked} === true }">
                 <f:fields>
                   <Text text="{
                     path: 'IcmsDeferredValue',
@@ -157,7 +157,7 @@
                   }" />
                 </f:fields>
               </f:FormElement>
-              <f:FormElement label="cBenef" visible="{ui>/taxLocked}">
+              <f:FormElement label="cBenef" visible="{= ${ui>/taxLocked} === true }">
                 <f:fields>
                   <Text text="{IcmsBenefitCode}" />
                 </f:fields>
@@ -281,7 +281,7 @@
 
           <!-- IBS/CBS (reforma tributária): só com a tributação STANDALONE ativa, sempre calculado
                pela natureza. Informativo em 2026 — não compõe o total do documento. -->
-          <f:FormContainer title="IBS/CBS" visible="{ui>/taxLocked}">
+          <f:FormContainer title="IBS/CBS" visible="{= ${ui>/taxLocked} === true }">
             <f:formElements>
               <f:FormElement label="CST">
                 <f:fields>

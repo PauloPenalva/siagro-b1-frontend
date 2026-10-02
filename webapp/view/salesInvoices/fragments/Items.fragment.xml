@@ -51,7 +51,7 @@
           <!-- IBS/CBS: informativo em 2026, fora do total do documento. Só com a tributação
                STANDALONE ativa; vem do servidor (NotMapped), então aparece depois de gravar. -->
           <ObjectNumber
-            visible="{ui>/taxLocked}"
+            visible="{= ${ui>/taxLocked} === true }"
             class="sapUiSmallMarginEnd"
             number="{
               path: 'TotalInvoiceIbsCbs',
