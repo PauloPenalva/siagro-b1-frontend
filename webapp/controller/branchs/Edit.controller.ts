@@ -15,6 +15,7 @@ export default class Edit extends CommonController {
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
 		this.clearStates("formBranchs");
+		void this.refreshStandaloneFlag();
     
     const oModel = this.getView().getModel() as ODataModel;
 		const oView = this.getView();

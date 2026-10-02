@@ -299,6 +299,18 @@ export default abstract class BaseController extends Controller {
 		}
   }
 
+  /**
+   * Publica `ui>/standalone` (modo diferente de SAPB1) para as telas esconderem os campos da NF-e
+   * STANDALONE. Começa em false para o campo não piscar na tela antes da resposta do servidor.
+   */
+  protected async refreshStandaloneFlag(): Promise<void> {
+    const uiModel = this.getModel("ui") as JSONModel;
+    uiModel.setProperty("/standalone", false);
+
+    const systemInfo = await this.getSystemInfo();
+    uiModel.setProperty("/standalone", systemInfo?.erp !== "SAPB1");
+  }
+
   async getSystemInfo(): Promise<SystemInfo> {
     const requestModel = new RequestModel();
     return await requestModel.get<SystemInfo>(ServerRoutes.systemInfo);

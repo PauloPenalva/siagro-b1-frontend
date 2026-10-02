@@ -14,6 +14,7 @@ export default class Add extends CommonController {
 	private newRouteMatched() {
 		
     this.clearStates("formBranchs");
+    void this.refreshStandaloneFlag();
     
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;
@@ -25,7 +26,7 @@ export default class Add extends CommonController {
 
 		// StateCode precisa existir no cache da entidade transiente: propriedade ausente do
 		// create() faz o value help estourar "Must not change a property before it has been read".
-		const oContext = oBinding.create({ StateCode: null }, false, false, false);
+		const oContext = oBinding.create({ StateCode: null, TaxRegime: null, IssuesNfe: false }, false, false, false);
 
 		oView.setBindingContext(oContext);
 	}

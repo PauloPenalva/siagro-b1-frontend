@@ -66,6 +66,21 @@
               valueHelpRequest=".openStatesAbbreviationValueHelp"
               maxLength="2"
           />
+          <!-- NF-e STANDALONE: ocultos em SAPB1, onde a emissão é do SAP. Com a chave ligada o
+               servidor exige CRT e UF. Sem item vazio de propósito: o enum não aceita "" e
+               desligar a chave dispensa o CRT. -->
+          <Label text="Regime tributário (CRT)" visible="{ui>/standalone}" />
+          <Select
+            visible="{ui>/standalone}"
+            selectedKey="{ path: 'TaxRegime', targetType: 'any' }"
+            forceSelection="false">
+            <core:ListItem key="SimplesNacional" text="1 - Simples Nacional" />
+            <core:ListItem key="SimplesNacionalExcess" text="2 - Simples Nacional, excesso de sublimite" />
+            <core:ListItem key="Normal" text="3 - Regime normal" />
+            <core:ListItem key="Mei" text="4 - MEI" />
+          </Select>
+          <Label text="Emite NF-e pelo Siagro ?" visible="{ui>/standalone}" />
+          <CheckBox selected="{IssuesNfe}" visible="{ui>/standalone}" />
         </f:content>
         <core:Title />
         <core:Title />
