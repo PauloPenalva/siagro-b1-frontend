@@ -13,6 +13,7 @@
 	<Page title="Natureza de Operação">
 		<content>
       <core:Fragment fragmentName="siagrob1.view.usages.fragments.Form" type="XML" />
+      <core:Fragment fragmentName="siagrob1.view.usages.fragments.Taxation" type="XML" />
 		</content>
 		<footer>
 			<Toolbar>

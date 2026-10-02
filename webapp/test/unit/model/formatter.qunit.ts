@@ -33,3 +33,11 @@ QUnit.test("isPartiallyReturned só marca a nota Confirmada com devolução", fu
 QUnit.test("formatPartialReturn mostra quanto voltou", function (assert) {
 	assert.strictEqual(formatter.formatPartialReturn("5000.000"), "Devolução parcial: 5.000,000");
 });
+
+QUnit.module("formatter - tipo da natureza de operação (NF-e STANDALONE)");
+
+QUnit.test("formatUsageDirection traduz o enum e deixa vazio o nulo do SAPB1", function (assert) {
+	assert.strictEqual(formatter.formatUsageDirection("Outgoing"), "Saída");
+	assert.strictEqual(formatter.formatUsageDirection("Incoming"), "Entrada");
+	assert.strictEqual(formatter.formatUsageDirection(null), "");
+});

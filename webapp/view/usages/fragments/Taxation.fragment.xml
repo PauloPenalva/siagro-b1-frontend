@@ -1,0 +1,146 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+    <!-- Tributação da NF-e STANDALONE. Oculta em SAPB1 (ui>/identityEditable = erp !== 'SAPB1'):
+         lá a tributação é do SAP. Nada aqui é obrigatório — natureza sem tributação continua
+         válida (a MH Agro não emite NF-e); quem exige é o documento de saída, e só na filial com
+         "Emite NF-e pelo Siagro". O servidor valida a coerência do que for preenchido.
+         Percentuais editáveis usam Double, nunca Decimal: o Decimal grava string e o leitor OData
+         recusa com um 400 que não nomeia o campo. -->
+    <f:SimpleForm
+      id="usagesTaxationForm"
+      visible="{ui>/identityEditable}"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="false"
+      busyIndicatorDelay="0">
+        <f:content>
+          <core:Title text="ICMS dentro do estado" emphasized="true" />
+          <Label text="CST" />
+          <Select selectedKey="{IcmsInStateCst}" forceSelection="false">
+            <core:ListItem key="" text="" />
+            <core:ListItem key="00" text="00 - Tributada integralmente" />
+            <core:ListItem key="20" text="20 - Com redução de base de cálculo" />
+            <core:ListItem key="40" text="40 - Isenta" />
+            <core:ListItem key="41" text="41 - Não tributada" />
+            <core:ListItem key="50" text="50 - Suspensão" />
+            <core:ListItem key="51" text="51 - Diferimento" />
+            <core:ListItem key="90" text="90 - Outras" />
+          </Select>
+          <Label text="CSOSN (Simples Nacional)" />
+          <Select selectedKey="{IcmsInStateCsosn}" forceSelection="false">
+            <core:ListItem key="" text="" />
+            <core:ListItem key="102" text="102 - Sem permissão de crédito" />
+            <core:ListItem key="103" text="103 - Isenção por faixa de receita" />
+            <core:ListItem key="300" text="300 - Imune" />
+            <core:ListItem key="400" text="400 - Não tributada" />
+            <core:ListItem key="900" text="900 - Outros" />
+          </Select>
+          <Label text="Alíquota %" />
+          <Input value="{ path: 'IcmsInStateRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+          <Label text="Redução de base %" />
+          <Input value="{ path: 'IcmsInStateBaseReduction', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+          <Label text="Diferimento % (CST 51)" />
+          <Input value="{ path: 'IcmsInStateDeferral', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+          <Label text="cBenef" />
+          <Input value="{IcmsInStateBenefitCode}" maxLength="10" />
+
+          <core:Title text="ICMS fora do estado" emphasized="true" />
+          <Label text="Alíquota" />
+          <Text text="Automática: 7% ou 12% pela UF do destinatário (Resolução do Senado), 4% para produto importado." />
+          <Label text="CST" />
+          <Select selectedKey="{IcmsOutStateCst}" forceSelection="false">
+            <core:ListItem key="" text="" />
+            <core:ListItem key="00" text="00 - Tributada integralmente" />
+            <core:ListItem key="20" text="20 - Com redução de base de cálculo" />
+            <core:ListItem key="40" text="40 - Isenta" />
+            <core:ListItem key="41" text="41 - Não tributada" />
+            <core:ListItem key="50" text="50 - Suspensão" />
+            <core:ListItem key="51" text="51 - Diferimento" />
+            <core:ListItem key="90" text="90 - Outras" />
+          </Select>
+          <Label text="CSOSN (Simples Nacional)" />
+          <Select selectedKey="{IcmsOutStateCsosn}" forceSelection="false">
+            <core:ListItem key="" text="" />
+            <core:ListItem key="102" text="102 - Sem permissão de crédito" />
+            <core:ListItem key="103" text="103 - Isenção por faixa de receita" />
+            <core:ListItem key="300" text="300 - Imune" />
+            <core:ListItem key="400" text="400 - Não tributada" />
+            <core:ListItem key="900" text="900 - Outros" />
+          </Select>
+          <Label text="Redução de base %" />
+          <Input value="{ path: 'IcmsOutStateBaseReduction', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+          <Label text="Diferimento % (CST 51)" />
+          <Input value="{ path: 'IcmsOutStateDeferral', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+          <Label text="cBenef" />
+          <Input value="{IcmsOutStateBenefitCode}" maxLength="10" />
+
+          <core:Title text="PIS/COFINS" emphasized="true" />
+          <!-- A lista de CST muda com o tipo: 01-49 na saída, 50-99 na entrada. -->
+          <Label text="CST PIS" />
+          <Select selectedKey="{PisCst}" forceSelection="false"
+                  visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
+                  items="{ui>/pisCofinsOutgoingCsts}">
+            <core:ListItem key="{ui>key}" text="{ui>text}" />
+          </Select>
+          <Select selectedKey="{PisCst}" forceSelection="false"
+                  visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }"
+                  items="{ui>/pisCofinsIncomingCsts}">
+            <core:ListItem key="{ui>key}" text="{ui>text}" />
+          </Select>
+          <Label text="Alíquota PIS %" />
+          <Input value="{ path: 'PisRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+          <Label text="CST COFINS" />
+          <Select selectedKey="{CofinsCst}" forceSelection="false"
+                  visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
+                  items="{ui>/pisCofinsOutgoingCsts}">
+            <core:ListItem key="{ui>key}" text="{ui>text}" />
+          </Select>
+          <Select selectedKey="{CofinsCst}" forceSelection="false"
+                  visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }"
+                  items="{ui>/pisCofinsIncomingCsts}">
+            <core:ListItem key="{ui>key}" text="{ui>text}" />
+          </Select>
+          <Label text="Alíquota COFINS %" />
+          <Input value="{ path: 'CofinsRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+          <Label text="Excluir o ICMS da base do PIS/COFINS ?" />
+          <CheckBox selected="{ExcludeIcmsFromPisCofinsBase}" />
+
+          <core:Title text="IBS/CBS (reforma tributária)" emphasized="true" />
+          <Label text="CST IBS/CBS" />
+          <Select selectedKey="{IbsCbsCst}" forceSelection="false">
+            <core:ListItem key="" text="" />
+            <core:ListItem key="000" text="000 - Tributação integral" />
+            <core:ListItem key="200" text="200 - Alíquota reduzida" />
+            <core:ListItem key="400" text="400 - Isenção" />
+            <core:ListItem key="410" text="410 - Imunidade e não incidência" />
+          </Select>
+          <Label text="cClassTrib" />
+          <Input value="{IbsCbsClassCode}" maxLength="6" />
+          <Label text="Redução IBS %" />
+          <Input value="{ path: 'IbsRateReduction', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+          <Label text="Redução CBS %" />
+          <Input value="{ path: 'CbsRateReduction', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+          <Label text="Alíquotas" />
+          <Text text="Vêm da tabela de Alíquotas IBS/CBS vigente na data de emissão." />
+
+          <core:Title text="Informações complementares" emphasized="true" />
+          <Label text="Texto padrão na NF-e" />
+          <TextArea value="{DefaultAdditionalInfo}" rows="4" maxLength="2000" growing="true" />
+        </f:content>
+    </f:SimpleForm>
+</core:FragmentDefinition>

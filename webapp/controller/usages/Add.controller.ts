@@ -3,6 +3,7 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import BaseController from "../BaseController";
+import { applyFiscalCodeLists } from "siagrob1/model/fiscalCodes";
 
 /**
  * @namespace siagrob1.controller.usages
@@ -20,6 +21,7 @@ export default class Add extends BaseController {
     // Só se chega aqui em STANDALONE (em SAPB1 o botão Incluir some): a identidade é
     // editável por definição.
     (this.getModel("ui") as JSONModel).setProperty("/identityEditable", true);
+    applyFiscalCodeLists(this.getModel("ui") as JSONModel);
 
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;
@@ -43,6 +45,34 @@ export default class Add extends BaseController {
 			Description: null,
 			CfopOutgoingInState: null,
 			CfopOutgoingOutState: null,
+			// Tributação da NF-e STANDALONE (Taxation.fragment.xml).
+			Direction: "Outgoing",
+			CfopIncomingInState: null,
+			CfopIncomingOutState: null,
+			InvoiceOperationText: null,
+			DefaultAdditionalInfo: null,
+			MovesFiscalInventory: false,
+			CreatesFinancialDocument: false,
+			IcmsInStateCst: null,
+			IcmsInStateCsosn: null,
+			IcmsInStateRate: null,
+			IcmsInStateBaseReduction: null,
+			IcmsInStateDeferral: null,
+			IcmsInStateBenefitCode: null,
+			IcmsOutStateCst: null,
+			IcmsOutStateCsosn: null,
+			IcmsOutStateBaseReduction: null,
+			IcmsOutStateDeferral: null,
+			IcmsOutStateBenefitCode: null,
+			PisCst: null,
+			PisRate: null,
+			CofinsCst: null,
+			CofinsRate: null,
+			ExcludeIcmsFromPisCofinsBase: false,
+			IbsCbsCst: null,
+			IbsCbsClassCode: null,
+			IbsRateReduction: null,
+			CbsRateReduction: null,
 		}, false, false, false);
 
 		oView.setBindingContext(oContext);

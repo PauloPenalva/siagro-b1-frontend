@@ -60,6 +60,11 @@ export default class Main extends BaseController {
 		this.navTo("usagesNew");
 	}
 
+	/** Alíquotas de IBS/CBS por vigência (só STANDALONE — o botão some em SAPB1). */
+	onOpenIbsCbsRates() {
+		this.navTo("ibsCbsRates");
+	}
+
 	onEdit(): void {
 		const oTable = this.byId("usagesTable") as Table;
     const i = oTable.getSelectedIndex();

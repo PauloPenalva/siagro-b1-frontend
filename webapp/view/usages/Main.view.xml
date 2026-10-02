@@ -52,6 +52,19 @@
 						</t:template>
 					</t:Column>
 					<t:Column
+						label="Tipo"
+						width="7rem"
+						visible="{ui>/identityEditable}"
+						>
+						<t:template>
+							<Text text="{
+								path: 'Direction',
+								targetType: 'any',
+								formatter: 'formatter.formatUsageDirection'
+							}" />
+						</t:template>
+					</t:Column>
+					<t:Column
 						label="CFOP Dentro"
 						width="9rem"
 						>
@@ -65,6 +78,31 @@
 						>
 						<t:template>
 							<Text text="{CfopOutgoingOutState}" />
+						</t:template>
+					</t:Column>
+					<!-- Um campo por propriedade: binding composto quebra no OData v4. -->
+					<t:Column
+						label="ICMS Dentro"
+						width="9rem"
+						visible="{ui>/identityEditable}"
+						>
+						<t:template>
+							<HBox>
+								<Text text="{IcmsInStateCst}" class="sapUiTinyMarginEnd" />
+								<Text text="{IcmsInStateCsosn}" />
+							</HBox>
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="ICMS Fora"
+						width="9rem"
+						visible="{ui>/identityEditable}"
+						>
+						<t:template>
+							<HBox>
+								<Text text="{IcmsOutStateCst}" class="sapUiTinyMarginEnd" />
+								<Text text="{IcmsOutStateCsosn}" />
+							</HBox>
 						</t:template>
 					</t:Column>
 					<t:Column
@@ -147,6 +185,7 @@
 				<ToolbarSpacer />
 				<!-- Em SAPB1 o cadastro da natureza é do SAP: só o efeito é configurável aqui.
 				     Incluir/Deletar sumem em vez de estourar NotImplemented no servidor. -->
+				<Button text="Alíquotas IBS/CBS" icon="sap-icon://simulate" press=".onOpenIbsCbsRates" visible="{ui>/identityEditable}"/>
 				<Button text="Incluir" icon="sap-icon://add" type="Emphasized" press=".onCreate" visible="{ui>/identityEditable}"/>
 				<Button text="Editar" icon="sap-icon://edit" press=".onEdit"/>
 				<Button text="Deletar" icon="sap-icon://delete" press=".onDelete" visible="{ui>/identityEditable}"/>
