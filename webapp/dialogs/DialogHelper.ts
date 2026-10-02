@@ -88,6 +88,21 @@ async function getSelectDialog(
   return oDlg;
 }
 
+/**
+ * $filter estático do value help (ex.: enum, que sap.ui.model.Filter não sabe formatar).
+ *
+ * Só mexe nos parâmetros quando há filtro: no UI5 1.141, `changeParameters({ $filter: undefined })`
+ * APAGA o $filter que o fragmento declarou no XML (contratos aprovados, séries por transação,
+ * origens confirmadas...), e todo chamador que não passa filtro estático perderia o dele.
+ */
+export function applyStaticFilter(binding: ODataListBinding, staticFilter?: string): void {
+  if (staticFilter === undefined) {
+    return;
+  }
+
+  binding.changeParameters({ $filter: staticFilter });
+}
+
 export default {
 
   formatter: formatter,
@@ -143,9 +158,7 @@ export default {
   ): Promise<Context | undefined> => {
     const oDlg = await getSelectDialog(oController, name, filters, defaultFilters);
 
-    // $filter estático (ex.: enum, que sap.ui.model.Filter não sabe formatar). Aplicado em toda
-    // abertura porque o diálogo é reaproveitado; undefined remove o parâmetro.
-    (oDlg.getBinding("items") as ODataListBinding).changeParameters({ $filter: staticFilter });
+    applyStaticFilter(oDlg.getBinding("items") as ODataListBinding, staticFilter);
 
     if (elementPath) {
       oDlg.bindElement(elementPath);
