@@ -4,13 +4,16 @@ import Dialog from "sap/m/Dialog";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import { Input$ValueHelpRequestEvent } from "sap/m/Input";
-import { FileUploader$ChangeEvent } from "sap/ui/unified/FileUploader";
+import FileUploader, { FileUploader$ChangeEvent } from "sap/ui/unified/FileUploader";
+import Fragment from "sap/ui/core/Fragment";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
   certificateDaysToExpire, certificateState, environmentCode, readFileAsBase64,
 } from "siagrob1/helpers/NfeHelpers";
+
+const CERTIFICATE_FRAGMENT = "siagrob1.view.nfeSettings.fragments.CertificateDialog";
 
 type Settings = {
   BranchCode: string;
@@ -56,8 +59,11 @@ export default class Main extends CommonController {
       return;
     }
 
-    ev.getSource().setValue(oContext.getProperty("Code") as string);
-    await this.load(oContext.getProperty("Code") as string);
+    const code = oContext.getProperty("Code") as string;
+    ev.getSource().setValue(code);
+    // Zera as configurações da filial anterior: se a leitura falhar, nada dela pode ser salvo na nova.
+    this.model().setData({ loaded: false, BranchCode: code });
+    await this.load(code);
   }
 
   private async load(branchCode: string) {
@@ -65,6 +71,7 @@ export default class Main extends CommonController {
     try {
       const result = await sendJson("GET", `${ServerRoutes.branchNfeSettingsGet}(BranchCode='${encodeURIComponent(branchCode)}')`);
       if (!result.ok) {
+        this.model().setData({ loaded: false, BranchCode: branchCode });
         MessageBox.error(result.message);
         return;
       }
@@ -85,7 +92,8 @@ export default class Main extends CommonController {
       certificateState: certificateState(days),
       certificateText: !settings.HasCertificate
         ? "Nenhum certificado enviado"
-        : days < 0 ? `Vencido em ${until}` : `${until} (${days} dias para vencer)`,
+        : days === undefined ? "Validade não informada"
+          : days < 0 ? `Vencido em ${until}` : `${until} (${days} dias para vencer)`,
     });
   }
 
@@ -115,7 +123,10 @@ export default class Main extends CommonController {
   async onOpenCertificate() {
     this.model().setProperty("/certificatePassword", "");
     this.certificateFile = undefined;
-    this.certificateDialog ??= await DialogHelper.createDialog(this, "siagrob1.view.nfeSettings.fragments.CertificateDialog");
+    this.certificateDialog ??= await DialogHelper.createDialog(this, CERTIFICATE_FRAGMENT);
+    // O diálogo é reaproveitado: sem limpar o FileUploader, ele mostraria o arquivo da vez anterior.
+    const fragmentId = this.getView().getId() + "_" + CERTIFICATE_FRAGMENT;
+    (Fragment.byId(fragmentId, "nfeCertificateFile") as FileUploader)?.clear();
     this.certificateDialog.open();
   }
 
@@ -125,6 +136,7 @@ export default class Main extends CommonController {
   }
 
   onCloseCertificate() {
+    this.model().setProperty("/certificatePassword", "");
     this.certificateDialog?.close();
   }
 

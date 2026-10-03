@@ -1,5 +1,5 @@
 import {
-	PAYMENT_MEANS, PAYMENT_START_RULES, paymentPreviewUrl, certificateDaysToExpire, certificateState, environmentCode,
+	PAYMENT_MEANS, PAYMENT_START_RULES, paymentPreviewUrl, certificateDaysToExpire, certificateState, environmentCode, readFileAsBase64,
 } from "siagrob1/helpers/NfeHelpers";
 
 QUnit.module("NfeHelpers - condição de pagamento");
@@ -44,4 +44,18 @@ QUnit.test("ambiente vai ao servidor pelo número do enum", function (assert) {
 	assert.strictEqual(environmentCode("Production"), 1);
 	assert.strictEqual(environmentCode("Homologation"), 2);
 	assert.strictEqual(environmentCode(undefined), 2);
+});
+
+QUnit.test("arquivo binário vira base64 sem perder bytes fora do UTF-8", function (assert) {
+	const bytes = [0x00, 0xff, 0x80, 0x7f, 0xc3, 0x28];
+	const file = new File([new Uint8Array(bytes)], "cert.pfx");
+
+	const done = assert.async();
+	assert.expect(2);
+
+	void readFileAsBase64(file).then((base64) => {
+		assert.notOk(base64.includes("data:"), "sem o prefixo data:");
+		assert.deepEqual(Array.from(atob(base64), (c) => c.charCodeAt(0)), bytes);
+		done();
+	});
 });
