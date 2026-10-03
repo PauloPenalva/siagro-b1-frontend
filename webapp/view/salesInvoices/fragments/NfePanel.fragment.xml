@@ -17,7 +17,7 @@
       <Label text="Protocolo" />
       <Text text="{NfeProtocol}" />
       <Label text="Autorizada em" />
-      <Text text="{ path: 'NfeAuthorizedAt', formatter: '.formatter.formatDateTime' }" />
+      <Text text="{ path: 'NfeAuthorizedAt', targetType: 'any', formatter: '.formatter.formatDateTime' }" />
       <Label text="Último retorno" />
       <Text text="{= ${NfeStatusCode} ? ${NfeStatusCode} + ' - ' + ${NfeStatusReason} : ${NfeStatusReason} }" />
       <Label text="Confirmação" visible="{= !!${NfeConfirmationError} }" />

@@ -59,3 +59,12 @@ QUnit.test("cor da situação", function (assert) {
 	assert.strictEqual(formatter.stateNfeStatus("Processing"), "Warning");
 	assert.strictEqual(formatter.stateNfeStatus("None"), "None");
 });
+
+QUnit.module("formatter - formatDateTime");
+
+QUnit.test("data com offset vira dd/MM/yyyy HH:mm, nunca Invalid Date", function (assert) {
+	const text = formatter.formatDateTime("2026-10-03T00:10:45-03:00");
+	assert.notOk(text.includes("Invalid"));
+	assert.ok(/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/.test(text), text);
+	assert.strictEqual(formatter.formatDateTime(null), "");
+});

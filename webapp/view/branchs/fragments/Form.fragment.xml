@@ -83,7 +83,8 @@
           <CheckBox selected="{IssuesNfe}" visible="{ui>/standalone}" />
           <!-- Emitente da NF-e STANDALONE. Ocultos em SAPB1. Obrigatórios só na hora de emitir:
                a emissão lista o que faltar. -->
-          <core:Title text="Emitente da NF-e" visible="{ui>/standalone}" />
+          <!-- O visible do Title não vale para o container do SimpleForm: sem texto, o cabeçalho some. -->
+          <core:Title text="{= ${ui>/standalone} ? 'Emitente da NF-e' : '' }" />
           <Label text="Razão social" visible="{ui>/standalone}" />
           <Input value="{LegalName}" maxLength="60" visible="{ui>/standalone}" />
           <Label text="Nome fantasia" visible="{ui>/standalone}" />
