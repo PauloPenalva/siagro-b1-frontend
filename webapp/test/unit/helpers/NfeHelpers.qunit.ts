@@ -1,5 +1,5 @@
 import {
-	PAYMENT_MEANS, PAYMENT_START_RULES, paymentPreviewUrl, certificateDaysToExpire, certificateState, environmentCode, readFileAsBase64,
+	PAYMENT_MEANS, PAYMENT_START_RULES, paymentPreviewUrl, certificateDaysToExpire, certificateState, environmentCode, readFileAsBase64, nfeOutcomeMessage,
 } from "siagrob1/helpers/NfeHelpers";
 
 QUnit.module("NfeHelpers - condição de pagamento");
@@ -58,4 +58,37 @@ QUnit.test("arquivo binário vira base64 sem perder bytes fora do UTF-8", functi
 		assert.deepEqual(Array.from(atob(base64), (c) => c.charCodeAt(0)), bytes);
 		done();
 	});
+});
+
+QUnit.module("NfeHelpers - desfecho da emissão");
+
+QUnit.test("autorizada e confirmada é sucesso", function (assert) {
+	assert.deepEqual(nfeOutcomeMessage({ NfeStatus: "Authorized", InvoiceStatus: "Confirmed" }),
+		{ type: "success", text: "NF-e autorizada e documento confirmado." });
+});
+
+QUnit.test("autorizada com confirmação falha pede Concluir confirmação", function (assert) {
+	const message = nfeOutcomeMessage({ NfeStatus: "Authorized", ConfirmationError: "Liberação sem saldo." });
+	assert.strictEqual(message.type, "warning");
+	assert.ok(message.text.includes("Liberação sem saldo."));
+	assert.ok(message.text.includes("Concluir confirmação"));
+});
+
+QUnit.test("rejeitada mostra código e motivo", function (assert) {
+	assert.deepEqual(nfeOutcomeMessage({ NfeStatus: "Rejected", StatusCode: "209", Reason: "IE do emitente inválida" }),
+		{ type: "error", text: "NF-e rejeitada: 209 - IE do emitente inválida" });
+});
+
+QUnit.test("rejeição local, sem código, mostra só o motivo", function (assert) {
+	assert.strictEqual(nfeOutcomeMessage({ NfeStatus: "Rejected", Reason: "Rejeitada na validação local" }).text,
+		"NF-e rejeitada: Rejeitada na validação local");
+});
+
+QUnit.test("em processamento é aviso com o motivo", function (assert) {
+	assert.deepEqual(nfeOutcomeMessage({ NfeStatus: "Processing", Reason: "Sem resposta da SEFAZ — use Consultar situação." }),
+		{ type: "warning", text: "Sem resposta da SEFAZ — use Consultar situação." });
+});
+
+QUnit.test("denegada é erro", function (assert) {
+	assert.strictEqual(nfeOutcomeMessage({ NfeStatus: "Denied", StatusCode: "302", Reason: "Uso Denegado" }).type, "error");
 });

@@ -1,0 +1,27 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+  <f:SimpleForm editable="false" layout="ResponsiveGridLayout" labelSpanL="3" labelSpanM="4" columnsL="2" columnsM="1">
+    <f:content>
+      <Label text="Situação" />
+      <ObjectStatus
+        inverted="true"
+        text="{ path: 'NfeStatus', targetType: 'any', formatter: '.formatter.formatNfeStatus' }"
+        state="{ path: 'NfeStatus', targetType: 'any', formatter: '.formatter.stateNfeStatus' }" />
+      <Label text="Chave de acesso" />
+      <Text text="{ChaveNFe}" />
+      <Label text="Número / Série" />
+      <Text text="{TaxDocumentNumber} / {TaxDocumentSeries}" />
+      <Label text="Protocolo" />
+      <Text text="{NfeProtocol}" />
+      <Label text="Autorizada em" />
+      <Text text="{ path: 'NfeAuthorizedAt', formatter: '.formatter.formatDateTime' }" />
+      <Label text="Último retorno" />
+      <Text text="{= ${NfeStatusCode} ? ${NfeStatusCode} + ' - ' + ${NfeStatusReason} : ${NfeStatusReason} }" />
+      <Label text="Confirmação" visible="{= !!${NfeConfirmationError} }" />
+      <MessageStrip type="Warning" showIcon="true" text="{NfeConfirmationError}" visible="{= !!${NfeConfirmationError} }" />
+    </f:content>
+  </f:SimpleForm>
+</core:FragmentDefinition>

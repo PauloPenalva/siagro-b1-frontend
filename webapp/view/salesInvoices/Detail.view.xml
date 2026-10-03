@@ -28,7 +28,21 @@
          </uxap:snappedHeading>
         <uxap:actions>
           <Button text="Editar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' ? true : false }" type="Emphasized" press=".onEdit"/>
-          <Button text="Confirmar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' ? true : false }" type="Success" press=".onConfirm"/>
+          <!-- Na filial com a regra ativa (ui>/taxLocked), emitir é o que confirma o documento Normal. -->
+          <Button text="Confirmar" type="Success" press=".onConfirm"
+            visible="{= ${ui>/taxLocked} !== true || ${path: 'InvoiceType', targetType: 'any'} !== 'Normal' }"
+            enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' ? true : false }" />
+          <Button text="Emitir NF-e" type="Success" icon="sap-icon://paper-plane" press=".onIssueNfe"
+            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }"
+            enabled="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === 'None' || ${path: 'NfeStatus', targetType: 'any'} === 'Rejected') }" />
+          <Button text="Consultar situação" icon="sap-icon://synchronize" press=".onConsultNfe"
+            visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Processing' }" />
+          <Button text="Concluir confirmação" type="Attention" press=".onCompleteNfeConfirmation"
+            visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' }" />
+          <Button text="DANFE" icon="sap-icon://pdf-attachment" press=".onDanfe"
+            visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' }" />
+          <Button text="XML" icon="sap-icon://download" press=".onNfeXml"
+            visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' }" />
           <Button text="Estornar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Confirmed' ? true : false }" type="Critical" press=".onReverse"/>
           <Button text="Cancelar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' || ${path: 'InvoiceStatus', targetType: 'any'}==='Confirmed' ? true : false }" type="Reject" press=".onCancel"/>
         </uxap:actions>
@@ -66,6 +80,14 @@
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection title=" " titleUppercase="false">
 						<core:Fragment fragmentName="siagrob1.view.salesInvoices.fragments.Form" type="XML" />
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="NF-e"
+        visible="{= ${path: 'NfeStatus', targetType: 'any'} !== 'None' }">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection title=" " titleUppercase="false">
+						<core:Fragment fragmentName="siagrob1.view.salesInvoices.fragments.NfePanel" type="XML" />
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>

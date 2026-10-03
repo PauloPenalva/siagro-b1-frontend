@@ -84,3 +84,34 @@ export function readFileAsBase64(file: File): Promise<string> {
     reader.readAsDataURL(file);
   });
 }
+
+export type NfeOutcome = {
+  NfeStatus: string;
+  InvoiceStatus?: string;
+  StatusCode?: string;
+  Reason?: string;
+  AccessKey?: string;
+  ConfirmationError?: string;
+};
+
+/** Mensagem do desfecho de emitir/consultar/concluir (o servidor devolve 200 com o desfecho). */
+export function nfeOutcomeMessage(outcome: NfeOutcome): { type: "success" | "warning" | "error"; text: string } {
+  const codeAndReason = [outcome.StatusCode, outcome.Reason].filter(Boolean).join(" - ");
+
+  switch (outcome.NfeStatus) {
+    case "Authorized":
+      return outcome.ConfirmationError
+        ? {
+          type: "warning",
+          text: `NF-e autorizada, mas a confirmação do documento falhou: ${outcome.ConfirmationError} ` +
+            "Corrija e use Concluir confirmação.",
+        }
+        : { type: "success", text: "NF-e autorizada e documento confirmado." };
+    case "Rejected":
+      return { type: "error", text: `NF-e rejeitada: ${codeAndReason}` };
+    case "Denied":
+      return { type: "error", text: `NF-e denegada: ${codeAndReason}` };
+    default:
+      return { type: "warning", text: outcome.Reason ?? "NF-e em processamento." };
+  }
+}

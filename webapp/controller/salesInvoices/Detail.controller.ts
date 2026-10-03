@@ -10,6 +10,9 @@ import Dialog from "sap/m/Dialog";
 import Table from "sap/ui/table/Table";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
+import { sendJson, odataValue } from "siagrob1/helpers/FetchHelpers";
+import { nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
 
 /**
  * @namespace siagrob1.controller.salesInvoices
@@ -57,6 +60,87 @@ export default class Detail extends BaseController {
     if (await DialogHelper.confirmDialog("Confirmar documento de saída ?")) {
       this.confirmAction(ctx);
     }
+  }
+
+  async onIssueNfe() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx || !(await confirmDialog("Emitir a NF-e deste documento ?", "Emitir NF-e ?"))) {
+      return;
+    }
+
+    await this.runNfeAction(ServerRoutes.salesInvoicesIssueNfe, ctx);
+  }
+
+  async onConsultNfe() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (ctx) {
+      await this.runNfeAction(ServerRoutes.salesInvoicesConsultNfe, ctx);
+    }
+  }
+
+  async onCompleteNfeConfirmation() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (ctx) {
+      await this.runNfeAction(ServerRoutes.salesInvoicesCompleteNfeConfirmation, ctx);
+    }
+  }
+
+  /**
+   * Emitir/consultar/concluir: 400 traz a mensagem de pré-condição/prontidão; 200 traz o desfecho
+   * (autorizada, rejeitada, denegada, em processamento). O documento é relido nos dois casos.
+   */
+  private async runNfeAction(url: string, ctx: Context) {
+    this.setBusy(true);
+    try {
+      const result = await sendJson("POST", url, { Key: ctx.getProperty("Key") as string });
+
+      if (!result.ok) {
+        MessageBox.error(result.message);
+        return;
+      }
+
+      const message = nfeOutcomeMessage(odataValue<NfeOutcome>(result.data));
+      if (message.type === "success") {
+        MessageToast.show(message.text);
+      } else if (message.type === "warning") {
+        MessageBox.warning(message.text);
+      } else {
+        MessageBox.error(message.text);
+      }
+    } finally {
+      ctx.refresh();
+      this.setBusy(false);
+    }
+  }
+
+  async onDanfe() {
+    const ctx = this.getView().getBindingContext() as Context;
+    const response = await fetch(`${ServerRoutes.danfeReport}/${ctx.getProperty("Key") as string}/print`, { method: "POST" });
+
+    if (!response.ok) {
+      MessageBox.error(await response.text() || "Falha ao gerar o DANFE.");
+      return;
+    }
+
+    const fileURL = URL.createObjectURL(await response.blob());
+    window.open(fileURL, "_blank");
+    setTimeout(() => URL.revokeObjectURL(fileURL), 60000);
+  }
+
+  async onNfeXml() {
+    const ctx = this.getView().getBindingContext() as Context;
+    const response = await fetch(`${ServerRoutes.salesInvoicesNfeXml}(Key=${ctx.getProperty("Key") as string})`);
+
+    if (!response.ok) {
+      MessageBox.error(await response.text() || "Falha ao baixar o XML.");
+      return;
+    }
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(await response.blob());
+    link.download = `${ctx.getProperty("ChaveNFe") as string}-procNFe.xml`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 60000);
   }
 
   private confirmAction(ctx:Context) {

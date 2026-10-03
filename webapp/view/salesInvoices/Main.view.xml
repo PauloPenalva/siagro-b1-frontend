@@ -45,7 +45,7 @@
 				alternateRowColors="true"
         rows="{
 					path: '/SalesInvoices',
-          parameters: { $select: 'ShipmentLoadKey,WithoutTaxDocument' },
+          parameters: { $select: 'ShipmentLoadKey,WithoutTaxDocument,NfeStatus,BranchCode' },
           sorter: [
             { path: 'RowId', descending: true }
           ]
@@ -250,6 +250,13 @@
 							<Text text="{ChaveNFe}" wrapping="false" />
 						</t:template>
 					</t:Column>
+          <t:Column label="Situação NF-e" width="9rem" visible="{ui>/standalone}">
+            <t:template>
+              <ObjectStatus
+                text="{ path: 'NfeStatus', targetType: 'any', formatter: '.formatter.formatNfeStatus' }"
+                state="{ path: 'NfeStatus', targetType: 'any', formatter: '.formatter.stateNfeStatus' }" />
+            </t:template>
+          </t:Column>
           <t:Column
 						label="Observações"
             width="25rem"

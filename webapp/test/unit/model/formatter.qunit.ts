@@ -41,3 +41,21 @@ QUnit.test("formatUsageDirection traduz o enum e deixa vazio o nulo do SAPB1", f
 	assert.strictEqual(formatter.formatUsageDirection("Incoming"), "Entrada");
 	assert.strictEqual(formatter.formatUsageDirection(null), "");
 });
+
+QUnit.module("formatter - situação da NF-e (STANDALONE)");
+
+QUnit.test("situação vira texto em português", function (assert) {
+	assert.strictEqual(formatter.formatNfeStatus("None"), "");
+	assert.strictEqual(formatter.formatNfeStatus("Processing"), "Em processamento");
+	assert.strictEqual(formatter.formatNfeStatus("Authorized"), "Autorizada");
+	assert.strictEqual(formatter.formatNfeStatus("Rejected"), "Rejeitada");
+	assert.strictEqual(formatter.formatNfeStatus("Denied"), "Denegada");
+});
+
+QUnit.test("cor da situação", function (assert) {
+	assert.strictEqual(formatter.stateNfeStatus("Authorized"), "Success");
+	assert.strictEqual(formatter.stateNfeStatus("Rejected"), "Error");
+	assert.strictEqual(formatter.stateNfeStatus("Denied"), "Error");
+	assert.strictEqual(formatter.stateNfeStatus("Processing"), "Warning");
+	assert.strictEqual(formatter.stateNfeStatus("None"), "None");
+});

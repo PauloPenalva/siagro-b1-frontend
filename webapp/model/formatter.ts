@@ -916,6 +916,29 @@ const formatter = {
     return m.get(value);
   },
 
+  /** Situação da NF-e STANDALONE. "None" (nunca emitida) fica em branco. */
+  formatNfeStatus: (value: string): string => {
+    const m = new Map<string, string>([
+      ["Processing", "Em processamento"],
+      ["Authorized", "Autorizada"],
+      ["Rejected", "Rejeitada"],
+      ["Denied", "Denegada"],
+    ]);
+
+    return m.get(value) ?? "";
+  },
+
+  stateNfeStatus: (value: string): string => {
+    const m = new Map<string, string>([
+      ["Processing", "Warning"],
+      ["Authorized", "Success"],
+      ["Rejected", "Error"],
+      ["Denied", "Error"],
+    ]);
+
+    return m.get(value) ?? "None";
+  },
+
   stateSalesInvoiceStatus: (value: string) => {
     const m = new Map<string, string>();
     m.set("Pending", "None");

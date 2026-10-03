@@ -165,6 +165,11 @@ export default {
 
   // Comentários do documento de saída: no Update/Delete a chave é a do COMENTÁRIO, não a do
   // documento.
+  salesInvoicesIssueNfe: '/odata/SalesInvoicesIssueNfe',
+  salesInvoicesConsultNfe: '/odata/SalesInvoicesConsultNfe',
+  salesInvoicesCompleteNfeConfirmation: '/odata/SalesInvoicesCompleteNfeConfirmation',
+  salesInvoicesNfeXml: '/odata/SalesInvoicesNfeXml',
+  danfeReport: '/reports/Danfe',
   salesInvoicesCommentCreate: '/SalesInvoicesCommentCreate(...)',
   salesInvoicesCommentUpdate: '/SalesInvoicesCommentUpdate(...)',
   salesInvoicesCommentDelete: '/SalesInvoicesCommentDelete(...)',

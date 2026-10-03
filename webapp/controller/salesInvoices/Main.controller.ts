@@ -65,7 +65,7 @@ export default class Main extends BaseController {
     this.createFilterModel();
 
     this.getRouter().getRoute("salesInvoices")
-      .attachPatternMatched(() => this.applyFilters());
+      .attachPatternMatched(() => { void this.refreshStandaloneFlag(); this.applyFilters(); });
 	}
 
   onClearFilters() {
@@ -193,12 +193,25 @@ export default class Main extends BaseController {
       throw new Error("Selecione um registro");
     }
 
+    const ctx = table.getContextByIndex(selectedInvoice[0]);
+
+    // Na filial que emite NF-e pelo Siagro, número/série/chave vêm da emissão (o servidor também
+    // recusa). Pergunta a mesma regra que trava a linha, pela filial da linha escolhida.
+    if ((ctx.getProperty("NfeStatus") as string) !== "None") {
+      MessageBox.information("Número, série e chave deste documento vêm da emissão da NF-e pelo Siagro.");
+      return;
+    }
+
+    await this.refreshTaxLock(ctx.getProperty("BranchCode") as string);
+    if ((this.getModel("ui") as JSONModel).getProperty("/taxLocked") === true) {
+      MessageBox.information("Na filial que emite NF-e pelo Siagro, número, série e chave vêm da emissão.");
+      return;
+    }
+
     this._notaFiscalDialog ??= await DialogHelper.createDialog(
-      this, 
+      this,
       "siagrob1.view.salesInvoices.fragments.NotaFiscalDialog"
     );
-
-    const ctx = table.getContextByIndex(selectedInvoice[0]);
     const viewModel = this.getModel("viewModel") as JSONModel;
     viewModel.setData({
       TaxDocumentNumber: ctx.getProperty("TaxDocumentNumber") as string,
