@@ -1,4 +1,6 @@
-import { PAYMENT_MEANS, PAYMENT_START_RULES, paymentPreviewUrl } from "siagrob1/helpers/NfeHelpers";
+import {
+	PAYMENT_MEANS, PAYMENT_START_RULES, paymentPreviewUrl, certificateDaysToExpire, certificateState, environmentCode,
+} from "siagrob1/helpers/NfeHelpers";
 
 QUnit.module("NfeHelpers - condição de pagamento");
 
@@ -20,4 +22,26 @@ QUnit.test("URL da prévia leva os literais do OData, com os dias entre aspas e 
 
 QUnit.test("total com vírgula ou vazio não quebra a URL", function (assert) {
 	assert.ok(paymentPreviewUrl("0", "IssueDate", "17", Number("abc"), "2026-10-02").includes("Total=0,"));
+});
+
+QUnit.module("NfeHelpers - certificado e ambiente");
+
+QUnit.test("dias para vencer contam a partir de hoje", function (assert) {
+	const today = new Date(2026, 9, 2);
+	assert.strictEqual(certificateDaysToExpire("2026-10-12T15:00:00-03:00", today), 10);
+	assert.strictEqual(certificateDaysToExpire("2026-09-30T00:00:00-03:00", today), -2);
+	assert.strictEqual(certificateDaysToExpire(undefined, today), undefined);
+});
+
+QUnit.test("situação do certificado: vencido, perto de vencer, ok", function (assert) {
+	assert.strictEqual(certificateState(-1), "Error");
+	assert.strictEqual(certificateState(29), "Warning");
+	assert.strictEqual(certificateState(30), "Success");
+	assert.strictEqual(certificateState(undefined), "None");
+});
+
+QUnit.test("ambiente vai ao servidor pelo número do enum", function (assert) {
+	assert.strictEqual(environmentCode("Production"), 1);
+	assert.strictEqual(environmentCode("Homologation"), 2);
+	assert.strictEqual(environmentCode(undefined), 2);
 });

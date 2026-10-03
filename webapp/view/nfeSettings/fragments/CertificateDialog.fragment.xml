@@ -1,0 +1,25 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:u="sap.ui.unified"
+    xmlns:core="sap.ui.core"
+>
+  <Dialog title="Enviar certificado A1" contentWidth="30rem" draggable="true">
+    <content>
+      <f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanM="4" labelSpanS="12">
+        <f:content>
+          <Label text="Arquivo (.pfx)" required="true" />
+          <u:FileUploader id="nfeCertificateFile" fileType="pfx,p12" sendXHR="false" change=".onCertificateFileChange" />
+          <Label text="Senha" required="true" />
+          <Input value="{nfe>/certificatePassword}" type="Password" />
+        </f:content>
+      </f:SimpleForm>
+    </content>
+    <beginButton>
+      <Button text="Enviar" type="Emphasized" press=".onUploadCertificate" />
+    </beginButton>
+    <endButton>
+      <Button text="Cancelar" press=".onCloseCertificate" />
+    </endButton>
+  </Dialog>
+</core:FragmentDefinition>

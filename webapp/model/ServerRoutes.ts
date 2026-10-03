@@ -238,4 +238,8 @@ export default {
 
   // NF-e STANDALONE (sub-projeto 2a).
   paymentConditions: '/odata/PaymentConditions',
+  branchNfeSettingsGet: '/odata/BranchNfeSettingsGet',
+  branchNfeSettingsSave: '/odata/BranchNfeSettingsSave',
+  branchNfeSettingsUploadCertificate: '/odata/BranchNfeSettingsUploadCertificate',
+  branchNfeSettingsTestConnection: '/odata/BranchNfeSettingsTestConnection',
 }

@@ -1,0 +1,63 @@
+<mvc:View
+	controllerName="siagrob1.controller.nfeSettings.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+
+	<Page title="Configuração da NF-e" busy="{ui>/busy}" busyIndicatorDelay="0">
+		<content>
+			<MessageStrip
+				text="O servidor não tem a chave Nfe:CertificateKey: o certificado não pode ser enviado nem a NF-e emitida."
+				type="Error" showIcon="true" class="sapUiSmallMargin"
+				visible="{= ${nfe>/loaded} === true &amp;&amp; ${nfe>/ServerKeyConfigured} === false }" />
+			<MessageStrip
+				text="Ambiente de homologação — notas sem valor fiscal."
+				type="Warning" showIcon="true" class="sapUiSmallMargin"
+				visible="{= ${nfe>/loaded} === true &amp;&amp; ${nfe>/Environment} === 'Homologation' }" />
+
+			<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanL="3" labelSpanM="4" columnsL="2" columnsM="1">
+				<f:content>
+					<core:Title text="Filial" />
+					<Label text="Filial" required="true" />
+					<Input
+						id="nfeSettingsBranch"
+						value="{nfe>/BranchCode}"
+						showValueHelp="true"
+						valueHelpOnly="true"
+						valueHelpRequest=".onPickBranch" />
+
+					<Label text="Ambiente" />
+					<Select selectedKey="{nfe>/Environment}" enabled="{= ${nfe>/loaded} === true }">
+						<core:Item key="Homologation" text="Homologação" />
+						<core:Item key="Production" text="Produção" />
+					</Select>
+					<Label text="Série" />
+					<Input value="{nfe>/Series}" type="Number" enabled="{= ${nfe>/loaded} === true }" />
+					<Label text="Próximo número" />
+					<Input value="{nfe>/NextNumber}" type="Number" enabled="{= ${nfe>/loaded} === true }" />
+
+					<core:Title text="Certificado digital (A1)" />
+					<Label text="Titular" />
+					<Text text="{nfe>/CertificateSubject}" />
+					<Label text="CNPJ" />
+					<Text text="{nfe>/CertificateTaxId}" />
+					<Label text="Validade" />
+					<ObjectStatus text="{nfe>/certificateText}" state="{nfe>/certificateState}" />
+				</f:content>
+			</f:SimpleForm>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<Button text="Testar comunicação" icon="sap-icon://connected" press=".onTestConnection"
+					enabled="{= ${nfe>/HasCertificate} === true }" />
+				<ToolbarSpacer />
+				<Button text="Enviar certificado" icon="sap-icon://upload" press=".onOpenCertificate"
+					enabled="{= ${nfe>/loaded} === true }" />
+				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave"
+					enabled="{= ${nfe>/loaded} === true }" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

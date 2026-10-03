@@ -799,6 +799,11 @@
           "target": "paymentConditions"
         },
         {
+          "pattern": "nfe-settings",
+          "name": "nfeSettings",
+          "target": "nfeSettings"
+        },
+        {
           "pattern": "usages",
           "name": "usages",
           "target": "usages"
@@ -1923,6 +1928,12 @@
           "id": "paymentConditions",
           "level": 1,
           "name": "siagrob1.view.paymentConditions.Main",
+          "clearControlAggregation": true
+        },
+        "nfeSettings": {
+          "id": "nfeSettings",
+          "level": 1,
+          "name": "siagrob1.view.nfeSettings.Main",
           "clearControlAggregation": true
         },
         "usages": {
