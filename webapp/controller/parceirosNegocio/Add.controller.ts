@@ -30,6 +30,14 @@ export default class Add extends BaseController {
 		const oContext = oBinding.create({
       "QryGroup23": "N",
       "Addresses": [],
+      // Toda propriedade que o formulário edita precisa existir no payload, nem que seja
+      // null: sem isso o Select de enum (targetType 'any') e o value help abrem "Must not
+      // change a property before it has been read".
+      "StateRegistrationIndicator": null,
+      "StateRegistration": null,
+      "NfeEmail": null,
+      "Phone": null,
+      "PaymentConditionCode": null,
     }, false, false, false);
 
 		oView.setBindingContext(oContext);

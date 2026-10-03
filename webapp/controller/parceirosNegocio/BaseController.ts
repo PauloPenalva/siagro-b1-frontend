@@ -10,7 +10,15 @@ export abstract class BaseController extends CommonController {
   onAddAddress() {
     const tb = this.byId("businessPartnerAddressesTable") as Table;
     const oBinding = tb.getBinding("rows") as ODataListBinding;
-    oBinding.create({}, false, true, false);
+    // As propriedades que o value help de município grava precisam existir na linha nova.
+    oBinding.create({
+      StreetNumber: null,
+      Complement: null,
+      MunicipalityCode: null,
+      ZipCode: null,
+      City: "",
+      State: "",
+    }, false, true, false);
   }
 
   onRemoveAddress() {
