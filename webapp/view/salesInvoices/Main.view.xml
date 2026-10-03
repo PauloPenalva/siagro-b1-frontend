@@ -45,7 +45,7 @@
 				alternateRowColors="true"
         rows="{
 					path: '/SalesInvoices',
-          parameters: { $select: 'ShipmentLoadKey,WithoutTaxDocument,NfeStatus,BranchCode' },
+          parameters: { $select: 'ShipmentLoadKey,WithoutTaxDocument,NfeStatus,BranchCode,InvoiceType' },
           sorter: [
             { path: 'RowId', descending: true }
           ]

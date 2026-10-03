@@ -1,5 +1,5 @@
 import {
-	PAYMENT_MEANS, PAYMENT_START_RULES, paymentPreviewUrl, certificateDaysToExpire, certificateState, environmentCode, readFileAsBase64, nfeOutcomeMessage,
+	PAYMENT_MEANS, PAYMENT_START_RULES, paymentPreviewUrl, certificateDaysToExpire, certificateState, environmentCode, readFileAsBase64, nfeOutcomeMessage, isManualTaxDocumentBlocked,
 } from "siagrob1/helpers/NfeHelpers";
 
 QUnit.module("NfeHelpers - condição de pagamento");
@@ -91,4 +91,21 @@ QUnit.test("em processamento é aviso com o motivo", function (assert) {
 
 QUnit.test("denegada é erro", function (assert) {
 	assert.strictEqual(nfeOutcomeMessage({ NfeStatus: "Denied", StatusCode: "302", Reason: "Uso Denegado" }).type, "error");
+});
+
+QUnit.test("autorizada sem confirmação não diz que o documento foi confirmado", function (assert) {
+	assert.deepEqual(nfeOutcomeMessage({ NfeStatus: "Authorized", InvoiceStatus: "Pending" }),
+		{ type: "success", text: "NF-e autorizada." });
+});
+
+QUnit.module("NfeHelpers - Informar Nota Fiscal manual");
+
+QUnit.test("regra de bloqueio por situação, trava e tipo", function (assert) {
+	assert.strictEqual(isManualTaxDocumentBlocked("None", false, "Normal"), false, "SAPB1/None");
+	assert.strictEqual(isManualTaxDocumentBlocked("None", false, "Normal"), false, "MH Agro, sem trava");
+	assert.strictEqual(isManualTaxDocumentBlocked("None", true, "Normal"), true, "CEAGUI Normal");
+	assert.strictEqual(isManualTaxDocumentBlocked("None", true, "Return"), false, "CEAGUI devolução");
+	assert.strictEqual(isManualTaxDocumentBlocked("Authorized", false, "Normal"), true, "já emitida");
+	assert.strictEqual(isManualTaxDocumentBlocked(undefined, false, "Normal"), false, "status indefinido");
+	assert.strictEqual(isManualTaxDocumentBlocked(null, false, "Normal"), false, "status nulo");
 });

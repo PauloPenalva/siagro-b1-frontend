@@ -99,12 +99,12 @@ export abstract class BaseController extends CommonController {
      * mora no servidor (`TaxCalculationGate`); a tela só a consulta e trava os campos. Falha =
      * trava desligada: quem recalcula e sobrescreve continua sendo o servidor.
      */
-    protected async refreshTaxLock(branchCode: string) {
+    protected async refreshTaxLock(branchCode: string): Promise<boolean> {
       const uiModel = this.getModel("ui") as JSONModel;
       uiModel.setProperty("/taxLocked", false);
 
       if (!branchCode) {
-        return;
+        return false;
       }
 
       try {
@@ -112,14 +112,19 @@ export abstract class BaseController extends CommonController {
         const oFunction = oModel.bindContext(ServerRoutes.taxCalculationIsActive);
         oFunction.setParameter("BranchCode", branchCode);
         await oFunction.invoke();
-        uiModel.setProperty("/taxLocked", oFunction.getBoundContext().getProperty("value") === true);
+        const locked = oFunction.getBoundContext().getProperty("value") === true;
+        uiModel.setProperty("/taxLocked", locked);
+        return locked;
       } catch {
         uiModel.setProperty("/taxLocked", false);
+        return false;
       }
     }
 
     /** Mesma consulta, com a filial do documento ligado à view (Edit/Detail). */
     protected async refreshTaxLockFromContext() {
+      // Zera antes de esperar a filial: um true velho não pode aparecer no documento de outra filial.
+      (this.getModel("ui") as JSONModel).setProperty("/taxLocked", false);
       const oContext = this.getView().getBindingContext() as Context;
       const branchCode = oContext ? await oContext.requestProperty("BranchCode") as string : undefined;
 

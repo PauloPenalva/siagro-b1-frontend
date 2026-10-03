@@ -4,7 +4,7 @@
     xmlns:u="sap.ui.unified"
     xmlns:core="sap.ui.core"
 >
-  <Dialog title="Enviar certificado A1" contentWidth="30rem" draggable="true">
+  <Dialog title="Enviar certificado A1" contentWidth="30rem" draggable="true" afterClose=".onCertificateAfterClose">
     <content>
       <f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanM="4" labelSpanS="12">
         <f:content>

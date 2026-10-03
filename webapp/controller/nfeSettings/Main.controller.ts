@@ -135,6 +135,11 @@ export default class Main extends CommonController {
     this.certificateFile = files?.length > 0 ? files[0] : undefined;
   }
 
+  /** Esc também fecha o diálogo: a senha não pode ficar no modelo. */
+  onCertificateAfterClose() {
+    this.model().setProperty("/certificatePassword", "");
+  }
+
   onCloseCertificate() {
     this.model().setProperty("/certificatePassword", "");
     this.certificateDialog?.close();

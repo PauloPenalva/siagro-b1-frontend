@@ -106,7 +106,10 @@ export function nfeOutcomeMessage(outcome: NfeOutcome): { type: "success" | "war
           text: `NF-e autorizada, mas a confirmação do documento falhou: ${outcome.ConfirmationError} ` +
             "Corrija e use Concluir confirmação.",
         }
-        : { type: "success", text: "NF-e autorizada e documento confirmado." };
+        : {
+          type: "success",
+          text: outcome.InvoiceStatus === "Confirmed" ? "NF-e autorizada e documento confirmado." : "NF-e autorizada.",
+        };
     case "Rejected":
       return { type: "error", text: `NF-e rejeitada: ${codeAndReason}` };
     case "Denied":
@@ -114,4 +117,17 @@ export function nfeOutcomeMessage(outcome: NfeOutcome): { type: "success" | "war
     default:
       return { type: "warning", text: outcome.Reason ?? "NF-e em processamento." };
   }
+}
+
+/** NF-e já emitida (em processamento, autorizada, rejeitada ou denegada). Nulo/None = nunca emitida. */
+export function isEmittedNfeStatus(nfeStatus?: string): boolean {
+  return !!nfeStatus && nfeStatus !== "None";
+}
+
+/**
+ * "Informar Nota Fiscal" manual não vale quando a NF-e já foi emitida, nem no documento Normal de
+ * filial que emite pelo Siagro. Devolução segue manual: o cliente emite a NF-e dele.
+ */
+export function isManualTaxDocumentBlocked(nfeStatus: string, taxLocked: boolean, invoiceType: string): boolean {
+  return isEmittedNfeStatus(nfeStatus) || (taxLocked === true && invoiceType === "Normal");
 }
