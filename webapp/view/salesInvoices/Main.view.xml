@@ -250,7 +250,7 @@
 							<Text text="{ChaveNFe}" wrapping="false" />
 						</t:template>
 					</t:Column>
-          <t:Column label="Situação NF-e" width="9rem" visible="{ui>/standalone}">
+          <t:Column label="Situação NF-e" width="9rem" visible="{= ${ui>/standalone} === true &amp;&amp; ${ui>/anyBranchIssuesNfe} === true }">
             <t:template>
               <ObjectStatus
                 text="{ path: 'NfeStatus', targetType: 'any', formatter: '.formatter.formatNfeStatus' }"

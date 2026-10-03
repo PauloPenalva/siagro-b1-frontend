@@ -11,7 +11,7 @@ import Table from "sap/ui/table/Table";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
-import { sendJson, odataValue } from "siagrob1/helpers/FetchHelpers";
+import { sendJson, odataValue, readErrorMessage } from "siagrob1/helpers/FetchHelpers";
 import { nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
 
 /**
@@ -108,39 +108,57 @@ export default class Detail extends BaseController {
         MessageBox.error(message.text);
       }
     } finally {
-      ctx.refresh();
+      try {
+        await ctx.requestRefresh();
+      } catch {
+        // a releitura falhar não pode deixar a tela ocupada
+      }
       this.setBusy(false);
     }
   }
 
   async onDanfe() {
     const ctx = this.getView().getBindingContext() as Context;
-    const response = await fetch(`${ServerRoutes.danfeReport}/${ctx.getProperty("Key") as string}/print`, { method: "POST" });
 
-    if (!response.ok) {
-      MessageBox.error(await response.text() || "Falha ao gerar o DANFE.");
-      return;
+    this.setBusy(true);
+    try {
+      const response = await fetch(`${ServerRoutes.danfeReport}/${ctx.getProperty("Key") as string}/print`, { method: "POST" });
+
+      if (!response.ok) {
+        throw new Error(await readErrorMessage(response) || "Falha ao gerar o DANFE.");
+      }
+
+      const fileURL = URL.createObjectURL(await response.blob());
+      window.open(fileURL, "_blank");
+      setTimeout(() => URL.revokeObjectURL(fileURL), 60000);
+    } catch (error) {
+      MessageBox.error((error as Error)?.message || "Falha ao gerar o DANFE.");
+    } finally {
+      this.setBusy(false);
     }
-
-    const fileURL = URL.createObjectURL(await response.blob());
-    window.open(fileURL, "_blank");
-    setTimeout(() => URL.revokeObjectURL(fileURL), 60000);
   }
 
   async onNfeXml() {
     const ctx = this.getView().getBindingContext() as Context;
-    const response = await fetch(`${ServerRoutes.salesInvoicesNfeXml}(Key=${ctx.getProperty("Key") as string})`);
 
-    if (!response.ok) {
-      MessageBox.error(await response.text() || "Falha ao baixar o XML.");
-      return;
+    this.setBusy(true);
+    try {
+      const response = await fetch(`${ServerRoutes.salesInvoicesNfeXml}(Key=${ctx.getProperty("Key") as string})`);
+
+      if (!response.ok) {
+        throw new Error(await readErrorMessage(response) || "Falha ao baixar o XML.");
+      }
+
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(await response.blob());
+      link.download = `${ctx.getProperty("ChaveNFe") as string}-procNFe.xml`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 60000);
+    } catch (error) {
+      MessageBox.error((error as Error)?.message || "Falha ao baixar o XML.");
+    } finally {
+      this.setBusy(false);
     }
-
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(await response.blob());
-    link.download = `${ctx.getProperty("ChaveNFe") as string}-procNFe.xml`;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(link.href), 60000);
   }
 
   private confirmAction(ctx:Context) {

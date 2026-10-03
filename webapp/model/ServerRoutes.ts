@@ -163,13 +163,14 @@ export default {
   salesContractsCommentUpdate: '/SalesContractsCommentUpdate(...)',
   salesContractsCommentDelete: '/SalesContractsCommentDelete(...)',
 
-  // Comentários do documento de saída: no Update/Delete a chave é a do COMENTÁRIO, não a do
-  // documento.
+  // NF-e STANDALONE no documento de saída: emitir, consultar, concluir a confirmação, XML e DANFE.
   salesInvoicesIssueNfe: '/odata/SalesInvoicesIssueNfe',
   salesInvoicesConsultNfe: '/odata/SalesInvoicesConsultNfe',
   salesInvoicesCompleteNfeConfirmation: '/odata/SalesInvoicesCompleteNfeConfirmation',
   salesInvoicesNfeXml: '/odata/SalesInvoicesNfeXml',
   danfeReport: '/reports/Danfe',
+  // Comentários do documento de saída: no Update/Delete a chave é a do COMENTÁRIO, não a do
+  // documento.
   salesInvoicesCommentCreate: '/SalesInvoicesCommentCreate(...)',
   salesInvoicesCommentUpdate: '/SalesInvoicesCommentUpdate(...)',
   salesInvoicesCommentDelete: '/SalesInvoicesCommentDelete(...)',

@@ -84,7 +84,7 @@
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
       <uxap:ObjectPageSection titleUppercase="false" title="NF-e"
-        visible="{= ${path: 'NfeStatus', targetType: 'any'} !== 'None' }">
+        visible="{= !!${path: 'NfeStatus', targetType: 'any'} &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'None' }">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection title=" " titleUppercase="false">
 						<core:Fragment fragmentName="siagrob1.view.salesInvoices.fragments.NfePanel" type="XML" />
