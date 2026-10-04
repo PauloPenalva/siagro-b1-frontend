@@ -174,7 +174,40 @@
                 <l:GridData span="XL5 L5 M5 S12" />
               </layoutData>
             </Text>
-            
+            <!-- Volume da NF-e (grupo vol), só na filial que emite NF-e pelo Siagro. Os quatro
+                 campos são opcionais; quem exige os pesos acima é a emissão (NfeReadinessValidator),
+                 porque a unidade pode ser saco, bag ou caixa e o peso não sai da quantidade. -->
+            <Label text="Volumes (qtde / espécie)" visible="{= ${ui>/taxLocked} === true }" />
+            <Input
+              visible="{= ${ui>/taxLocked} === true }"
+              editable="{ui>/editable}"
+              value="{VolumeQuantity}">
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S4" />
+              </layoutData>
+            </Input>
+            <Input
+              visible="{= ${ui>/taxLocked} === true }"
+              editable="{ui>/editable}"
+              value="{VolumeSpecies}"
+              maxLength="60"
+              placeholder="GRANEL, SACO, BAG, CAIXA" />
+            <Label text="Marca / numeração" visible="{= ${ui>/taxLocked} === true }" />
+            <Input
+              visible="{= ${ui>/taxLocked} === true }"
+              editable="{ui>/editable}"
+              value="{VolumeBrand}"
+              maxLength="60">
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S6" />
+              </layoutData>
+            </Input>
+            <Input
+              visible="{= ${ui>/taxLocked} === true }"
+              editable="{ui>/editable}"
+              value="{VolumeNumbering}"
+              maxLength="60" />
+
             <core:Title text="Transporte" />
             <Label text="Endereço Entrega" />
             <Input

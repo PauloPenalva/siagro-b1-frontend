@@ -32,6 +32,7 @@ export default class Add extends BaseController {
       "Enabled": "SIM",
       "GoodsOrigin": null,
       "Ncm": null,
+      "Cest": null,
     }, false, false, false);
 
 		this._itemContext = oContext;
