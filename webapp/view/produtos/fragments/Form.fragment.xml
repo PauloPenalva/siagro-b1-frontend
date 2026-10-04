@@ -64,7 +64,7 @@
           <Label text="NCM" visible="{ui>/standalone}" />
           <Input value="{Ncm}" maxLength="8" visible="{ui>/standalone}" />
           <Label text="CEST" visible="{ui>/standalone}" />
-          <Input value="{Cest}" maxLength="9" placeholder="06.005.00" visible="{ui>/standalone}" />
+          <Input value="{Cest}" maxLength="9" placeholder="00.000.00" visible="{ui>/standalone}" />
 
 
           <core:Title />
