@@ -53,6 +53,8 @@ export default class Detail extends BaseController {
     uiModel.setProperty("/typeEditable", false);
     uiModel.setProperty("/canIssueNfe", false);
     uiModel.setProperty("/canReturn", false);
+    // O quadro "Tributos" do documento anterior não pode aparecer enquanto as linhas deste não chegam.
+    uiModel.setProperty("/taxTotals", { visible: false, rows: [] });
 
     // $expand explícito: sem carregar SalesInvoiceItem a Quebra Apurada volta ZERO em silêncio e
     // toda linha de devolução parece divergente.

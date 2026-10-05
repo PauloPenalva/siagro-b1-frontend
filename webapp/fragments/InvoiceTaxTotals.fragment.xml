@@ -1,0 +1,38 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    core:require="{
+      taxTotals: 'siagrob1/helpers/InvoiceTaxTotalsHelpers'
+    }"
+>
+  <!-- Quadro "Tributos" do Detail da entrada e da saída: soma da fotografia fiscal das linhas,
+       calculada no cliente (InvoiceTaxTotalsHelpers) e gravada em ui>/taxTotals pelo BaseController. -->
+  <Table
+    id="tableInvoiceTaxTotals"
+    class="sapUiSizeCondensed"
+    width="40rem"
+    items="{ui>/taxTotals/rows}"
+    noDataText="Nenhum tributo nas linhas deste documento."
+  >
+    <columns>
+      <Column width="12rem">
+        <Text text="Tributo" />
+      </Column>
+      <Column hAlign="End">
+        <Text text="Base de cálculo" />
+      </Column>
+      <Column hAlign="End">
+        <Text text="Valor" />
+      </Column>
+    </columns>
+    <items>
+      <ColumnListItem>
+        <cells>
+          <Text text="{ui>Tax}" />
+          <Text text="{path: 'ui>Base', formatter: 'taxTotals.formatTaxAmount'}" />
+          <Text text="{path: 'ui>Value', formatter: 'taxTotals.formatTaxAmount'}" />
+        </cells>
+      </ColumnListItem>
+    </items>
+  </Table>
+</core:FragmentDefinition>

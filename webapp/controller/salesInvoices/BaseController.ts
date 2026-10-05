@@ -13,6 +13,7 @@ import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import Sorter from "sap/ui/model/Sorter";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
+import { summarizeInvoiceTaxes, TaxLine } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 
 export abstract class BaseController extends CommonController {
 
@@ -210,6 +211,8 @@ export abstract class BaseController extends CommonController {
      *
      * Percorre `getAllCurrentContexts()` e não as linhas visíveis: a sap.ui.table é
      * virtualizada, e somar o que está na tela daria um total menor conforme a rolagem.
+     *
+     * Recalcula também o quadro "Tributos" do Detail (`/taxTotals`), que soma as mesmas linhas.
      */
     protected refreshDocumentTotal() {
       const oTable = this.byId("tableSalesInvoicesItems") as Table;
@@ -231,6 +234,9 @@ export abstract class BaseController extends CommonController {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }));
+
+      uiModel.setProperty("/taxTotals", summarizeInvoiceTaxes(
+        oBinding.getAllCurrentContexts().map((ctx) => ctx.getObject() as TaxLine)));
     }
 
     /** Quantidade ou preço mudou numa linha: o total geral acompanha. */

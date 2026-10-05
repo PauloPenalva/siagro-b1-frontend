@@ -16,6 +16,7 @@ import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { sendJson, odataValue, readErrorMessage } from "siagrob1/helpers/FetchHelpers";
 import { nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
 import { NfeReturnRow, prefillNfeReturnRows, hasReturnableBalance, buildNfeReturnPayload } from "siagrob1/helpers/NfeReturnHelpers";
+import { TAX_TOTALS_SELECT } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 
 /**
  * @namespace siagrob1.controller.salesInvoices
@@ -34,9 +35,13 @@ export default class Detail extends BaseController {
 
       uiModel.setProperty("/editable", false);
       uiModel.setProperty("/canPickContract", false);
+      // O quadro "Tributos" do documento anterior não pode aparecer enquanto as linhas deste não chegam.
+      uiModel.setProperty("/taxTotals", { visible: false, rows: [] });
 
 			const sPath = `/SalesInvoices(${id})`;
-			this.bindElement(sPath);
+			// A grade de itens não mostra tributo; sem o $select explícito o autoExpandSelect não os busca e o
+			// quadro "Tributos" somaria nada.
+			this.bindElement(sPath, { $expand: `Items($select=${TAX_TOTALS_SELECT})` });
 			this.attachDocumentTotalRefresh();
 			void this.refreshTaxLockFromContext();
 			void this.refreshNfeHeaderFromContext();
