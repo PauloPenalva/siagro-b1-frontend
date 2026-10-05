@@ -1,0 +1,57 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+  <Dialog title="Condição de pagamento" contentWidth="36rem" draggable="true">
+    <content>
+      <f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanM="4" labelSpanS="12">
+        <f:content>
+          <Label text="Nome" required="true" />
+          <Input value="{condition>/name}" maxLength="100" />
+          <Label text="Dias" required="true" />
+          <Input value="{condition>/days}" placeholder="0 ou 30,60,90" maxLength="100" />
+          <Label text="Início da contagem" />
+          <Select selectedKey="{condition>/startRule}" items="{condition>/startRules}">
+            <core:Item key="{condition>key}" text="{condition>text}" />
+          </Select>
+          <Label text="Meio de pagamento" required="true" />
+          <Select selectedKey="{condition>/paymentMeans}" items="{condition>/paymentMeansList}">
+            <core:Item key="{condition>key}" text="{condition>text}" />
+          </Select>
+          <Label text="Inativa" />
+          <CheckBox selected="{condition>/inactive}" />
+
+          <core:Title text="Prévia das parcelas" />
+          <Label text="Valor / Emissão" />
+          <Input value="{condition>/previewTotal}" type="Number" />
+          <DatePicker value="{condition>/previewDate}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" />
+          <Label text="" />
+          <Button text="Calcular prévia" icon="sap-icon://simulate" press=".onPreview" />
+        </f:content>
+      </f:SimpleForm>
+      <Table items="{condition>/preview}" noDataText="Calcule a prévia para ver as parcelas." class="sapUiSmallMarginBeginEnd">
+        <columns>
+          <Column width="5rem"><Text text="Parcela" /></Column>
+          <Column><Text text="Vencimento" /></Column>
+          <Column hAlign="End"><Text text="Valor" /></Column>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <cells>
+              <Text text="{condition>Number}" />
+              <Text text="{ path: 'condition>DueDate', formatter: '.formatIsoDate' }" />
+              <Text text="{ path: 'condition>Amount', formatter: '.formatAmount' }" />
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </content>
+    <beginButton>
+      <Button text="Confirmar" type="Emphasized" press=".onConfirmCondition" />
+    </beginButton>
+    <endButton>
+      <Button text="Cancelar" press=".onCancelCondition" />
+    </endButton>
+  </Dialog>
+</core:FragmentDefinition>

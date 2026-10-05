@@ -7,9 +7,15 @@ import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import MessageToast from "sap/m/MessageToast";
 import MessageBox from "sap/m/MessageBox";
 import Dialog from "sap/m/Dialog";
+import Input from "sap/m/Input";
+import { ValueState } from "sap/ui/core/library";
 import Table from "sap/ui/table/Table";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
+import { sendJson, odataValue, readErrorMessage } from "siagrob1/helpers/FetchHelpers";
+import { nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
+import { NfeReturnRow, prefillNfeReturnRows, hasReturnableBalance, buildNfeReturnPayload } from "siagrob1/helpers/NfeReturnHelpers";
 
 /**
  * @namespace siagrob1.controller.salesInvoices
@@ -32,6 +38,9 @@ export default class Detail extends BaseController {
 			const sPath = `/SalesInvoices(${id})`;
 			this.bindElement(sPath);
 			this.attachDocumentTotalRefresh();
+			void this.refreshTaxLockFromContext();
+			void this.refreshNfeHeaderFromContext();
+			void this.refreshNfeReturnFromContext();
 
 			return;
 		}
@@ -54,6 +63,188 @@ export default class Detail extends BaseController {
 
     if (await DialogHelper.confirmDialog("Confirmar documento de saída ?")) {
       this.confirmAction(ctx);
+    }
+  }
+
+  async onIssueNfe() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx || !(await confirmDialog("Emitir a NF-e deste documento ?", "Emitir NF-e ?"))) {
+      return;
+    }
+
+    await this.runNfeAction(ServerRoutes.salesInvoicesIssueNfe, ctx);
+  }
+
+  async onConsultNfe() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (ctx) {
+      await this.runNfeAction(ServerRoutes.salesInvoicesConsultNfe, ctx);
+    }
+  }
+
+  async onCompleteNfeConfirmation() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (ctx) {
+      await this.runNfeAction(ServerRoutes.salesInvoicesCompleteNfeConfirmation, ctx);
+    }
+  }
+
+  /**
+   * Emitir/consultar/concluir: 400 traz a mensagem de pré-condição/prontidão; 200 traz o desfecho
+   * (autorizada, rejeitada, denegada, em processamento). O documento é relido nos dois casos.
+   */
+  private async runNfeAction(url: string, ctx: Context) {
+    this.setBusy(true);
+    try {
+      const result = await sendJson("POST", url, { Key: ctx.getProperty("Key") as string });
+
+      if (!result.ok) {
+        MessageBox.error(result.message);
+        return;
+      }
+
+      const message = nfeOutcomeMessage(odataValue<NfeOutcome>(result.data));
+      if (message.type === "success") {
+        MessageToast.show(message.text);
+      } else if (message.type === "warning") {
+        MessageBox.warning(message.text);
+      } else {
+        MessageBox.error(message.text);
+      }
+    } finally {
+      try {
+        await ctx.requestRefresh();
+      } catch {
+        // a releitura falhar não pode deixar a tela ocupada
+      }
+      this.setBusy(false);
+    }
+  }
+
+  async onDanfe() {
+    const ctx = this.getView().getBindingContext() as Context;
+
+    this.setBusy(true);
+    try {
+      const response = await fetch(`${ServerRoutes.danfeReport}/${ctx.getProperty("Key") as string}/print`, { method: "POST" });
+
+      if (!response.ok) {
+        throw new Error(await readErrorMessage(response) || "Falha ao gerar o DANFE.");
+      }
+
+      const fileURL = URL.createObjectURL(await response.blob());
+      window.open(fileURL, "_blank");
+      setTimeout(() => URL.revokeObjectURL(fileURL), 60000);
+    } catch (error) {
+      MessageBox.error((error as Error)?.message || "Falha ao gerar o DANFE.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  async onNfeXml() {
+    const ctx = this.getView().getBindingContext() as Context;
+
+    this.setBusy(true);
+    try {
+      const response = await fetch(`${ServerRoutes.salesInvoicesNfeXml}(Key=${ctx.getProperty("Key") as string})`);
+
+      if (!response.ok) {
+        throw new Error(await readErrorMessage(response) || "Falha ao baixar o XML.");
+      }
+
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(await response.blob());
+      link.download = `${ctx.getProperty("ChaveNFe") as string}-procNFe.xml`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 60000);
+    } catch (error) {
+      MessageBox.error((error as Error)?.message || "Falha ao baixar o XML.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  private _nfeReturnDialog: Dialog;
+
+  /** "Devolver": abre o diálogo com os itens da venda e o saldo devolvível de cada um. */
+  async onNfeReturn() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) {
+      return;
+    }
+
+    let rows: NfeReturnRow[] = [];
+    this.setBusy(true);
+    try {
+      const result = await sendJson(
+        "GET", `${ServerRoutes.salesInvoicesNfeReturnableItems}(Key=${ctx.getProperty("Key") as string})`);
+
+      if (!result.ok) {
+        MessageBox.error(result.message);
+        return;
+      }
+
+      rows = odataValue<NfeReturnRow[]>(result.data) ?? [];
+    } finally {
+      this.setBusy(false);
+    }
+
+    if (!hasReturnableBalance(rows)) {
+      MessageBox.information("Esta venda não tem saldo a devolver.");
+      return;
+    }
+
+    this.getView().setModel(new JSONModel({ rows: prefillNfeReturnRows(rows), reason: "", busy: false }), "nfeReturn");
+
+    this._nfeReturnDialog ??= await DialogHelper.createDialog(
+      this, "siagrob1.view.salesInvoices.fragments.NfeReturnDialog");
+    this._nfeReturnDialog.open();
+  }
+
+  onCloseNfeReturn() {
+    this._nfeReturnDialog?.close();
+  }
+
+  /** Cria a devolução própria e abre a tela dela, onde fica o "Emitir NF-e". */
+  async onConfirmNfeReturn() {
+    // Valor digitado que o tipo Float não leu deixa o número anterior no modelo: o Input fica em
+    // Error e o que seria enviado não é o que está na tela.
+    const invalidInput = this._nfeReturnDialog
+      ?.findAggregatedObjects(true, (c) => c.isA("sap.m.Input") && (c as Input).getValueState() === ValueState.Error);
+
+    if (invalidInput?.length) {
+      MessageBox.warning("Corrija as quantidades marcadas em vermelho.");
+      return;
+    }
+
+    const ctx = this.getView().getBindingContext() as Context;
+    const model = this.getView().getModel("nfeReturn") as JSONModel;
+    const built = buildNfeReturnPayload(
+      model.getProperty("/rows") as NfeReturnRow[], model.getProperty("/reason") as string);
+
+    if (built.ok === false) {
+      MessageBox.warning(built.message);
+      return;
+    }
+
+    model.setProperty("/busy", true);
+    try {
+      const action = (ctx.getModel() as ODataModel).bindContext(ServerRoutes.salesInvoicesCreateNfeReturn);
+      action.setParameter("Key", ctx.getProperty("Key"));
+      action.setParameter("OriginItemKeys", built.payload.OriginItemKeys);
+      action.setParameter("Quantities", built.payload.Quantities);
+      action.setParameter("Reason", built.payload.Reason);
+      await action.invoke();
+
+      const key = action.getBoundContext().getProperty("value") as string;
+      this._nfeReturnDialog.close();
+      MessageToast.show("Devolução criada. Confira os dados e emita a NF-e.", { closeOnBrowserNavigation: false });
+      this.navTo("salesInvoicesDetail", { id: key });
+    } catch {
+      // O handler global de mensagens do OData (Component) já mostrou o erro do servidor.
+    } finally {
+      model.setProperty("/busy", false);
     }
   }
 

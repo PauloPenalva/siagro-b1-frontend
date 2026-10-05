@@ -34,6 +34,9 @@ export default class Edit extends BaseController {
 			const sPath = `/SalesInvoices(${id})`;
 			this.bindElement(sPath);
 			this.attachDocumentTotalRefresh();
+			void this.refreshTaxLockFromContext();
+			void this.refreshNfeHeaderFromContext();
+			void this.refreshNfeReturnFromContext();
 			return;
 		}
 

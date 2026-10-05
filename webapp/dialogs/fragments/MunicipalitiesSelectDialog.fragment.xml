@@ -1,0 +1,28 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+<TableSelectDialog
+  class="sapUiSizeCompact"
+  growing="true"
+  growingThreshold="30"
+  items="{
+    path: '/Municipalities',
+    sorter: { path: 'Name', descending: false }
+  }"
+  title="Municípios (IBGE)"
+>
+<columns>
+  <Column width="7rem"><header><Text text="Código" /></header></Column>
+  <Column><header><Text text="Município" /></header></Column>
+  <Column width="4rem"><header><Text text="UF" /></header></Column>
+</columns>
+<ColumnListItem>
+  <cells>
+    <Text text="{Code}" />
+    <Text text="{Name}" />
+    <Text text="{StateAbbreviation}" />
+  </cells>
+</ColumnListItem>
+</TableSelectDialog>
+</core:FragmentDefinition>

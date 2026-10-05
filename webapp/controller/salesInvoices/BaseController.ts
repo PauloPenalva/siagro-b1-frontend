@@ -12,6 +12,7 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import Sorter from "sap/ui/model/Sorter";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
 import CommonController from "siagrob1/controller/common/CommonController";
 
 export abstract class BaseController extends CommonController {
@@ -93,6 +94,60 @@ export abstract class BaseController extends CommonController {
      * O diálogo é ligado ao contexto da LINHA selecionada — os campos usam caminho relativo
      * (`{Ncm}`, `{IcmsBase}`, ...) e escrevem direto no item.
      */
+    /**
+     * Pergunta ao servidor se a filial do documento calcula tributos (NF-e STANDALONE). A regra
+     * mora no servidor (`TaxCalculationGate`); a tela só a consulta e trava os campos. Falha =
+     * trava desligada: quem recalcula e sobrescreve continua sendo o servidor.
+     */
+    protected async refreshTaxLock(branchCode: string): Promise<boolean> {
+      const uiModel = this.getModel("ui") as JSONModel;
+      uiModel.setProperty("/taxLocked", false);
+
+      if (!branchCode) {
+        return false;
+      }
+
+      try {
+        const oModel = this.getView().getModel() as ODataModel;
+        const oFunction = oModel.bindContext(ServerRoutes.taxCalculationIsActive);
+        oFunction.setParameter("BranchCode", branchCode);
+        await oFunction.invoke();
+        const locked = oFunction.getBoundContext().getProperty("value") === true;
+        uiModel.setProperty("/taxLocked", locked);
+        return locked;
+      } catch {
+        uiModel.setProperty("/taxLocked", false);
+        return false;
+      }
+    }
+
+    /** Mesma consulta, com a filial do documento ligado à view (Edit/Detail). */
+    protected async refreshTaxLockFromContext() {
+      // Zera antes de esperar a filial: um true velho não pode aparecer no documento de outra filial.
+      (this.getModel("ui") as JSONModel).setProperty("/taxLocked", false);
+      const oContext = this.getView().getBindingContext() as Context;
+      const branchCode = oContext ? await oContext.requestProperty("BranchCode") as string : undefined;
+
+      await this.refreshTaxLock(branchCode);
+    }
+
+    /** Modo (campos da NF-e) e nome da condição de pagamento do documento ligado à view. */
+    protected async refreshNfeHeaderFromContext() {
+      void this.refreshStandaloneFlag();
+      const oContext = this.getView().getBindingContext() as Context;
+      const code = oContext ? await oContext.requestProperty("PaymentConditionCode") as number : undefined;
+      await this.refreshPaymentConditionName(code);
+    }
+
+    /** Devolução com NF-e própria (criada pelo Devolver): a grade trava produto, preço e natureza. */
+    protected async refreshNfeReturnFromContext() {
+      const uiModel = this.getModel("ui") as JSONModel;
+      uiModel.setProperty("/nfeReturn", false);
+      const oContext = this.getView().getBindingContext() as Context;
+      const nfeReturn = oContext ? await oContext.requestProperty("IsNfeReturn") === true : false;
+      uiModel.setProperty("/nfeReturn", nfeReturn);
+    }
+
     async onOpenItemFiscal() {
       const oTable = this.byId("tableSalesInvoicesItems") as Table;
       const i = oTable.getSelectedIndex();
@@ -102,10 +157,12 @@ export abstract class BaseController extends CommonController {
         return;
       }
 
-      this.itemFiscalDialog ??= await DialogHelper.createDialog(
-        this, "siagrob1.view.salesInvoices.fragments.ItemFiscalDialog");
+      const oItemContext = oTable.getContextByIndex(i) as Context;
 
-      this.itemFiscalDialog.setBindingContext(oTable.getContextByIndex(i) as Context);
+      this.itemFiscalDialog ??= await DialogHelper.createDialog(
+        this, "siagrob1.view.salesInvoices.fragments.ItemFiscalDialog", oItemContext);
+
+      this.itemFiscalDialog.setBindingContext(oItemContext);
       this.itemFiscalDialog.open();
     }
 
@@ -224,9 +281,11 @@ export abstract class BaseController extends CommonController {
       const oInput = ev.getSource();
       const oTarget = oInput.getBindingContext() as Context;
 
+      const outgoingOnly = await this.outgoingUsagesFilter();
+
       const oSelected = await DialogHelper.openTableSelectDialog(
         this, "UsagesSelectDialog", ["Name", "Description"],
-        [ new Filter("Inactive", FilterOperator.EQ, false) ]);
+        [ new Filter("Inactive", FilterOperator.EQ, false) ], undefined, outgoingOnly);
 
       // Cancelar resolve undefined: não mexer no que já estava preenchido.
       if (!oSelected) {
@@ -237,6 +296,21 @@ export abstract class BaseController extends CommonController {
       await oTarget.setProperty("UsageCode", oSelected.getProperty("Code"));
 
       await this.previewCfop(oTarget, oSelected.getProperty("Code") as number);
+    }
+
+    /**
+     * Em STANDALONE o documento de saída só aceita natureza de Saída. O enum vai por $filter
+     * estático (o Filter do UI5 não formata enum). Teste POSITIVO do modo, como no servidor: em
+     * SAPB1 (o OUSG não tem tipo, Direction vem nulo) ou se a consulta falhar, nenhum filtro —
+     * filtrar ali esconderia todas as naturezas.
+     */
+    private async outgoingUsagesFilter(): Promise<string> {
+      try {
+        const erp = (await this.getSystemInfo())?.erp;
+        return erp?.toUpperCase() === "STANDALONE" ? "Direction eq 'Outgoing'" : undefined;
+      } catch {
+        return undefined;
+      }
     }
 
     /**

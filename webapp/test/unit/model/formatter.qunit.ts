@@ -33,3 +33,38 @@ QUnit.test("isPartiallyReturned só marca a nota Confirmada com devolução", fu
 QUnit.test("formatPartialReturn mostra quanto voltou", function (assert) {
 	assert.strictEqual(formatter.formatPartialReturn("5000.000"), "Devolução parcial: 5.000,000");
 });
+
+QUnit.module("formatter - tipo da natureza de operação (NF-e STANDALONE)");
+
+QUnit.test("formatUsageDirection traduz o enum e deixa vazio o nulo do SAPB1", function (assert) {
+	assert.strictEqual(formatter.formatUsageDirection("Outgoing"), "Saída");
+	assert.strictEqual(formatter.formatUsageDirection("Incoming"), "Entrada");
+	assert.strictEqual(formatter.formatUsageDirection(null), "");
+});
+
+QUnit.module("formatter - situação da NF-e (STANDALONE)");
+
+QUnit.test("situação vira texto em português", function (assert) {
+	assert.strictEqual(formatter.formatNfeStatus("None"), "");
+	assert.strictEqual(formatter.formatNfeStatus("Processing"), "Em processamento");
+	assert.strictEqual(formatter.formatNfeStatus("Authorized"), "Autorizada");
+	assert.strictEqual(formatter.formatNfeStatus("Rejected"), "Rejeitada");
+	assert.strictEqual(formatter.formatNfeStatus("Denied"), "Denegada");
+});
+
+QUnit.test("cor da situação", function (assert) {
+	assert.strictEqual(formatter.stateNfeStatus("Authorized"), "Success");
+	assert.strictEqual(formatter.stateNfeStatus("Rejected"), "Error");
+	assert.strictEqual(formatter.stateNfeStatus("Denied"), "Error");
+	assert.strictEqual(formatter.stateNfeStatus("Processing"), "Warning");
+	assert.strictEqual(formatter.stateNfeStatus("None"), "None");
+});
+
+QUnit.module("formatter - formatDateTime");
+
+QUnit.test("data com offset vira dd/MM/yyyy HH:mm, nunca Invalid Date", function (assert) {
+	const text = formatter.formatDateTime("2026-10-03T00:10:45-03:00");
+	assert.notOk(text.includes("Invalid"));
+	assert.ok(/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/.test(text), text);
+	assert.strictEqual(formatter.formatDateTime(null), "");
+});

@@ -3,7 +3,8 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import BaseController from "../BaseController";
+import BaseController from "./BaseController";
+import { applyFiscalCodeLists } from "siagrob1/model/fiscalCodes";
 
 /**
  * @namespace siagrob1.controller.usages
@@ -17,6 +18,7 @@ export default class Edit extends BaseController {
 	private editRouteMatched(ev: Route$MatchedEvent) {
 		this.clearStates("usagesForm");
 
+    applyFiscalCodeLists(this.getModel("ui") as JSONModel);
     void this.applyErpMode();
 
     const oModel = this.getView().getModel() as ODataModel;

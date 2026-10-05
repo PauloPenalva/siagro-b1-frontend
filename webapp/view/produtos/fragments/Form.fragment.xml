@@ -43,6 +43,28 @@
               liveChange=".validateField"
               maxLength="200"
           />
+          <!-- NF-e STANDALONE: ocultos em SAPB1 (o produto vem do OITM). Opcionais aqui; o
+               documento de saída os exige quando a filial emite NF-e pelo Siagro. -->
+          <Label text="Origem da mercadoria" visible="{ui>/standalone}" />
+          <Select
+            visible="{ui>/standalone}"
+            selectedKey="{GoodsOrigin}"
+            forceSelection="false">
+            <core:ListItem key="" text="" />
+            <core:ListItem key="0" text="0 - Nacional" />
+            <core:ListItem key="1" text="1 - Estrangeira, importação direta" />
+            <core:ListItem key="2" text="2 - Estrangeira, adquirida no mercado interno" />
+            <core:ListItem key="3" text="3 - Nacional com mais de 40% de conteúdo importado" />
+            <core:ListItem key="4" text="4 - Nacional, processos produtivos básicos" />
+            <core:ListItem key="5" text="5 - Nacional com até 40% de conteúdo importado" />
+            <core:ListItem key="6" text="6 - Estrangeira, importação direta, sem similar (CAMEX)" />
+            <core:ListItem key="7" text="7 - Estrangeira, mercado interno, sem similar (CAMEX)" />
+            <core:ListItem key="8" text="8 - Nacional com mais de 70% de conteúdo importado" />
+          </Select>
+          <Label text="NCM" visible="{ui>/standalone}" />
+          <Input value="{Ncm}" maxLength="8" visible="{ui>/standalone}" />
+          <Label text="CEST" visible="{ui>/standalone}" />
+          <Input value="{Cest}" maxLength="9" placeholder="00.000.00" visible="{ui>/standalone}" />
 
 
           <core:Title />

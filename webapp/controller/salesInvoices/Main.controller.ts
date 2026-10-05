@@ -12,6 +12,8 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import Dialog from "sap/m/Dialog";
 import { Input$LiveChangeEvent } from "sap/m/Input";
 import Fragment from "sap/ui/core/Fragment";
+import { sendJson, odataCollection } from "siagrob1/helpers/FetchHelpers";
+import { isEmittedNfeStatus, isManualTaxDocumentBlocked } from "siagrob1/helpers/NfeHelpers";
 
 const NFE_KEY_LENGTH = 44;
 
@@ -65,7 +67,10 @@ export default class Main extends BaseController {
     this.createFilterModel();
 
     this.getRouter().getRoute("salesInvoices")
-      .attachPatternMatched(() => this.applyFilters());
+      .attachPatternMatched(() => {
+        void this.refreshStandaloneFlag().then(() => this.refreshAnyBranchIssuesNfe());
+        this.applyFilters();
+      });
 	}
 
   onClearFilters() {
@@ -185,6 +190,27 @@ export default class Main extends BaseController {
     }
   }
 
+  /**
+   * `ui>/anyBranchIssuesNfe`: a coluna "Situação NF-e" só faz sentido se alguma filial emite NF-e
+   * pelo Siagro. STANDALONE sem filial emissora (MH Agro) vê a lista como sempre foi.
+   */
+  private async refreshAnyBranchIssuesNfe(): Promise<void> {
+    const uiModel = this.getModel("ui") as JSONModel;
+    uiModel.setProperty("/anyBranchIssuesNfe", false);
+
+    if (uiModel.getProperty("/standalone") !== true) {
+      return;
+    }
+
+    try {
+      const result = await sendJson("GET", "/odata/Branchs?$filter=IssuesNfe eq true&$top=1&$select=Code");
+      const rows = result.ok ? odataCollection<unknown>(result.data) : [];
+      uiModel.setProperty("/anyBranchIssuesNfe", rows.length > 0);
+    } catch {
+      uiModel.setProperty("/anyBranchIssuesNfe", false);
+    }
+  }
+
   async onNotaFiscal() {
     const table = this.byId("tableSalesInvoices") as Table;
     const selectedInvoice = table.getSelectedIndices();
@@ -193,12 +219,30 @@ export default class Main extends BaseController {
       throw new Error("Selecione um registro");
     }
 
+    const ctx = table.getContextByIndex(selectedInvoice[0]);
+
+    // Na filial que emite NF-e pelo Siagro, número/série/chave do documento Normal vêm da emissão
+    // (o servidor também recusa). A devolução própria (Devolver) também vem da emissão; as demais
+    // devoluções seguem manuais: o cliente emite a NF-e dele e o número é digitado.
+    // Fora do STANDALONE (SAPB1) a regra de tributação nem é consultada.
+    const nfeStatus = ctx.getProperty("NfeStatus") as string;
+    const invoiceType = ctx.getProperty("InvoiceType") as string;
+    const standalone = (this.getModel("ui") as JSONModel).getProperty("/standalone") === true;
+    const taxLocked = standalone && !isEmittedNfeStatus(nfeStatus)
+      ? await this.refreshTaxLock(ctx.getProperty("BranchCode") as string)
+      : false;
+
+    if (isManualTaxDocumentBlocked(nfeStatus, taxLocked, invoiceType, ctx.getProperty("IsNfeReturn") === true)) {
+      MessageBox.information(isEmittedNfeStatus(nfeStatus)
+        ? "Número, série e chave deste documento vêm da emissão da NF-e pelo Siagro."
+        : "Na filial que emite NF-e pelo Siagro, número, série e chave vêm da emissão.");
+      return;
+    }
+
     this._notaFiscalDialog ??= await DialogHelper.createDialog(
-      this, 
+      this,
       "siagrob1.view.salesInvoices.fragments.NotaFiscalDialog"
     );
-
-    const ctx = table.getContextByIndex(selectedInvoice[0]);
     const viewModel = this.getModel("viewModel") as JSONModel;
     viewModel.setData({
       TaxDocumentNumber: ctx.getProperty("TaxDocumentNumber") as string,

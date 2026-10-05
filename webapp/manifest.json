@@ -794,6 +794,16 @@
           "target": "logisticRegionsEdit"
         },
         {
+          "pattern": "payment-conditions",
+          "name": "paymentConditions",
+          "target": "paymentConditions"
+        },
+        {
+          "pattern": "nfe-settings",
+          "name": "nfeSettings",
+          "target": "nfeSettings"
+        },
+        {
           "pattern": "usages",
           "name": "usages",
           "target": "usages"
@@ -802,6 +812,11 @@
           "pattern": "usages/new",
           "name": "usagesNew",
           "target": "usagesNew"
+        },
+        {
+          "pattern": "usages/ibs-cbs-rates",
+          "name": "ibsCbsRates",
+          "target": "ibsCbsRates"
         },
         {
           "pattern": "usages/{id}/edit",
@@ -1909,6 +1924,18 @@
 					"name": "siagrob1.view.logisticRegions.Edit",
           "clearControlAggregation": true
 				},
+        "paymentConditions": {
+          "id": "paymentConditions",
+          "level": 1,
+          "name": "siagrob1.view.paymentConditions.Main",
+          "clearControlAggregation": true
+        },
+        "nfeSettings": {
+          "id": "nfeSettings",
+          "level": 1,
+          "name": "siagrob1.view.nfeSettings.Main",
+          "clearControlAggregation": true
+        },
         "usages": {
 					"id": "usages",
           "level": 1,
@@ -1925,6 +1952,12 @@
 					"id": "usagesEdit",
           "level": 2,
 					"name": "siagrob1.view.usages.Edit",
+          "clearControlAggregation": true
+				},
+        "ibsCbsRates": {
+					"id": "ibsCbsRates",
+          "level": 2,
+					"name": "siagrob1.view.ibsCbsRates.Main",
           "clearControlAggregation": true
 				},
          "costCenters": {

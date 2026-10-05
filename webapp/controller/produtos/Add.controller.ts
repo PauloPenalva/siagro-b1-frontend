@@ -17,6 +17,7 @@ export default class Add extends BaseController {
 	private newRouteMatched() {
 
     this.clearStates("itemForm");
+    void this.refreshStandaloneFlag();
 
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;
@@ -29,6 +30,9 @@ export default class Add extends BaseController {
     const oContext = oBinding.create({
       "ItmsGrpCod": 105,
       "Enabled": "SIM",
+      "GoodsOrigin": null,
+      "Ncm": null,
+      "Cest": null,
     }, false, false, false);
 
 		this._itemContext = oContext;

@@ -5,6 +5,7 @@
     xmlns:core="sap.ui.core"
 >
   <Dialog
+    core:require="{ formatter: 'siagrob1/model/formatter' }"
     title="Dados Fiscais do Item"
     contentWidth="42rem"
     resizable="true"
@@ -41,7 +42,22 @@
               </f:FormElement>
               <f:FormElement label="NCM">
                 <f:fields>
-                  <Input value="{Ncm}" editable="{ui>/editable}" maxLength="8" />
+                  <Input value="{Ncm}" editable="{= ${ui>/editable} &amp;&amp; !${ui>/taxLocked} }" maxLength="8" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Origem" visible="{= ${ui>/taxLocked} === true }">
+                <f:fields>
+                  <Text text="{GoodsOrigin}" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Movimenta estoque" visible="{= ${ui>/taxLocked} === true }">
+                <f:fields>
+                  <Text text="{ path: 'MovesFiscalInventory', targetType: 'any', formatter: 'formatter.formatBooleanYesNo' }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Gera financeiro" visible="{= ${ui>/taxLocked} === true }">
+                <f:fields>
+                  <Text text="{ path: 'CreatesFinancialDocument', targetType: 'any', formatter: 'formatter.formatBooleanYesNo' }" />
                 </f:fields>
               </f:FormElement>
             </f:formElements>
@@ -51,13 +67,13 @@
             <f:formElements>
               <f:FormElement label="CST">
                 <f:fields>
-                  <Input value="{CstIcms}" editable="{ui>/editable}" maxLength="3" />
+                  <Input value="{CstIcms}" editable="{= ${ui>/editable} &amp;&amp; !${ui>/taxLocked} }" maxLength="3" />
                 </f:fields>
               </f:FormElement>
               <f:FormElement label="Base">
                 <f:fields>
                   <Input
-                    editable="{ui>/editable}"
+                    editable="{= ${ui>/editable} &amp;&amp; !${ui>/taxLocked} }"
                     value="{
                       path: 'IcmsBase',
                       type: 'sap.ui.model.odata.type.Decimal',
@@ -73,11 +89,11 @@
               <f:FormElement label="Alíquota">
                 <f:fields>
                   <Input
-                    editable="{ui>/editable}"
+                    editable="{= ${ui>/editable} &amp;&amp; !${ui>/taxLocked} }"
                     value="{
                       path: 'IcmsRate',
                       type: 'sap.ui.model.odata.type.Decimal',
-                      constraints: { precision: 5, scale: 4 },
+                      constraints: { precision: 7, scale: 4 },
                       formatOptions: {
                         decimalSeparator: ',',
                         groupingEnabled: false
@@ -88,7 +104,7 @@
               <f:FormElement label="Valor">
                 <f:fields>
                   <Input
-                    editable="{ui>/editable}"
+                    editable="{= ${ui>/editable} &amp;&amp; !${ui>/taxLocked} }"
                     value="{
                       path: 'IcmsValue',
                       type: 'sap.ui.model.odata.type.Decimal',
@@ -101,6 +117,51 @@
                     }" />
                 </f:fields>
               </f:FormElement>
+              <f:FormElement label="Redução de base %" visible="{= ${ui>/taxLocked} === true }">
+                <f:fields>
+                  <Text text="{
+                    path: 'IcmsBaseReduction',
+                    type: 'sap.ui.model.odata.type.Decimal',
+                    constraints: { precision: 7, scale: 4 },
+                    formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="ICMS da operação" visible="{= ${ui>/taxLocked} === true }">
+                <f:fields>
+                  <Text text="{
+                    path: 'IcmsOperationValue',
+                    type: 'sap.ui.model.odata.type.Decimal',
+                    constraints: { precision: 18, scale: 2 },
+                    formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Diferimento %" visible="{= ${ui>/taxLocked} === true }">
+                <f:fields>
+                  <Text text="{
+                    path: 'IcmsDeferral',
+                    type: 'sap.ui.model.odata.type.Decimal',
+                    constraints: { precision: 7, scale: 4 },
+                    formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="ICMS diferido" visible="{= ${ui>/taxLocked} === true }">
+                <f:fields>
+                  <Text text="{
+                    path: 'IcmsDeferredValue',
+                    type: 'sap.ui.model.odata.type.Decimal',
+                    constraints: { precision: 18, scale: 2 },
+                    formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="cBenef" visible="{= ${ui>/taxLocked} === true }">
+                <f:fields>
+                  <Text text="{IcmsBenefitCode}" />
+                </f:fields>
+              </f:FormElement>
             </f:formElements>
           </f:FormContainer>
 
@@ -108,13 +169,13 @@
             <f:formElements>
               <f:FormElement label="CST">
                 <f:fields>
-                  <Input value="{CstPis}" editable="{ui>/editable}" maxLength="3" />
+                  <Input value="{CstPis}" editable="{= ${ui>/editable} &amp;&amp; !${ui>/taxLocked} }" maxLength="3" />
                 </f:fields>
               </f:FormElement>
               <f:FormElement label="Base">
                 <f:fields>
                   <Input
-                    editable="{ui>/editable}"
+                    editable="{= ${ui>/editable} &amp;&amp; !${ui>/taxLocked} }"
                     value="{
                       path: 'PisBase',
                       type: 'sap.ui.model.odata.type.Decimal',
@@ -130,11 +191,11 @@
               <f:FormElement label="Alíquota">
                 <f:fields>
                   <Input
-                    editable="{ui>/editable}"
+                    editable="{= ${ui>/editable} &amp;&amp; !${ui>/taxLocked} }"
                     value="{
                       path: 'PisRate',
                       type: 'sap.ui.model.odata.type.Decimal',
-                      constraints: { precision: 5, scale: 4 },
+                      constraints: { precision: 7, scale: 4 },
                       formatOptions: {
                         decimalSeparator: ',',
                         groupingEnabled: false
@@ -145,7 +206,7 @@
               <f:FormElement label="Valor">
                 <f:fields>
                   <Input
-                    editable="{ui>/editable}"
+                    editable="{= ${ui>/editable} &amp;&amp; !${ui>/taxLocked} }"
                     value="{
                       path: 'PisValue',
                       type: 'sap.ui.model.odata.type.Decimal',
@@ -165,13 +226,13 @@
             <f:formElements>
               <f:FormElement label="CST">
                 <f:fields>
-                  <Input value="{CstCofins}" editable="{ui>/editable}" maxLength="3" />
+                  <Input value="{CstCofins}" editable="{= ${ui>/editable} &amp;&amp; !${ui>/taxLocked} }" maxLength="3" />
                 </f:fields>
               </f:FormElement>
               <f:FormElement label="Base">
                 <f:fields>
                   <Input
-                    editable="{ui>/editable}"
+                    editable="{= ${ui>/editable} &amp;&amp; !${ui>/taxLocked} }"
                     value="{
                       path: 'CofinsBase',
                       type: 'sap.ui.model.odata.type.Decimal',
@@ -187,11 +248,11 @@
               <f:FormElement label="Alíquota">
                 <f:fields>
                   <Input
-                    editable="{ui>/editable}"
+                    editable="{= ${ui>/editable} &amp;&amp; !${ui>/taxLocked} }"
                     value="{
                       path: 'CofinsRate',
                       type: 'sap.ui.model.odata.type.Decimal',
-                      constraints: { precision: 5, scale: 4 },
+                      constraints: { precision: 7, scale: 4 },
                       formatOptions: {
                         decimalSeparator: ',',
                         groupingEnabled: false
@@ -202,7 +263,7 @@
               <f:FormElement label="Valor">
                 <f:fields>
                   <Input
-                    editable="{ui>/editable}"
+                    editable="{= ${ui>/editable} &amp;&amp; !${ui>/taxLocked} }"
                     value="{
                       path: 'CofinsValue',
                       type: 'sap.ui.model.odata.type.Decimal',
@@ -213,6 +274,113 @@
                         groupingSeparator: '.'
                       }
                     }" />
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+
+          <!-- IBS/CBS (reforma tributária): só com a tributação STANDALONE ativa, sempre calculado
+               pela natureza. Informativo em 2026 — não compõe o total do documento. -->
+          <f:FormContainer title="IBS/CBS" visible="{= ${ui>/taxLocked} === true }">
+            <f:formElements>
+              <f:FormElement label="CST">
+                <f:fields>
+                  <Text text="{IbsCbsCst}" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="cClassTrib">
+                <f:fields>
+                  <Text text="{IbsCbsClassCode}" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Base">
+                <f:fields>
+                  <Text text="{
+                    path: 'IbsCbsBase',
+                    type: 'sap.ui.model.odata.type.Decimal',
+                    constraints: { precision: 18, scale: 2 },
+                    formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="CBS %">
+                <f:fields>
+                  <Text text="{
+                    path: 'CbsRate',
+                    type: 'sap.ui.model.odata.type.Decimal',
+                    constraints: { precision: 7, scale: 4 },
+                    formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Redução CBS %">
+                <f:fields>
+                  <Text text="{
+                    path: 'CbsRateReduction',
+                    type: 'sap.ui.model.odata.type.Decimal',
+                    constraints: { precision: 7, scale: 4 },
+                    formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="CBS">
+                <f:fields>
+                  <Text text="{
+                    path: 'CbsValue',
+                    type: 'sap.ui.model.odata.type.Decimal',
+                    constraints: { precision: 18, scale: 2 },
+                    formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="IBS estadual %">
+                <f:fields>
+                  <Text text="{
+                    path: 'IbsStateRate',
+                    type: 'sap.ui.model.odata.type.Decimal',
+                    constraints: { precision: 7, scale: 4 },
+                    formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="IBS municipal %">
+                <f:fields>
+                  <Text text="{
+                    path: 'IbsMunicipalRate',
+                    type: 'sap.ui.model.odata.type.Decimal',
+                    constraints: { precision: 7, scale: 4 },
+                    formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Redução IBS %">
+                <f:fields>
+                  <Text text="{
+                    path: 'IbsRateReduction',
+                    type: 'sap.ui.model.odata.type.Decimal',
+                    constraints: { precision: 7, scale: 4 },
+                    formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="IBS estadual">
+                <f:fields>
+                  <Text text="{
+                    path: 'IbsStateValue',
+                    type: 'sap.ui.model.odata.type.Decimal',
+                    constraints: { precision: 18, scale: 2 },
+                    formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="IBS municipal">
+                <f:fields>
+                  <Text text="{
+                    path: 'IbsMunicipalValue',
+                    type: 'sap.ui.model.odata.type.Decimal',
+                    constraints: { precision: 18, scale: 2 },
+                    formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }" />
                 </f:fields>
               </f:FormElement>
             </f:formElements>

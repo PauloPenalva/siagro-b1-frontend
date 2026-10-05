@@ -1,0 +1,55 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<Dialog
+		core:require="{ Float: 'sap/ui/model/type/Float' }"
+		title="Devolver Documento de Saída"
+		contentWidth="60rem"
+		class="sapUiSizeCompact"
+		busy="{nfeReturn>/busy}"
+		busyIndicatorDelay="0">
+		<content>
+			<!-- A quantidade a devolver nasce igual ao saldo de cada item: a devolução total é o caso
+			     comum. Item com zero fica de fora da devolução. -->
+			<Table items="{nfeReturn>/rows}">
+				<columns>
+					<Column><Text text="Produto" /></Column>
+					<Column><Text text="Descrição" /></Column>
+					<Column hAlign="End"><Text text="Vendido" /></Column>
+					<Column hAlign="End"><Text text="Já devolvido" /></Column>
+					<Column hAlign="End" width="12rem"><Text text="A devolver" /></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Text text="{nfeReturn>ItemCode}" />
+							<Text text="{nfeReturn>ItemName}" />
+							<Text text="{ path: 'nfeReturn>SoldQuantity', type: 'Float', formatOptions: { minFractionDigits: 3, maxFractionDigits: 3 } }" />
+							<Text text="{ path: 'nfeReturn>ReturnedQuantity', type: 'Float', formatOptions: { minFractionDigits: 3, maxFractionDigits: 3 } }" />
+							<Input
+								textAlign="End"
+								value="{ path: 'nfeReturn>ReturnQuantity', type: 'Float', formatOptions: { maxFractionDigits: 3 } }" />
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+			<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanL="2" labelSpanM="3">
+				<f:content>
+					<Label text="Motivo da devolução" required="true" />
+					<TextArea
+						rows="3"
+						maxLength="400"
+						placeholder="Ex.: carga recusada pelo cliente"
+						value="{nfeReturn>/reason}" />
+				</f:content>
+			</f:SimpleForm>
+		</content>
+		<beginButton>
+			<Button text="Devolver" type="Emphasized" press=".onConfirmNfeReturn" />
+		</beginButton>
+		<endButton>
+			<Button text="Cancelar" press=".onCloseNfeReturn" />
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

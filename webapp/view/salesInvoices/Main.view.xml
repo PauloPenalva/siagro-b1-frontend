@@ -33,7 +33,8 @@
            controller que a lê. Com autoExpandSelect, o que não é ligado por um controle não é
            pedido, e sem ela o guard passaria batido. WithoutTaxDocument entra pelo mesmo motivo:
            o diálogo "Informar Nota Fiscal" o lê do contexto da linha, e a coluna que o exibe pode
-           estar oculta. -->
+           estar oculta. IsNfeReturn é lido pelo "Informar Nota Fiscal" (a devolução própria vem da
+           emissão). -->
       <t:Table
 				id="tableSalesInvoices"
 				busyIndicatorDelay="0"
@@ -45,7 +46,7 @@
 				alternateRowColors="true"
         rows="{
 					path: '/SalesInvoices',
-          parameters: { $select: 'ShipmentLoadKey,WithoutTaxDocument' },
+          parameters: { $select: 'ShipmentLoadKey,WithoutTaxDocument,NfeStatus,BranchCode,InvoiceType,IsNfeReturn' },
           sorter: [
             { path: 'RowId', descending: true }
           ]
@@ -250,6 +251,13 @@
 							<Text text="{ChaveNFe}" wrapping="false" />
 						</t:template>
 					</t:Column>
+          <t:Column label="Situação NF-e" width="9rem" visible="{= ${ui>/standalone} === true &amp;&amp; ${ui>/anyBranchIssuesNfe} === true }">
+            <t:template>
+              <ObjectStatus
+                text="{ path: 'NfeStatus', targetType: 'any', formatter: '.formatter.formatNfeStatus' }"
+                state="{ path: 'NfeStatus', targetType: 'any', formatter: '.formatter.stateNfeStatus' }" />
+            </t:template>
+          </t:Column>
           <t:Column
 						label="Observações"
             width="25rem"

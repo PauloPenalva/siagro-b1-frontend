@@ -42,6 +42,8 @@ export default class Add extends BaseController {
     // navegado (SalesContract/Code), que não é gravável.
     uiModel.setProperty("/canPickContract", true);
     uiModel.setProperty("/documentTotal", "0,00");
+    void this.refreshStandaloneFlag();
+    uiModel.setProperty("/paymentConditionName", "");
 
     const oView = this.getView();
     const oModel = this.getModel() as ODataModel;
@@ -55,6 +57,7 @@ export default class Add extends BaseController {
       this.setBusy(true);
 
       const branchInfo = await this.getBranchInfo();
+      void this.refreshTaxLock(branchInfo?.code);
       const results = await this.getDocNumberInfoByTransaction("SalesInvoice");
       const docNumberInfo = results.filter(x => x.Default)[0];
 
@@ -78,6 +81,10 @@ export default class Add extends BaseController {
         FreightCostStandard: 0,
         GrossWeight: 0,
         NetWeight: 0,
+        VolumeQuantity: null,
+        VolumeSpecies: null,
+        VolumeBrand: null,
+        VolumeNumbering: null,
         TaxDocumentNumber: null,
         TaxDocumentSeries: null,
         ChaveNFe: null,

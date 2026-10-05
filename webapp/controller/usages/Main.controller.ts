@@ -10,6 +10,7 @@ import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import formatter from "siagrob1/model/formatter";
+import { attachOverflowTooltips } from "siagrob1/helpers/OverflowTooltipHelpers";
 
 /**
  * @namespace siagrob1.controller.usages
@@ -19,6 +20,7 @@ export default class Main extends BaseController {
 
 	onInit(): void {
 		this.getRouter().getRoute("usages").attachPatternMatched(() => this.routeMatched())
+		attachOverflowTooltips(this.byId("usagesTable") as Table);
 	}
 
 	private routeMatched() {
@@ -58,6 +60,11 @@ export default class Main extends BaseController {
 
 	onCreate() {
 		this.navTo("usagesNew");
+	}
+
+	/** Alíquotas de IBS/CBS por vigência (só STANDALONE — o botão some em SAPB1). */
+	onOpenIbsCbsRates() {
+		this.navTo("ibsCbsRates");
 	}
 
 	onEdit(): void {

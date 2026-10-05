@@ -52,25 +52,100 @@
               editable="{ui>/identityEditable}"
               maxLength="200"
           />
-          <Label text="CFOP dentro do estado" />
+          <!-- Tipo da natureza (só STANDALONE: o OUSG não tem tipo, e ali o campo vem nulo).
+               Decide quais CFOPs aparecem e se há efeito em contrato de venda. -->
+          <Label text="Tipo" visible="{ui>/identityEditable}" />
+          <Select
+            visible="{ui>/identityEditable}"
+            selectedKey="{ path: 'Direction', targetType: 'any' }"
+            change=".onDirectionChange"
+            forceSelection="false">
+            <core:ListItem key="Outgoing" text="Saída" />
+            <core:ListItem key="Incoming" text="Entrada" />
+          </Select>
+          <Label text="CFOP dentro do estado"
+                 visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
           <Input
               value="{CfopOutgoingInState}"
               editable="{ui>/identityEditable}"
               maxLength="4"
+              visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
           />
-          <Label text="CFOP fora do estado" />
+          <Label text="CFOP fora do estado"
+                 visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
           <Input
               value="{CfopOutgoingOutState}"
               editable="{ui>/identityEditable}"
               maxLength="4"
+              visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
           />
+          <Label text="CFOP de entrada dentro do estado"
+                 visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
+          <Input
+              value="{CfopIncomingInState}"
+              editable="{ui>/identityEditable}"
+              maxLength="4"
+              visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }"
+          />
+          <Label text="CFOP de entrada fora do estado"
+                 visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
+          <Input
+              value="{CfopIncomingOutState}"
+              editable="{ui>/identityEditable}"
+              maxLength="4"
+              visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }"
+          />
+          <Label text="Texto na nota (natOp)" visible="{ui>/identityEditable}" />
+          <Input
+              value="{InvoiceOperationText}"
+              maxLength="60"
+              placeholder="Vazio = usa o Nome"
+              visible="{ui>/identityEditable}"
+          />
+          <!-- Natureza de devolução (NF-e de devolução de venda): só natureza de Saída, só STANDALONE.
+               A devolução criada pelo Devolver herda esta natureza em cada linha. -->
+          <Label text="Natureza de devolução"
+                 visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
+          <!-- ui5lint-disable no-deprecated-api -->
+          <Input
+              value="{ReturnUsageCode}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              showClearIcon="true"
+              valueHelpRequest=".onReturnUsageValueHelp"
+              change=".onReturnUsageChange"
+              visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} !== 'Incoming' }">
+            <layoutData>
+              <l:GridData span="XL2 L2 M3 S4" />
+            </layoutData>
+          </Input>
+          <!-- ui5lint-enable no-deprecated-api -->
+          <Input
+              value="{ReturnUsageName}"
+              editable="false"
+              visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
+          <!-- Flags da natureza (equivalem a "Atualiza Estoque" e "Gera Duplicata" da TES do
+               Protheus). Só cadastro por enquanto: o estoque FISCAL e o financeiro a partir
+               do documento fiscal ainda não existem. -->
+          <Label text="Movimenta estoque ?" visible="{ui>/identityEditable}" />
+          <CheckBox selected="{MovesFiscalInventory}" visible="{ui>/identityEditable}" />
+          <Label text="Gera financeiro ?" visible="{ui>/identityEditable}" />
+          <CheckBox selected="{CreatesFinancialDocument}" visible="{ui>/identityEditable}" />
 
+          <!-- Efeito em contrato de VENDA: não se aplica à natureza de entrada (o efeito em
+               contrato de compra vem com a NF-e de entrada). -->
           <core:Title
               text="Efeito no Contrato"
               emphasized="true"
           />
-          <Label text="Saldo do contrato" />
+          <Text
+              text="Não se aplica à natureza de entrada."
+              visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }"
+          />
+          <Label text="Saldo do contrato"
+                 visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
           <Select
+            visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
             selectedKey="{
               path: 'ContractBalanceEffect',
               targetType: 'any'
@@ -81,8 +156,10 @@
             <core:ListItem key="Consume" text="Consome saldo" />
             <core:ListItem key="Restore" text="Devolve saldo" />
           </Select>
-          <Label text="Valor do contrato" />
+          <Label text="Valor do contrato"
+                 visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
           <Select
+            visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
             selectedKey="{
               path: 'ContractValueEffect',
               targetType: 'any'
@@ -98,21 +175,29 @@
               text="Obrigatoriedades"
               emphasized="true"
           />
-          <Label text="Exige contrato ?" />
+          <Label text="Exige contrato ?"
+                 visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
           <CheckBox
             selected="{RequiresContract}"
+            visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
           />
-          <Label text="Exige quantidade ?" />
+          <Label text="Exige quantidade ?"
+                 visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
           <CheckBox
             selected="{RequiresQuantity}"
+            visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
           />
-          <Label text="Exige peso ?" />
+          <Label text="Exige peso ?"
+                 visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
           <CheckBox
             selected="{RequiresWeight}"
+            visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
           />
-          <Label text="Padrão do faturamento de romaneio ?" />
+          <Label text="Padrão do faturamento de romaneio ?"
+                 visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
           <CheckBox
             selected="{IsDefault}"
+            visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
           />
           <Label text="Inativo ?" />
           <CheckBox

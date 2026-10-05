@@ -26,7 +26,7 @@
           <Title text="Itens do Documento de Saída" />
           <ToolbarSpacer />
           <Button
-            visible="{ui>/editable}"
+            visible="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
             text="Incluir"
             type="Transparent"
             icon="sap-icon://add"
@@ -48,6 +48,20 @@
           <ToolbarSpacer />
           <!-- Total geral do documento. Somado no cliente pelo mesmo motivo do total da
                linha: TotalInvoiceItems é [NotMapped] e não existe antes de salvar. -->
+          <!-- IBS/CBS: informativo em 2026, fora do total do documento. Só com a tributação
+               STANDALONE ativa; vem do servidor (NotMapped), então aparece depois de gravar. -->
+          <ObjectNumber
+            visible="{= ${ui>/taxLocked} === true }"
+            class="sapUiSmallMarginEnd"
+            number="{
+              path: 'TotalInvoiceIbsCbs',
+              type: 'sap.ui.model.odata.type.Decimal',
+              constraints: { precision: 18, scale: 2 },
+              formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"
+            unit="IBS/CBS"
+            state="None"
+          />
           <ObjectNumber
             id="salesInvoiceDocumentTotal"
             number="{ui>/documentTotal}"
@@ -62,7 +76,7 @@
       <t:Column label="Produto">
         <t:template>
           <Input
-            editable="{ui>/editable}"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
             width="10rem"
             required="true"
             value="{ItemCode}" 
@@ -111,7 +125,7 @@
        <t:Column label="Und.Med.">
         <t:template>
           <Input 
-            editable="{ui>/editable}"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
             required="true"
             value="{UnitOfMeasureCode}" 
             showValueHelp="true" 
@@ -127,7 +141,7 @@
         <t:template>
           <Input
               required="true"
-              editable="{ui>/editable}"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
               change=".onItemAmountChange"
               value="{
                 path: 'UnitPrice',
@@ -173,7 +187,7 @@
       <t:Column label="Contrato" visible="{ui>/canPickContract}">
         <t:template>
           <Input
-            editable="{ui>/editable}"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
             showValueHelp="true"
             valueHelpOnly="true"
             valueHelpRequest=".openSalesContractValueHelp" />
@@ -185,7 +199,7 @@
       <t:Column label="Natureza de Operação" width="14rem">
         <t:template>
           <Input
-            editable="{ui>/editable}"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
             required="true"
             value="{UsageName}"
             showValueHelp="true"

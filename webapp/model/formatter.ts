@@ -916,6 +916,29 @@ const formatter = {
     return m.get(value);
   },
 
+  /** Situação da NF-e STANDALONE. "None" (nunca emitida) fica em branco. */
+  formatNfeStatus: (value: string): string => {
+    const m = new Map<string, string>([
+      ["Processing", "Em processamento"],
+      ["Authorized", "Autorizada"],
+      ["Rejected", "Rejeitada"],
+      ["Denied", "Denegada"],
+    ]);
+
+    return m.get(value) ?? "";
+  },
+
+  stateNfeStatus: (value: string): string => {
+    const m = new Map<string, string>([
+      ["Processing", "Warning"],
+      ["Authorized", "Success"],
+      ["Rejected", "Error"],
+      ["Denied", "Error"],
+    ]);
+
+    return m.get(value) ?? "None";
+  },
+
   stateSalesInvoiceStatus: (value: string) => {
     const m = new Map<string, string>();
     m.set("Pending", "None");
@@ -1052,6 +1075,13 @@ const formatter = {
    * Aceita string porque sem targetType: 'any' no binding o UI5 converte o Edm.Boolean
    * para texto antes de chamar o formatter — e aí "false" é truthy e toda linha vira "Sim".
    */
+  /** Tipo da natureza de operação. Vazio em SAPB1 (o OUSG não tem tipo). */
+  formatUsageDirection: (value: string) => {
+    if (value === "Incoming") return "Entrada";
+    if (value === "Outgoing") return "Saída";
+    return "";
+  },
+
   formatBooleanYesNo: (value: boolean | string) =>
     (typeof value === "string" ? value.toLowerCase() === "true" : !!value) ? "Sim" : "Não",
 

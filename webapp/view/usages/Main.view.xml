@@ -46,9 +46,23 @@
 						label="Nome"
 						sortProperty="Name"
 						filterProperty="Name"
+						width="22rem"
 						>
 						<t:template>
-							<Text text="{Name}" />
+							<Text text="{Name}" wrapping="false" />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Tipo"
+						width="7rem"
+						visible="{ui>/identityEditable}"
+						>
+						<t:template>
+							<Text text="{
+								path: 'Direction',
+								targetType: 'any',
+								formatter: 'formatter.formatUsageDirection'
+							}" wrapping="false" />
 						</t:template>
 					</t:Column>
 					<t:Column
@@ -56,7 +70,7 @@
 						width="9rem"
 						>
 						<t:template>
-							<Text text="{CfopOutgoingInState}" />
+							<Text text="{CfopOutgoingInState}" wrapping="false" />
 						</t:template>
 					</t:Column>
 					<t:Column
@@ -64,7 +78,32 @@
 						width="9rem"
 						>
 						<t:template>
-							<Text text="{CfopOutgoingOutState}" />
+							<Text text="{CfopOutgoingOutState}" wrapping="false" />
+						</t:template>
+					</t:Column>
+					<!-- Um campo por propriedade: binding composto quebra no OData v4. -->
+					<t:Column
+						label="ICMS Dentro"
+						width="9rem"
+						visible="{ui>/identityEditable}"
+						>
+						<t:template>
+							<HBox>
+								<Text text="{IcmsInStateCst}" class="sapUiTinyMarginEnd" wrapping="false" />
+								<Text text="{IcmsInStateCsosn}" wrapping="false" />
+							</HBox>
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="ICMS Fora"
+						width="9rem"
+						visible="{ui>/identityEditable}"
+						>
+						<t:template>
+							<HBox>
+								<Text text="{IcmsOutStateCst}" class="sapUiTinyMarginEnd" wrapping="false" />
+								<Text text="{IcmsOutStateCsosn}" wrapping="false" />
+							</HBox>
 						</t:template>
 					</t:Column>
 					<t:Column
@@ -76,7 +115,7 @@
 								path: 'ContractBalanceEffect',
 								targetType: 'any',
 								formatter: 'formatter.formatContractBalanceEffect'
-							}" />
+							}" wrapping="false" />
 						</t:template>
 					</t:Column>
 					<t:Column
@@ -88,7 +127,7 @@
 								path: 'ContractValueEffect',
 								targetType: 'any',
 								formatter: 'formatter.formatContractValueEffect'
-							}" />
+							}" wrapping="false" />
 						</t:template>
 					</t:Column>
 					<t:Column
@@ -120,7 +159,7 @@
 								path: 'IsDefault',
 								targetType: 'any',
 								formatter: 'formatter.formatBooleanYesNo'
-							}" />
+							}" wrapping="false" />
 						</t:template>
 					</t:Column>
 					<t:Column
@@ -134,7 +173,7 @@
 								path: 'Inactive',
 								targetType: 'any',
 								formatter: 'formatter.formatBooleanYesNo'
-							}" />
+							}" wrapping="false" />
 						</t:template>
 					</t:Column>
 				</t:columns>
@@ -147,6 +186,7 @@
 				<ToolbarSpacer />
 				<!-- Em SAPB1 o cadastro da natureza é do SAP: só o efeito é configurável aqui.
 				     Incluir/Deletar sumem em vez de estourar NotImplemented no servidor. -->
+				<Button text="Alíquotas IBS/CBS" icon="sap-icon://simulate" press=".onOpenIbsCbsRates" visible="{ui>/identityEditable}"/>
 				<Button text="Incluir" icon="sap-icon://add" type="Emphasized" press=".onCreate" visible="{ui>/identityEditable}"/>
 				<Button text="Editar" icon="sap-icon://edit" press=".onEdit"/>
 				<Button text="Deletar" icon="sap-icon://delete" press=".onDelete" visible="{ui>/identityEditable}"/>

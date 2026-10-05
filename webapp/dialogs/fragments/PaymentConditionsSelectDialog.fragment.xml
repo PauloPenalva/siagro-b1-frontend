@@ -1,0 +1,22 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+<TableSelectDialog
+  class="sapUiSizeCompact"
+  growing="true"
+  growingThreshold="20"
+  items="{ path: '/PaymentConditions', sorter: { path: 'Name' } }"
+  title="Condições de Pagamento"
+>
+<columns>
+  <Column width="6rem"><header><Text text="Código" /></header></Column>
+  <Column><header><Text text="Nome" /></header></Column>
+  <Column width="9rem"><header><Text text="Dias" /></header></Column>
+</columns>
+<ColumnListItem>
+  <cells>
+    <Text text="{Code}" />
+    <Text text="{Name}" />
+    <Text text="{Days}" />
+  </cells>
+</ColumnListItem>
+</TableSelectDialog>
+</core:FragmentDefinition>

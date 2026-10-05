@@ -44,6 +44,7 @@ export default class Edit extends BaseController {
 	}
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
+		void this.refreshStandaloneFlag();
 		this.clearStates("businessPartnerForm");
 
     const oModel = this.getView().getModel() as ODataModel;
@@ -67,6 +68,12 @@ export default class Edit extends BaseController {
 					dataReceived: () => this.setBusy(false),
 				}
 			})
+
+			void (async () => {
+				const oContext = this.getView().getBindingContext() as Context;
+				const code = oContext ? await oContext.requestProperty("PaymentConditionCode") as number : undefined;
+				await this.refreshPaymentConditionName(code);
+			})();
 
 			this.cardCode = id;
 			this.bindSignatories(id);

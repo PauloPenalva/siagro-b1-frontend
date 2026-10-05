@@ -1,0 +1,31 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+  <Dialog title="Vigência de IBS/CBS" contentWidth="28rem" draggable="true">
+    <content>
+      <f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanM="5" labelSpanS="12">
+        <f:content>
+          <Label text="Início da vigência" required="true" />
+          <DatePicker
+            value="{rate>/startDate}"
+            valueFormat="yyyy-MM-dd"
+            displayFormat="dd/MM/yyyy" />
+          <Label text="CBS %" />
+          <Input value="{rate>/cbsRate}" type="Number" />
+          <Label text="IBS estadual %" />
+          <Input value="{rate>/ibsStateRate}" type="Number" />
+          <Label text="IBS municipal %" />
+          <Input value="{rate>/ibsMunicipalRate}" type="Number" />
+        </f:content>
+      </f:SimpleForm>
+    </content>
+    <beginButton>
+      <Button text="Confirmar" type="Emphasized" press=".onConfirmRate" />
+    </beginButton>
+    <endButton>
+      <Button text="Cancelar" press=".onCancelRate" />
+    </endButton>
+  </Dialog>
+</core:FragmentDefinition>

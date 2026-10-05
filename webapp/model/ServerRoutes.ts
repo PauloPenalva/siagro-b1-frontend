@@ -22,6 +22,9 @@ export default {
   // `::`, `--` e `/`, que dariam trabalho de escapar num segmento de rota.
   myTableLayouts: '/security/users/me/table-layouts',
 
+  // Regra de ativação da tributação da NF-e STANDALONE (Erp STANDALONE + filial que emite NF-e).
+  taxCalculationIsActive: '/TaxCalculationIsActive(...)',
+
   // Espelhamento do cadastro de usuários do SAP (só responde quando Erp = SAPB1).
   usersSyncFromSap: '/UsersSyncFromSap(...)',
 
@@ -160,6 +163,15 @@ export default {
   salesContractsCommentUpdate: '/SalesContractsCommentUpdate(...)',
   salesContractsCommentDelete: '/SalesContractsCommentDelete(...)',
 
+  // NF-e STANDALONE no documento de saída: emitir, consultar, concluir a confirmação, XML e DANFE.
+  salesInvoicesIssueNfe: '/odata/SalesInvoicesIssueNfe',
+  salesInvoicesConsultNfe: '/odata/SalesInvoicesConsultNfe',
+  salesInvoicesCompleteNfeConfirmation: '/odata/SalesInvoicesCompleteNfeConfirmation',
+  salesInvoicesNfeXml: '/odata/SalesInvoicesNfeXml',
+  danfeReport: '/reports/Danfe',
+  // NF-e de devolução: "Devolver" cria a devolução própria (bindContext); os itens devolvíveis vêm por fetch.
+  salesInvoicesCreateNfeReturn: '/SalesInvoicesCreateNfeReturn(...)',
+  salesInvoicesNfeReturnableItems: '/odata/SalesInvoicesNfeReturnableItems',
   // Comentários do documento de saída: no Update/Delete a chave é a do COMENTÁRIO, não a do
   // documento.
   salesInvoicesCommentCreate: '/SalesInvoicesCommentCreate(...)',
@@ -232,4 +244,11 @@ export default {
   shipmentLoadsAttachmentsList: '/odata/ShipmentLoadsAttachmentsList',
   shipmentLoadsAttachmentUpload: '/odata/ShipmentLoadsAttachmentUpload',
   shipmentLoadsAttachmentsDownload: '/odata/ShipmentLoadsAttachmentsDownload',
+
+  // NF-e STANDALONE (sub-projeto 2a).
+  paymentConditions: '/odata/PaymentConditions',
+  branchNfeSettingsGet: '/odata/BranchNfeSettingsGet',
+  branchNfeSettingsSave: '/odata/BranchNfeSettingsSave',
+  branchNfeSettingsUploadCertificate: '/odata/BranchNfeSettingsUploadCertificate',
+  branchNfeSettingsTestConnection: '/odata/BranchNfeSettingsTestConnection',
 }

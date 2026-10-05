@@ -1,6 +1,7 @@
 import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
+import JSONModel from "sap/ui/model/json/JSONModel";
 import { BaseController } from "./BaseController";
 
 /**
@@ -12,6 +13,8 @@ export default class Add extends BaseController {
 		this.getRouter().getRoute("parceirosNegocioAdd").attachPatternMatched(() => this.newRouteMatched());
 	}
 	private newRouteMatched() {
+		void this.refreshStandaloneFlag();
+		(this.getModel("ui") as JSONModel).setProperty("/paymentConditionName", "");
 		
     this.clearStates("businessPartnerForm");
     
@@ -27,6 +30,14 @@ export default class Add extends BaseController {
 		const oContext = oBinding.create({
       "QryGroup23": "N",
       "Addresses": [],
+      // Toda propriedade que o formulário edita precisa existir no payload, nem que seja
+      // null: sem isso o Select de enum (targetType 'any') e o value help abrem "Must not
+      // change a property before it has been read".
+      "StateRegistrationIndicator": null,
+      "StateRegistration": null,
+      "NfeEmail": null,
+      "Phone": null,
+      "PaymentConditionCode": null,
     }, false, false, false);
 
 		oView.setBindingContext(oContext);
