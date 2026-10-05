@@ -139,6 +139,15 @@ export abstract class BaseController extends CommonController {
       await this.refreshPaymentConditionName(code);
     }
 
+    /** Devolução com NF-e própria (criada pelo Devolver): a grade trava produto, preço e natureza. */
+    protected async refreshNfeReturnFromContext() {
+      const uiModel = this.getModel("ui") as JSONModel;
+      uiModel.setProperty("/nfeReturn", false);
+      const oContext = this.getView().getBindingContext() as Context;
+      const nfeReturn = oContext ? await oContext.requestProperty("IsNfeReturn") === true : false;
+      uiModel.setProperty("/nfeReturn", nfeReturn);
+    }
+
     async onOpenItemFiscal() {
       const oTable = this.byId("tableSalesInvoicesItems") as Table;
       const i = oTable.getSelectedIndex();

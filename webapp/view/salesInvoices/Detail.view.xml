@@ -28,12 +28,12 @@
          </uxap:snappedHeading>
         <uxap:actions>
           <Button text="Editar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' ? true : false }" type="Emphasized" press=".onEdit"/>
-          <!-- Na filial com a regra ativa (ui>/taxLocked), emitir é o que confirma o documento Normal. -->
+          <!-- Na filial com a regra ativa (ui>/taxLocked), emitir é o que confirma o documento Normal e a devolução própria. -->
           <Button text="Confirmar" type="Success" press=".onConfirm"
-            visible="{= ${ui>/taxLocked} !== true || ${path: 'InvoiceType', targetType: 'any'} !== 'Normal' }"
+            visible="{= ${ui>/taxLocked} !== true || (${path: 'InvoiceType', targetType: 'any'} !== 'Normal' &amp;&amp; ${IsNfeReturn} !== true) }"
             enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' ? true : false }" />
           <Button text="Emitir NF-e" type="Success" icon="sap-icon://paper-plane" press=".onIssueNfe"
-            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }"
+            visible="{= ${ui>/taxLocked} === true &amp;&amp; (${path: 'InvoiceType', targetType: 'any'} === 'Normal' || ${IsNfeReturn} === true) }"
             enabled="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === 'None' || ${path: 'NfeStatus', targetType: 'any'} === 'Rejected') }" />
           <Button text="Consultar situação" icon="sap-icon://synchronize" press=".onConsultNfe"
             visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Processing' }" />
@@ -43,6 +43,10 @@
             visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' }" />
           <Button text="XML" icon="sap-icon://download" press=".onNfeXml"
             visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' }" />
+          <!-- NF-e de devolução: a venda autorizada (sem carga) gera a devolução própria, que é
+               emitida pelo mesmo "Emitir NF-e". -->
+          <Button text="Devolver" icon="sap-icon://undo" press=".onNfeReturn"
+            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} === 'Confirmed' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' &amp;&amp; !${ShipmentLoadKey} }" />
           <Button text="Estornar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Confirmed' ? true : false }" type="Critical" press=".onReverse"/>
           <Button text="Cancelar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' || ${path: 'InvoiceStatus', targetType: 'any'}==='Confirmed' ? true : false }" type="Reject" press=".onCancel"/>
         </uxap:actions>

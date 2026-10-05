@@ -36,6 +36,7 @@ export default class Edit extends BaseController {
 			this.attachDocumentTotalRefresh();
 			void this.refreshTaxLockFromContext();
 			void this.refreshNfeHeaderFromContext();
+			void this.refreshNfeReturnFromContext();
 			return;
 		}
 

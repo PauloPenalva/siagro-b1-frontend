@@ -26,7 +26,7 @@
           <Title text="Itens do Documento de Saída" />
           <ToolbarSpacer />
           <Button
-            visible="{ui>/editable}"
+            visible="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
             text="Incluir"
             type="Transparent"
             icon="sap-icon://add"
@@ -76,7 +76,7 @@
       <t:Column label="Produto">
         <t:template>
           <Input
-            editable="{ui>/editable}"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
             width="10rem"
             required="true"
             value="{ItemCode}" 
@@ -125,7 +125,7 @@
        <t:Column label="Und.Med.">
         <t:template>
           <Input 
-            editable="{ui>/editable}"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
             required="true"
             value="{UnitOfMeasureCode}" 
             showValueHelp="true" 
@@ -141,7 +141,7 @@
         <t:template>
           <Input
               required="true"
-              editable="{ui>/editable}"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
               change=".onItemAmountChange"
               value="{
                 path: 'UnitPrice',
@@ -187,7 +187,7 @@
       <t:Column label="Contrato" visible="{ui>/canPickContract}">
         <t:template>
           <Input
-            editable="{ui>/editable}"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
             showValueHelp="true"
             valueHelpOnly="true"
             valueHelpRequest=".openSalesContractValueHelp" />
@@ -199,7 +199,7 @@
       <t:Column label="Natureza de Operação" width="14rem">
         <t:template>
           <Input
-            editable="{ui>/editable}"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
             required="true"
             value="{UsageName}"
             showValueHelp="true"

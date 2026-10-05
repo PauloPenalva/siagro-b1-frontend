@@ -50,7 +50,7 @@
             <Input value="{InvoiceNumber}" editable="false" />
             <Label text="Filial"/>
             <Select 
-              editable="{ui>/editable}"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true }"
               forceSelection="false"
               required="true"
               selectedKey="{BranchCode}"
@@ -106,7 +106,7 @@
             </Select>
             <Label text="Cliente" />
             <Input
-              editable="{ui>/editable}"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true }"
               showValueHelp="true"
               valueHelpOnly="true"
               valueHelpRequest=".openBusinessPartnersValueHelp"
@@ -303,19 +303,19 @@
             <core:Title text="Dados da NF-e"/>
             <Label text="Numero" />
             <Input 
-              editable="{= ${ui>/editable} === true &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
               value="{TaxDocumentNumber}"
               maxLength="9"
             />
             <Label text="Série" />
             <Input 
-              editable="{= ${ui>/editable} === true &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
               value="{TaxDocumentSeries}"
               maxLength="3"
             />
             <Label text="Chave de Acesso" />
             <Input 
-              editable="{= ${ui>/editable} === true &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
               value="{ChaveNFe}"
               maxLength="44"
             />

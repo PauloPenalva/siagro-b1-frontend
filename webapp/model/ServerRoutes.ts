@@ -169,6 +169,9 @@ export default {
   salesInvoicesCompleteNfeConfirmation: '/odata/SalesInvoicesCompleteNfeConfirmation',
   salesInvoicesNfeXml: '/odata/SalesInvoicesNfeXml',
   danfeReport: '/reports/Danfe',
+  // NF-e de devolução: "Devolver" cria a devolução própria (bindContext); os itens devolvíveis vêm por fetch.
+  salesInvoicesCreateNfeReturn: '/SalesInvoicesCreateNfeReturn(...)',
+  salesInvoicesNfeReturnableItems: '/odata/SalesInvoicesNfeReturnableItems',
   // Comentários do documento de saída: no Update/Delete a chave é a do COMENTÁRIO, não a do
   // documento.
   salesInvoicesCommentCreate: '/SalesInvoicesCommentCreate(...)',

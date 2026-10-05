@@ -222,8 +222,9 @@ export default class Main extends BaseController {
     const ctx = table.getContextByIndex(selectedInvoice[0]);
 
     // Na filial que emite NF-e pelo Siagro, número/série/chave do documento Normal vêm da emissão
-    // (o servidor também recusa). Devolução fica de fora: o cliente emite a NF-e dele e o número
-    // é digitado. Fora do STANDALONE (SAPB1) a regra de tributação nem é consultada.
+    // (o servidor também recusa). A devolução própria (Devolver) também vem da emissão; as demais
+    // devoluções seguem manuais: o cliente emite a NF-e dele e o número é digitado.
+    // Fora do STANDALONE (SAPB1) a regra de tributação nem é consultada.
     const nfeStatus = ctx.getProperty("NfeStatus") as string;
     const invoiceType = ctx.getProperty("InvoiceType") as string;
     const standalone = (this.getModel("ui") as JSONModel).getProperty("/standalone") === true;
@@ -231,7 +232,7 @@ export default class Main extends BaseController {
       ? await this.refreshTaxLock(ctx.getProperty("BranchCode") as string)
       : false;
 
-    if (isManualTaxDocumentBlocked(nfeStatus, taxLocked, invoiceType)) {
+    if (isManualTaxDocumentBlocked(nfeStatus, taxLocked, invoiceType, ctx.getProperty("IsNfeReturn") === true)) {
       MessageBox.information(isEmittedNfeStatus(nfeStatus)
         ? "Número, série e chave deste documento vêm da emissão da NF-e pelo Siagro."
         : "Na filial que emite NF-e pelo Siagro, número, série e chave vêm da emissão.");

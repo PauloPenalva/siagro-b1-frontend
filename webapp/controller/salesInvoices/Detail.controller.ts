@@ -13,6 +13,7 @@ import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { sendJson, odataValue, readErrorMessage } from "siagrob1/helpers/FetchHelpers";
 import { nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
+import { NfeReturnRow, prefillNfeReturnRows, hasReturnableBalance, buildNfeReturnPayload } from "siagrob1/helpers/NfeReturnHelpers";
 
 /**
  * @namespace siagrob1.controller.salesInvoices
@@ -37,6 +38,7 @@ export default class Detail extends BaseController {
 			this.attachDocumentTotalRefresh();
 			void this.refreshTaxLockFromContext();
 			void this.refreshNfeHeaderFromContext();
+			void this.refreshNfeReturnFromContext();
 
 			return;
 		}
@@ -158,6 +160,79 @@ export default class Detail extends BaseController {
       MessageBox.error((error as Error)?.message || "Falha ao baixar o XML.");
     } finally {
       this.setBusy(false);
+    }
+  }
+
+  private _nfeReturnDialog: Dialog;
+
+  /** "Devolver": abre o diálogo com os itens da venda e o saldo devolvível de cada um. */
+  async onNfeReturn() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) {
+      return;
+    }
+
+    let rows: NfeReturnRow[] = [];
+    this.setBusy(true);
+    try {
+      const result = await sendJson(
+        "GET", `${ServerRoutes.salesInvoicesNfeReturnableItems}(Key=${ctx.getProperty("Key") as string})`);
+
+      if (!result.ok) {
+        MessageBox.error(result.message);
+        return;
+      }
+
+      rows = odataValue<NfeReturnRow[]>(result.data) ?? [];
+    } finally {
+      this.setBusy(false);
+    }
+
+    if (!hasReturnableBalance(rows)) {
+      MessageBox.information("Esta venda não tem saldo a devolver.");
+      return;
+    }
+
+    this.getView().setModel(new JSONModel({ rows: prefillNfeReturnRows(rows), reason: "", busy: false }), "nfeReturn");
+
+    this._nfeReturnDialog ??= await DialogHelper.createDialog(
+      this, "siagrob1.view.salesInvoices.fragments.NfeReturnDialog");
+    this._nfeReturnDialog.open();
+  }
+
+  onCloseNfeReturn() {
+    this._nfeReturnDialog?.close();
+  }
+
+  /** Cria a devolução própria e abre a tela dela, onde fica o "Emitir NF-e". */
+  async onConfirmNfeReturn() {
+    const ctx = this.getView().getBindingContext() as Context;
+    const model = this.getView().getModel("nfeReturn") as JSONModel;
+    const built = buildNfeReturnPayload(
+      model.getProperty("/rows") as NfeReturnRow[], model.getProperty("/reason") as string);
+
+    if (built.ok === false) {
+      MessageBox.warning(built.message);
+      return;
+    }
+
+    model.setProperty("/busy", true);
+    try {
+      const action = (ctx.getModel() as ODataModel).bindContext(ServerRoutes.salesInvoicesCreateNfeReturn);
+      action.setParameter("Key", ctx.getProperty("Key"));
+      action.setParameter("OriginItemKeys", built.payload.OriginItemKeys);
+      action.setParameter("Quantities", built.payload.Quantities);
+      action.setParameter("Reason", built.payload.Reason);
+      await action.invoke();
+
+      const key = action.getBoundContext().getProperty("value") as string;
+      this._nfeReturnDialog.close();
+      MessageToast.show("Devolução criada. Confira os dados e emita a NF-e.", { closeOnBrowserNavigation: false });
+      this.navTo("salesInvoicesDetail", { id: key });
+    } catch {
+      // O handler global de mensagens do OData (Component) já mostrou o erro do servidor.
+    } finally {
+      model.setProperty("/busy", false);
     }
   }
 
