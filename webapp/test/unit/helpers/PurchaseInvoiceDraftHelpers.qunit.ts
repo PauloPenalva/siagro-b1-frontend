@@ -10,6 +10,7 @@ QUnit.test("a linha em branco já traz as chaves que a tela edita, nulas", funct
 	assert.deepEqual(blankItemRow(), {
 		ItemCode: "", ItemName: "", UnitOfMeasureCode: "", Quantity: 0, UnitPrice: 0,
 		SalesInvoiceItemKey: null, PurchaseContractKey: null, UsageCode: null, UsageName: null,
+		NfeItemNumber: null,
 	});
 });
 
@@ -23,4 +24,13 @@ QUnit.test("XML importado vira uma linha por item, na ordem do XML", function (a
 		[["TRIGO", "KG", 1000, 1.5], ["MILHO", "SC", 0, 0]]);
 	assert.deepEqual(rows.map((row) => [row.SalesInvoiceItemKey, row.PurchaseContractKey, row.UsageCode, row.UsageName]),
 		[[null, null, null, null], [null, null, null, null]]);
+});
+
+QUnit.test("XML importado leva o nItem do fornecedor em cada linha", function (assert) {
+	const rows = draftItemRows([
+		{ ItemCode: "TRIGO", ItemName: "TRIGO", UnitOfMeasureCode: "KG", Quantity: 1, UnitPrice: 1, NfeItemNumber: 1 },
+		{ ItemCode: "MILHO", ItemName: "MILHO", UnitOfMeasureCode: "KG", Quantity: 1, UnitPrice: 1, NfeItemNumber: 2 },
+	]);
+
+	assert.deepEqual(rows.map((row) => row.NfeItemNumber), [1, 2]);
 });

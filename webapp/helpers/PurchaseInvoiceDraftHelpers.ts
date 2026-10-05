@@ -21,6 +21,8 @@ export interface InvoiceItemPayload {
   /** Natureza da linha (modo NF-e). Nula até o operador escolher. */
   UsageCode: number;
   UsageName: string;
+  /** nItem na NF-e do fornecedor (importação do XML); nulo na digitação. É o que a devolução referencia. */
+  NfeItemNumber: number;
 }
 
 /** Item lido do XML importado. */
@@ -30,6 +32,7 @@ export interface ImportedInvoiceItem {
   UnitOfMeasureCode: string;
   Quantity: number;
   UnitPrice: number;
+  NfeItemNumber?: number;
 }
 
 /** Linha em branco do "Incluir Item" e da digitação manual. */
@@ -37,6 +40,7 @@ export function blankItemRow(): InvoiceItemPayload {
   return {
     ItemCode: "", ItemName: "", UnitOfMeasureCode: "", Quantity: 0, UnitPrice: 0,
     SalesInvoiceItemKey: null, PurchaseContractKey: null, UsageCode: null, UsageName: null,
+    NfeItemNumber: null,
   };
 }
 
@@ -59,5 +63,6 @@ export function draftItemRows(items?: ImportedInvoiceItem[]): InvoiceItemPayload
     UnitOfMeasureCode: item.UnitOfMeasureCode,
     Quantity: item.Quantity ?? 0,
     UnitPrice: item.UnitPrice ?? 0,
+    NfeItemNumber: item.NfeItemNumber ?? null,
   }));
 }
