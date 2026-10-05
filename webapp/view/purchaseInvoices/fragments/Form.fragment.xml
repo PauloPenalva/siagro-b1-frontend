@@ -3,7 +3,7 @@
     xmlns:f="sap.ui.layout.form"
     xmlns:l="sap.ui.layout"
     xmlns:core="sap.ui.core"
-    core:require="{ DoubleType: 'sap/ui/model/odata/type/Double' }"
+    core:require="{ DoubleType: 'sap/ui/model/odata/type/Double', nfeHelpers: 'siagrob1/helpers/PurchaseInvoiceNfeHelpers' }"
 >
     <!-- Mesmo desenho do formulário do documento de saída (salesInvoices/fragments/Form): três colunas no XL,
          seções Dados do Documento, Transporte, Dados da NF-e, Informações Complementares e Outras Informações. -->
@@ -65,6 +65,7 @@
           <Label text="Tipo" />
           <Select
             selectedKey="{path: 'InvoiceType', targetType: 'any'}"
+            change=".onInvoiceTypeChange"
             enabled="{= ${ui>/typeEditable} === true &amp;&amp; ${ui>/nfeMode} !== true }"
             forceSelection="false"
             width="100%">
@@ -287,8 +288,22 @@
               maxLength="60" />
 
           <!-- Na entrada de terceiro são os dados da nota do fornecedor, digitados ou lidos do XML. No modo NF-e
-               quem grava número, série e chave é a emissão. -->
+               quem grava número, série e chave é a emissão. O tipo de documento (NF-e ou outro) só aparece na
+               entrada de terceiro. -->
           <core:Title text="Dados da NF-e" />
+
+          <!-- Documento de terceiro: NF-e (eletrônica, com a chave conferida) ou outro documento (serviço, papel/talão),
+               sem chave. A emissão própria é sempre NF-e e não mostra o campo. -->
+          <Label text="Tipo de documento" visible="{= ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' }" />
+          <Select
+            visible="{= ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' }"
+            selectedKey="{path: 'TaxDocumentKind', targetType: 'any'}"
+            enabled="{= ${ui>/editable} === true }"
+            forceSelection="false"
+            width="100%">
+            <core:Item key="Nfe" text="NF-e (eletrônica)" />
+            <core:Item key="Other" text="Outro (serviço, papel/talão…)" />
+          </Select>
 
           <Label text="Número" />
           <Input value="{TaxDocumentNumber}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="9" />
@@ -297,8 +312,15 @@
           <Input value="{TaxDocumentSeries}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="3" />
 
           <!-- A chave tem 44 dígitos: maxLength menor trunca em silêncio na digitação. -->
-          <Label text="Chave de Acesso" />
+          <Label text="Chave de Acesso"
+            required="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'TaxDocumentKind', targetType: 'any'} === 'Nfe' }" />
           <Input value="{ChaveNFe}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="44" />
+
+          <!-- Autorização da NF-e do fornecedor gravada pelo confirmar com a filial em Produção (spec terceiro-chave R4). -->
+          <Label text="Autorização na SEFAZ" visible="{= !!${path: 'SupplierNfeProtocol', targetType: 'any'} }" />
+          <Text
+            visible="{= !!${path: 'SupplierNfeProtocol', targetType: 'any'} }"
+            text="{parts: [{path: 'SupplierNfeProtocol', targetType: 'any'}, {path: 'SupplierNfeCheckedAt', targetType: 'any'}], formatter: 'nfeHelpers.supplierNfeAuthorizationText'}" />
 
           <core:Title text="Informações Complementares" />
           <!-- Entrada de terceiro: é AQUI que o emitente escreve número/série/chave e quantidade das notas de
