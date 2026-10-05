@@ -141,10 +141,11 @@
           <!-- `Double` e não `Decimal`: campo de ESCRITA. `Decimal` faz parse para string e o
                leitor OData deste backend recusa Edm.Decimal em string (400 sem nomear o campo).
                Mesma escolha do documento de saída. -->
-          <!-- Em modo NF-e quem grava o valor é a emissão (vNF), então a tela não deixa digitar. -->
+          <!-- Gravado pelo sistema, não digitado: na emissão própria é o vNF da emissão; no terceiro Normal da filial
+               que emite pelo Siagro, a soma das linhas a cada gravação. Fora disso segue digitado. -->
           <Label text="Valor declarado" />
           <Input
-              editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/taxMode} !== true }"
               value="{
                 path: 'TotalDocumentValue',
                 type: 'sap.ui.model.odata.type.Double',
