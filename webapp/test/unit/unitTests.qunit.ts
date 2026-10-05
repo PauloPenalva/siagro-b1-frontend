@@ -22,3 +22,4 @@ import "./helpers/OverflowTooltipHelpers.qunit";
 import "./helpers/PurchaseInvoiceNfeHelpers.qunit";
 import "./helpers/PurchaseInvoiceDraftHelpers.qunit";
 import "./helpers/InvoiceTaxTotalsHelpers.qunit";
+import "./helpers/InvoiceChargeTotalsHelpers.qunit";

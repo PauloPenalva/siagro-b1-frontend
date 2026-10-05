@@ -17,6 +17,7 @@ import { sendJson, odataValue, readErrorMessage } from "siagrob1/helpers/FetchHe
 import { nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
 import { NfeReturnRow, prefillNfeReturnRows, hasReturnableBalance, buildNfeReturnPayload } from "siagrob1/helpers/NfeReturnHelpers";
 import { TAX_TOTALS_SELECT } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
+import { LINE_CHARGES_SELECT, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
 import { openDanfeViewer } from "siagrob1/dialogs/DanfeViewer";
 
 /**
@@ -38,11 +39,12 @@ export default class Detail extends BaseController {
       uiModel.setProperty("/canPickContract", false);
       // O quadro "Tributos" do documento anterior não pode aparecer enquanto as linhas deste não chegam.
       uiModel.setProperty("/taxTotals", { visible: false, rows: [] });
+      uiModel.setProperty("/chargeTotals", summarizeInvoiceCharges([]));
 
 			const sPath = `/SalesInvoices(${id})`;
 			// A grade de itens não mostra tributo; sem o $select explícito o autoExpandSelect não os busca e o
-			// quadro "Tributos" somaria nada.
-			this.bindElement(sPath, { $expand: `Items($select=${TAX_TOTALS_SELECT})` });
+			// quadro "Tributos" somaria nada; idem para os quatro valores da seção Totais.
+			this.bindElement(sPath, { $expand: `Items($select=${TAX_TOTALS_SELECT},${LINE_CHARGES_SELECT})` });
 			this.attachDocumentTotalRefresh();
 			void this.refreshTaxLockFromContext();
 			void this.refreshNfeHeaderFromContext();

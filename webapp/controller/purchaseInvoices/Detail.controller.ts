@@ -15,6 +15,7 @@ import formatter from "siagrob1/model/formatter";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { sendJson, odataValue, readErrorMessage } from "siagrob1/helpers/FetchHelpers";
 import { nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
+import { summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
 import { ReturnableRow, prefillNfeReturnRows, hasReturnableBalance, buildNfeReturnPayload } from "siagrob1/helpers/NfeReturnHelpers";
 import {
   PURCHASE_ITEM_SELECT, PurchaseNfeState, buildPurchaseItemNumbers, canIssuePurchaseNfe, canReturnPurchase,
@@ -56,6 +57,7 @@ export default class Detail extends BaseController {
     uiModel.setProperty("/canReturn", false);
     // O quadro "Tributos" do documento anterior não pode aparecer enquanto as linhas deste não chegam.
     uiModel.setProperty("/taxTotals", { visible: false, rows: [] });
+    uiModel.setProperty("/chargeTotals", summarizeInvoiceCharges([]));
 
     // $expand explícito: sem carregar SalesInvoiceItem a Quebra Apurada volta ZERO em silêncio e
     // toda linha de devolução parece divergente.

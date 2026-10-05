@@ -81,6 +81,7 @@ export default class Edit extends BaseController {
       ItemCode: "", ItemName: "", UnitOfMeasureCode: "",
       Quantity: 0, UnitPrice: 0, SalesInvoiceItemKey: null, PurchaseContractKey: null,
       UsageCode: null, UsageName: null,
+      FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0,
     }, false, false, false);
 
     this.refreshDocumentTotal();

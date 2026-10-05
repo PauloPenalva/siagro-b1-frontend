@@ -312,7 +312,12 @@ export default class Main extends BaseController {
                 UnitPrice: +release?.Price,
                 UnitOfMeasureCode: release?.UnitOfMeasureCode,
                 SalesContractKey: release?.SalesContractKey,
-                SalesShipmentReleaseKey: release?.SalesShipmentReleaseKey
+                SalesShipmentReleaseKey: release?.SalesShipmentReleaseKey,
+                // Frete, seguro, desconto e outras despesas da linha (spec 2026-10-05 §10): o faturamento não os informa.
+                FreightValue: 0,
+                InsuranceValue: 0,
+                DiscountValue: 0,
+                OtherExpensesValue: 0
               }
             ],
             // A nota aponta a CARGA e não escreve romaneio: com N notas por carga,

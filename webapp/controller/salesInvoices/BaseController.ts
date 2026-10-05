@@ -14,6 +14,7 @@ import Sorter from "sap/ui/model/Sorter";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
 import { summarizeInvoiceTaxes, TaxLine } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
+import { chargeLineOf, formatAmount, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
 
 export abstract class BaseController extends CommonController {
 
@@ -204,13 +205,14 @@ export abstract class BaseController extends CommonController {
     }
 
     /**
-     * Total geral do documento, somado NO CLIENTE.
+     * Total geral do documento (itens + frete + seguro + outras despesas − desconto, spec 2026-10-05 D2), somado NO
+     * CLIENTE, e a seção "Totais" do Detail (`/chargeTotals`).
      *
-     * `TotalInvoiceItems` é [NotMapped]: só existe depois que o servidor responde, então num
-     * documento em digitação não haveria total nenhum. Aqui a soma acompanha a grade.
+     * `GrandTotal` é [NotMapped]: só existe depois que o servidor responde, então num documento em digitação não haveria
+     * total nenhum. Aqui a soma acompanha a grade.
      *
-     * Percorre `getAllCurrentContexts()` e não as linhas visíveis: a sap.ui.table é
-     * virtualizada, e somar o que está na tela daria um total menor conforme a rolagem.
+     * Percorre `getAllCurrentContexts()` e não as linhas visíveis: a sap.ui.table é virtualizada, e somar o que está na
+     * tela daria um total menor conforme a rolagem.
      *
      * Recalcula também o quadro "Tributos" do Detail (`/taxTotals`), que soma as mesmas linhas.
      */
@@ -223,23 +225,15 @@ export abstract class BaseController extends CommonController {
         return;
       }
 
-      const total = oBinding.getAllCurrentContexts().reduce((sum, ctx) => {
-        const quantity = Number(ctx.getProperty("Quantity") ?? 0);
-        const unitPrice = Number(ctx.getProperty("UnitPrice") ?? 0);
+      const contexts = oBinding.getAllCurrentContexts();
+      const charges = summarizeInvoiceCharges(contexts.map((ctx) => chargeLineOf(ctx)));
 
-        return sum + (isNaN(quantity) ? 0 : quantity) * (isNaN(unitPrice) ? 0 : unitPrice);
-      }, 0);
-
-      uiModel.setProperty("/documentTotal", total.toLocaleString("pt-BR", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }));
-
-      uiModel.setProperty("/taxTotals", summarizeInvoiceTaxes(
-        oBinding.getAllCurrentContexts().map((ctx) => ctx.getObject() as TaxLine)));
+      uiModel.setProperty("/documentTotal", formatAmount(charges.grandTotal));
+      uiModel.setProperty("/chargeTotals", charges);
+      uiModel.setProperty("/taxTotals", summarizeInvoiceTaxes(contexts.map((ctx) => ctx.getObject() as TaxLine)));
     }
 
-    /** Quantidade ou preço mudou numa linha: o total geral acompanha. */
+    /** Quantidade, preço ou um dos quatro valores da linha mudou: o total geral acompanha. */
     onItemAmountChange() {
       this.refreshDocumentTotal();
     }

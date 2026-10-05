@@ -49,7 +49,7 @@ export default class Add extends BaseController {
     uiModel.setProperty("/editable", true);
     // Tipo e emissão só se escolhem na criação: mudá-los depois invalidaria as amarrações.
     uiModel.setProperty("/typeEditable", true);
-    uiModel.setProperty("/totalItems", "0,00");
+    uiModel.setProperty("/documentTotal", "0,00");
     uiModel.setProperty("/paymentConditionName", "");
 
     const oModel = this.getModel() as ODataModel;
