@@ -18,3 +18,4 @@ import "./model/fiscalCodes.qunit";
 import "./dialogs/DialogHelper.qunit";
 import "./helpers/NfeHelpers.qunit";
 import "./helpers/NfeReturnHelpers.qunit";
+import "./helpers/OverflowTooltipHelpers.qunit";
