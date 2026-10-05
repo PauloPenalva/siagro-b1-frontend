@@ -20,6 +20,7 @@ import {
   PURCHASE_ITEM_SELECT, PurchaseNfeState, buildPurchaseItemNumbers, canIssuePurchaseNfe, canReturnPurchase,
   canReturnThirdPartyPurchase, PurchaseReturnItemRow,
 } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
+import { openDanfeViewer } from "siagrob1/dialogs/DanfeViewer";
 import { BaseController } from "./BaseController";
 
 /** Linha do "Devolver" da entrada: o comprado no lugar do vendido. */
@@ -156,25 +157,9 @@ export default class Detail extends BaseController {
     }
   }
 
+  /** DANFE num diálogo, com Baixar no rodapé (DanfeViewer). */
   async onDanfe() {
-    const ctx = this.getView().getBindingContext() as Context;
-
-    this.setBusy(true);
-    try {
-      const response = await fetch(`${ServerRoutes.purchaseInvoicesDanfeReport}/${ctx.getProperty("Key") as string}/print`, { method: "POST" });
-
-      if (!response.ok) {
-        throw new Error(await readErrorMessage(response) || "Falha ao gerar o DANFE.");
-      }
-
-      const fileURL = URL.createObjectURL(await response.blob());
-      window.open(fileURL, "_blank");
-      setTimeout(() => URL.revokeObjectURL(fileURL), 60000);
-    } catch (error) {
-      MessageBox.error((error as Error)?.message || "Falha ao gerar o DANFE.");
-    } finally {
-      this.setBusy(false);
-    }
+    await openDanfeViewer(ServerRoutes.purchaseInvoicesDanfeReport, this.getView().getBindingContext() as Context);
   }
 
   async onNfeXml() {
