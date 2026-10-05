@@ -1,6 +1,6 @@
 import {
 	buildPurchaseItemNumbers, canIssuePurchaseNfe, canReturnPurchase, canReturnThirdPartyPurchase, isPurchaseNfeMode,
-	isPurchaseTaxMode, mustFallBackToNormal, PurchaseNfeState, requiresSupplierKey, supplierNfeAuthorizationText
+	isPurchaseTaxMode, missingUsageMessage, mustFallBackToNormal, PurchaseNfeState, requiresSupplierKey, supplierNfeAuthorizationText
 } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 
 QUnit.module("PurchaseInvoiceNfeHelpers - NF-e do documento de entrada");
@@ -145,4 +145,20 @@ QUnit.test("texto da autorização na SEFAZ com protocolo e data", function (ass
 QUnit.test("sem protocolo não há texto; sem data, só o protocolo", function (assert) {
 	assert.strictEqual(supplierNfeAuthorizationText(null, null), "");
 	assert.strictEqual(supplierNfeAuthorizationText("135260000000001", null), "Autorizada na SEFAZ — protocolo 135260000000001");
+});
+
+QUnit.test("mensagem da natureza nomeia o item, um ou vários", function (assert) {
+	assert.strictEqual(missingUsageMessage(["TRIGO"]),
+		"Informe a natureza de operação do item TRIGO: os tributos da entrada são calculados por ela.");
+	assert.strictEqual(missingUsageMessage(["TRIGO", "MILHO"]),
+		"Informe a natureza de operação dos itens TRIGO, MILHO: os tributos da entrada são calculados por ela.");
+});
+
+QUnit.test("mensagem da natureza: linha sem produto aparece como (sem produto) e código repetido some", function (assert) {
+	assert.strictEqual(missingUsageMessage(["", "TRIGO"]),
+		"Informe a natureza de operação dos itens (sem produto), TRIGO: os tributos da entrada são calculados por ela.");
+	assert.strictEqual(missingUsageMessage([null, "  "]),
+		"Informe a natureza de operação do item (sem produto): os tributos da entrada são calculados por ela.");
+	assert.strictEqual(missingUsageMessage(["TRIGO", "TRIGO"]),
+		"Informe a natureza de operação do item TRIGO: os tributos da entrada são calculados por ela.");
 });

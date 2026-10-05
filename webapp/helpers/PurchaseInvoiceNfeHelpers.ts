@@ -33,6 +33,17 @@ export function requiresSupplierKey(
 		doc.TaxDocumentKind === "Nfe";
 }
 
+/**
+ * Aviso de natureza faltando na entrada que calcula tributos: nomeia os produtos das linhas sem natureza (linha sem
+ * produto aparece como "(sem produto)"; código repetido aparece uma vez).
+ */
+export function missingUsageMessage(itemCodes: string[]): string {
+	const names = [...new Set(itemCodes.map((code) => (code ?? "").trim() || "(sem produto)"))];
+	const subject = names.length === 1 ? "do item" : "dos itens";
+
+	return `Informe a natureza de operação ${subject} ${names.join(", ")}: os tributos da entrada são calculados por ela.`;
+}
+
 /** "Autorizada na SEFAZ — protocolo X em dd/mm/aaaa hh:mm" (consulta do confirmar em Produção); vazio sem protocolo. */
 export function supplierNfeAuthorizationText(protocol: string, checkedAt: string): string {
 	if (!protocol) {

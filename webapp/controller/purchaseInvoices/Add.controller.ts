@@ -7,7 +7,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import formatter from "siagrob1/model/formatter";
-import { requiresSupplierKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
+import { missingUsageMessage } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { blankItemRow, draftItemRows, ImportedInvoiceItem, toNumber } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 import { BaseController } from "./BaseController";
 
@@ -248,18 +248,12 @@ export default class Add extends BaseController {
     if (taxMode) {
       const withoutUsage = (oBinding?.getAllCurrentContexts() ?? []).filter(ctx => !ctx.getProperty("UsageCode"));
       if (withoutUsage.length > 0) {
-        MessageBox.warning("Informe a natureza de operação de todos os itens: os tributos da entrada são calculados por ela.");
+        MessageBox.warning(missingUsageMessage(withoutUsage.map(ctx => ctx.getProperty("ItemCode") as string)));
         return;
       }
     }
 
-    const keyDoc = {
-      IssuerType: oContext.getProperty("IssuerType") as string,
-      InvoiceType: oContext.getProperty("InvoiceType") as string,
-      TaxDocumentKind: oContext.getProperty("TaxDocumentKind") as string,
-    };
-    if (requiresSupplierKey(keyDoc, uiModel.getProperty("/taxLocked") === true) &&
-        !((oContext.getProperty("ChaveNFe") as string) ?? "").trim()) {
+    if (this.isSupplierKeyMissing(oContext)) {
       MessageBox.warning("Informe a chave de acesso da NF-e do fornecedor.");
       return;
     }

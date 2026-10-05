@@ -18,7 +18,7 @@ export interface InvoiceItemPayload {
   SalesInvoiceItemKey: string;
   /** Nulo até o operador amarrar. (strictNullChecks off: `string` já admite null aqui.) */
   PurchaseContractKey: string;
-  /** Natureza da linha (modo NF-e). Nula até o operador escolher. */
+  /** Natureza da linha (entrada própria e terceiro Normal, as que calculam tributos). Nula até o operador escolher. */
   UsageCode: number;
   UsageName: string;
   /** nItem na NF-e do fornecedor (importação do XML); nulo na digitação. É o que a devolução referencia. */

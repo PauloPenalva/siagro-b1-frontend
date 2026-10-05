@@ -289,14 +289,17 @@
 
           <!-- Na entrada de terceiro são os dados da nota do fornecedor, digitados ou lidos do XML. No modo NF-e
                quem grava número, série e chave é a emissão. O tipo de documento (NF-e ou outro) só aparece na
-               entrada de terceiro. -->
+               entrada de terceiro Normal da filial que emite NF-e pelo Siagro. -->
           <core:Title text="Dados da NF-e" />
 
-          <!-- Documento de terceiro: NF-e (eletrônica, com a chave conferida) ou outro documento (serviço, papel/talão),
-               sem chave. A emissão própria é sempre NF-e e não mostra o campo. -->
-          <Label text="Tipo de documento" visible="{= ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' }" />
+          <!-- Documento de terceiro Normal na filial que emite NF-e pelo Siagro: NF-e (eletrônica, com a chave
+               conferida) ou outro documento (serviço, papel/talão), sem chave. Fora disso o campo some: a emissão
+               própria é sempre NF-e, a devolução do cliente não tem chave e a filial sem a regra (SAPB1, MH Agro)
+               fica como sempre foi. -->
+          <Label text="Tipo de documento"
+            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }" />
           <Select
-            visible="{= ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' }"
+            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }"
             selectedKey="{path: 'TaxDocumentKind', targetType: 'any'}"
             enabled="{= ${ui>/editable} === true }"
             forceSelection="false"
@@ -311,10 +314,11 @@
           <Label text="Série" />
           <Input value="{TaxDocumentSeries}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="3" />
 
-          <!-- A chave tem 44 dígitos: maxLength menor trunca em silêncio na digitação. -->
+          <!-- A chave tem 44 dígitos, mas a colada do DANFE vem com espaços (54 caracteres): maxLength menor trunca
+               em silêncio. O servidor tira os espaços antes de validar e grava os 44 dígitos. -->
           <Label text="Chave de Acesso"
-            required="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'TaxDocumentKind', targetType: 'any'} === 'Nfe' }" />
-          <Input value="{ChaveNFe}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="44" />
+            required="{= ${ui>/editable} === true &amp;&amp; ${ui>/taxLocked} === true &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'TaxDocumentKind', targetType: 'any'} === 'Nfe' }" />
+          <Input value="{ChaveNFe}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="54" />
 
           <!-- Autorização da NF-e do fornecedor gravada pelo confirmar com a filial em Produção (spec terceiro-chave R4). -->
           <Label text="Autorização na SEFAZ" visible="{= !!${path: 'SupplierNfeProtocol', targetType: 'any'} }" />
