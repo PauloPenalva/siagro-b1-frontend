@@ -48,7 +48,7 @@
           </uxap:ObjectPageSubSection>
         </uxap:subSections>
       </uxap:ObjectPageSection>
-      <uxap:ObjectPageSection titleUppercase="false" title="NF-e" visible="{ui>/nfeMode}">
+      <uxap:ObjectPageSection titleUppercase="false" title="NF-e" visible="{= ${ui>/nfeMode} === true || (${path: 'NfeStatus', targetType: 'any'} !== undefined &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== null &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'None') }">
         <uxap:subSections>
           <uxap:ObjectPageSubSection title=" " titleUppercase="false">
             <core:Fragment fragmentName="siagrob1.view.salesInvoices.fragments.NfePanel" type="XML" />
@@ -87,10 +87,10 @@
                 e o botão apareceria antes de o documento carregar. -->
         <Button text="Emitir NF-e" type="Emphasized" icon="sap-icon://paper-plane" visible="{ui>/canIssueNfe}" press=".onIssueNfe" />
         <Button text="Consultar situação" icon="sap-icon://synchronize"
-                visible="{= ${ui>/nfeMode} === true &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} === 'Processing' }"
+                visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Processing' }"
                 press=".onConsultNfe" />
         <Button text="Concluir confirmação"
-                visible="{= ${ui>/nfeMode} === true &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' }"
+                visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' }"
                 press=".onCompleteNfeConfirmation" />
         <Button text="DANFE" icon="sap-icon://pdf-attachment"
                 visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' }" press=".onDanfe" />
@@ -105,7 +105,7 @@
         <Button
           text="Confirmar"
           type="Emphasized"
-          visible="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' &amp;&amp; ${ui>/nfeMode} !== true }"
+          visible="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' &amp;&amp; ${ui>/nfeMode} !== true &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === undefined || ${path: 'NfeStatus', targetType: 'any'} === null || ${path: 'NfeStatus', targetType: 'any'} === 'None') }"
           press=".onConfirm" />
         <Button
           text="Estornar"

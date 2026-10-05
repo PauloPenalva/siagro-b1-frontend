@@ -109,6 +109,11 @@ export default class Main extends BaseController {
       return;
     }
 
+    if (oContext.getProperty("NfeStatus") === "Processing") {
+      MessageBox.warning("A NF-e deste documento está em processamento na SEFAZ: aguarde e use Consultar situação.");
+      return;
+    }
+
     this.navTo("purchaseInvoicesEdit", { id: oContext.getProperty("Key") as string });
   }
 

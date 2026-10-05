@@ -11,6 +11,9 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
 import { isPurchaseNfeMode } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 
+/** Sequência compartilhada por Add/Edit/Detail: só a chamada mais recente de refreshNfeMode escreve no `ui`. */
+let nfeModeSequence = 0;
+
 /**
  * Comum às telas do documento de entrada.
  *
@@ -22,39 +25,69 @@ export abstract class BaseController extends CommonController {
 
   /**
    * Modo NF-e do documento ligado à view: filial que emite pelo Siagro (`/taxLocked`) e emissão própria
-   * (`/nfeMode`); devolução de compra (`/nfeReturn`); nome da condição de pagamento. Zera antes de esperar:
-   * um true velho não pode aparecer no documento de outra filial.
+   * (`/nfeMode`); devolução de compra (`/nfeReturn`); nome da condição de pagamento.
+   *
+   * O modelo `ui` é do componente e as três telas (Add/Edit/Detail) escrevem nele, então uma chamada lenta
+   * não pode sobrescrever a de um documento mais novo: cada chamada tira um número de sequência e, depois de
+   * cada espera, só segue se ainda for a mais recente e o contexto da view for o mesmo.
+   *
+   * `reset`: zera as flags antes de esperar. Certo na troca de rota/documento (um true velho não pode aparecer
+   * no documento de outra filial); errado depois de uma ação no mesmo documento (a seção e os botões piscariam).
    */
-  protected async refreshNfeMode(): Promise<void> {
+  protected async refreshNfeMode(reset = true): Promise<void> {
+    const sequence = ++nfeModeSequence;
     const uiModel = this.getModel("ui") as JSONModel;
-    uiModel.setProperty("/taxLocked", false);
-    uiModel.setProperty("/nfeMode", false);
-    uiModel.setProperty("/nfeReturn", false);
-
     const oContext = this.getView().getBindingContext() as Context;
+    const isCurrent = () => sequence === nfeModeSequence && this.getView().getBindingContext() === oContext;
+
+    if (reset || !oContext) {
+      uiModel.setProperty("/taxLocked", false);
+      uiModel.setProperty("/nfeMode", false);
+      uiModel.setProperty("/nfeReturn", false);
+    }
+
     if (!oContext) {
       return;
     }
 
-    const branchCode = await oContext.requestProperty("BranchCode") as string;
-    const issuerType = await oContext.requestProperty("IssuerType") as string;
-    const isNfeReturn = await oContext.requestProperty("IsNfeReturn") === true;
-    const paymentConditionCode = await oContext.requestProperty("PaymentConditionCode") as number;
-    const taxLocked = await this.isTaxCalculationActive(branchCode);
+    try {
+      const branchCode = await oContext.requestProperty("BranchCode") as string;
+      const issuerType = await oContext.requestProperty("IssuerType") as string;
+      const isNfeReturn = await oContext.requestProperty("IsNfeReturn") === true;
+      const paymentConditionCode = await oContext.requestProperty("PaymentConditionCode") as number;
+      const taxLocked = await this.isTaxCalculationActive(branchCode);
 
-    uiModel.setProperty("/taxLocked", taxLocked);
-    uiModel.setProperty("/nfeMode", isPurchaseNfeMode(taxLocked, issuerType));
-    uiModel.setProperty("/nfeReturn", isNfeReturn);
-    await this.refreshPaymentConditionName(paymentConditionCode);
+      if (!isCurrent()) {
+        return;
+      }
+
+      const nfeMode = isPurchaseNfeMode(taxLocked, issuerType);
+      uiModel.setProperty("/taxLocked", taxLocked);
+      uiModel.setProperty("/nfeMode", nfeMode);
+      uiModel.setProperty("/nfeReturn", isNfeReturn);
+
+      // O nome da condição só aparece no modo NF-e e fora da devolução de compra (que não tem pagamento).
+      if (nfeMode && !isNfeReturn) {
+        await this.refreshPaymentConditionName(paymentConditionCode);
+      } else {
+        uiModel.setProperty("/paymentConditionName", "");
+      }
+    } catch {
+      if (isCurrent()) {
+        uiModel.setProperty("/taxLocked", false);
+        uiModel.setProperty("/nfeMode", false);
+        uiModel.setProperty("/nfeReturn", false);
+      }
+    }
   }
 
   /** Trocar a filial ou a emissão muda o modo NF-e (a natureza e os tributos passam a valer, ou deixam). */
   onBranchChange() {
-    void this.refreshNfeMode();
+    void this.refreshNfeMode(false);
   }
 
   onIssuerTypeChange() {
-    void this.refreshNfeMode();
+    void this.refreshNfeMode(false);
   }
 
   /**

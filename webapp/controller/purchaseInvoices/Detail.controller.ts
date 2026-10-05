@@ -73,12 +73,21 @@ export default class Detail extends BaseController {
     void this.refreshDetailNfe();
   }
 
-  /** Modo NF-e e os dois botões que dependem do estado do documento (regras puras em PurchaseInvoiceNfeHelpers). */
-  private async refreshDetailNfe() {
-    await this.refreshNfeMode();
-    const uiModel = this.getModel("ui") as JSONModel;
+  /**
+   * Modo NF-e e os dois botões que dependem do estado do documento (regras puras em PurchaseInvoiceNfeHelpers).
+   * `reset = false` depois de uma ação no mesmo documento: a seção e os botões não piscam.
+   */
+  private async refreshDetailNfe(reset = true) {
     const oContext = this.getView().getBindingContext() as Context;
+    await this.refreshNfeMode(reset);
+    const uiModel = this.getModel("ui") as JSONModel;
     const state = oContext ? await oContext.requestObject() as PurchaseNfeState : undefined;
+
+    // Outro documento foi aberto enquanto esperava: quem vale é a chamada dele.
+    if (this.getView().getBindingContext() !== oContext) {
+      return;
+    }
+
     const nfeMode = uiModel.getProperty("/nfeMode") === true;
 
     uiModel.setProperty("/canIssueNfe", !!state && canIssuePurchaseNfe(state, nfeMode));
@@ -136,7 +145,7 @@ export default class Detail extends BaseController {
       } catch {
         // a releitura falhar não pode deixar a tela ocupada
       }
-      void this.refreshDetailNfe();
+      void this.refreshDetailNfe(false);
       this.setBusy(false);
     }
   }

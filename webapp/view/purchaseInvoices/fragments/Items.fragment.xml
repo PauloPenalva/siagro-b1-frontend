@@ -22,7 +22,7 @@
       <OverflowToolbar>
         <content>
           <Title text="Itens" />
-          <Button text="Tributos do item" icon="sap-icon://simulate" press=".onOpenItemFiscal" visible="{ui>/nfeMode}" />
+          <Button text="Tributos do item" icon="sap-icon://simulate" press=".onOpenItemFiscal" visible="{= ${ui>/nfeMode} === true }" />
           <ToolbarSpacer />
           <ObjectNumber
             number="{ui>/totalItems}"
@@ -60,7 +60,7 @@
       </t:Column>
       <!-- Natureza da linha (modo NF-e): só naturezas de Entrada. Na devolução de compra vem da natureza de
            devolução da linha comprada e não muda. -->
-      <t:Column label="Natureza" width="14rem" visible="{ui>/nfeMode}">
+      <t:Column label="Natureza" width="14rem" visible="{= ${ui>/nfeMode} === true }">
         <t:template>
           <!-- ui5lint-disable no-deprecated-api -->
           <Input
@@ -72,7 +72,7 @@
           <!-- ui5lint-enable no-deprecated-api -->
         </t:template>
       </t:Column>
-      <t:Column label="CFOP" width="6rem" visible="{ui>/nfeMode}">
+      <t:Column label="CFOP" width="6rem" visible="{= ${ui>/nfeMode} === true }">
         <t:template>
           <Text text="{Cfop}" wrapping="false" />
         </t:template>

@@ -2,6 +2,7 @@
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
+    core:require="{ DoubleType: 'sap/ui/model/odata/type/Double' }"
 >
     <f:SimpleForm
       id="purchaseInvoicesForm"
@@ -54,12 +55,14 @@
             <core:Item key="Own" text="Própria" />
           </Select>
 
+          <!-- Depois que existe número reservado ou NF-e (NfeStatus diferente de None, ou NfeRandomCode), a filial
+               fica travada: trocá-la invalidaria a numeração e o cálculo já feitos (spec D10). -->
           <!-- Filial do documento: decide se a emissão própria sai com NF-e pelo Siagro (modo NF-e). Antes nunca
                era gravada na entrada. -->
           <Label text="Filial" />
           <Select
             selectedKey="{BranchCode}"
-            editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true }"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !${NfeRandomCode} &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === undefined || ${path: 'NfeStatus', targetType: 'any'} === null || ${path: 'NfeStatus', targetType: 'any'} === 'None') }"
             forceSelection="false"
             change=".onBranchChange"
             items="{ path: '/Branchs', sorter: { path: 'Code' } }"
@@ -123,9 +126,10 @@
           <!-- `Double` e não `Decimal`: campo de ESCRITA. `Decimal` faz parse para string e o
                leitor OData deste backend recusa Edm.Decimal em string (400 sem nomear o campo).
                Mesma escolha do documento de saída. -->
+          <!-- Em modo NF-e quem grava o valor é a emissão (vNF), então a tela não deixa digitar. -->
           <Label text="Valor declarado" />
           <Input
-              editable="{ui>/editable}"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }"
               value="{
                 path: 'TotalDocumentValue',
                 type: 'sap.ui.model.odata.type.Double',
@@ -179,6 +183,80 @@
               rows="8"
               growing="true"
               width="100%" />
+
+          <!-- Transporte e pesos da NF-e (grupo transp). Peso bruto e líquido são exigidos na emissão
+               (NfeReadinessValidator); na devolução de compra seguem editáveis (spec 9.3). O texto do título some
+               fora do modo NF-e porque core:Title não tem visible. -->
+          <core:Title text="{= ${ui>/nfeMode} === true ? 'Transporte' : '' }" emphasized="true" />
+
+          <!-- ui5lint-disable no-deprecated-api -->
+          <Label text="Transportadora" visible="{= ${ui>/nfeMode} === true }" />
+          <Input
+              visible="{= ${ui>/nfeMode} === true }"
+              editable="{ui>/editable}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openBusinessPartnersValueHelp"
+              value="{TruckingCompanyCode}">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="TruckingCompanyName:CardName" />
+            </customData>
+          </Input>
+          <Input value="{TruckingCompanyName}" editable="false" visible="{= ${ui>/nfeMode} === true }" />
+
+          <Label text="Placa" visible="{= ${ui>/nfeMode} === true }" />
+          <Input
+              visible="{= ${ui>/nfeMode} === true }"
+              editable="{ui>/editable}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openTrucksValueHelp"
+              value="{TruckCode}" />
+
+          <!-- ui5lint-enable no-deprecated-api -->
+          <Label text="Tipo do Frete" visible="{= ${ui>/nfeMode} === true }" />
+          <Select
+              visible="{= ${ui>/nfeMode} === true }"
+              editable="{ui>/editable}"
+              forceSelection="false"
+              width="100%"
+              selectedKey="{path: 'FreightTerms', targetType: 'any'}">
+            <core:ListItem key="Cif" text="CIF" />
+            <core:ListItem key="Fob" text="FOB" />
+            <core:ListItem key="Ter" text="TER" />
+            <core:ListItem key="None" text="SEM FRETE" />
+          </Select>
+
+          <!-- `Double` e não `Decimal`: campo de ESCRITA (o leitor OData recusa Edm.Decimal em string). -->
+          <Label text="Peso Bruto" visible="{= ${ui>/nfeMode} === true }" />
+          <Input
+              visible="{= ${ui>/nfeMode} === true }"
+              editable="{ui>/editable}"
+              value="{
+                path: 'GrossWeight',
+                type: 'DoubleType',
+                formatOptions: {
+                  decimals: 3,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }" />
+
+          <Label text="Peso Líquido" visible="{= ${ui>/nfeMode} === true }" />
+          <Input
+              visible="{= ${ui>/nfeMode} === true }"
+              editable="{ui>/editable}"
+              value="{
+                path: 'NetWeight',
+                type: 'DoubleType',
+                formatOptions: {
+                  decimals: 3,
+                  decimalSeparator: ',',
+                  groupingEnabled: true,
+                  groupingSeparator: '.'
+                }
+              }" />
         </f:content>
     </f:SimpleForm>
 </core:FragmentDefinition>
