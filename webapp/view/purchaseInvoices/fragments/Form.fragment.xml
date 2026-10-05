@@ -141,6 +141,7 @@
                fornecedor. A devolução de compra não tem pagamento (tPag 90). -->
           <Label text="Condição de pagamento"
                  visible="{= ${ui>/nfeMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }" />
+          <!-- ui5lint-disable no-deprecated-api -->
           <Input
             visible="{= ${ui>/nfeMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
             editable="{ui>/editable}"
@@ -148,6 +149,7 @@
             valueHelpOnly="true"
             valueHelpRequest=".openPaymentConditionsValueHelp"
             value="{PaymentConditionCode}" />
+          <!-- ui5lint-enable no-deprecated-api -->
           <Input value="{ui>/paymentConditionName}" editable="false"
                  visible="{= ${ui>/nfeMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }" />
 

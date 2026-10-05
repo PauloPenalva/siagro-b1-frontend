@@ -194,6 +194,7 @@ export default class Add extends BaseController {
       BranchCode: branchCode ?? null,
       PaymentConditionCode: null,
       ReferencedAccessKey: null,
+      IsNfeReturn: false,
       CardCode: draft?.CardCode ?? "",
       CardName: draft?.CardName ?? "",
       InvoiceNumber: null,

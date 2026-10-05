@@ -62,12 +62,14 @@
            devolução da linha comprada e não muda. -->
       <t:Column label="Natureza" width="14rem" visible="{ui>/nfeMode}">
         <t:template>
+          <!-- ui5lint-disable no-deprecated-api -->
           <Input
             value="{UsageName}"
             editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
             showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
             valueHelpOnly="true"
             valueHelpRequest=".openPurchaseUsageValueHelp" />
+          <!-- ui5lint-enable no-deprecated-api -->
         </t:template>
       </t:Column>
       <t:Column label="CFOP" width="6rem" visible="{ui>/nfeMode}">
