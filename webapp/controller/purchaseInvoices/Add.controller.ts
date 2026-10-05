@@ -185,11 +185,14 @@ export default class Add extends BaseController {
     // existiam no modelo mas a tabela não as mostrava, e o primeiro "Incluir Item" fazia aparecer duas.
     // Cada create() sem bAtEnd entra no TOPO, por isso a lista vai de trás para a frente.
     const oItems = (this.byId("tablePurchaseInvoiceItems") as Table)?.getBinding("rows") as ODataListBinding;
-    for (const row of draftItemRows(draft?.Items).reverse()) {
-      oItems?.create(row, false, false, false);
-    }
+    const created = draftItemRows(draft?.Items).reverse()
+      .map((row) => oItems?.create(row, false, false, false))
+      .filter((ctx): ctx is Context => !!ctx);
 
-    this.refreshDocumentTotal();
+    // Logo após o create() numa entidade recém-vinculada, getProperty() das linhas ainda devolve null: somar agora
+    // daria "0,00" na barra até a primeira edição. Espera as linhas ficarem legíveis.
+    void Promise.all(created.map((ctx) => ctx.requestObject()))
+      .then(() => this.refreshDocumentTotal());
   }
 
   onAddItem() {
