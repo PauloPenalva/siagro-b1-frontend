@@ -105,6 +105,8 @@ QUnit.test("regra de bloqueio por situação, trava e tipo", function (assert) {
 	assert.strictEqual(isManualTaxDocumentBlocked("None", false, "Normal"), false, "MH Agro, sem trava");
 	assert.strictEqual(isManualTaxDocumentBlocked("None", true, "Normal"), true, "CEAGUI Normal");
 	assert.strictEqual(isManualTaxDocumentBlocked("None", true, "Return"), false, "CEAGUI devolução");
+	assert.strictEqual(isManualTaxDocumentBlocked("None", true, "Return", true), true, "CEAGUI devolução própria");
+	assert.strictEqual(isManualTaxDocumentBlocked("None", false, "Return", true), true, "devolução própria vem da emissão");
 	assert.strictEqual(isManualTaxDocumentBlocked("Authorized", false, "Normal"), true, "já emitida");
 	assert.strictEqual(isManualTaxDocumentBlocked(undefined, false, "Normal"), false, "status indefinido");
 	assert.strictEqual(isManualTaxDocumentBlocked(null, false, "Normal"), false, "status nulo");
