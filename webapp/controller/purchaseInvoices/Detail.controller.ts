@@ -17,12 +17,15 @@ import { sendJson, odataValue, readErrorMessage } from "siagrob1/helpers/FetchHe
 import { nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
 import { ReturnableRow, prefillNfeReturnRows, hasReturnableBalance, buildNfeReturnPayload } from "siagrob1/helpers/NfeReturnHelpers";
 import {
-  PURCHASE_ITEM_SELECT, PurchaseNfeState, canIssuePurchaseNfe, canReturnPurchase,
+  PURCHASE_ITEM_SELECT, PurchaseNfeState, buildPurchaseItemNumbers, canIssuePurchaseNfe, canReturnPurchase,
+  canReturnThirdPartyPurchase, PurchaseReturnItemRow,
 } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { BaseController } from "./BaseController";
 
 /** Linha do "Devolver" da entrada: o comprado no lugar do vendido. */
-type PurchaseReturnRow = ReturnableRow & { ItemName: string; PurchasedQuantity: number; ReturnedQuantity: number };
+type PurchaseReturnRow = ReturnableRow & PurchaseReturnItemRow & {
+  ItemName: string; PurchasedQuantity: number; ReturnedQuantity: number;
+};
 
 /**
  * Visualização do documento de entrada, com o ciclo de vida (confirmar, estornar, cancelar) e os
@@ -91,7 +94,8 @@ export default class Detail extends BaseController {
     const nfeMode = uiModel.getProperty("/nfeMode") === true;
 
     uiModel.setProperty("/canIssueNfe", !!state && canIssuePurchaseNfe(state, nfeMode));
-    uiModel.setProperty("/canReturn", !!state && canReturnPurchase(state, nfeMode));
+    uiModel.setProperty("/canReturn", !!state && (canReturnPurchase(state, nfeMode) ||
+      canReturnThirdPartyPurchase(state, uiModel.getProperty("/taxLocked") === true)));
   }
 
   async onIssueNfe() {
@@ -224,7 +228,13 @@ export default class Detail extends BaseController {
       return;
     }
 
-    this.getView().setModel(new JSONModel({ rows: prefillNfeReturnRows(rows), reason: "", busy: false }), "nfeReturn");
+    this.getView().setModel(new JSONModel({
+      rows: prefillNfeReturnRows(rows).map((row) => ({ ...row, TypedItemNumber: null as number })),
+      reason: "",
+      busy: false,
+      // A coluna "Item na NF" só existe na entrada de terceiro (a própria sempre tem o nItem da nossa emissão).
+      thirdParty: ctx.getProperty("IssuerType") === "ThirdParty",
+    }), "nfeReturn");
 
     this._nfeReturnDialog ??= await DialogHelper.createDialog(
       this, "siagrob1.view.purchaseInvoices.fragments.NfeReturnDialog");
@@ -243,7 +253,7 @@ export default class Detail extends BaseController {
       ?.findAggregatedObjects(true, (c) => c.isA("sap.m.Input") && (c as Input).getValueState() === ValueState.Error);
 
     if (invalidInput?.length) {
-      MessageBox.warning("Corrija as quantidades marcadas em vermelho.");
+      MessageBox.warning("Corrija os campos marcados em vermelho.");
       return;
     }
 
@@ -257,12 +267,23 @@ export default class Detail extends BaseController {
       return;
     }
 
+    const numbers = buildPurchaseItemNumbers(
+      model.getProperty("/rows") as PurchaseReturnRow[], built.payload.OriginItemKeys,
+      ctx.getProperty("IssuerType") === "ThirdParty");
+
+    if (numbers.ok === false) {
+      MessageBox.warning(numbers.message);
+      return;
+    }
+
     model.setProperty("/busy", true);
     try {
       const action = (ctx.getModel() as ODataModel).bindContext(ServerRoutes.purchaseInvoicesCreateNfeReturn);
       action.setParameter("Key", ctx.getProperty("Key"));
       action.setParameter("OriginItemKeys", built.payload.OriginItemKeys);
       action.setParameter("Quantities", built.payload.Quantities);
+      // Sempre enviado: parâmetro declarado que falta faz a action chegar nula no servidor.
+      action.setParameter("ItemNumbers", numbers.itemNumbers);
       action.setParameter("Reason", built.payload.Reason);
       await action.invoke();
 

@@ -21,15 +21,35 @@ export interface InvoiceItemPayload {
   /** Natureza da linha (modo NF-e). Nula até o operador escolher. */
   UsageCode: number;
   UsageName: string;
+  /** nItem na NF-e do fornecedor (importação do XML); nulo na digitação. É o que a devolução referencia. */
+  NfeItemNumber: number;
 }
 
-/** Item lido do XML importado. */
+/**
+ * Converte para número, com 0 quando falta, vem em branco ou não é número.
+ *
+ * A action de importação devolve Edm.Decimal como string (IEEE754Compatible) e o servidor recusa
+ * Edm.Decimal em string no POST, então o rascunho precisa converter antes de enviar.
+ */
+export function toNumber(value: unknown): number {
+  if (typeof value !== "number" && typeof value !== "string") {
+    return 0;
+  }
+  if (typeof value === "string" && value.trim() === "") {
+    return 0;
+  }
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+/** Item lido do XML importado. Quantidade e preço chegam como string (Edm.Decimal da action). */
 export interface ImportedInvoiceItem {
   ItemCode: string;
   ItemName: string;
   UnitOfMeasureCode: string;
-  Quantity: number;
-  UnitPrice: number;
+  Quantity: number | string;
+  UnitPrice: number | string;
+  NfeItemNumber?: number;
 }
 
 /** Linha em branco do "Incluir Item" e da digitação manual. */
@@ -37,6 +57,7 @@ export function blankItemRow(): InvoiceItemPayload {
   return {
     ItemCode: "", ItemName: "", UnitOfMeasureCode: "", Quantity: 0, UnitPrice: 0,
     SalesInvoiceItemKey: null, PurchaseContractKey: null, UsageCode: null, UsageName: null,
+    NfeItemNumber: null,
   };
 }
 
@@ -57,7 +78,8 @@ export function draftItemRows(items?: ImportedInvoiceItem[]): InvoiceItemPayload
     ItemCode: item.ItemCode,
     ItemName: item.ItemName,
     UnitOfMeasureCode: item.UnitOfMeasureCode,
-    Quantity: item.Quantity ?? 0,
-    UnitPrice: item.UnitPrice ?? 0,
+    Quantity: toNumber(item.Quantity),
+    UnitPrice: toNumber(item.UnitPrice),
+    NfeItemNumber: item.NfeItemNumber ?? null,
   }));
 }

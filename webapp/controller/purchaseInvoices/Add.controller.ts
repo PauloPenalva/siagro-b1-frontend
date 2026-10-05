@@ -7,7 +7,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import formatter from "siagrob1/model/formatter";
-import { blankItemRow, draftItemRows, ImportedInvoiceItem } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
+import { blankItemRow, draftItemRows, ImportedInvoiceItem, toNumber } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 import { BaseController } from "./BaseController";
 
 /** Rascunho devolvido pela leitura do XML — não é gravado ainda. */
@@ -167,7 +167,7 @@ export default class Add extends BaseController {
       ChaveNFe: draft?.ChaveNFe ?? null,
       IssueDate: draft?.IssueDate ?? today,
       PostingDate: today,
-      TotalDocumentValue: draft?.TotalDocumentValue ?? 0,
+      TotalDocumentValue: toNumber(draft?.TotalDocumentValue),
       TaxPayerComments: draft?.TaxPayerComments ?? null,
       Comments: null,
       // O XML volta ao servidor no POST: é a prova documental guardada com o documento.

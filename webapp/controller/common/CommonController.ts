@@ -431,6 +431,42 @@ export default abstract class CommonController extends BaseController {
     void this.applyValueHelp(ev, "ProfilesSelectDialog", ["Description", "Code"], "Code");
   }
 
+  /**
+   * Natureza de devolução de compra de terceiro da filial (spec terceiro D3): só naturezas de Saída ativas ($filter
+   * estático do enum). setProperty sem await: o grupo é diferido.
+   */
+  async openThirdPartyReturnUsageValueHelp(ev: Input$ValueHelpRequestEvent) {
+    const oTarget = ev.getSource().getBindingContext() as Context;
+
+    const oSelected = await DialogHelper.openTableSelectDialog(
+      this, "UsagesSelectDialog", ["Name", "Description"],
+      [new Filter("Inactive", FilterOperator.EQ, false)], undefined, "Direction eq 'Outgoing'");
+
+    if (!oSelected) {
+      return;
+    }
+
+    void oTarget.setProperty("ThirdPartyPurchaseReturnUsageCode", oSelected.getProperty("Code"));
+    this.setThirdPartyReturnUsageDescription(oSelected.getProperty("Name") as string);
+  }
+
+  /** Nome da natureza ao lado do código no formulário da filial (spec terceiro §11). */
+  protected setThirdPartyReturnUsageDescription(name: string) {
+    (this.byId("thirdPartyReturnUsage") as Input)?.setDescription(name ?? "");
+  }
+
+  /** Lê o nome da natureza pelo código gravado na filial; sem código, limpa a descrição. */
+  protected async loadThirdPartyReturnUsageDescription(code: number) {
+    if (code === null || code === undefined) {
+      this.setThirdPartyReturnUsageDescription("");
+      return;
+    }
+
+    const usage = await (this.getView().getModel() as ODataModel)
+      .bindContext(`/Usages(${code})`).requestObject() as { Name: string };
+    this.setThirdPartyReturnUsageDescription(usage?.Name);
+  }
+
     async formartCustomerTaxId(key: string){
       if (!key){
         return null;
