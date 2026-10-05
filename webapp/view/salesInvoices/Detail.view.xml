@@ -102,6 +102,13 @@
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Totais">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection title=" " titleUppercase="false">
+						<core:Fragment fragmentName="siagrob1.fragments.InvoiceChargeTotals" type="XML" />
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
       <uxap:ObjectPageSection titleUppercase="false" title="Tributos" visible="{= ${ui>/taxTotals/visible} === true }">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection title=" " titleUppercase="false">

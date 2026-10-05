@@ -7,7 +7,8 @@
 	xmlns:t="sap.ui.table"
 	xmlns:f="sap.f"
 	core:require="{
-		formatter: 'siagrob1/model/formatter'
+		formatter: 'siagrob1/model/formatter',
+		Decimal: 'sap/ui/model/odata/type/Decimal'
 	}">
 
 	<f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
@@ -149,6 +150,22 @@
 							<Text text="{
 								path: 'TotalDocumentValue',
 								type: 'sap.ui.model.odata.type.Decimal',
+								constraints: { precision: 18, scale: 2 },
+								formatOptions: {
+									decimalSeparator: ',',
+									groupingEnabled: true,
+									groupingSeparator: '.'
+								}
+							}" />
+						</t:template>
+					</t:Column>
+					<!-- Total geral (itens + frete + seguro + outras despesas − desconto, spec 2026-10-05 R4): calculado no
+					     servidor a partir das linhas que o QueryAll já inclui; sem sortProperty, não é coluna do banco. -->
+					<t:Column label="Total geral" width="11rem" hAlign="End">
+						<t:template>
+							<Text text="{
+								path: 'GrandTotal',
+								type: 'Decimal',
 								constraints: { precision: 18, scale: 2 },
 								formatOptions: {
 									decimalSeparator: ',',

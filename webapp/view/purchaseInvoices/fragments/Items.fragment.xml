@@ -3,7 +3,7 @@
     xmlns:t="sap.ui.table"
     xmlns:core="sap.ui.core"
     core:require="{
-      formatter: 'siagrob1/model/formatter'
+      formatter: 'siagrob1/model/formatter', DoubleType: 'sap/ui/model/odata/type/Double', charges: 'siagrob1/helpers/InvoiceChargeTotalsHelpers'
     }"
 >
   <t:Table
@@ -126,19 +126,81 @@
             }" />
         </t:template>
       </t:Column>
+      <!-- Frete, seguro, desconto e outras despesas da linha (spec 2026-10-05 §10). Campo de ESCRITA de decimal usa
+           `Double`, nunca `Decimal` (o backend recusa Edm.Decimal em string). Editáveis também na devolução Pendente
+           (vêm da venda na proporção do que volta). -->
+      <t:Column label="Frete" hAlign="End" width="9rem">
+        <t:template>
+          <Input
+              editable="{ui>/editable}"
+              textAlign="End"
+              change=".onItemAmountChange"
+              value="{
+                path: 'FreightValue',
+                type: 'DoubleType',
+                formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }"
+          />
+        </t:template>
+      </t:Column>
+      <t:Column label="Seguro" hAlign="End" width="9rem">
+        <t:template>
+          <Input
+              editable="{ui>/editable}"
+              textAlign="End"
+              change=".onItemAmountChange"
+              value="{
+                path: 'InsuranceValue',
+                type: 'DoubleType',
+                formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }"
+          />
+        </t:template>
+      </t:Column>
+      <t:Column label="Desconto" hAlign="End" width="9rem">
+        <t:template>
+          <Input
+              editable="{ui>/editable}"
+              textAlign="End"
+              change=".onItemAmountChange"
+              value="{
+                path: 'DiscountValue',
+                type: 'DoubleType',
+                formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }"
+          />
+        </t:template>
+      </t:Column>
+      <t:Column label="Outras despesas" hAlign="End" width="9rem">
+        <t:template>
+          <Input
+              editable="{ui>/editable}"
+              textAlign="End"
+              change=".onItemAmountChange"
+              value="{
+                path: 'OtherExpensesValue',
+                type: 'DoubleType',
+                formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }"
+          />
+        </t:template>
+      </t:Column>
       <t:Column label="Total" width="10rem" hAlign="End">
         <t:template>
-          <!-- Calculado no cliente: `Total` é [NotMapped] e só existe depois que o servidor
-               responde, então a linha em digitação aparecia VAZIA — e nas já gravadas o valor
-               ficava parado até salvar e reler. `targetType: 'any'` em cada parte é obrigatório:
-               sem ele o binding composto entrega texto e a multiplicação vira NaN. -->
-          <Text text="{
-            parts: [
-              { path: 'Quantity', targetType: 'any' },
-              { path: 'UnitPrice', targetType: 'any' }
-            ],
-            formatter: 'formatter.formatLineTotal'
-          }" />
+          <!-- Total geral da linha (itens + frete + seguro + outras despesas − desconto), calculado no cliente: GrandTotal é [NotMapped]. targetType 'any' em cada parte: sem ele o binding composto entrega texto e a soma vira NaN. -->
+          <Text
+              text="{
+                parts: [
+                  { path: 'Quantity', targetType: 'any' },
+                  { path: 'UnitPrice', targetType: 'any' },
+                  { path: 'FreightValue', targetType: 'any' },
+                  { path: 'InsuranceValue', targetType: 'any' },
+                  { path: 'DiscountValue', targetType: 'any' },
+                  { path: 'OtherExpensesValue', targetType: 'any' }
+                ],
+                formatter: 'charges.formatLineGrandTotal'
+              }"
+          />
         </t:template>
       </t:Column>
 

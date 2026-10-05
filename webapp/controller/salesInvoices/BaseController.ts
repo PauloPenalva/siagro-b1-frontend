@@ -413,6 +413,14 @@ export abstract class BaseController extends CommonController {
       });
 
       aCols.push({
+        label: "Total geral",
+        property: "GrandTotal",
+        type: EdmType.Number,
+        scale: 2,
+        delimiter: true
+      });
+
+      aCols.push({
         label: "Placa",
         property: "TruckCode",
         type: EdmType.String

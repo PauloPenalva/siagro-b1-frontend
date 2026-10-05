@@ -224,6 +224,14 @@ export default class Main extends BaseController {
       delimiter: true,
     });
 
+    aCols.push({
+      label: "Total geral",
+      property: "GrandTotal",
+      type: EdmType.Number,
+      scale: 2,
+      delimiter: true,
+    });
+
     aCols.push({ label: "Chave NF-e", property: "ChaveNFe", type: EdmType.String });
 
     return aCols;
