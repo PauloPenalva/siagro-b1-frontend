@@ -11,6 +11,7 @@ import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
 import { isPurchaseNfeMode, mustFallBackToNormal } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
+import { summarizeInvoiceTaxes, TaxLine } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 
 /** Sequência compartilhada por Add/Edit/Detail: só a chamada mais recente de refreshNfeMode escreve no `ui`. */
 let nfeModeSequence = 0;
@@ -271,6 +272,8 @@ export abstract class BaseController extends CommonController {
    *
    * Não confundir com `TotalDocumentValue`, que é o total DECLARADO pelo emitente: os dois
    * divergirem é informação de conciliação, não erro.
+   *
+   * Recalcula também o quadro "Tributos" do Detail (`/taxTotals`), que soma as mesmas linhas.
    */
   protected refreshDocumentTotal() {
     const oTable = this.byId("tablePurchaseInvoiceItems") as Table;
@@ -296,5 +299,8 @@ export abstract class BaseController extends CommonController {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }));
+
+    uiModel.setProperty("/taxTotals", summarizeInvoiceTaxes(
+      oBinding.getAllCurrentContexts().map((ctx) => ctx.getObject() as TaxLine)));
   }
 }
