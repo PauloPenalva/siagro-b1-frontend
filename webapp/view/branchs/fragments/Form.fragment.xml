@@ -81,6 +81,18 @@
           </Select>
           <Label text="Emite NF-e pelo Siagro ?" visible="{ui>/standalone}" />
           <CheckBox selected="{IssuesNfe}" visible="{ui>/standalone}" />
+          <!-- Natureza aplicada à devolução de compra de uma entrada de terceiro (spec terceiro D3). Só faz sentido
+               na filial que emite NF-e pelo Siagro. -->
+          <Label text="Natureza de devolução de compra de terceiro"
+                 visible="{= ${ui>/standalone} === true &amp;&amp; ${path: 'IssuesNfe', targetType: 'any'} === true }" />
+          <!-- ui5lint-disable no-deprecated-api -->
+          <Input
+            value="{ThirdPartyPurchaseReturnUsageCode}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openThirdPartyReturnUsageValueHelp"
+            visible="{= ${ui>/standalone} === true &amp;&amp; ${path: 'IssuesNfe', targetType: 'any'} === true }" />
+          <!-- ui5lint-enable no-deprecated-api -->
           <!-- Emitente da NF-e STANDALONE. Ocultos em SAPB1. Obrigatórios só na hora de emitir:
                a emissão lista o que faltar. -->
           <!-- O visible do Title não vale para o container do SimpleForm: sem texto, o cabeçalho some. -->

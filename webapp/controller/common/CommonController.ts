@@ -431,6 +431,24 @@ export default abstract class CommonController extends BaseController {
     void this.applyValueHelp(ev, "ProfilesSelectDialog", ["Description", "Code"], "Code");
   }
 
+  /**
+   * Natureza de devolução de compra de terceiro da filial (spec terceiro D3): só naturezas de Saída ativas ($filter
+   * estático do enum). setProperty sem await: o grupo é diferido.
+   */
+  async openThirdPartyReturnUsageValueHelp(ev: Input$ValueHelpRequestEvent) {
+    const oTarget = ev.getSource().getBindingContext() as Context;
+
+    const oSelected = await DialogHelper.openTableSelectDialog(
+      this, "UsagesSelectDialog", ["Name", "Description"],
+      [new Filter("Inactive", FilterOperator.EQ, false)], undefined, "Direction eq 'Outgoing'");
+
+    if (!oSelected) {
+      return;
+    }
+
+    void oTarget.setProperty("ThirdPartyPurchaseReturnUsageCode", oSelected.getProperty("Code"));
+  }
+
     async formartCustomerTaxId(key: string){
       if (!key){
         return null;

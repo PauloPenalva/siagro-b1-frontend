@@ -27,7 +27,7 @@ export default class Add extends CommonController {
 		// StateCode precisa existir no cache da entidade transiente: propriedade ausente do
 		// create() faz o value help estourar "Must not change a property before it has been read".
 		const oContext = oBinding.create({
-			StateCode: null, TaxRegime: null, IssuesNfe: false,
+			StateCode: null, TaxRegime: null, IssuesNfe: false, ThirdPartyPurchaseReturnUsageCode: null,
 			LegalName: null, TradeName: null, StateRegistration: null, Street: null,
 			StreetNumber: null, Complement: null, District: null, MunicipalityCode: null,
 			ZipCode: null, Phone: null,
