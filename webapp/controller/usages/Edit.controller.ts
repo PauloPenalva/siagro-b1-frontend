@@ -3,7 +3,7 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import BaseController from "../BaseController";
+import BaseController from "./BaseController";
 import { applyFiscalCodeLists } from "siagrob1/model/fiscalCodes";
 
 /**

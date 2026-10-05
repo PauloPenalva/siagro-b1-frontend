@@ -101,6 +101,28 @@
               placeholder="Vazio = usa o Nome"
               visible="{ui>/identityEditable}"
           />
+          <!-- Natureza de devolução (NF-e de devolução de venda): só natureza de Saída, só STANDALONE.
+               A devolução criada pelo Devolver herda esta natureza em cada linha. -->
+          <Label text="Natureza de devolução"
+                 visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
+          <!-- ui5lint-disable no-deprecated-api -->
+          <Input
+              value="{ReturnUsageCode}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              showClearIcon="true"
+              valueHelpRequest=".onReturnUsageValueHelp"
+              change=".onReturnUsageChange"
+              visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} !== 'Incoming' }">
+            <layoutData>
+              <l:GridData span="XL2 L2 M3 S4" />
+            </layoutData>
+          </Input>
+          <!-- ui5lint-enable no-deprecated-api -->
+          <Input
+              value="{ReturnUsageName}"
+              editable="false"
+              visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
           <!-- Flags da natureza (equivalem a "Atualiza Estoque" e "Gera Duplicata" da TES do
                Protheus). Só cadastro por enquanto: o estoque FISCAL e o financeiro a partir
                do documento fiscal ainda não existem. -->

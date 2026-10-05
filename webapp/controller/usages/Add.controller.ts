@@ -2,7 +2,7 @@ import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import BaseController from "../BaseController";
+import BaseController from "./BaseController";
 import { applyFiscalCodeLists } from "siagrob1/model/fiscalCodes";
 
 /**
@@ -49,6 +49,9 @@ export default class Add extends BaseController {
 			Direction: "Outgoing",
 			CfopIncomingInState: null,
 			CfopIncomingOutState: null,
+			// Natureza de devolução (NF-e de devolução de venda) — só natureza de Saída.
+			ReturnUsageCode: null,
+			ReturnUsageName: null,
 			InvoiceOperationText: null,
 			DefaultAdditionalInfo: null,
 			MovesFiscalInventory: false,
