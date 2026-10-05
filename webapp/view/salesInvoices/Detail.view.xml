@@ -46,7 +46,7 @@
           <!-- NF-e de devolução: a venda autorizada (sem carga) gera a devolução própria, que é
                emitida pelo mesmo "Emitir NF-e". -->
           <Button text="Devolver" icon="sap-icon://undo" press=".onNfeReturn"
-            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} === 'Confirmed' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' &amp;&amp; !${ShipmentLoadKey} }" />
+            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} === 'Confirmed' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' &amp;&amp; !${path: 'ShipmentLoadKey', targetType: 'any'} }" />
           <Button text="Estornar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Confirmed' ? true : false }" type="Critical" press=".onReverse"/>
           <Button text="Cancelar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' || ${path: 'InvoiceStatus', targetType: 'any'}==='Confirmed' ? true : false }" type="Reject" press=".onCancel"/>
         </uxap:actions>

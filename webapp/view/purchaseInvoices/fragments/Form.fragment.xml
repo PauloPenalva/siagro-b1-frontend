@@ -62,7 +62,7 @@
           <Label text="Filial" />
           <Select
             selectedKey="{BranchCode}"
-            editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !${NfeRandomCode} &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === undefined || ${path: 'NfeStatus', targetType: 'any'} === null || ${path: 'NfeStatus', targetType: 'any'} === 'None') }"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !${path: 'NfeRandomCode', targetType: 'any'} &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === undefined || ${path: 'NfeStatus', targetType: 'any'} === null || ${path: 'NfeStatus', targetType: 'any'} === 'None') }"
             forceSelection="false"
             change=".onBranchChange"
             items="{ path: '/Branchs', sorter: { path: 'Code' } }"
