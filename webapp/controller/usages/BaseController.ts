@@ -14,15 +14,18 @@ import RootBaseController from "../BaseController";
 export default class BaseController extends RootBaseController {
 
 	/**
-	 * Só natureza de ENTRADA ativa: o enum vai como $filter estático (o Filter do UI5 não formata
-	 * enum). setProperty sem await: no update group diferido a Promise só resolve no submit.
+	 * Só natureza ativa do sentido OPOSTO ao desta natureza: Saída → Entrada, Entrada → Saída. O enum vai
+	 * como $filter estático (o Filter do UI5 não formata enum). setProperty sem await: no update group
+	 * diferido a Promise só resolve no submit.
 	 */
 	async onReturnUsageValueHelp(ev: Input$ValueHelpRequestEvent) {
 		const oTarget = ev.getSource().getBindingContext() as Context;
+		const direction = oTarget.getProperty("Direction") as string;
+		const opposite = direction === "Incoming" ? "Outgoing" : "Incoming";
 
 		const oSelected = await DialogHelper.openTableSelectDialog(
 			this, "UsagesSelectDialog", ["Name", "Description"],
-			[new Filter("Inactive", FilterOperator.EQ, false)], undefined, "Direction eq 'Incoming'");
+			[new Filter("Inactive", FilterOperator.EQ, false)], undefined, `Direction eq '${opposite}'`);
 
 		if (!oSelected) {
 			return;
@@ -43,15 +46,10 @@ export default class BaseController extends RootBaseController {
 	}
 
 	/**
-	 * Natureza de Entrada não tem natureza de devolução: o campo some da tela e o backend recusa o
-	 * vínculo, então ao trocar para Entrada o vínculo é limpo (o usuário não teria como limpar).
-	 * Sem await: o contexto está num update group diferido.
+	 * A natureza de devolução é do sentido oposto: trocar o tipo invalida a escolhida antes, então o vínculo
+	 * é limpo. Sem await: o contexto está num update group diferido.
 	 */
 	onDirectionChange(ev: Select$ChangeEvent) {
-		if (ev.getParameter("selectedItem")?.getKey() !== "Incoming") {
-			return;
-		}
-
 		const oTarget = ev.getSource().getBindingContext() as Context;
 		void oTarget.setProperty("ReturnUsageCode", null);
 		void oTarget.setProperty("ReturnUsageName", null);
