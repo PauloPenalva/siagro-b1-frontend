@@ -26,6 +26,9 @@ interface InvoiceItemPayload {
   SalesInvoiceItemKey: string;
   /** Nulo até o operador amarrar. (strictNullChecks off: `string` já admite null aqui.) */
   PurchaseContractKey: string;
+  /** Natureza da linha (modo NF-e). Nula até o operador escolher. */
+  UsageCode: number;
+  UsageName: string;
 }
 
 /** Rascunho devolvido pela leitura do XML — não é gravado ainda. */
@@ -61,10 +64,10 @@ export default class Add extends BaseController {
 
   onInit(): void {
     this.getRouter().getRoute("purchaseInvoicesAdd")
-      .attachPatternMatched(() => this.newRouteMatched());
+      .attachPatternMatched(() => void this.newRouteMatched());
   }
 
-  private newRouteMatched() {
+  private async newRouteMatched() {
     this.clearStates("purchaseInvoicesForm");
 
     const uiModel = this.getModel("ui") as JSONModel;
@@ -73,6 +76,7 @@ export default class Add extends BaseController {
     // Tipo e emissão só se escolhem na criação: mudá-los depois invalidaria as amarrações.
     uiModel.setProperty("/typeEditable", true);
     uiModel.setProperty("/totalItems", "0,00");
+    uiModel.setProperty("/paymentConditionName", "");
 
     const oModel = this.getModel() as ODataModel;
 
@@ -82,7 +86,9 @@ export default class Add extends BaseController {
 
     // Documento nasce vazio, com uma linha em branco para a digitação manual. Importar XML
     // substitui tudo.
-    this.createDraft();
+    const branchInfo = await this.getBranchInfo();
+    this.createDraft(undefined, undefined, branchInfo?.code);
+    await this.refreshNfeMode();
   }
 
   /**
@@ -130,7 +136,10 @@ export default class Add extends BaseController {
 
       const draft = action.getBoundContext()?.getObject() as ImportedInvoice;
 
-      this.createDraft(draft, xmlContent);
+      // O rascunho do XML também recebe a filial da sessão.
+      const branchInfo = await this.getBranchInfo();
+      this.createDraft(draft, xmlContent, branchInfo?.code);
+      await this.refreshNfeMode();
 
       MessageToast.show(
         `XML lido: ${draft.Items?.length ?? 0} item(ns).`,
@@ -146,7 +155,7 @@ export default class Add extends BaseController {
    * TODA propriedade que a tela edita entra no create() inicial, nem que seja como null: sem
    * isso a primeira alteração abre "Must not change a property before it has been read".
    */
-  private createDraft(draft?: ImportedInvoice, xmlContent?: string) {
+  private createDraft(draft?: ImportedInvoice, xmlContent?: string, branchCode?: string) {
     const oModel = this.getModel() as ODataModel;
     const oBinding = oModel.bindList("/PurchaseInvoices");
 
@@ -173,11 +182,18 @@ export default class Add extends BaseController {
       SalesInvoiceItemKey: null,
       // Idem para a amarração com o contrato de compra: nasce nula até o operador escolher.
       PurchaseContractKey: null,
+      // Natureza nasce nula: sem estas chaves a primeira escolha abre "Must not change a property
+      // before it has been read".
+      UsageCode: null,
+      UsageName: null,
     }));
 
     const oContext = oBinding.create({
       InvoiceType: "Normal",
       IssuerType: "ThirdParty",
+      BranchCode: branchCode ?? null,
+      PaymentConditionCode: null,
+      ReferencedAccessKey: null,
       CardCode: draft?.CardCode ?? "",
       CardName: draft?.CardName ?? "",
       InvoiceNumber: null,
@@ -212,6 +228,7 @@ export default class Add extends BaseController {
     oBinding.create({
       ItemCode: "", ItemName: "", UnitOfMeasureCode: "",
       Quantity: 0, UnitPrice: 0, SalesInvoiceItemKey: null, PurchaseContractKey: null,
+      UsageCode: null, UsageName: null,
     }, false, false, false);
 
     this.refreshDocumentTotal();
@@ -245,6 +262,15 @@ export default class Add extends BaseController {
 
     const oTable = this.byId("tablePurchaseInvoiceItems");
     const oBinding = oTable?.getBinding("rows") as ODataListBinding;
+
+    const nfeMode = (this.getModel("ui") as JSONModel).getProperty("/nfeMode") === true;
+    if (nfeMode) {
+      const withoutUsage = (oBinding?.getAllCurrentContexts() ?? []).filter(ctx => !ctx.getProperty("UsageCode"));
+      if (withoutUsage.length > 0) {
+        MessageBox.warning("Informe a natureza de operação de todos os itens: a NF-e de entrada é calculada por ela.");
+        return;
+      }
+    }
 
     // Aviso, não bloqueio: amarrar depois é caminho legítimo, e a conciliação só fica
     // incompleta enquanto isso. Só faz sentido na devolução.

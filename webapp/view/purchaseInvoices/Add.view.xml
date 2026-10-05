@@ -32,11 +32,11 @@
             press=".onImportXml" />
           <Button
             text="Incluir Item"
-            icon="sap-icon://add"
+            icon="sap-icon://add" enabled="{= ${ui>/nfeReturn} !== true }"
             press=".onAddItem" />
           <Button
             text="Excluir Item"
-            icon="sap-icon://delete"
+            icon="sap-icon://delete" enabled="{= ${ui>/nfeReturn} !== true }"
             press=".onRemoveItem" />
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>

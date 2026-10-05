@@ -48,16 +48,30 @@
             selectedKey="{path: 'IssuerType', targetType: 'any'}"
             enabled="{ui>/typeEditable}"
             forceSelection="false"
+            change=".onIssuerTypeChange"
             width="100%">
             <core:Item key="ThirdParty" text="De terceiro" />
             <core:Item key="Own" text="Própria" />
           </Select>
 
+          <!-- Filial do documento: decide se a emissão própria sai com NF-e pelo Siagro (modo NF-e). Antes nunca
+               era gravada na entrada. -->
+          <Label text="Filial" />
+          <Select
+            selectedKey="{BranchCode}"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true }"
+            forceSelection="false"
+            change=".onBranchChange"
+            items="{ path: '/Branchs', sorter: { path: 'Code' } }"
+            width="100%">
+            <core:ListItem key="{Code}" text="{ShortName}" additionalText="{Code}" />
+          </Select>
+
           <Label text="Emitente" required="true" />
           <Input
               value="{CardCode}"
-              editable="{ui>/editable}"
-              showValueHelp="{ui>/editable}"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true }"
+              showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true }"
               valueHelpOnly="true"
               valueHelpRequest=".openBusinessPartnersValueHelp">
             <customData>
@@ -75,14 +89,14 @@
               maxLength="9" />
 
           <Label text="Número da NF" />
-          <Input value="{TaxDocumentNumber}" editable="{ui>/editable}" maxLength="9" />
+          <Input value="{TaxDocumentNumber}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="9" />
 
           <Label text="Série" />
-          <Input value="{TaxDocumentSeries}" editable="{ui>/editable}" maxLength="3" />
+          <Input value="{TaxDocumentSeries}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="3" />
 
           <!-- A chave tem 44 dígitos: maxLength menor trunca em silêncio na digitação. -->
           <Label text="Chave da NF-e" />
-          <Input value="{ChaveNFe}" editable="{ui>/editable}" maxLength="44" />
+          <Input value="{ChaveNFe}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="44" />
 
           <Label text="Data de emissão" />
           <DatePicker
@@ -123,17 +137,43 @@
                 }
               }" />
 
+          <!-- Modo NF-e (filial que emite pelo Siagro + emissão própria). A condição vira cobr/dup e pag; padrão do
+               fornecedor. A devolução de compra não tem pagamento (tPag 90). -->
+          <Label text="Condição de pagamento"
+                 visible="{= ${ui>/nfeMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }" />
+          <Input
+            visible="{= ${ui>/nfeMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
+            editable="{ui>/editable}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openPaymentConditionsValueHelp"
+            value="{PaymentConditionCode}" />
+          <Input value="{ui>/paymentConditionName}" editable="false"
+                 visible="{= ${ui>/nfeMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }" />
+
+          <!-- Nota do produtor (ou outra NF-e) que a entrada própria referencia no NFref. 44 dígitos; o servidor
+               confere o dígito verificador. -->
+          <Label text="NF-e referenciada"
+                 visible="{= ${ui>/nfeMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }" />
+          <Input
+            value="{ReferencedAccessKey}"
+            maxLength="54"
+            placeholder="Chave de 44 dígitos (ex.: NF-e do produtor)"
+            editable="{ui>/editable}"
+            visible="{= ${ui>/nfeMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }" />
+
           <Label text="Observações" />
           <TextArea value="{Comments}" editable="{ui>/editable}" rows="3" width="100%" />
 
           <core:Title text="Informações do Contribuinte" emphasized="true" />
-          <!-- É AQUI que o emitente escreve número/série/chave e quantidade das notas de
-               origem. O layout da NF-e não amarra linha a origem, então este texto é a
-               referência que o operador usa para fazer a amarração na grade. -->
-          <Label text="Referências informadas pelo emitente" />
+          <!-- Entrada de terceiro: é AQUI que o emitente escreve número/série/chave e quantidade das notas de
+               origem; o layout da NF-e não amarra linha a origem, então este texto é a referência que o
+               operador usa para fazer a amarração na grade. Na emissão própria (modo NF-e) é o infCpl que o
+               operador escreve, ex.: o texto do Funrural, e vai na NF-e. -->
+          <Label text="{= ${ui>/nfeMode} === true ? 'Informações complementares (vão na NF-e)' : 'Referências informadas pelo emitente' }" />
           <TextArea
               value="{TaxPayerComments}"
-              editable="false"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} === true }"
               rows="8"
               growing="true"
               width="100%" />
