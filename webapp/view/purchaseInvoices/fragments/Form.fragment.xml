@@ -1,9 +1,12 @@
 <core:FragmentDefinition
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
     xmlns:core="sap.ui.core"
     core:require="{ DoubleType: 'sap/ui/model/odata/type/Double' }"
 >
+    <!-- Mesmo desenho do formulário do documento de saída (salesInvoices/fragments/Form): três colunas no XL,
+         seções Dados do Documento, Transporte, Dados da NF-e, Informações Complementares e Outras Informações. -->
     <f:SimpleForm
       id="purchaseInvoicesForm"
       editable="true"
@@ -17,13 +20,35 @@
       emptySpanL="0"
       emptySpanM="0"
       emptySpanS="0"
-      columnsXL="2"
+      columnsXL="3"
       columnsL="2"
-      columnsM="1"
+      columnsM="2"
       singleContainerFullSize="true"
       busyIndicatorDelay="0">
         <f:content>
-          <core:Title text="Dados do Documento" emphasized="true" />
+          <core:Title text="Dados do Documento de Entrada" emphasized="true" />
+
+          <!-- Número interno: só existe na emissão própria. Na Fase 3 passa a ser gerado pelo
+               numerador DocNumbers; até lá é digitado. -->
+          <Label text="Número interno" />
+          <Input
+              value="{InvoiceNumber}"
+              editable="{= ${ui>/editable} &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'Own' }"
+              maxLength="9" />
+
+          <!-- Depois que existe número reservado ou NF-e (NfeStatus diferente de None, ou NfeRandomCode), a filial
+               fica travada: trocá-la invalidaria a numeração e o cálculo já feitos (spec D10). -->
+          <!-- Filial do documento: decide se a emissão própria sai com NF-e pelo Siagro (modo NF-e). -->
+          <Label text="Filial" />
+          <Select
+            selectedKey="{BranchCode}"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !${path: 'NfeRandomCode', targetType: 'any'} &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === undefined || ${path: 'NfeStatus', targetType: 'any'} === null || ${path: 'NfeStatus', targetType: 'any'} === 'None') }"
+            forceSelection="false"
+            change=".onBranchChange"
+            items="{ path: '/Branchs', sorter: { path: 'Code' } }"
+            width="100%">
+            <core:ListItem key="{Code}" text="{ShortName}" additionalText="{Code}" />
+          </Select>
 
           <!-- O tipo define a natureza do documento e as regras que o acompanham; mudá-lo depois
                de gravado invalidaria as amarrações já feitas. Editável só na inclusão. -->
@@ -55,21 +80,6 @@
             <core:Item key="Own" text="Própria" />
           </Select>
 
-          <!-- Depois que existe número reservado ou NF-e (NfeStatus diferente de None, ou NfeRandomCode), a filial
-               fica travada: trocá-la invalidaria a numeração e o cálculo já feitos (spec D10). -->
-          <!-- Filial do documento: decide se a emissão própria sai com NF-e pelo Siagro (modo NF-e). Antes nunca
-               era gravada na entrada. -->
-          <Label text="Filial" />
-          <Select
-            selectedKey="{BranchCode}"
-            editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !${path: 'NfeRandomCode', targetType: 'any'} &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === undefined || ${path: 'NfeStatus', targetType: 'any'} === null || ${path: 'NfeStatus', targetType: 'any'} === 'None') }"
-            forceSelection="false"
-            change=".onBranchChange"
-            items="{ path: '/Branchs', sorter: { path: 'Code' } }"
-            width="100%">
-            <core:ListItem key="{Code}" text="{ShortName}" additionalText="{Code}" />
-          </Select>
-
           <Label text="Emitente" required="true" />
           <Input
               value="{CardCode}"
@@ -77,29 +87,14 @@
               showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true }"
               valueHelpOnly="true"
               valueHelpRequest=".openBusinessPartnersValueHelp">
+            <layoutData>
+              <l:GridData span="XL3 L3 M3 S8" />
+            </layoutData>
             <customData>
               <core:CustomData key="descriptionProperty" value="CardName" />
             </customData>
           </Input>
           <Input value="{CardName}" editable="false" />
-
-          <!-- Número interno: só existe na emissão própria. Na Fase 3 passa a ser gerado pelo
-               numerador DocNumbers; até lá é digitado. -->
-          <Label text="Número interno" />
-          <Input
-              value="{InvoiceNumber}"
-              editable="{= ${ui>/editable} &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'Own' }"
-              maxLength="9" />
-
-          <Label text="Número da NF" />
-          <Input value="{TaxDocumentNumber}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="9" />
-
-          <Label text="Série" />
-          <Input value="{TaxDocumentSeries}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="3" />
-
-          <!-- A chave tem 44 dígitos: maxLength menor trunca em silêncio na digitação. -->
-          <Label text="Chave da NF-e" />
-          <Input value="{ChaveNFe}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="44" />
 
           <Label text="Data de emissão" />
           <DatePicker
@@ -139,7 +134,11 @@
                   groupingEnabled: true,
                   groupingSeparator: '.'
                 }
-              }" />
+              }">
+            <layoutData>
+              <l:GridData span="XL3 L3 M3 S8" />
+            </layoutData>
+          </Input>
 
           <!-- Modo NF-e (filial que emite pelo Siagro + emissão própria). A condição vira cobr/dup e pag; padrão do
                fornecedor. A devolução de compra não tem pagamento (tPag 90). -->
@@ -152,42 +151,21 @@
             showValueHelp="true"
             valueHelpOnly="true"
             valueHelpRequest=".openPaymentConditionsValueHelp"
-            value="{PaymentConditionCode}" />
+            value="{PaymentConditionCode}">
+            <layoutData>
+              <l:GridData span="XL3 L3 M3 S8" />
+            </layoutData>
+          </Input>
           <!-- ui5lint-enable no-deprecated-api -->
           <Input value="{ui>/paymentConditionName}" editable="false"
                  visible="{= ${ui>/nfeMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }" />
 
-          <!-- Nota do produtor (ou outra NF-e) que a entrada própria referencia no NFref. 44 dígitos; o servidor
-               confere o dígito verificador. -->
-          <Label text="NF-e referenciada"
-                 visible="{= ${ui>/nfeMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }" />
-          <Input
-            value="{ReferencedAccessKey}"
-            maxLength="54"
-            placeholder="Chave de 44 dígitos (ex.: NF-e do produtor)"
-            editable="{ui>/editable}"
-            visible="{= ${ui>/nfeMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }" />
-
-          <Label text="Observações" />
-          <TextArea value="{Comments}" editable="{ui>/editable}" rows="3" width="100%" />
-
-          <core:Title text="Informações do Contribuinte" emphasized="true" />
-          <!-- Entrada de terceiro: é AQUI que o emitente escreve número/série/chave e quantidade das notas de
-               origem; o layout da NF-e não amarra linha a origem, então este texto é a referência que o
-               operador usa para fazer a amarração na grade. Na emissão própria (modo NF-e) é o infCpl que o
-               operador escreve, ex.: o texto do Funrural, e vai na NF-e. -->
-          <Label text="{= ${ui>/nfeMode} === true ? 'Informações complementares (vão na NF-e)' : 'Referências informadas pelo emitente' }" />
-          <TextArea
-              value="{TaxPayerComments}"
-              editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} === true }"
-              rows="8"
-              growing="true"
-              width="100%" />
-
-          <!-- Transporte e pesos da NF-e (grupo transp). Peso bruto e líquido são exigidos na emissão
-               (NfeReadinessValidator); na devolução de compra seguem editáveis (spec 9.3). O texto do título some
-               fora do modo NF-e porque core:Title não tem visible. -->
-          <core:Title text="{= ${ui>/nfeMode} === true ? 'Transporte' : '' }" emphasized="true" />
+          <!-- Transporte, pesos e volume da NF-e (grupos transp e vol), só no modo NF-e: a entrada de terceiro não
+               emite nada. Peso bruto e líquido são exigidos na emissão (NfeReadinessValidator); os quatro campos de
+               volume são opcionais. Na devolução de compra seguem editáveis (spec 9.3). O texto do título some fora
+               do modo NF-e porque core:Title não tem visible. Ordem do grupo vol da NF-e/DANFE: peso bruto, peso
+               líquido, quantidade, espécie, marca e numeração. -->
+          <core:Title text="{= ${ui>/nfeMode} === true ? 'Transporte' : '' }" />
 
           <!-- ui5lint-disable no-deprecated-api -->
           <Label text="Transportadora" visible="{= ${ui>/nfeMode} === true }" />
@@ -198,6 +176,9 @@
               valueHelpOnly="true"
               valueHelpRequest=".openBusinessPartnersValueHelp"
               value="{TruckingCompanyCode}">
+            <layoutData>
+              <l:GridData span="XL3 L3 M3 S8" />
+            </layoutData>
             <customData>
               <core:CustomData key="descriptionProperty" value="TruckingCompanyName:CardName" />
             </customData>
@@ -211,9 +192,13 @@
               showValueHelp="true"
               valueHelpOnly="true"
               valueHelpRequest=".openTrucksValueHelp"
-              value="{TruckCode}" />
-
+              value="{TruckCode}">
+            <layoutData>
+              <l:GridData span="XL3 L3 M3 S8" />
+            </layoutData>
+          </Input>
           <!-- ui5lint-enable no-deprecated-api -->
+
           <Label text="Tipo do Frete" visible="{= ${ui>/nfeMode} === true }" />
           <Select
               visible="{= ${ui>/nfeMode} === true }"
@@ -241,7 +226,11 @@
                   groupingEnabled: true,
                   groupingSeparator: '.'
                 }
-              }" />
+              }">
+            <layoutData>
+              <l:GridData span="XL3 L3 M3 S8" />
+            </layoutData>
+          </Input>
 
           <Label text="Peso Líquido" visible="{= ${ui>/nfeMode} === true }" />
           <Input
@@ -256,7 +245,74 @@
                   groupingEnabled: true,
                   groupingSeparator: '.'
                 }
-              }" />
+              }">
+            <layoutData>
+              <l:GridData span="XL3 L3 M3 S8" />
+            </layoutData>
+          </Input>
+
+          <Label text="Qtde. Volumes" visible="{= ${ui>/nfeMode} === true }" />
+          <Input
+              visible="{= ${ui>/nfeMode} === true }"
+              editable="{ui>/editable}"
+              value="{VolumeQuantity}">
+            <layoutData>
+              <l:GridData span="XL3 L3 M3 S8" />
+            </layoutData>
+          </Input>
+
+          <Label text="Espécie" visible="{= ${ui>/nfeMode} === true }" />
+          <Input
+              visible="{= ${ui>/nfeMode} === true }"
+              editable="{ui>/editable}"
+              value="{VolumeSpecies}"
+              maxLength="60"
+              placeholder="GRANEL, SACO, BAG, CAIXA" />
+
+          <Label text="Marca" visible="{= ${ui>/nfeMode} === true }" />
+          <Input
+              visible="{= ${ui>/nfeMode} === true }"
+              editable="{ui>/editable}"
+              value="{VolumeBrand}"
+              maxLength="60" />
+
+          <Label text="Numeração" visible="{= ${ui>/nfeMode} === true }" />
+          <Input
+              visible="{= ${ui>/nfeMode} === true }"
+              editable="{ui>/editable}"
+              value="{VolumeNumbering}"
+              maxLength="60" />
+
+          <!-- Na entrada de terceiro são os dados da nota do fornecedor, digitados ou lidos do XML. No modo NF-e
+               quem grava número, série e chave é a emissão. -->
+          <core:Title text="Dados da NF-e" />
+
+          <Label text="Número" />
+          <Input value="{TaxDocumentNumber}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="9" />
+
+          <Label text="Série" />
+          <Input value="{TaxDocumentSeries}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="3" />
+
+          <!-- A chave tem 44 dígitos: maxLength menor trunca em silêncio na digitação. -->
+          <Label text="Chave de Acesso" />
+          <Input value="{ChaveNFe}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="44" />
+
+          <core:Title text="Informações Complementares" />
+          <!-- Entrada de terceiro: é AQUI que o emitente escreve número/série/chave e quantidade das notas de
+               origem; o layout da NF-e não amarra linha a origem, então este texto é a referência que o
+               operador usa para fazer a amarração na grade. Na emissão própria (modo NF-e) é o infCpl que o
+               operador escreve, ex.: o texto do Funrural, e vai na NF-e. -->
+          <Label text="{= ${ui>/nfeMode} === true ? 'Inf.Contribuinte' : 'Referências informadas pelo emitente' }" />
+          <TextArea
+              value="{TaxPayerComments}"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} === true }"
+              rows="5"
+              growing="true"
+              width="100%" />
+
+          <core:Title text="Outras Informações" />
+          <Label text="Observações" />
+          <TextArea value="{Comments}" editable="{ui>/editable}" rows="5" width="100%" />
         </f:content>
     </f:SimpleForm>
 </core:FragmentDefinition>

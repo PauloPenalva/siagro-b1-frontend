@@ -7,7 +7,6 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import formatter from "siagrob1/model/formatter";
-import { isValidAccessKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { blankItemRow, draftItemRows, ImportedInvoiceItem } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 import { BaseController } from "./BaseController";
 
@@ -147,16 +146,19 @@ export default class Add extends BaseController {
       IssuerType: "ThirdParty",
       BranchCode: branchCode ?? null,
       PaymentConditionCode: null,
-      ReferencedAccessKey: null,
       IsNfeReturn: false,
-      // Transporte e pesos da NF-e: precisam existir no payload inicial (entidade transiente). Frete "None" =
-      // modFrete 9, o que todas as entradas reais usam; sem a chave o servidor assume Cif.
+      // Transporte, pesos e volume da NF-e: precisam existir no payload inicial (entidade transiente). Frete
+      // "None" = modFrete 9, o que todas as entradas reais usam; sem a chave o servidor assume Cif.
       TruckingCompanyCode: null,
       TruckingCompanyName: null,
       TruckCode: null,
       FreightTerms: "None",
       GrossWeight: 0,
       NetWeight: 0,
+      VolumeQuantity: null,
+      VolumeSpecies: null,
+      VolumeBrand: null,
+      VolumeNumbering: null,
       CardCode: draft?.CardCode ?? "",
       CardName: draft?.CardName ?? "",
       InvoiceNumber: null,
@@ -236,12 +238,6 @@ export default class Add extends BaseController {
     // carrega a referência e o saldo; o servidor recusaria esta (por isso vem antes da checagem de natureza).
     if (nfeMode && oContext.getProperty("IssuerType") === "Own" && oContext.getProperty("InvoiceType") === "Return") {
       MessageBox.warning("Na filial que emite NF-e pelo Siagro, a devolução de compra é feita pelo botão Devolver, no detalhe do documento de entrada.");
-      return;
-    }
-
-    const referencedKey = oContext.getProperty("ReferencedAccessKey") as string;
-    if (nfeMode && referencedKey && !isValidAccessKey(referencedKey)) {
-      MessageBox.warning("A chave da NF-e referenciada é inválida.");
       return;
     }
 

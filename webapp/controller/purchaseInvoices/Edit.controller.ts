@@ -7,7 +7,7 @@ import MessageToast from "sap/m/MessageToast";
 import MessageBox from "sap/m/MessageBox";
 import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
-import { PURCHASE_ITEM_SELECT, isValidAccessKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
+import { PURCHASE_ITEM_SELECT } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 
@@ -116,12 +116,6 @@ export default class Edit extends BaseController {
     const oBinding = oTable?.getBinding("rows") as ODataListBinding;
 
     const nfeMode = (this.getModel("ui") as JSONModel).getProperty("/nfeMode") === true;
-
-    const referencedKey = oContext.getProperty("ReferencedAccessKey") as string;
-    if (nfeMode && referencedKey && !isValidAccessKey(referencedKey)) {
-      MessageBox.warning("A chave da NF-e referenciada é inválida.");
-      return;
-    }
 
     if (nfeMode) {
       const withoutUsage = (oBinding?.getAllCurrentContexts() ?? []).filter(ctx => !ctx.getProperty("UsageCode"));

@@ -28,25 +28,6 @@ export function canReturnPurchase(doc: PurchaseNfeState, nfeMode: boolean): bool
 		doc.InvoiceStatus === "Confirmed" && doc.NfeStatus === "Authorized";
 }
 
-/** 44 dígitos (o resto é descartado) e dígito verificador mod 11, como o servidor confere. */
-export function isValidAccessKey(value: string): boolean {
-	const key = (value ?? "").replace(/\D/g, "");
-
-	if (key.length !== 44) {
-		return false;
-	}
-
-	let sum = 0;
-	let weight = 2;
-	for (let i = 42; i >= 0; i--) {
-		sum += Number(key[i]) * weight;
-		weight = weight === 9 ? 2 : weight + 1;
-	}
-
-	const digit = 11 - (sum % 11);
-	return (digit >= 10 ? 0 : digit) === Number(key[43]);
-}
-
 /**
  * $select das linhas no Detail/Edit. Explícito porque as colunas fiscais só aparecem no modo NF-e — informação
  * que ainda não chegou quando o UI5 monta o $select automático — e o diálogo fiscal lê a fotografia inteira.
