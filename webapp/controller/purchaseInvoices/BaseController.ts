@@ -10,7 +10,7 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
-import { isPurchaseNfeMode, mustFallBackToNormal } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
+import { isPurchaseNfeMode, isPurchaseTaxMode, mustFallBackToNormal, requiresSupplierKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { summarizeInvoiceTaxes, TaxLine } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 
 /** Sequência compartilhada por Add/Edit/Detail: só a chamada mais recente de refreshNfeMode escreve no `ui`. */
@@ -26,8 +26,9 @@ export abstract class BaseController extends CommonController {
   private itemFiscalDialog: Dialog;
 
   /**
-   * Modo NF-e do documento ligado à view: filial que emite pelo Siagro (`/taxLocked`) e emissão própria
-   * (`/nfeMode`); devolução de compra (`/nfeReturn`); nome da condição de pagamento.
+   * Modo NF-e do documento ligado à view: filial que emite pelo Siagro (`/taxLocked`), emissão própria
+   * (`/nfeMode`), cálculo de tributos e natureza (`/taxMode`: própria e terceiro Normal); devolução de compra
+   * (`/nfeReturn`); nome da condição de pagamento.
    *
    * O modelo `ui` é do componente e as três telas (Add/Edit/Detail) escrevem nele, então uma chamada lenta
    * não pode sobrescrever a de um documento mais novo: cada chamada tira um número de sequência e, depois de
@@ -46,6 +47,7 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/taxLocked", false);
       uiModel.setProperty("/nfeMode", false);
       uiModel.setProperty("/nfeReturn", false);
+      uiModel.setProperty("/taxMode", false);
     }
 
     if (!oContext) {
@@ -68,6 +70,10 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/taxLocked", taxLocked);
       uiModel.setProperty("/nfeMode", nfeMode);
       uiModel.setProperty("/nfeReturn", isNfeReturn);
+      // Natureza, CFOP, "Tributos do item", condição de pagamento e Transporte: própria e terceiro Normal, com a
+      // mesma tela (spec terceiro-chave D1).
+      const taxMode = isPurchaseTaxMode(taxLocked, issuerType, invoiceType);
+      uiModel.setProperty("/taxMode", taxMode);
 
       // No modo NF-e o tipo fica travado em Normal (a devolução de compra própria é feita pelo "Devolver"); uma
       // Devolução escolhida antes de a emissão virar Própria volta para Normal. setProperty sem await: grupo diferido.
@@ -76,8 +82,9 @@ export abstract class BaseController extends CommonController {
         MessageToast.show("Na filial que emite NF-e pelo Siagro, a devolução de compra é feita pelo botão Devolver, no detalhe do documento de entrada.");
       }
 
-      // O nome da condição só aparece no modo NF-e e fora da devolução de compra (que não tem pagamento).
-      if (nfeMode && !isNfeReturn) {
+      // O nome da condição aparece com a condição (própria e terceiro Normal) e fora da devolução de compra (que não
+      // tem pagamento).
+      if (taxMode && !isNfeReturn) {
         await this.refreshPaymentConditionName(paymentConditionCode);
       } else {
         uiModel.setProperty("/paymentConditionName", "");
@@ -87,8 +94,24 @@ export abstract class BaseController extends CommonController {
         uiModel.setProperty("/taxLocked", false);
         uiModel.setProperty("/nfeMode", false);
         uiModel.setProperty("/nfeReturn", false);
+        uiModel.setProperty("/taxMode", false);
       }
     }
+  }
+
+  /**
+   * A chave da NF-e do fornecedor é obrigatória (terceiro Normal do tipo NF-e na filial que emite pelo Siagro) e
+   * está em branco. Quem decide de verdade é o servidor; isto evita o ida e volta.
+   */
+  protected isSupplierKeyMissing(oContext: Context): boolean {
+    const doc = {
+      IssuerType: oContext.getProperty("IssuerType") as string,
+      InvoiceType: oContext.getProperty("InvoiceType") as string,
+      TaxDocumentKind: oContext.getProperty("TaxDocumentKind") as string,
+    };
+    const taxLocked = (this.getModel("ui") as JSONModel).getProperty("/taxLocked") === true;
+
+    return requiresSupplierKey(doc, taxLocked) && !((oContext.getProperty("ChaveNFe") as string) ?? "").trim();
   }
 
   /** Trocar a filial ou a emissão muda o modo NF-e (a natureza e os tributos passam a valer, ou deixam). */
@@ -100,8 +123,13 @@ export abstract class BaseController extends CommonController {
     void this.refreshNfeMode(false);
   }
 
+  /** Trocar o tipo (Normal/Devolução) do terceiro liga ou desliga o cálculo: a devolução do cliente não tem natureza. */
+  onInvoiceTypeChange() {
+    void this.refreshNfeMode(false);
+  }
+
   /**
-   * Natureza da LINHA da entrada própria: só naturezas de Entrada ativas ($filter estático do enum). O Input
+   * Natureza da LINHA da entrada que calcula tributos (própria e terceiro Normal): só naturezas de Entrada ativas ($filter estático do enum). O Input
    * mostra o nome (`UsageName`) e quem vale para o servidor é o `UsageCode`; os tributos aparecem depois de
    * salvar (o cálculo é do servidor). setProperty sem await: o grupo é diferido.
    */

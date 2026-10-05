@@ -7,6 +7,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import formatter from "siagrob1/model/formatter";
+import { missingUsageMessage } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { blankItemRow, draftItemRows, ImportedInvoiceItem, toNumber } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 import { BaseController } from "./BaseController";
 
@@ -144,6 +145,7 @@ export default class Add extends BaseController {
     const oContext = oBinding.create({
       InvoiceType: "Normal",
       IssuerType: "ThirdParty",
+      TaxDocumentKind: "Nfe",
       BranchCode: branchCode ?? null,
       PaymentConditionCode: null,
       IsNfeReturn: false,
@@ -232,7 +234,9 @@ export default class Add extends BaseController {
     const oTable = this.byId("tablePurchaseInvoiceItems");
     const oBinding = oTable?.getBinding("rows") as ODataListBinding;
 
-    const nfeMode = (this.getModel("ui") as JSONModel).getProperty("/nfeMode") === true;
+    const uiModel = this.getModel("ui") as JSONModel;
+    const nfeMode = uiModel.getProperty("/nfeMode") === true;
+    const taxMode = uiModel.getProperty("/taxMode") === true;
 
     // A devolução de compra da filial que emite NF-e nasce só pelo "Devolver" do detalhe da entrada, que
     // carrega a referência e o saldo; o servidor recusaria esta (por isso vem antes da checagem de natureza).
@@ -241,12 +245,17 @@ export default class Add extends BaseController {
       return;
     }
 
-    if (nfeMode) {
+    if (taxMode) {
       const withoutUsage = (oBinding?.getAllCurrentContexts() ?? []).filter(ctx => !ctx.getProperty("UsageCode"));
       if (withoutUsage.length > 0) {
-        MessageBox.warning("Informe a natureza de operação de todos os itens: a NF-e de entrada é calculada por ela.");
+        MessageBox.warning(missingUsageMessage(withoutUsage.map(ctx => ctx.getProperty("ItemCode") as string)));
         return;
       }
+    }
+
+    if (this.isSupplierKeyMissing(oContext)) {
+      MessageBox.warning("Informe a chave de acesso da NF-e do fornecedor.");
+      return;
     }
 
     // Aviso, não bloqueio: amarrar depois é caminho legítimo, e a conciliação só fica
