@@ -15,6 +15,7 @@ export default class Add extends CommonController {
 		
     this.clearStates("formBranchs");
     void this.refreshStandaloneFlag();
+    this.setThirdPartyReturnUsageDescription("");
     
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;

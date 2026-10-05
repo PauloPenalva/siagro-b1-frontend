@@ -16,6 +16,7 @@ export default class Edit extends CommonController {
 	private editRouteMatched(ev: Route$MatchedEvent) {
 		this.clearStates("formBranchs");
 		void this.refreshStandaloneFlag();
+		this.setThirdPartyReturnUsageDescription("");
     
     const oModel = this.getView().getModel() as ODataModel;
 		const oView = this.getView();
@@ -31,7 +32,12 @@ export default class Edit extends CommonController {
 				path: sPath,
 				events: {
 					dataRequested: () => this.setBusy(true),
-					dataReceived: () => this.setBusy(false),
+					dataReceived: () => {
+						this.setBusy(false);
+						const ctx = oView.getBindingContext();
+						void this.loadThirdPartyReturnUsageDescription(ctx?.getProperty("ThirdPartyPurchaseReturnUsageCode") as number)
+							.catch(() => this.setThirdPartyReturnUsageDescription(""));
+					},
 				}
 			})
 			return;

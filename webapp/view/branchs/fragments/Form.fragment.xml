@@ -87,6 +87,7 @@
                  visible="{= ${ui>/standalone} === true &amp;&amp; ${path: 'IssuesNfe', targetType: 'any'} === true }" />
           <!-- ui5lint-disable no-deprecated-api -->
           <Input
+            id="thirdPartyReturnUsage"
             value="{ThirdPartyPurchaseReturnUsageCode}"
             showValueHelp="true"
             valueHelpOnly="true"

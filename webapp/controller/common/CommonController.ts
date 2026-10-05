@@ -447,6 +447,24 @@ export default abstract class CommonController extends BaseController {
     }
 
     void oTarget.setProperty("ThirdPartyPurchaseReturnUsageCode", oSelected.getProperty("Code"));
+    this.setThirdPartyReturnUsageDescription(oSelected.getProperty("Name") as string);
+  }
+
+  /** Nome da natureza ao lado do código no formulário da filial (spec terceiro §11). */
+  protected setThirdPartyReturnUsageDescription(name: string) {
+    (this.byId("thirdPartyReturnUsage") as Input)?.setDescription(name ?? "");
+  }
+
+  /** Lê o nome da natureza pelo código gravado na filial; sem código, limpa a descrição. */
+  protected async loadThirdPartyReturnUsageDescription(code: number) {
+    if (code === null || code === undefined) {
+      this.setThirdPartyReturnUsageDescription("");
+      return;
+    }
+
+    const usage = await (this.getView().getModel() as ODataModel)
+      .bindContext(`/Usages(${code})`).requestObject() as { Name: string };
+    this.setThirdPartyReturnUsageDescription(usage?.Name);
   }
 
     async formartCustomerTaxId(key: string){
