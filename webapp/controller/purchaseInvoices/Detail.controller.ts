@@ -18,17 +18,13 @@ import { nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
 import { ReturnableRow, prefillNfeReturnRows, hasReturnableBalance, buildNfeReturnPayload } from "siagrob1/helpers/NfeReturnHelpers";
 import {
   PURCHASE_ITEM_SELECT, PurchaseNfeState, buildPurchaseItemNumbers, canIssuePurchaseNfe, canReturnPurchase,
-  canReturnThirdPartyPurchase,
+  canReturnThirdPartyPurchase, PurchaseReturnItemRow,
 } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { BaseController } from "./BaseController";
 
 /** Linha do "Devolver" da entrada: o comprado no lugar do vendido. */
-type PurchaseReturnRow = ReturnableRow & {
+type PurchaseReturnRow = ReturnableRow & PurchaseReturnItemRow & {
   ItemName: string; PurchasedQuantity: number; ReturnedQuantity: number;
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- strictNullChecks desligado; null é intencional
-  ItemNumber: number | null;
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- strictNullChecks desligado; null é intencional
-  TypedItemNumber: number | null;
 };
 
 /**
@@ -257,7 +253,7 @@ export default class Detail extends BaseController {
       ?.findAggregatedObjects(true, (c) => c.isA("sap.m.Input") && (c as Input).getValueState() === ValueState.Error);
 
     if (invalidInput?.length) {
-      MessageBox.warning("Corrija as quantidades marcadas em vermelho.");
+      MessageBox.warning("Corrija os campos marcados em vermelho.");
       return;
     }
 
@@ -272,7 +268,8 @@ export default class Detail extends BaseController {
     }
 
     const numbers = buildPurchaseItemNumbers(
-      model.getProperty("/rows") as PurchaseReturnRow[], built.payload.OriginItemKeys);
+      model.getProperty("/rows") as PurchaseReturnRow[], built.payload.OriginItemKeys,
+      ctx.getProperty("IssuerType") === "ThirdParty");
 
     if (numbers.ok === false) {
       MessageBox.warning(numbers.message);

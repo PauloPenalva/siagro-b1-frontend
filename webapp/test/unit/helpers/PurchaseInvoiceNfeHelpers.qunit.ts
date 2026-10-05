@@ -67,8 +67,8 @@ QUnit.test("número do item: zero quando a linha já tem, o digitado quando falt
 		{ OriginItemKey: "b", ItemCode: "MILHO", ItemNumber: null, TypedItemNumber: 3 },
 	];
 
-	assert.deepEqual(buildPurchaseItemNumbers(rows, ["a", "b"]), { ok: true, itemNumbers: [0, 3] });
-	assert.deepEqual(buildPurchaseItemNumbers(rows.slice(0, 1), ["a"]), { ok: true, itemNumbers: [0] }, "entrada própria: só zeros");
+	assert.deepEqual(buildPurchaseItemNumbers(rows, ["a", "b"], true), { ok: true, itemNumbers: [0, 3] });
+	assert.deepEqual(buildPurchaseItemNumbers(rows.slice(0, 1), ["a"], true), { ok: true, itemNumbers: [0] }, "linha que já tem número");
 });
 
 QUnit.test("número do item faltando, fora de 1 a 990 ou repetido é recusado", function (assert) {
@@ -77,7 +77,39 @@ QUnit.test("número do item faltando, fora de 1 a 990 ou repetido é recusado", 
 		{ OriginItemKey: "b", ItemCode: "MILHO", ItemNumber: null, TypedItemNumber: typed },
 	];
 
-	assert.deepEqual(buildPurchaseItemNumbers(row(null), ["b"]), { ok: false, message: "Item MILHO: informe o número do item na NF-e do fornecedor." });
-	assert.deepEqual(buildPurchaseItemNumbers(row(991), ["b"]), { ok: false, message: "Item MILHO: informe o número do item na NF-e do fornecedor." });
-	assert.deepEqual(buildPurchaseItemNumbers(row(1), ["b"]), { ok: false, message: "Item MILHO: o número 1 já é de outro item desta NF-e do fornecedor." });
+	assert.deepEqual(buildPurchaseItemNumbers(row(null), ["b"], true), { ok: false, message: "Item MILHO: informe o número do item na NF-e do fornecedor." });
+	assert.deepEqual(buildPurchaseItemNumbers(row(991), ["b"], true), { ok: false, message: "Item MILHO: informe o número do item na NF-e do fornecedor." });
+	assert.deepEqual(buildPurchaseItemNumbers(row(1), ["b"], true), { ok: false, message: "Item MILHO: o número 1 já é de outro item desta NF-e do fornecedor." });
+});
+
+QUnit.test("entrada própria: zeros mesmo com linha sem número", function (assert) {
+	const rows = [{ OriginItemKey: "b", ItemCode: "MILHO", ItemNumber: null as number, TypedItemNumber: null as number }];
+
+	assert.deepEqual(buildPurchaseItemNumbers(rows, ["b", "x"], false), { ok: true, itemNumbers: [0, 0] });
+});
+
+QUnit.test("dois números digitados iguais na mesma devolução: o segundo é recusado", function (assert) {
+	const rows = [
+		{ OriginItemKey: "a", ItemCode: "TRIGO", ItemNumber: null as number, TypedItemNumber: 5 },
+		{ OriginItemKey: "b", ItemCode: "MILHO", ItemNumber: null as number, TypedItemNumber: 5 },
+	];
+
+	assert.deepEqual(buildPurchaseItemNumbers(rows, ["a", "b"], true),
+		{ ok: false, message: "Item MILHO: o número 5 já é de outro item desta NF-e do fornecedor." });
+});
+
+QUnit.test("número do item 0, negativo ou fracionado é recusado", function (assert) {
+	const msg = "Item MILHO: informe o número do item na NF-e do fornecedor.";
+
+	for (const typed of [0, -1, 2.5]) {
+		const rows = [{ OriginItemKey: "b", ItemCode: "MILHO", ItemNumber: null as number, TypedItemNumber: typed }];
+
+		assert.deepEqual(buildPurchaseItemNumbers(rows, ["b"], true), { ok: false, message: msg }, `digitado ${typed}`);
+	}
+});
+
+QUnit.test("chave que não está nas linhas dá 0", function (assert) {
+	const rows = [{ OriginItemKey: "a", ItemCode: "TRIGO", ItemNumber: 1, TypedItemNumber: null as number }];
+
+	assert.deepEqual(buildPurchaseItemNumbers(rows, ["zzz"], true), { ok: true, itemNumbers: [0] });
 });

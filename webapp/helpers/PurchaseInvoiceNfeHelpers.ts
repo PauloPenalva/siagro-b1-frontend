@@ -49,11 +49,17 @@ export type PurchaseReturnItemRow = {
 
 /**
  * `ItemNumbers` da action, paralelo a `keys`: 0 quando a linha de origem já tem o número (o servidor usa o dela), o
- * digitado quando falta (1 a 990, sem repetir no documento). Quem decide de verdade é o servidor.
+ * digitado quando falta (1 a 990, sem repetir no documento). Só a entrada de terceiro valida o digitado: na própria
+ * (`thirdParty` falso) a coluna não existe, então vai um 0 por chave e o servidor dá a mensagem certa. Quem decide de
+ * verdade é o servidor.
  */
 export function buildPurchaseItemNumbers(
-	rows: PurchaseReturnItemRow[], keys: string[]
+	rows: PurchaseReturnItemRow[], keys: string[], thirdParty: boolean
 ): { ok: true; itemNumbers: number[] } | { ok: false; message: string } {
+	if (thirdParty !== true) {
+		return { ok: true, itemNumbers: keys.map(() => 0) };
+	}
+
 	const present = (value: number) => value !== null && value !== undefined;
 	const used = new Set(rows.filter((r) => present(r.ItemNumber)).map((r) => Number(r.ItemNumber)));
 	const itemNumbers: number[] = [];
