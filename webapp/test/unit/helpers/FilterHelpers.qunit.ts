@@ -1,4 +1,5 @@
-import { anyOfFilter } from "siagrob1/helpers/FilterHelpers";
+import Filter from "sap/ui/model/Filter";
+import { anyOfFilter, unlockedUnitsOfMeasureFilter } from "siagrob1/helpers/FilterHelpers";
 
 QUnit.module("FilterHelpers - anyOfFilter (filtro de múltipla seleção)");
 
@@ -24,4 +25,14 @@ QUnit.test("vários valores viram um grupo de or entre parênteses", function (a
 
 QUnit.test("aspas simples no valor são escapadas", function (assert) {
 	assert.strictEqual(anyOfFilter("Code", ["D'Ávila"]), "Code eq 'D''Ávila'");
+});
+
+QUnit.module("FilterHelpers - unlockedUnitsOfMeasureFilter (value help de unidade)");
+
+QUnit.test("unidade sem a flag (Locked nulo) aparece junto com a liberada", function (assert) {
+	const filter = unlockedUnitsOfMeasureFilter();
+	const conditions = filter.getFilters().map((f: Filter): unknown[] => [f.getPath(), f.getOperator(), f.getValue1() as unknown]);
+
+	assert.strictEqual(filter.isAnd(), false, "as duas condições se unem com or");
+	assert.deepEqual(conditions, [["Locked", "EQ", "N"], ["Locked", "EQ", null]]);
 });

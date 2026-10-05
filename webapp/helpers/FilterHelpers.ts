@@ -1,3 +1,6 @@
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+
 /**
  * Condição de `$filter` para um filtro de múltipla seleção (MultiComboBox da filterbar).
  *
@@ -16,4 +19,21 @@ export function anyOfFilter(property: string, values: string[]): string {
   const conditions = values.map((value) => `${property} eq '${String(value).replace(/'/g, "''")}'`);
 
   return conditions.length === 1 ? conditions[0] : `(${conditions.join(" or ")})`;
+}
+
+/**
+ * Unidades de medida que os value helps listam: as liberadas (`Locked = 'N'`) E as sem a flag.
+ *
+ * Unidade importada ou criada por POST avulso nasce com `Locked` nulo; com o filtro só em `'N'` ela
+ * sumia de todas as telas (o campo UM da linha dos documentos vinha vazio na CEAGUI). Não dá para
+ * trocar por "diferente de 'Y'": no SQL, `ne` também descarta os nulos.
+ */
+export function unlockedUnitsOfMeasureFilter(): Filter {
+  return new Filter({
+    filters: [
+      new Filter("Locked", FilterOperator.EQ, "N"),
+      new Filter("Locked", FilterOperator.EQ, null),
+    ],
+    and: false,
+  });
 }

@@ -11,6 +11,7 @@ import RequestModel from "siagrob1/model/RequestModel";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
+import { unlockedUnitsOfMeasureFilter } from "siagrob1/helpers/FilterHelpers";
 import { BusinessPartner } from "siagrob1/types/BusinessPartner";
 import Dialog from "sap/m/Dialog";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
@@ -373,7 +374,7 @@ export default abstract class CommonController extends BaseController {
 
   openUnitsOfMeasureValueHelp(ev: Input$ValueHelpRequestEvent) {
     void this.applyValueHelp(ev, "UnitsOfMeasureSelectDialog", ["Code", "Description"], "Code",
-      [ new Filter("Locked", FilterOperator.EQ, "N") ]);
+      [ unlockedUnitsOfMeasureFilter() ]);
   }
 
   openHarvestSeasonsValueHelp(ev: Input$ValueHelpRequestEvent) {
