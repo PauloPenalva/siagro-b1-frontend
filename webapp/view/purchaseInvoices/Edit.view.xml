@@ -25,8 +25,8 @@
           <Title text="Editar Documento de Entrada {TaxDocumentNumber}"/>
         </uxap:snappedHeading>
         <uxap:actions>
-          <Button text="Incluir Item" icon="sap-icon://add" press=".onAddItem" />
-          <Button text="Excluir Item" icon="sap-icon://delete" press=".onRemoveItem" />
+          <Button text="Incluir Item" icon="sap-icon://add" enabled="{= ${ui>/nfeReturn} !== true }" press=".onAddItem" />
+          <Button text="Excluir Item" icon="sap-icon://delete" enabled="{= ${ui>/nfeReturn} !== true }" press=".onRemoveItem" />
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
     </uxap:headerTitle>

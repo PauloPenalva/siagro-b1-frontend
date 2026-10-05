@@ -24,7 +24,10 @@ export default class Main extends BaseController {
     this.createFilterModel();
 
     this.getRouter().getRoute("purchaseInvoices")
-      .attachPatternMatched(() => this.applyFilters());
+      .attachPatternMatched(() => {
+        void this.refreshStandaloneFlag().then(() => this.refreshAnyBranchIssuesNfe());
+        this.applyFilters();
+      });
   }
 
   onRefresh(): void {
@@ -103,6 +106,11 @@ export default class Main extends BaseController {
     if (oContext.getProperty("InvoiceStatus") !== "Pending") {
       MessageBox.warning(
         "Somente documento pendente pode ser alterado. Estorne a confirmação antes.");
+      return;
+    }
+
+    if (oContext.getProperty("NfeStatus") === "Processing") {
+      MessageBox.warning("A NF-e deste documento está em processamento na SEFAZ: aguarde e use Consultar situação.");
       return;
     }
 

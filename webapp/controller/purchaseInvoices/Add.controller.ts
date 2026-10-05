@@ -7,26 +7,8 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import formatter from "siagrob1/model/formatter";
+import { blankItemRow, draftItemRows, ImportedInvoiceItem } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 import { BaseController } from "./BaseController";
-
-/**
- * Linha enviada no deep-insert do documento.
- *
- * `Quantity` e `UnitPrice` vão como NÚMERO, não string. Verificado contra o servidor: o
- * desserializador OData recusa Edm.Decimal em string e o POST volta 400 "The entity field is
- * required" — o corpo inteiro falha ao vincular, sem mensagem sobre a linha culpada.
- */
-interface InvoiceItemPayload {
-  ItemCode: string;
-  ItemName: string;
-  UnitOfMeasureCode: string;
-  Quantity: number;
-  UnitPrice: number;
-  /** Nulo até o operador amarrar. (strictNullChecks off: `string` já admite null aqui.) */
-  SalesInvoiceItemKey: string;
-  /** Nulo até o operador amarrar. (strictNullChecks off: `string` já admite null aqui.) */
-  PurchaseContractKey: string;
-}
 
 /** Rascunho devolvido pela leitura do XML — não é gravado ainda. */
 interface ImportedInvoice {
@@ -39,13 +21,7 @@ interface ImportedInvoice {
   TotalDocumentValue: number;
   TaxPayerComments: string;
   XmlFileName: string;
-  Items: {
-    ItemCode: string;
-    ItemName: string;
-    UnitOfMeasureCode: string;
-    Quantity: number;
-    UnitPrice: number;
-  }[];
+  Items: ImportedInvoiceItem[];
 }
 
 /**
@@ -61,10 +37,10 @@ export default class Add extends BaseController {
 
   onInit(): void {
     this.getRouter().getRoute("purchaseInvoicesAdd")
-      .attachPatternMatched(() => this.newRouteMatched());
+      .attachPatternMatched(() => void this.newRouteMatched());
   }
 
-  private newRouteMatched() {
+  private async newRouteMatched() {
     this.clearStates("purchaseInvoicesForm");
 
     const uiModel = this.getModel("ui") as JSONModel;
@@ -73,6 +49,7 @@ export default class Add extends BaseController {
     // Tipo e emissão só se escolhem na criação: mudá-los depois invalidaria as amarrações.
     uiModel.setProperty("/typeEditable", true);
     uiModel.setProperty("/totalItems", "0,00");
+    uiModel.setProperty("/paymentConditionName", "");
 
     const oModel = this.getModel() as ODataModel;
 
@@ -82,7 +59,9 @@ export default class Add extends BaseController {
 
     // Documento nasce vazio, com uma linha em branco para a digitação manual. Importar XML
     // substitui tudo.
-    this.createDraft();
+    const branchInfo = await this.getBranchInfo();
+    this.createDraft(undefined, undefined, branchInfo?.code);
+    await this.refreshNfeMode();
   }
 
   /**
@@ -130,7 +109,10 @@ export default class Add extends BaseController {
 
       const draft = action.getBoundContext()?.getObject() as ImportedInvoice;
 
-      this.createDraft(draft, xmlContent);
+      // O rascunho do XML também recebe a filial da sessão.
+      const branchInfo = await this.getBranchInfo();
+      this.createDraft(draft, xmlContent, branchInfo?.code);
+      await this.refreshNfeMode();
 
       MessageToast.show(
         `XML lido: ${draft.Items?.length ?? 0} item(ns).`,
@@ -146,7 +128,7 @@ export default class Add extends BaseController {
    * TODA propriedade que a tela edita entra no create() inicial, nem que seja como null: sem
    * isso a primeira alteração abre "Must not change a property before it has been read".
    */
-  private createDraft(draft?: ImportedInvoice, xmlContent?: string) {
+  private createDraft(draft?: ImportedInvoice, xmlContent?: string, branchCode?: string) {
     const oModel = this.getModel() as ODataModel;
     const oBinding = oModel.bindList("/PurchaseInvoices");
 
@@ -159,25 +141,24 @@ export default class Add extends BaseController {
     // "Must not change a property before it has been read" na entidade transiente.
     const today = new Date().toISOString();
 
-    const items: InvoiceItemPayload[] = (draft?.Items ?? [{
-      ItemCode: "", ItemName: "", UnitOfMeasureCode: "", Quantity: 0, UnitPrice: 0,
-    }]).map<InvoiceItemPayload>(item => ({
-      ItemCode: item.ItemCode,
-      ItemName: item.ItemName,
-      UnitOfMeasureCode: item.UnitOfMeasureCode,
-      Quantity: item.Quantity ?? 0,
-      UnitPrice: item.UnitPrice ?? 0,
-      // Nasce sem amarração: o XML não carrega o vínculo com a NF de origem. Precisa EXISTIR no
-      // payload inicial, senão a primeira escolha no value help abre
-      // "Must not change a property before it has been read".
-      SalesInvoiceItemKey: null,
-      // Idem para a amarração com o contrato de compra: nasce nula até o operador escolher.
-      PurchaseContractKey: null,
-    }));
-
     const oContext = oBinding.create({
       InvoiceType: "Normal",
       IssuerType: "ThirdParty",
+      BranchCode: branchCode ?? null,
+      PaymentConditionCode: null,
+      IsNfeReturn: false,
+      // Transporte, pesos e volume da NF-e: precisam existir no payload inicial (entidade transiente). Frete
+      // "None" = modFrete 9, o que todas as entradas reais usam; sem a chave o servidor assume Cif.
+      TruckingCompanyCode: null,
+      TruckingCompanyName: null,
+      TruckCode: null,
+      FreightTerms: "None",
+      GrossWeight: 0,
+      NetWeight: 0,
+      VolumeQuantity: null,
+      VolumeSpecies: null,
+      VolumeBrand: null,
+      VolumeNumbering: null,
       CardCode: draft?.CardCode ?? "",
       CardName: draft?.CardName ?? "",
       InvoiceNumber: null,
@@ -194,10 +175,18 @@ export default class Add extends BaseController {
       XmlData: xmlContent
         ? btoa(unescape(encodeURIComponent(xmlContent)))
         : null,
-      Items: items,
     }, false, false, false);
 
     this.getView().setBindingContext(oContext);
+
+    // As linhas entram pelo binding da tabela, como no "Incluir Item": aninhadas no create() acima elas
+    // existiam no modelo mas a tabela não as mostrava, e o primeiro "Incluir Item" fazia aparecer duas.
+    // Cada create() sem bAtEnd entra no TOPO, por isso a lista vai de trás para a frente.
+    const oItems = (this.byId("tablePurchaseInvoiceItems") as Table)?.getBinding("rows") as ODataListBinding;
+    for (const row of draftItemRows(draft?.Items).reverse()) {
+      oItems?.create(row, false, false, false);
+    }
+
     this.refreshDocumentTotal();
   }
 
@@ -209,10 +198,7 @@ export default class Add extends BaseController {
       return;
     }
 
-    oBinding.create({
-      ItemCode: "", ItemName: "", UnitOfMeasureCode: "",
-      Quantity: 0, UnitPrice: 0, SalesInvoiceItemKey: null, PurchaseContractKey: null,
-    }, false, false, false);
+    oBinding.create(blankItemRow(), false, false, false);
 
     this.refreshDocumentTotal();
   }
@@ -245,6 +231,23 @@ export default class Add extends BaseController {
 
     const oTable = this.byId("tablePurchaseInvoiceItems");
     const oBinding = oTable?.getBinding("rows") as ODataListBinding;
+
+    const nfeMode = (this.getModel("ui") as JSONModel).getProperty("/nfeMode") === true;
+
+    // A devolução de compra da filial que emite NF-e nasce só pelo "Devolver" do detalhe da entrada, que
+    // carrega a referência e o saldo; o servidor recusaria esta (por isso vem antes da checagem de natureza).
+    if (nfeMode && oContext.getProperty("IssuerType") === "Own" && oContext.getProperty("InvoiceType") === "Return") {
+      MessageBox.warning("Na filial que emite NF-e pelo Siagro, a devolução de compra é feita pelo botão Devolver, no detalhe do documento de entrada.");
+      return;
+    }
+
+    if (nfeMode) {
+      const withoutUsage = (oBinding?.getAllCurrentContexts() ?? []).filter(ctx => !ctx.getProperty("UsageCode"));
+      if (withoutUsage.length > 0) {
+        MessageBox.warning("Informe a natureza de operação de todos os itens: a NF-e de entrada é calculada por ela.");
+        return;
+      }
+    }
 
     // Aviso, não bloqueio: amarrar depois é caminho legítimo, e a conciliação só fica
     // incompleta enquanto isso. Só faz sentido na devolução.

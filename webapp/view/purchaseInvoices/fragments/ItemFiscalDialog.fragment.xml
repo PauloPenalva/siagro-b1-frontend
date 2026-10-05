@@ -1,0 +1,77 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<Dialog
+		core:require="{ Decimal: 'sap/ui/model/odata/type/Decimal' }"
+		title="Tributos do item {ItemCode}"
+		contentWidth="48rem"
+		class="sapUiSizeCompact">
+		<content>
+			<!-- A fotografia do cálculo pela natureza: travada, quem grava é o servidor ao salvar. -->
+			<f:SimpleForm editable="false" layout="ResponsiveGridLayout" labelSpanL="5" labelSpanM="5" columnsL="2" columnsM="2">
+				<f:content>
+					<core:Title text="Operação" />
+					<Label text="Natureza" />
+					<Text text="{UsageName}" />
+					<Label text="CFOP" />
+					<Text text="{Cfop}" />
+					<Label text="NCM" />
+					<Text text="{Ncm}" />
+					<Label text="Origem" />
+					<Text text="{GoodsOrigin}" />
+					<Label text="Nº do item na NF-e" />
+					<Text text="{NfeItemNumber}" />
+
+					<core:Title text="ICMS" />
+					<Label text="CST/CSOSN" />
+					<Text text="{CstIcms}" />
+					<Label text="Base" />
+					<Text text="{ path: 'IcmsBase', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
+					<Label text="Alíquota %" />
+					<Text text="{ path: 'IcmsRate', type: 'Decimal', constraints: { precision: 7, scale: 4 } }" />
+					<Label text="Redução da base %" />
+					<Text text="{ path: 'IcmsBaseReduction', type: 'Decimal', constraints: { precision: 7, scale: 4 } }" />
+					<Label text="ICMS da operação" />
+					<Text text="{ path: 'IcmsOperationValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
+					<Label text="Diferimento %" />
+					<Text text="{ path: 'IcmsDeferral', type: 'Decimal', constraints: { precision: 7, scale: 4 } }" />
+					<Label text="ICMS diferido" />
+					<Text text="{ path: 'IcmsDeferredValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
+					<Label text="ICMS" />
+					<Text text="{ path: 'IcmsValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
+					<Label text="cBenef" />
+					<Text text="{IcmsBenefitCode}" />
+
+					<core:Title text="PIS / COFINS" />
+					<Label text="CST PIS" />
+					<Text text="{CstPis}" />
+					<Label text="PIS" />
+					<Text text="{ path: 'PisValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
+					<Label text="CST COFINS" />
+					<Text text="{CstCofins}" />
+					<Label text="COFINS" />
+					<Text text="{ path: 'CofinsValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
+
+					<core:Title text="IBS / CBS" />
+					<Label text="CST / cClassTrib" />
+					<HBox>
+						<Text text="{IbsCbsCst}" class="sapUiTinyMarginEnd" />
+						<Text text="{IbsCbsClassCode}" />
+					</HBox>
+					<Label text="Base" />
+					<Text text="{ path: 'IbsCbsBase', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
+					<Label text="CBS" />
+					<Text text="{ path: 'CbsValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
+					<Label text="IBS estadual" />
+					<Text text="{ path: 'IbsStateValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
+					<Label text="IBS municipal" />
+					<Text text="{ path: 'IbsMunicipalValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
+				</f:content>
+			</f:SimpleForm>
+		</content>
+		<endButton>
+			<Button text="Fechar" press=".onCloseItemFiscal" />
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

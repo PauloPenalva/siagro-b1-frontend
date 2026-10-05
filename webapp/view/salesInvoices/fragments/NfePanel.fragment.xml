@@ -20,8 +20,8 @@
       <Text text="{ path: 'NfeAuthorizedAt', targetType: 'any', formatter: '.formatter.formatDateTime' }" />
       <Label text="Último retorno" />
       <Text text="{= ${NfeStatusCode} ? ${NfeStatusCode} + ' - ' + ${NfeStatusReason} : ${NfeStatusReason} }" />
-      <Label text="Confirmação" visible="{= !!${NfeConfirmationError} }" />
-      <MessageStrip type="Warning" showIcon="true" text="{NfeConfirmationError}" visible="{= !!${NfeConfirmationError} }" />
+      <Label text="Confirmação" visible="{= !!${path: 'NfeConfirmationError', targetType: 'any'} }" />
+      <MessageStrip type="Warning" showIcon="true" text="{NfeConfirmationError}" visible="{= !!${path: 'NfeConfirmationError', targetType: 'any'} }" />
     </f:content>
   </f:SimpleForm>
 </core:FragmentDefinition>

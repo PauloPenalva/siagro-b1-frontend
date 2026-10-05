@@ -7,6 +7,7 @@ import MessageToast from "sap/m/MessageToast";
 import MessageBox from "sap/m/MessageBox";
 import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import { PURCHASE_ITEM_SELECT } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 
@@ -53,15 +54,16 @@ export default class Edit extends BaseController {
     // `Items({key})/AssessedShortage`, rota que o backend não expõe: 404 e colunas em branco.
     this.bindElement(`/PurchaseInvoices(${id})`, {
       $expand:
-        "Items($select=Key,ItemCode,ItemName,UnitOfMeasureCode,Quantity,UnitPrice,Total," +
-        "AssessedShortage,Difference,SalesInvoiceItemKey,PurchaseContractKey" +
-        ";$expand=SalesInvoiceItem($expand=SalesInvoice),PurchaseContract($select=Key,Code))",
+        `Items($select=${PURCHASE_ITEM_SELECT};` +
+        "$expand=SalesInvoiceItem($expand=SalesInvoice),PurchaseContract($select=Key,Code))",
     });
 
     // Depois que os dados CHEGAM, não junto do bindElement: o bind é assíncrono e somar aqui
     // percorreria uma lista ainda vazia, deixando "Total dos itens" parado em 0,00 para sempre.
     this.getView().getElementBinding()
       ?.attachEventOnce("dataReceived", () => this.refreshDocumentTotal());
+
+    void this.refreshNfeMode();
   }
 
   onAddItem() {
@@ -78,6 +80,7 @@ export default class Edit extends BaseController {
     oBinding.create({
       ItemCode: "", ItemName: "", UnitOfMeasureCode: "",
       Quantity: 0, UnitPrice: 0, SalesInvoiceItemKey: null, PurchaseContractKey: null,
+      UsageCode: null, UsageName: null,
     }, false, false, false);
 
     this.refreshDocumentTotal();
@@ -111,6 +114,16 @@ export default class Edit extends BaseController {
 
     const oTable = this.byId("tablePurchaseInvoiceItems");
     const oBinding = oTable?.getBinding("rows") as ODataListBinding;
+
+    const nfeMode = (this.getModel("ui") as JSONModel).getProperty("/nfeMode") === true;
+
+    if (nfeMode) {
+      const withoutUsage = (oBinding?.getAllCurrentContexts() ?? []).filter(ctx => !ctx.getProperty("UsageCode"));
+      if (withoutUsage.length > 0) {
+        MessageBox.warning("Informe a natureza de operação de todos os itens: a NF-e de entrada é calculada por ela.");
+        return;
+      }
+    }
 
     // Aviso, não bloqueio: amarrar depois é caminho legítimo, e a conciliação fiscal-contratual
     // fica incompleta enquanto isso. Só faz sentido no tipo Normal.

@@ -12,7 +12,6 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import Sorter from "sap/ui/model/Sorter";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
-import ServerRoutes from "siagrob1/model/ServerRoutes";
 import CommonController from "siagrob1/controller/common/CommonController";
 
 export abstract class BaseController extends CommonController {
@@ -107,18 +106,9 @@ export abstract class BaseController extends CommonController {
         return false;
       }
 
-      try {
-        const oModel = this.getView().getModel() as ODataModel;
-        const oFunction = oModel.bindContext(ServerRoutes.taxCalculationIsActive);
-        oFunction.setParameter("BranchCode", branchCode);
-        await oFunction.invoke();
-        const locked = oFunction.getBoundContext().getProperty("value") === true;
-        uiModel.setProperty("/taxLocked", locked);
-        return locked;
-      } catch {
-        uiModel.setProperty("/taxLocked", false);
-        return false;
-      }
+      const locked = await this.isTaxCalculationActive(branchCode);
+      uiModel.setProperty("/taxLocked", locked);
+      return locked;
     }
 
     /** Mesma consulta, com a filial do documento ligado à view (Edit/Detail). */

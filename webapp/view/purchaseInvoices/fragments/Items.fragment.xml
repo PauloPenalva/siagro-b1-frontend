@@ -22,6 +22,7 @@
       <OverflowToolbar>
         <content>
           <Title text="Itens" />
+          <Button text="Tributos do item" icon="sap-icon://simulate" press=".onOpenItemFiscal" visible="{= ${ui>/nfeMode} === true }" />
           <ToolbarSpacer />
           <ObjectNumber
             number="{ui>/totalItems}"
@@ -40,8 +41,8 @@
         <t:template>
           <Input
             value="{ItemCode}"
-            editable="{ui>/editable}"
-            showValueHelp="{ui>/editable}"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
+            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
             valueHelpOnly="true"
             valueHelpRequest=".openLineItemValueHelp">
             <customData>
@@ -57,12 +58,31 @@
           <Input value="{ItemName}" editable="false" />
         </t:template>
       </t:Column>
+      <!-- Natureza da linha (modo NF-e): só naturezas de Entrada. Na devolução de compra vem da natureza de
+           devolução da linha comprada e não muda. -->
+      <t:Column label="Natureza" width="14rem" visible="{= ${ui>/nfeMode} === true }">
+        <t:template>
+          <!-- ui5lint-disable no-deprecated-api -->
+          <Input
+            value="{UsageName}"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
+            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
+            valueHelpOnly="true"
+            valueHelpRequest=".openPurchaseUsageValueHelp" />
+          <!-- ui5lint-enable no-deprecated-api -->
+        </t:template>
+      </t:Column>
+      <t:Column label="CFOP" width="6rem" visible="{= ${ui>/nfeMode} === true }">
+        <t:template>
+          <Text text="{Cfop}" wrapping="false" />
+        </t:template>
+      </t:Column>
       <t:Column label="UM" width="6rem">
         <t:template>
           <Input
             value="{UnitOfMeasureCode}"
-            editable="{ui>/editable}"
-            showValueHelp="{ui>/editable}"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
+            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
             valueHelpOnly="true"
             valueHelpRequest=".openUnitsOfMeasureValueHelp" />
         </t:template>
@@ -92,7 +112,7 @@
       <t:Column label="Preço Unitário" width="11rem" hAlign="End">
         <t:template>
           <Input
-            editable="{ui>/editable}"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
             change=".onItemAmountChange"
             value="{
               path: 'UnitPrice',
@@ -141,7 +161,7 @@
       <!-- A AMARRAÇÃO, só relevante no tipo Devolução: manual, porque o XML da NF-e não diz
            qual linha veio de qual origem. O Input mostra a NF de origem e o value help grava
            a chave da linha. -->
-      <t:Column label="NF de Origem" width="12rem" visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Return' }">
+      <t:Column label="NF de Origem" width="12rem" visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Return' &amp;&amp; ${IsNfeReturn} !== true }">
         <t:template>
           <!-- OneWay é obrigatório: o campo exibe uma NAVEGAÇÃO, e quem grava é o
                `SalesInvoiceItemKey` da linha. No modo padrão (TwoWay) o `setValue` do value help
@@ -158,7 +178,7 @@
       </t:Column>
 
       <t:Column label="Quebra Apurada" width="11rem" hAlign="End"
-                visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Return' }">
+                visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Return' &amp;&amp; ${IsNfeReturn} !== true }">
         <t:template>
           <!-- Faturado − líquido recebido: é o volume que o fator efetivo já devolveu ao
                contrato, e o número que o fiscal precisa espelhar. -->
@@ -176,7 +196,7 @@
       </t:Column>
 
       <t:Column label="Diferença" width="11rem" hAlign="End"
-                visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Return' }">
+                visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Return' &amp;&amp; ${IsNfeReturn} !== true }">
         <t:template>
           <ObjectStatus
             text="{

@@ -3,8 +3,7 @@ import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import { ValueState } from "sap/ui/core/library";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
-import Filter from "sap/ui/model/Filter";
-import FilterOperator from "sap/ui/model/FilterOperator";
+import { unlockedUnitsOfMeasureFilter } from "siagrob1/helpers/FilterHelpers";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
@@ -80,7 +79,7 @@ export default class Complement extends BaseController {
   async onCommercialUnitOfMeasureValueHelp(): Promise<void> {
     const ctx = await DialogHelper.openTableSelectDialog(
       this, "UnitsOfMeasureSelectDialog", ["Code", "Description"],
-      [new Filter("Locked", FilterOperator.EQ, "N")]);
+      [unlockedUnitsOfMeasureFilter()]);
 
     if (!ctx) {
       return;

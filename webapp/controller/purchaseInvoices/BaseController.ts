@@ -3,11 +3,17 @@ import Context from "sap/ui/model/odata/v4/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageBox from "sap/m/MessageBox";
+import MessageToast from "sap/m/MessageToast";
+import Dialog from "sap/m/Dialog";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
+import { isPurchaseNfeMode, mustFallBackToNormal } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
+
+/** Sequência compartilhada por Add/Edit/Detail: só a chamada mais recente de refreshNfeMode escreve no `ui`. */
+let nfeModeSequence = 0;
 
 /**
  * Comum às telas do documento de entrada.
@@ -15,6 +21,125 @@ import CommonController from "siagrob1/controller/common/CommonController";
  * @namespace siagrob1.controller.purchaseInvoices
  */
 export abstract class BaseController extends CommonController {
+
+  private itemFiscalDialog: Dialog;
+
+  /**
+   * Modo NF-e do documento ligado à view: filial que emite pelo Siagro (`/taxLocked`) e emissão própria
+   * (`/nfeMode`); devolução de compra (`/nfeReturn`); nome da condição de pagamento.
+   *
+   * O modelo `ui` é do componente e as três telas (Add/Edit/Detail) escrevem nele, então uma chamada lenta
+   * não pode sobrescrever a de um documento mais novo: cada chamada tira um número de sequência e, depois de
+   * cada espera, só segue se ainda for a mais recente e o contexto da view for o mesmo.
+   *
+   * `reset`: zera as flags antes de esperar. Certo na troca de rota/documento (um true velho não pode aparecer
+   * no documento de outra filial); errado depois de uma ação no mesmo documento (a seção e os botões piscariam).
+   */
+  protected async refreshNfeMode(reset = true): Promise<void> {
+    const sequence = ++nfeModeSequence;
+    const uiModel = this.getModel("ui") as JSONModel;
+    const oContext = this.getView().getBindingContext() as Context;
+    const isCurrent = () => sequence === nfeModeSequence && this.getView().getBindingContext() === oContext;
+
+    if (reset || !oContext) {
+      uiModel.setProperty("/taxLocked", false);
+      uiModel.setProperty("/nfeMode", false);
+      uiModel.setProperty("/nfeReturn", false);
+    }
+
+    if (!oContext) {
+      return;
+    }
+
+    try {
+      const branchCode = await oContext.requestProperty("BranchCode") as string;
+      const issuerType = await oContext.requestProperty("IssuerType") as string;
+      const isNfeReturn = await oContext.requestProperty("IsNfeReturn") === true;
+      const invoiceType = await oContext.requestProperty("InvoiceType") as string;
+      const paymentConditionCode = await oContext.requestProperty("PaymentConditionCode") as number;
+      const taxLocked = await this.isTaxCalculationActive(branchCode);
+
+      if (!isCurrent()) {
+        return;
+      }
+
+      const nfeMode = isPurchaseNfeMode(taxLocked, issuerType);
+      uiModel.setProperty("/taxLocked", taxLocked);
+      uiModel.setProperty("/nfeMode", nfeMode);
+      uiModel.setProperty("/nfeReturn", isNfeReturn);
+
+      // No modo NF-e o tipo fica travado em Normal (a devolução de compra própria é feita pelo "Devolver"); uma
+      // Devolução escolhida antes de a emissão virar Própria volta para Normal. setProperty sem await: grupo diferido.
+      if (mustFallBackToNormal(invoiceType, isNfeReturn, nfeMode, uiModel.getProperty("/typeEditable") === true)) {
+        void oContext.setProperty("InvoiceType", "Normal");
+        MessageToast.show("Na filial que emite NF-e pelo Siagro, a devolução de compra é feita pelo botão Devolver, no detalhe do documento de entrada.");
+      }
+
+      // O nome da condição só aparece no modo NF-e e fora da devolução de compra (que não tem pagamento).
+      if (nfeMode && !isNfeReturn) {
+        await this.refreshPaymentConditionName(paymentConditionCode);
+      } else {
+        uiModel.setProperty("/paymentConditionName", "");
+      }
+    } catch {
+      if (isCurrent()) {
+        uiModel.setProperty("/taxLocked", false);
+        uiModel.setProperty("/nfeMode", false);
+        uiModel.setProperty("/nfeReturn", false);
+      }
+    }
+  }
+
+  /** Trocar a filial ou a emissão muda o modo NF-e (a natureza e os tributos passam a valer, ou deixam). */
+  onBranchChange() {
+    void this.refreshNfeMode(false);
+  }
+
+  onIssuerTypeChange() {
+    void this.refreshNfeMode(false);
+  }
+
+  /**
+   * Natureza da LINHA da entrada própria: só naturezas de Entrada ativas ($filter estático do enum). O Input
+   * mostra o nome (`UsageName`) e quem vale para o servidor é o `UsageCode`; os tributos aparecem depois de
+   * salvar (o cálculo é do servidor). setProperty sem await: o grupo é diferido.
+   */
+  async openPurchaseUsageValueHelp(ev: Input$ValueHelpRequestEvent) {
+    const oInput = ev.getSource();
+    const oTarget = oInput.getBindingContext() as Context;
+
+    const oSelected = await DialogHelper.openTableSelectDialog(
+      this, "UsagesSelectDialog", ["Name", "Description"],
+      [new Filter("Inactive", FilterOperator.EQ, false)], undefined, "Direction eq 'Incoming'");
+
+    if (!oSelected) {
+      return;
+    }
+
+    oInput.setValue(oSelected.getProperty("Name") as string);
+    void oTarget.setProperty("UsageCode", oSelected.getProperty("Code"));
+  }
+
+  /** Tributos calculados do item selecionado (somente leitura). */
+  async onOpenItemFiscal() {
+    const oTable = this.byId("tablePurchaseInvoiceItems") as Table;
+    const i = oTable.getSelectedIndices()[0] ?? -1;
+
+    if (i < 0) {
+      MessageBox.alert("Selecione um item.");
+      return;
+    }
+
+    const oItemContext = oTable.getContextByIndex(i) as Context;
+    this.itemFiscalDialog ??= await DialogHelper.createDialog(
+      this, "siagrob1.view.purchaseInvoices.fragments.ItemFiscalDialog", oItemContext);
+    this.itemFiscalDialog.setBindingContext(oItemContext);
+    this.itemFiscalDialog.open();
+  }
+
+  onCloseItemFiscal() {
+    this.itemFiscalDialog?.close();
+  }
 
   /**
    * Value help da NF de ORIGEM da linha — só faz sentido no documento tipo Devolução.

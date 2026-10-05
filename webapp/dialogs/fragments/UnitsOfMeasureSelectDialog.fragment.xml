@@ -13,7 +13,10 @@
   items="{
     path: '/UnitsOfMeasure',
     filters:[
-      { path: 'Locked', operator: 'EQ', value1: 'N' }
+      { filters: [
+          { path: 'Locked', operator: 'EQ', value1: 'N' },
+          { path: 'Locked', operator: 'EQ', value1: null }
+        ], and: false }
     ],
     sorter: {
       path: 'Description', 

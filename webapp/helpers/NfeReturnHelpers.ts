@@ -1,25 +1,29 @@
-/** Linha do diálogo "Devolver": um item da venda e quanto dele ainda pode voltar. */
-export type NfeReturnRow = {
+/** O que o diálogo "Devolver" usa de cada linha — comum à venda e à compra. */
+export type ReturnableRow = {
 	OriginItemKey: string;
 	ItemCode: string;
-	ItemName: string;
-	SoldQuantity: number;
-	ReturnedQuantity: number;
 	Returnable: number;
 	/** O que o usuário digitou; o tipo Float do campo entrega número, ou null se apagado. */
 	// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- strictNullChecks desligado; null é intencional
 	ReturnQuantity: number | null;
 };
 
+/** Linha do diálogo "Devolver": um item da venda e quanto dele ainda pode voltar. */
+export type NfeReturnRow = ReturnableRow & {
+	ItemName: string;
+	SoldQuantity: number;
+	ReturnedQuantity: number;
+};
+
 /** Corpo de SalesInvoicesCreateNfeReturn, sem a Key (arrays PARALELOS). */
 export type NfeReturnPayload = { OriginItemKeys: string[]; Quantities: number[]; Reason: string };
 
 /** Abre o diálogo com o saldo de cada item já preenchido: a devolução total é o caso comum. */
-export function prefillNfeReturnRows(rows: NfeReturnRow[]): NfeReturnRow[] {
+export function prefillNfeReturnRows<T extends ReturnableRow>(rows: T[]): T[] {
 	return rows.map((r) => ({ ...r, ReturnQuantity: r.Returnable }));
 }
 
-export function hasReturnableBalance(rows: NfeReturnRow[]): boolean {
+export function hasReturnableBalance(rows: ReturnableRow[]): boolean {
 	return rows.some((r) => Number(r.Returnable) > 0);
 }
 
@@ -28,7 +32,7 @@ export function hasReturnableBalance(rows: NfeReturnRow[]): boolean {
  * verdade é o servidor; isto só evita uma ida que voltaria recusada.
  */
 export function buildNfeReturnPayload(
-	rows: NfeReturnRow[], reason: string
+	rows: ReturnableRow[], reason: string
 ): { ok: true; payload: NfeReturnPayload } | { ok: false; message: string } {
 	const text = (reason ?? "").trim();
 
