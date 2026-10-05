@@ -3,7 +3,7 @@
 	xmlns:core="sap.ui.core"
 	xmlns:f="sap.ui.layout.form">
 	<Dialog
-		core:require="{ Float: 'sap/ui/model/type/Float' }"
+		core:require="{ Float: 'sap/ui/model/type/Float', Integer: 'sap/ui/model/type/Integer' }"
 		title="Devolver Documento de Entrada"
 		contentWidth="60rem"
 		class="sapUiSizeCompact"
@@ -18,6 +18,7 @@
 					<Column><Text text="Descrição" /></Column>
 					<Column hAlign="End"><Text text="Comprado" /></Column>
 					<Column hAlign="End"><Text text="Já devolvido" /></Column>
+					<Column hAlign="End" width="8rem" visible="{= ${nfeReturn>/thirdParty} === true }"><Text text="Item na NF" /></Column>
 					<Column hAlign="End" width="12rem"><Text text="A devolver" /></Column>
 				</columns>
 				<items>
@@ -27,6 +28,14 @@
 							<Text text="{nfeReturn>ItemName}" />
 							<Text text="{ path: 'nfeReturn>PurchasedQuantity', type: 'Float', formatOptions: { minFractionDigits: 3, maxFractionDigits: 3 } }" />
 							<Text text="{ path: 'nfeReturn>ReturnedQuantity', type: 'Float', formatOptions: { minFractionDigits: 3, maxFractionDigits: 3 } }" />
+							<VBox alignItems="End">
+								<!-- O nItem da importação vem pronto; onde falta (documento digitado), o operador informa. -->
+								<Text text="{nfeReturn>ItemNumber}" wrapping="false"
+									visible="{= ${nfeReturn>ItemNumber} !== null &amp;&amp; ${nfeReturn>ItemNumber} !== undefined }" />
+								<Input width="5rem" textAlign="End"
+									visible="{= ${nfeReturn>ItemNumber} === null || ${nfeReturn>ItemNumber} === undefined }"
+									value="{ path: 'nfeReturn>TypedItemNumber', type: 'Integer' }" />
+							</VBox>
 							<Input
 								textAlign="End"
 								value="{ path: 'nfeReturn>ReturnQuantity', type: 'Float', formatOptions: { maxFractionDigits: 3 } }" />
