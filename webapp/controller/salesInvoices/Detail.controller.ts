@@ -17,6 +17,7 @@ import { sendJson, odataValue, readErrorMessage } from "siagrob1/helpers/FetchHe
 import { nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
 import { NfeReturnRow, prefillNfeReturnRows, hasReturnableBalance, buildNfeReturnPayload } from "siagrob1/helpers/NfeReturnHelpers";
 import { TAX_TOTALS_SELECT } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
+import { openDanfeViewer } from "siagrob1/dialogs/DanfeViewer";
 
 /**
  * @namespace siagrob1.controller.salesInvoices
@@ -126,25 +127,9 @@ export default class Detail extends BaseController {
     }
   }
 
+  /** DANFE num diálogo, com Baixar no rodapé (DanfeViewer). */
   async onDanfe() {
-    const ctx = this.getView().getBindingContext() as Context;
-
-    this.setBusy(true);
-    try {
-      const response = await fetch(`${ServerRoutes.danfeReport}/${ctx.getProperty("Key") as string}/print`, { method: "POST" });
-
-      if (!response.ok) {
-        throw new Error(await readErrorMessage(response) || "Falha ao gerar o DANFE.");
-      }
-
-      const fileURL = URL.createObjectURL(await response.blob());
-      window.open(fileURL, "_blank");
-      setTimeout(() => URL.revokeObjectURL(fileURL), 60000);
-    } catch (error) {
-      MessageBox.error((error as Error)?.message || "Falha ao gerar o DANFE.");
-    } finally {
-      this.setBusy(false);
-    }
+    await openDanfeViewer(ServerRoutes.danfeReport, this.getView().getBindingContext() as Context);
   }
 
   async onNfeXml() {

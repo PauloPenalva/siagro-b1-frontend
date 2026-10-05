@@ -134,3 +134,26 @@ export function isManualTaxDocumentBlocked(
 ): boolean {
   return isEmittedNfeStatus(nfeStatus) || isNfeReturn === true || (taxLocked === true && invoiceType === "Normal");
 }
+
+/** Campos do cabeçalho (entrada ou saída) que nomeiam o DANFE. */
+export type DanfeDocument = { ChaveNFe: string; TaxDocumentNumber: string; TaxDocumentSeries: string };
+
+/**
+ * Título e nome do arquivo do DANFE no visualizador. O número vem com zeros à esquerda ("000000009") e o
+ * título mostra "nº 9"; o arquivo segue o padrão do XML (`<chave>-procNFe.xml`) para os dois andarem juntos.
+ */
+export function danfeViewerOptions(doc: DanfeDocument): { title: string; fileName: string } {
+  const number = (doc.TaxDocumentNumber ?? "").trim();
+  const series = (doc.TaxDocumentSeries ?? "").trim();
+  const key = (doc.ChaveNFe ?? "").trim();
+
+  let title = "DANFE";
+  if (number) {
+    title += ` – NF-e nº ${number.replace(/^0+(?=\d)/, "")}`;
+    if (series) {
+      title += ` série ${series}`;
+    }
+  }
+
+  return { title, fileName: key ? `${key}-danfe.pdf` : "danfe.pdf" };
+}

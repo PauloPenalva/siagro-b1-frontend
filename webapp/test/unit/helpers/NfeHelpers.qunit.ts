@@ -1,5 +1,6 @@
 import {
 	PAYMENT_MEANS, PAYMENT_START_RULES, paymentPreviewUrl, certificateDaysToExpire, certificateState, environmentCode, readFileAsBase64, nfeOutcomeMessage, isManualTaxDocumentBlocked,
+	danfeViewerOptions,
 } from "siagrob1/helpers/NfeHelpers";
 
 QUnit.module("NfeHelpers - condição de pagamento");
@@ -110,4 +111,41 @@ QUnit.test("regra de bloqueio por situação, trava e tipo", function (assert) {
 	assert.strictEqual(isManualTaxDocumentBlocked("Authorized", false, "Normal"), true, "já emitida");
 	assert.strictEqual(isManualTaxDocumentBlocked(undefined, false, "Normal"), false, "status indefinido");
 	assert.strictEqual(isManualTaxDocumentBlocked(null, false, "Normal"), false, "status nulo");
+});
+
+QUnit.module("NfeHelpers - visualizador do DANFE");
+
+QUnit.test("título com número sem zeros à esquerda e série; arquivo com a chave, como o XML", function (assert) {
+	assert.deepEqual(
+		danfeViewerOptions({
+			ChaveNFe: "35261068583898000101550090000000091119608953", TaxDocumentNumber: "000000009", TaxDocumentSeries: "9",
+		}),
+		{ title: "DANFE – NF-e nº 9 série 9", fileName: "35261068583898000101550090000000091119608953-danfe.pdf" },
+	);
+});
+
+QUnit.test("sem série, o título fica só com o número", function (assert) {
+	assert.strictEqual(
+		danfeViewerOptions({ ChaveNFe: "1", TaxDocumentNumber: "000000123", TaxDocumentSeries: null }).title,
+		"DANFE – NF-e nº 123",
+	);
+});
+
+QUnit.test("sem número, o título é só DANFE", function (assert) {
+	assert.strictEqual(
+		danfeViewerOptions({ ChaveNFe: "1", TaxDocumentNumber: "  ", TaxDocumentSeries: "9" }).title, "DANFE",
+	);
+	assert.strictEqual(danfeViewerOptions({ ChaveNFe: "1", TaxDocumentNumber: null, TaxDocumentSeries: null }).title, "DANFE");
+});
+
+QUnit.test("número todo zero vira 0, não some", function (assert) {
+	assert.strictEqual(
+		danfeViewerOptions({ ChaveNFe: "1", TaxDocumentNumber: "000", TaxDocumentSeries: "1" }).title, "DANFE – NF-e nº 0 série 1",
+	);
+});
+
+QUnit.test("sem chave, o arquivo se chama danfe.pdf", function (assert) {
+	assert.strictEqual(
+		danfeViewerOptions({ ChaveNFe: null, TaxDocumentNumber: "9", TaxDocumentSeries: "9" }).fileName, "danfe.pdf",
+	);
 });

@@ -19,6 +19,10 @@ import {
 export type AttachmentViewerOptions = {
   /** Rota que devolve o binário, ex.: `/odata/ShipmentLoadsAttachmentsDownload(Key=...)`. */
   url: string;
+  /** Verbo da requisição. Default GET; o DANFE é gerado por POST (`/reports/Danfe/{key}/print`). */
+  method?: "GET" | "POST";
+  /** Mensagem quando falha e o servidor não diz o motivo. Default: "Não foi possível abrir o anexo." */
+  errorMessage?: string;
   /** Nome para o Baixar e o título. Ausente: lido do Content-Disposition. */
   fileName?: string;
   /** Título do diálogo. Default: o nome do arquivo. */
@@ -26,8 +30,8 @@ export type AttachmentViewerOptions = {
 };
 
 /**
- * Visualiza um anexo num diálogo, sem baixar (GAC-1171, melhorias). Reaproveitado pela carga e
- * pelos contratos.
+ * Visualiza um anexo num diálogo, sem baixar (GAC-1171, melhorias). Reaproveitado pela carga,
+ * pelos contratos, pela minuta e pelo DANFE.
  *
  * Montado em código, e não por fragmento: qualquer controller chama sem depender do id da view
  * nem de `addDependent`. Cada abertura cria o seu diálogo e o destrói ao fechar.
@@ -39,21 +43,22 @@ export type AttachmentViewerOptions = {
 export async function openAttachmentViewer(options: AttachmentViewerOptions): Promise<void> {
   BusyIndicator.show(0);
 
+  const failure = options.errorMessage ?? "Não foi possível abrir o anexo.";
   let response: Response | undefined;
   let blob: Blob | undefined;
 
   try {
-    response = await fetch(options.url);
+    response = await fetch(options.url, { method: options.method ?? "GET" });
 
     if (!response.ok) {
       const message = await readErrorMessage(response);
-      MessageBox.error(message || "Não foi possível abrir o anexo.");
+      MessageBox.error(message || failure);
       return;
     }
 
     blob = await response.blob();
   } catch {
-    MessageBox.error("Não foi possível abrir o anexo.");
+    MessageBox.error(failure);
     return;
   } finally {
     BusyIndicator.hide();
