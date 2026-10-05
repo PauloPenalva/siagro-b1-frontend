@@ -31,7 +31,7 @@
             />
             <Label text="Codigo"/>
             <Select 
-              editable="{ui>/editable}"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true }"
               forceSelection="false"
               required="true"
               selectedKey="{DocNumberKey}"
@@ -65,7 +65,7 @@
             </Select>
             <Label text="Tipo"/>
             <Select 
-              editable="{ui>/editable}"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true }"
               forceSelection="false"
               required="true"
               selectedKey="{

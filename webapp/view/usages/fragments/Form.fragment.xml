@@ -58,6 +58,7 @@
           <Select
             visible="{ui>/identityEditable}"
             selectedKey="{ path: 'Direction', targetType: 'any' }"
+            change=".onDirectionChange"
             forceSelection="false">
             <core:ListItem key="Outgoing" text="Saída" />
             <core:ListItem key="Incoming" text="Entrada" />

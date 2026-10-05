@@ -7,6 +7,8 @@ import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import MessageToast from "sap/m/MessageToast";
 import MessageBox from "sap/m/MessageBox";
 import Dialog from "sap/m/Dialog";
+import Input from "sap/m/Input";
+import { ValueState } from "sap/ui/core/library";
 import Table from "sap/ui/table/Table";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
@@ -206,6 +208,16 @@ export default class Detail extends BaseController {
 
   /** Cria a devolução própria e abre a tela dela, onde fica o "Emitir NF-e". */
   async onConfirmNfeReturn() {
+    // Valor digitado que o tipo Float não leu deixa o número anterior no modelo: o Input fica em
+    // Error e o que seria enviado não é o que está na tela.
+    const invalidInput = this._nfeReturnDialog
+      ?.findAggregatedObjects(true, (c) => c.isA("sap.m.Input") && (c as Input).getValueState() === ValueState.Error);
+
+    if (invalidInput?.length) {
+      MessageBox.warning("Corrija as quantidades marcadas em vermelho.");
+      return;
+    }
+
     const ctx = this.getView().getBindingContext() as Context;
     const model = this.getView().getModel("nfeReturn") as JSONModel;
     const built = buildNfeReturnPayload(

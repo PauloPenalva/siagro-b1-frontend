@@ -1,5 +1,6 @@
 import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import { InputBase$ChangeEvent } from "sap/m/InputBase";
+import { Select$ChangeEvent } from "sap/m/Select";
 import Context from "sap/ui/model/odata/v4/Context";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
@@ -38,6 +39,21 @@ export default class BaseController extends RootBaseController {
 		}
 
 		const oTarget = ev.getSource().getBindingContext() as Context;
+		void oTarget.setProperty("ReturnUsageName", null);
+	}
+
+	/**
+	 * Natureza de Entrada não tem natureza de devolução: o campo some da tela e o backend recusa o
+	 * vínculo, então ao trocar para Entrada o vínculo é limpo (o usuário não teria como limpar).
+	 * Sem await: o contexto está num update group diferido.
+	 */
+	onDirectionChange(ev: Select$ChangeEvent) {
+		if (ev.getParameter("selectedItem")?.getKey() !== "Incoming") {
+			return;
+		}
+
+		const oTarget = ev.getSource().getBindingContext() as Context;
+		void oTarget.setProperty("ReturnUsageCode", null);
 		void oTarget.setProperty("ReturnUsageName", null);
 	}
 }
