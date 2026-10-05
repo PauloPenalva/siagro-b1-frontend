@@ -70,8 +70,10 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/taxLocked", taxLocked);
       uiModel.setProperty("/nfeMode", nfeMode);
       uiModel.setProperty("/nfeReturn", isNfeReturn);
-      // Natureza, CFOP e "Tributos do item": própria e terceiro Normal (spec terceiro-chave D1).
-      uiModel.setProperty("/taxMode", isPurchaseTaxMode(taxLocked, issuerType, invoiceType));
+      // Natureza, CFOP, "Tributos do item", condição de pagamento e Transporte: própria e terceiro Normal, com a
+      // mesma tela (spec terceiro-chave D1).
+      const taxMode = isPurchaseTaxMode(taxLocked, issuerType, invoiceType);
+      uiModel.setProperty("/taxMode", taxMode);
 
       // No modo NF-e o tipo fica travado em Normal (a devolução de compra própria é feita pelo "Devolver"); uma
       // Devolução escolhida antes de a emissão virar Própria volta para Normal. setProperty sem await: grupo diferido.
@@ -80,8 +82,9 @@ export abstract class BaseController extends CommonController {
         MessageToast.show("Na filial que emite NF-e pelo Siagro, a devolução de compra é feita pelo botão Devolver, no detalhe do documento de entrada.");
       }
 
-      // O nome da condição só aparece no modo NF-e e fora da devolução de compra (que não tem pagamento).
-      if (nfeMode && !isNfeReturn) {
+      // O nome da condição aparece com a condição (própria e terceiro Normal) e fora da devolução de compra (que não
+      // tem pagamento).
+      if (taxMode && !isNfeReturn) {
         await this.refreshPaymentConditionName(paymentConditionCode);
       } else {
         uiModel.setProperty("/paymentConditionName", "");

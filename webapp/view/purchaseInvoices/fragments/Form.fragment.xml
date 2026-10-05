@@ -84,6 +84,22 @@
             <core:Item key="Own" text="Própria" />
           </Select>
 
+          <!-- Documento de terceiro Normal na filial que emite NF-e pelo Siagro: NF-e (eletrônica, com a chave
+               conferida) ou outro documento (serviço, papel/talão), sem chave. Fora disso o campo some: a emissão
+               própria é sempre NF-e, a devolução do cliente não tem chave e a filial sem a regra (SAPB1, MH Agro)
+               fica como sempre foi. -->
+          <Label text="Tipo de documento"
+            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }" />
+          <Select
+            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }"
+            selectedKey="{path: 'TaxDocumentKind', targetType: 'any'}"
+            enabled="{= ${ui>/editable} === true }"
+            forceSelection="false"
+            width="100%">
+            <core:Item key="Nfe" text="NF-e (eletrônica)" />
+            <core:Item key="Other" text="Outro (serviço, papel/talão…)" />
+          </Select>
+
           <Label text="Emitente" required="true" />
           <Input
               value="{CardCode}"
@@ -144,13 +160,14 @@
             </layoutData>
           </Input>
 
-          <!-- Modo NF-e (filial que emite pelo Siagro + emissão própria). A condição vira cobr/dup e pag; padrão do
-               fornecedor. A devolução de compra não tem pagamento (tPag 90). -->
+          <!-- Filial que emite pelo Siagro, emissão própria ou de terceiro Normal (a tela do terceiro é igual à da
+               própria). Na própria a condição vira cobr/dup e pag; padrão do fornecedor. A devolução de compra não tem
+               pagamento (tPag 90). -->
           <Label text="Condição de pagamento"
-                 visible="{= ${ui>/nfeMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }" />
+                 visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }" />
           <!-- ui5lint-disable no-deprecated-api -->
           <Input
-            visible="{= ${ui>/nfeMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
+            visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
             editable="{ui>/editable}"
             showValueHelp="true"
             valueHelpOnly="true"
@@ -162,19 +179,19 @@
           </Input>
           <!-- ui5lint-enable no-deprecated-api -->
           <Input value="{ui>/paymentConditionName}" editable="false"
-                 visible="{= ${ui>/nfeMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }" />
+                 visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }" />
 
-          <!-- Transporte, pesos e volume da NF-e (grupos transp e vol), só no modo NF-e: a entrada de terceiro não
-               emite nada. Peso bruto e líquido são exigidos na emissão (NfeReadinessValidator); os quatro campos de
-               volume são opcionais. Na devolução de compra seguem editáveis (spec 9.3). O texto do título some fora
-               do modo NF-e porque core:Title não tem visible. Ordem do grupo vol da NF-e/DANFE: peso bruto, peso
+          <!-- Transporte, pesos e volume (grupos transp e vol da NF-e): emissão própria e terceiro Normal na filial
+               que emite pelo Siagro, com a mesma tela. Peso bruto e líquido são exigidos na emissão própria
+               (NfeReadinessValidator); no terceiro são os dados da nota do fornecedor. Na devolução de compra seguem
+               editáveis (spec 9.3). O texto do título some fora disso porque core:Title não tem visible. Ordem do grupo vol da NF-e/DANFE: peso bruto, peso
                líquido, quantidade, espécie, marca e numeração. -->
-          <core:Title text="{= ${ui>/nfeMode} === true ? 'Transporte' : '' }" />
+          <core:Title text="{= ${ui>/taxMode} === true ? 'Transporte' : '' }" />
 
           <!-- ui5lint-disable no-deprecated-api -->
-          <Label text="Transportadora" visible="{= ${ui>/nfeMode} === true }" />
+          <Label text="Transportadora" visible="{= ${ui>/taxMode} === true }" />
           <Input
-              visible="{= ${ui>/nfeMode} === true }"
+              visible="{= ${ui>/taxMode} === true }"
               editable="{ui>/editable}"
               showValueHelp="true"
               valueHelpOnly="true"
@@ -187,11 +204,11 @@
               <core:CustomData key="descriptionProperty" value="TruckingCompanyName:CardName" />
             </customData>
           </Input>
-          <Input value="{TruckingCompanyName}" editable="false" visible="{= ${ui>/nfeMode} === true }" />
+          <Input value="{TruckingCompanyName}" editable="false" visible="{= ${ui>/taxMode} === true }" />
 
-          <Label text="Placa" visible="{= ${ui>/nfeMode} === true }" />
+          <Label text="Placa" visible="{= ${ui>/taxMode} === true }" />
           <Input
-              visible="{= ${ui>/nfeMode} === true }"
+              visible="{= ${ui>/taxMode} === true }"
               editable="{ui>/editable}"
               showValueHelp="true"
               valueHelpOnly="true"
@@ -203,9 +220,9 @@
           </Input>
           <!-- ui5lint-enable no-deprecated-api -->
 
-          <Label text="Tipo do Frete" visible="{= ${ui>/nfeMode} === true }" />
+          <Label text="Tipo do Frete" visible="{= ${ui>/taxMode} === true }" />
           <Select
-              visible="{= ${ui>/nfeMode} === true }"
+              visible="{= ${ui>/taxMode} === true }"
               editable="{ui>/editable}"
               forceSelection="false"
               width="100%"
@@ -217,9 +234,9 @@
           </Select>
 
           <!-- `Double` e não `Decimal`: campo de ESCRITA (o leitor OData recusa Edm.Decimal em string). -->
-          <Label text="Peso Bruto" visible="{= ${ui>/nfeMode} === true }" />
+          <Label text="Peso Bruto" visible="{= ${ui>/taxMode} === true }" />
           <Input
-              visible="{= ${ui>/nfeMode} === true }"
+              visible="{= ${ui>/taxMode} === true }"
               editable="{ui>/editable}"
               value="{
                 path: 'GrossWeight',
@@ -236,9 +253,9 @@
             </layoutData>
           </Input>
 
-          <Label text="Peso Líquido" visible="{= ${ui>/nfeMode} === true }" />
+          <Label text="Peso Líquido" visible="{= ${ui>/taxMode} === true }" />
           <Input
-              visible="{= ${ui>/nfeMode} === true }"
+              visible="{= ${ui>/taxMode} === true }"
               editable="{ui>/editable}"
               value="{
                 path: 'NetWeight',
@@ -255,9 +272,9 @@
             </layoutData>
           </Input>
 
-          <Label text="Qtde. Volumes" visible="{= ${ui>/nfeMode} === true }" />
+          <Label text="Qtde. Volumes" visible="{= ${ui>/taxMode} === true }" />
           <Input
-              visible="{= ${ui>/nfeMode} === true }"
+              visible="{= ${ui>/taxMode} === true }"
               editable="{ui>/editable}"
               value="{VolumeQuantity}">
             <layoutData>
@@ -265,48 +282,31 @@
             </layoutData>
           </Input>
 
-          <Label text="Espécie" visible="{= ${ui>/nfeMode} === true }" />
+          <Label text="Espécie" visible="{= ${ui>/taxMode} === true }" />
           <Input
-              visible="{= ${ui>/nfeMode} === true }"
+              visible="{= ${ui>/taxMode} === true }"
               editable="{ui>/editable}"
               value="{VolumeSpecies}"
               maxLength="60"
               placeholder="GRANEL, SACO, BAG, CAIXA" />
 
-          <Label text="Marca" visible="{= ${ui>/nfeMode} === true }" />
+          <Label text="Marca" visible="{= ${ui>/taxMode} === true }" />
           <Input
-              visible="{= ${ui>/nfeMode} === true }"
+              visible="{= ${ui>/taxMode} === true }"
               editable="{ui>/editable}"
               value="{VolumeBrand}"
               maxLength="60" />
 
-          <Label text="Numeração" visible="{= ${ui>/nfeMode} === true }" />
+          <Label text="Numeração" visible="{= ${ui>/taxMode} === true }" />
           <Input
-              visible="{= ${ui>/nfeMode} === true }"
+              visible="{= ${ui>/taxMode} === true }"
               editable="{ui>/editable}"
               value="{VolumeNumbering}"
               maxLength="60" />
 
           <!-- Na entrada de terceiro são os dados da nota do fornecedor, digitados ou lidos do XML. No modo NF-e
-               quem grava número, série e chave é a emissão. O tipo de documento (NF-e ou outro) só aparece na
-               entrada de terceiro Normal da filial que emite NF-e pelo Siagro. -->
+               quem grava número, série e chave é a emissão. -->
           <core:Title text="Dados da NF-e" />
-
-          <!-- Documento de terceiro Normal na filial que emite NF-e pelo Siagro: NF-e (eletrônica, com a chave
-               conferida) ou outro documento (serviço, papel/talão), sem chave. Fora disso o campo some: a emissão
-               própria é sempre NF-e, a devolução do cliente não tem chave e a filial sem a regra (SAPB1, MH Agro)
-               fica como sempre foi. -->
-          <Label text="Tipo de documento"
-            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }" />
-          <Select
-            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }"
-            selectedKey="{path: 'TaxDocumentKind', targetType: 'any'}"
-            enabled="{= ${ui>/editable} === true }"
-            forceSelection="false"
-            width="100%">
-            <core:Item key="Nfe" text="NF-e (eletrônica)" />
-            <core:Item key="Other" text="Outro (serviço, papel/talão…)" />
-          </Select>
 
           <Label text="Número" />
           <Input value="{TaxDocumentNumber}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="9" />
