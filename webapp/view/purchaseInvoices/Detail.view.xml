@@ -19,10 +19,10 @@
     <uxap:headerTitle>
       <uxap:ObjectPageDynamicHeaderTitle>
         <uxap:expandedHeading>
-          <Title text="Documento de Entrada {TaxDocumentNumber}"/>
+          <Title text="{= ${IsNfeReturn} === true ? 'Devolução de Compra ' + (${TaxDocumentNumber} || '') : 'Documento de Entrada ' + (${TaxDocumentNumber} || '') }"/>
         </uxap:expandedHeading>
         <uxap:snappedHeading>
-          <Title text="Documento de Entrada {TaxDocumentNumber}"/>
+          <Title text="{= ${IsNfeReturn} === true ? 'Devolução de Compra ' + (${TaxDocumentNumber} || '') : 'Documento de Entrada ' + (${TaxDocumentNumber} || '') }"/>
         </uxap:snappedHeading>
         <uxap:actions>
           <ObjectStatus
@@ -45,6 +45,13 @@
         <uxap:subSections>
           <uxap:ObjectPageSubSection title=" " titleUppercase="false">
             <core:Fragment fragmentName="siagrob1.view.purchaseInvoices.fragments.Form" type="XML" />
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="NF-e" visible="{ui>/nfeMode}">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <core:Fragment fragmentName="siagrob1.view.salesInvoices.fragments.NfePanel" type="XML" />
           </uxap:ObjectPageSubSection>
         </uxap:subSections>
       </uxap:ObjectPageSection>
@@ -78,15 +85,27 @@
                 sap.ui.model.odata.type.Raw e estoura FormatException;
              2. expression binding explícito — `visible` com binding indefinido avalia como TRUE,
                 e o botão apareceria antes de o documento carregar. -->
+        <Button text="Emitir NF-e" type="Emphasized" icon="sap-icon://paper-plane" visible="{ui>/canIssueNfe}" press=".onIssueNfe" />
+        <Button text="Consultar situação" icon="sap-icon://synchronize"
+                visible="{= ${ui>/nfeMode} === true &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} === 'Processing' }"
+                press=".onConsultNfe" />
+        <Button text="Concluir confirmação"
+                visible="{= ${ui>/nfeMode} === true &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' }"
+                press=".onCompleteNfeConfirmation" />
+        <Button text="DANFE" icon="sap-icon://pdf-attachment"
+                visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' }" press=".onDanfe" />
+        <Button text="XML" icon="sap-icon://download"
+                visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' }" press=".onNfeXml" />
+        <Button text="Devolver" icon="sap-icon://undo" visible="{ui>/canReturn}" press=".onNfeReturn" />
         <Button
           text="Editar"
           icon="sap-icon://edit"
-          visible="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' }"
+          visible="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' }"
           press=".onEdit" />
         <Button
           text="Confirmar"
           type="Emphasized"
-          visible="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' }"
+          visible="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' &amp;&amp; ${ui>/nfeMode} !== true }"
           press=".onConfirm" />
         <Button
           text="Estornar"

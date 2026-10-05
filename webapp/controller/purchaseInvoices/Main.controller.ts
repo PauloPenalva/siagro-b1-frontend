@@ -24,7 +24,10 @@ export default class Main extends BaseController {
     this.createFilterModel();
 
     this.getRouter().getRoute("purchaseInvoices")
-      .attachPatternMatched(() => this.applyFilters());
+      .attachPatternMatched(() => {
+        void this.refreshStandaloneFlag().then(() => this.refreshAnyBranchIssuesNfe());
+        this.applyFilters();
+      });
   }
 
   onRefresh(): void {
