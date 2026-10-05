@@ -20,3 +20,4 @@ import "./helpers/NfeHelpers.qunit";
 import "./helpers/NfeReturnHelpers.qunit";
 import "./helpers/OverflowTooltipHelpers.qunit";
 import "./helpers/PurchaseInvoiceNfeHelpers.qunit";
+import "./helpers/PurchaseInvoiceDraftHelpers.qunit";

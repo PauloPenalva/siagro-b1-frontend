@@ -8,29 +8,8 @@ import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import formatter from "siagrob1/model/formatter";
 import { isValidAccessKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
+import { blankItemRow, draftItemRows, ImportedInvoiceItem } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 import { BaseController } from "./BaseController";
-
-/**
- * Linha enviada no deep-insert do documento.
- *
- * `Quantity` e `UnitPrice` vão como NÚMERO, não string. Verificado contra o servidor: o
- * desserializador OData recusa Edm.Decimal em string e o POST volta 400 "The entity field is
- * required" — o corpo inteiro falha ao vincular, sem mensagem sobre a linha culpada.
- */
-interface InvoiceItemPayload {
-  ItemCode: string;
-  ItemName: string;
-  UnitOfMeasureCode: string;
-  Quantity: number;
-  UnitPrice: number;
-  /** Nulo até o operador amarrar. (strictNullChecks off: `string` já admite null aqui.) */
-  SalesInvoiceItemKey: string;
-  /** Nulo até o operador amarrar. (strictNullChecks off: `string` já admite null aqui.) */
-  PurchaseContractKey: string;
-  /** Natureza da linha (modo NF-e). Nula até o operador escolher. */
-  UsageCode: number;
-  UsageName: string;
-}
 
 /** Rascunho devolvido pela leitura do XML — não é gravado ainda. */
 interface ImportedInvoice {
@@ -43,13 +22,7 @@ interface ImportedInvoice {
   TotalDocumentValue: number;
   TaxPayerComments: string;
   XmlFileName: string;
-  Items: {
-    ItemCode: string;
-    ItemName: string;
-    UnitOfMeasureCode: string;
-    Quantity: number;
-    UnitPrice: number;
-  }[];
+  Items: ImportedInvoiceItem[];
 }
 
 /**
@@ -169,26 +142,6 @@ export default class Add extends BaseController {
     // "Must not change a property before it has been read" na entidade transiente.
     const today = new Date().toISOString();
 
-    const items: InvoiceItemPayload[] = (draft?.Items ?? [{
-      ItemCode: "", ItemName: "", UnitOfMeasureCode: "", Quantity: 0, UnitPrice: 0,
-    }]).map<InvoiceItemPayload>(item => ({
-      ItemCode: item.ItemCode,
-      ItemName: item.ItemName,
-      UnitOfMeasureCode: item.UnitOfMeasureCode,
-      Quantity: item.Quantity ?? 0,
-      UnitPrice: item.UnitPrice ?? 0,
-      // Nasce sem amarração: o XML não carrega o vínculo com a NF de origem. Precisa EXISTIR no
-      // payload inicial, senão a primeira escolha no value help abre
-      // "Must not change a property before it has been read".
-      SalesInvoiceItemKey: null,
-      // Idem para a amarração com o contrato de compra: nasce nula até o operador escolher.
-      PurchaseContractKey: null,
-      // Natureza nasce nula: sem estas chaves a primeira escolha abre "Must not change a property
-      // before it has been read".
-      UsageCode: null,
-      UsageName: null,
-    }));
-
     const oContext = oBinding.create({
       InvoiceType: "Normal",
       IssuerType: "ThirdParty",
@@ -220,10 +173,18 @@ export default class Add extends BaseController {
       XmlData: xmlContent
         ? btoa(unescape(encodeURIComponent(xmlContent)))
         : null,
-      Items: items,
     }, false, false, false);
 
     this.getView().setBindingContext(oContext);
+
+    // As linhas entram pelo binding da tabela, como no "Incluir Item": aninhadas no create() acima elas
+    // existiam no modelo mas a tabela não as mostrava, e o primeiro "Incluir Item" fazia aparecer duas.
+    // Cada create() sem bAtEnd entra no TOPO, por isso a lista vai de trás para a frente.
+    const oItems = (this.byId("tablePurchaseInvoiceItems") as Table)?.getBinding("rows") as ODataListBinding;
+    for (const row of draftItemRows(draft?.Items).reverse()) {
+      oItems?.create(row, false, false, false);
+    }
+
     this.refreshDocumentTotal();
   }
 
@@ -235,11 +196,7 @@ export default class Add extends BaseController {
       return;
     }
 
-    oBinding.create({
-      ItemCode: "", ItemName: "", UnitOfMeasureCode: "",
-      Quantity: 0, UnitPrice: 0, SalesInvoiceItemKey: null, PurchaseContractKey: null,
-      UsageCode: null, UsageName: null,
-    }, false, false, false);
+    oBinding.create(blankItemRow(), false, false, false);
 
     this.refreshDocumentTotal();
   }
