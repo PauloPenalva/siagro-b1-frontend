@@ -3,13 +3,14 @@ import Context from "sap/ui/model/odata/v4/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageBox from "sap/m/MessageBox";
+import MessageToast from "sap/m/MessageToast";
 import Dialog from "sap/m/Dialog";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
-import { isPurchaseNfeMode } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
+import { isPurchaseNfeMode, mustFallBackToNormal } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 
 /** Sequência compartilhada por Add/Edit/Detail: só a chamada mais recente de refreshNfeMode escreve no `ui`. */
 let nfeModeSequence = 0;
@@ -54,6 +55,7 @@ export abstract class BaseController extends CommonController {
       const branchCode = await oContext.requestProperty("BranchCode") as string;
       const issuerType = await oContext.requestProperty("IssuerType") as string;
       const isNfeReturn = await oContext.requestProperty("IsNfeReturn") === true;
+      const invoiceType = await oContext.requestProperty("InvoiceType") as string;
       const paymentConditionCode = await oContext.requestProperty("PaymentConditionCode") as number;
       const taxLocked = await this.isTaxCalculationActive(branchCode);
 
@@ -65,6 +67,13 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/taxLocked", taxLocked);
       uiModel.setProperty("/nfeMode", nfeMode);
       uiModel.setProperty("/nfeReturn", isNfeReturn);
+
+      // No modo NF-e o tipo fica travado em Normal (a devolução de compra própria é feita pelo "Devolver"); uma
+      // Devolução escolhida antes de a emissão virar Própria volta para Normal. setProperty sem await: grupo diferido.
+      if (mustFallBackToNormal(invoiceType, isNfeReturn, nfeMode, uiModel.getProperty("/typeEditable") === true)) {
+        void oContext.setProperty("InvoiceType", "Normal");
+        MessageToast.show("Na filial que emite NF-e pelo Siagro, a devolução de compra é feita pelo botão Devolver, no detalhe do documento de entrada.");
+      }
 
       // O nome da condição só aparece no modo NF-e e fora da devolução de compra (que não tem pagamento).
       if (nfeMode && !isNfeReturn) {

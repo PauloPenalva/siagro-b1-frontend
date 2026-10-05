@@ -1,5 +1,5 @@
 import {
-	canIssuePurchaseNfe, canReturnPurchase, isPurchaseNfeMode, PurchaseNfeState
+	canIssuePurchaseNfe, canReturnPurchase, isPurchaseNfeMode, mustFallBackToNormal, PurchaseNfeState
 } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 
 QUnit.module("PurchaseInvoiceNfeHelpers - NF-e do documento de entrada");
@@ -33,4 +33,15 @@ QUnit.test("devolve só a entrada própria Normal, confirmada e autorizada", fun
 	assert.strictEqual(canReturnPurchase({ ...authorized, InvoiceType: "Return", IsNfeReturn: true }, true), false);
 	assert.strictEqual(canReturnPurchase({ ...authorized, NfeStatus: "None" }, true), false);
 	assert.strictEqual(canReturnPurchase(authorized, false), false);
+});
+
+QUnit.test("no modo NF-e a devolução própria manual volta para Normal (é feita pelo Devolver)", function (assert) {
+	assert.strictEqual(mustFallBackToNormal("Return", false, true, true), true);
+});
+
+QUnit.test("Normal, devolução do Devolver, fora do modo NF-e e tipo já gravado não mudam", function (assert) {
+	assert.strictEqual(mustFallBackToNormal("Normal", false, true, true), false, "já é Normal");
+	assert.strictEqual(mustFallBackToNormal("Return", true, true, true), false, "devolução nascida do Devolver");
+	assert.strictEqual(mustFallBackToNormal("Return", false, false, true), false, "terceiro ou filial sem NF-e");
+	assert.strictEqual(mustFallBackToNormal("Return", false, true, false), false, "documento gravado: tipo travado");
 });

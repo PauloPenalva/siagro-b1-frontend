@@ -29,6 +29,15 @@ export function canReturnPurchase(doc: PurchaseNfeState, nfeMode: boolean): bool
 }
 
 /**
+ * Na filial que emite NF-e pelo Siagro, a devolução de compra própria só nasce pelo "Devolver" (o servidor recusa
+ * a manual). Enquanto o tipo ainda é escolhível (inclusão), uma Devolução marcada antes de virar Emissão Própria
+ * volta para Normal. A devolução do cliente (De terceiro) e a filial sem NF-e seguem escolhendo o tipo.
+ */
+export function mustFallBackToNormal(invoiceType: string, isNfeReturn: boolean, nfeMode: boolean, typeEditable: boolean): boolean {
+	return nfeMode === true && typeEditable === true && invoiceType === "Return" && isNfeReturn !== true;
+}
+
+/**
  * $select das linhas no Detail/Edit. Explícito porque as colunas fiscais só aparecem no modo NF-e — informação
  * que ainda não chegou quando o UI5 monta o $select automático — e o diálogo fiscal lê a fotografia inteira.
  */

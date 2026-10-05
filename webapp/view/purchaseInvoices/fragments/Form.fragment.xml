@@ -59,10 +59,13 @@
                   (true) o Select auto-seleciona um item na inicialização e ESCREVE a chave de
                   volta, o que abre "Must not change a property before it has been read" em
                   diálogo de erro na cara do usuário. -->
+          <!-- No modo NF-e (Emissão Própria na filial que emite pelo Siagro) o tipo fica em Normal: a devolução de
+               compra própria só nasce pelo "Devolver" (o servidor recusa a manual). A devolução do cliente (De terceiro)
+               e a filial sem NF-e seguem escolhendo. -->
           <Label text="Tipo" />
           <Select
             selectedKey="{path: 'InvoiceType', targetType: 'any'}"
-            enabled="{ui>/typeEditable}"
+            enabled="{= ${ui>/typeEditable} === true &amp;&amp; ${ui>/nfeMode} !== true }"
             forceSelection="false"
             width="100%">
             <core:Item key="Normal" text="Normal" />
