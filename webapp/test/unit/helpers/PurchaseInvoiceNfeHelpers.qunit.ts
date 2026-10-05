@@ -1,6 +1,6 @@
 import {
 	buildPurchaseItemNumbers, canIssuePurchaseNfe, canReturnPurchase, canReturnThirdPartyPurchase, isPurchaseNfeMode,
-	mustFallBackToNormal, PurchaseNfeState
+	isPurchaseTaxMode, mustFallBackToNormal, PurchaseNfeState, requiresSupplierKey, supplierNfeAuthorizationText
 } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 
 QUnit.module("PurchaseInvoiceNfeHelpers - NF-e do documento de entrada");
@@ -112,4 +112,37 @@ QUnit.test("chave que não está nas linhas dá 0", function (assert) {
 	const rows = [{ OriginItemKey: "a", ItemCode: "TRIGO", ItemNumber: 1, TypedItemNumber: null as number }];
 
 	assert.deepEqual(buildPurchaseItemNumbers(rows, ["zzz"], true), { ok: true, itemNumbers: [0] });
+});
+
+QUnit.module("PurchaseInvoiceNfeHelpers - terceiro calculado e chave do fornecedor");
+
+QUnit.test("calcula tributos: própria e terceiro Normal na filial ativa", function (assert) {
+	assert.strictEqual(isPurchaseTaxMode(true, "Own", "Normal"), true);
+	assert.strictEqual(isPurchaseTaxMode(true, "Own", "Return"), true);
+	assert.strictEqual(isPurchaseTaxMode(true, "ThirdParty", "Normal"), true);
+});
+
+QUnit.test("não calcula: devolução do cliente e filial sem a regra", function (assert) {
+	assert.strictEqual(isPurchaseTaxMode(true, "ThirdParty", "Return"), false);
+	assert.strictEqual(isPurchaseTaxMode(false, "ThirdParty", "Normal"), false);
+	assert.strictEqual(isPurchaseTaxMode(false, "Own", "Normal"), false);
+});
+
+QUnit.test("chave obrigatória só no terceiro Normal do tipo NF-e na filial ativa", function (assert) {
+	const doc = { IssuerType: "ThirdParty", InvoiceType: "Normal", TaxDocumentKind: "Nfe" };
+	assert.strictEqual(requiresSupplierKey(doc, true), true);
+	assert.strictEqual(requiresSupplierKey({ ...doc, TaxDocumentKind: "Other" }, true), false);
+	assert.strictEqual(requiresSupplierKey({ ...doc, InvoiceType: "Return" }, true), false);
+	assert.strictEqual(requiresSupplierKey({ ...doc, IssuerType: "Own" }, true), false);
+	assert.strictEqual(requiresSupplierKey(doc, false), false);
+});
+
+QUnit.test("texto da autorização na SEFAZ com protocolo e data", function (assert) {
+	const text = supplierNfeAuthorizationText("135260000000001", "2026-10-05T12:30:00-03:00");
+	assert.ok(text.startsWith("Autorizada na SEFAZ — protocolo 135260000000001 em 05/10/2026"), text);
+});
+
+QUnit.test("sem protocolo não há texto; sem data, só o protocolo", function (assert) {
+	assert.strictEqual(supplierNfeAuthorizationText(null, null), "");
+	assert.strictEqual(supplierNfeAuthorizationText("135260000000001", null), "Autorizada na SEFAZ — protocolo 135260000000001");
 });

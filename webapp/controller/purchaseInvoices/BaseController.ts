@@ -10,7 +10,7 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
-import { isPurchaseNfeMode, mustFallBackToNormal } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
+import { isPurchaseNfeMode, isPurchaseTaxMode, mustFallBackToNormal } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { summarizeInvoiceTaxes, TaxLine } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 
 /** Sequência compartilhada por Add/Edit/Detail: só a chamada mais recente de refreshNfeMode escreve no `ui`. */
@@ -46,6 +46,7 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/taxLocked", false);
       uiModel.setProperty("/nfeMode", false);
       uiModel.setProperty("/nfeReturn", false);
+      uiModel.setProperty("/taxMode", false);
     }
 
     if (!oContext) {
@@ -68,6 +69,8 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/taxLocked", taxLocked);
       uiModel.setProperty("/nfeMode", nfeMode);
       uiModel.setProperty("/nfeReturn", isNfeReturn);
+      // Natureza, CFOP e "Tributos do item": própria e terceiro Normal (spec terceiro-chave D1).
+      uiModel.setProperty("/taxMode", isPurchaseTaxMode(taxLocked, issuerType, invoiceType));
 
       // No modo NF-e o tipo fica travado em Normal (a devolução de compra própria é feita pelo "Devolver"); uma
       // Devolução escolhida antes de a emissão virar Própria volta para Normal. setProperty sem await: grupo diferido.
@@ -87,6 +90,7 @@ export abstract class BaseController extends CommonController {
         uiModel.setProperty("/taxLocked", false);
         uiModel.setProperty("/nfeMode", false);
         uiModel.setProperty("/nfeReturn", false);
+        uiModel.setProperty("/taxMode", false);
       }
     }
   }
@@ -97,6 +101,11 @@ export abstract class BaseController extends CommonController {
   }
 
   onIssuerTypeChange() {
+    void this.refreshNfeMode(false);
+  }
+
+  /** Trocar o tipo (Normal/Devolução) do terceiro liga ou desliga o cálculo: a devolução do cliente não tem natureza. */
+  onInvoiceTypeChange() {
     void this.refreshNfeMode(false);
   }
 

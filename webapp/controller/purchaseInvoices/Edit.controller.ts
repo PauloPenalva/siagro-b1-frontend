@@ -7,7 +7,7 @@ import MessageToast from "sap/m/MessageToast";
 import MessageBox from "sap/m/MessageBox";
 import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
-import { PURCHASE_ITEM_SELECT } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
+import { PURCHASE_ITEM_SELECT, requiresSupplierKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 
@@ -115,14 +115,26 @@ export default class Edit extends BaseController {
     const oTable = this.byId("tablePurchaseInvoiceItems");
     const oBinding = oTable?.getBinding("rows") as ODataListBinding;
 
-    const nfeMode = (this.getModel("ui") as JSONModel).getProperty("/nfeMode") === true;
+    const uiModel = this.getModel("ui") as JSONModel;
+    const taxMode = uiModel.getProperty("/taxMode") === true;
 
-    if (nfeMode) {
+    if (taxMode) {
       const withoutUsage = (oBinding?.getAllCurrentContexts() ?? []).filter(ctx => !ctx.getProperty("UsageCode"));
       if (withoutUsage.length > 0) {
-        MessageBox.warning("Informe a natureza de operação de todos os itens: a NF-e de entrada é calculada por ela.");
+        MessageBox.warning("Informe a natureza de operação de todos os itens: os tributos da entrada são calculados por ela.");
         return;
       }
+    }
+
+    const keyDoc = {
+      IssuerType: oContext.getProperty("IssuerType") as string,
+      InvoiceType: oContext.getProperty("InvoiceType") as string,
+      TaxDocumentKind: oContext.getProperty("TaxDocumentKind") as string,
+    };
+    if (requiresSupplierKey(keyDoc, uiModel.getProperty("/taxLocked") === true) &&
+        !((oContext.getProperty("ChaveNFe") as string) ?? "").trim()) {
+      MessageBox.warning("Informe a chave de acesso da NF-e do fornecedor.");
+      return;
     }
 
     // Aviso, não bloqueio: amarrar depois é caminho legítimo, e a conciliação fiscal-contratual

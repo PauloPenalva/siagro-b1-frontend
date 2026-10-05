@@ -16,6 +16,37 @@ export function isPurchaseNfeMode(taxLocked: boolean, issuerType: string): boole
 	return taxLocked === true && issuerType === "Own";
 }
 
+/**
+ * Filial que calcula tributos (regra ativa) e documento que o motor calcula: emissão própria ou terceiro Normal (spec
+ * terceiro-chave D1). A devolução do cliente (terceiro + Devolução) fica sem natureza. Diferente de `isPurchaseNfeMode`,
+ * que é só a emissão própria (travas de número/série/chave, emissão).
+ */
+export function isPurchaseTaxMode(taxLocked: boolean, issuerType: string, invoiceType: string): boolean {
+	return taxLocked === true && (issuerType === "Own" || (issuerType === "ThirdParty" && invoiceType === "Normal"));
+}
+
+/** Chave da NF-e do fornecedor obrigatória: terceiro Normal do tipo NF-e na filial que emite pelo Siagro (spec terceiro-chave D3). */
+export function requiresSupplierKey(
+	doc: { IssuerType: string; InvoiceType: string; TaxDocumentKind: string }, taxLocked: boolean
+): boolean {
+	return taxLocked === true && doc.IssuerType === "ThirdParty" && doc.InvoiceType === "Normal" &&
+		doc.TaxDocumentKind === "Nfe";
+}
+
+/** "Autorizada na SEFAZ — protocolo X em dd/mm/aaaa hh:mm" (consulta do confirmar em Produção); vazio sem protocolo. */
+export function supplierNfeAuthorizationText(protocol: string, checkedAt: string): string {
+	if (!protocol) {
+		return "";
+	}
+
+	const date = checkedAt ? new Date(checkedAt) : null;
+	const when = date && !isNaN(date.getTime())
+		? ` em ${date.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}`
+		: "";
+
+	return `Autorizada na SEFAZ — protocolo ${protocol}${when}`;
+}
+
 /** Entrada própria Normal ou devolução de compra, Pendente, sem NF-e ou com a anterior rejeitada. */
 export function canIssuePurchaseNfe(doc: PurchaseNfeState, nfeMode: boolean): boolean {
 	const issuable = doc.InvoiceType === "Normal" || (doc.InvoiceType === "Return" && doc.IsNfeReturn === true);
