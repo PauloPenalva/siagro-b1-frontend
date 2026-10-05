@@ -172,7 +172,7 @@
 									groupingEnabled: true,
 									groupingSeparator: '.'
 								}
-							}" />
+							}" wrapping="false" />
 						</t:template>
 					</t:Column>
 					<t:Column label="Chave NF-e" width="25rem" sortProperty="ChaveNFe">
