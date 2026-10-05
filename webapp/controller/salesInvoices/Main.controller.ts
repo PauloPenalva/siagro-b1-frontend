@@ -12,7 +12,6 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import Dialog from "sap/m/Dialog";
 import { Input$LiveChangeEvent } from "sap/m/Input";
 import Fragment from "sap/ui/core/Fragment";
-import { sendJson, odataCollection } from "siagrob1/helpers/FetchHelpers";
 import { isEmittedNfeStatus, isManualTaxDocumentBlocked } from "siagrob1/helpers/NfeHelpers";
 
 const NFE_KEY_LENGTH = 44;
@@ -187,27 +186,6 @@ export default class Main extends BaseController {
           MessageToast.show("Documento de saída cancelado com sucesso.")
         })
         .finally(() => this.setBusy(false));
-    }
-  }
-
-  /**
-   * `ui>/anyBranchIssuesNfe`: a coluna "Situação NF-e" só faz sentido se alguma filial emite NF-e
-   * pelo Siagro. STANDALONE sem filial emissora (MH Agro) vê a lista como sempre foi.
-   */
-  private async refreshAnyBranchIssuesNfe(): Promise<void> {
-    const uiModel = this.getModel("ui") as JSONModel;
-    uiModel.setProperty("/anyBranchIssuesNfe", false);
-
-    if (uiModel.getProperty("/standalone") !== true) {
-      return;
-    }
-
-    try {
-      const result = await sendJson("GET", "/odata/Branchs?$filter=IssuesNfe eq true&$top=1&$select=Code");
-      const rows = result.ok ? odataCollection<unknown>(result.data) : [];
-      uiModel.setProperty("/anyBranchIssuesNfe", rows.length > 0);
-    } catch {
-      uiModel.setProperty("/anyBranchIssuesNfe", false);
     }
   }
 

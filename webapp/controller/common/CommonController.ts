@@ -5,7 +5,7 @@ import Context from "sap/ui/model/odata/v4/Context";
 import MessageBox from "sap/m/MessageBox";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
-import { sendJson } from "siagrob1/helpers/FetchHelpers";
+import { sendJson, odataCollection } from "siagrob1/helpers/FetchHelpers";
 import formatter from "siagrob1/model/formatter";
 import RequestModel from "siagrob1/model/RequestModel";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
@@ -511,4 +511,44 @@ export default abstract class CommonController extends BaseController {
     uiModel.setProperty("/paymentConditionName", result.ok ? (result.data as { Name?: string })?.Name ?? "" : "");
   }
 
+  /**
+   * A filial calcula tributos e emite NF-e pelo Siagro (`TaxCalculationGate` no servidor)? Falha = false: quem
+   * recalcula e trava continua sendo o servidor.
+   */
+  protected async isTaxCalculationActive(branchCode: string): Promise<boolean> {
+    if (!branchCode) {
+      return false;
+    }
+
+    try {
+      const oModel = this.getView().getModel() as ODataModel;
+      const oFunction = oModel.bindContext(ServerRoutes.taxCalculationIsActive);
+      oFunction.setParameter("BranchCode", branchCode);
+      await oFunction.invoke();
+      return oFunction.getBoundContext().getProperty("value") === true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * `ui>/anyBranchIssuesNfe`: a coluna "Situação NF-e" só faz sentido se alguma filial emite NF-e
+   * pelo Siagro. STANDALONE sem filial emissora (MH Agro) vê a lista como sempre foi.
+   */
+  protected async refreshAnyBranchIssuesNfe(): Promise<void> {
+    const uiModel = this.getModel("ui") as JSONModel;
+    uiModel.setProperty("/anyBranchIssuesNfe", false);
+
+    if (uiModel.getProperty("/standalone") !== true) {
+      return;
+    }
+
+    try {
+      const result = await sendJson("GET", "/odata/Branchs?$filter=IssuesNfe eq true&$top=1&$select=Code");
+      const rows = result.ok ? odataCollection<unknown>(result.data) : [];
+      uiModel.setProperty("/anyBranchIssuesNfe", rows.length > 0);
+    } catch {
+      uiModel.setProperty("/anyBranchIssuesNfe", false);
+    }
+  }
 }
