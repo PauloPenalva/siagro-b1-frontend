@@ -25,6 +25,17 @@
 					<Title text="Carga {Code}"/>
 				</uxap:snappedHeading>
 				<uxap:actions>
+					<!-- Peça 2 (2026-10-06): expedir e faturar sem sair da carga. O servidor recusa igual fora destas situações. -->
+					<Button
+						text="Expedir"
+						type="Emphasized"
+						press=".onShip"
+						visible="{= ${path: 'LoadType', targetType: 'any'} === 'Normal' &amp;&amp; (${path: 'Status', targetType: 'any'} === 'Planned' || ${path: 'Status', targetType: 'any'} === 'Open' || ${path: 'Status', targetType: 'any'} === 'InTransshipment') }"/>
+					<Button
+						text="Faturar"
+						type="Emphasized"
+						press=".onBill"
+						visible="{= ${path: 'LoadType', targetType: 'any'} === 'Normal' &amp;&amp; (${path: 'Status', targetType: 'any'} === 'Open' || ${path: 'Status', targetType: 'any'} === 'PartiallyInvoiced') &amp;&amp; ${AvailableQuantity} > 0 }"/>
 					<Button
 						text="Recalcular Saldo"
 						type="Transparent"

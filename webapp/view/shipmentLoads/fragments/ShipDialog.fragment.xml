@@ -1,0 +1,102 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<Dialog
+		id="shipDialog"
+		title="Expedir na carga {ship>/LoadCode}"
+		contentWidth="60rem"
+		class="sapUiSizeCompact">
+		<content>
+			<Table
+				id="shipReleasesTable"
+				mode="SingleSelectLeft"
+				items="{shipReleases>/}"
+				growing="true"
+				growingThreshold="50"
+				noDataText="Nenhuma liberação de embarque com saldo para este produto e armazém.">
+				<columns>
+					<Column><Text text="Contrato"/></Column>
+					<Column><Text text="Fornecedor"/></Column>
+					<Column><Text text="Origem"/></Column>
+					<Column hAlign="End"><Text text="Saldo"/></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Text text="{shipReleases>PurchaseContractCode}"/>
+							<Text text="{shipReleases>FName}"/>
+							<Text text="{ path: 'shipReleases>Origin', formatter: '.formatter.releaseOriginText' }"/>
+							<ObjectNumber
+								number="{ path: 'shipReleases>AvailableQuantity', type: 'sap.ui.model.type.Float', formatOptions: { maxFractionDigits: 3 } }"
+								unit="{shipReleases>UnitOfMeasureCode}"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+			<f:Form id="shipForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="2" columnsL="2" columnsXL="2"/>
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="Armazém">
+								<f:fields>
+									<!-- Sem CustomData descriptionProperty: o diálogo herda o contexto OData da
+									     carga e a descrição iria parar na entidade, não no modelo ship. -->
+									<Input
+										value="{ship>/WarehouseCode}"
+										required="true"
+										showValueHelp="true"
+										valueHelpOnly="true"
+										valueHelpRequest=".openWarehouseValueHelp"
+										change=".onShipWarehouseChange"/>
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement label="Motorista">
+								<f:fields>
+									<Input
+										value="{ship>/TruckDriverCode}"
+										required="true"
+										showValueHelp="true"
+										valueHelpOnly="true"
+										valueHelpRequest=".openTruckDriversValueHelp"/>
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement label="Data">
+								<f:fields>
+									<DatePicker
+										value="{ship>/TransactionDate}"
+										valueFormat="yyyy-MM-dd"
+										displayFormat="dd/MM/yyyy"
+										required="true"/>
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="Peso bruto">
+								<f:fields>
+									<Input type="Number" value="{ship>/GrossWeight}" required="true"/>
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement label="Observação">
+								<f:fields>
+									<TextArea value="{ship>/Comments}" rows="3"/>
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<beginButton>
+			<Button text="Expedir" type="Emphasized" press=".onConfirmShip"/>
+		</beginButton>
+		<endButton>
+			<Button text="Cancelar" press=".onCloseShip"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>
