@@ -236,7 +236,17 @@ export default abstract class CommonController extends BaseController {
       return;
     }
 
-    const oTarget = oInput.getBindingContext();
+    // O destino é decidido pelo model do binding de `value`, não pelo contexto herdado: um
+    // diálogo com addDependent herda o element binding OData da página, mesmo quando o Input
+    // está ligado a um JSON model (ex.: `billing>/DeliveryCardCode`).
+    const oValueBinding = oInput.getBinding("value");
+
+    if (oValueBinding?.getModel()?.isA("sap.ui.model.json.JSONModel")) {
+      this.applyValueHelpDescriptionToJsonModel(oInput, oSelected, sDescriptionPaths);
+      return;
+    }
+
+    const oTarget = oValueBinding?.getContext() ?? oInput.getBindingContext();
 
     if (!oTarget?.isA("sap.ui.model.odata.v4.Context")) {
       this.applyValueHelpDescriptionToJsonModel(oInput, oSelected, sDescriptionPaths);
