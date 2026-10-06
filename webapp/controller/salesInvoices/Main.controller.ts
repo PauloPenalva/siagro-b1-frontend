@@ -16,6 +16,7 @@ import { isEmittedNfeStatus, isManualTaxDocumentBlocked, canCancelNfe, nfeOutcom
 import { openNfeCancelDialog } from "siagrob1/dialogs/NfeCancelDialog";
 import { sendJson, odataValue } from "siagrob1/helpers/FetchHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
+import Sorter from "sap/ui/model/Sorter";
 
 const NFE_KEY_LENGTH = 44;
 
@@ -65,15 +66,41 @@ export default class Main extends BaseController {
 
   private _returnInFlight = false;
 
+  private _branchesLoaded = false;
+
 	onInit(): void  {
     this.createFilterModel();
+    this.getView().setModel(new JSONModel([]), "branches");
 
     this.getRouter().getRoute("salesInvoices")
       .attachPatternMatched(() => {
+        // this.getModel() só resolve o OData model depois que a rota casa (onInit é cedo demais).
+        if (!this._branchesLoaded) {
+          this._branchesLoaded = true;
+          void this.loadBranches();
+        }
         void this.refreshStandaloneFlag().then(() => this.refreshAnyBranchIssuesNfe());
         this.applyFilters();
       });
 	}
+
+  /**
+   * O Select de Filial da FilterBar carrega a lista UMA vez num JSONModel, em vez de bind direto
+   * em `/Branchs` com `suspended: true`. A sap.ui.comp FilterBar chama resume() no binding de
+   * todo item visível a cada `onBeforeRendering` e nunca o suspende de volta: no segundo render o
+   * OData V4 estoura "Cannot resume a not suspended binding" e o render é abortado. Esse segundo
+   * render acontece logo na carga, quando `ui>/standalone`/`ui>/anyBranchIssuesNfe` resolvem e
+   * ligam o filtro "Situação NF-e" — que ficava sem DOM até a FilterBar redesenhar. A lista de
+   * entrada não tem Select ligado ao OData na barra, por isso não tinha o problema. Um JSONModel
+   * aceita resume() sem estar suspenso.
+   */
+  private async loadBranches(): Promise<void> {
+    const oModel = this.getModel() as ODataModel;
+    const contexts = await oModel.bindList("/Branchs", undefined, [new Sorter("Code")])
+      .requestContexts(0, 100);
+    const branches = contexts.map(ctx => ctx.getObject() as { Code: string; ShortName: string });
+    (this.getView().getModel("branches") as JSONModel).setData(branches);
+  }
 
   onClearFilters() {
     this.clearFilters();

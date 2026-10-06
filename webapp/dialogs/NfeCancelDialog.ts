@@ -20,9 +20,11 @@ export function openNfeCancelDialog(owner: Control): Promise<string> {
       press: () => { result = text.getValue().trim(); dialog.close(); },
     });
 
-    // Contador nativo do TextArea (maxLength + showExceededText=false mostra "n caracteres restantes").
+    // Contador nativo do TextArea: só aparece com showExceededText=true ("n caracteres restantes" e,
+    // acima do limite, o excesso). Nesse modo o maxLength não corta a digitação: os 255 continuam
+    // garantidos pelo botão, que só habilita com 15 a 255 caracteres.
     const text = new TextArea({
-      width: "100%", rows: 4, maxLength: NFE_CANCEL_MAX, showExceededText: false,
+      width: "100%", rows: 4, maxLength: NFE_CANCEL_MAX, showExceededText: true,
       placeholder: "Mínimo de 15 caracteres",
       liveChange: () => confirm.setEnabled(isValidNfeCancelJustification(text.getValue())),
     });

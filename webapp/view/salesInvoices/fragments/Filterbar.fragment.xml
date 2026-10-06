@@ -7,17 +7,15 @@
   <fb:filterGroupItems>
     <fb:FilterGroupItem name="branch" label="Filial" groupName="GroupBranch" visibleInFilterBar="true">
       <fb:control>
-          <Select 
+          <!-- Filiais num JSONModel carregado uma vez pelo controller, e não bind direto em
+               /Branchs com suspended: a FilterBar resume() o binding a cada render e, no
+               segundo, o OData V4 estoura "Cannot resume a not suspended binding" e aborta o
+               render (o filtro Situação NF-e, que aparece depois da carga, ficava sem DOM). -->
+          <Select
             forceSelection="false"
             selectedKey="{filter>/BranchCode}"
-            items="{
-              path: '/Branchs',
-              suspended: true,
-              sorter: { 
-                path: 'Code'
-              }
-            }">
-            <core:ListItem key="{Code}" text="{ShortName}"/>
+            items="{branches>/}">
+            <core:ListItem key="{branches>Code}" text="{branches>ShortName}"/>
           </Select>
       </fb:control>
     </fb:FilterGroupItem>
