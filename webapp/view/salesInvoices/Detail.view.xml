@@ -37,6 +37,8 @@
             enabled="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === 'None' || ${path: 'NfeStatus', targetType: 'any'} === 'Rejected') }" />
           <Button text="Consultar situação" icon="sap-icon://synchronize" press=".onConsultNfe"
             visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Processing' || ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' }" />
+          <Button text="Carta de Correção" icon="sap-icon://edit-outside" press=".onNfeCorrection"
+            visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} !== 'Cancelled' }" />
           <Button text="Concluir confirmação" type="Attention" press=".onCompleteNfeConfirmation"
             visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' }" />
           <Button text="Concluir cancelamento" type="Attention" press=".onCompleteNfeCancellation"
@@ -96,6 +98,10 @@
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection title=" " titleUppercase="false">
 						<core:Fragment fragmentName="siagrob1.view.salesInvoices.fragments.NfePanel" type="XML" />
+					</uxap:ObjectPageSubSection>
+					<uxap:ObjectPageSubSection title=" " titleUppercase="false"
+					  visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' || ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }">
+					  <core:Fragment fragmentName="siagrob1.fragments.NfeCorrections" type="XML" />
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
