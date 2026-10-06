@@ -80,7 +80,9 @@ export default class Detail extends BaseController {
 
   async onIssueNfe() {
     const ctx = this.getView().getBindingContext() as Context;
-    if (!ctx || !(await confirmDialog("Emitir a NF-e deste documento ?", "Emitir NF-e ?"))) {
+    // Documento Normal: já confirmado, a NF-e é transmitida. Devolução própria: emitir é o que confirma.
+    const verb = ctx?.getProperty("IsNfeReturn") === true ? "Emitir" : "Transmitir";
+    if (!ctx || !(await confirmDialog(`${verb} a NF-e deste documento ?`, `${verb} NF-e ?`))) {
       return;
     }
 

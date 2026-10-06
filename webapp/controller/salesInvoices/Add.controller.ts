@@ -68,6 +68,7 @@ export default class Add extends BaseController {
         DocNumberKey: docNumberInfo?.Key ?? null,
         BranchCode: branchInfo?.code ?? null,
         InvoiceType: "Normal",
+        TaxDocumentKind: "Nfe",
         InvoiceStatus: "Pending",
         InvoiceDate: new Date().toISOString(),
         CardCode: null,

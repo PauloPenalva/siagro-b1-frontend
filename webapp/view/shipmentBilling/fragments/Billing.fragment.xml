@@ -162,6 +162,15 @@
 						text="TER"
 					/>
 				</Select>
+				<Label text="Tipo de documento" visible="{= ${viewModel>/TaxLocked} === true }" />
+				<Select
+					visible="{= ${viewModel>/TaxLocked} === true }"
+					forceSelection="false"
+					selectedKey="{viewModel>/TaxDocumentKind}"
+				>
+					<core:Item key="Nfe" text="NF-e (eletrônica)" />
+					<core:Item key="Other" text="Outro (papel/talão…)" />
+				</Select>
         
 
         <Label text="Inf.Ad.Nota Fiscal" />
