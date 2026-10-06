@@ -50,7 +50,7 @@
                 pattern: 'dd/MM/yyyy'
               }
             }"
-            editable="{ui>/editable}"
+            editable="true"
             required="true"
             liveChange=".validateField"
         />
