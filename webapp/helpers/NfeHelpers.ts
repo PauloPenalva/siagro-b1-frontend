@@ -146,14 +146,15 @@ export function isEmittedNfeStatus(nfeStatus?: string): boolean {
 }
 
 /**
- * "Informar Nota Fiscal" manual não vale quando a NF-e já foi emitida, no documento Normal de filial
- * que emite pelo Siagro, nem na devolução própria (criada pelo Devolver, sai com NF-e do Siagro). As
- * demais devoluções seguem manuais: o cliente emite a NF-e dele.
+ * "Informar Nota Fiscal" manual não vale quando a NF-e já foi emitida, no documento Normal do tipo NF-e de filial
+ * que emite pelo Siagro, nem na devolução própria (criada pelo Devolver, sai com NF-e do Siagro). O documento Normal
+ * do tipo Outro (papel/talão) e as demais devoluções seguem manuais.
  */
 export function isManualTaxDocumentBlocked(
-  nfeStatus: string, taxLocked: boolean, invoiceType: string, isNfeReturn = false
+  nfeStatus: string, taxLocked: boolean, invoiceType: string, isNfeReturn = false, taxDocumentKind = "Nfe"
 ): boolean {
-  return isEmittedNfeStatus(nfeStatus) || isNfeReturn === true || (taxLocked === true && invoiceType === "Normal");
+  return isEmittedNfeStatus(nfeStatus) || isNfeReturn === true
+    || (taxLocked === true && invoiceType === "Normal" && taxDocumentKind !== "Other");
 }
 
 /** Campos do cabeçalho (entrada ou saída) que nomeiam o DANFE. */

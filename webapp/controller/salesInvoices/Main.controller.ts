@@ -271,10 +271,11 @@ export default class Main extends BaseController {
       ? await this.refreshTaxLock(ctx.getProperty("BranchCode") as string)
       : false;
 
-    if (isManualTaxDocumentBlocked(nfeStatus, taxLocked, invoiceType, ctx.getProperty("IsNfeReturn") === true)) {
+    if (isManualTaxDocumentBlocked(nfeStatus, taxLocked, invoiceType, ctx.getProperty("IsNfeReturn") === true,
+      ctx.getProperty("TaxDocumentKind") as string)) {
       MessageBox.information(isEmittedNfeStatus(nfeStatus)
         ? "Número, série e chave deste documento vêm da emissão da NF-e pelo Siagro."
-        : "Na filial que emite NF-e pelo Siagro, número, série e chave vêm da emissão.");
+        : "Na filial que emite NF-e pelo Siagro, número, série e chave do documento do tipo NF-e vêm da emissão.");
       return;
     }
 

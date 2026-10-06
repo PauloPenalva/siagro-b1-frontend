@@ -127,6 +127,12 @@ QUnit.test("regra de bloqueio por situação, trava e tipo", function (assert) {
 	assert.strictEqual(isManualTaxDocumentBlocked(null, false, "Normal"), false, "status nulo");
 });
 
+QUnit.test("documento do tipo Outro aceita número digitado na filial que emite", function (assert) {
+	assert.strictEqual(isManualTaxDocumentBlocked("None", true, "Normal", false, "Other"), false, "CEAGUI Normal tipo Outro");
+	assert.strictEqual(isManualTaxDocumentBlocked("None", true, "Normal", false, "Nfe"), true, "CEAGUI Normal tipo NF-e");
+	assert.strictEqual(isManualTaxDocumentBlocked("Rejected", true, "Normal", false, "Other"), true, "já foi à SEFAZ");
+});
+
 QUnit.module("NfeHelpers - visualizador do DANFE");
 
 QUnit.test("título com número sem zeros à esquerda e série; arquivo com a chave, como o XML", function (assert) {
