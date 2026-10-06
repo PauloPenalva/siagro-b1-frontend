@@ -289,6 +289,11 @@ export default class Main extends BaseController {
       TaxDocumentSeries: ctx.getProperty("TaxDocumentSeries") as string,
       ChaveNFe: ctx.getProperty("ChaveNFe") as string,
       WithoutTaxDocument: ctx.getProperty("WithoutTaxDocument") === true,
+      // Documento Normal do tipo "Outro" (talão, nota de papel) na filial que emite NF-e: não há
+      // chave de 44 dígitos de onde tirar número e série, então os dois são digitados. Fora desse
+      // caso continuam vindo só da chave.
+      ManualNumber: taxLocked === true && invoiceType === "Normal"
+        && ctx.getProperty("TaxDocumentKind") === "Other",
     });
 
     void this.openNotaFiscalDialog();
@@ -324,7 +329,7 @@ export default class Main extends BaseController {
     const viewModel = this.getModel("viewModel") as JSONModel;
     const chave = (ev.getParameter("value") || "").replace(/\D/g, "");
 
-    // Número e série são somente leitura: a chave é a única origem deles, então enquanto ela
+    // Número e série são somente leitura (fora o tipo "Outro", ver ManualNumber): a chave é a origem deles, então enquanto ela
     // estiver incompleta os dois ficam em branco em vez de manter um valor órfão.
     if (chave.length !== NFE_KEY_LENGTH) {
       viewModel.setProperty("/TaxDocumentSeries", "");
