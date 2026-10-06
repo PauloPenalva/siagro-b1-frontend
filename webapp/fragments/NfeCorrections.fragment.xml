@@ -1,0 +1,64 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:t="sap.ui.table"
+    xmlns:rowmodes="sap.ui.table.rowmodes"
+    xmlns:core="sap.ui.core"
+>
+  <!--
+    CC-e registradas da NF-e (saída e entrada). Somente leitura: nascem no envio e na consulta.
+    `$$ownRequest`: sem ele vira $expand no GET do documento (o get service não inclui NfeCorrections) e a
+    tabela vem vazia; com ele, a tabela é refrescada sozinha depois do envio. O sorter manda $orderby
+    explícito, que sobrevive à paginação da sap.ui.table.
+  -->
+  <t:Table
+    id="nfeCorrectionsTable"
+    class="sapUiSizeCondensed"
+    alternateRowColors="true"
+    selectionMode="None"
+    enableBusyIndicator="true"
+    rows="{
+      path: 'NfeCorrections',
+      parameters: { '$$ownRequest': true, '$select': 'Key,Sequence,Text,Protocol,RegisteredAt,CreatedBy' },
+      sorter: { path: 'Sequence', descending: true }
+    }"
+    noData="Nenhuma carta de correção registrada."
+    >
+    <t:rowMode>
+      <rowmodes:Auto minRowCount="2" maxRowCount="10" />
+    </t:rowMode>
+    <t:extension>
+      <OverflowToolbar>
+        <content>
+          <Title text="Cartas de correção" />
+        </content>
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column label="Seq." width="4rem" hAlign="End">
+        <t:template><Text wrapping="false" text="{Sequence}" /></t:template>
+      </t:Column>
+      <t:Column label="Registrada em" width="10rem">
+        <t:template>
+          <Text wrapping="false" text="{ path: 'RegisteredAt', targetType: 'any', formatter: '.formatter.formatDateTime' }" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Protocolo" width="10rem">
+        <t:template><Text wrapping="false" text="{Protocol}" /></t:template>
+      </t:Column>
+      <t:Column label="Correção">
+        <t:template><Text wrapping="false" text="{Text}" tooltip="{Text}" /></t:template>
+      </t:Column>
+      <t:Column label="Usuário" width="9rem">
+        <t:template><Text wrapping="false" text="{CreatedBy}" /></t:template>
+      </t:Column>
+      <t:Column width="7rem" hAlign="Center">
+        <t:template>
+          <HBox>
+            <Button icon="sap-icon://download" type="Transparent" tooltip="XML da carta" press=".onNfeCorrectionXml" />
+            <Button icon="sap-icon://print" type="Transparent" tooltip="Imprimir carta" press=".onNfeCorrectionPdf" />
+          </HBox>
+        </t:template>
+      </t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>

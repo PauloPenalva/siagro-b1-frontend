@@ -14,12 +14,15 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { sendJson, odataValue, readErrorMessage } from "siagrob1/helpers/FetchHelpers";
-import { nfeOutcomeMessage, NfeOutcome, canCancelNfe } from "siagrob1/helpers/NfeHelpers";
+import { nfeOutcomeMessage, NfeOutcome, canCancelNfe, canSendNfeCorrection, pickNfeCorrectionPrefill, FailedNfeCorrection } from "siagrob1/helpers/NfeHelpers";
 import { openNfeCancelDialog } from "siagrob1/dialogs/NfeCancelDialog";
 import { NfeReturnRow, prefillNfeReturnRows, hasReturnableBalance, buildNfeReturnPayload } from "siagrob1/helpers/NfeReturnHelpers";
 import { TAX_TOTALS_SELECT } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 import { LINE_CHARGES_SELECT, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
-import { openDanfeViewer } from "siagrob1/dialogs/DanfeViewer";
+import { openDanfeViewer, openNfeCorrectionViewer } from "siagrob1/dialogs/DanfeViewer";
+import { openNfeCorrectionDialog } from "siagrob1/dialogs/NfeCorrectionDialog";
+import { Button$PressEvent } from "sap/m/Button";
+import Control from "sap/ui/core/Control";
 
 /**
  * @namespace siagrob1.controller.salesInvoices
@@ -88,6 +91,7 @@ export default class Detail extends BaseController {
     const ctx = this.getView().getBindingContext() as Context;
     if (ctx) {
       await this.runNfeAction(ServerRoutes.salesInvoicesConsultNfe, ctx);
+      this.refreshNfeCorrections();
     }
   }
 
@@ -136,7 +140,9 @@ export default class Detail extends BaseController {
   }
 
   async onNfeXml() {
-    await this.downloadNfeXml(ServerRoutes.salesInvoicesNfeXml, "procNFe");
+    const ctx = this.getView().getBindingContext() as Context;
+    await this.downloadNfeXml(`${ServerRoutes.salesInvoicesNfeXml}(Key=${ctx.getProperty("Key") as string})`,
+      `${ctx.getProperty("ChaveNFe") as string}-procNFe.xml`);
   }
 
   async onCompleteNfeCancellation() {
@@ -147,15 +153,77 @@ export default class Detail extends BaseController {
   }
 
   async onNfeCancellationXml() {
-    await this.downloadNfeXml(ServerRoutes.salesInvoicesNfeCancellationXml, "procEventoNFe");
+    const ctx = this.getView().getBindingContext() as Context;
+    await this.downloadNfeXml(`${ServerRoutes.salesInvoicesNfeCancellationXml}(Key=${ctx.getProperty("Key") as string})`,
+      `${ctx.getProperty("ChaveNFe") as string}-procEventoNFe.xml`);
   }
 
-  private async downloadNfeXml(route: string, suffix: string) {
+  /** Último texto de CC-e recusado, por documento: reabre o diálogo com ele (limpo no sucesso). */
+  private _failedNfeCorrection: FailedNfeCorrection;
+
+  /** "Carta de Correção": diálogo pré-preenchido com a última carta; 200 traz a sequência registrada. */
+  async onNfeCorrection() {
     const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx || !canSendNfeCorrection(ctx.getProperty("NfeStatus") as string, ctx.getProperty("InvoiceStatus") as string)) {
+      return;
+    }
+
+    const key = ctx.getProperty("Key") as string;
+    const last = await sendJson("GET",
+      `${ServerRoutes.salesInvoicesNfeCorrections}?$filter=SalesInvoiceKey eq ${key}&$orderby=Sequence desc&$top=1&$select=Text`);
+    const previous = last.ok ? (odataValue<{ Text: string }[]>(last.data) ?? [])[0]?.Text ?? "" : "";
+
+    const text = await openNfeCorrectionDialog(this.getView(),
+      pickNfeCorrectionPrefill(this._failedNfeCorrection, key, previous));
+    if (text === null) {
+      return;
+    }
 
     this.setBusy(true);
     try {
-      const response = await fetch(`${route}(Key=${ctx.getProperty("Key") as string})`);
+      const result = await sendJson("POST", ServerRoutes.salesInvoicesSendNfeCorrection, { Key: key, Text: text });
+      if (!result.ok) {
+        this._failedNfeCorrection = { key, text };
+        MessageBox.error(result.message);
+        return;
+      }
+
+      this._failedNfeCorrection = undefined;
+      const outcome = odataValue<{ Sequence: number }>(result.data);
+      MessageToast.show(`Carta de correção nº ${outcome.Sequence} registrada na SEFAZ.`);
+    } finally {
+      this.refreshNfeCorrections();
+      this.setBusy(false);
+    }
+  }
+
+  async onNfeCorrectionXml(event: Button$PressEvent) {
+    const row = (event.getSource() as Control).getBindingContext() as Context;
+    const ctx = this.getView().getBindingContext() as Context;
+    const sequence = row.getProperty("Sequence") as number;
+    await this.downloadNfeXml(
+      `${ServerRoutes.salesInvoicesNfeCorrectionXml}(Key=${ctx.getProperty("Key") as string},Sequence=${sequence})`,
+      `${ctx.getProperty("ChaveNFe") as string}-cce-${sequence}-procEventoNFe.xml`);
+  }
+
+  async onNfeCorrectionPdf(event: Button$PressEvent) {
+    const row = (event.getSource() as Control).getBindingContext() as Context;
+    await openNfeCorrectionViewer(ServerRoutes.danfeReport, this.getView().getBindingContext() as Context,
+      row.getProperty("Sequence") as number);
+  }
+
+  private refreshNfeCorrections() {
+    try {
+      (this.byId("nfeCorrectionsTable") as Table)?.getBinding("rows")?.refresh();
+    } catch {
+      // tabela ainda não carregada: o próximo bind traz as cartas
+    }
+  }
+
+  private async downloadNfeXml(url: string, fileName: string) {
+    this.setBusy(true);
+    try {
+      const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error(await readErrorMessage(response) || "Falha ao baixar o XML.");
@@ -163,7 +231,7 @@ export default class Detail extends BaseController {
 
       const link = document.createElement("a");
       link.href = URL.createObjectURL(await response.blob());
-      link.download = `${ctx.getProperty("ChaveNFe") as string}-${suffix}.xml`;
+      link.download = fileName;
       link.click();
       setTimeout(() => URL.revokeObjectURL(link.href), 60000);
     } catch (error) {
