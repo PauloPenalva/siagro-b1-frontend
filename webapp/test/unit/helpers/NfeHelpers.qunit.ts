@@ -1,6 +1,6 @@
 import {
 	PAYMENT_MEANS, PAYMENT_START_RULES, paymentPreviewUrl, certificateDaysToExpire, certificateState, environmentCode, readFileAsBase64, nfeOutcomeMessage, isManualTaxDocumentBlocked,
-	danfeViewerOptions,
+	danfeViewerOptions, isValidNfeCancelJustification, canCancelNfe, needsNfeCancellationCompletion, isReversibleNfeStatus,
 } from "siagrob1/helpers/NfeHelpers";
 
 QUnit.module("NfeHelpers - condição de pagamento");
@@ -148,4 +148,43 @@ QUnit.test("sem chave, o arquivo se chama danfe.pdf", function (assert) {
 	assert.strictEqual(
 		danfeViewerOptions({ ChaveNFe: null, TaxDocumentNumber: "9", TaxDocumentSeries: "9" }).fileName, "danfe.pdf",
 	);
+});
+
+QUnit.module("NfeHelpers - cancelamento");
+
+QUnit.test("justificativa conta depois do trim, de 15 a 255", function (assert) {
+	assert.strictEqual(isValidNfeCancelJustification("   curta demais "), false);
+	assert.strictEqual(isValidNfeCancelJustification("  Venda desfeita pelo cliente  "), true);
+	assert.strictEqual(isValidNfeCancelJustification("x".repeat(255)), true);
+	assert.strictEqual(isValidNfeCancelJustification("x".repeat(256)), false);
+});
+
+QUnit.test("só NF-e autorizada de documento ativo é cancelável", function (assert) {
+	assert.strictEqual(canCancelNfe("Authorized", "Confirmed"), true);
+	assert.strictEqual(canCancelNfe("Authorized", "Pending"), true);
+	assert.strictEqual(canCancelNfe("Authorized", "Cancelled"), false);
+	assert.strictEqual(canCancelNfe("Processing", "Pending"), false);
+	assert.strictEqual(canCancelNfe("Cancelled", "Confirmed"), false);
+});
+
+QUnit.test("concluir cancelamento só com NF-e cancelada e documento ativo", function (assert) {
+	assert.strictEqual(needsNfeCancellationCompletion("Cancelled", "Confirmed"), true);
+	assert.strictEqual(needsNfeCancellationCompletion("Cancelled", "Cancelled"), false);
+	assert.strictEqual(needsNfeCancellationCompletion("Authorized", "Confirmed"), false);
+});
+
+QUnit.test("estorno só sem NF-e emitida", function (assert) {
+	assert.strictEqual(isReversibleNfeStatus(undefined), true);
+	assert.strictEqual(isReversibleNfeStatus("None"), true);
+	assert.strictEqual(isReversibleNfeStatus("Rejected"), true);
+	assert.strictEqual(isReversibleNfeStatus("Processing"), false);
+	assert.strictEqual(isReversibleNfeStatus("Authorized"), false);
+	assert.strictEqual(isReversibleNfeStatus("Cancelled"), false);
+});
+
+QUnit.test("desfecho do cancelamento", function (assert) {
+	assert.deepEqual(nfeOutcomeMessage({ NfeStatus: "Cancelled", InvoiceStatus: "Cancelled" }),
+		{ type: "success", text: "NF-e cancelada e documento cancelado." });
+	assert.deepEqual(nfeOutcomeMessage({ NfeStatus: "Cancelled", InvoiceStatus: "Confirmed", CancellationError: "Liberação travada." }),
+		{ type: "warning", text: "NF-e cancelada na SEFAZ, mas o cancelamento do documento falhou: Liberação travada. Corrija e use Concluir cancelamento." });
 });
