@@ -211,6 +211,13 @@ QUnit.test("texto é normalizado como no servidor", function (assert) {
 	assert.strictEqual(normalizeNfeCorrectionText(null), "");
 });
 
+QUnit.test("espaço em branco segue char.IsWhiteSpace do .NET", function (assert) {
+	const bom = String.fromCharCode(0xFEFF);
+	assert.strictEqual(normalizeNfeCorrectionText(bom + "abc"), bom + "abc");
+	assert.deepEqual(invalidNfeCorrectionChars(bom + "abc"), [bom]);
+	assert.strictEqual(normalizeNfeCorrectionText("abc" + String.fromCharCode(0x85)), "abc");
+});
+
 QUnit.test("caracteres fora do Latin-1 são apontados uma vez", function (assert) {
 	assert.deepEqual(invalidNfeCorrectionChars("Valor € errado ✓ e € de novo"), ["€", "✓"]);
 	assert.deepEqual(invalidNfeCorrectionChars("Correção do endereço nº 10"), []);

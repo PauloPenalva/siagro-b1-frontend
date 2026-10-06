@@ -210,13 +210,17 @@ const TYPOGRAPHIC: Record<string, string> = {
   "\u2018": "'", "\u2019": "'", "\u201C": "\"", "\u201D": "\"", "\u2013": "-", "\u2014": "-", "\u2026": "...",
 };
 
+// Espelha char.IsWhiteSpace do .NET do servidor (o /\s do JS difere: aceita U+FEFF e ignora U+0085).
+// eslint-disable-next-line no-control-regex
+const NET_WHITESPACE = /[\u0009-\u000D\u0020\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]/;
+
 /** xCorrecao como o servidor envia: aspas/travessão/reticências em ASCII, todo espaço em branco vira um espaço. */
 export function normalizeNfeCorrectionText(text: string): string {
   return Array.from(text ?? "")
-    .map((c) => TYPOGRAPHIC[c] ?? (/\s/.test(c) ? " " : c))
+    .map((c) => TYPOGRAPHIC[c] ?? (NET_WHITESPACE.test(c) ? " " : c))
     .join("")
     .replace(/ {2,}/g, " ")
-    .trim();
+    .replace(/^ +| +$/g, "");
 }
 
 /** Caracteres que a SEFAZ recusa (fora de U+0020–U+00FF), um de cada, na ordem em que aparecem. */
