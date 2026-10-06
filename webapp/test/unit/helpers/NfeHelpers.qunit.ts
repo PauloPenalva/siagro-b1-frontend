@@ -1,7 +1,9 @@
 import {
 	PAYMENT_MEANS, PAYMENT_START_RULES, paymentPreviewUrl, certificateDaysToExpire, certificateState, environmentCode, readFileAsBase64, nfeOutcomeMessage, isManualTaxDocumentBlocked,
 	danfeViewerOptions, isValidNfeCancelJustification, canCancelNfe, needsNfeCancellationCompletion, isReversibleNfeStatus,
+	normalizeNfeCorrectionText, invalidNfeCorrectionChars, isValidNfeCorrectionText, canSendNfeCorrection, correctionViewerOptions,
 } from "siagrob1/helpers/NfeHelpers";
+import type { NfeOutcome } from "siagrob1/helpers/NfeHelpers";
 
 QUnit.module("NfeHelpers - condição de pagamento");
 
@@ -199,4 +201,46 @@ QUnit.test("desfecho do cancelamento", function (assert) {
 		{ type: "success", text: "NF-e cancelada e documento cancelado." });
 	assert.deepEqual(nfeOutcomeMessage({ NfeStatus: "Cancelled", InvoiceStatus: "Confirmed", CancellationError: "Liberação travada." }),
 		{ type: "warning", text: "NF-e cancelada na SEFAZ, mas o cancelamento do documento falhou: Liberação travada. Corrija e use Concluir cancelamento." });
+});
+
+QUnit.module("NfeHelpers - carta de correção");
+
+QUnit.test("texto é normalizado como no servidor", function (assert) {
+	assert.strictEqual(normalizeNfeCorrectionText("  Placa\r\nABC\t  1  "), "Placa ABC 1");
+	assert.strictEqual(normalizeNfeCorrectionText("“X” – ‘Y’…"), "\"X\" - 'Y'...");
+	assert.strictEqual(normalizeNfeCorrectionText(null), "");
+});
+
+QUnit.test("caracteres fora do Latin-1 são apontados uma vez", function (assert) {
+	assert.deepEqual(invalidNfeCorrectionChars("Valor € errado ✓ e € de novo"), ["€", "✓"]);
+	assert.deepEqual(invalidNfeCorrectionChars("Correção do endereço nº 10"), []);
+});
+
+QUnit.test("texto válido tem 15 a 1000 caracteres normalizados e nada fora do Latin-1", function (assert) {
+	assert.notOk(isValidNfeCorrectionText("curta    \n   "));
+	assert.ok(isValidNfeCorrectionText("x".repeat(15)));
+	assert.ok(isValidNfeCorrectionText("x".repeat(1000)));
+	assert.notOk(isValidNfeCorrectionText("x".repeat(1001)));
+	assert.notOk(isValidNfeCorrectionText("Texto longo o bastante €"));
+});
+
+QUnit.test("carta só para NF-e autorizada de documento ativo e emissão própria", function (assert) {
+	assert.ok(canSendNfeCorrection("Authorized", "Confirmed"));
+	assert.ok(canSendNfeCorrection("Authorized", "Pending", "Own"));
+	assert.notOk(canSendNfeCorrection("Authorized", "Confirmed", "ThirdParty"));
+	assert.notOk(canSendNfeCorrection("Authorized", "Cancelled"));
+	assert.notOk(canSendNfeCorrection("Cancelled", "Cancelled"));
+	assert.notOk(canSendNfeCorrection("Processing", "Pending"));
+});
+
+QUnit.test("título e arquivo do PDF da carta", function (assert) {
+	assert.deepEqual(
+		correctionViewerOptions({ ChaveNFe: "3526", TaxDocumentNumber: "000000009", TaxDocumentSeries: "9" }, 2),
+		{ title: "Carta de Correção nº 2 – NF-e nº 9 série 9", fileName: "3526-cce-2.pdf" });
+});
+
+QUnit.test("consulta avisa as cartas importadas", function (assert) {
+	const message = nfeOutcomeMessage({ NfeStatus: "Authorized", StatusCode: "100", InvoiceStatus: "Confirmed", ImportedCorrections: 2 } as NfeOutcome);
+	assert.strictEqual(message.type, "success");
+	assert.ok(message.text.endsWith(" 2 carta(s) de correção importada(s) da SEFAZ."));
 });

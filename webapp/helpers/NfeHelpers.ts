@@ -93,10 +93,11 @@ export type NfeOutcome = {
   AccessKey?: string;
   ConfirmationError?: string;
   CancellationError?: string;
+  ImportedCorrections?: number;
 };
 
 /** Mensagem do desfecho de emitir/consultar/concluir (o servidor devolve 200 com o desfecho). */
-export function nfeOutcomeMessage(outcome: NfeOutcome): { type: "success" | "warning" | "error"; text: string } {
+function baseNfeOutcomeMessage(outcome: NfeOutcome): { type: "success" | "warning" | "error"; text: string } {
   const codeAndReason = [outcome.StatusCode, outcome.Reason].filter(Boolean).join(" - ");
 
   switch (outcome.NfeStatus) {
@@ -130,6 +131,13 @@ export function nfeOutcomeMessage(outcome: NfeOutcome): { type: "success" | "war
     default:
       return { type: "warning", text: outcome.Reason ?? "NF-e em processamento." };
   }
+}
+
+export function nfeOutcomeMessage(outcome: NfeOutcome): { type: "success" | "warning" | "error"; text: string } {
+  const message = baseNfeOutcomeMessage(outcome);
+  return outcome.ImportedCorrections > 0
+    ? { ...message, text: `${message.text} ${outcome.ImportedCorrections} carta(s) de correção importada(s) da SEFAZ.` }
+    : message;
 }
 
 /** NF-e já emitida (em processamento, autorizada, rejeitada, denegada ou cancelada). Nulo/None = nunca emitida. */
@@ -193,4 +201,46 @@ export function needsNfeCancellationCompletion(nfeStatus?: string, invoiceStatus
 /** Estorno de confirmação: recusado com NF-e em processamento, autorizada ou cancelada. */
 export function isReversibleNfeStatus(nfeStatus?: string): boolean {
   return nfeStatus !== "Processing" && nfeStatus !== "Authorized" && nfeStatus !== "Cancelled";
+}
+
+export const NFE_CORRECTION_MIN = 15;
+export const NFE_CORRECTION_MAX = 1000;
+
+const TYPOGRAPHIC: Record<string, string> = {
+  "\u2018": "'", "\u2019": "'", "\u201C": "\"", "\u201D": "\"", "\u2013": "-", "\u2014": "-", "\u2026": "...",
+};
+
+/** xCorrecao como o servidor envia: aspas/travessão/reticências em ASCII, todo espaço em branco vira um espaço. */
+export function normalizeNfeCorrectionText(text: string): string {
+  return Array.from(text ?? "")
+    .map((c) => TYPOGRAPHIC[c] ?? (/\s/.test(c) ? " " : c))
+    .join("")
+    .replace(/ {2,}/g, " ")
+    .trim();
+}
+
+/** Caracteres que a SEFAZ recusa (fora de U+0020–U+00FF), um de cada, na ordem em que aparecem. */
+export function invalidNfeCorrectionChars(text: string): string[] {
+  return [...new Set(Array.from(normalizeNfeCorrectionText(text)).filter((c) => c < " " || c > "\u00FF"))];
+}
+
+/** Texto da CC-e: 15 a 1000 caracteres depois da normalização e nada fora do Latin-1 — a mesma conta do servidor. */
+export function isValidNfeCorrectionText(text: string): boolean {
+  const length = normalizeNfeCorrectionText(text).length;
+  return length >= NFE_CORRECTION_MIN && length <= NFE_CORRECTION_MAX && invalidNfeCorrectionChars(text).length === 0;
+}
+
+/** "Carta de Correção": NF-e autorizada, documento ativo e, na entrada, emissão própria. */
+export function canSendNfeCorrection(nfeStatus?: string, invoiceStatus?: string, issuerType?: string): boolean {
+  return nfeStatus === "Authorized" && invoiceStatus !== "Cancelled" && (issuerType === undefined || issuerType === "Own");
+}
+
+/** Título e arquivo do PDF da CC-e no visualizador (mesmo padrão do DANFE). */
+export function correctionViewerOptions(doc: DanfeDocument, sequence: number): { title: string; fileName: string } {
+  const danfe = danfeViewerOptions(doc);
+  const key = (doc.ChaveNFe ?? "").trim();
+  return {
+    title: danfe.title.replace(/^DANFE/, `Carta de Correção nº ${sequence}`),
+    fileName: key ? `${key}-cce-${sequence}.pdf` : `cce-${sequence}.pdf`,
+  };
 }

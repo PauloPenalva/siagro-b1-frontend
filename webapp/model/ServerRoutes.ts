@@ -187,6 +187,14 @@ export default {
   purchaseInvoicesCancelNfe: '/odata/PurchaseInvoicesCancelNfe',
   purchaseInvoicesCompleteNfeCancellation: '/odata/PurchaseInvoicesCompleteNfeCancellation',
   purchaseInvoicesNfeCancellationXml: '/odata/PurchaseInvoicesNfeCancellationXml',
+
+  // CC-e (evento 110110): envio com o texto, XML de cada carta e histórico (entity set somente leitura).
+  salesInvoicesSendNfeCorrection: '/odata/SalesInvoicesSendNfeCorrection',
+  salesInvoicesNfeCorrectionXml: '/odata/SalesInvoicesNfeCorrectionXml',
+  salesInvoicesNfeCorrections: '/odata/SalesInvoicesNfeCorrections',
+  purchaseInvoicesSendNfeCorrection: '/odata/PurchaseInvoicesSendNfeCorrection',
+  purchaseInvoicesNfeCorrectionXml: '/odata/PurchaseInvoicesNfeCorrectionXml',
+  purchaseInvoicesNfeCorrections: '/odata/PurchaseInvoicesNfeCorrections',
   // Comentários do documento de saída: no Update/Delete a chave é a do COMENTÁRIO, não a do
   // documento.
   salesInvoicesCommentCreate: '/SalesInvoicesCommentCreate(...)',
