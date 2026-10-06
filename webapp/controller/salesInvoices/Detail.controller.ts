@@ -14,7 +14,7 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { sendJson, odataValue, readErrorMessage } from "siagrob1/helpers/FetchHelpers";
-import { nfeOutcomeMessage, NfeOutcome, canCancelNfe, canSendNfeCorrection } from "siagrob1/helpers/NfeHelpers";
+import { nfeOutcomeMessage, NfeOutcome, canCancelNfe, canSendNfeCorrection, pickNfeCorrectionPrefill, FailedNfeCorrection } from "siagrob1/helpers/NfeHelpers";
 import { openNfeCancelDialog } from "siagrob1/dialogs/NfeCancelDialog";
 import { NfeReturnRow, prefillNfeReturnRows, hasReturnableBalance, buildNfeReturnPayload } from "siagrob1/helpers/NfeReturnHelpers";
 import { TAX_TOTALS_SELECT } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
@@ -158,6 +158,9 @@ export default class Detail extends BaseController {
       `${ctx.getProperty("ChaveNFe") as string}-procEventoNFe.xml`);
   }
 
+  /** Último texto de CC-e recusado, por documento: reabre o diálogo com ele (limpo no sucesso). */
+  private _failedNfeCorrection: FailedNfeCorrection;
+
   /** "Carta de Correção": diálogo pré-preenchido com a última carta; 200 traz a sequência registrada. */
   async onNfeCorrection() {
     const ctx = this.getView().getBindingContext() as Context;
@@ -170,7 +173,8 @@ export default class Detail extends BaseController {
       `${ServerRoutes.salesInvoicesNfeCorrections}?$filter=SalesInvoiceKey eq ${key}&$orderby=Sequence desc&$top=1&$select=Text`);
     const previous = last.ok ? (odataValue<{ Text: string }[]>(last.data) ?? [])[0]?.Text ?? "" : "";
 
-    const text = await openNfeCorrectionDialog(this.getView(), previous);
+    const text = await openNfeCorrectionDialog(this.getView(),
+      pickNfeCorrectionPrefill(this._failedNfeCorrection, key, previous));
     if (text === null) {
       return;
     }
@@ -179,10 +183,12 @@ export default class Detail extends BaseController {
     try {
       const result = await sendJson("POST", ServerRoutes.salesInvoicesSendNfeCorrection, { Key: key, Text: text });
       if (!result.ok) {
+        this._failedNfeCorrection = { key, text };
         MessageBox.error(result.message);
         return;
       }
 
+      this._failedNfeCorrection = undefined;
       const outcome = odataValue<{ Sequence: number }>(result.data);
       MessageToast.show(`Carta de correção nº ${outcome.Sequence} registrada na SEFAZ.`);
     } finally {

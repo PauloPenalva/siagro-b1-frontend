@@ -1,7 +1,7 @@
 import {
 	PAYMENT_MEANS, PAYMENT_START_RULES, paymentPreviewUrl, certificateDaysToExpire, certificateState, environmentCode, readFileAsBase64, nfeOutcomeMessage, isManualTaxDocumentBlocked,
 	danfeViewerOptions, isValidNfeCancelJustification, canCancelNfe, needsNfeCancellationCompletion, isReversibleNfeStatus,
-	normalizeNfeCorrectionText, invalidNfeCorrectionChars, isValidNfeCorrectionText, canSendNfeCorrection, correctionViewerOptions,
+	normalizeNfeCorrectionText, invalidNfeCorrectionChars, isValidNfeCorrectionText, canSendNfeCorrection, correctionViewerOptions, pickNfeCorrectionPrefill,
 } from "siagrob1/helpers/NfeHelpers";
 import type { NfeOutcome } from "siagrob1/helpers/NfeHelpers";
 
@@ -251,3 +251,18 @@ QUnit.test("consulta avisa as cartas importadas", function (assert) {
 	assert.strictEqual(message.type, "success");
 	assert.ok(message.text.endsWith(" 2 carta(s) de correção importada(s) da SEFAZ."));
 });
+
+QUnit.module("NfeHelpers - texto da carta de correção reaberto");
+
+QUnit.test("texto que falhou no mesmo documento vence a última carta registrada", function (assert) {
+	assert.strictEqual(pickNfeCorrectionPrefill({ key: "k1", text: "texto digitado" }, "k1", "carta registrada"), "texto digitado");
+});
+
+QUnit.test("texto que falhou em outro documento é ignorado", function (assert) {
+	assert.strictEqual(pickNfeCorrectionPrefill({ key: "k2", text: "texto digitado" }, "k1", "carta registrada"), "carta registrada");
+});
+
+QUnit.test("sem falha guardada usa a última carta registrada", function (assert) {
+	assert.strictEqual(pickNfeCorrectionPrefill(undefined, "k1", "carta registrada"), "carta registrada");
+});
+

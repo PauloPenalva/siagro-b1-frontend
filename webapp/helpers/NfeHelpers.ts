@@ -239,6 +239,18 @@ export function canSendNfeCorrection(nfeStatus?: string, invoiceStatus?: string,
   return nfeStatus === "Authorized" && invoiceStatus !== "Cancelled" && (issuerType === undefined || issuerType === "Own");
 }
 
+export type FailedNfeCorrection = { key: string; text: string };
+
+/**
+ * Texto com que o diálogo da CC-e reabre: o que o usuário digitou e a SEFAZ/servidor recusou (do MESMO documento)
+ * vence a última carta registrada, para não perder o texto nem reenviar uma carta antiga.
+ */
+export function pickNfeCorrectionPrefill(
+  failed: FailedNfeCorrection, key: string, previous: string
+): string {
+  return failed && failed.key === key ? failed.text : previous;
+}
+
 /** Título e arquivo do PDF da CC-e no visualizador (mesmo padrão do DANFE). */
 export function correctionViewerOptions(doc: DanfeDocument, sequence: number): { title: string; fileName: string } {
   const danfe = danfeViewerOptions(doc);
