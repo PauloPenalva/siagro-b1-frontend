@@ -28,12 +28,16 @@
          </uxap:snappedHeading>
         <uxap:actions>
           <Button text="Editar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' ? true : false }" type="Emphasized" press=".onEdit"/>
-          <!-- Na filial com a regra ativa (ui>/taxLocked), emitir é o que confirma o documento Normal e a devolução própria. -->
+          <!-- Na filial com a regra ativa (ui>/taxLocked), o documento Normal confirma e depois transmite a NF-e (spec
+               2026-10-06 D1); a devolução própria segue "emitir é o que confirma". -->
           <Button text="Confirmar" type="Success" press=".onConfirm"
-            visible="{= ${ui>/taxLocked} !== true || (${path: 'InvoiceType', targetType: 'any'} !== 'Normal' &amp;&amp; ${IsNfeReturn} !== true) }"
+            visible="{= ${ui>/taxLocked} !== true || ${IsNfeReturn} !== true }"
             enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' ? true : false }" />
+          <Button text="Transmitir NF-e" type="Success" icon="sap-icon://paper-plane" press=".onIssueNfe"
+            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; ${path: 'TaxDocumentKind', targetType: 'any'} === 'Nfe' }"
+            enabled="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Confirmed' &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === 'None' || ${path: 'NfeStatus', targetType: 'any'} === 'Rejected') }" />
           <Button text="Emitir NF-e" type="Success" icon="sap-icon://paper-plane" press=".onIssueNfe"
-            visible="{= ${ui>/taxLocked} === true &amp;&amp; (${path: 'InvoiceType', targetType: 'any'} === 'Normal' || ${IsNfeReturn} === true) }"
+            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${IsNfeReturn} === true }"
             enabled="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === 'None' || ${path: 'NfeStatus', targetType: 'any'} === 'Rejected') }" />
           <Button text="Consultar situação" icon="sap-icon://synchronize" press=".onConsultNfe"
             visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Processing' || ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' }" />

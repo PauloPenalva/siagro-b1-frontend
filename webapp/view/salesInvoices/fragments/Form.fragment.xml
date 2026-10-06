@@ -76,6 +76,18 @@
               <core:ListItem key="Normal" text="Normal" />
               <core:ListItem key="Return" text="Retorno" />
             </Select>
+            <!-- Na filial que emite NF-e pelo Siagro (ui>/taxLocked), o documento Normal é NF-e (transmitida depois de
+                 confirmado) ou Outro (papel/talão, termina no Confirmar). Fora dela o campo some. -->
+            <Label text="Tipo de documento"
+              visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }" />
+            <Select
+              visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }"
+              editable="{= ${ui>/editable} === true }"
+              forceSelection="false"
+              selectedKey="{ path: 'TaxDocumentKind', targetType: 'any' }">
+              <core:ListItem key="Nfe" text="NF-e (eletrônica)" />
+              <core:ListItem key="Other" text="Outro (papel/talão…)" />
+            </Select>
             <Label text="Emissão" />
             <DatePicker
                 value="{
@@ -303,19 +315,19 @@
             <core:Title text="Dados da NF-e"/>
             <Label text="Numero" />
             <Input 
-              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'TaxDocumentKind', targetType: 'any'} !== 'Other') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
               value="{TaxDocumentNumber}"
               maxLength="9"
             />
             <Label text="Série" />
             <Input 
-              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'TaxDocumentKind', targetType: 'any'} !== 'Other') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
               value="{TaxDocumentSeries}"
               maxLength="3"
             />
             <Label text="Chave de Acesso" />
             <Input 
-              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'TaxDocumentKind', targetType: 'any'} !== 'Other') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
               value="{ChaveNFe}"
               maxLength="44"
             />

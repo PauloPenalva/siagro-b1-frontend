@@ -47,6 +47,10 @@ type BillingForm = {
   ItemCode?: string,
   FreightTerms?: string,
   FreightCost?: number,
+  /** "Nfe" ou "Other" — só aparece (e só vale) na filial que emite NF-e pelo Siagro. */
+  TaxDocumentKind?: string,
+  /** Só exibição — a filial da carga emite NF-e pelo Siagro (TaxCalculationGate). */
+  TaxLocked?: boolean,
   /** Chave da carga faturada — substitui `SalesTransactions` no payload. */
   ShipmentLoadKey?: string,
   ShipmentLoadCode?: string,
@@ -215,7 +219,11 @@ export default class Main extends BaseController {
       TruckingCompanyName: load.CarrierName,
       FreightTerms: "",
       BranchCode: load.BranchCode,
+      TaxDocumentKind: "Nfe",
+      TaxLocked: false,
     });
+
+    viewModel.setProperty("/TaxLocked", await this.isTaxCalculationActive(load.BranchCode));
 
     contractsTable.clearSelection();
     await this.loadAvailableReleases(load.ItemCode ?? "");
@@ -323,6 +331,7 @@ export default class Main extends BaseController {
             // A nota aponta a CARGA e não escreve romaneio: com N notas por carga,
             // SalesInvoiceKey no romaneio não teria dono único.
             ShipmentLoadKey: billing?.ShipmentLoadKey,
+            TaxDocumentKind: billing?.TaxDocumentKind ?? "Nfe",
             FreightTerms: billing?.FreightTerms,
             FreightCostStandard: billing?.FreightCost
           };
