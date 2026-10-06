@@ -99,6 +99,18 @@ QUnit.test("autorizada sem confirmação não diz que o documento foi confirmado
 		{ type: "success", text: "NF-e autorizada." });
 });
 
+QUnit.test("consulta de autorizada com outro retorno mostra a situação na SEFAZ", function (assert) {
+	assert.deepEqual(nfeOutcomeMessage({ NfeStatus: "Authorized", StatusCode: "217", Reason: "NF-e não consta na base de dados da SEFAZ" }),
+		{ type: "warning", text: "Situação na SEFAZ: 217 - NF-e não consta na base de dados da SEFAZ" });
+});
+
+QUnit.test("autorizada com 100 ou 150 segue como sucesso", function (assert) {
+	assert.deepEqual(nfeOutcomeMessage({ NfeStatus: "Authorized", InvoiceStatus: "Confirmed", StatusCode: "100", Reason: "Autorizado o uso da NF-e" }),
+		{ type: "success", text: "NF-e autorizada e documento confirmado." });
+	assert.deepEqual(nfeOutcomeMessage({ NfeStatus: "Authorized", StatusCode: "150", Reason: "Autorizado o uso da NF-e, autorização fora de prazo" }),
+		{ type: "success", text: "NF-e autorizada." });
+});
+
 QUnit.module("NfeHelpers - Informar Nota Fiscal manual");
 
 QUnit.test("regra de bloqueio por situação, trava e tipo", function (assert) {

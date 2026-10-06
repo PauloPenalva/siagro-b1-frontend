@@ -101,6 +101,10 @@ export function nfeOutcomeMessage(outcome: NfeOutcome): { type: "success" | "war
 
   switch (outcome.NfeStatus) {
     case "Authorized":
+      // Consulta de autorizada com outro retorno (nem 100 nem 150): mostra o cStat e o motivo (spec §7.4).
+      if (outcome.StatusCode && outcome.StatusCode !== "100" && outcome.StatusCode !== "150") {
+        return { type: "warning", text: `Situação na SEFAZ: ${codeAndReason}` };
+      }
       return outcome.ConfirmationError
         ? {
           type: "warning",

@@ -163,7 +163,7 @@ export default class Main extends BaseController {
     }
 
     if (!await confirmDialog(
-      "Cancelar este documento ? A chave da NF-e volta a ficar livre.",
+      "Cancelar este documento ? A chave da NF-e de terceiro volta a ficar livre.",
       "Cancelar documento ?")) {
       return;
     }
