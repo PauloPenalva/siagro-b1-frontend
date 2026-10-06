@@ -448,6 +448,18 @@ export abstract class BaseController extends CommonController {
       });
 
       aCols.push({
+        label: "Situação NF-e",
+        property: "NfeStatus",
+        type: EdmType.Enumeration,
+        valueMap: {
+          "None": "", "Processing": "Em processamento", "Authorized": "Autorizada",
+          "Rejected": "Rejeitada", "Denied": "Denegada", "Cancelled": "Cancelada",
+        },
+      });
+
+      aCols.push({ label: "Cancelada em", property: "NfeCancelledAt", type: EdmType.DateTime });
+
+      aCols.push({
         label: "Chave NF-e",
         property: "ChaveNFe",
         type: EdmType.String,

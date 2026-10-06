@@ -9,6 +9,10 @@ import Context from "sap/ui/model/odata/v4/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import formatter from "siagrob1/model/formatter";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
+import { sendJson, odataValue } from "siagrob1/helpers/FetchHelpers";
+import { canCancelNfe, nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
+import { openNfeCancelDialog } from "siagrob1/dialogs/NfeCancelDialog";
 import { BaseController } from "./BaseController";
 
 /**
@@ -65,7 +69,7 @@ export default class Main extends BaseController {
 
       if (!value) return;
 
-      if (key === "InvoiceType" || key === "IssuerType" || key === "InvoiceStatus") {
+      if (key === "InvoiceType" || key === "IssuerType" || key === "InvoiceStatus" || key === "NfeStatus") {
         filters.push(`${key} eq '${value}'`);
       } else if (key === "DateFrom") {
         filters.push(`IssueDate ge ${value}`);
@@ -125,6 +129,36 @@ export default class Main extends BaseController {
     const oContext = this.selectedContext();
 
     if (!oContext) {
+      return;
+    }
+
+    // NF-e própria autorizada: o cancelamento vai pela SEFAZ, com justificativa.
+    if (canCancelNfe(oContext.getProperty("NfeStatus") as string, oContext.getProperty("InvoiceStatus") as string)) {
+      const justification = await openNfeCancelDialog(this.getView());
+      if (justification === null) {
+        return;
+      }
+
+      this.setBusy(true);
+      try {
+        const result = await sendJson("POST", ServerRoutes.purchaseInvoicesCancelNfe,
+          { Key: oContext.getProperty("Key") as string, Justification: justification });
+
+        if (!result.ok) {
+          MessageBox.error(result.message);
+          return;
+        }
+
+        const message = nfeOutcomeMessage(odataValue<NfeOutcome>(result.data));
+        if (message.type === "success") {
+          MessageToast.show(message.text);
+        } else {
+          MessageBox.warning(message.text);
+        }
+      } finally {
+        this.onRefresh();
+        this.setBusy(false);
+      }
       return;
     }
 
@@ -231,6 +265,18 @@ export default class Main extends BaseController {
       scale: 2,
       delimiter: true,
     });
+
+    aCols.push({
+      label: "Situação NF-e",
+      property: "NfeStatus",
+      type: EdmType.Enumeration,
+      valueMap: {
+        "None": "", "Processing": "Em processamento", "Authorized": "Autorizada",
+        "Rejected": "Rejeitada", "Denied": "Denegada", "Cancelled": "Cancelada",
+      },
+    });
+
+    aCols.push({ label: "Cancelada em", property: "NfeCancelledAt", type: EdmType.DateTime });
 
     aCols.push({ label: "Chave NF-e", property: "ChaveNFe", type: EdmType.String });
 

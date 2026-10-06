@@ -84,6 +84,19 @@
             </Select>
         </fb:control>
       </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="nfeStatus" label="Situação NF-e" groupName="GroupStatus" visibleInFilterBar="true"
+        visible="{= ${ui>/standalone} === true &amp;&amp; ${ui>/anyBranchIssuesNfe} === true }">
+        <fb:control>
+            <Select forceSelection="false" selectedKey="{filter>/NfeStatus}">
+              <core:ListItem key="" text="Todas"/>
+              <core:ListItem key="Processing" text="Em processamento"/>
+              <core:ListItem key="Authorized" text="Autorizada"/>
+              <core:ListItem key="Rejected" text="Rejeitada"/>
+              <core:ListItem key="Denied" text="Denegada"/>
+              <core:ListItem key="Cancelled" text="Cancelada"/>
+            </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
       <fb:FilterGroupItem name="businessPartners" label="Cliente" groupName="GroupCustomers" visibleInFilterBar="true">
         <fb:control>
             <Input
