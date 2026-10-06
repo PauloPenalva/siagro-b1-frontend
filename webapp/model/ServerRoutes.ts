@@ -180,6 +180,13 @@ export default {
   purchaseInvoicesDanfeReport: '/reports/Danfe/purchase-invoices',
   purchaseInvoicesCreateNfeReturn: '/PurchaseInvoicesCreateNfeReturn(...)',
   purchaseInvoicesNfeReturnableItems: '/odata/PurchaseInvoicesNfeReturnableItems',
+  // Cancelamento da NF-e (evento 110111): ação com justificativa, conclusão da fase local e XML do evento.
+  salesInvoicesCancelNfe: '/odata/SalesInvoicesCancelNfe',
+  salesInvoicesCompleteNfeCancellation: '/odata/SalesInvoicesCompleteNfeCancellation',
+  salesInvoicesNfeCancellationXml: '/odata/SalesInvoicesNfeCancellationXml',
+  purchaseInvoicesCancelNfe: '/odata/PurchaseInvoicesCancelNfe',
+  purchaseInvoicesCompleteNfeCancellation: '/odata/PurchaseInvoicesCompleteNfeCancellation',
+  purchaseInvoicesNfeCancellationXml: '/odata/PurchaseInvoicesNfeCancellationXml',
   // Comentários do documento de saída: no Update/Delete a chave é a do COMENTÁRIO, não a do
   // documento.
   salesInvoicesCommentCreate: '/SalesInvoicesCommentCreate(...)',

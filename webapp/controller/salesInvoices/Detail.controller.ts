@@ -14,7 +14,8 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { sendJson, odataValue, readErrorMessage } from "siagrob1/helpers/FetchHelpers";
-import { nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
+import { nfeOutcomeMessage, NfeOutcome, canCancelNfe } from "siagrob1/helpers/NfeHelpers";
+import { openNfeCancelDialog } from "siagrob1/dialogs/NfeCancelDialog";
 import { NfeReturnRow, prefillNfeReturnRows, hasReturnableBalance, buildNfeReturnPayload } from "siagrob1/helpers/NfeReturnHelpers";
 import { TAX_TOTALS_SELECT } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 import { LINE_CHARGES_SELECT, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
@@ -101,10 +102,10 @@ export default class Detail extends BaseController {
    * Emitir/consultar/concluir: 400 traz a mensagem de pré-condição/prontidão; 200 traz o desfecho
    * (autorizada, rejeitada, denegada, em processamento). O documento é relido nos dois casos.
    */
-  private async runNfeAction(url: string, ctx: Context) {
+  private async runNfeAction(url: string, ctx: Context, extra: Record<string, unknown> = {}) {
     this.setBusy(true);
     try {
-      const result = await sendJson("POST", url, { Key: ctx.getProperty("Key") as string });
+      const result = await sendJson("POST", url, { Key: ctx.getProperty("Key") as string, ...extra });
 
       if (!result.ok) {
         MessageBox.error(result.message);
@@ -135,11 +136,26 @@ export default class Detail extends BaseController {
   }
 
   async onNfeXml() {
+    await this.downloadNfeXml(ServerRoutes.salesInvoicesNfeXml, "procNFe");
+  }
+
+  async onCompleteNfeCancellation() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (ctx) {
+      await this.runNfeAction(ServerRoutes.salesInvoicesCompleteNfeCancellation, ctx);
+    }
+  }
+
+  async onNfeCancellationXml() {
+    await this.downloadNfeXml(ServerRoutes.salesInvoicesNfeCancellationXml, "procEventoNFe");
+  }
+
+  private async downloadNfeXml(route: string, suffix: string) {
     const ctx = this.getView().getBindingContext() as Context;
 
     this.setBusy(true);
     try {
-      const response = await fetch(`${ServerRoutes.salesInvoicesNfeXml}(Key=${ctx.getProperty("Key") as string})`);
+      const response = await fetch(`${route}(Key=${ctx.getProperty("Key") as string})`);
 
       if (!response.ok) {
         throw new Error(await readErrorMessage(response) || "Falha ao baixar o XML.");
@@ -147,7 +163,7 @@ export default class Detail extends BaseController {
 
       const link = document.createElement("a");
       link.href = URL.createObjectURL(await response.blob());
-      link.download = `${ctx.getProperty("ChaveNFe") as string}-procNFe.xml`;
+      link.download = `${ctx.getProperty("ChaveNFe") as string}-${suffix}.xml`;
       link.click();
       setTimeout(() => URL.revokeObjectURL(link.href), 60000);
     } catch (error) {
@@ -282,6 +298,15 @@ export default class Detail extends BaseController {
     const ctx = this.getView().getBindingContext() as Context;
     if (!ctx) {
       MessageBox.error("Contexto inválido.")
+      return;
+    }
+
+    // NF-e autorizada: o cancelamento vai pela SEFAZ, com justificativa.
+    if (canCancelNfe(ctx.getProperty("NfeStatus") as string, ctx.getProperty("InvoiceStatus") as string)) {
+      const justification = await openNfeCancelDialog(this.getView());
+      if (justification !== null) {
+        await this.runNfeAction(ServerRoutes.salesInvoicesCancelNfe, ctx, { Justification: justification });
+      }
       return;
     }
 

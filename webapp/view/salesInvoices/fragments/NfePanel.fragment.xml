@@ -18,10 +18,19 @@
       <Text text="{NfeProtocol}" />
       <Label text="Autorizada em" />
       <Text text="{ path: 'NfeAuthorizedAt', targetType: 'any', formatter: '.formatter.formatDateTime' }" />
+      <Label text="Protocolo do cancelamento" visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" />
+      <Text text="{NfeCancellationProtocol}" visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" />
+      <Label text="Cancelada em" visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" />
+      <Text text="{ path: 'NfeCancelledAt', targetType: 'any', formatter: '.formatter.formatDateTime' }"
+            visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" />
+      <Label text="Justificativa" visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" />
+      <Text text="{NfeCancellationReason}" visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" />
       <Label text="Último retorno" />
       <Text text="{= ${NfeStatusCode} ? ${NfeStatusCode} + ' - ' + ${NfeStatusReason} : ${NfeStatusReason} }" />
       <Label text="Confirmação" visible="{= !!${path: 'NfeConfirmationError', targetType: 'any'} }" />
       <MessageStrip type="Warning" showIcon="true" text="{NfeConfirmationError}" visible="{= !!${path: 'NfeConfirmationError', targetType: 'any'} }" />
+      <Label text="Cancelamento" visible="{= !!${path: 'NfeCancellationError', targetType: 'any'} }" />
+      <MessageStrip type="Warning" showIcon="true" text="{NfeCancellationError}" visible="{= !!${path: 'NfeCancellationError', targetType: 'any'} }" />
     </f:content>
   </f:SimpleForm>
 </core:FragmentDefinition>

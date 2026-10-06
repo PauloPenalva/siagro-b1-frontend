@@ -101,15 +101,20 @@
                 e o botão apareceria antes de o documento carregar. -->
         <Button text="Emitir NF-e" type="Emphasized" icon="sap-icon://paper-plane" visible="{ui>/canIssueNfe}" press=".onIssueNfe" />
         <Button text="Consultar situação" icon="sap-icon://synchronize"
-                visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Processing' }"
+                visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Processing' || ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' }"
                 press=".onConsultNfe" />
         <Button text="Concluir confirmação"
                 visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' }"
                 press=".onCompleteNfeConfirmation" />
+        <Button text="Concluir cancelamento"
+                visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} !== 'Cancelled' }"
+                press=".onCompleteNfeCancellation" />
         <Button text="DANFE" icon="sap-icon://pdf-attachment"
-                visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' }" press=".onDanfe" />
+                visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' || ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" press=".onDanfe" />
         <Button text="XML" icon="sap-icon://download"
-                visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' }" press=".onNfeXml" />
+                visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' || ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" press=".onNfeXml" />
+        <Button text="XML do cancelamento" icon="sap-icon://download"
+                visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" press=".onNfeCancellationXml" />
         <Button text="Devolver" icon="sap-icon://undo" visible="{ui>/canReturn}" press=".onNfeReturn" />
         <Button
           text="Editar"
@@ -123,12 +128,12 @@
           press=".onConfirm" />
         <Button
           text="Estornar"
-          visible="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Confirmed' }"
+          visible="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Confirmed' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Cancelled' }"
           press=".onReverseConfirm" />
         <Button
           text="Cancelar Documento"
           icon="sap-icon://decline"
-          visible="{= ${path: 'InvoiceStatus', targetType: 'any'} !== 'Cancelled' }"
+          visible="{= ${path: 'InvoiceStatus', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Cancelled' }"
           press=".onCancelInvoice" />
         <Button text="Voltar" press=".onBack" />
       </OverflowToolbar>

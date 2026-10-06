@@ -12,7 +12,11 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import Dialog from "sap/m/Dialog";
 import { Input$LiveChangeEvent } from "sap/m/Input";
 import Fragment from "sap/ui/core/Fragment";
-import { isEmittedNfeStatus, isManualTaxDocumentBlocked } from "siagrob1/helpers/NfeHelpers";
+import { isEmittedNfeStatus, isManualTaxDocumentBlocked, canCancelNfe, nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
+import { openNfeCancelDialog } from "siagrob1/dialogs/NfeCancelDialog";
+import { sendJson, odataValue } from "siagrob1/helpers/FetchHelpers";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
+import Sorter from "sap/ui/model/Sorter";
 
 const NFE_KEY_LENGTH = 44;
 
@@ -62,15 +66,41 @@ export default class Main extends BaseController {
 
   private _returnInFlight = false;
 
+  private _branchesLoaded = false;
+
 	onInit(): void  {
     this.createFilterModel();
+    this.getView().setModel(new JSONModel([]), "branches");
 
     this.getRouter().getRoute("salesInvoices")
       .attachPatternMatched(() => {
+        // this.getModel() só resolve o OData model depois que a rota casa (onInit é cedo demais).
+        if (!this._branchesLoaded) {
+          this._branchesLoaded = true;
+          void this.loadBranches();
+        }
         void this.refreshStandaloneFlag().then(() => this.refreshAnyBranchIssuesNfe());
         this.applyFilters();
       });
 	}
+
+  /**
+   * O Select de Filial da FilterBar carrega a lista UMA vez num JSONModel, em vez de bind direto
+   * em `/Branchs` com `suspended: true`. A sap.ui.comp FilterBar chama resume() no binding de
+   * todo item visível a cada `onBeforeRendering` e nunca o suspende de volta: no segundo render o
+   * OData V4 estoura "Cannot resume a not suspended binding" e o render é abortado. Esse segundo
+   * render acontece logo na carga, quando `ui>/standalone`/`ui>/anyBranchIssuesNfe` resolvem e
+   * ligam o filtro "Situação NF-e" — que ficava sem DOM até a FilterBar redesenhar. A lista de
+   * entrada não tem Select ligado ao OData na barra, por isso não tinha o problema. Um JSONModel
+   * aceita resume() sem estar suspenso.
+   */
+  private async loadBranches(): Promise<void> {
+    const oModel = this.getModel() as ODataModel;
+    const contexts = await oModel.bindList("/Branchs", undefined, [new Sorter("Code")])
+      .requestContexts(0, 100);
+    const branches = contexts.map(ctx => ctx.getObject() as { Code: string; ShortName: string });
+    (this.getView().getModel("branches") as JSONModel).setData(branches);
+  }
 
   onClearFilters() {
     this.clearFilters();
@@ -108,7 +138,7 @@ export default class Main extends BaseController {
       // formatar enum: estoura "Unsupported type: SIAGROB1.SalesInvoiceType" num diálogo, com a
       // lista sem filtrar nada. Cair no `else` seria pior ainda — `contains(InvoiceType,'Return')`
       // é recusado pelo backend.
-      if (filterKey == "InvoiceStatus" || filterKey == "InvoiceType") {
+      if (filterKey == "InvoiceStatus" || filterKey == "InvoiceType" || filterKey == "NfeStatus") {
         filters.push(`${filterKey} eq '${esc(value)}'`)
       } else if (filterKey == "DateFrom") {
         filters.push(`InvoiceDate ge ${value}`)
@@ -173,8 +203,39 @@ export default class Main extends BaseController {
       throw new Error("Selecione apenas um registro.");
     }
 
+    const ctx = table.getContextByIndex(selectedInvoice[0]) as Context;
+
+    // NF-e autorizada: o cancelamento vai pela SEFAZ, com justificativa.
+    if (canCancelNfe(ctx.getProperty("NfeStatus") as string, ctx.getProperty("InvoiceStatus") as string)) {
+      const justification = await openNfeCancelDialog(this.getView());
+      if (justification === null) {
+        return;
+      }
+
+      this.setBusy(true);
+      try {
+        const result = await sendJson("POST", ServerRoutes.salesInvoicesCancelNfe,
+          { Key: ctx.getProperty("Key") as string, Justification: justification });
+
+        if (!result.ok) {
+          MessageBox.error(result.message);
+          return;
+        }
+
+        const message = nfeOutcomeMessage(odataValue<NfeOutcome>(result.data));
+        if (message.type === "success") {
+          MessageToast.show(message.text);
+        } else {
+          MessageBox.warning(message.text);
+        }
+      } finally {
+        this.refreshData();
+        this.setBusy(false);
+      }
+      return;
+    }
+
     if (await DialogHelper.confirmDialog("Cancelar Documento de Saída ?")) {
-      const ctx = table.getContextByIndex(selectedInvoice[0]);
       const oModel = this.getModel() as ODataModel;
       const action = oModel.bindContext("/SalesInvoicesCancel(...)");
       action.setParameter("Key", ctx.getProperty("Key"));

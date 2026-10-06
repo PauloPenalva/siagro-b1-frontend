@@ -36,19 +36,23 @@
             visible="{= ${ui>/taxLocked} === true &amp;&amp; (${path: 'InvoiceType', targetType: 'any'} === 'Normal' || ${IsNfeReturn} === true) }"
             enabled="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === 'None' || ${path: 'NfeStatus', targetType: 'any'} === 'Rejected') }" />
           <Button text="Consultar situação" icon="sap-icon://synchronize" press=".onConsultNfe"
-            visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Processing' }" />
+            visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Processing' || ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' }" />
           <Button text="Concluir confirmação" type="Attention" press=".onCompleteNfeConfirmation"
             visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' }" />
+          <Button text="Concluir cancelamento" type="Attention" press=".onCompleteNfeCancellation"
+            visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} !== 'Cancelled' }" />
           <Button text="DANFE" icon="sap-icon://pdf-attachment" press=".onDanfe"
-            visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' }" />
+            visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' || ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" />
           <Button text="XML" icon="sap-icon://download" press=".onNfeXml"
-            visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' }" />
+            visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' || ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" />
+          <Button text="XML do cancelamento" icon="sap-icon://download" press=".onNfeCancellationXml"
+            visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" />
           <!-- NF-e de devolução: a venda autorizada (sem carga) gera a devolução própria, que é
                emitida pelo mesmo "Emitir NF-e". -->
           <Button text="Devolver" icon="sap-icon://undo" press=".onNfeReturn"
             visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} === 'Confirmed' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' &amp;&amp; !${path: 'ShipmentLoadKey', targetType: 'any'} }" />
-          <Button text="Estornar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Confirmed' ? true : false }" type="Critical" press=".onReverse"/>
-          <Button text="Cancelar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' || ${path: 'InvoiceStatus', targetType: 'any'}==='Confirmed' ? true : false }" type="Reject" press=".onCancel"/>
+          <Button text="Estornar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Confirmed' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Cancelled' }" type="Critical" press=".onReverse"/>
+          <Button text="Cancelar" enabled="{= (${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' || ${path: 'InvoiceStatus', targetType: 'any'} === 'Confirmed') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Cancelled' }" type="Reject" press=".onCancel"/>
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>

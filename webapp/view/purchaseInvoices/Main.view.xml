@@ -41,7 +41,7 @@
 				alternateRowColors="true"
 				rows="{
 					path: '/PurchaseInvoices',
-					parameters: { $select: 'NfeStatus,IssuerType,IsNfeReturn' },
+					parameters: { $select: 'NfeStatus,NfeCancelledAt,InvoiceStatus,IssuerType,IsNfeReturn' },
 					sorter: {
 						path: 'IssueDate',
 						descending: true
@@ -110,6 +110,11 @@
 								state="{ path: 'NfeStatus', targetType: 'any', formatter: '.formatter.stateNfeStatus' }" />
 						</t:template>
 					</t:Column>
+          <t:Column label="Cancelada em" width="10rem" sortProperty="NfeCancelledAt" visible="{= ${ui>/standalone} === true &amp;&amp; ${ui>/anyBranchIssuesNfe} === true }">
+            <t:template>
+              <Text text="{ path: 'NfeCancelledAt', targetType: 'any', formatter: '.formatter.formatDateTime' }" wrapping="false" />
+            </t:template>
+          </t:Column>
 					<t:Column label="Número interno" width="8rem" hAlign="Center" sortProperty="InvoiceNumber">
 						<t:template>
 							<Text text="{InvoiceNumber}" />

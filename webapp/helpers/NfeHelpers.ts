@@ -92,6 +92,7 @@ export type NfeOutcome = {
   Reason?: string;
   AccessKey?: string;
   ConfirmationError?: string;
+  CancellationError?: string;
 };
 
 /** Mensagem do desfecho de emitir/consultar/concluir (o servidor devolve 200 com o desfecho). */
@@ -100,6 +101,10 @@ export function nfeOutcomeMessage(outcome: NfeOutcome): { type: "success" | "war
 
   switch (outcome.NfeStatus) {
     case "Authorized":
+      // Consulta de autorizada com outro retorno (nem 100 nem 150): mostra o cStat e o motivo (spec §7.4).
+      if (outcome.StatusCode && outcome.StatusCode !== "100" && outcome.StatusCode !== "150") {
+        return { type: "warning", text: `Situação na SEFAZ: ${codeAndReason}` };
+      }
       return outcome.ConfirmationError
         ? {
           type: "warning",
@@ -114,12 +119,20 @@ export function nfeOutcomeMessage(outcome: NfeOutcome): { type: "success" | "war
       return { type: "error", text: `NF-e rejeitada: ${codeAndReason}` };
     case "Denied":
       return { type: "error", text: `NF-e denegada: ${codeAndReason}` };
+    case "Cancelled":
+      return outcome.CancellationError
+        ? {
+          type: "warning",
+          text: `NF-e cancelada na SEFAZ, mas o cancelamento do documento falhou: ${outcome.CancellationError} ` +
+            "Corrija e use Concluir cancelamento.",
+        }
+        : { type: "success", text: "NF-e cancelada e documento cancelado." };
     default:
       return { type: "warning", text: outcome.Reason ?? "NF-e em processamento." };
   }
 }
 
-/** NF-e já emitida (em processamento, autorizada, rejeitada ou denegada). Nulo/None = nunca emitida. */
+/** NF-e já emitida (em processamento, autorizada, rejeitada, denegada ou cancelada). Nulo/None = nunca emitida. */
 export function isEmittedNfeStatus(nfeStatus?: string): boolean {
   return !!nfeStatus && nfeStatus !== "None";
 }
@@ -156,4 +169,28 @@ export function danfeViewerOptions(doc: DanfeDocument): { title: string; fileNam
   }
 
   return { title, fileName: key ? `${key}-danfe.pdf` : "danfe.pdf" };
+}
+
+export const NFE_CANCEL_MIN = 15;
+export const NFE_CANCEL_MAX = 255;
+
+/** Justificativa do cancelamento (xJust): 15 a 255 caracteres depois do trim, como o servidor conta. */
+export function isValidNfeCancelJustification(text: string): boolean {
+  const length = (text ?? "").trim().length;
+  return length >= NFE_CANCEL_MIN && length <= NFE_CANCEL_MAX;
+}
+
+/** "Cancelar" vai pela SEFAZ (com justificativa): NF-e autorizada de documento ainda ativo. */
+export function canCancelNfe(nfeStatus?: string, invoiceStatus?: string): boolean {
+  return nfeStatus === "Authorized" && invoiceStatus !== "Cancelled";
+}
+
+/** NF-e cancelada na SEFAZ e documento ainda ativo: falta a fase local. */
+export function needsNfeCancellationCompletion(nfeStatus?: string, invoiceStatus?: string): boolean {
+  return nfeStatus === "Cancelled" && invoiceStatus !== "Cancelled";
+}
+
+/** Estorno de confirmação: recusado com NF-e em processamento, autorizada ou cancelada. */
+export function isReversibleNfeStatus(nfeStatus?: string): boolean {
+  return nfeStatus !== "Processing" && nfeStatus !== "Authorized" && nfeStatus !== "Cancelled";
 }

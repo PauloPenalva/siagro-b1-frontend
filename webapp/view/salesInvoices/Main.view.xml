@@ -46,7 +46,7 @@
 				alternateRowColors="true"
         rows="{
 					path: '/SalesInvoices',
-          parameters: { $select: 'ShipmentLoadKey,WithoutTaxDocument,NfeStatus,BranchCode,InvoiceType,IsNfeReturn,TotalInvoiceItems' },
+          parameters: { $select: 'ShipmentLoadKey,WithoutTaxDocument,NfeStatus,NfeCancelledAt,InvoiceStatus,BranchCode,InvoiceType,IsNfeReturn,TotalInvoiceItems' },
           sorter: [
             { path: 'RowId', descending: true }
           ]
@@ -256,6 +256,11 @@
               <ObjectStatus
                 text="{ path: 'NfeStatus', targetType: 'any', formatter: '.formatter.formatNfeStatus' }"
                 state="{ path: 'NfeStatus', targetType: 'any', formatter: '.formatter.stateNfeStatus' }" />
+            </t:template>
+          </t:Column>
+          <t:Column label="Cancelada em" width="10rem" sortProperty="NfeCancelledAt" visible="{= ${ui>/standalone} === true &amp;&amp; ${ui>/anyBranchIssuesNfe} === true }">
+            <t:template>
+              <Text text="{ path: 'NfeCancelledAt', targetType: 'any', formatter: '.formatter.formatDateTime' }" wrapping="false" />
             </t:template>
           </t:Column>
           <t:Column
