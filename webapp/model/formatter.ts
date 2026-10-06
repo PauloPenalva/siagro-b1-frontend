@@ -1114,27 +1114,6 @@ const formatter = {
     return m.get(value) ?? "";
   },
 
-  /**
-   * Total da linha do documento de saída, calculado NO CLIENTE.
-   *
-   * A propriedade `Total` da entidade é [NotMapped] — só existe depois que o servidor
-   * responde, então a linha em digitação ficava sempre vazia. Aqui o valor acompanha o que
-   * está sendo digitado.
-   *
-   * Aceita string porque, sem `targetType: 'any'` em cada parte, o binding composto do OData
-   * v4 entrega os valores já convertidos para texto.
-   */
-  formatLineTotal: (quantity: number | string, unitPrice: number | string) => {
-    const qty = Number(quantity ?? 0);
-    const price = Number(unitPrice ?? 0);
-    const total = (isNaN(qty) ? 0 : qty) * (isNaN(price) ? 0 : price);
-
-    return total.toLocaleString("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  },
-
   // ---------------------------------------------------------------------------
   // Documento de entrada
   // ---------------------------------------------------------------------------

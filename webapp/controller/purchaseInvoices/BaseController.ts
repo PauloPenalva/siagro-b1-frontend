@@ -12,6 +12,7 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
 import { isPurchaseNfeMode, isPurchaseTaxMode, mustFallBackToNormal, requiresSupplierKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { summarizeInvoiceTaxes, TaxLine } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
+import { chargeLineOf, formatAmount, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
 
 /** Sequência compartilhada por Add/Edit/Detail: só a chamada mais recente de refreshNfeMode escreve no `ui`. */
 let nfeModeSequence = 0;
@@ -287,19 +288,20 @@ export abstract class BaseController extends CommonController {
     void oTarget.setProperty("PurchaseContractKey", null);
   }
 
-  /** Quantidade ou preço mudou numa linha: o "Total dos itens" acompanha. */
+  /** Quantidade, preço ou um dos quatro valores da linha mudou: o "Total geral" acompanha. */
   onItemAmountChange() {
     this.refreshDocumentTotal();
   }
 
   /**
-   * Soma das linhas do documento.
+   * Total geral do documento (itens + frete + seguro + outras despesas − desconto, spec 2026-10-05 D2) e a seção
+   * "Totais" do Detail (`/chargeTotals`).
    *
-   * Calculada NO CLIENTE porque `TotalInvoiceItems` é derivada e, num documento em digitação, o
-   * servidor ainda não respondeu nada.
+   * Calculado NO CLIENTE porque `GrandTotal` é derivado e, num documento em digitação, o servidor ainda não respondeu
+   * nada.
    *
-   * Não confundir com `TotalDocumentValue`, que é o total DECLARADO pelo emitente: os dois
-   * divergirem é informação de conciliação, não erro.
+   * Não confundir com `TotalDocumentValue`, que é o total DECLARADO pelo emitente: na filial que emite pelo Siagro o
+   * servidor o grava igual a este; fora dela, os dois divergirem é informação de conciliação, não erro.
    *
    * Recalcula também o quadro "Tributos" do Detail (`/taxTotals`), que soma as mesmas linhas.
    */
@@ -312,23 +314,11 @@ export abstract class BaseController extends CommonController {
       return;
     }
 
-    const total = oBinding.getAllCurrentContexts().reduce((sum, ctx) => {
-      const quantity = Number(ctx.getProperty("Quantity") ?? 0);
-      const unitPrice = Number(ctx.getProperty("UnitPrice") ?? 0);
+    const contexts = oBinding.getAllCurrentContexts();
+    const charges = summarizeInvoiceCharges(contexts.map((ctx) => chargeLineOf(ctx)));
 
-      if (isNaN(quantity) || isNaN(unitPrice)) {
-        return sum;
-      }
-
-      return sum + (quantity * unitPrice);
-    }, 0);
-
-    uiModel.setProperty("/totalItems", total.toLocaleString("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }));
-
-    uiModel.setProperty("/taxTotals", summarizeInvoiceTaxes(
-      oBinding.getAllCurrentContexts().map((ctx) => ctx.getObject() as TaxLine)));
+    uiModel.setProperty("/documentTotal", formatAmount(charges.grandTotal));
+    uiModel.setProperty("/chargeTotals", charges);
+    uiModel.setProperty("/taxTotals", summarizeInvoiceTaxes(contexts.map((ctx) => ctx.getObject() as TaxLine)));
   }
 }

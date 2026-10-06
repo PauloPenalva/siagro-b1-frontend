@@ -1,0 +1,37 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    core:require="{
+      charges: 'siagrob1/helpers/InvoiceChargeTotalsHelpers'
+    }"
+>
+  <!-- Seção "Totais" do Detail da entrada e da saída (spec 2026-10-05 §10): total dos itens, os quatro valores da linha
+       somados e o total geral, calculados no cliente (InvoiceChargeTotalsHelpers) e gravados em ui>/chargeTotals pelo
+       BaseController, junto do total da barra da grade. -->
+  <Table
+    id="tableInvoiceChargeTotals"
+    class="sapUiSizeCondensed"
+    width="30rem"
+    items="{ui>/chargeTotals/rows}"
+  >
+    <columns>
+      <Column width="16rem">
+        <Text text="Descrição" />
+      </Column>
+      <Column hAlign="End">
+        <Text text="Valor" />
+      </Column>
+    </columns>
+    <items>
+      <ColumnListItem>
+        <cells>
+          <Text text="{ui>Label}" />
+          <ObjectNumber
+            number="{path: 'ui>Value', formatter: 'charges.formatAmount'}"
+            emphasized="{ui>Emphasized}"
+            state="None" />
+        </cells>
+      </ColumnListItem>
+    </items>
+  </Table>
+</core:FragmentDefinition>

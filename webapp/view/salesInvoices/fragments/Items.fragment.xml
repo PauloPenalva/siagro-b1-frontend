@@ -4,9 +4,7 @@
     xmlns:l="sap.ui.layout"
     xmlns:t="sap.ui.table"
     xmlns:core="sap.ui.core"
-    core:require="{
-      formatter: 'siagrob1/model/formatter'
-    }"
+    core:require="{ DoubleType: 'sap/ui/model/odata/type/Double', charges: 'siagrob1/helpers/InvoiceChargeTotalsHelpers' }"
 >
   <t:Table
     id="tableSalesInvoicesItems"
@@ -46,8 +44,7 @@
             press=".onOpenItemFiscal"
           />
           <ToolbarSpacer />
-          <!-- Total geral do documento. Somado no cliente pelo mesmo motivo do total da
-               linha: TotalInvoiceItems é [NotMapped] e não existe antes de salvar. -->
+          <!-- Total geral do documento (itens + frete + seguro + outras despesas − desconto). Somado no cliente pelo mesmo motivo do total da linha: GrandTotal é [NotMapped] e não existe antes de salvar. -->
           <!-- IBS/CBS: informativo em 2026, fora do total do documento. Só com a tributação
                STANDALONE ativa; vem do servidor (NotMapped), então aparece depois de gravar. -->
           <ObjectNumber
@@ -156,18 +153,81 @@
           />
         </t:template>
       </t:Column>
+      <!-- Frete, seguro, desconto e outras despesas da linha (spec 2026-10-05 §10). Campo de ESCRITA de decimal usa
+           `Double`, nunca `Decimal` (o backend recusa Edm.Decimal em string). Editáveis também na devolução Pendente
+           (vêm da venda na proporção do que volta). -->
+      <t:Column label="Frete" hAlign="End" width="8rem">
+        <t:template>
+          <Input
+              editable="{ui>/editable}"
+              textAlign="End"
+              change=".onItemAmountChange"
+              value="{
+                path: 'FreightValue',
+                type: 'DoubleType',
+                formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }"
+          />
+        </t:template>
+      </t:Column>
+      <t:Column label="Seguro" hAlign="End" width="8rem">
+        <t:template>
+          <Input
+              editable="{ui>/editable}"
+              textAlign="End"
+              change=".onItemAmountChange"
+              value="{
+                path: 'InsuranceValue',
+                type: 'DoubleType',
+                formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }"
+          />
+        </t:template>
+      </t:Column>
+      <t:Column label="Desconto" hAlign="End" width="8rem">
+        <t:template>
+          <Input
+              editable="{ui>/editable}"
+              textAlign="End"
+              change=".onItemAmountChange"
+              value="{
+                path: 'DiscountValue',
+                type: 'DoubleType',
+                formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }"
+          />
+        </t:template>
+      </t:Column>
+      <t:Column label="Outras despesas" hAlign="End" width="9rem">
+        <t:template>
+          <Input
+              editable="{ui>/editable}"
+              textAlign="End"
+              change=".onItemAmountChange"
+              value="{
+                path: 'OtherExpensesValue',
+                type: 'DoubleType',
+                formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }"
+          />
+        </t:template>
+      </t:Column>
       <t:Column label="Total">
         <t:template>
-          <!-- Calculado no cliente: `Total` é [NotMapped] e só existe depois que o servidor
-               responde, então a linha em digitação aparecia vazia. `targetType: 'any'` em
-               cada parte é obrigatório — sem ele o binding composto entrega texto. -->
+          <!-- Total geral da linha (itens + frete + seguro + outras despesas − desconto), calculado no cliente: `GrandTotal`
+               é [NotMapped] e só existe depois que o servidor responde. `targetType: 'any'` em cada parte é obrigatório —
+               sem ele o binding composto entrega texto. -->
           <Text
               text="{
                 parts: [
                   { path: 'Quantity', targetType: 'any' },
-                  { path: 'UnitPrice', targetType: 'any' }
+                  { path: 'UnitPrice', targetType: 'any' },
+                  { path: 'FreightValue', targetType: 'any' },
+                  { path: 'InsuranceValue', targetType: 'any' },
+                  { path: 'DiscountValue', targetType: 'any' },
+                  { path: 'OtherExpensesValue', targetType: 'any' }
                 ],
-                formatter: 'formatter.formatLineTotal'
+                formatter: 'charges.formatLineGrandTotal'
               }"
           />
         </t:template>

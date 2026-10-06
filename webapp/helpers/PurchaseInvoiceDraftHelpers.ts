@@ -23,6 +23,11 @@ export interface InvoiceItemPayload {
   UsageName: string;
   /** nItem na NF-e do fornecedor (importação do XML); nulo na digitação. É o que a devolução referencia. */
   NfeItemNumber: number;
+  /** Frete, seguro, desconto e outras despesas da linha (spec 2026-10-05): 0 até o operador informar ou o XML trazer. */
+  FreightValue: number;
+  InsuranceValue: number;
+  DiscountValue: number;
+  OtherExpensesValue: number;
 }
 
 /**
@@ -50,6 +55,11 @@ export interface ImportedInvoiceItem {
   Quantity: number | string;
   UnitPrice: number | string;
   NfeItemNumber?: number;
+  /** Frete, seguro, desconto e outras despesas do `det/prod` (Edm.Decimal da action, em string); ausentes = 0. */
+  FreightValue?: number | string;
+  InsuranceValue?: number | string;
+  DiscountValue?: number | string;
+  OtherExpensesValue?: number | string;
 }
 
 /** Linha em branco do "Incluir Item" e da digitação manual. */
@@ -57,7 +67,7 @@ export function blankItemRow(): InvoiceItemPayload {
   return {
     ItemCode: "", ItemName: "", UnitOfMeasureCode: "", Quantity: 0, UnitPrice: 0,
     SalesInvoiceItemKey: null, PurchaseContractKey: null, UsageCode: null, UsageName: null,
-    NfeItemNumber: null,
+    NfeItemNumber: null, FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0,
   };
 }
 
@@ -81,5 +91,9 @@ export function draftItemRows(items?: ImportedInvoiceItem[]): InvoiceItemPayload
     Quantity: toNumber(item.Quantity),
     UnitPrice: toNumber(item.UnitPrice),
     NfeItemNumber: item.NfeItemNumber ?? null,
+    FreightValue: toNumber(item.FreightValue),
+    InsuranceValue: toNumber(item.InsuranceValue),
+    DiscountValue: toNumber(item.DiscountValue),
+    OtherExpensesValue: toNumber(item.OtherExpensesValue),
   }));
 }

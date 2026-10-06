@@ -10,7 +10,7 @@ QUnit.test("a linha em branco já traz as chaves que a tela edita, nulas", funct
 	assert.deepEqual(blankItemRow(), {
 		ItemCode: "", ItemName: "", UnitOfMeasureCode: "", Quantity: 0, UnitPrice: 0,
 		SalesInvoiceItemKey: null, PurchaseContractKey: null, UsageCode: null, UsageName: null,
-		NfeItemNumber: null,
+		NfeItemNumber: null, FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0,
 	});
 });
 
@@ -52,4 +52,17 @@ QUnit.test("toNumber converte string decimal e zera nulo, vazio e não numérico
 	assert.strictEqual(toNumber(""), 0);
 	assert.strictEqual(toNumber("  "), 0);
 	assert.strictEqual(toNumber("abc"), 0);
+});
+
+QUnit.test("XML importado leva frete, seguro, desconto e outras despesas da linha, em número", function (assert) {
+	const rows = draftItemRows([
+		{
+			ItemCode: "TRIGO", ItemName: "TRIGO", UnitOfMeasureCode: "KG", Quantity: "1000.0000", UnitPrice: "1.5000000000",
+			FreightValue: "100.00", InsuranceValue: "20.00", DiscountValue: "50.00", OtherExpensesValue: "30.00",
+		},
+		{ ItemCode: "MILHO", ItemName: "MILHO", UnitOfMeasureCode: "KG", Quantity: 1, UnitPrice: 1 },
+	]);
+
+	assert.deepEqual(rows.map((row) => [row.FreightValue, row.InsuranceValue, row.DiscountValue, row.OtherExpensesValue]),
+		[[100, 20, 50, 30], [0, 0, 0, 0]]);
 });
