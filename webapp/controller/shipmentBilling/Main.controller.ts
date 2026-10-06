@@ -1,76 +1,11 @@
-import Dialog from "sap/m/Dialog";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import Table from "sap/ui/table/Table";
 import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 import MessageBox from "sap/m/MessageBox";
 import Context from "sap/ui/model/odata/v4/Context";
-import JSONModel from "sap/ui/model/json/JSONModel";
-import Fragment from "sap/ui/core/Fragment";
-import DialogHelper from "siagrob1/dialogs/DialogHelper";
-import ODataModel from "sap/ui/model/odata/v4/ODataModel";
-import MessageToast from "sap/m/MessageToast";
 import { SearchField$SearchEvent } from "sap/m/SearchField";
-import Sorter from "sap/ui/model/Sorter";
-
-/** Carga selecionada na lista — a origem do faturamento agora. */
-type LoadData = {
-  Key: string,
-  Code: string,
-  ItemCode: string,
-  ItemName: string,
-  TruckDriverCode: string,
-  TruckDriverName: string,
-  TruckCode: string,
-  CarrierCardCode: string,
-  CarrierName: string,
-  BranchCode: string,
-  AvailableQuantity: number,
-}
-
-/** Dados do formulário do diálogo de faturamento (model "viewModel"). */
-type BillingForm = {
-  InvoiceDate?: string,
-  BranchCode?: string,
-  Volume?: string | number,
-  TruckingCompanyCode?: string,
-  /** Só exibição — copiado da carga junto com o código, não vai no payload. */
-  TruckingCompanyName?: string,
-  TruckCode?: string,
-  TruckDriverCode?: string,
-  /** Só exibição — nome desnormalizado da carga, não vai no payload. */
-  TruckDriverName?: string,
-  TaxPayerComments?: string,
-  DeliveryCardCode?: string,
-  /** Só exibição — preenchido pelo value help, não vai no payload. */
-  DeliveryCardName?: string,
-  ItemCode?: string,
-  FreightTerms?: string,
-  FreightCost?: number,
-  /** "Nfe" ou "Other" — só aparece (e só vale) na filial que emite NF-e pelo Siagro. */
-  TaxDocumentKind?: string,
-  /** Só exibição — a filial da carga emite NF-e pelo Siagro (TaxCalculationGate). */
-  TaxLocked?: boolean,
-  /** Chave da carga faturada — substitui `SalesTransactions` no payload. */
-  ShipmentLoadKey?: string,
-  ShipmentLoadCode?: string,
-  /** Saldo da carga no momento da abertura, limite da quantidade a faturar. */
-  AvailableQuantity?: number,
-}
-
-/** Liberação de entrega de venda selecionada, usada na montagem do documento de saída. */
-type BilledRelease = {
-  SalesShipmentReleaseKey?: string,
-  SalesContractKey?: string,
-  CardCode?: string,
-  Price?: string | number,
-  UnitOfMeasureCode?: string,
-  AvailableQuantity?: string | number,
-  /** Só exibição — preço em KG convertido pra UoM comercial do item, quando configurada. */
-  CommercialPrice?: string | number,
-  /** Só exibição — acompanha CommercialPrice. */
-  CommercialUnitOfMeasureCode?: string,
-}
+import ShipmentBillingDialog, { BillingLoad } from "siagrob1/helpers/ShipmentBillingDialog";
 
 /**
  * @namespace siagrob1.controller.shipmentBilling
@@ -79,23 +14,21 @@ export default class Main extends BaseController {
 
   formatter = formatter;
 
-  private _billingDialog: Dialog;
-  private _busyDialog: Dialog;
-  /** Trava de reentrância do faturamento — ver `saveBillingDialog`. */
-  private _billingInFlight = false;
+  private _billing: ShipmentBillingDialog;
 
   onInit(): void {
-    // Liberações de venda disponíveis do dialog de faturamento: resultado da function
-    // OData vai para um JSONModel (a resposta é array cru, sem envelope — mesmo padrão
-    // de SelectShipmentRelease; bindar a table direto na function quebra o modelo V4).
-    this.getView().setModel(new JSONModel([]), "releases");
-
-    // Filiais do Select do diálogo num JSONModel estático, e não bindadas direto em /Branchs:
-    // o selectedKey vem do "viewModel" (JSONModel setado antes de abrir), e com o binding OData
-    // os itens só chegavam DEPOIS do primeiro render — o sap.m.Select reconciliava a seleção
-    // internamente (getSelectedItem() correto) sem repintar, e o campo ficava visualmente vazio.
-    // Mesmo padrão de shipmentLoads/FormController.loadBranches.
-    this.getView().setModel(new JSONModel([]), "branches");
+    // O diálogo de faturamento é compartilhado com o detalhe da carga; os modelos dele
+    // (billing, billingReleases, billingBranches) são criados pelo helper.
+    this._billing = new ShipmentBillingDialog({
+      controller: this,
+      view: this.getView(),
+      setBusy: (busy) => this.setBusy(busy),
+      validateForm: (formId) => this.validateForm(formId),
+      registerTableLayouts: (root) => this.registerTableLayouts(root),
+      isTaxCalculationActive: (branchCode) => this.isTaxCalculationActive(branchCode),
+      onBilled: () => this.refreshData(),
+      onClosed: () => (this.byId("shipmentBillingTable") as Table).clearSelection(),
+    });
 
     this.getRouter().getRoute("shipmentBilling")
       .attachPatternMatched(() => this.applyFilters(null));
@@ -142,248 +75,30 @@ export default class Main extends BaseController {
   // onDelete saiu daqui: o estorno do romaneio de embarque migrou para a Montagem de Carga,
   // que é o único lugar onde o romaneio ainda está solto — condição para poder estornar.
 
-  private async createBillingDialog() {
-    const name = "siagrob1.view.shipmentBilling.fragments.Billing";
-    const oView = this.getView();
-    this._billingDialog = this.byId("billingDialog") as Dialog;
-
-    if (!this._billingDialog) {
-      this.setBusy(true);
-      this._billingDialog = await Fragment.load({
-        id: oView.getId(),
-        name,
-        controller: this
-      }) as unknown as Dialog;
-      oView.addDependent(this._billingDialog);
-
-      // O diálogo renderiza por conta própria e não passa pelo `onBeforeRendering` da view.
-      this.registerTableLayouts(this._billingDialog);
-    }
-    this.setBusy(false);
-  }
-
-  /**
-   * Carrega as filiais uma única vez, ANTES de o diálogo renderizar — é isso que garante que o
-   * Select já nasça com os itens e o selectedKey casados.
-   */
-  private async loadBranches(): Promise<void> {
-    const branchesModel = this.getModel("branches") as JSONModel;
-    if ((branchesModel.getData() as unknown[]).length > 0) return;
-
-    const contexts = await (this.getModel() as ODataModel)
-      .bindList("/Branchs", undefined, [new Sorter("Code")])
-      .requestContexts(0, 100);
-
-    branchesModel.setData(
-      contexts.map(ctx => ctx.getObject() as { Code: string, ShortName: string }));
-  }
-
   async openBillingDialog() {
-    await this.loadBranches();
-    await this.createBillingDialog();
-
     const table = this.byId("shipmentBillingTable") as Table;
-    const contractsTable = this.byId("shipmentBillingSalesContractsTable") as Table;
     const selected = table.getSelectedIndices();
 
-    // UMA carga: a aglutinação já foi decidida na Montagem, e por isso as duas checagens de
-    // consistência (placa e produto) saíram daqui — a carga é homogênea por construção.
     if (selected.length !== 1) {
       MessageBox.warning("Selecione uma carga para faturar.");
       return;
     }
 
-    const load = (table.getContextByIndex(selected[0]) as Context).getObject() as LoadData;
-
-    if (!(load.AvailableQuantity > 0)) {
-      MessageBox.warning("Carga sem saldo a faturar.");
-      return;
-    }
-
-    const viewModel = this.getModel("viewModel") as JSONModel;
-
-    viewModel.setData({
-      ItemCode: load.ItemCode,
-      ItemName: load.ItemName,
-      // Sugere o saldo inteiro; o usuário reduz para faturar em partes.
-      Volume: load.AvailableQuantity,
-      AvailableQuantity: load.AvailableQuantity,
-      ShipmentLoadKey: load.Key,
-      ShipmentLoadCode: load.Code,
-      TruckDriverCode: load.TruckDriverCode,
-      TruckDriverName: load.TruckDriverName,
-      TruckCode: load.TruckCode,
-      // Transportadora vem da carga e o campo é somente leitura no diálogo: faturar com
-      // transportadora diferente da da carga é recusado pelo backend.
-      TruckingCompanyCode: load.CarrierCardCode,
-      TruckingCompanyName: load.CarrierName,
-      FreightTerms: "",
-      BranchCode: load.BranchCode,
-      TaxDocumentKind: "Nfe",
-      TaxLocked: false,
-    });
-
-    viewModel.setProperty("/TaxLocked", await this.isTaxCalculationActive(load.BranchCode));
-
-    contractsTable.clearSelection();
-    await this.loadAvailableReleases(load.ItemCode ?? "");
-
-    this._billingDialog?.open();
+    const load = (table.getContextByIndex(selected[0]) as Context).getObject() as BillingLoad;
+    await this._billing.open(load);
   }
 
-  private async loadAvailableReleases(itemCode: string): Promise<void> {
-    const model = this.getModel() as ODataModel;
-    const func = model.bindContext("/SalesShipmentReleasesGetAvailable(...)");
-    func.setParameter("ItemCode", itemCode);
-
-    this.setBusy(true);
-    try {
-      await func.invoke();
-      const releasesModel = this.getModel("releases") as JSONModel;
-      releasesModel.setData(func.getBoundContext().getObject() as object);
-    } finally {
-      this.setBusy(false);
-    }
-  }
-
-  // hasTruckCodeInconsistency e hasItemCodeInconsistency migraram para a Montagem de Carga,
-  // onde a aglutinação passa a ser decidida (e ganharam a terceira, de filial). Aqui a carga
-  // já chega homogênea por construção — simplificação real, não remoção de validação.
-
-  async saveBillingDialog() {
-    // Trava de reentrância: precisa ser avaliada e setada ANTES do primeiro await, senão
-    // um duplo clique em "Confirmar" enfileira dois MessageBox.confirm e dispara dois
-    // faturamentos do mesmo carregamento (documento de saída duplicado, saldo do contrato
-    // descontado duas vezes). O backend também recusa, mas aqui o usuário nem chega lá.
-    if (this._billingInFlight) {
-      return;
-    }
-    this._billingInFlight = true;
-
-    try {
-      if (!this.validateForm("shipmentBillingSalesContractsForm")) {
-        MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
-        return;
-      }
-
-      const viewModelForm = this.getModel("viewModel") as JSONModel;
-      const volume = Number(viewModelForm.getProperty("/Volume"));
-      const available = Number(viewModelForm.getProperty("/AvailableQuantity"));
-
-      // Validação local do saldo FÍSICO da carga. O backend recusa igual — isto só evita a
-      // ida ao servidor e dá a mensagem no idioma da tela.
-      if (!(volume > 0)) {
-        MessageBox.warning("Informe uma quantidade a faturar maior que zero.");
-        return;
-      }
-
-      if (volume > available) {
-        MessageBox.warning(
-          `Quantidade a faturar maior que o saldo da carga (${available.toLocaleString("pt-BR", { minimumFractionDigits: 3 })}).`);
-        return;
-      }
-
-
-      const contractsTable = this.byId("shipmentBillingSalesContractsTable") as Table;
-      const selectedContract = contractsTable.getSelectedIndices();
-      if (selectedContract.length < 1) {
-        MessageBox.error("Liberação de entrega não selecionada.");
-        throw new Error("Liberação de entrega não selecionada.");
-      }
-
-      // Contexto do JSONModel "releases" (não OData) — getObject() devolve o DTO da function.
-      const contractCtx = contractsTable.getContextByIndex(selectedContract[0]);
-
-      if (contractCtx) {
-        const model = this.getModel() as ODataModel;
-        const viewModel = this.getModel("viewModel") as JSONModel;
-        const release = contractCtx.getObject() as BilledRelease;
-        const billing = viewModel.getData() as BillingForm;
-
-        const confirm = await DialogHelper.confirmDialog("Confirma emissão do(s) Documento(s) de Saída ?");
-        if (confirm) {
-
-          const salesInvoice = {
-            InvoiceDate: billing?.InvoiceDate,
-            BranchCode: billing?.BranchCode,
-            CardCode: release?.CardCode,
-            GrossWeight: +billing?.Volume,
-            NetWeight: +billing?.Volume,
-            TruckingCompanyCode: billing?.TruckingCompanyCode,
-            TruckCode: billing?.TruckCode,
-            TaxPayerComments: billing?.TaxPayerComments,
-            DeliveryCardCode: billing?.DeliveryCardCode,
-            Items: [
-              {
-                ItemCode: billing?.ItemCode,
-                Quantity: +billing?.Volume,
-                UnitPrice: +release?.Price,
-                UnitOfMeasureCode: release?.UnitOfMeasureCode,
-                SalesContractKey: release?.SalesContractKey,
-                SalesShipmentReleaseKey: release?.SalesShipmentReleaseKey,
-                // Frete, seguro, desconto e outras despesas da linha (spec 2026-10-05 §10): o faturamento não os informa.
-                FreightValue: 0,
-                InsuranceValue: 0,
-                DiscountValue: 0,
-                OtherExpensesValue: 0
-              }
-            ],
-            // A nota aponta a CARGA e não escreve romaneio: com N notas por carga,
-            // SalesInvoiceKey no romaneio não teria dono único.
-            ShipmentLoadKey: billing?.ShipmentLoadKey,
-            TaxDocumentKind: billing?.TaxDocumentKind ?? "Nfe",
-            FreightTerms: billing?.FreightTerms,
-            FreightCostStandard: billing?.FreightCost
-          };
-
-          this.closeBillingDialog();
-
-          await this.createBusyDialog();
-          this._busyDialog?.open();
-
-          const action = model.bindContext("/ShipmentBillingCreateSalesInvoice(...)");
-          action.setParameter("SalesInvoice", salesInvoice)
-          try {
-            await action.invoke();
-            MessageToast.show("Documento(s) de saída criado(s) com sucesso.");
-          } catch {
-            // A mensagem técnica do backend já é exibida pelo handler global de mensagens
-            // OData (Component.onMessageBindingChange).
-          } finally {
-            this._busyDialog?.close();
-            // Refresh também no erro: se o romaneio já ficou vinculado, ele não pode
-            // continuar sendo oferecido na lista para uma nova tentativa.
-            this.refreshData();
-          }
-        }
-      }
-    } finally {
-      this._billingInFlight = false;
-    }
+  saveBillingDialog() {
+    return this._billing.save();
   }
 
   closeBillingDialog() {
-    const oTable = this.byId("shipmentBillingTable") as Table;
-    const oTableContracts = this.byId("shipmentBillingSalesContractsTable") as Table;
-    oTable.clearSelection();
-    oTableContracts.clearSelection();
-
-    this._billingDialog.close();
+    this._billing.close();
   }
 
   private refreshData() {
     const oTable = this.byId("shipmentBillingTable") as Table;
     (oTable.getBinding("rows") as ODataListBinding).refresh();
   }
-
-  private async createBusyDialog() {
-		if (!this._busyDialog) {
-			this._busyDialog = await Fragment.load({
-				name: "siagrob1.view.shipmentBilling.fragments.BusyDialog",
-				controller: this,
-			}) as unknown as Dialog;
-			this.getView().addDependent(this._busyDialog);
-		}
-	}
 
 }
