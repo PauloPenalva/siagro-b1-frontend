@@ -43,25 +43,32 @@
 						<f:formElements>
 							<f:FormElement label="Armazém">
 								<f:fields>
-									<!-- Sem CustomData descriptionProperty: o diálogo herda o contexto OData da
-									     carga e a descrição iria parar na entidade, não no modelo ship. -->
 									<Input
 										value="{ship>/WarehouseCode}"
+										description="{ship>/WarehouseName}"
 										required="true"
 										showValueHelp="true"
 										valueHelpOnly="true"
-										valueHelpRequest=".openWarehouseValueHelp"
-										change=".onShipWarehouseChange"/>
+										valueHelpRequest=".openWarehouseValueHelp">
+										<customData>
+											<core:CustomData key="descriptionProperty" value="WarehouseName:Name"/>
+										</customData>
+									</Input>
 								</f:fields>
 							</f:FormElement>
 							<f:FormElement label="Motorista">
 								<f:fields>
 									<Input
 										value="{ship>/TruckDriverCode}"
+										description="{ship>/TruckDriverName}"
 										required="true"
 										showValueHelp="true"
 										valueHelpOnly="true"
-										valueHelpRequest=".openTruckDriversValueHelp"/>
+										valueHelpRequest=".openTruckDriversValueHelp">
+										<customData>
+											<core:CustomData key="descriptionProperty" value="TruckDriverName:Name"/>
+										</customData>
+									</Input>
 								</f:fields>
 							</f:FormElement>
 							<f:FormElement label="Data">

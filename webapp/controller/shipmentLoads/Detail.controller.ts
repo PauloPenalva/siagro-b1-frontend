@@ -76,6 +76,9 @@ export default class Detail extends BaseController {
 
   private _shipDialog: Dialog;
 
+  /** Promise do Fragment.load: um duplo clique no primeiro "Expedir" não carrega o diálogo duas vezes. */
+  private _shipDialogLoading: Promise<Dialog>;
+
   /** Trava de reentrância do "Expedir": setada ANTES do primeiro await (mesmo padrão do faturamento). */
   private _shipInFlight = false;
 
@@ -131,32 +134,41 @@ export default class Detail extends BaseController {
     const load = await ctx.requestObject() as {
       Key: string; Code: string; ItemCode: string; WarehouseCode?: string; TruckDriverCode?: string;
     };
+    // Os nomes não estão no $select da view: lidos à parte para o diálogo mostrar a descrição.
+    const warehouseName = (await ctx.requestProperty("WarehouseName")) as string;
+    const driverName = (await ctx.requestProperty("TruckDriverName")) as string;
 
     const now = new Date();
     const pad = (n: number) => String(n).padStart(2, "0");
     const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 
+    // Marca o armazém como já carregado ANTES do setData: o listener do modelo não deve disparar uma
+    // carga redundante, o loadShipReleases explícito abaixo é o único gatilho na abertura.
+    this._shipReleasesWarehouse = load.WarehouseCode ?? "";
     (this.getView().getModel("ship") as JSONModel).setData({
       LoadKey: load.Key,
       LoadCode: load.Code,
       ItemCode: load.ItemCode,
       WarehouseCode: load.WarehouseCode ?? "",
+      WarehouseName: warehouseName ?? "",
       TruckDriverCode: load.TruckDriverCode ?? "",
+      TruckDriverName: driverName ?? "",
       TransactionDate: today,
       GrossWeight: "",
       Comments: "",
     });
 
-    if (!this._shipDialog) {
-      this._shipDialog = await Fragment.load({
-        id: this.getView().getId(),
-        name: "siagrob1.view.shipmentLoads.fragments.ShipDialog",
-        controller: this,
-      }) as Dialog;
-      this.getView().addDependent(this._shipDialog);
-    }
+    this._shipDialogLoading ??= (Fragment.load({
+      id: this.getView().getId(),
+      name: "siagrob1.view.shipmentLoads.fragments.ShipDialog",
+      controller: this,
+    }) as Promise<Dialog>).then((dialog) => {
+      this.getView().addDependent(dialog);
+      this._shipDialog = dialog;
+      return dialog;
+    });
+    await this._shipDialogLoading;
 
-    this._shipReleasesWarehouse = undefined;
     await this.loadShipReleases();
     this._shipDialog.open();
   }
@@ -211,6 +223,10 @@ export default class Detail extends BaseController {
       }
       if (!ship.WarehouseCode || !ship.TruckDriverCode) {
         MessageBox.warning("Informe o armazém e o motorista.");
+        return;
+      }
+      if (!ship.TransactionDate) {
+        MessageBox.warning("Informe a data.");
         return;
       }
       if (!(Number(ship.GrossWeight) > 0)) {
