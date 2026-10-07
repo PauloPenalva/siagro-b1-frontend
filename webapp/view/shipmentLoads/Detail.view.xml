@@ -232,6 +232,15 @@
 										<Title text="{= ${path: 'LoadType', targetType: 'any'} === 'Removal' ? 'Recebimentos da Carga' : 'Romaneios da Carga' }"/>
 										<ToolbarSpacer/>
 										<Button type="Transparent" text="Desvincular" icon="sap-icon://chain-link" press=".onDetachShipments"/>
+										<!-- Desvincula e estorna o embarque numa decisão só: o saldo volta ao contrato de compra e à
+										     liberação de embarque. Não existe em carga de Remoção (lá não há expedição). -->
+										<Button
+											type="Transparent"
+											text="Estornar"
+											icon="sap-icon://undo"
+											tooltip="Desvincula o romaneio da carga e estorna o embarque; o saldo volta ao contrato de compra e à liberação de embarque"
+											visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' }"
+											press=".onReverseShipment"/>
 										<Button
 											type="Transparent"
 											text="Trocar Liberação"

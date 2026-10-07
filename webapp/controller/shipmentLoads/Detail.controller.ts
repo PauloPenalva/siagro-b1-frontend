@@ -435,6 +435,92 @@ export default class Detail extends BaseController {
     }
   }
 
+  /** Trava de reentrância do estorno: setada antes do primeiro await. */
+  private _reverseInFlight = false;
+
+  /**
+   * Estorno do embarque a partir da carga: desvincula o romaneio e estorna a Expedição, devolvendo o saldo ao
+   * contrato de compra e à liberação de embarque. O estorno (`ShippingTransactionsReverse`) só aceita romaneio
+   * solto, por isso as duas ações viram uma decisão só — mesmo fluxo da tela "Romaneios de Embarque". Se o estorno
+   * falhar depois do desvínculo, o romaneio fica solto e pode ser estornado por aquela tela.
+   */
+  async onReverseShipment(): Promise<void> {
+    if (this._reverseInFlight) return;
+    this._reverseInFlight = true;
+
+    try {
+      const table = this.byId("loadTransactionsTable") as Table;
+      const selected = table.getSelectedIndices();
+
+      if (selected.length !== 1) {
+        MessageBox.warning("Selecione 1 romaneio para estornar.");
+        return;
+      }
+
+      const row = table.getContextByIndex(selected[0]) as Context;
+      if (!this.isVigenteRow(row)) {
+        MessageBox.warning("Selecione um romaneio vigente da carga.");
+        return;
+      }
+
+      const code = row.getProperty("Code") as string;
+      const status = row.getProperty("TransactionStatus") as string;
+      if (status === "Invoiced") {
+        MessageBox.warning(`O romaneio ${code} já foi faturado e não pode ser estornado.`);
+        return;
+      }
+      if (status === "Cancelled" || status === "Returned") {
+        MessageBox.warning(`O romaneio ${code} já está cancelado ou estornado.`);
+        return;
+      }
+
+      const load = this.getView().getBindingContext() as Context;
+      const loadCode = load.getProperty("Code") as string;
+      const loadStatus = load.getProperty("Status") as string;
+      if (loadStatus === "Cancelled") {
+        MessageBox.warning(`A carga ${loadCode} está cancelada — seus romaneios já foram devolvidos.`);
+        return;
+      }
+      // A UI decide pelo status da carga; o backend, pela existência de documento de saída vivo.
+      if (["PartiallyInvoiced", "Invoiced", "Discharged", "Completed"].includes(loadStatus)) {
+        MessageBox.warning(
+          `A carga ${loadCode} já tem faturamento (${formatter.formatShipmentLoadStatus(loadStatus)}). `
+          + "Cancele os documentos de saída da carga antes de estornar este romaneio.");
+        return;
+      }
+
+      if (!await DialogHelper.confirmDialog(
+        `Desvincular o romaneio ${code} da carga e estornar o embarque ? `
+        + "O saldo volta para o contrato de compra e para a liberação de embarque.",
+        "Estornar Embarque")) return;
+
+      const shipmentKey = row.getProperty("Key") as string;
+      const model = this.getModel() as ODataModel;
+
+      this.setBusy(true);
+      try {
+        const detach = model.bindContext("/ShipmentLoadsDetachTransactions(...)");
+        detach.setParameter("Key", this._loadKey);
+        detach.setParameter("StorageTransactionKeys", [shipmentKey]);
+        await detach.invoke();
+
+        const reverse = model.bindContext("/ShippingTransactionsReverse(...)");
+        reverse.setParameter("Key", shipmentKey);
+        await reverse.invoke();
+
+        MessageToast.show(`Embarque do romaneio ${code} estornado.`);
+      } catch {
+        // A mensagem do servidor já aparece pelo handler global de mensagens OData.
+      } finally {
+        this.setBusy(false);
+        table.clearSelection();
+        this.refreshAll();
+      }
+    } finally {
+      this._reverseInFlight = false;
+    }
+  }
+
   /**
    * Troca a liberação (contrato de compra) de 1 romaneio, ou inverte a de 2 (GAC-1177 v2).
    * Gera um estorno (12) na origem e uma nova Expedição (7) no destino, com a data da carga;

@@ -143,6 +143,16 @@ export abstract class FormController extends BaseController {
       await action.invoke();
 
       MessageToast.show(form.isEdit ? "Carga alterada com sucesso." : "Carga criada com sucesso.");
+
+      // Inclusão: abre direto o detalhe da carga criada (onde estão Expedir e Faturar). A resposta é camelCase
+      // (Ok(new { … })). Navegação com replace: o "voltar" do detalhe leva à lista, não de volta ao formulário.
+      const created = form.isEdit ? null : action.getBoundContext()?.getObject() as { key?: string; Key?: string };
+      const createdKey = created?.key ?? created?.Key;
+      if (createdKey) {
+        this.navTo("shipmentLoadsDetail", { id: createdKey }, true);
+        return;
+      }
+
       this.onNavBack();
     } catch (e) {
       MessageBox.error((e as Error).message);

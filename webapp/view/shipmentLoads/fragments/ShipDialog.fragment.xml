@@ -6,6 +6,8 @@
 		id="shipDialog"
 		title="Expedir na carga {ship>/LoadCode}"
 		contentWidth="60rem"
+		busyIndicatorDelay="0"
+		busy="{ui>/busy}"
 		class="sapUiSizeCompact">
 		<content>
 			<Table
