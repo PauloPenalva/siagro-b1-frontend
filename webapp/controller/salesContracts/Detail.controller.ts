@@ -39,6 +39,8 @@ export default class Detail extends SalesContractsBaseController {
   private _fiscalSaving = false;
 
 	onInit(): void  {	
+		this.getView().setModel(new JSONModel({}), "fiscalComplement");
+		this.getView().setModel(new JSONModel({}), "fiscalComplementDialog");
 		this.initContractDrafts();
 		this.getRouter().getRoute("salesContractsDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
 	}
@@ -74,7 +76,9 @@ export default class Detail extends SalesContractsBaseController {
 
       this._fiscalContractKey = id;
       (this.getModel("fiscalComplement") as JSONModel).setData({});
-      void this.refreshStandaloneFlag().then(() => this.loadFiscalComplement(id));
+      void this.refreshStandaloneFlag()
+        .then(() => this.loadFiscalComplement(id))
+        .catch(() => { /* sem systemInfo a seção fica oculta/vazia; nada depende disso */ });
 
       const requestModel = new RequestModel({Key: id});
       requestModel.get<SalesContractsTotals>(this.api.salesContractsGetTotals.replace("$", id))
@@ -119,7 +123,10 @@ export default class Detail extends SalesContractsBaseController {
         canEdit: SessionService.hasPermission("SALES_CONTRACT_FISCAL_EDIT"),
       });
     } catch {
-      // O handler global do OData já mostra o erro do servidor.
+      // O handler global do OData já mostra o erro do servidor. Falha tardia de outro contrato não mexe na tela.
+      if (contractKey !== this._fiscalContractKey) {
+        return;
+      }
       model.setData({ canEdit: false });
     }
   }
