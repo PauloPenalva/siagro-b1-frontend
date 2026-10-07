@@ -287,6 +287,10 @@ export default class Detail extends BaseController {
     this._billing.close();
   }
 
+  onBillingReleaseSelect() {
+    return this._billing.onReleaseSelect();
+  }
+
   async onRecalculate(): Promise<void> {
     const action = (this.getModel() as ODataModel).bindContext("/ShipmentLoadsRecalculateInvoiced(...)");
     action.setParameter("Key", this._loadKey);

@@ -10,6 +10,7 @@ import Sorter from "sap/ui/model/Sorter";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Table from "sap/ui/table/Table";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
 
 /** Carga a faturar — os campos que o diálogo usa. */
 export type BillingLoad = {
@@ -69,12 +70,31 @@ type BillingForm = {
   ShipmentLoadCode?: string,
   /** Saldo da carga no momento da abertura, limite da quantidade a faturar. */
   AvailableQuantity?: number,
+  /** Só exibição — complemento fiscal do contrato da liberação escolhida (só com TaxLocked); null se o contrato não tem. */
+  FiscalComplement?: FiscalComplement,
+  /** Só exibição — contrato da liberação escolhida; vazio = nenhuma liberação escolhida. */
+  FiscalContractKey?: string,
+  FiscalContractCode?: string,
+  /** Só exibição — consulta do complemento em andamento. */
+  FiscalLoading?: boolean,
+}
+
+/** Complemento fiscal do contrato de venda (DTO PascalCase da function SalesContractsGetFiscalComplement). */
+type FiscalComplement = {
+  UsageCode?: string,
+  UsageName?: string,
+  PaymentConditionName?: string,
+  AdditionalInfo?: string,
+  CustomerOrderNumber?: string,
+  CustomerOrderItem?: string,
+  IsComplete?: boolean,
 }
 
 /** Liberação de entrega de venda selecionada, usada na montagem do documento de saída. */
 type BilledRelease = {
   SalesShipmentReleaseKey?: string,
   SalesContractKey?: string,
+  SalesContractCode?: string,
   CardCode?: string,
   Price?: string | number,
   UnitOfMeasureCode?: string,
@@ -96,6 +116,8 @@ export default class ShipmentBillingDialog {
   private _busyDialog: Dialog;
   /** Trava de reentrância do faturamento — ver `save`. */
   private _billingInFlight = false;
+  /** Descarta resposta atrasada do complemento fiscal quando a seleção já mudou. */
+  private _fiscalRequestId = 0;
 
   constructor(private readonly host: BillingDialogHost) {
     // Liberações de venda disponíveis do dialog de faturamento: resultado da function
@@ -146,7 +168,12 @@ export default class ShipmentBillingDialog {
       BranchCode: load.BranchCode,
       TaxDocumentKind: "Nfe",
       TaxLocked: false,
+      FiscalComplement: null,
+      FiscalContractKey: "",
+      FiscalContractCode: "",
+      FiscalLoading: false,
     });
+    this._fiscalRequestId++;
 
     billingModel.setProperty("/TaxLocked", await this.host.isTaxCalculationActive(load.BranchCode));
 
@@ -267,7 +294,56 @@ export default class ShipmentBillingDialog {
     }
   }
 
+  /**
+   * Seleção da tabela de liberações mudou: com a filial emitindo NF-e, busca o complemento
+   * fiscal do contrato da liberação. Sem TaxLocked nada é buscado nem exibido.
+   */
+  async onReleaseSelect(): Promise<void> {
+    const billingModel = this.host.view.getModel("billing") as JSONModel;
+    const requestId = ++this._fiscalRequestId;
+
+    billingModel.setProperty("/FiscalComplement", null);
+    billingModel.setProperty("/FiscalContractKey", "");
+    billingModel.setProperty("/FiscalContractCode", "");
+    billingModel.setProperty("/FiscalLoading", false);
+
+    if (billingModel.getProperty("/TaxLocked") !== true) {
+      return;
+    }
+
+    const contractsTable = this.host.view.byId("shipmentBillingSalesContractsTable") as Table;
+    const index = contractsTable.getSelectedIndex();
+    const release = index >= 0
+      ? contractsTable.getContextByIndex(index)?.getObject() as BilledRelease
+      : undefined;
+    if (!release?.SalesContractKey) {
+      return;
+    }
+
+    billingModel.setProperty("/FiscalContractKey", release.SalesContractKey);
+    billingModel.setProperty("/FiscalContractCode", release.SalesContractCode ?? "");
+    billingModel.setProperty("/FiscalLoading", true);
+
+    let data: FiscalComplement = null;
+    try {
+      const func = (this.host.view.getModel() as ODataModel).bindContext(ServerRoutes.salesContractsGetFiscalComplement);
+      func.setParameter("Key", release.SalesContractKey);
+      await func.invoke();
+      data = (func.getBoundContext().getObject() as FiscalComplement) ?? null;
+    } catch {
+      // O handler global do OData mostra o erro; sem dado, o aviso de complemento ausente fica visível.
+    }
+
+    // Resposta atrasada de outra seleção (ou de outra abertura do diálogo) não sobrescreve a atual.
+    if (requestId !== this._fiscalRequestId) {
+      return;
+    }
+    billingModel.setProperty("/FiscalComplement", data);
+    billingModel.setProperty("/FiscalLoading", false);
+  }
+
   close(): void {
+    this._fiscalRequestId++;
     const contractsTable = this.host.view.byId("shipmentBillingSalesContractsTable") as Table;
     contractsTable.clearSelection();
 
