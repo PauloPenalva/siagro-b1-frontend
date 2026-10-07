@@ -35,28 +35,28 @@
           editable="false"
           forceSelection="false"
           required="true"
-          selectedKey="{viewModel>/BranchCode}"
-          items="{branches>/}"
+          selectedKey="{billing>/BranchCode}"
+          items="{billingBranches>/}"
           >
-          <core:ListItem key="{branches>Code}" text="{branches>ShortName}" additionalText="{branches>Code}"/>
+          <core:ListItem key="{billingBranches>Code}" text="{billingBranches>ShortName}" additionalText="{billingBranches>Code}"/>
         </Select>
         <Label text="Emissao" />
         <DatePicker
             value="{
-              path: 'viewModel>/InvoiceDate',
+              path: 'billing>/InvoiceDate',
               type: 'sap.ui.model.odata.type.DateTimeOffset',
               constraints: { precision: 7 },
               formatOptions: {
                 pattern: 'dd/MM/yyyy'
               }
             }"
-            editable="{ui>/editable}"
+            editable="true"
             required="true"
             liveChange=".validateField"
         />
 				<Label text="Produto" />
 				<Input
-					value="{viewModel>/ItemCode}"
+					value="{billing>/ItemCode}"
 					editable="false"
 				>
 					<layoutData>
@@ -66,7 +66,7 @@
 
 				<Label text="Descricao" />
 				<Input
-					value="{viewModel>/ItemName}"
+					value="{billing>/ItemName}"
 					editable="false"
 				>
 					<layoutData>
@@ -75,7 +75,7 @@
 				</Input>
 
 				<Label text="Carga" />
-				<Input value="{viewModel>/ShipmentLoadCode}" editable="false">
+				<Input value="{billing>/ShipmentLoadCode}" editable="false">
 					<layoutData>
 						<l:GridData span="XL2 L1 M3 S4" />
 					</layoutData>
@@ -84,7 +84,7 @@
 				<Label text="Saldo da Carga" />
 				<Input
 					value="{
-						path: 'viewModel>/AvailableQuantity',
+						path: 'billing>/AvailableQuantity',
 						type: 'sap.ui.model.type.Float',
 						formatOptions: {
 								decimals: 3 ,
@@ -105,7 +105,7 @@
 				<Label text="Qtd. a Faturar" />
 				<Input
 					value="{
-						path: 'viewModel>/Volume',
+						path: 'billing>/Volume',
 						type: 'sap.ui.model.type.Float',
 						formatOptions: {
 								decimals: 3 ,
@@ -125,7 +125,7 @@
 				<!-- <Label text="Peso Balanca" />
 				<Input id="grossWeightLimit"
 					value="{
-            path: 'viewModel>/GrossWeightLimit',
+            path: 'billing>/GrossWeightLimit',
             type: 'sap.ui.model.type.Float',
             formatOptions: {
                 decimals: 3,
@@ -147,7 +147,7 @@
 				<Select
 					forceSelection="false"
           required="true"
-					selectedKey="{viewModel>/FreightTerms}"
+					selectedKey="{billing>/FreightTerms}"
 				>
 					<core:Item
 						key="Cif"
@@ -162,11 +162,11 @@
 						text="TER"
 					/>
 				</Select>
-				<Label text="Tipo de documento" visible="{= ${viewModel>/TaxLocked} === true }" />
+				<Label text="Tipo de documento" visible="{= ${billing>/TaxLocked} === true }" />
 				<Select
-					visible="{= ${viewModel>/TaxLocked} === true }"
+					visible="{= ${billing>/TaxLocked} === true }"
 					forceSelection="false"
-					selectedKey="{viewModel>/TaxDocumentKind}"
+					selectedKey="{billing>/TaxDocumentKind}"
 				>
 					<core:Item key="Nfe" text="NF-e (eletrônica)" />
 					<core:Item key="Other" text="Outro (papel/talão…)" />
@@ -175,7 +175,7 @@
 
         <Label text="Inf.Ad.Nota Fiscal" />
 				<TextArea value="{
-									path: 'viewModel>/TaxPayerComments',
+									path: 'billing>/TaxPayerComments',
 									type: 'sap.ui.model.odata.type.String'
 							}" rows="8" cols="80" editable="true" />
 
@@ -188,7 +188,7 @@
           valueHelpOnly="true"
           required="true"
           valueHelpRequest=".openCostumersValueHelp"
-          value="{viewModel>/DeliveryCardCode}"
+          value="{billing>/DeliveryCardCode}"
           >
           <layoutData>
             <l:GridData span="XL3 L3 M3 S8" />
@@ -197,34 +197,34 @@
             <core:CustomData key="descriptionProperty" value="DeliveryCardName:CardName" />
           </customData>
         </Input>
-        <Input value="{viewModel>/DeliveryCardName}" editable="false" />
+        <Input value="{billing>/DeliveryCardName}" editable="false" />
 
         <!-- A transportadora vem da CARGA e não é escolhida aqui: o backend recusa faturar
              com transportadora diferente da da carga. Sem value help, portanto — para trocá-la
              o usuário edita a carga. -->
         <Label text="Transportadora" />
-        <Input value="{viewModel>/TruckingCompanyCode}" editable="false">
+        <Input value="{billing>/TruckingCompanyCode}" editable="false">
           <layoutData>
             <l:GridData span="XL3 L3 M3 S8" />
           </layoutData>
         </Input>
-        <Input value="{viewModel>/TruckingCompanyName}" editable="false" />
+        <Input value="{billing>/TruckingCompanyName}" editable="false" />
         
         
 				<Label text="Motorista" />
 				<Input
-					value="{viewModel>/TruckDriverCode}"
+					value="{billing>/TruckDriverCode}"
 					editable="false"
 				>
 					<layoutData>
 						<l:GridData span="XL2 L1 M3 S4" />
 					</layoutData>
 				</Input>
-				<Input value="{viewModel>/TruckDriverName}" editable="false" />
+				<Input value="{billing>/TruckDriverName}" editable="false" />
 
 				<Label text="Placa" />
 				<Input
-					value="{viewModel>/TruckCode}"
+					value="{billing>/TruckCode}"
 					editable="false"
 				>
 					<layoutData>
@@ -255,7 +255,7 @@
 				<!-- <Label text="NF Bal+Compl ?" />
 				<Select
 					forceSelection="true"
-					selectedKey="{viewModel>/ComplementInvoice}"
+					selectedKey="{billing>/ComplementInvoice}"
 				>
 					<core:Item
 						key="No"
@@ -269,7 +269,7 @@
 
 				<Label text="Frete p/Tonelada"/>
 				<Input value="{
-          path: 'viewModel>/FreightCost',
+          path: 'billing>/FreightCost',
           type: 'sap.ui.model.type.Float',
           formatOptions: {
               decimals: 2,
@@ -279,7 +279,7 @@
           }}"  
           editable="true" 
           textAlign="End" 
-          required="{= ${path: 'viewModel>/FreightTerms', targetType: 'any'}==='Cif' ? true : false }">
+          required="{= ${path: 'billing>/FreightTerms', targetType: 'any'}==='Cif' ? true : false }">
 					<layoutData>
 						<l:GridData span="XL2 L1 M3 S4" />
 					</layoutData>
@@ -300,7 +300,7 @@
 			visibleRowCountMode="Fixed"
 			visibleRowCount="6"
 			rows="{
-				path: 'releases>/'
+				path: 'billingReleases>/'
 			}"
 		>
 			<t:toolbar>
@@ -313,19 +313,19 @@
         <t:Column width="6rem" sortProperty="BranchShortName">
 					<Label text="Filial" />
 					<t:template>
-						<Text text="{releases>BranchShortName}" wrapping="false"/>
+						<Text text="{billingReleases>BranchShortName}" wrapping="false"/>
 					</t:template>
 				</t:Column>
 				<t:Column width="6rem" sortProperty="SalesContractCode">
 					<Label text="Contrato" />
 					<t:template>
-						<Text text="{releases>SalesContractCode}" wrapping="false"/>
+						<Text text="{billingReleases>SalesContractCode}" wrapping="false"/>
 					</t:template>
 				</t:Column>
 				<t:Column width="10rem" sortProperty="Complement">
 					<Label text="Compl." />
 					<t:template>
-						<Text text="{releases>Complement}" wrapping="false"/>
+						<Text text="{billingReleases>Complement}" wrapping="false"/>
 					</t:template>
 				</t:Column>
 				<t:Column width="8rem" sortProperty="StandardCashFlowDate">
@@ -333,7 +333,7 @@
 					<t:template>
 						<Text
 							text="{
-								path: 'releases>StandardCashFlowDate',
+								path: 'billingReleases>StandardCashFlowDate',
 								formatter: '.formatter.formatDate'
 							}"
 							wrapping="false"
@@ -346,36 +346,36 @@
 						<ObjectNumber
 							textAlign="End"
 							number="{
-								path: 'releases>SalesContractFreightCostStandard',
+								path: 'billingReleases>SalesContractFreightCostStandard',
 								type: 'sap.ui.model.type.Float',
 								formatOptions: { decimals: 8, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
 							}"
-							unit="{releases>SalesContractFreightUmCode}"
+							unit="{billingReleases>SalesContractFreightUmCode}"
 						/>
 					</t:template>
 				</t:Column>
 				<t:Column sortProperty="CardCode" width="5rem">
 					<Label text="Cliente" />
 					<t:template>
-						<Text text="{releases>CardCode}" wrapping="false"/>
+						<Text text="{billingReleases>CardCode}" wrapping="false"/>
 					</t:template>
 				</t:Column>
 				<t:Column sortProperty="CardName" width="25rem">
 					<Label text="Razao Social" />
 					<t:template>
-						<Text text="{releases>CardName}" wrapping="false"/>
+						<Text text="{billingReleases>CardName}" wrapping="false"/>
 					</t:template>
 				</t:Column>
 				<t:Column width="25rem">
 					<Label text="Nome Fantasia" />
 					<t:template>
-						<Text text="{releases>CardFName}" wrapping="false" />
+						<Text text="{billingReleases>CardFName}" wrapping="false" />
 					</t:template>
 				</t:Column>
 				<t:Column width="15rem">
 					<Label text="Armazém" />
 					<t:template>
-						<Text text="({releases>DeliveryLocationCode}) {releases>DeliveryLocationName}" wrapping="false" />
+						<Text text="({billingReleases>DeliveryLocationCode}) {billingReleases>DeliveryLocationName}" wrapping="false" />
 					</t:template>
 				</t:Column>
 				<t:Column width="8rem" hAlign="End" sortProperty="Price">
@@ -383,11 +383,11 @@
 					<t:template>
 						<ObjectNumber
 							number="{
-                parts: [{path: 'releases>CommercialPrice'}, {path: 'releases>Price'}],
+                parts: [{path: 'billingReleases>CommercialPrice'}, {path: 'billingReleases>Price'}],
                 formatter: '.formatter.formatCommercialOrKgPrice'
               }"
 							unit="{
-                parts: [{path: 'releases>CommercialUnitOfMeasureCode'}, {path: 'releases>UnitOfMeasureCode'}],
+                parts: [{path: 'billingReleases>CommercialUnitOfMeasureCode'}, {path: 'billingReleases>UnitOfMeasureCode'}],
                 formatter: '.formatter.formatCommercialOrKgUnit'
               }"
 						/>
@@ -398,7 +398,7 @@
 					<t:template>
 						<Text
 							text="{
-							path: 'releases>AvailableQuantity',
+							path: 'billingReleases>AvailableQuantity',
               type: 'sap.ui.model.type.Float',
 							formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }}"
 							wrapping="false"
@@ -408,7 +408,7 @@
 				<t:Column width="3rem">
 					<Label text="Um" />
 					<t:template>
-						<Text text="{releases>UnitOfMeasureCode}" wrapping="false"/>
+						<Text text="{billingReleases>UnitOfMeasureCode}" wrapping="false"/>
 					</t:template>
 				</t:Column>
 				<t:Column width="10rem" hAlign="End" sortProperty="SalesContractAvailableVolume">
@@ -418,9 +418,9 @@
 						     aceita, mas ele decide com o numero a vista. -->
 						<ObjectNumber
 							textAlign="End"
-							state="{= ${releases>SalesContractAvailableVolume} &lt; 0 ? 'Error' : 'None' }"
+							state="{= ${billingReleases>SalesContractAvailableVolume} &lt; 0 ? 'Error' : 'None' }"
 							number="{
-								path: 'releases>SalesContractAvailableVolume',
+								path: 'billingReleases>SalesContractAvailableVolume',
 								type: 'sap.ui.model.type.Float',
 								formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
 							}"/>
@@ -432,7 +432,7 @@
 						<Text
 							wrapping="false"
 							text="{
-								path: 'releases>SalesContractStatus',
+								path: 'billingReleases>SalesContractStatus',
 								targetType: 'any',
 								formatter: '.formatter.formatContractStatus'
 							}"/>

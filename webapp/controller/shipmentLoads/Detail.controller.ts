@@ -12,6 +12,7 @@ import Table from "sap/ui/table/Table";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
+import ShipmentBillingDialog, { BillingLoad } from "siagrob1/helpers/ShipmentBillingDialog";
 
 /** Linha do diálogo de recusa — o DTO da function, mais a quantidade digitada. */
 type RefusableDocument = {
@@ -73,7 +74,38 @@ export default class Detail extends BaseController {
 
   private _changeReleaseInFlight = false;
 
+  private _shipDialog: Dialog;
+
+  /** Promise do Fragment.load: um duplo clique no primeiro "Expedir" não carrega o diálogo duas vezes. */
+  private _shipDialogLoading: Promise<Dialog>;
+
+  /** Trava de reentrância do "Expedir": setada ANTES do primeiro await (mesmo padrão do faturamento). */
+  private _shipInFlight = false;
+
+  /** Armazém das liberações hoje listadas: evita recarregar quando o valor não mudou. */
+  private _shipReleasesWarehouse: string;
+
+  private _billing: ShipmentBillingDialog;
+
   onInit(): void {
+    this.getView().setModel(new JSONModel({}), "ship");
+    this.getView().setModel(new JSONModel([]), "shipReleases");
+
+    // O value help do armazém grava com setValue, que não dispara `change` no Input: a lista de
+    // liberações acompanha o modelo.
+    const warehouseBinding = (this.getView().getModel("ship") as JSONModel).bindProperty("/WarehouseCode");
+    warehouseBinding.attachChange(() => this.onShipWarehouseChange());
+
+    this._billing = new ShipmentBillingDialog({
+      controller: this,
+      view: this.getView(),
+      setBusy: (busy) => this.setBusy(busy),
+      validateForm: (formId) => this.validateForm(formId),
+      registerTableLayouts: (root) => this.registerTableLayouts(root),
+      isTaxCalculationActive: (branchCode) => this.isTaxCalculationActive(branchCode),
+      onBilled: () => this.refreshAll(),
+    });
+
     this.getRouter().getRoute("shipmentLoadsDetail")
       .attachPatternMatched((ev) => this.detailRouteMatched(ev));
   }
@@ -93,6 +125,166 @@ export default class Detail extends BaseController {
       () => MessageBox.error("Erro ao carregar os anexos da carga."));
     this.refreshTransshipmentLinkage(id).catch(
       () => MessageBox.error("Erro ao carregar a situação dos transbordos."));
+  }
+
+  async onShip(): Promise<void> {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) return;
+
+    const load = await ctx.requestObject() as {
+      Key: string; Code: string; ItemCode: string; WarehouseCode?: string; TruckDriverCode?: string;
+    };
+    // Os nomes não estão no $select da view: lidos à parte para o diálogo mostrar a descrição.
+    const warehouseName = (await ctx.requestProperty("WarehouseName")) as string;
+    const driverName = (await ctx.requestProperty("TruckDriverName")) as string;
+
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+
+    // Marca o armazém como já carregado ANTES do setData: o listener do modelo não deve disparar uma
+    // carga redundante, o loadShipReleases explícito abaixo é o único gatilho na abertura.
+    this._shipReleasesWarehouse = load.WarehouseCode ?? "";
+    (this.getView().getModel("ship") as JSONModel).setData({
+      LoadKey: load.Key,
+      LoadCode: load.Code,
+      ItemCode: load.ItemCode,
+      WarehouseCode: load.WarehouseCode ?? "",
+      WarehouseName: warehouseName ?? "",
+      TruckDriverCode: load.TruckDriverCode ?? "",
+      TruckDriverName: driverName ?? "",
+      TransactionDate: today,
+      GrossWeight: "",
+      Comments: "",
+    });
+
+    this._shipDialogLoading ??= (Fragment.load({
+      id: this.getView().getId(),
+      name: "siagrob1.view.shipmentLoads.fragments.ShipDialog",
+      controller: this,
+    }) as Promise<Dialog>).then((dialog) => {
+      this.getView().addDependent(dialog);
+      this._shipDialog = dialog;
+      return dialog;
+    });
+    await this._shipDialogLoading;
+
+    await this.loadShipReleases();
+    this._shipDialog.open();
+  }
+
+  private async loadShipReleases(): Promise<void> {
+    const ship = (this.getView().getModel("ship") as JSONModel).getData() as {
+      ItemCode: string; WarehouseCode: string;
+    };
+    const releases = this.getView().getModel("shipReleases") as JSONModel;
+    (this.byId("shipReleasesTable") as SapMTable | undefined)?.removeSelections(true);
+    this._shipReleasesWarehouse = ship.WarehouseCode;
+
+    if (!ship.ItemCode || !ship.WarehouseCode) {
+      releases.setData([]);
+      return;
+    }
+
+    const func = (this.getModel() as ODataModel).bindContext("/ShipmentReleasesGetPurchaseContracts(...)");
+    func.setParameter("ItemCode", ship.ItemCode);
+    func.setParameter("WarehouseCode", ship.WarehouseCode);
+
+    try {
+      await func.invoke();
+      releases.setData(func.getBoundContext().getObject() as object[]);
+    } catch (e) {
+      releases.setData([]);
+      MessageBox.error((e as Error).message);
+    }
+  }
+
+  onShipWarehouseChange(): void {
+    const ship = (this.getView().getModel("ship") as JSONModel).getData() as { WarehouseCode?: string };
+    if (!this._shipDialog || ship.WarehouseCode === this._shipReleasesWarehouse) return;
+    void this.loadShipReleases();
+  }
+
+  async onConfirmShip(): Promise<void> {
+    if (this._shipInFlight) return;
+    this._shipInFlight = true;
+
+    try {
+      const ship = (this.getView().getModel("ship") as JSONModel).getData() as {
+        LoadKey: string; WarehouseCode: string; TruckDriverCode: string;
+        TransactionDate: string; GrossWeight: string | number; Comments: string;
+      };
+      const selected = (this.byId("shipReleasesTable") as SapMTable).getSelectedItem();
+      const releaseKey = selected?.getBindingContext("shipReleases")?.getProperty("ShipmentReleaseKey") as string;
+
+      if (!releaseKey) {
+        MessageBox.warning("Selecione a liberação de embarque.");
+        return;
+      }
+      if (!ship.WarehouseCode || !ship.TruckDriverCode) {
+        MessageBox.warning("Informe o armazém e o motorista.");
+        return;
+      }
+      if (!ship.TransactionDate) {
+        MessageBox.warning("Informe a data.");
+        return;
+      }
+      if (!(Number(ship.GrossWeight) > 0)) {
+        MessageBox.warning("Informe o peso bruto maior que zero.");
+        return;
+      }
+
+      const action = (this.getModel() as ODataModel).bindContext("/ShipmentLoadsShip(...)");
+      action.setParameter("Key", ship.LoadKey);
+      action.setParameter("ShipmentReleaseKey", releaseKey);
+      action.setParameter("WarehouseCode", ship.WarehouseCode);
+      action.setParameter("TruckDriverCode", ship.TruckDriverCode);
+      // Meio-dia de Brasília: a conversão para o fuso do servidor não muda o dia.
+      action.setParameter("TransactionDate", `${ship.TransactionDate}T12:00:00-03:00`);
+      action.setParameter("GrossWeight", Number(ship.GrossWeight));
+      action.setParameter("Comments", ship.Comments);
+
+      this.setBusy(true);
+      try {
+        await action.invoke();
+        const result = action.getBoundContext().getObject() as { storageTransactionCode: string };
+        this._shipDialog.close();
+        MessageToast.show(`Romaneio ${result.storageTransactionCode} expedido na carga.`);
+        this.refreshAll();
+      } catch {
+        // A mensagem do servidor já aparece pelo handler global de mensagens OData; o diálogo
+        // continua aberto para o usuário corrigir.
+      } finally {
+        this.setBusy(false);
+      }
+    } finally {
+      this._shipInFlight = false;
+    }
+  }
+
+  onCloseShip(): void {
+    this._shipDialog.close();
+  }
+
+  async onBill(): Promise<void> {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) return;
+
+    // requestProperty, não getObject: com autoExpandSelect o $select só traz o que a view liga
+    // (BranchCode, por exemplo, não está em nenhum controle) e o diálogo precisa dos campos todos.
+    const fields: (keyof BillingLoad)[] = ["Key", "Code", "ItemCode", "ItemName", "BranchCode", "AvailableQuantity",
+      "TruckDriverCode", "TruckDriverName", "TruckCode", "CarrierCardCode", "CarrierName"];
+    const values = await ctx.requestProperty(fields as string[]) as unknown[];
+    const load = Object.fromEntries(fields.map((f, i) => [f, values[i]])) as BillingLoad;
+    await this._billing.open(load);
+  }
+
+  saveBillingDialog() {
+    return this._billing.save();
+  }
+
+  closeBillingDialog() {
+    this._billing.close();
   }
 
   async onRecalculate(): Promise<void> {
