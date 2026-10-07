@@ -37,6 +37,8 @@ export default {
   // saldo/preço em KG, que continua sendo a fonte de verdade.
   itemsGetComplement: '/ItemsGetComplement(...)',
   itemsSetComplement: '/ItemsSetComplement(...)',
+  salesContractsGetFiscalComplement: '/SalesContractsGetFiscalComplement(...)',
+  salesContractsSetFiscalComplement: '/SalesContractsSetFiscalComplement(...)',
   unitsOfMeasure: '/odata/UnitsOfMeasure',
   harvestSeasons: '/odata/HarvestSeasons',
   warehouses: '/odata/Warehouses',

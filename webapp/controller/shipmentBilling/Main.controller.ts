@@ -96,6 +96,10 @@ export default class Main extends BaseController {
     this._billing.close();
   }
 
+  onBillingReleaseSelect() {
+    return this._billing.onReleaseSelect();
+  }
+
   private refreshData() {
     const oTable = this.byId("shipmentBillingTable") as Table;
     (oTable.getBinding("rows") as ODataListBinding).refresh();

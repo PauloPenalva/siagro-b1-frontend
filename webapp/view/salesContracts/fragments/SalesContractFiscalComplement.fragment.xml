@@ -1,0 +1,91 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+  <!--
+    Complemento fiscal do contrato de venda (natureza de operação, condição de pagamento, pedido do
+    cliente e informações adicionais). Os dados vêm da function SalesContractsGetFiscalComplement e
+    ficam no JSONModel "fiscalComplement", não no model OData. A gravação é pela action dedicada.
+  -->
+  <VBox width="100%">
+    <MessageStrip
+      type="Warning"
+      showIcon="true"
+      class="sapUiSmallMarginBottom"
+      visible="{= ${fiscalComplement>/IsComplete} !== true }"
+      text="Este contrato ainda não tem complemento fiscal completo. Na filial que emite NF-e, ele não pode ser faturado sem natureza de operação e condição de pagamento." />
+    <Toolbar>
+      <ToolbarSpacer />
+      <Button
+        text="Editar"
+        icon="sap-icon://edit"
+        visible="{fiscalComplement>/canEdit}"
+        press=".onOpenFiscalComplementDialog" />
+    </Toolbar>
+    <f:Form editable="false">
+      <f:layout>
+        <f:ColumnLayout columnsM="2" columnsL="2" columnsXL="3" />
+      </f:layout>
+      <f:formContainers>
+        <f:FormContainer>
+          <f:formElements>
+            <f:FormElement label="Natureza da operação (código)">
+              <f:fields>
+                <Text text="{fiscalComplement>/UsageCode}" />
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Natureza da operação">
+              <f:fields>
+                <Text text="{fiscalComplement>/UsageName}" />
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Condição de pagamento (código)">
+              <f:fields>
+                <Text text="{fiscalComplement>/PaymentConditionCode}" />
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Condição de pagamento">
+              <f:fields>
+                <Text text="{fiscalComplement>/PaymentConditionName}" />
+              </f:fields>
+            </f:FormElement>
+          </f:formElements>
+        </f:FormContainer>
+        <f:FormContainer>
+          <f:formElements>
+            <f:FormElement label="Pedido do cliente">
+              <f:fields>
+                <Text text="{fiscalComplement>/CustomerOrderNumber}" />
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Item do pedido">
+              <f:fields>
+                <Text text="{fiscalComplement>/CustomerOrderItem}" />
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Informações adicionais">
+              <f:fields>
+                <Text text="{fiscalComplement>/AdditionalInfo}" />
+              </f:fields>
+            </f:FormElement>
+          </f:formElements>
+        </f:FormContainer>
+        <f:FormContainer>
+          <f:formElements>
+            <f:FormElement label="Alterado por">
+              <f:fields>
+                <Text text="{fiscalComplement>/UpdatedBy}" />
+              </f:fields>
+            </f:FormElement>
+            <f:FormElement label="Alterado em">
+              <f:fields>
+                <Text text="{fiscalComplement>/UpdatedAtText}" />
+              </f:fields>
+            </f:FormElement>
+          </f:formElements>
+        </f:FormContainer>
+      </f:formContainers>
+    </f:Form>
+  </VBox>
+</core:FragmentDefinition>
