@@ -147,6 +147,11 @@
               </layoutData>
             </Input>
             <Input value="{ui>/paymentConditionName}" editable="false" visible="{ui>/standalone}" />
+            <!-- Complemento fiscal do contrato de venda (spec 2026-10-07, D6): na filial que emite a NF-e
+                 pelo Siagro, o servidor SOBRESCREVE a condição de pagamento do documento e a natureza de
+                 operação das linhas que têm contrato com o que está no complemento fiscal do contrato.
+                 O que for digitado aqui ou na linha é substituído ao salvar. O texto adicional do contrato
+                 entra antes do texto de Inf.Contribuinte. -->
             <core:Title text="Transporte" />
             <Label text="Endereço Entrega" />
             <Input
