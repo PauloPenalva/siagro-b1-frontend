@@ -103,7 +103,15 @@ export default class Detail extends BaseController {
       validateForm: (formId) => this.validateForm(formId),
       registerTableLayouts: (root) => this.registerTableLayouts(root),
       isTaxCalculationActive: (branchCode) => this.isTaxCalculationActive(branchCode),
-      onBilled: () => this.refreshAll(),
+      // Faturou: leva o usuário direto ao documento de saída, onde está o "Transmitir NF-e". No erro, fica na carga
+      // e atualiza (o romaneio pode já ter mudado de situação).
+      onBilled: (created) => {
+        if (created?.key) {
+          this.navTo("salesInvoicesDetail", { id: created.key });
+          return;
+        }
+        this.refreshAll();
+      },
     });
 
     this.getRouter().getRoute("shipmentLoadsDetail")

@@ -27,6 +27,9 @@ export type BillingLoad = {
   CarrierName: string,
 }
 
+/** Documento de saída criado pelo faturamento (resposta camelCase da action). */
+export type BilledDocument = { key: string, invoiceNumber: string };
+
 /** O que o helper precisa da tela dona (membros protegidos do controller chegam como funções). */
 export type BillingDialogHost = {
   /** Dono do fragmento (handlers .saveBillingDialog/.closeBillingDialog/value helps). */
@@ -36,8 +39,11 @@ export type BillingDialogHost = {
   validateForm(formId: string): boolean,
   registerTableLayouts(root: ManagedObject): void,
   isTaxCalculationActive(branchCode: string): Promise<boolean>,
-  /** Depois de faturar (também no erro): a tela atualiza o que precisa. */
-  onBilled(): void,
+  /**
+   * Depois de faturar (também no erro): a tela atualiza o que precisa. Com sucesso, recebe a chave e o número do
+   * documento criado (o detalhe da carga leva o usuário direto a ele); no erro, nada.
+   */
+  onBilled(created?: BilledDocument): void,
   /** Ao fechar (o /shipment-billing limpa a seleção da lista). */
   onClosed?(): void,
 }
@@ -278,9 +284,14 @@ export default class ShipmentBillingDialog {
 
           const action = model.bindContext("/ShipmentBillingCreateSalesInvoice(...)");
           action.setParameter("SalesInvoice", salesInvoice)
+          // Sem strictNullChecks no projeto: nulo = faturamento falhou ou servidor sem a chave.
+          let created: BilledDocument = null;
           try {
             await action.invoke();
-            MessageToast.show("Documento(s) de saída criado(s) com sucesso.");
+            created = action.getBoundContext()?.getObject() as BilledDocument;
+            MessageToast.show(created?.invoiceNumber
+              ? `Documento de saída ${created.invoiceNumber} criado com sucesso.`
+              : "Documento(s) de saída criado(s) com sucesso.");
           } catch {
             // A mensagem técnica do backend já é exibida pelo handler global de mensagens
             // OData (Component.onMessageBindingChange).
@@ -288,7 +299,7 @@ export default class ShipmentBillingDialog {
             this._busyDialog?.close();
             // Refresh também no erro: se o romaneio já ficou vinculado, ele não pode
             // continuar sendo oferecido na lista para uma nova tentativa.
-            this.host.onBilled();
+            this.host.onBilled(created?.key ? created : undefined);
           }
         }
       }
