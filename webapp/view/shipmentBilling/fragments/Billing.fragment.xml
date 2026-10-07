@@ -192,7 +192,11 @@
         <Label text="Informações do contrato" visible="{= ${billing>/TaxLocked} === true &amp;&amp; !!${billing>/FiscalContractKey} }" />
         <TextArea
           value="{billing>/FiscalComplement/AdditionalInfo}"
-          rows="3"
+          width="100%"
+          rows="4"
+          growing="true"
+          growingMaxLines="12"
+          wrapping="Soft"
           editable="false"
           visible="{= ${billing>/TaxLocked} === true &amp;&amp; !!${billing>/FiscalContractKey} }" />
         <MessageStrip
