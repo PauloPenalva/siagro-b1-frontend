@@ -77,6 +77,8 @@ type BillingForm = {
   FiscalContractCode?: string,
   /** Só exibição — consulta do complemento em andamento. */
   FiscalLoading?: boolean,
+  /** Só exibição — a consulta do complemento falhou (não é recusa do contrato). */
+  FiscalError?: boolean,
 }
 
 /** Complemento fiscal do contrato de venda (DTO PascalCase da function SalesContractsGetFiscalComplement). */
@@ -172,6 +174,7 @@ export default class ShipmentBillingDialog {
       FiscalContractKey: "",
       FiscalContractCode: "",
       FiscalLoading: false,
+      FiscalError: false,
     });
     this._fiscalRequestId++;
 
@@ -306,6 +309,7 @@ export default class ShipmentBillingDialog {
     billingModel.setProperty("/FiscalContractKey", "");
     billingModel.setProperty("/FiscalContractCode", "");
     billingModel.setProperty("/FiscalLoading", false);
+    billingModel.setProperty("/FiscalError", false);
 
     if (billingModel.getProperty("/TaxLocked") !== true) {
       return;
@@ -325,13 +329,15 @@ export default class ShipmentBillingDialog {
     billingModel.setProperty("/FiscalLoading", true);
 
     let data: FiscalComplement = null;
+    let failed = false;
     try {
       const func = (this.host.view.getModel() as ODataModel).bindContext(ServerRoutes.salesContractsGetFiscalComplement);
       func.setParameter("Key", release.SalesContractKey);
       await func.invoke();
       data = (func.getBoundContext().getObject() as FiscalComplement) ?? null;
     } catch {
-      // O handler global do OData mostra o erro; sem dado, o aviso de complemento ausente fica visível.
+      // O handler global do OData mostra o erro; aqui só sinalizamos que a consulta falhou.
+      failed = true;
     }
 
     // Resposta atrasada de outra seleção (ou de outra abertura do diálogo) não sobrescreve a atual.
@@ -339,6 +345,7 @@ export default class ShipmentBillingDialog {
       return;
     }
     billingModel.setProperty("/FiscalComplement", data);
+    billingModel.setProperty("/FiscalError", failed);
     billingModel.setProperty("/FiscalLoading", false);
   }
 

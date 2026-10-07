@@ -176,7 +176,7 @@
         <!-- Complemento fiscal do contrato da liberação escolhida (só filial que emite NF-e) -->
         <Label text="Natureza da operação" visible="{= ${billing>/TaxLocked} === true &amp;&amp; !!${billing>/FiscalContractKey} }" />
         <Input
-          value="{= ${billing>/FiscalComplement/UsageCode} ? ${billing>/FiscalComplement/UsageCode} + ' - ' + ${billing>/FiscalComplement/UsageName} : '' }"
+          value="{= (${billing>/FiscalComplement/UsageCode} || '') + (${billing>/FiscalComplement/UsageCode} &amp;&amp; ${billing>/FiscalComplement/UsageName} ? ' - ' : '') + (${billing>/FiscalComplement/UsageName} || '') }"
           editable="false"
           visible="{= ${billing>/TaxLocked} === true &amp;&amp; !!${billing>/FiscalContractKey} }" />
         <Label text="Condição de pagamento" visible="{= ${billing>/TaxLocked} === true &amp;&amp; !!${billing>/FiscalContractKey} }" />
@@ -186,7 +186,7 @@
           visible="{= ${billing>/TaxLocked} === true &amp;&amp; !!${billing>/FiscalContractKey} }" />
         <Label text="Pedido / Item do cliente" visible="{= ${billing>/TaxLocked} === true &amp;&amp; !!${billing>/FiscalContractKey} }" />
         <Input
-          value="{= ${billing>/FiscalComplement/CustomerOrderNumber} ? ${billing>/FiscalComplement/CustomerOrderNumber} + ' / ' + ${billing>/FiscalComplement/CustomerOrderItem} : '' }"
+          value="{= (${billing>/FiscalComplement/CustomerOrderNumber} || '') + (${billing>/FiscalComplement/CustomerOrderNumber} &amp;&amp; ${billing>/FiscalComplement/CustomerOrderItem} ? ' / ' : '') + (${billing>/FiscalComplement/CustomerOrderItem} || '') }"
           editable="false"
           visible="{= ${billing>/TaxLocked} === true &amp;&amp; !!${billing>/FiscalContractKey} }" />
         <Label text="Informações do contrato" visible="{= ${billing>/TaxLocked} === true &amp;&amp; !!${billing>/FiscalContractKey} }" />
@@ -199,7 +199,12 @@
           type="Error"
           showIcon="true"
           text="{= 'O contrato ' + ${billing>/FiscalContractCode} + ' não tem complemento fiscal com natureza de operação e condição de pagamento. Peça ao fiscal para completá-lo.' }"
-          visible="{= ${billing>/TaxLocked} === true &amp;&amp; !!${billing>/FiscalContractKey} &amp;&amp; !${billing>/FiscalLoading} &amp;&amp; ${billing>/FiscalComplement/IsComplete} !== true }" />
+          visible="{= ${billing>/TaxLocked} === true &amp;&amp; !!${billing>/FiscalContractKey} &amp;&amp; !${billing>/FiscalLoading} &amp;&amp; ${billing>/FiscalError} !== true &amp;&amp; ${billing>/FiscalComplement/IsComplete} !== true }" />
+        <MessageStrip
+          type="Warning"
+          showIcon="true"
+          text="Não foi possível consultar o complemento fiscal do contrato. O servidor confere ao confirmar."
+          visible="{= ${billing>/TaxLocked} === true &amp;&amp; ${billing>/FiscalError} === true }" />
 
         <Label text="Inf.Ad.Nota Fiscal" />
 				<TextArea value="{
