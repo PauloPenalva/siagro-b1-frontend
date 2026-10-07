@@ -226,6 +226,13 @@
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Complemento Fiscal" visible="{= ${ui>/standalone} === true }">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection titleUppercase="false">
+            <core:Fragment fragmentName="siagrob1.view.salesContracts.fragments.SalesContractFiscalComplement" type="XML" />
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
       <uxap:ObjectPageSection titleUppercase="false" title="Locais de Entrega">
         <uxap:subSections>
           <uxap:ObjectPageSubSection>

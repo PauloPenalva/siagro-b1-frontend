@@ -1,0 +1,70 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+  <!--
+    Edição do complemento fiscal. Escreve no JSONModel "fiscalComplementDialog"; o valor só chega ao
+    servidor quando o usuário salva (action SalesContractsSetFiscalComplement). Os campos de
+    value help são somente-valor, por isso cada um tem seu botão Limpar.
+  -->
+  <Dialog id="fiscalComplementDialog" title="Complemento Fiscal" contentWidth="560px">
+    <content>
+      <f:Form editable="true">
+        <f:layout>
+          <f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1" />
+        </f:layout>
+        <f:formContainers>
+          <f:FormContainer>
+            <f:formElements>
+              <f:FormElement label="Natureza da operação">
+                <f:fields>
+                  <Input
+                    value="{fiscalComplementDialog>/UsageCode}"
+                    description="{fiscalComplementDialog>/UsageName}"
+                    showValueHelp="true"
+                    valueHelpOnly="true"
+                    valueHelpRequest=".openFiscalComplementUsageValueHelp" />
+                  <Button text="Limpar" press=".onClearFiscalComplementUsage" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Condição de pagamento">
+                <f:fields>
+                  <Input
+                    value="{fiscalComplementDialog>/PaymentConditionCode}"
+                    description="{fiscalComplementDialog>/PaymentConditionName}"
+                    showValueHelp="true"
+                    valueHelpOnly="true"
+                    valueHelpRequest=".openFiscalComplementPaymentConditionValueHelp" />
+                  <Button text="Limpar" press=".onClearFiscalComplementPaymentCondition" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Pedido do cliente">
+                <f:fields>
+                  <Input value="{fiscalComplementDialog>/CustomerOrderNumber}" maxLength="15" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Item do pedido">
+                <f:fields>
+                  <Input value="{fiscalComplementDialog>/CustomerOrderItem}" maxLength="6" />
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Informações adicionais">
+                <f:fields>
+                  <TextArea value="{fiscalComplementDialog>/AdditionalInfo}" maxLength="2000" rows="4" width="100%" />
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+        </f:formContainers>
+      </f:Form>
+    </content>
+    <footer>
+      <OverflowToolbar>
+        <ToolbarSpacer />
+        <Button text="Salvar" type="Emphasized" press=".onSaveFiscalComplement" />
+        <Button text="Cancelar" press=".onCloseFiscalComplementDialog" />
+      </OverflowToolbar>
+    </footer>
+  </Dialog>
+</core:FragmentDefinition>
