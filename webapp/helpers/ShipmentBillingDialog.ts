@@ -158,6 +158,9 @@ export default class ShipmentBillingDialog {
     const billingModel = this.host.view.getModel("billing") as JSONModel;
 
     billingModel.setData({
+      // Emissão sugerida = hoje (a NF-e recusa outra data). ISO completo: o campo é DateTimeOffset,
+      // mesmo padrão de salesInvoices/Add.
+      InvoiceDate: new Date().toISOString(),
       ItemCode: load.ItemCode,
       ItemName: load.ItemName,
       // Sugere o saldo inteiro; o usuário reduz para faturar em partes.
