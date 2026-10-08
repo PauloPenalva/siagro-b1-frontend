@@ -122,10 +122,10 @@
         <Button text="XML do cancelamento" icon="sap-icon://download"
                 visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" press=".onNfeCancellationXml" />
         <Button text="Inutilizar numeração" icon="sap-icon://locked"
-                visible="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Cancelled' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} === 'Rejected' &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'Own' &amp;&amp; !!${TaxDocumentNumber} }"
+                visible="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Cancelled' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} === 'Rejected' &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'Own' &amp;&amp; !!${path: 'TaxDocumentNumber', targetType: 'any'} }"
                 press=".onVoidNfeNumber" />
         <Button text="XML da inutilização" icon="sap-icon://download"
-                visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Voided' &amp;&amp; ${NfeStatusCode} === '102' }"
+                visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Voided' &amp;&amp; ${path: 'NfeStatusCode', targetType: 'any'} === '102' }"
                 press=".onNfeVoidNumberXml" />
         <Button text="Devolver" icon="sap-icon://undo" visible="{ui>/canReturn}" press=".onNfeReturn" />
         <Button
