@@ -101,6 +101,11 @@ export default {
   prePurchaseContractReport: '/reports/PrePurchaseContract',
   purchaseContractsByItemReport: '/reports/PurchaseContractsByItem',
   salesContractsByItemReport: '/reports/SalesContractsByItem',
+  salesInvoicesByPeriodReport: '/reports/SalesInvoicesByPeriod',
+  purchaseInvoicesByPeriodReport: '/reports/PurchaseInvoicesByPeriod',
+  salesInvoiceItemsReport: '/reports/SalesInvoiceItems',
+  purchaseInvoiceItemsReport: '/reports/PurchaseInvoiceItems',
+  salesReturnsReport: '/reports/SalesReturns',
 
   purchaseContractsPriceFixations: '/odata/PurchaseContractsPriceFixations',
   // Actions OData invocadas via ODataModel.bindContext — formato relativo à raiz

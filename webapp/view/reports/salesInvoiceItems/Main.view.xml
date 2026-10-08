@@ -1,13 +1,13 @@
 <mvc:View
-	controllerName="siagrob1.controller.reports.salesInvoices.Main"
+	controllerName="siagrob1.controller.reports.salesInvoiceItems.Main"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:core="sap.ui.core"
 	xmlns:f="sap.ui.layout.form">
-	<Page title="Notas de Saída por Período">
+	<Page title="Itens dos Documentos de Saída">
 		<f:SimpleForm
-			id="salesInvoicesReportForm"
+			id="salesInvoiceItemsReportForm"
 			editable="true"
 			layout="ResponsiveGridLayout"
 			labelSpanXL="4"
@@ -40,6 +40,10 @@
 					<core:Item key="0" text="Normal"/>
 					<core:Item key="1" text="Devolução"/>
 				</Select>
+				<Label text="Contrato"/>
+				<Input value="{params>/ContractCode}" maxLength="30"/>
+				<Label text="CFOP"/>
+				<Input value="{params>/Cfop}" maxLength="4"/>
 			</f:content>
 		</f:SimpleForm>
 		<footer>

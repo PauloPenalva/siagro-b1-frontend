@@ -1,0 +1,45 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+	<Label text="Emissão de" required="true"/>
+	<DatePicker
+		value="{ path: 'params>/FromDate', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy' } }"
+		liveChange=".validateField"
+		required="true"/>
+	<Label text="Emissão até" required="true"/>
+	<DatePicker
+		value="{ path: 'params>/ToDate', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy' } }"
+		liveChange=".validateField"
+		required="true"/>
+	<Label text="Filial"/>
+	<Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBranchsValueHelp" value="{params>/BranchCode}">
+		<customData>
+			<core:CustomData key="descriptionProperty" value="BranchName:ShortName"/>
+		</customData>
+	</Input>
+	<Input value="{params>/BranchName}" editable="false"/>
+	<Label text="Produto"/>
+	<Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openItemValueHelp" value="{params>/ItemCode}">
+		<customData>
+			<core:CustomData key="descriptionProperty" value="ItemName"/>
+		</customData>
+	</Input>
+	<Input value="{params>/ItemName}" editable="false"/>
+	<Label text="Situação"/>
+	<MultiComboBox selectedKeys="{params>/Statuses}">
+		<core:Item key="0" text="Pendente"/>
+		<core:Item key="1" text="Confirmado"/>
+		<core:Item key="2" text="Cancelado"/>
+		<core:Item key="3" text="Retornado"/>
+	</MultiComboBox>
+	<Label text="Situação NF-e" visible="{ui>/standalone}"/>
+	<MultiComboBox selectedKeys="{params>/NfeStatuses}" visible="{ui>/standalone}">
+		<core:Item key="0" text="Não emitida"/>
+		<core:Item key="1" text="Em processamento"/>
+		<core:Item key="2" text="Autorizada"/>
+		<core:Item key="3" text="Rejeitada"/>
+		<core:Item key="4" text="Denegada"/>
+		<core:Item key="5" text="Cancelada"/>
+		<core:Item key="6" text="Inutilizada"/>
+	</MultiComboBox>
+</core:FragmentDefinition>
