@@ -58,6 +58,7 @@
 						<Button type="Transparent" text="Editar" press=".onEdit"/>
 						<ToolbarSeparator />
 						<Button type="Transparent" text="Cancelar Documento" press=".onCancelInvoice"/>
+						<Button type="Transparent" text="Inutilizar numeração" press=".onVoidNfeNumber"/>
 						<ToolbarSeparator />
 						<Button type="Transparent" text="Atualizar" press=".onRefresh"/>
 					</OverflowToolbar>

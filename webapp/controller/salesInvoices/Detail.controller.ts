@@ -16,6 +16,7 @@ import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { sendJson, odataValue, readErrorMessage } from "siagrob1/helpers/FetchHelpers";
 import { nfeOutcomeMessage, NfeOutcome, canCancelNfe, canSendNfeCorrection, pickNfeCorrectionPrefill, FailedNfeCorrection } from "siagrob1/helpers/NfeHelpers";
 import { openNfeCancelDialog } from "siagrob1/dialogs/NfeCancelDialog";
+import { runNfeVoidNumber } from "siagrob1/dialogs/NfeVoidNumberAction";
 import { NfeReturnRow, prefillNfeReturnRows, hasReturnableBalance, buildNfeReturnPayload } from "siagrob1/helpers/NfeReturnHelpers";
 import { TAX_TOTALS_SELECT } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 import { LINE_CHARGES_SELECT, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
@@ -158,6 +159,28 @@ export default class Detail extends BaseController {
     const ctx = this.getView().getBindingContext() as Context;
     await this.downloadNfeXml(`${ServerRoutes.salesInvoicesNfeCancellationXml}(Key=${ctx.getProperty("Key") as string})`,
       `${ctx.getProperty("ChaveNFe") as string}-procEventoNFe.xml`);
+  }
+
+  async onVoidNfeNumber() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) {
+      return;
+    }
+
+    if (await runNfeVoidNumber(this.getView(), ServerRoutes.salesInvoicesVoidNfeNumber,
+      ctx.getProperty("Key") as string, (busy) => this.setBusy(busy))) {
+      try {
+        await ctx.requestRefresh();
+      } catch {
+        // a releitura falhar não pode travar a tela
+      }
+    }
+  }
+
+  async onNfeVoidNumberXml() {
+    const ctx = this.getView().getBindingContext() as Context;
+    await this.downloadNfeXml(`${ServerRoutes.salesInvoicesNfeVoidNumberXml}(Key=${ctx.getProperty("Key") as string})`,
+      `${ctx.getProperty("TaxDocumentSeries") as string}-${ctx.getProperty("TaxDocumentNumber") as string}-procInutNFe.xml`);
   }
 
   /** Último texto de CC-e recusado, por documento: reabre o diálogo com ele (limpo no sucesso). */

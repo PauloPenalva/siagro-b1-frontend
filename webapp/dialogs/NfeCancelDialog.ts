@@ -7,16 +7,25 @@ import Label from "sap/m/Label";
 import Control from "sap/ui/core/Control";
 import { NFE_CANCEL_MAX, isValidNfeCancelJustification } from "siagrob1/helpers/NfeHelpers";
 
+/** Textos do diálogo de justificativa; o padrão é o do cancelamento. */
+export type NfeJustificationTexts = { title: string; confirm: string; warning: string };
+
+const CANCEL_TEXTS: NfeJustificationTexts = {
+  title: "Cancelar NF-e",
+  confirm: "Cancelar NF-e",
+  warning: "O cancelamento é enviado à SEFAZ e não pode ser desfeito. O documento será cancelado e os saldos estornados.",
+};
+
 /**
  * Pede a justificativa do cancelamento da NF-e. Devolve o texto (com trim) ou `null` se o usuário
  * desistiu. O botão só habilita com 15 a 255 caracteres — a mesma conta do servidor.
  */
-export function openNfeCancelDialog(owner: Control): Promise<string> {
+export function openNfeCancelDialog(owner: Control, texts: NfeJustificationTexts = CANCEL_TEXTS): Promise<string> {
   return new Promise((resolve) => {
     let result: string = null;
 
     const confirm = new Button({
-      text: "Cancelar NF-e", type: "Reject", enabled: false,
+      text: texts.confirm, type: "Reject", enabled: false,
       press: () => { result = text.getValue().trim(); dialog.close(); },
     });
 
@@ -30,13 +39,13 @@ export function openNfeCancelDialog(owner: Control): Promise<string> {
     });
 
     const dialog = new Dialog({
-      title: "Cancelar NF-e",
+      title: texts.title,
       contentWidth: "32rem",
       content: new VBox({
         items: [
           new MessageStrip({
             type: "Warning", showIcon: true,
-            text: "O cancelamento é enviado à SEFAZ e não pode ser desfeito. O documento será cancelado e os saldos estornados.",
+            text: texts.warning,
           }),
           new Label({ text: "Justificativa", required: true, labelFor: text }),
           text,

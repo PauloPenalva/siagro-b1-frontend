@@ -189,6 +189,11 @@ export default {
   purchaseInvoicesCancelNfe: '/odata/PurchaseInvoicesCancelNfe',
   purchaseInvoicesCompleteNfeCancellation: '/odata/PurchaseInvoicesCompleteNfeCancellation',
   purchaseInvoicesNfeCancellationXml: '/odata/PurchaseInvoicesNfeCancellationXml',
+  // Inutilização da numeração da NF-e rejeitada: ação com justificativa e XML do comprovante.
+  salesInvoicesVoidNfeNumber: '/odata/SalesInvoicesVoidNfeNumber',
+  salesInvoicesNfeVoidNumberXml: '/odata/SalesInvoicesNfeVoidNumberXml',
+  purchaseInvoicesVoidNfeNumber: '/odata/PurchaseInvoicesVoidNfeNumber',
+  purchaseInvoicesNfeVoidNumberXml: '/odata/PurchaseInvoicesNfeVoidNumberXml',
 
   // CC-e (evento 110110): envio com o texto, XML de cada carta e histórico (entity set somente leitura).
   salesInvoicesSendNfeCorrection: '/odata/SalesInvoicesSendNfeCorrection',

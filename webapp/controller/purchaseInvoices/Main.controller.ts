@@ -11,8 +11,9 @@ import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import formatter from "siagrob1/model/formatter";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { sendJson, odataValue } from "siagrob1/helpers/FetchHelpers";
-import { canCancelNfe, nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
+import { canCancelNfe, canVoidNfeNumber, nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
 import { openNfeCancelDialog } from "siagrob1/dialogs/NfeCancelDialog";
+import { runNfeVoidNumber } from "siagrob1/dialogs/NfeVoidNumberAction";
 import { BaseController } from "./BaseController";
 
 /**
@@ -125,6 +126,24 @@ export default class Main extends BaseController {
    * Cancelar não estorna nada nesta fase: o documento nunca moveu saldo. Tira o registro da
    * conciliação e LIBERA a chave de NF-e para relançamento, sem apagar o documento.
    */
+  async onVoidNfeNumber() {
+    const ctx = this.selectedContext();
+    if (!ctx) {
+      return;
+    }
+
+    if (!canVoidNfeNumber(ctx.getProperty("NfeStatus") as string, ctx.getProperty("InvoiceStatus") as string,
+      ctx.getProperty("IssuerType") as string)) {
+      MessageBox.warning("Só o documento cancelado com NF-e própria rejeitada tem a numeração inutilizada.");
+      return;
+    }
+
+    if (await runNfeVoidNumber(this.getView(), ServerRoutes.purchaseInvoicesVoidNfeNumber,
+      ctx.getProperty("Key") as string, (busy) => this.setBusy(busy))) {
+      this.onRefresh();
+    }
+  }
+
   async onCancelInvoice() {
     const oContext = this.selectedContext();
 

@@ -12,8 +12,9 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import Dialog from "sap/m/Dialog";
 import { Input$LiveChangeEvent } from "sap/m/Input";
 import Fragment from "sap/ui/core/Fragment";
-import { isEmittedNfeStatus, isManualTaxDocumentBlocked, canCancelNfe, nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
+import { isEmittedNfeStatus, isManualTaxDocumentBlocked, canCancelNfe, canVoidNfeNumber, nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
 import { openNfeCancelDialog } from "siagrob1/dialogs/NfeCancelDialog";
+import { runNfeVoidNumber } from "siagrob1/dialogs/NfeVoidNumberAction";
 import { sendJson, odataValue } from "siagrob1/helpers/FetchHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import Sorter from "sap/ui/model/Sorter";
@@ -190,6 +191,26 @@ export default class Main extends BaseController {
     (oTable.getBinding("rows") as ODataListBinding).refresh();
   }
  
+  async onVoidNfeNumber() {
+    const table = this.byId("tableSalesInvoices") as Table;
+    const selected = table.getSelectedIndices();
+    if (selected.length !== 1) {
+      MessageBox.warning("Selecione um registro.");
+      return;
+    }
+
+    const ctx = table.getContextByIndex(selected[0]) as Context;
+    if (!canVoidNfeNumber(ctx.getProperty("NfeStatus") as string, ctx.getProperty("InvoiceStatus") as string)) {
+      MessageBox.warning("Só o documento cancelado com NF-e rejeitada tem a numeração inutilizada.");
+      return;
+    }
+
+    if (await runNfeVoidNumber(this.getView(), ServerRoutes.salesInvoicesVoidNfeNumber,
+      ctx.getProperty("Key") as string, (busy) => this.setBusy(busy))) {
+      this.refreshData();
+    }
+  }
+
   async onCancel() {
     const table = this.byId("tableSalesInvoices") as Table;
     const selectedInvoice = table.getSelectedIndices();
