@@ -18,6 +18,9 @@ export abstract class BaseController extends CommonController {
       ZipCode: null,
       City: "",
       State: "",
+      // O Select de tipo (targetType 'any') e o value help de país gravam nestas.
+      AdresType: null,
+      Country: "BR",
     }, false, true, false);
   }
 
