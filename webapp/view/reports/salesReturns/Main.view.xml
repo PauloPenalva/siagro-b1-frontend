@@ -34,7 +34,7 @@
 					</customData>
 				</Input>
 				<Input value="{params>/CardName}" editable="false"/>
-				<Label text="Emissão"/>
+				<Label text="Origem"/>
 				<Select selectedKey="{params>/Source}">
 					<core:Item key="" text="Própria e do cliente"/>
 					<core:Item key="0" text="Própria"/>

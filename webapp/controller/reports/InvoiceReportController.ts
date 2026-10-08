@@ -16,9 +16,6 @@ export default abstract class InvoiceReportController extends CommonController {
 
 	onInit(): void {
 		this.getView().setModel(new JSONModel(), "params");
-		if (!this.getView().getModel("ui")) {
-			this.getView().setModel(new JSONModel({ standalone: false }), "ui");
-		}
 
 		this.getRouter()
 			.getRoute(this.routeName)

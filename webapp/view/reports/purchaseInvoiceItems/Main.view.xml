@@ -40,10 +40,10 @@
 					<core:Item key="0" text="Normal"/>
 					<core:Item key="1" text="Devolução"/>
 				</Select>
-				<Label text="Emissão"/>
+				<Label text="Emitida por"/>
 				<Select selectedKey="{params>/IssuerType}">
 					<core:Item key="" text="Todas"/>
-					<core:Item key="0" text="De terceiro"/>
+					<core:Item key="0" text="Terceiro"/>
 					<core:Item key="1" text="Própria"/>
 				</Select>
 				<Label text="Contrato"/>
