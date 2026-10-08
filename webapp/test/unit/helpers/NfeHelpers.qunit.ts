@@ -272,7 +272,6 @@ QUnit.test("sem falha guardada usa a última carta registrada", function (assert
 	assert.strictEqual(pickNfeCorrectionPrefill(undefined, "k1", "carta registrada"), "carta registrada");
 });
 
-
 QUnit.module("NfeHelpers - inutilização da numeração");
 
 QUnit.test("só documento cancelado com NF-e rejeitada (e entrada própria)", function (assert) {

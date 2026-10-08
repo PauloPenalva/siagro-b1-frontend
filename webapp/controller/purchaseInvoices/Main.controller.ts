@@ -126,24 +126,6 @@ export default class Main extends BaseController {
    * Cancelar não estorna nada nesta fase: o documento nunca moveu saldo. Tira o registro da
    * conciliação e LIBERA a chave de NF-e para relançamento, sem apagar o documento.
    */
-  async onVoidNfeNumber() {
-    const ctx = this.selectedContext();
-    if (!ctx) {
-      return;
-    }
-
-    if (!canVoidNfeNumber(ctx.getProperty("NfeStatus") as string, ctx.getProperty("InvoiceStatus") as string,
-      ctx.getProperty("IssuerType") as string)) {
-      MessageBox.warning("Só o documento cancelado com NF-e própria rejeitada tem a numeração inutilizada.");
-      return;
-    }
-
-    if (await runNfeVoidNumber(this.getView(), ServerRoutes.purchaseInvoicesVoidNfeNumber,
-      ctx.getProperty("Key") as string, (busy) => this.setBusy(busy))) {
-      this.onRefresh();
-    }
-  }
-
   async onCancelInvoice() {
     const oContext = this.selectedContext();
 
@@ -201,6 +183,25 @@ export default class Main extends BaseController {
       this.onRefresh();
     } finally {
       this.setBusy(false);
+    }
+  }
+
+  /** Inutiliza a numeração da NF-e própria rejeitada de um documento cancelado. */
+  async onVoidNfeNumber() {
+    const ctx = this.selectedContext();
+    if (!ctx) {
+      return;
+    }
+
+    if (!canVoidNfeNumber(ctx.getProperty("NfeStatus") as string, ctx.getProperty("InvoiceStatus") as string,
+      ctx.getProperty("IssuerType") as string)) {
+      MessageBox.warning("Só o documento cancelado com NF-e própria rejeitada tem a numeração inutilizada.");
+      return;
+    }
+
+    if (await runNfeVoidNumber(this.getView(), ServerRoutes.purchaseInvoicesVoidNfeNumber,
+      ctx.getProperty("Key") as string, (busy) => this.setBusy(busy))) {
+      this.onRefresh();
     }
   }
 
@@ -291,7 +292,7 @@ export default class Main extends BaseController {
       type: EdmType.Enumeration,
       valueMap: {
         "None": "", "Processing": "Em processamento", "Authorized": "Autorizada",
-        "Rejected": "Rejeitada", "Denied": "Denegada", "Cancelled": "Cancelada",
+        "Rejected": "Rejeitada", "Denied": "Denegada", "Cancelled": "Cancelada", "Voided": "Inutilizada",
       },
     });
 

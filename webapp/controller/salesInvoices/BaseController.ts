@@ -456,7 +456,7 @@ export abstract class BaseController extends CommonController {
         type: EdmType.Enumeration,
         valueMap: {
           "None": "", "Processing": "Em processamento", "Authorized": "Autorizada",
-          "Rejected": "Rejeitada", "Denied": "Denegada", "Cancelled": "Cancelada",
+          "Rejected": "Rejeitada", "Denied": "Denegada", "Cancelled": "Cancelada", "Voided": "Inutilizada",
         },
       });
 
