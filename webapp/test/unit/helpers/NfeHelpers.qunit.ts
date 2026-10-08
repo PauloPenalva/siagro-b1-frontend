@@ -1,7 +1,7 @@
 import {
 	PAYMENT_MEANS, PAYMENT_START_RULES, paymentPreviewUrl, certificateDaysToExpire, certificateState, environmentCode, readFileAsBase64, nfeOutcomeMessage, isManualTaxDocumentBlocked,
 	danfeViewerOptions, isValidNfeCancelJustification, canCancelNfe, needsNfeCancellationCompletion, isReversibleNfeStatus,
-	normalizeNfeCorrectionText, invalidNfeCorrectionChars, isValidNfeCorrectionText, canSendNfeCorrection, correctionViewerOptions, pickNfeCorrectionPrefill,
+	normalizeNfeCorrectionText, invalidNfeCorrectionChars, isValidNfeCorrectionText, canSendNfeCorrection, correctionViewerOptions, pickNfeCorrectionPrefill, canVoidNfeNumber,
 } from "siagrob1/helpers/NfeHelpers";
 import type { NfeOutcome } from "siagrob1/helpers/NfeHelpers";
 
@@ -272,3 +272,23 @@ QUnit.test("sem falha guardada usa a última carta registrada", function (assert
 	assert.strictEqual(pickNfeCorrectionPrefill(undefined, "k1", "carta registrada"), "carta registrada");
 });
 
+
+QUnit.module("NfeHelpers - inutilização da numeração");
+
+QUnit.test("só documento cancelado com NF-e rejeitada (e entrada própria)", function (assert) {
+	assert.strictEqual(canVoidNfeNumber("Rejected", "Cancelled"), true);
+	assert.strictEqual(canVoidNfeNumber("Rejected", "Cancelled", "Own"), true);
+	assert.strictEqual(canVoidNfeNumber("Rejected", "Cancelled", "ThirdParty"), false);
+	assert.strictEqual(canVoidNfeNumber("Rejected", "Confirmed"), false);
+	assert.strictEqual(canVoidNfeNumber("Processing", "Cancelled"), false);
+	assert.strictEqual(canVoidNfeNumber("Denied", "Cancelled"), false);
+	assert.strictEqual(canVoidNfeNumber("Voided", "Cancelled"), false);
+	assert.strictEqual(canVoidNfeNumber(undefined, undefined), false);
+});
+
+QUnit.test("desfecho da inutilização: 102 é sucesso, 256/563 é aviso sem comprovante", function (assert) {
+	assert.deepEqual(nfeOutcomeMessage({ NfeStatus: "Voided", StatusCode: "102", Reason: "Inutilização de número homologado" }),
+		{ type: "success", text: "Numeração da NF-e inutilizada." });
+	assert.deepEqual(nfeOutcomeMessage({ NfeStatus: "Voided", StatusCode: "256", Reason: "Rejeição: já inutilizada" }),
+		{ type: "warning", text: "Numeração já inutilizada na SEFAZ (256 - Rejeição: já inutilizada): o comprovante não está disponível." });
+});
