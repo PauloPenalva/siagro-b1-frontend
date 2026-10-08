@@ -355,6 +355,11 @@ export default abstract class CommonController extends BaseController {
     void this.applyValueHelp(ev, "MunicipalitiesSelectDialog", ["Code", "Name", "StateAbbreviation"], "Code");
   }
 
+  /** País do endereço do parceiro. Grava o ISO-2 (`BR`), que é o que o endereço guarda. */
+  openCountriesValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "CountriesSelectDialog", ["Code", "Name"], "Code");
+  }
+
   openAgentsValueHelp(ev: Input$ValueHelpRequestEvent) {
     void this.applyValueHelp(ev, "AgentsSelectDialog", ['Name'], "Code",
       [ new Filter("Inactive", FilterOperator.EQ, "N") ]);

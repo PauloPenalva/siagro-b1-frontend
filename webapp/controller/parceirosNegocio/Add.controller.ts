@@ -15,6 +15,8 @@ export default class Add extends BaseController {
 	private newRouteMatched() {
 		void this.refreshStandaloneFlag();
 		(this.getModel("ui") as JSONModel).setProperty("/paymentConditionName", "");
+		// O grid de endereços liga em ui>/editable; sem isto herdava o false de um Detail aberto antes.
+		(this.getModel("ui") as JSONModel).setProperty("/editable", true);
 		
     this.clearStates("businessPartnerForm");
     

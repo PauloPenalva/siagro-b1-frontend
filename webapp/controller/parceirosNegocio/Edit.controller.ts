@@ -45,6 +45,8 @@ export default class Edit extends BaseController {
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
 		void this.refreshStandaloneFlag();
+		// O grid de endereços liga em ui>/editable; sem isto herdava o false de um Detail aberto antes.
+		(this.getModel("ui") as JSONModel).setProperty("/editable", true);
 		this.clearStates("businessPartnerForm");
 
     const oModel = this.getView().getModel() as ODataModel;

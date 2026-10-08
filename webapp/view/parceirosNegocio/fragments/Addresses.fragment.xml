@@ -52,12 +52,18 @@
       </t:Column>
       <t:Column label="Tipo">
         <t:template>
-          <Input
-            editable="{ui>/editable}"
+          <!-- AdresType é chave do endereço: só a linha nova (transiente) escolhe o tipo.
+               isTransient é undefined na linha lida do servidor, por isso "=== true". -->
+          <Select
+            selectedKey="{path: 'AdresType', targetType: 'any'}"
+            forceSelection="false"
             required="true"
-            value="{AdresType}" 
+            width="100%"
+            enabled="{= ${ui>/editable} === true &amp;&amp; %{@$ui5.context.isTransient} === true }"
           >
-          </Input>
+            <core:ListItem key="B" text="Cobrança" />
+            <core:ListItem key="S" text="Entrega" />
+          </Select>
         </t:template>
       </t:Column>
       <t:Column label="Logradouro">
@@ -137,9 +143,11 @@
           <Input
             editable="{ui>/editable}"
             required="true"
-            value="{Country}" 
-          >
-          </Input>
+            value="{Country}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openCountriesValueHelp"
+          />
         </t:template>
       </t:Column>
     </t:columns>
