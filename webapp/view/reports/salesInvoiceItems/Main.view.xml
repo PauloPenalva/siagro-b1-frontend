@@ -4,7 +4,8 @@
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:core="sap.ui.core"
-	xmlns:f="sap.ui.layout.form">
+	xmlns:f="sap.ui.layout.form"
+	xmlns:l="sap.ui.layout">
 	<Page title="Itens dos Documentos de Saída">
 		<f:SimpleForm
 			id="salesInvoiceItemsReportForm"
@@ -19,21 +20,26 @@
 			emptySpanL="0"
 			emptySpanM="0"
 			emptySpanS="0"
-			columnsXL="3"
+			columnsXL="2"
 			columnsL="2"
 			columnsM="2"
-			singleContainerFullSize="true"
+			singleContainerFullSize="false"
 			busyIndicatorDelay="0">
 			<f:content>
+				<core:Title text="Período e situação" emphasized="true"/>
+				<core:Fragment fragmentName="siagrob1.view.reports.fragments.InvoiceReportPeriodFilters" type="XML"/>
 				<core:Title text="Filtros" emphasized="true"/>
 				<core:Fragment fragmentName="siagrob1.view.reports.fragments.InvoiceReportCommonFilters" type="XML"/>
 				<Label text="Cliente"/>
 				<Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openCostumersValueHelp" value="{params>/CardCode}">
+					<layoutData><l:GridData span="XL3 L3 M3 S12"/></layoutData>
 					<customData>
 						<core:CustomData key="descriptionProperty" value="CardName"/>
 					</customData>
 				</Input>
-				<Input value="{params>/CardName}" editable="false"/>
+				<Input value="{params>/CardName}" editable="false">
+					<layoutData><l:GridData span="XL5 L5 M5 S12"/></layoutData>
+				</Input>
 				<Label text="Tipo"/>
 				<Select selectedKey="{params>/InvoiceType}">
 					<core:Item key="" text="Todos"/>
