@@ -92,6 +92,7 @@
               <core:ListItem key="Rejected" text="Rejeitada"/>
               <core:ListItem key="Denied" text="Denegada"/>
               <core:ListItem key="Cancelled" text="Cancelada"/>
+              <core:ListItem key="Voided" text="Inutilizada"/>
             </Select>
         </fb:control>
       </fb:FilterGroupItem>

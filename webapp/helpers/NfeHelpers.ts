@@ -128,6 +128,13 @@ function baseNfeOutcomeMessage(outcome: NfeOutcome): { type: "success" | "warnin
             "Corrija e use Concluir cancelamento.",
         }
         : { type: "success", text: "NF-e cancelada e documento cancelado." };
+    case "Voided":
+      return outcome.StatusCode === "102"
+        ? { type: "success", text: "Numeração da NF-e inutilizada." }
+        : {
+          type: "warning",
+          text: `Numeração já inutilizada na SEFAZ (${codeAndReason}): o comprovante não está disponível.`,
+        };
     default:
       return { type: "warning", text: outcome.Reason ?? "NF-e em processamento." };
   }
@@ -197,6 +204,14 @@ export function canCancelNfe(nfeStatus?: string, invoiceStatus?: string): boolea
 /** NF-e cancelada na SEFAZ e documento ainda ativo: falta a fase local. */
 export function needsNfeCancellationCompletion(nfeStatus?: string, invoiceStatus?: string): boolean {
   return nfeStatus === "Cancelled" && invoiceStatus !== "Cancelled";
+}
+
+/**
+ * "Inutilizar numeração": a NF-e rejeitada de um documento já cancelado nunca foi autorizada e o número
+ * fica sem uso. Entrada de terceiro (issuerType "ThirdParty") não tem número do Siagro; a saída não informa issuerType.
+ */
+export function canVoidNfeNumber(nfeStatus?: string, invoiceStatus?: string, issuerType?: string): boolean {
+  return invoiceStatus === "Cancelled" && nfeStatus === "Rejected" && (issuerType === undefined || issuerType === "Own");
 }
 
 /** Estorno de confirmação: recusado com NF-e em processamento, autorizada ou cancelada. */

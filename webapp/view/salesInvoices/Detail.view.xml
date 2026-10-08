@@ -53,6 +53,10 @@
             visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' || ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" />
           <Button text="XML do cancelamento" icon="sap-icon://download" press=".onNfeCancellationXml"
             visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" />
+          <Button text="Inutilizar numeração" icon="sap-icon://locked" press=".onVoidNfeNumber"
+            visible="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Cancelled' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} === 'Rejected' &amp;&amp; !!${path: 'TaxDocumentNumber', targetType: 'any'} }" />
+          <Button text="XML da inutilização" icon="sap-icon://download" press=".onNfeVoidNumberXml"
+            visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Voided' &amp;&amp; ${path: 'NfeStatusCode', targetType: 'any'} === '102' }" />
           <!-- NF-e de devolução: a venda autorizada (sem carga) gera a devolução própria, que é
                emitida pelo mesmo "Emitir NF-e". -->
           <Button text="Devolver" icon="sap-icon://undo" press=".onNfeReturn"

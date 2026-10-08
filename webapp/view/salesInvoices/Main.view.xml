@@ -63,6 +63,7 @@
             <Button type="Transparent" text="Retornar" press=".onReturn"/>
             <ToolbarSeparator />
           	<Button type="Transparent" text="Cancelar Doc." press=".onCancel"/>
+          	<Button type="Transparent" text="Inutilizar numeração" press=".onVoidNfeNumber" visible="{= ${path: 'ui>/standalone', targetType: 'any'} === true &amp;&amp; ${path: 'ui>/anyBranchIssuesNfe', targetType: 'any'} === true }"/>
             <ToolbarSeparator />
 						<Button type="Transparent" text="Atualizar" press=".refreshData"/>
 					</OverflowToolbar>

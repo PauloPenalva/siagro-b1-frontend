@@ -924,6 +924,7 @@ const formatter = {
       ["Rejected", "Rejeitada"],
       ["Denied", "Denegada"],
       ["Cancelled", "Cancelada"],
+      ["Voided", "Inutilizada"],
     ]);
 
     return m.get(value) ?? "";
@@ -936,6 +937,7 @@ const formatter = {
       ["Rejected", "Error"],
       ["Denied", "Error"],
       ["Cancelled", "Error"],
+      ["Voided", "None"],
     ]);
 
     return m.get(value) ?? "None";
