@@ -65,12 +65,19 @@
 							}" wrapping="false" />
 						</t:template>
 					</t:Column>
+					<!-- O CFOP mora em colunas diferentes conforme o tipo: entrada grava em
+					     CfopIncoming*, saída (e natureza do OUSG, sem tipo) em CfopOutgoing*. -->
 					<t:Column
 						label="CFOP Dentro"
 						width="9rem"
 						>
 						<t:template>
-							<Text text="{CfopOutgoingInState}" wrapping="false" />
+							<HBox>
+								<Text text="{CfopOutgoingInState}" wrapping="false"
+									visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
+								<Text text="{CfopIncomingInState}" wrapping="false"
+									visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
+							</HBox>
 						</t:template>
 					</t:Column>
 					<t:Column
@@ -78,7 +85,12 @@
 						width="9rem"
 						>
 						<t:template>
-							<Text text="{CfopOutgoingOutState}" wrapping="false" />
+							<HBox>
+								<Text text="{CfopOutgoingOutState}" wrapping="false"
+									visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
+								<Text text="{CfopIncomingOutState}" wrapping="false"
+									visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
+							</HBox>
 						</t:template>
 					</t:Column>
 					<!-- Um campo por propriedade: binding composto quebra no OData v4. -->
