@@ -242,6 +242,10 @@ export abstract class BaseController extends CommonController {
      * Recalcula o total quando a grade recebe dados — é o que faz o número aparecer nas telas
      * de edição e visualização, onde os itens chegam do servidor e não da digitação.
      * Idempotente: navegar de novo não empilha listeners.
+     *
+     * O listener vai na TABELA (`rowsUpdated`), não no binding das linhas: cada `bindElement` de outro documento
+     * troca o binding relativo `{Items}` por um objeto novo, e um `change` anexado ao primeiro morria com ele —
+     * do segundo documento aberto em diante, Totais e Tributos ficavam zerados até um F5.
      */
     protected attachDocumentTotalRefresh() {
       if (this.documentTotalAttached) {
@@ -249,13 +253,12 @@ export abstract class BaseController extends CommonController {
       }
 
       const oTable = this.byId("tableSalesInvoicesItems") as Table;
-      const oBinding = oTable?.getBinding("rows") as ODataListBinding;
 
-      if (!oBinding) {
+      if (!oTable) {
         return;
       }
 
-      oBinding.attachChange(() => this.refreshDocumentTotal());
+      oTable.attachRowsUpdated(() => this.refreshDocumentTotal());
       this.documentTotalAttached = true;
     }
 

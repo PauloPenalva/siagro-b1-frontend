@@ -58,10 +58,9 @@ export default class Edit extends BaseController {
         "$expand=SalesInvoiceItem($expand=SalesInvoice),PurchaseContract($select=Key,Code))",
     });
 
-    // Depois que os dados CHEGAM, não junto do bindElement: o bind é assíncrono e somar aqui
+    // Soma quando as linhas CHEGAM à grade, não junto do bindElement: o bind é assíncrono e somar aqui
     // percorreria uma lista ainda vazia, deixando "Total dos itens" parado em 0,00 para sempre.
-    this.getView().getElementBinding()
-      ?.attachEventOnce("dataReceived", () => this.refreshDocumentTotal());
+    this.attachDocumentTotalRefresh();
 
     void this.refreshNfeMode();
   }

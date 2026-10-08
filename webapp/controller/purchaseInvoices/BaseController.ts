@@ -26,6 +26,8 @@ export abstract class BaseController extends CommonController {
 
   private itemFiscalDialog: Dialog;
 
+  private documentTotalAttached = false;
+
   /**
    * Modo NF-e do documento ligado à view: filial que emite pelo Siagro (`/taxLocked`), emissão própria
    * (`/nfeMode`), cálculo de tributos e natureza (`/taxMode`: própria e terceiro Normal); devolução de compra
@@ -320,5 +322,29 @@ export abstract class BaseController extends CommonController {
     uiModel.setProperty("/documentTotal", formatAmount(charges.grandTotal));
     uiModel.setProperty("/chargeTotals", charges);
     uiModel.setProperty("/taxTotals", summarizeInvoiceTaxes(contexts.map((ctx) => ctx.getObject() as TaxLine)));
+  }
+
+  /**
+   * Recalcula o total sempre que a grade atualiza as linhas — é o que faz o número aparecer na edição e na
+   * visualização, onde os itens chegam do servidor e não da digitação. Idempotente: navegar de novo não empilha
+   * listeners.
+   *
+   * Vai na TABELA (`rowsUpdated`), e não em evento de binding: cada `bindElement` de outro documento troca os bindings
+   * por objetos novos (um `change` anexado ao de `{Items}` morre com ele — foi o que zerava a saída), e o
+   * `dataReceived` do cabeçalho não garante que a grade já tenha os contextos das linhas quando dispara.
+   */
+  protected attachDocumentTotalRefresh() {
+    if (this.documentTotalAttached) {
+      return;
+    }
+
+    const oTable = this.byId("tablePurchaseInvoiceItems") as Table;
+
+    if (!oTable) {
+      return;
+    }
+
+    oTable.attachRowsUpdated(() => this.refreshDocumentTotal());
+    this.documentTotalAttached = true;
   }
 }
