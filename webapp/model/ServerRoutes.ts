@@ -286,6 +286,10 @@ export default {
   shipmentLoadsAttachmentUpload: '/odata/ShipmentLoadsAttachmentUpload',
   shipmentLoadsAttachmentsDownload: '/odata/ShipmentLoadsAttachmentsDownload',
 
+  // Recusa da carga com NF-e de entrada própria (spec 2026-10-09).
+  shipmentLoadsPendingRefusal: (key: string): string => `/odata/ShipmentLoadsGetPendingRefusal(Key=${key})`,
+  shipmentLoadsCancelRefusal: '/odata/ShipmentLoadsCancelRefusal',
+
   // NF-e STANDALONE (sub-projeto 2a).
   paymentConditions: '/odata/PaymentConditions',
   branchNfeSettingsGet: '/odata/BranchNfeSettingsGet',

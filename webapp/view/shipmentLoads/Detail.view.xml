@@ -48,6 +48,12 @@
 						type="Transparent"
 						press=".onRefuse"
 						visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' &amp;&amp; (${path: 'Status', targetType: 'any'} === 'PartiallyInvoiced' || ${path: 'Status', targetType: 'any'} === 'Invoiced') }"/>
+					<!-- Spec 2026-10-09: só com recusa aguardando NF-e. O servidor recusa se alguma NF-e já saiu. -->
+					<Button
+						text="Cancelar Recusa"
+						type="Transparent"
+						press=".onCancelRefusal"
+						visible="{= ${path: 'Status', targetType: 'any'} === 'RefusalPending' }"/>
 					<!-- GAC-1175: encerramento MANUAL da carga de remoção, com o desfazer ao lado.
 					     A remoção não tem faturamento que a encerre sozinha. -->
 					<Button
@@ -337,6 +343,18 @@
 									</t:Column>
 								</t:columns>
 							</t:Table>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
+			<!-- Recusa aguardando NF-e (spec 2026-10-09): visível só enquanto a function devolve linhas. -->
+			<uxap:ObjectPageSection titleUppercase="false" title="Recusa aguardando NF-e"
+				visible="{pendingRefusal>/visible}">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<uxap:blocks>
+							<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.PendingRefusal" type="XML"/>
 						</uxap:blocks>
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>

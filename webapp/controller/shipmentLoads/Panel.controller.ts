@@ -20,6 +20,8 @@ const LANES = [
   { id: "listInvoiced", status: "Invoiced", count: "countInvoiced" },
   // GAC-1171 (melhorias): entre Faturada e Devolvida, a carga marcada como descarregada no destino.
   { id: "listDischarged", status: "Discharged", count: "countDischarged" },
+  // Spec 2026-10-09: recusa registrada aguardando as NF-e de entrada; a carga fica travada até concluir ou cancelar.
+  { id: "listRefusalPending", status: "RefusalPending", count: "countRefusalPending" },
   { id: "listReturned", status: "Returned", count: "countReturned" },
   { id: "listCompleted", status: "Completed", count: "countCompleted" },
 ];

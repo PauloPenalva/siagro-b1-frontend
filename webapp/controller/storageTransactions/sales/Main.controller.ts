@@ -33,6 +33,8 @@ const SHIPMENT_LOAD_STATUSES = [
   // GAC-1171 (melhorias): faturada e marcada à mão como descarregada no destino.
   { key: "Discharged", text: "Descarregada" },
   { key: "Returned", text: "Devolvida" },
+  // Spec 2026-10-09: recusa registrada aguardando as NF-e de entrada das devoluções.
+  { key: "RefusalPending", text: "Recusa aguardando NF-e" },
   { key: "Completed", text: "Concluída" },
   { key: "Cancelled", text: "Cancelada" },
 ];
@@ -229,6 +231,14 @@ export default class Main extends CommonController {
       return false;
     }
 
+    // Spec 2026-10-09: carga travada pela recusa aguardando NF-e — mesma mensagem do servidor.
+    if (shipment.LoadStatus === "RefusalPending") {
+      MessageBox.warning(
+        `A carga ${shipment.LoadCode} tem uma recusa aguardando NF-e de entrada: `
+        + "emita as NF-e ou cancele a recusa.");
+      return false;
+    }
+
     // Descarregada e Concluída vêm depois de Faturada (GAC-1171): o mesmo aviso vale.
     if (["PartiallyInvoiced", "Invoiced", "Discharged", "Completed"].includes(shipment.LoadStatus)) {
       MessageBox.warning(
@@ -338,6 +348,7 @@ export default class Main extends CommonController {
         // GAC-1171 (melhorias): faturada e marcada à mão como descarregada no destino.
         Discharged: "Descarregada",
         Returned: "Devolvida",
+        RefusalPending: "Recusa aguardando NF-e",
         Completed: "Concluída",
         Cancelled: "Cancelada",
       },

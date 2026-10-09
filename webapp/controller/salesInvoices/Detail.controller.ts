@@ -14,7 +14,8 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { sendJson, odataValue, readErrorMessage } from "siagrob1/helpers/FetchHelpers";
-import { nfeOutcomeMessage, NfeOutcome, canCancelNfe, canSendNfeCorrection, pickNfeCorrectionPrefill, FailedNfeCorrection } from "siagrob1/helpers/NfeHelpers";
+import { runNfeAction } from "siagrob1/helpers/NfeActionRunner";
+import { canCancelNfe, canSendNfeCorrection, pickNfeCorrectionPrefill, FailedNfeCorrection } from "siagrob1/helpers/NfeHelpers";
 import { openNfeCancelDialog } from "siagrob1/dialogs/NfeCancelDialog";
 import { runNfeVoidNumber } from "siagrob1/dialogs/NfeVoidNumberAction";
 import { NfeReturnRow, prefillNfeReturnRows, hasReturnableBalance, buildNfeReturnPayload } from "siagrob1/helpers/NfeReturnHelpers";
@@ -112,21 +113,7 @@ export default class Detail extends BaseController {
   private async runNfeAction(url: string, ctx: Context, extra: Record<string, unknown> = {}) {
     this.setBusy(true);
     try {
-      const result = await sendJson("POST", url, { Key: ctx.getProperty("Key") as string, ...extra });
-
-      if (!result.ok) {
-        MessageBox.error(result.message);
-        return;
-      }
-
-      const message = nfeOutcomeMessage(odataValue<NfeOutcome>(result.data));
-      if (message.type === "success") {
-        MessageToast.show(message.text);
-      } else if (message.type === "warning") {
-        MessageBox.warning(message.text);
-      } else {
-        MessageBox.error(message.text);
-      }
+      await runNfeAction(url, { Key: ctx.getProperty("Key") as string, ...extra });
     } finally {
       try {
         await ctx.requestRefresh();

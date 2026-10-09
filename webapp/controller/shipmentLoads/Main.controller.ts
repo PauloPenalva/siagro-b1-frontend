@@ -29,6 +29,8 @@ const SHIPMENT_LOAD_STATUSES = [
   // GAC-1171 (melhorias): faturada e marcada à mão como descarregada no destino.
   { key: "Discharged", text: "Descarregada" },
   { key: "Returned", text: "Devolvida" },
+  // Spec 2026-10-09: recusa com NF-e de entrada própria ainda não concluída.
+  { key: "RefusalPending", text: "Recusa aguardando NF-e" },
   { key: "Completed", text: "Concluída" },
   { key: "Cancelled", text: "Cancelada" },
 ];
