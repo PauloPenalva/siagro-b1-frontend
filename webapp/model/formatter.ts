@@ -656,6 +656,8 @@ const formatter = {
     m.set("InTransshipment", "Em Transbordo");
     // GAC-1171 (melhorias): faturada e marcada à mão como descarregada no destino.
     m.set("Discharged", "Descarregada");
+    // Spec 2026-10-09: recusa registrada na filial com NF-e, aguardando as NF-e de entrada.
+    m.set("RefusalPending", "Recusa aguardando NF-e");
 
     return m.get(value);
   },
@@ -690,6 +692,8 @@ const formatter = {
     // GAC-1171 (melhorias): Information, e não Success, para não se confundir com Faturada na
     // lista. A Concluída (Success) é o fecho, e a Descarregada é o passo intermediário.
     m.set("Discharged", "Information");
+    // Error: a carga está travada até emitir as NF-e ou cancelar a recusa.
+    m.set("RefusalPending", "Error");
 
     return m.get(value);
   },

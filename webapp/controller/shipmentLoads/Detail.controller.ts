@@ -13,6 +13,11 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 import ShipmentBillingDialog, { BillingLoad } from "siagrob1/helpers/ShipmentBillingDialog";
+import { sendJson, odataCollection } from "siagrob1/helpers/FetchHelpers";
+import { runNfeAction } from "siagrob1/helpers/NfeActionRunner";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
+import { Button$PressEvent } from "sap/m/Button";
+import { Link$PressEvent } from "sap/m/Link";
 
 /** Linha do diálogo de recusa — o DTO da function, mais a quantidade digitada. */
 type RefusableDocument = {
@@ -28,6 +33,30 @@ type RefusalForm = {
   DestinationWarehouseName?: string;
   Reason?: string;
   busy: boolean;
+};
+
+/** Linha da function ShipmentLoadsGetPendingRefusal (cabeçalho da recusa repetido por linha). */
+type PendingRefusalRow = {
+  RefusalKey: string;
+  Destination: string;
+  DestinationWarehouseCode?: string;
+  DestinationWarehouseName?: string;
+  Reason: string;
+  SalesInvoiceKey: string;
+  InvoiceNumber?: string;
+  CardName?: string;
+  Quantity: number;
+  InvoiceStatus: string;
+  NfeStatus: string;
+  TaxDocumentNumber?: string;
+  TaxDocumentSeries?: string;
+  NfeConfirmationError?: string;
+};
+
+const REFUSAL_DESTINATION_TEXT: Record<string, string> = {
+  Rebilling: "Caminhão segue viagem (refaturamento)",
+  Warehouse: "Devolução ao armazém",
+  Transshipment: "Transbordo",
 };
 
 /** Romaneio selecionado no grid, lido do contexto (getObject + acesso opcional). */
@@ -90,6 +119,7 @@ export default class Detail extends BaseController {
   onInit(): void {
     this.getView().setModel(new JSONModel({}), "ship");
     this.getView().setModel(new JSONModel([]), "shipReleases");
+    this.getView().setModel(new JSONModel({ visible: false, Rows: [] }), "pendingRefusal");
 
     // O value help do armazém grava com setValue, que não dispara `change` no Input: a lista de
     // liberações acompanha o modelo.
@@ -133,6 +163,10 @@ export default class Detail extends BaseController {
       () => MessageBox.error("Erro ao carregar os anexos da carga."));
     this.refreshTransshipmentLinkage(id).catch(
       () => MessageBox.error("Erro ao carregar a situação dos transbordos."));
+    // A view sobrevive à troca de carga: o painel da carga anterior não pode aparecer até a resposta chegar.
+    (this.getView().getModel("pendingRefusal") as JSONModel).setData({ visible: false, Rows: [] });
+    this.refreshPendingRefusal(id).catch(
+      () => MessageBox.error("Erro ao carregar a recusa aguardando NF-e."));
   }
 
   async onShip(): Promise<void> {
@@ -828,8 +862,16 @@ export default class Detail extends BaseController {
         return;
       }
 
+      // Spec 2026-10-09: na filial que emite NF-e pelo Siagro a recusa nasce pendente, aguardando as
+      // NF-e de entrada das devoluções. Falha na consulta = false, como no faturamento.
+      const ctx = this.getView().getBindingContext() as Context;
+      const branchCode = (await ctx?.requestProperty("BranchCode")) as string;
+      const withNfe = await this.isTaxCalculationActive(branchCode);
+
       const confirmed = await DialogHelper.confirmDialog(
-        toTransshipment
+        withNfe
+          ? "Confirma a recusa ? Serão criadas as devoluções com NF-e de entrada; a recusa só é concluída depois que todas forem autorizadas."
+          : toTransshipment
           ? "Confirma a recusa ? A mercadoria seguirá para transbordo no armazém informado."
           : toWarehouse
             ? "Confirma a recusa, devolvendo a mercadoria ao armazém informado ?"
@@ -861,7 +903,9 @@ export default class Detail extends BaseController {
       this.refreshAll();
 
       MessageToast.show(
-        toTransshipment
+        withNfe
+          ? "Recusa registrada. Emita as NF-e de entrada no painel \"Recusa aguardando NF-e\"."
+          : toTransshipment
           ? "Recusa registrada. Mercadoria seguirá para transbordo no armazém informado."
           : toWarehouse
             ? "Recusa registrada. Mercadoria devolvida ao armazém."
@@ -1086,5 +1130,98 @@ export default class Detail extends BaseController {
     // cliente (`BaseController#refreshTransshipmentLinkage`) precisam dos dois lados frescos.
     this.refreshTransshipmentLinkage(loadKey).catch(
       () => MessageBox.error("Erro ao atualizar a situação dos transbordos."));
+
+    // Spec 2026-10-09: emitir a última NF-e conclui a recusa; cancelar a recusa a apaga. O painel
+    // é JSONModel e só se atualiza relendo a function.
+    this.refreshPendingRefusal(loadKey).catch(
+      () => MessageBox.error("Erro ao carregar a recusa aguardando NF-e."));
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Recusa aguardando NF-e (spec 2026-10-09)                            */
+  /* ------------------------------------------------------------------ */
+
+  private async refreshPendingRefusal(loadKey: string): Promise<void> {
+    const model = this.getView().getModel("pendingRefusal") as JSONModel;
+    const result = await sendJson("GET", ServerRoutes.shipmentLoadsPendingRefusal(loadKey));
+
+    if (!result.ok) {
+      throw new Error(result.message);
+    }
+
+    const rows = odataCollection<PendingRefusalRow>(result.data);
+    const first = rows[0];
+    // formatNfeStatus deixa "None" em branco (nunca emitida); aqui a coluna precisa dizer isso.
+    const nfeStatusText = (status: string) => formatter.formatNfeStatus(status) || "Não emitida";
+
+    model.setData({
+      visible: rows.length > 0,
+      DestinationText: first ? REFUSAL_DESTINATION_TEXT[first.Destination] ?? first.Destination : "",
+      DestinationWarehouseCode: first?.DestinationWarehouseCode ?? "",
+      DestinationWarehouseName: first?.DestinationWarehouseName ?? "",
+      Reason: first?.Reason ?? "",
+      Rows: rows.map(r => ({
+        ...r,
+        // Edm.Decimal pode chegar como string: o tipo Float do grid espera número.
+        Quantity: Number(r.Quantity),
+        NfeText: r.TaxDocumentNumber
+          ? `${nfeStatusText(r.NfeStatus)} - nº ${Number(r.TaxDocumentNumber)} série ${r.TaxDocumentSeries}`
+          : nfeStatusText(r.NfeStatus),
+      })),
+    });
+  }
+
+  private pendingRefusalRow(ev: { getSource(): unknown }): PendingRefusalRow {
+    const source = ev.getSource() as { getBindingContext(model: string): { getObject(): PendingRefusalRow } };
+    return source.getBindingContext("pendingRefusal").getObject();
+  }
+
+  private async runRefusalNfeAction(url: string, row: PendingRefusalRow): Promise<void> {
+    this.setBusy(true);
+    try {
+      await runNfeAction(url, { Key: row.SalesInvoiceKey });
+    } finally {
+      this.setBusy(false);
+      // A autorização da última NF-e conclui a recusa e muda saldo/situação: relê a carga inteira.
+      this.refreshAll();
+    }
+  }
+
+  async onIssueRefusalNfe(ev: Button$PressEvent): Promise<void> {
+    const row = this.pendingRefusalRow(ev);
+    if (!(await DialogHelper.confirmDialog(`Emitir a NF-e de entrada da devolução ${row.InvoiceNumber} ?`))) return;
+    await this.runRefusalNfeAction(ServerRoutes.salesInvoicesIssueNfe, row);
+  }
+
+  async onConsultRefusalNfe(ev: Button$PressEvent): Promise<void> {
+    await this.runRefusalNfeAction(ServerRoutes.salesInvoicesConsultNfe, this.pendingRefusalRow(ev));
+  }
+
+  async onCompleteRefusalNfe(ev: Button$PressEvent): Promise<void> {
+    await this.runRefusalNfeAction(ServerRoutes.salesInvoicesCompleteNfeConfirmation, this.pendingRefusalRow(ev));
+  }
+
+  onOpenRefusalReturn(ev: Link$PressEvent): void {
+    this.navTo("salesInvoicesDetail", { id: this.pendingRefusalRow(ev).SalesInvoiceKey });
+  }
+
+  async onCancelRefusal(): Promise<void> {
+    if (!(await DialogHelper.confirmDialog(
+      "Cancelar a recusa ? As devoluções ainda sem NF-e autorizada serão canceladas e a carga volta à situação anterior."))) {
+      return;
+    }
+
+    this.setBusy(true);
+    try {
+      const result = await sendJson("POST", ServerRoutes.shipmentLoadsCancelRefusal, { Key: this._loadKey });
+      if (!result.ok) {
+        MessageBox.error(result.message);
+        return;
+      }
+      MessageToast.show("Recusa cancelada.");
+    } finally {
+      this.setBusy(false);
+      this.refreshAll();
+    }
   }
 }
