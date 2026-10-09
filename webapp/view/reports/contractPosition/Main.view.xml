@@ -1,0 +1,48 @@
+<mvc:View
+	controllerName="siagrob1.controller.reports.contractPosition.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<Page title="Contratos — Compra x Venda">
+		<f:SimpleForm
+			id="contractPositionReportForm"
+			editable="true"
+			layout="ResponsiveGridLayout"
+			labelSpanXL="4"
+			labelSpanL="4"
+			labelSpanM="4"
+			labelSpanS="12"
+			adjustLabelSpan="false"
+			emptySpanXL="0"
+			emptySpanL="0"
+			emptySpanM="0"
+			emptySpanS="0"
+			columnsXL="2"
+			columnsL="2"
+			columnsM="2"
+			singleContainerFullSize="false"
+			busyIndicatorDelay="0">
+			<f:content>
+				<core:Title text="Lado e situação" emphasized="true"/>
+				<Label text="Lado"/>
+				<Select selectedKey="{params>/Side}">
+					<core:Item key="0" text="Compra e venda"/>
+					<core:Item key="1" text="Compra"/>
+					<core:Item key="2" text="Venda"/>
+				</Select>
+				<core:Fragment fragmentName="siagrob1.view.reports.fragments.ContractPositionStatusFilters" type="XML"/>
+				<core:Title text="Filtros" emphasized="true"/>
+				<core:Fragment fragmentName="siagrob1.view.reports.fragments.InvoiceReportCommonFilters" type="XML"/>
+				<core:Fragment fragmentName="siagrob1.view.reports.fragments.ContractPositionFilters" type="XML"/>
+			</f:content>
+		</f:SimpleForm>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Imprimir" type="Emphasized" press=".onPrintReport"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

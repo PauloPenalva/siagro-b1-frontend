@@ -1040,6 +1040,16 @@
           "target": "salesShipmentsReport"
         },
         {
+          "pattern": "contract-position/report",
+          "name": "contractPositionReport",
+          "target": "contractPositionReport"
+        },
+        {
+          "pattern": "contract-monthly-position/report",
+          "name": "contractMonthlyPositionReport",
+          "target": "contractMonthlyPositionReport"
+        },
+        {
           "pattern": "storage-invoices",
           "name": "storageInvoices",
           "target": "storageInvoices"
@@ -2268,6 +2278,18 @@
           "id": "salesShipmentsReport",
           "level": 1,
           "name": "siagrob1.view.reports.salesShipments.Main",
+          "clearControlAggregation": true
+        },
+        "contractPositionReport": {
+          "id": "contractPositionReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.contractPosition.Main",
+          "clearControlAggregation": true
+        },
+        "contractMonthlyPositionReport": {
+          "id": "contractMonthlyPositionReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.contractMonthlyPosition.Main",
           "clearControlAggregation": true
         },
         "storageInvoices": {
