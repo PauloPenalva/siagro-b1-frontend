@@ -2,15 +2,15 @@ import InvoiceReportController from "../InvoiceReportController";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 
 /**
- * @namespace siagrob1.controller.reports.salesInvoices
+ * @namespace siagrob1.controller.reports.salesInvoiceItems
  */
 export default class Main extends InvoiceReportController {
-	protected readonly routeName = "salesInvoicesReport";
-	protected readonly formId = "salesInvoicesReportForm";
-	protected readonly serverRoute = ServerRoutes.salesInvoicesByPeriodReport;
+	protected readonly routeName = "salesInvoiceItemsReport";
+	protected readonly formId = "salesInvoiceItemsReportForm";
+	protected readonly serverRoute = ServerRoutes.salesInvoiceItemsReport;
 
 	protected defaults() {
-		return { InvoiceType: "" };
+		return { InvoiceType: "", ContractCode: "", Cfop: "" };
 	}
 
 	protected buildPayload() {

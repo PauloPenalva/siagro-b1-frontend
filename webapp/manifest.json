@@ -1000,6 +1000,26 @@
           "target": "salesContractsByItemReport"
         },
         {
+          "pattern": "purchase-invoices/report",
+          "name": "purchaseInvoicesReport",
+          "target": "purchaseInvoicesReport"
+        },
+        {
+          "pattern": "sales-invoice-items/report",
+          "name": "salesInvoiceItemsReport",
+          "target": "salesInvoiceItemsReport"
+        },
+        {
+          "pattern": "purchase-invoice-items/report",
+          "name": "purchaseInvoiceItemsReport",
+          "target": "purchaseInvoiceItemsReport"
+        },
+        {
+          "pattern": "sales-returns/report",
+          "name": "salesReturnsReport",
+          "target": "salesReturnsReport"
+        },
+        {
           "pattern": "storage-invoices",
           "name": "storageInvoices",
           "target": "storageInvoices"
@@ -2182,6 +2202,30 @@
 					"name": "siagrob1.view.reports.salesContractsByItem.Main",
           "clearControlAggregation": true
 				},
+        "purchaseInvoicesReport": {
+          "id": "purchaseInvoicesReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.purchaseInvoices.Main",
+          "clearControlAggregation": true
+        },
+        "salesInvoiceItemsReport": {
+          "id": "salesInvoiceItemsReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.salesInvoiceItems.Main",
+          "clearControlAggregation": true
+        },
+        "purchaseInvoiceItemsReport": {
+          "id": "purchaseInvoiceItemsReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.purchaseInvoiceItems.Main",
+          "clearControlAggregation": true
+        },
+        "salesReturnsReport": {
+          "id": "salesReturnsReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.salesReturns.Main",
+          "clearControlAggregation": true
+        },
         "storageInvoices": {
 					"id": "storageInvoices",
           "level": 1,

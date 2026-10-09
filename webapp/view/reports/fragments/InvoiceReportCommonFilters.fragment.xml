@@ -1,0 +1,25 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:l="sap.ui.layout">
+	<Label text="Filial"/>
+	<Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBranchsValueHelp" value="{params>/BranchCode}">
+		<layoutData><l:GridData span="XL3 L3 M3 S12"/></layoutData>
+		<customData>
+			<core:CustomData key="descriptionProperty" value="BranchName:ShortName"/>
+		</customData>
+	</Input>
+	<Input value="{params>/BranchName}" editable="false">
+		<layoutData><l:GridData span="XL5 L5 M5 S12"/></layoutData>
+	</Input>
+	<Label text="Produto"/>
+	<Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openItemValueHelp" value="{params>/ItemCode}">
+		<layoutData><l:GridData span="XL3 L3 M3 S12"/></layoutData>
+		<customData>
+			<core:CustomData key="descriptionProperty" value="ItemName"/>
+		</customData>
+	</Input>
+	<Input value="{params>/ItemName}" editable="false">
+		<layoutData><l:GridData span="XL5 L5 M5 S12"/></layoutData>
+	</Input>
+</core:FragmentDefinition>

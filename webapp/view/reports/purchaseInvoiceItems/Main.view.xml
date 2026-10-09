@@ -1,14 +1,14 @@
 <mvc:View
-	controllerName="siagrob1.controller.reports.salesInvoices.Main"
+	controllerName="siagrob1.controller.reports.purchaseInvoiceItems.Main"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:core="sap.ui.core"
 	xmlns:f="sap.ui.layout.form"
 	xmlns:l="sap.ui.layout">
-	<Page title="Notas de Saída por Período">
+	<Page title="Itens dos Documentos de Entrada">
 		<f:SimpleForm
-			id="salesInvoicesReportForm"
+			id="purchaseInvoiceItemsReportForm"
 			editable="true"
 			layout="ResponsiveGridLayout"
 			labelSpanXL="4"
@@ -30,8 +30,8 @@
 				<core:Fragment fragmentName="siagrob1.view.reports.fragments.InvoiceReportPeriodFilters" type="XML"/>
 				<core:Title text="Filtros" emphasized="true"/>
 				<core:Fragment fragmentName="siagrob1.view.reports.fragments.InvoiceReportCommonFilters" type="XML"/>
-				<Label text="Cliente"/>
-				<Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openCostumersValueHelp" value="{params>/CardCode}">
+				<Label text="Emitente"/>
+				<Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBusinessPartnersValueHelp" value="{params>/CardCode}">
 					<layoutData><l:GridData span="XL3 L3 M3 S12"/></layoutData>
 					<customData>
 						<core:CustomData key="descriptionProperty" value="CardName"/>
@@ -46,6 +46,16 @@
 					<core:Item key="0" text="Normal"/>
 					<core:Item key="1" text="Devolução"/>
 				</Select>
+				<Label text="Emitida por"/>
+				<Select selectedKey="{params>/IssuerType}">
+					<core:Item key="" text="Todas"/>
+					<core:Item key="0" text="Terceiro"/>
+					<core:Item key="1" text="Própria"/>
+				</Select>
+				<Label text="Contrato"/>
+				<Input value="{params>/ContractCode}" maxLength="30"/>
+				<Label text="CFOP"/>
+				<Input value="{params>/Cfop}" maxLength="4"/>
 			</f:content>
 		</f:SimpleForm>
 		<footer>

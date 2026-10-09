@@ -1,14 +1,14 @@
 <mvc:View
-	controllerName="siagrob1.controller.reports.salesInvoices.Main"
+	controllerName="siagrob1.controller.reports.salesReturns.Main"
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:core="sap.ui.core"
 	xmlns:f="sap.ui.layout.form"
 	xmlns:l="sap.ui.layout">
-	<Page title="Notas de Saída por Período">
+	<Page title="Devoluções de Venda">
 		<f:SimpleForm
-			id="salesInvoicesReportForm"
+			id="salesReturnsReportForm"
 			editable="true"
 			layout="ResponsiveGridLayout"
 			labelSpanXL="4"
@@ -40,11 +40,11 @@
 				<Input value="{params>/CardName}" editable="false">
 					<layoutData><l:GridData span="XL5 L5 M5 S12"/></layoutData>
 				</Input>
-				<Label text="Tipo"/>
-				<Select selectedKey="{params>/InvoiceType}">
-					<core:Item key="" text="Todos"/>
-					<core:Item key="0" text="Normal"/>
-					<core:Item key="1" text="Devolução"/>
+				<Label text="Origem"/>
+				<Select selectedKey="{params>/Source}">
+					<core:Item key="" text="Própria e do cliente"/>
+					<core:Item key="0" text="Própria"/>
+					<core:Item key="1" text="Do cliente"/>
 				</Select>
 			</f:content>
 		</f:SimpleForm>
