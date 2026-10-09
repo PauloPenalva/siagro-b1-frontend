@@ -16,6 +16,13 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import formatter from "siagrob1/model/formatter";
 import SessionService from "siagrob1/services/SessionService";
 import VersionService from "siagrob1/services/VersionService";
+import SearchManager, { SearchManager$SearchEvent, SearchManager$SuggestEvent } from "sap/f/SearchManager";
+import SuggestionItem from "sap/m/SuggestionItem";
+import MessageToast from "sap/m/MessageToast";
+import { filterApps, flattenMenuApps, MenuData, resolveApp } from "siagrob1/helpers/AppSearchHelpers";
+
+/** `suggest()` existe no runtime do SearchManager, mas a tipagem não o declara. */
+type SuggestingSearchManager = SearchManager & { suggest: (show?: boolean) => void };
 
 /**
  * @namespace siagrob1.controller
@@ -38,6 +45,8 @@ export default class App extends BaseController {
 		oView.addStyleClass(oComponent.getContentDensityClass());
 
     this._avatar = this.byId("avatar") as Avatar;
+
+    oView.setModel(new JSONModel({ suggestions: [] }), "appSearch");
 
     this.oProductSwitchModel = new JSONModel();
     void this.oProductSwitchModel.loadData(sap.ui.require.toUrl("siagrob1/data/productSwitch/data.json"))
@@ -198,6 +207,42 @@ export default class App extends BaseController {
     if (sKey) {
       this.navTo(sKey);
     }
+  }
+
+  /** Aplicativos que o usuário enxerga no menu lateral - lido na hora, o menu muda a cada login. */
+  private getMenuApps() {
+    return flattenMenuApps((this.getOwnerComponent().getModel("menu") as JSONModel).getData() as MenuData);
+  }
+
+  onAppSearchSuggest(ev: SearchManager$SuggestEvent): void {
+    const suggestions = filterApps(this.getMenuApps(), ev.getParameter("suggestValue"));
+
+    (this.getView().getModel("appSearch") as JSONModel).setProperty("/suggestions", suggestions);
+
+    // É o `suggest()` que abre (ou fecha) a lista com as sugestões novas.
+    (ev.getSource() as unknown as SuggestingSearchManager).suggest(suggestions.length > 0);
+  }
+
+  /**
+   * Clicar numa sugestão traz a própria `suggestionItem` (o SearchManager repassa os parâmetros
+   * do SearchField). Enter com texto livre não traz, e aí o texto decide qual aplicativo abrir.
+   */
+  onAppSearch(ev: SearchManager$SearchEvent): void {
+    const params = ev.getParameters() as { query?: string; clearButtonPressed?: boolean; suggestionItem?: SuggestionItem };
+
+    if (params.clearButtonPressed || !params.query?.trim()) {
+      return;
+    }
+
+    const key = params.suggestionItem?.getKey() || resolveApp(this.getMenuApps(), params.query)?.key;
+
+    if (!key) {
+      MessageToast.show("Nenhum aplicativo encontrado.");
+      return;
+    }
+
+    ev.getSource().setValue("");
+    this.navTo(key);
   }
 
   onAvatarPress(oEvent: Avatar$PressEvent) {
