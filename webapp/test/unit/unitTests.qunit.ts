@@ -25,3 +25,4 @@ import "./helpers/InvoiceTaxTotalsHelpers.qunit";
 import "./helpers/InvoiceChargeTotalsHelpers.qunit";
 import "./helpers/AppSearchHelpers.qunit";
 import "./helpers/DateHelpers.qunit";
+import "./helpers/ShellBarSearchHelpers.qunit";
