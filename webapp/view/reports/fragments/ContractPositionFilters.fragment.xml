@@ -1,0 +1,25 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:l="sap.ui.layout">
+	<Label text="Safra"/>
+	<Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openHarvestSeasonsValueHelp" value="{params>/HarvestSeasonCode}">
+		<layoutData><l:GridData span="XL3 L3 M3 S12"/></layoutData>
+	</Input>
+	<Label text="Parceiro"/>
+	<Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBusinessPartnersValueHelp" value="{params>/CardCode}">
+		<layoutData><l:GridData span="XL3 L3 M3 S12"/></layoutData>
+		<customData>
+			<core:CustomData key="descriptionProperty" value="CardName"/>
+		</customData>
+	</Input>
+	<Input value="{params>/CardName}" editable="false">
+		<layoutData><l:GridData span="XL5 L5 M5 S12"/></layoutData>
+	</Input>
+	<Label text="Tipo"/>
+	<Select selectedKey="{params>/Type}">
+		<core:Item key="" text="Todos"/>
+		<core:Item key="0" text="FIX - Preço Fixo"/>
+		<core:Item key="1" text="PAF - Preço a Fixar"/>
+	</Select>
+</core:FragmentDefinition>
