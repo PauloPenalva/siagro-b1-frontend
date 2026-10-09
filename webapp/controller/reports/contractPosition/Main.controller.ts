@@ -2,7 +2,7 @@ import ContractPositionReportController from "../ContractPositionReportControlle
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 
 /**
- * Contratos — Compra x Venda. Lado (ContractPositionSide): 0 Ambos, 1 Compra, 2 Venda.
+ * Contratos - Compra x Venda. Lado (ContractPositionSide): 0 Ambos, 1 Compra, 2 Venda.
  * @namespace siagrob1.controller.reports.contractPosition
  */
 export default class Main extends ContractPositionReportController {
