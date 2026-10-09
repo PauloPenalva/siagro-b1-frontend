@@ -1,0 +1,80 @@
+<mvc:View
+	controllerName="siagrob1.controller.reports.salesShipments.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:l="sap.ui.layout">
+	<Page title="Romaneios de Venda">
+		<f:SimpleForm
+			id="salesShipmentsReportForm"
+			editable="true"
+			layout="ResponsiveGridLayout"
+			labelSpanXL="4"
+			labelSpanL="4"
+			labelSpanM="4"
+			labelSpanS="12"
+			adjustLabelSpan="false"
+			emptySpanXL="0"
+			emptySpanL="0"
+			emptySpanM="0"
+			emptySpanS="0"
+			columnsXL="2"
+			columnsL="2"
+			columnsM="2"
+			singleContainerFullSize="false"
+			busyIndicatorDelay="0">
+			<f:content>
+				<core:Title text="Período e situação" emphasized="true"/>
+				<core:Fragment fragmentName="siagrob1.view.reports.fragments.ReportDateRangeFilters" type="XML"/>
+				<Label text="Situação"/>
+				<MultiComboBox selectedKeys="{params>/Statuses}">
+					<core:Item key="0" text="Pendente"/>
+					<core:Item key="1" text="Confirmado"/>
+					<core:Item key="3" text="Faturado"/>
+					<core:Item key="4" text="Devolvido"/>
+					<core:Item key="2" text="Cancelado"/>
+				</MultiComboBox>
+				<core:Title text="Filtros" emphasized="true"/>
+				<core:Fragment fragmentName="siagrob1.view.reports.fragments.InvoiceReportCommonFilters" type="XML"/>
+				<Label text="Armazém"/>
+				<Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openWarehouseValueHelp" value="{params>/WarehouseCode}">
+					<layoutData><l:GridData span="XL3 L3 M3 S12"/></layoutData>
+					<customData>
+						<core:CustomData key="descriptionProperty" value="WarehouseName:Name"/>
+					</customData>
+				</Input>
+				<Input value="{params>/WarehouseName}" editable="false">
+					<layoutData><l:GridData span="XL5 L5 M5 S12"/></layoutData>
+				</Input>
+				<Label text="Placa"/>
+				<Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openTrucksValueHelp" value="{params>/TruckCode}">
+					<layoutData><l:GridData span="XL3 L3 M3 S12"/></layoutData>
+				</Input>
+				<Label text="Cliente"/>
+				<Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openCostumersValueHelp" value="{params>/CardCode}">
+					<layoutData><l:GridData span="XL3 L3 M3 S12"/></layoutData>
+					<customData>
+						<core:CustomData key="descriptionProperty" value="CardName"/>
+					</customData>
+				</Input>
+				<Input value="{params>/CardName}" editable="false">
+					<layoutData><l:GridData span="XL5 L5 M5 S12"/></layoutData>
+				</Input>
+				<Label text="Vínculo com carga"/>
+				<Select selectedKey="{params>/HasLoad}">
+					<core:Item key="" text="Com e sem carga"/>
+					<core:Item key="true" text="Com carga"/>
+					<core:Item key="false" text="Sem carga"/>
+				</Select>
+			</f:content>
+		</f:SimpleForm>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Imprimir" type="Emphasized" press=".onPrintReport"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

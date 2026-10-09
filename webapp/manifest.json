@@ -1020,6 +1020,26 @@
           "target": "salesReturnsReport"
         },
         {
+          "pattern": "shipment-loads/report",
+          "name": "shipmentLoadsReport",
+          "target": "shipmentLoadsReport"
+        },
+        {
+          "pattern": "sales-shipment-releases/report",
+          "name": "salesShipmentReleasesReport",
+          "target": "salesShipmentReleasesReport"
+        },
+        {
+          "pattern": "shipment-releases/report",
+          "name": "shipmentReleasesReport",
+          "target": "shipmentReleasesReport"
+        },
+        {
+          "pattern": "sales-shipments/report",
+          "name": "salesShipmentsReport",
+          "target": "salesShipmentsReport"
+        },
+        {
           "pattern": "storage-invoices",
           "name": "storageInvoices",
           "target": "storageInvoices"
@@ -2224,6 +2244,30 @@
           "id": "salesReturnsReport",
           "level": 1,
           "name": "siagrob1.view.reports.salesReturns.Main",
+          "clearControlAggregation": true
+        },
+        "shipmentLoadsReport": {
+          "id": "shipmentLoadsReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.shipmentLoads.Main",
+          "clearControlAggregation": true
+        },
+        "salesShipmentReleasesReport": {
+          "id": "salesShipmentReleasesReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.salesShipmentReleases.Main",
+          "clearControlAggregation": true
+        },
+        "shipmentReleasesReport": {
+          "id": "shipmentReleasesReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.shipmentReleases.Main",
+          "clearControlAggregation": true
+        },
+        "salesShipmentsReport": {
+          "id": "salesShipmentsReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.salesShipments.Main",
           "clearControlAggregation": true
         },
         "storageInvoices": {

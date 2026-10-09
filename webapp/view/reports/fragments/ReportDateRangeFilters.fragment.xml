@@ -1,0 +1,14 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+	<Label text="Data de" required="true"/>
+	<DatePicker
+		value="{ path: 'params>/FromDate', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy' } }"
+		liveChange=".validateField"
+		required="true"/>
+	<Label text="Data até" required="true"/>
+	<DatePicker
+		value="{ path: 'params>/ToDate', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy' } }"
+		liveChange=".validateField"
+		required="true"/>
+</core:FragmentDefinition>
