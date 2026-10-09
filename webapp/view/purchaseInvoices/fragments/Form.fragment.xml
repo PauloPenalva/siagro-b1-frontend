@@ -28,12 +28,12 @@
         <f:content>
           <core:Title text="Dados do Documento de Entrada" emphasized="true" />
 
-          <!-- Número interno: só existe na emissão própria. Na Fase 3 passa a ser gerado pelo
-               numerador DocNumbers; até lá é digitado. -->
+          <!-- Número interno (DE000001): gerado pelo servidor ao gravar, para toda entrada, e nunca
+               muda — por isso nunca é editável. Vazio só na tela de inclusão, antes de gravar. -->
           <Label text="Número interno" />
           <Input
               value="{InvoiceNumber}"
-              editable="{= ${ui>/editable} &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'Own' }"
+              editable="false"
               maxLength="9" />
 
           <!-- Depois que existe número reservado ou NF-e (NfeStatus diferente de None, ou NfeRandomCode), a filial
