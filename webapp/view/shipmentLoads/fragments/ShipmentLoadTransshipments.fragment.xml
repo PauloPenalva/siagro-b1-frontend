@@ -52,13 +52,14 @@
 					<ToolbarSpacer/>
 					<!-- Espelha EnsureLoadAcceptsTransshipment + EnsureIsLastAsync: carga encerrada não
 					     aceita transbordo, e um transbordo já aberto (Status InTransshipment) bloqueia
-					     o início de outro. `targetType: 'any'` em toda expressão sobre enum, senão o
+					     o início de outro; a carga travada pela recusa aguardando NF-e (spec 2026-10-09)
+					     também não. `targetType: 'any'` em toda expressão sobre enum, senão o
 					     valor não chega como string e a comparação nunca casa. -->
 					<Button
 						type="Transparent"
 						text="Iniciar Transbordo"
 						icon="sap-icon://add"
-						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Completed' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'InTransshipment' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Discharged' }"
+						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Completed' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'InTransshipment' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Discharged' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'RefusalPending' }"
 						press=".onStartTransshipment"/>
 					<!-- Registrar Entrada/Estornar só fazem sentido enquanto HÁ transbordo aberto —
 					     exatamente quando a carga está InTransshipment. Mesma convenção do vizinho: o

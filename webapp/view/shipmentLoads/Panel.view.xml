@@ -125,6 +125,20 @@
 					</List>
 				</Panel>
 
+				<!-- Spec 2026-10-09: carga com recusa registrada aguardando as NF-e de entrada das
+				     devoluções. Sem esta raia ela some do painel enquanto está travada. -->
+				<Panel headerText="Recusa aguardando NF-e ({panel>/countRefusalPending})" expandable="false">
+					<List
+						id="listRefusalPending"
+						updateFinished=".onLaneUpdated"
+						noDataText="Nenhuma carga com recusa aguardando NF-e."
+						items="{ path: '/ShipmentLoads', parameters: { $orderby: 'Code' } }">
+						<CustomListItem type="Navigation" press=".onOpenLoad">
+							<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.LoadCard" type="XML"/>
+						</CustomListItem>
+					</List>
+				</Panel>
+
 				<!-- Sem esta raia a carga recusada some do painel sem explicação: ela sai de
 				     "Faturada" e não entra em lugar nenhum. -->
 				<Panel headerText="Devolvida ({panel>/countReturned})" expandable="false">

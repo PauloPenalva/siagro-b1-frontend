@@ -515,6 +515,12 @@ export default class Detail extends BaseController {
         MessageBox.warning(`A carga ${loadCode} está cancelada — seus romaneios já foram devolvidos.`);
         return;
       }
+      // Spec 2026-10-09: carga travada pela recusa aguardando NF-e — mesma mensagem do servidor.
+      if (loadStatus === "RefusalPending") {
+        MessageBox.warning(
+          `A carga ${loadCode} tem uma recusa aguardando NF-e de entrada: emita as NF-e ou cancele a recusa.`);
+        return;
+      }
       // A UI decide pelo status da carga; o backend, pela existência de documento de saída vivo.
       if (["PartiallyInvoiced", "Invoiced", "Discharged", "Completed"].includes(loadStatus)) {
         MessageBox.warning(
