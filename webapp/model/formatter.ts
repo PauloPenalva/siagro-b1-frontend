@@ -724,6 +724,7 @@ const formatter = {
     m.set("TransshipmentReversed", "Transbordo Estornado");
     m.set("Discharged", "Carga Descarregada");
     m.set("DischargeUndone", "Descarregada Desfeita");
+    m.set("RefusalCancelled", "Recusa Cancelada");
 
     return m.get(value);
   },
