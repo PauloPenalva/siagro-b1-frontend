@@ -7,7 +7,7 @@ import Fragment from "sap/ui/core/Fragment";
 import Device from "sap/ui/Device";
 import Button from "sap/m/Button";
 import { MenuItem$PressEvent } from "sap/m/MenuItem";
-import { ShellBar$ProductSwitcherPressedEvent } from "sap/f/ShellBar";
+import ShellBar, { ShellBar$ProductSwitcherPressedEvent } from "sap/f/ShellBar";
 import Avatar, { Avatar$PressEvent } from "sap/m/Avatar";
 import Dialog from "sap/m/Dialog";
 import MessageBox from "sap/m/MessageBox";
@@ -20,6 +20,7 @@ import SearchManager, { SearchManager$SearchEvent, SearchManager$SuggestEvent } 
 import SuggestionItem from "sap/m/SuggestionItem";
 import MessageToast from "sap/m/MessageToast";
 import { filterApps, flattenMenuApps, MenuData, resolveApp } from "siagrob1/helpers/AppSearchHelpers";
+import { keepShellBarSearchOpenOnEscape } from "siagrob1/helpers/ShellBarSearchHelpers";
 
 /** `suggest()` existe no runtime do SearchManager, mas a tipagem não o declara. */
 type SuggestingSearchManager = SearchManager & { suggest: (show?: boolean) => void };
@@ -47,6 +48,7 @@ export default class App extends BaseController {
     this._avatar = this.byId("avatar") as Avatar;
 
     oView.setModel(new JSONModel({ suggestions: [] }), "appSearch");
+    keepShellBarSearchOpenOnEscape(this.byId("shellBar") as ShellBar);
 
     this.oProductSwitchModel = new JSONModel();
     void this.oProductSwitchModel.loadData(sap.ui.require.toUrl("siagrob1/data/productSwitch/data.json"))
