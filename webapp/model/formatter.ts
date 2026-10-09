@@ -996,6 +996,9 @@ const formatter = {
     m.set("OwnershipTransfer", "Transferencia Propriedade");
     m.set("StorageInvoice", "Fatura de Serviço");
     m.set("ShipmentLoad", "Carga");
+    m.set("FinancialDocument", "Financeiro");
+    m.set("WarehouseReconciliation", "Conferência de Saldo");
+    m.set("PurchaseInvoice", "Documento de Entrada");
     
     return m.get(value);
   },

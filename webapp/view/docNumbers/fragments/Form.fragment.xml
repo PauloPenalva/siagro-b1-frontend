@@ -48,6 +48,9 @@
               <core:ListItem key="OwnershipTransfer" text="Transferencia Propriedade"/>
               <core:ListItem key="StorageInvoice" text="Fatura de Serviço"/>
               <core:ListItem key="ShipmentLoad" text="Carga"/>
+              <core:ListItem key="FinancialDocument" text="Financeiro"/>
+              <core:ListItem key="WarehouseReconciliation" text="Conferência de Saldo"/>
+              <core:ListItem key="PurchaseInvoice" text="Documento de Entrada"/>
             </Select>
             <Label text="Nome" />
             <Input
