@@ -1,4 +1,5 @@
 import { FormController, LoadForm } from "./FormController";
+import { localIsoDate } from "siagrob1/helpers/DateHelpers";
 
 /**
  * Nova Carga.
@@ -30,7 +31,7 @@ export default class Add extends FormController {
       // GAC-1175: a criação é a única chance de escolher o tipo.
       typeEditable: true,
       LoadType: "Normal",
-      LoadDate: new Date().toISOString().slice(0, 10),
+      LoadDate: localIsoDate(new Date()),
       HasExcess: false,
     } as LoadForm);
 

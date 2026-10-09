@@ -11,6 +11,7 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import { odataCollection, sendJson } from "siagrob1/helpers/FetchHelpers";
 import { PAYMENT_MEANS, PAYMENT_START_RULES, paymentPreviewUrl } from "siagrob1/helpers/NfeHelpers";
+import { localIsoDate } from "siagrob1/helpers/DateHelpers";
 
 type ConditionForm = {
   code?: number;
@@ -94,7 +95,7 @@ export default class Main extends BaseController {
     (this.getView().getModel("condition") as JSONModel).setData({
       ...data,
       previewTotal: 1000,
-      previewDate: new Date().toISOString().slice(0, 10),
+      previewDate: localIsoDate(new Date()),
       preview: [],
       startRules: PAYMENT_START_RULES,
       paymentMeansList: PAYMENT_MEANS,

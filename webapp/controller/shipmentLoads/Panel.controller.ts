@@ -8,6 +8,7 @@ import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
+import { localIsoDate } from "siagrob1/helpers/DateHelpers";
 
 /** As raias do painel, na ordem em que a carga anda. */
 const LANES = [
@@ -43,7 +44,7 @@ export default class Panel extends BaseController {
   onInit(): void {
     this.getView().setModel(new JSONModel([]), "branches");
     this.getView().setModel(new JSONModel({
-      date: new Date().toISOString().slice(0, 10),
+      date: localIsoDate(new Date()),
       branchCode: "",
     }), "panel");
 
