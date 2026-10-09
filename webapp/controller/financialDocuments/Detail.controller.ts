@@ -13,6 +13,7 @@ import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
+import { localIsoDate } from "siagrob1/helpers/DateHelpers";
 
 export default class Detail extends CommonController {
   formatter = { ...formatter }
@@ -88,7 +89,7 @@ export default class Detail extends CommonController {
 
     (this.getModel("viewModel") as JSONModel).setProperty("/settleDialog", {
       financialAccountCode: "",
-      settlementDate: new Date().toISOString().substring(0, 10),
+      settlementDate: localIsoDate(new Date()),
       amount: openAmount,
       interestAmount: 0,
       fineAmount: 0,
@@ -342,7 +343,7 @@ export default class Detail extends CommonController {
 
     (this.getModel("viewModel") as JSONModel).setProperty("/refundDialog", {
       financialAccountCode: await this.lastSettlementAccount(),
-      refundDate: new Date().toISOString().substring(0, 10),
+      refundDate: localIsoDate(new Date()),
       amountText: formatter.formatDecimal(settled, 2),
       documentReference: "",
       reason: "",
