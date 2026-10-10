@@ -99,6 +99,19 @@ QUnit.test("com Funrural, a seção mostra o retido e o líquido a pagar depois 
 	assert.strictEqual(result.netPayable, 1475.55);
 });
 
+QUnit.test("na devolução de compra, os rótulos falam em estorno e líquido a receber", function (assert) {
+	const result = summarizeInvoiceCharges(
+		[{ Quantity: 1000, UnitPrice: 1.5, FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0 }],
+		24.45,
+		true,
+	);
+
+	assert.deepEqual(result.rows.slice(-2), [
+		{ Label: "(−) Funrural estornado", Value: 24.45, Emphasized: false },
+		{ Label: "Líquido a receber", Value: 1475.55, Emphasized: true },
+	]);
+});
+
 QUnit.test("sem Funrural, a seção termina no total geral", function (assert) {
 	const result = summarizeInvoiceCharges(
 		[{ Quantity: 1, UnitPrice: 10, FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0 }]);

@@ -95,8 +95,8 @@ export function lineFunrural(context: { getProperty(path: string): unknown }): n
 		toNumber(context.getProperty("FunruralSenarValue")));
 }
 
-/** Seção "Totais" do documento, na ordem da spec; linha nula (rascunho recém-criado) é ignorada. */
-export function summarizeInvoiceCharges(allLines: ChargeLine[], funrural = 0): ChargeTotals {
+/** Seção "Totais" do documento, na ordem da spec; `isReturn` (devolução de compra) troca os rótulos do Funrural, pois o líquido é a RECEBER; linha nula (rascunho recém-criado) é ignorada. */
+export function summarizeInvoiceCharges(allLines: ChargeLine[], funrural = 0, isReturn = false): ChargeTotals {
 	const lines = allLines.filter((line) => !!line);
 	const sum = (pick: (line: ChargeLine) => number) => cents(lines.reduce((total, line) => total + pick(line), 0));
 
@@ -110,8 +110,8 @@ export function summarizeInvoiceCharges(allLines: ChargeLine[], funrural = 0): C
 	const netPayable = cents(grandTotal - withheld);
 	const funruralRows: ChargeTotalRow[] = withheld > 0
 		? [
-			{ Label: "(−) Funrural retido", Value: withheld, Emphasized: false },
-			{ Label: "Líquido a pagar", Value: netPayable, Emphasized: true },
+			{ Label: isReturn ? "(−) Funrural estornado" : "(−) Funrural retido", Value: withheld, Emphasized: false },
+			{ Label: isReturn ? "Líquido a receber" : "Líquido a pagar", Value: netPayable, Emphasized: true },
 		]
 		: [];
 
