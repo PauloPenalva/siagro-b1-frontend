@@ -1050,6 +1050,11 @@
           "target": "contractMonthlyPositionReport"
         },
         {
+          "pattern": "funrural-withholding/report",
+          "name": "funruralWithholdingReport",
+          "target": "funruralWithholdingReport"
+        },
+        {
           "pattern": "storage-invoices",
           "name": "storageInvoices",
           "target": "storageInvoices"
@@ -2290,6 +2295,12 @@
           "id": "contractMonthlyPositionReport",
           "level": 1,
           "name": "siagrob1.view.reports.contractMonthlyPosition.Main",
+          "clearControlAggregation": true
+        },
+        "funruralWithholdingReport": {
+          "id": "funruralWithholdingReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.funruralWithholding.Main",
           "clearControlAggregation": true
         },
         "storageInvoices": {

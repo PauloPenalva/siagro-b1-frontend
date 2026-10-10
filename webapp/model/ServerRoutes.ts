@@ -112,6 +112,7 @@ export default {
   salesShipmentsByPeriodReport: '/reports/SalesShipmentsByPeriod',
   contractPositionReport: '/reports/ContractPosition',
   contractMonthlyPositionReport: '/reports/ContractMonthlyPosition',
+  funruralWithholdingReport: '/reports/FunruralWithholding',
 
   purchaseContractsPriceFixations: '/odata/PurchaseContractsPriceFixations',
   // Actions OData invocadas via ODataModel.bindContext — formato relativo à raiz

@@ -1,0 +1,54 @@
+<mvc:View
+	controllerName="siagrob1.controller.reports.funruralWithholding.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:l="sap.ui.layout">
+	<Page title="Funrural Retido por Item de Entrada">
+		<f:SimpleForm
+			id="funruralWithholdingReportForm"
+			editable="true"
+			layout="ResponsiveGridLayout"
+			labelSpanXL="4"
+			labelSpanL="4"
+			labelSpanM="4"
+			labelSpanS="12"
+			adjustLabelSpan="false"
+			emptySpanXL="0"
+			emptySpanL="0"
+			emptySpanM="0"
+			emptySpanS="0"
+			columnsXL="2"
+			columnsL="2"
+			columnsM="2"
+			singleContainerFullSize="false"
+			busyIndicatorDelay="0">
+			<f:content>
+				<core:Title text="Período e situação" emphasized="true"/>
+				<core:Fragment fragmentName="siagrob1.view.reports.fragments.InvoiceReportPeriodFilters" type="XML"/>
+				<core:Title text="Filtros" emphasized="true"/>
+				<core:Fragment fragmentName="siagrob1.view.reports.fragments.InvoiceReportCommonFilters" type="XML"/>
+				<Label text="Emitente"/>
+				<Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBusinessPartnersValueHelp" value="{params>/CardCode}">
+					<layoutData><l:GridData span="XL3 L3 M3 S12"/></layoutData>
+					<customData>
+						<core:CustomData key="descriptionProperty" value="CardName"/>
+					</customData>
+				</Input>
+				<Input value="{params>/CardName}" editable="false">
+					<layoutData><l:GridData span="XL5 L5 M5 S12"/></layoutData>
+				</Input>
+				<Label text="Contrato"/>
+				<Input value="{params>/ContractCode}" maxLength="30"/>
+			</f:content>
+		</f:SimpleForm>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Imprimir" type="Emphasized" press=".onPrintReport"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>
