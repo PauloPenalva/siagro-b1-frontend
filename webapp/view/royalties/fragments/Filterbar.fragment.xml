@@ -1,0 +1,49 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:fb="sap.ui.comp.filterbar">
+  <fb:FilterBar id="royaltyFb" search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+    <fb:filterGroupItems>
+      <fb:FilterGroupItem name="fromDate" label="Entrada de" groupName="G" visibleInFilterBar="true">
+        <fb:control>
+          <DatePicker value="{ path: 'filter>/FromDate', type: 'sap.ui.model.type.String' }"
+            displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="toDate" label="Entrada até" groupName="G" visibleInFilterBar="true">
+        <fb:control>
+          <DatePicker value="{ path: 'filter>/ToDate', type: 'sap.ui.model.type.String' }"
+            displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="situation" label="Situação" groupName="G" visibleInFilterBar="true">
+        <fb:control>
+          <Select forceSelection="false" selectedKey="{filter>/Situation}">
+            <core:ListItem key="" text="Todas" />
+            <core:ListItem key="Declared" text="Declarada" />
+            <core:ListItem key="Tested" text="Testada" />
+            <core:ListItem key="Conventional" text="Convencional" />
+            <core:ListItem key="ParticipantWarehouse" text="Armazém Participante" />
+          </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="cardCode" label="Parceiro" groupName="G" visibleInFilterBar="true">
+        <fb:control>
+          <Input showClearIcon="true" showValueHelp="true" valueHelpRequest=".openBusinessPartnersValueHelp" value="{filter>/CardCode}" />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="originCode" label="Origem" groupName="G" visibleInFilterBar="true">
+        <fb:control>
+          <Input showClearIcon="true" showValueHelp="true" valueHelpRequest=".openRoyaltyOriginValueHelp" value="{filter>/OriginCode}" />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="itemCode" label="Produto" groupName="G" visibleInFilterBar="true">
+        <fb:control>
+          <Input showClearIcon="true" showValueHelp="true" valueHelpRequest=".openItemValueHelp" value="{filter>/ItemCode}" />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="lot" label="Lote" groupName="G" visibleInFilterBar="true">
+        <fb:control>
+          <Input showClearIcon="true" showValueHelp="true" valueHelpRequest=".openStorageAddressesValueHelp" value="{filter>/StorageAddressCode}" />
+        </fb:control>
+      </fb:FilterGroupItem>
+    </fb:filterGroupItems>
+  </fb:FilterBar>
+</core:FragmentDefinition>

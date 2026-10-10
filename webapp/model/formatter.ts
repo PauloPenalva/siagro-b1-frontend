@@ -1513,6 +1513,12 @@ const formatter = {
   signerStatusText,
   signerStatusValueState,
   templateScopeText,
+
+  /** Situação do saldo de royalty (ITS): enum do backend chega como o nome do membro. */
+  royaltySituation: (value: string): string => {
+    return ({ Declared: "Declarada", Tested: "Testada", Conventional: "Convencional",
+      ParticipantWarehouse: "Armazém Participante" } as Record<string, string>)[value] ?? value ?? "";
+  },
 };
 
 export default formatter;
