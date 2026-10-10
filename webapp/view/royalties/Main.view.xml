@@ -4,10 +4,7 @@
   xmlns="sap.m"
   xmlns:mvc="sap.ui.core.mvc"
   xmlns:core="sap.ui.core"
-  xmlns:f="sap.f"
-  core:require="{
-    formatter: 'siagrob1/model/formatter'
-  }">
+  xmlns:f="sap.f">
   <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
     <f:title>
       <f:DynamicPageTitle>

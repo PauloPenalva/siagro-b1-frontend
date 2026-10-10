@@ -1,4 +1,4 @@
-<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:t="sap.ui.table">
+<core:FragmentDefinition core:require="{ formatter: 'siagrob1/model/formatter' }" xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:t="sap.ui.table">
   <t:Table
     id="pendingTable"
     busyIndicatorDelay="0"
