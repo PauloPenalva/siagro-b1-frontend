@@ -127,3 +127,39 @@ QUnit.test("linha ainda sem dados (rascunho recém-criado) é ignorada, sem esto
 	assert.deepEqual(summarizeInvoiceTaxes(lines), { visible: true, rows: [{ Tax: "ICMS", Base: 10, Value: 1 }] });
 	assert.deepEqual(summarizeInvoiceTaxes([undefined] as TaxLine[]), { visible: false, rows: [] });
 });
+
+QUnit.test("entrada com Funrural mostra INSS, RAT e SENAR depois dos tributos da NF-e", function (assert) {
+	const result = summarizeInvoiceTaxes([
+		line({ IcmsBase: 1500, FunruralBase: 1500, FunruralInssValue: 19.8, FunruralRatValue: 1.65, FunruralSenarValue: 3 }),
+		line({ FunruralBase: "750.00", FunruralSenarValue: "1.50" }),
+	]);
+
+	assert.deepEqual(result.rows.slice(-3), [
+		{ Tax: "Funrural - INSS", Base: 2250, Value: 19.8 },
+		{ Tax: "Funrural - RAT", Base: 2250, Value: 1.65 },
+		{ Tax: "Funrural - SENAR", Base: 2250, Value: 4.5 },
+	]);
+});
+
+QUnit.test("linha sem Funrural (saída de venda) não mostra as linhas do Funrural", function (assert) {
+	const result = summarizeInvoiceTaxes([line({ IcmsBase: 1000, IcmsValue: 180 })]);
+
+	assert.notOk(result.rows.some((row) => row.Tax.startsWith("Funrural")));
+});
+
+QUnit.test("TAX_TOTALS_SELECT não pede Funrural (a linha de saída não tem os campos)", function (assert) {
+	assert.notOk(TAX_TOTALS_SELECT.includes("Funrural"));
+});
+
+QUnit.test("a grade de entrada pede os campos do Funrural", function (assert) {
+	for (const field of ["FunruralBase", "FunruralInssRate", "FunruralInssValue", "FunruralRatRate", "FunruralRatValue",
+		"FunruralSenarRate", "FunruralSenarValue"]) {
+		assert.ok(PURCHASE_ITEM_SELECT.split(",").includes(field), field);
+	}
+});
+
+QUnit.test("decisão judicial: só a linha do SENAR aparece", function (assert) {
+	const result = summarizeInvoiceTaxes([line({ FunruralBase: 1500, FunruralSenarValue: 3 })]);
+
+	assert.deepEqual(result.rows.filter((row) => row.Tax.startsWith("Funrural")).map((row) => row.Tax), ["Funrural - SENAR"]);
+});
