@@ -67,6 +67,21 @@
 					<Text text="{ path: 'IbsStateValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
 					<Label text="IBS municipal" />
 					<Text text="{ path: 'IbsMunicipalValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
+					<core:Title text="Funrural" />
+					<Label text="Base" />
+					<Text text="{ path: 'FunruralBase', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
+					<Label text="INSS %" />
+					<Text text="{ path: 'FunruralInssRate', type: 'Decimal', constraints: { precision: 7, scale: 4 } }" />
+					<Label text="INSS" />
+					<Text text="{ path: 'FunruralInssValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
+					<Label text="RAT %" />
+					<Text text="{ path: 'FunruralRatRate', type: 'Decimal', constraints: { precision: 7, scale: 4 } }" />
+					<Label text="RAT" />
+					<Text text="{ path: 'FunruralRatValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
+					<Label text="SENAR %" />
+					<Text text="{ path: 'FunruralSenarRate', type: 'Decimal', constraints: { precision: 7, scale: 4 } }" />
+					<Label text="SENAR" />
+					<Text text="{ path: 'FunruralSenarValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
 				</f:content>
 			</f:SimpleForm>
 		</content>

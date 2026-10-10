@@ -76,6 +76,9 @@ export default class Add extends BaseController {
 			IbsCbsClassCode: null,
 			IbsRateReduction: null,
 			CbsRateReduction: null,
+			FunruralInssRate: null,
+			FunruralRatRate: null,
+			FunruralSenarRate: null,
 		}, false, false, false);
 
 		oView.setBindingContext(oContext);

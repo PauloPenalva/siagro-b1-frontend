@@ -24,6 +24,11 @@ export type TaxLine = {
 	IbsStateValue: Amount;
 	IbsMunicipalValue: Amount;
 	CbsValue: Amount;
+	/** Só a linha de ENTRADA tem Funrural (spec 2026-10-09 §7); na de saída os campos não existem. */
+	FunruralBase?: Amount;
+	FunruralInssValue?: Amount;
+	FunruralRatValue?: Amount;
+	FunruralSenarValue?: Amount;
 };
 
 /** Linha do quadro. `Base` nula quando o tributo não tem base própria (ICMS diferido). */
@@ -51,6 +56,9 @@ const TAXES: { tax: string; base?: keyof TaxLine; value: keyof TaxLine }[] = [
 	{ tax: "IBS estadual", base: "IbsCbsBase", value: "IbsStateValue" },
 	{ tax: "IBS municipal", base: "IbsCbsBase", value: "IbsMunicipalValue" },
 	{ tax: "CBS", base: "IbsCbsBase", value: "CbsValue" },
+	{ tax: "Funrural - INSS", base: "FunruralBase", value: "FunruralInssValue" },
+	{ tax: "Funrural - RAT", base: "FunruralBase", value: "FunruralRatValue" },
+	{ tax: "Funrural - SENAR", base: "FunruralBase", value: "FunruralSenarValue" },
 ];
 
 /** Número da linha, com 0 quando falta, vem em branco ou não é número. */
@@ -91,7 +99,7 @@ export function summarizeInvoiceTaxes(allLines: TaxLine[]): { visible: boolean; 
 
 	const rows = TAXES
 		.map(({ tax, base, value }) => ({ Tax: tax, Base: base ? sum(lines, base) : null, Value: sum(lines, value) }))
-		.filter((row) => (row.Base ?? 0) !== 0 || row.Value !== 0);
+		.filter((row) => (row.Tax.startsWith("Funrural") ? row.Value !== 0 : (row.Base ?? 0) !== 0 || row.Value !== 0));
 
 	return { visible: true, rows };
 }

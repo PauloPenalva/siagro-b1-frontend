@@ -12,7 +12,7 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
 import { isPurchaseNfeMode, isPurchaseTaxMode, mustFallBackToNormal, requiresSupplierKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { summarizeInvoiceTaxes, TaxLine } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
-import { chargeLineOf, formatAmount, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
+import { chargeLineOf, formatAmount, lineFunrural, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
 
 /** Sequência compartilhada por Add/Edit/Detail: só a chamada mais recente de refreshNfeMode escreve no `ui`. */
 let nfeModeSequence = 0;
@@ -317,7 +317,10 @@ export abstract class BaseController extends CommonController {
     }
 
     const contexts = oBinding.getAllCurrentContexts();
-    const charges = summarizeInvoiceCharges(contexts.map((ctx) => chargeLineOf(ctx)));
+    const funrural = contexts.reduce((total, ctx) => total + lineFunrural(ctx), 0);
+    // Devolução de compra: o líquido é a receber e o Funrural é estornado. O contexto pai da grade é o cabeçalho.
+    const isReturn = (oBinding.getContext() as Context | undefined)?.getProperty("IsNfeReturn") === true;
+    const charges = summarizeInvoiceCharges(contexts.map((ctx) => chargeLineOf(ctx)), funrural, isReturn);
 
     uiModel.setProperty("/documentTotal", formatAmount(charges.grandTotal));
     uiModel.setProperty("/chargeTotals", charges);

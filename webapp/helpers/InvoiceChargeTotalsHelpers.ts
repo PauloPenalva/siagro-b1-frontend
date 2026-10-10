@@ -3,7 +3,8 @@
  * geral da linha (coluna "Total"), a seção "Totais" do Detail e o total da barra da grade, somados NO CLIENTE —
  * `GrandTotal` é [NotMapped] e não existe num documento em digitação.
  *
- * Puro para poder ser testado sem view; as duas entidades de linha têm os mesmos campos.
+ * Puro para poder ser testado sem view; as duas entidades de linha têm os mesmos campos. Na entrada, a seção "Totais"
+ * também mostra o Funrural retido e o líquido a pagar (spec 2026-10-09 §7).
  */
 import { toNumber } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 
@@ -31,6 +32,9 @@ export type ChargeTotals = {
 	otherExpenses: number;
 	discount: number;
 	grandTotal: number;
+	/** Funrural retido (só a entrada; spec 2026-10-09 §7) e o total geral menos ele. */
+	funrural: number;
+	netPayable: number;
 	rows: ChargeTotalRow[];
 };
 
@@ -82,8 +86,17 @@ export function chargeLineOf(context: { getProperty(path: string): unknown }): C
 	};
 }
 
-/** Seção "Totais" do documento, na ordem da spec; linha nula (rascunho recém-criado) é ignorada. */
-export function summarizeInvoiceCharges(allLines: ChargeLine[]): ChargeTotals {
+/**
+ * Funrural retido na linha (INSS + RAT + SENAR), pelo `getProperty` como `chargeLineOf`. Calculado pelo SERVIDOR ao
+ * salvar: numa linha em digitação ainda é 0, e a seção mostra o retido quando o documento volta gravado.
+ */
+export function lineFunrural(context: { getProperty(path: string): unknown }): number {
+	return cents(toNumber(context.getProperty("FunruralInssValue")) + toNumber(context.getProperty("FunruralRatValue")) +
+		toNumber(context.getProperty("FunruralSenarValue")));
+}
+
+/** Seção "Totais" do documento, na ordem da spec; `isReturn` (devolução de compra) troca os rótulos do Funrural, pois o líquido é a RECEBER; linha nula (rascunho recém-criado) é ignorada. */
+export function summarizeInvoiceCharges(allLines: ChargeLine[], funrural = 0, isReturn = false): ChargeTotals {
 	const lines = allLines.filter((line) => !!line);
 	const sum = (pick: (line: ChargeLine) => number) => cents(lines.reduce((total, line) => total + pick(line), 0));
 
@@ -93,9 +106,17 @@ export function summarizeInvoiceCharges(allLines: ChargeLine[]): ChargeTotals {
 	const otherExpenses = sum((line) => toNumber(line.OtherExpensesValue));
 	const discount = sum((line) => toNumber(line.DiscountValue));
 	const grandTotal = cents(items + freight + insurance + otherExpenses - discount);
+	const withheld = cents(funrural);
+	const netPayable = cents(grandTotal - withheld);
+	const funruralRows: ChargeTotalRow[] = withheld > 0
+		? [
+			{ Label: isReturn ? "(−) Funrural estornado" : "(−) Funrural retido", Value: withheld, Emphasized: false },
+			{ Label: isReturn ? "Líquido a receber" : "Líquido a pagar", Value: netPayable, Emphasized: true },
+		]
+		: [];
 
 	return {
-		items, freight, insurance, otherExpenses, discount, grandTotal,
+		items, freight, insurance, otherExpenses, discount, grandTotal, funrural: withheld, netPayable,
 		rows: [
 			{ Label: "Total dos itens", Value: items, Emphasized: false },
 			{ Label: "Frete", Value: freight, Emphasized: false },
@@ -103,6 +124,7 @@ export function summarizeInvoiceCharges(allLines: ChargeLine[]): ChargeTotals {
 			{ Label: "Outras despesas", Value: otherExpenses, Emphasized: false },
 			{ Label: "(−) Desconto", Value: discount, Emphasized: false },
 			{ Label: "Total geral", Value: grandTotal, Emphasized: true },
+			...funruralRows,
 		],
 	};
 }

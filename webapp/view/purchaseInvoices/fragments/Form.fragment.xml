@@ -331,7 +331,7 @@
           <!-- Entrada de terceiro: é AQUI que o emitente escreve número/série/chave e quantidade das notas de
                origem; o layout da NF-e não amarra linha a origem, então este texto é a referência que o
                operador usa para fazer a amarração na grade. Na emissão própria (modo NF-e) é o infCpl que o
-               operador escreve, ex.: o texto do Funrural, e vai na NF-e. -->
+               operador escreve e vai na NF-e. O texto do Funrural NÃO se digita aqui: é gerado automaticamente na emissão. -->
           <Label text="{= ${ui>/nfeMode} === true ? 'Inf.Contribuinte' : 'Referências informadas pelo emitente' }" />
           <TextArea
               value="{TaxPayerComments}"
