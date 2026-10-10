@@ -23,7 +23,7 @@ import { summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHel
 import { ReturnableRow, prefillNfeReturnRows, hasReturnableBalance, buildNfeReturnPayload } from "siagrob1/helpers/NfeReturnHelpers";
 import {
   PURCHASE_ITEM_SELECT, PurchaseNfeState, buildPurchaseItemNumbers, canCreateCounterNote, canIssuePurchaseNfe,
-  canReturnPurchase, canReturnThirdPartyPurchase, counterNoteText, isValidCounterNote, PurchaseReturnItemRow,
+  allUsagesAllowCounterNote, canReturnPurchase, canReturnThirdPartyPurchase, counterNoteText, isValidCounterNote, PurchaseReturnItemRow,
 } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { openDanfeViewer, openNfeCorrectionViewer } from "siagrob1/dialogs/DanfeViewer";
 import { openNfeCorrectionDialog } from "siagrob1/dialogs/NfeCorrectionDialog";
@@ -125,19 +125,20 @@ export default class Detail extends BaseController {
     uiModel.setProperty("/canReturn", !!state && (canReturnPurchase(state, nfeMode) ||
       canReturnThirdPartyPurchase(state, taxLocked)));
     uiModel.setProperty("/canCreateCounterNote", !!state &&
-      canCreateCounterNote(state, taxLocked, !!links?.counterNote.key));
+      canCreateCounterNote(state, taxLocked, !!links?.counterNote.key, links?.allUsagesAllow === true));
   }
 
   /**
    * Vínculos da contra-nota (spec 2026-10-10 §9): na contra-nota, a escrituração de origem; na escrituração, a contra-nota
-   * válida (que esconde o "Gerar contra-nota"). Só lê: quem escreve no `ui` é o refreshDetailNfe, depois de conferir que o
-   * documento ainda é o mesmo. Falha na leitura = sem vínculo (o servidor ainda recusa a segunda contra-nota).
+   * válida (que esconde o "Gerar contra-nota"). Sem contra-nota válida, também se toda linha está numa natureza que
+   * "Permite contra-nota" (§5/§9). Só lê: quem escreve no `ui` é o refreshDetailNfe, depois de conferir que o documento
+   * ainda é o mesmo. Falha na leitura = sem vínculo (o servidor ainda recusa a segunda contra-nota) e sem o botão.
    */
   private async readCounterNoteLinks(
     oContext: Context, state: PurchaseNfeState
-  ): Promise<{ counterNote: DocumentLink; producerInvoice: DocumentLink }> {
+  ): Promise<{ counterNote: DocumentLink; producerInvoice: DocumentLink; allUsagesAllow: boolean }> {
     const model = oContext.getModel() as ODataModel;
-    const links = { counterNote: { ...NO_LINK }, producerInvoice: { ...NO_LINK } };
+    const links = { counterNote: { ...NO_LINK }, producerInvoice: { ...NO_LINK }, allUsagesAllow: false };
 
     if (state.ProducerInvoiceKey) {
       const binding = model.bindContext(`/PurchaseInvoices(${state.ProducerInvoiceKey})`, undefined,
@@ -177,7 +178,44 @@ export default class Detail extends BaseController {
       binding.destroy();
     }
 
+    if (!links.counterNote.key) {
+      links.allUsagesAllow = await this.readAllUsagesAllowCounterNote(oContext);
+    }
+
     return links;
+  }
+
+  /**
+   * As naturezas das linhas (já carregadas pelo $expand de Items) e a flag "Permite contra-nota" de cada uma.
+   * Qualquer falha = false: o botão some e quem decide de verdade é o servidor.
+   */
+  private async readAllUsagesAllowCounterNote(oContext: Context): Promise<boolean> {
+    let lineUsageCodes: number[];
+    try {
+      const items = await oContext.requestObject("Items") as { UsageCode: number }[];
+      lineUsageCodes = (items ?? []).map((item) => item.UsageCode ?? null);
+    } catch {
+      return false;
+    }
+
+    const codes = [...new Set(lineUsageCodes.filter((code) => code != null))];
+    // Linha sem natureza já basta para não oferecer: nem precisa ler as naturezas.
+    if (codes.length === 0 || lineUsageCodes.includes(null)) {
+      return false;
+    }
+
+    const binding = (oContext.getModel() as ODataModel).bindList("/Usages", undefined, undefined,
+      [new Filter({ filters: codes.map((code) => new Filter("Code", FilterOperator.EQ, code)), and: false })],
+      { $select: "Code,AllowsCounterNote" });
+    try {
+      const usages = (await binding.requestContexts(0, codes.length)).map((ctx) =>
+        ctx.getObject() as { Code: number; AllowsCounterNote: boolean });
+      return allUsagesAllowCounterNote(lineUsageCodes, usages);
+    } catch {
+      return false;
+    } finally {
+      binding.destroy();
+    }
   }
 
   /** Cria a contra-nota da escrituração e abre a tela dela, onde fica o "Emitir NF-e". */

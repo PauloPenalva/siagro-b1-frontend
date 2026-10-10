@@ -1,5 +1,5 @@
 import {
-	buildPurchaseItemNumbers, canCreateCounterNote, canIssuePurchaseNfe, canReturnPurchase, canReturnThirdPartyPurchase,
+	allUsagesAllowCounterNote, buildPurchaseItemNumbers, canCreateCounterNote, canIssuePurchaseNfe, canReturnPurchase, canReturnThirdPartyPurchase,
 	counterNoteText, isPurchaseNfeMode, isPurchaseTaxMode, isValidCounterNote, missingUsageMessage, mustFallBackToNormal,
 	PurchaseNfeState, requiresSupplierKey, supplierNfeAuthorizationText
 } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
@@ -169,14 +169,24 @@ const producer: PurchaseNfeState = {
 	ChaveNFe: "35261011222333000181550010000007891000067823", TaxDocumentKind: "Nfe",
 };
 
-QUnit.test("gera contra-nota da escrituração NF-e confirmada, com a chave e sem contra-nota válida", function (assert) {
-	assert.strictEqual(canCreateCounterNote(producer, true, false), true);
-	assert.strictEqual(canCreateCounterNote(producer, true, true), false);
-	assert.strictEqual(canCreateCounterNote(producer, false, false), false);
-	assert.strictEqual(canCreateCounterNote({ ...producer, TaxDocumentKind: "Other" }, true, false), false);
-	assert.strictEqual(canCreateCounterNote({ ...producer, InvoiceStatus: "Pending" }, true, false), false);
-	assert.strictEqual(canCreateCounterNote({ ...producer, IssuerType: "Own" }, true, false), false);
-	assert.strictEqual(canCreateCounterNote({ ...producer, ChaveNFe: "" }, true, false), false);
+QUnit.test("gera contra-nota da escrituração NF-e confirmada, com a chave, sem contra-nota válida e natureza que permite", function (assert) {
+	assert.strictEqual(canCreateCounterNote(producer, true, false, true), true);
+	assert.strictEqual(canCreateCounterNote(producer, true, true, true), false);
+	assert.strictEqual(canCreateCounterNote(producer, false, false, true), false);
+	assert.strictEqual(canCreateCounterNote(producer, true, false, false), false);
+	assert.strictEqual(canCreateCounterNote({ ...producer, TaxDocumentKind: "Other" }, true, false, true), false);
+	assert.strictEqual(canCreateCounterNote({ ...producer, InvoiceStatus: "Pending" }, true, false, true), false);
+	assert.strictEqual(canCreateCounterNote({ ...producer, IssuerType: "Own" }, true, false, true), false);
+	assert.strictEqual(canCreateCounterNote({ ...producer, ChaveNFe: "" }, true, false, true), false);
+});
+
+QUnit.test("contra-nota só com toda linha numa natureza que permite", function (assert) {
+	const usages = [{ Code: 1, AllowsCounterNote: true }, { Code: 2, AllowsCounterNote: false }];
+	assert.strictEqual(allUsagesAllowCounterNote([1, 1], usages), true);
+	assert.strictEqual(allUsagesAllowCounterNote([1, 2], usages), false);
+	assert.strictEqual(allUsagesAllowCounterNote([1, null], usages), false);
+	assert.strictEqual(allUsagesAllowCounterNote([1, 3], usages), false);
+	assert.strictEqual(allUsagesAllowCounterNote([], usages), false);
 });
 
 QUnit.test("contra-nota válida: não cancelada e NF-e fora de cancelada, inutilizada ou denegada", function (assert) {

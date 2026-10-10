@@ -81,12 +81,28 @@ export function canReturnThirdPartyPurchase(doc: PurchaseNfeState, taxLocked: bo
 }
 
 /**
- * "Gerar contra-nota" (spec 2026-10-10 §5): escrituração NF-e do produtor (terceiro, Normal, confirmada, chave de 44) na
- * filial que emite pelo Siagro, sem contra-nota válida. A flag "Permite contra-nota" de cada natureza quem confere é o
- * servidor.
+ * "Gerar contra-nota" (spec 2026-10-10 §5 e §9): escrituração NF-e do produtor (terceiro, Normal, confirmada, chave de 44)
+ * na filial que emite pelo Siagro, sem contra-nota válida e com TODA linha numa natureza que "Permite contra-nota"
+ * (`allUsagesAllow`, ver {@link allUsagesAllowCounterNote}). O servidor confere de novo; aqui é só para não oferecer o
+ * botão em toda NF-e de terceiro confirmada.
  */
-export function canCreateCounterNote(doc: PurchaseNfeState, taxLocked: boolean, hasValidCounterNote: boolean): boolean {
-	return canReturnThirdPartyPurchase(doc, taxLocked) && doc.TaxDocumentKind === "Nfe" && hasValidCounterNote !== true;
+export function canCreateCounterNote(
+	doc: PurchaseNfeState, taxLocked: boolean, hasValidCounterNote: boolean, allUsagesAllow: boolean
+): boolean {
+	return canReturnThirdPartyPurchase(doc, taxLocked) && doc.TaxDocumentKind === "Nfe" && hasValidCounterNote !== true &&
+		allUsagesAllow === true;
+}
+
+/**
+ * Toda linha tem natureza e toda natureza dessas linhas tem "Permite contra-nota" (spec §5). Sem linhas = não permite.
+ * Código nulo/indefinido = linha sem natureza. `usages` é o que voltou da leitura de `/Usages`: natureza que não voltou
+ * conta como não permitida.
+ */
+export function allUsagesAllowCounterNote(
+	lineUsageCodes: number[], usages: { Code: number; AllowsCounterNote: boolean }[]
+): boolean {
+	return lineUsageCodes.length > 0 && lineUsageCodes.every((code) =>
+		code != null && usages.some((usage) => usage.Code === code && usage.AllowsCounterNote === true));
 }
 
 /** Contra-nota que ainda trava a escrituração: não cancelada e com a NF-e fora de cancelada, inutilizada ou denegada (§7). */
