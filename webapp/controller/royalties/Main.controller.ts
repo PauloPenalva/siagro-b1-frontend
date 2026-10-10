@@ -13,10 +13,14 @@ import CommonController from "../common/CommonController";
 
 type RoyaltyFilter = {
 	FromDate?: string, ToDate?: string, Situation?: string, CardCode?: string,
-	OriginCode?: string, ItemCode?: string, StorageAddressCode?: string,
+	OriginCode?: string, ItemCode?: string, StorageAddressCode?: string, Scope?: string,
 };
 type WriteOffFilter = { FromDate: string, ToDate: string, ItsId: string, TaxId: string, Situation: string };
-type RoyaltyTotal = { Situation: string, Count: number, Balance: number };
+type RoyaltyTotal = { Situation: string, Count: number, Balance: number, WrittenOffWeight?: number };
+
+const SCOPE_TITLE: Record<string, string> = {
+	Pending: "A baixar", WrittenOff: "Baixados", All: "Baixados e a baixar",
+};
 
 const SITUATION_LABEL: Record<string, string> = {
 	Declared: "Declarada", Tested: "Testada", Conventional: "Convencional", ParticipantWarehouse: "Armazém Participante",
@@ -29,7 +33,7 @@ const SITUATION_LABEL: Record<string, string> = {
 export default class Main extends CommonController {
 	onInit(): void {
 		this.createFilterModel(Main.defaultFilter());
-		this.getView().setModel(new JSONModel({ summary: "" }), "totals");
+		this.getView().setModel(new JSONModel({ summary: "", title: SCOPE_TITLE.Pending }), "totals");
 		this.getView().setModel(new JSONModel({ writeOff: {} }), "viewModel");
 		this.getView().setModel(new JSONModel(Main.emptyWriteOffFilter()), "writeOffFilter");
 		this.getRouter().getRoute("royaltyWriteOffs").attachPatternMatched(() => this.onRouteMatched());
@@ -41,7 +45,7 @@ export default class Main extends CommonController {
 		const pad = (n: number) => String(n).padStart(2, "0");
 		const first = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-01`;
 		const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-		return { FromDate: first, ToDate: today, Situation: "", CardCode: "", OriginCode: "", ItemCode: "", StorageAddressCode: "" };
+		return { FromDate: first, ToDate: today, Situation: "", CardCode: "", OriginCode: "", ItemCode: "", StorageAddressCode: "", Scope: "Pending" };
 	}
 
 	private onRouteMatched(): void {
@@ -72,7 +76,10 @@ export default class Main extends CommonController {
 	/** $filter cru: sap.ui.model.Filter não formata enum OData ("Unsupported type"). */
 	protected applyFilters(): void {
 		const f = this.filterData();
-		const parts = ["Balance gt 0"];
+		const scope = f.Scope || "Pending";
+		const parts: string[] = [];
+		if (scope === "Pending") { parts.push("Balance gt 0"); }
+		else if (scope === "WrittenOff") { parts.push("Balance le 0 and WrittenOffWeight gt 0"); }
 		const offset = Main.localOffset();
 		if (f.FromDate) { parts.push(`TransactionDate ge ${f.FromDate}T00:00:00${offset}`); }
 		if (f.ToDate) { parts.push(`TransactionDate le ${f.ToDate}T23:59:59${offset}`); }
@@ -81,7 +88,8 @@ export default class Main extends CommonController {
 		if (f.OriginCode) { parts.push(`RoyaltyOriginCode eq ${Main.literal(f.OriginCode)}`); }
 		if (f.ItemCode) { parts.push(`ItemCode eq ${Main.literal(f.ItemCode)}`); }
 		if (f.StorageAddressCode) { parts.push(`StorageAddressCode eq ${Main.literal(f.StorageAddressCode)}`); }
-		this.pendingBinding()?.changeParameters({ $filter: parts.join(" and ") });
+		(this.getModel("totals") as JSONModel).setProperty("/title", SCOPE_TITLE[scope] ?? SCOPE_TITLE.Pending);
+		this.pendingBinding()?.changeParameters({ $filter: parts.length ? parts.join(" and ") : undefined });
 		(this.byId("pendingTable") as Table)?.clearSelection();
 		void this.loadTotals();
 	}
@@ -94,16 +102,24 @@ export default class Main extends CommonController {
 		const arg = (v?: string) => (v ? Main.literal(v) : "null");
 		const path = `${this.api.royaltyBalanceTotals}(FromDate=${arg(f.FromDate)},ToDate=${arg(f.ToDate)},` +
 			`CardCode=${arg(f.CardCode)},OriginCode=${arg(f.OriginCode)},ItemCode=${arg(f.ItemCode)},` +
-			`Situation=${arg(f.Situation)},StorageAddressCode=${arg(f.StorageAddressCode)})`;
+			`Situation=${arg(f.Situation)},StorageAddressCode=${arg(f.StorageAddressCode)},Scope=${arg(f.Scope || "Pending")})`;
 		try {
 			const ctx = (this.getModel() as ODataModel).bindContext(path);
 			const result = await ctx.requestObject() as { value?: RoyaltyTotal[] };
 			const fmt = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 3 });
 			if (request !== this.totalsRequest) { return; }
+			const scope = f.Scope || "Pending";
+			const describe = (t: RoyaltyTotal) => {
+				const written = fmt.format(t.WrittenOffWeight ?? 0);
+				if (scope === "WrittenOff") { return `baixado ${written} kg`; }
+				if (scope === "All") { return `baixado ${written} · saldo ${fmt.format(t.Balance)} kg`; }
+				return `${fmt.format(t.Balance)} kg`;
+			};
 			const summary = (result?.value ?? [])
-				.map(t => `${SITUATION_LABEL[t.Situation] ?? t.Situation}: ${fmt.format(t.Balance)} kg (${t.Count})`)
+				.map(t => `${SITUATION_LABEL[t.Situation] ?? t.Situation}: ${describe(t)} (${t.Count})`)
 				.join("   |   ");
-			(this.getModel("totals") as JSONModel).setProperty("/summary", summary || "Nenhum saldo pendente.");
+			(this.getModel("totals") as JSONModel).setProperty("/summary",
+				summary || (scope === "WrittenOff" ? "Nenhum romaneio baixado." : scope === "All" ? "Nenhum romaneio." : "Nenhum saldo pendente."));
 		} catch {
 			if (request !== this.totalsRequest) { return; }
 			(this.getModel("totals") as JSONModel).setProperty("/summary", "Não foi possível carregar os totais.");
@@ -161,6 +177,11 @@ export default class Main extends CommonController {
 			.filter(Boolean);
 		if (contexts.length < 1) {
 			MessageBox.warning("Selecione ao menos 1 romaneio para baixar.");
+			return;
+		}
+		// Recusa a seleção inteira se alguma linha não tem saldo (mais simples e previsível que descartar em silêncio).
+		if (contexts.some(c => !(Number(c.getProperty("Balance")) > 0))) {
+			MessageBox.warning("Selecione romaneios com saldo a baixar.");
 			return;
 		}
 		const situations = [...new Set(contexts.map(c => c.getProperty("Situation") as string))];

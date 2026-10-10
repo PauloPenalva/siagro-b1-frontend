@@ -12,7 +12,7 @@
             sorter: [ { path: 'TransactionDate' }, { path: 'Code' } ] }">
     <t:extension>
       <OverflowToolbar>
-        <Title text="Pendentes de baixa" />
+        <Title text="{totals>/title}" />
         <ToolbarSpacer />
         <Text text="{totals>/summary}" />
         <ToolbarSpacer />

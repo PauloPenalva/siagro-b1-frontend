@@ -24,6 +24,15 @@
           </Select>
         </fb:control>
       </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="scope" label="Abrangência" groupName="G" visibleInFilterBar="true">
+        <fb:control>
+          <Select forceSelection="true" selectedKey="{filter>/Scope}">
+            <core:ListItem key="Pending" text="A baixar" />
+            <core:ListItem key="WrittenOff" text="Baixados" />
+            <core:ListItem key="All" text="Todos" />
+          </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
       <fb:FilterGroupItem name="cardCode" label="Parceiro" groupName="G" visibleInFilterBar="true">
         <fb:control>
           <Input showClearIcon="true" showValueHelp="true" valueHelpRequest=".openBusinessPartnersValueHelp" value="{filter>/CardCode}" />

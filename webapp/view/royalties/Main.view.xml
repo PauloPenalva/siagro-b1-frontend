@@ -21,7 +21,7 @@
     <f:content>
       <IconTabBar id="royaltyTabs" expandable="false" stretchContentHeight="true" select=".onTabSelect">
         <items>
-          <IconTabFilter key="pending" text="Pendentes">
+          <IconTabFilter key="pending" text="Romaneios">
             <content>
               <core:Fragment fragmentName="siagrob1.view.royalties.fragments.PendingTable" type="XML" />
             </content>
