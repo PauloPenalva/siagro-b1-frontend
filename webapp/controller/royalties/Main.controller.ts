@@ -1,8 +1,12 @@
 import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageBox from "sap/m/MessageBox";
+import MessageToast from "sap/m/MessageToast";
+import Dialog from "sap/m/Dialog";
 import Table from "sap/ui/table/Table";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
+import Context from "sap/ui/model/odata/v4/Context";
+import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "../common/CommonController";
 
 type RoyaltyFilter = {
@@ -23,6 +27,7 @@ export default class Main extends CommonController {
 	onInit(): void {
 		this.createFilterModel(Main.defaultFilter());
 		this.getView().setModel(new JSONModel({ summary: "" }), "totals");
+		this.getView().setModel(new JSONModel({ writeOff: {} }), "viewModel");
 		this.getRouter().getRoute("royaltyWriteOffs").attachPatternMatched(() => this.onRouteMatched());
 	}
 
@@ -132,8 +137,136 @@ export default class Main extends CommonController {
 		}
 	}
 
-	onTabSelect(): void { /* a aba Baixas aplica o próprio filtro na Task 16 */ }
+	private writeOffDialog?: Dialog;
+	private writeOffDetailDialog?: Dialog;
 
-	/** Implementado na Task 16. */
-	onOpenWriteOff(): void { /* Task 16 */ }
+	private static localIsoDate(d: Date): string {
+		const pad = (n: number) => String(n).padStart(2, "0");
+		return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+	}
+
+	async onOpenWriteOff(): Promise<void> {
+		const table = this.byId("pendingTable") as Table;
+		const contexts = table.getSelectedIndices()
+			.map(i => table.getContextByIndex(i) as Context)
+			.filter(Boolean);
+		if (contexts.length < 1) {
+			MessageBox.warning("Selecione ao menos 1 romaneio para baixar.");
+			return;
+		}
+		const situations = [...new Set(contexts.map(c => c.getProperty("Situation") as string))];
+		if (situations.length > 1) {
+			MessageBox.warning("Selecione romaneios de uma mesma situação.");
+			return;
+		}
+		const lines = contexts.map(c => ({
+			key: c.getProperty("StorageTransactionKey") as string,
+			code: c.getProperty("Code") as string,
+			partner: `${c.getProperty("CardCode") as string} - ${c.getProperty("CardName") as string}`,
+			balance: Number(c.getProperty("Balance")),
+			weight: Number(c.getProperty("Balance")),
+		}));
+		(this.getModel("viewModel") as JSONModel).setProperty("/writeOff", {
+			situationLabel: SITUATION_LABEL[situations[0]] ?? situations[0],
+			writeOffDate: Main.localIsoDate(new Date()),
+			itsId: "", taxId: "", name: "", comments: "",
+			lines,
+			totalText: "",
+		});
+		this.updateWriteOffTotal();
+		this.writeOffDialog ??= await DialogHelper.createDialog(this, "siagrob1.view.royalties.fragments.WriteOffDialog");
+		this.writeOffDialog.open();
+	}
+
+	onWriteOffWeightChange(): void { this.updateWriteOffTotal(); }
+
+	private updateWriteOffTotal(): void {
+		const vm = this.getModel("viewModel") as JSONModel;
+		const lines = (vm.getProperty("/writeOff/lines") ?? []) as { weight: number }[];
+		const total = lines.reduce((s, l) => s + (Number(l.weight) || 0), 0);
+		vm.setProperty("/writeOff/totalText", new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 3 }).format(total));
+	}
+
+	onCloseWriteOff(): void { this.writeOffDialog?.close(); }
+
+	async onConfirmWriteOff(): Promise<void> {
+		const form = (this.getModel("viewModel") as JSONModel).getProperty("/writeOff") as {
+			writeOffDate: string, itsId: string, taxId: string, name: string, comments: string,
+			lines: { key: string, code: string, balance: number, weight: number }[],
+		};
+		if (!form.writeOffDate || !form.itsId?.trim() || !form.taxId?.trim() || !form.name?.trim()) {
+			MessageBox.warning("Informe data, ID do ITS, CPF/CNPJ e nome.");
+			return;
+		}
+		const invalid = form.lines.find(l => !(l.weight > 0) || l.weight > l.balance + 1e-9);
+		if (invalid) {
+			MessageBox.warning(`Peso inválido no romaneio ${invalid.code}: informe de 0 a ${invalid.balance} kg.`);
+			return;
+		}
+		const action = (this.getModel() as ODataModel).bindContext(this.api.royaltyWriteOffsCreate);
+		action.setParameter("WriteOffDate", form.writeOffDate);
+		action.setParameter("ItsId", form.itsId.trim());
+		action.setParameter("TaxId", form.taxId.trim());
+		action.setParameter("Name", form.name.trim());
+		// null explícito, nunca undefined: parâmetro do EDM que não chega derruba a action.
+		action.setParameter("Comments", form.comments?.trim() || null);
+		action.setParameter("StorageTransactionKeys", form.lines.map(l => l.key));
+		action.setParameter("Weights", form.lines.map(l => Number(l.weight)));
+		try {
+			this.setBusy(true);
+			await action.invoke();
+			this.writeOffDialog?.close();
+			MessageToast.show("Baixa ITS registrada.");
+			(this.byId("pendingTable") as Table).clearSelection();
+			this.onRefresh();
+			this.onRefreshWriteOffs();
+		} catch (err) {
+			MessageBox.error((err as Error).message || "Erro ao registrar a baixa.");
+		} finally {
+			this.setBusy(false);
+		}
+	}
+
+	onTabSelect(): void { this.onRefreshWriteOffs(); }
+
+	onRefreshWriteOffs(): void {
+		(this.byId("writeOffsTable").getBinding("rows") as ODataListBinding)?.refresh();
+	}
+
+	async onWriteOffDetail(): Promise<void> {
+		const table = this.byId("writeOffsTable") as Table;
+		const ctx = table.getContextByIndex(table.getSelectedIndex()) as Context;
+		if (!ctx) {
+			MessageBox.warning("Selecione uma baixa.");
+			return;
+		}
+		this.writeOffDetailDialog ??= await DialogHelper.createDialog(this, "siagrob1.view.royalties.fragments.WriteOffDetailDialog");
+		this.writeOffDetailDialog.setBindingContext(ctx);
+		this.writeOffDetailDialog.open();
+	}
+
+	onCloseWriteOffDetail(): void { this.writeOffDetailDialog?.close(); }
+
+	async onCancelWriteOff(): Promise<void> {
+		const ctx = this.writeOffDetailDialog?.getBindingContext() as Context;
+		if (!ctx) { return; }
+		const confirmed = await new Promise<boolean>(resolve => MessageBox.confirm(
+			`Cancelar a baixa ITS ${ctx.getProperty("ItsId") as string}? O saldo volta aos romaneios.`,
+			{ onClose: (a: unknown) => resolve(a === MessageBox.Action.OK) }));
+		if (!confirmed) { return; }
+		const action = (this.getModel() as ODataModel).bindContext(this.api.royaltyWriteOffsCancel);
+		action.setParameter("Key", ctx.getProperty("Key"));
+		try {
+			this.setBusy(true);
+			await action.invoke();
+			this.writeOffDetailDialog?.close();
+			MessageToast.show("Baixa ITS cancelada.");
+			this.onRefreshWriteOffs();
+			this.onRefresh();
+		} catch (err) {
+			MessageBox.error((err as Error).message || "Erro ao cancelar a baixa.");
+		} finally {
+			this.setBusy(false);
+		}
+	}
 }

@@ -1,3 +1,38 @@
-<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
-  <Text text="" />
+<core:FragmentDefinition core:require="{ formatter: 'siagrob1/model/formatter' }" xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:t="sap.ui.table">
+  <t:Table
+    id="writeOffsTable"
+    busyIndicatorDelay="0"
+    selectionMode="Single"
+    selectionBehavior="Row"
+    class="sapUiSizeCondensed"
+    visibleRowCountMode="Auto"
+    enableBusyIndicator="true"
+    alternateRowColors="true"
+    rows="{ path: '/RoyaltyWriteOffs', parameters: { $expand: 'Lines($expand=StorageTransaction($select=Code))', $count: true },
+            sorter: { path: 'RowId', descending: true } }">
+    <t:extension>
+      <OverflowToolbar>
+        <Title text="Baixas registradas" />
+        <ToolbarSpacer />
+        <Button type="Transparent" text="Visualizar" press=".onWriteOffDetail" />
+        <Button type="Transparent" text="Atualizar" press=".onRefreshWriteOffs" />
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column width="5rem"><Label text="Nº" /><t:template><Text text="{RowId}" /></t:template></t:Column>
+      <t:Column width="7rem"><Label text="Data" /><t:template>
+        <Text text="{ path: 'WriteOffDate', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd/MM/yyyy' } }" />
+      </t:template></t:Column>
+      <t:Column width="10rem"><Label text="ID do ITS" /><t:template><Text text="{ItsId}" /></t:template></t:Column>
+      <t:Column width="10rem"><Label text="Situação" /><t:template>
+        <Text text="{ path: 'Situation', targetType: 'any', formatter: 'formatter.royaltySituation' }" />
+      </t:template></t:Column>
+      <t:Column width="10rem"><Label text="CPF/CNPJ" /><t:template><Text text="{TaxId}" /></t:template></t:Column>
+      <t:Column width="16rem"><Label text="Nome" /><t:template><Text text="{Name}" wrapping="false" /></t:template></t:Column>
+      <t:Column width="7rem"><Label text="Status" /><t:template>
+        <ObjectStatus text="{= ${ path: 'Status', targetType: 'any' } === 'Cancelled' ? 'Cancelada' : 'Ativa' }"
+          state="{= ${ path: 'Status', targetType: 'any' } === 'Cancelled' ? 'Error' : 'Success' }" />
+      </t:template></t:Column>
+    </t:columns>
+  </t:Table>
 </core:FragmentDefinition>
