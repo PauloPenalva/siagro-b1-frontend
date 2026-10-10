@@ -1,3 +1,4 @@
+import RoyaltyFieldsHelper from "siagrob1/controller/royalties/RoyaltyFieldsHelper";
 import MessageToast from "sap/m/MessageToast";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
@@ -40,6 +41,7 @@ export default class Edit extends GenericController {
 		if (id != null) {
       const sPath = `/WeighingTickets(${id})`;
       this.bindElement(sPath);
+      void RoyaltyFieldsHelper.applyToBoundRecord(this, true);
 			return;
 		}
 

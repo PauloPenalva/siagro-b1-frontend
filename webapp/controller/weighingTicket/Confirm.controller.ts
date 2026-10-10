@@ -1,3 +1,4 @@
+import RoyaltyFieldsHelper from "siagrob1/controller/royalties/RoyaltyFieldsHelper";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
@@ -41,6 +42,7 @@ export default class Confirm extends GenericController {
 		if (id != null) {
       const sPath = `/WeighingTickets(${id})`;
       this.bindElement(sPath);
+      void RoyaltyFieldsHelper.applyToBoundRecord(this, true);
 			return;
 		}
 	}
