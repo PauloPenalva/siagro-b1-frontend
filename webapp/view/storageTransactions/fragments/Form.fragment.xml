@@ -72,6 +72,7 @@
             <Select 
               editable="{ui>/editable}"
               forceSelection="false"
+              change=".onTransactionTypeChange"
               required="true"
               selectedKey="{
                 path: 'TransactionType',

@@ -9,6 +9,8 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { Column, EdmType, SpreadsheetSettings } from "sap/ui/export/library";
 import Spreadsheet from "sap/ui/export/Spreadsheet";
 import formatter from "siagrob1/model/formatter";
+import RoyaltyFieldsHelper from "siagrob1/controller/royalties/RoyaltyFieldsHelper";
+import JSONModel from "sap/ui/model/json/JSONModel";
 
 
 /**
@@ -36,6 +38,14 @@ export abstract class BaseController extends CommonController {
     }
   }
 
+
+  /** Na Compra a origem do royalty é o armazém do carregamento: reavalia ao trocar o tipo do romaneio. */
+  onTransactionTypeChange() {
+    const ctx = this.getView().getBindingContext() as Context;
+    const ui = this.getModel("ui") as JSONModel;
+    void RoyaltyFieldsHelper.apply(this, ctx?.getProperty("ItemCode") as string,
+      ui.getProperty("/royaltyEditable") as boolean, ctx?.getProperty("TransactionType") !== "Purchase");
+  }
 
   onAddQualityInspection() {
     const oTable = this.byId(
