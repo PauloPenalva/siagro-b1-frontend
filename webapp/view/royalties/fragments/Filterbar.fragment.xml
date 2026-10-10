@@ -15,7 +15,7 @@
       </fb:FilterGroupItem>
       <fb:FilterGroupItem name="situation" label="Situação" groupName="G" visibleInFilterBar="true">
         <fb:control>
-          <Select forceSelection="false" selectedKey="{filter>/Situation}">
+          <Select forceSelection="true" selectedKey="{filter>/Situation}">
             <core:ListItem key="" text="Todas" />
             <core:ListItem key="Declared" text="Declarada" />
             <core:ListItem key="Tested" text="Testada" />
