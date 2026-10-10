@@ -1,0 +1,33 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+  <Dialog id="royaltyWriteOffDetailDialog" title="Baixa ITS {ItsId}" contentWidth="700px">
+    <content>
+      <VBox class="sapUiSmallMargin">
+        <ObjectAttribute title="Data" text="{ path: 'WriteOffDate', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd/MM/yyyy' } }" />
+        <ObjectAttribute title="CPF/CNPJ" text="{TaxId}" />
+        <ObjectAttribute title="Nome" text="{Name}" />
+        <ObjectAttribute title="Observações" text="{Comments}" />
+        <ObjectAttribute title="Cancelada por" text="{CanceledBy}" visible="{= ${ path: 'Status', targetType: 'any' } === 'Cancelled' }" />
+        <Table items="{Lines}" class="sapUiSmallMarginTop">
+          <columns>
+            <Column><Text text="Romaneio" /></Column>
+            <Column hAlign="End"><Text text="Peso baixado (kg)" /></Column>
+          </columns>
+          <items>
+            <ColumnListItem>
+              <Text text="{StorageTransaction/Code}" />
+              <Text text="{ path: 'Weight', type: 'sap.ui.model.odata.type.Decimal', formatOptions: { maxFractionDigits: 3 } }" />
+            </ColumnListItem>
+          </items>
+        </Table>
+      </VBox>
+    </content>
+    <footer>
+      <OverflowToolbar>
+        <ToolbarSpacer />
+        <Button text="Cancelar baixa" type="Reject" press=".onCancelWriteOff"
+          visible="{= ${ path: 'Status', targetType: 'any' } !== 'Cancelled' }" />
+        <Button text="Fechar" press=".onCloseWriteOffDetail" />
+      </OverflowToolbar>
+    </footer>
+  </Dialog>
+</core:FragmentDefinition>

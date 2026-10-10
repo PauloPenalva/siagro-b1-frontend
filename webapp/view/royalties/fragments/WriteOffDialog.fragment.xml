@@ -1,0 +1,57 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form" xmlns:t="sap.ui.table">
+  <Dialog id="royaltyWriteOffDialog" title="Registrar baixa ITS" contentWidth="900px">
+    <content>
+      <VBox class="sapUiSmallMargin">
+        <f:Form editable="true">
+          <f:layout><f:ColumnLayout columnsM="2" columnsL="2" columnsXL="2" /></f:layout>
+          <f:formContainers>
+            <f:FormContainer>
+              <f:formElements>
+                <f:FormElement label="Situação"><f:fields><Text text="{viewModel>/writeOff/situationLabel}" /></f:fields></f:FormElement>
+                <f:FormElement label="Data da baixa"><f:fields>
+                  <DatePicker value="{viewModel>/writeOff/writeOffDate}" required="true" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+                </f:fields></f:FormElement>
+                <f:FormElement label="ID do ITS"><f:fields>
+                  <Input value="{viewModel>/writeOff/itsId}" required="true" maxLength="50" />
+                </f:fields></f:FormElement>
+              </f:formElements>
+            </f:FormContainer>
+            <f:FormContainer>
+              <f:formElements>
+                <f:FormElement label="CPF/CNPJ da baixa"><f:fields>
+                  <Input value="{viewModel>/writeOff/taxId}" required="true" maxLength="18" />
+                </f:fields></f:FormElement>
+                <f:FormElement label="Nome"><f:fields>
+                  <Input value="{viewModel>/writeOff/name}" required="true" maxLength="200" />
+                </f:fields></f:FormElement>
+                <f:FormElement label="Observações"><f:fields>
+                  <TextArea value="{viewModel>/writeOff/comments}" rows="2" maxLength="500" />
+                </f:fields></f:FormElement>
+              </f:formElements>
+            </f:FormContainer>
+          </f:formContainers>
+        </f:Form>
+        <t:Table rows="{viewModel>/writeOff/lines}" selectionMode="None" visibleRowCount="6" class="sapUiSizeCondensed">
+          <t:columns>
+            <t:Column width="8rem"><Label text="Romaneio" /><t:template><Text text="{viewModel>code}" /></t:template></t:Column>
+            <t:Column width="16rem"><Label text="Parceiro" /><t:template><Text text="{viewModel>partner}" wrapping="false" /></t:template></t:Column>
+            <t:Column width="9rem" hAlign="End"><Label text="Saldo (kg)" /><t:template>
+              <Text text="{ path: 'viewModel>balance', type: 'sap.ui.model.type.Float', formatOptions: { maxFractionDigits: 3, groupingEnabled: true, decimalSeparator: ',', groupingSeparator: '.' } }" />
+            </t:template></t:Column>
+            <t:Column width="11rem" hAlign="End"><Label text="Peso a baixar (kg)" /><t:template>
+              <Input change=".onWriteOffWeightChange" value="{ path: 'viewModel>weight', type: 'sap.ui.model.type.Float', formatOptions: { maxFractionDigits: 3, groupingEnabled: true, decimalSeparator: ',', groupingSeparator: '.' } }" />
+            </t:template></t:Column>
+          </t:columns>
+        </t:Table>
+        <Text class="sapUiSmallMarginTop" text="Total a baixar: {viewModel>/writeOff/totalText} kg" />
+      </VBox>
+    </content>
+    <footer>
+      <OverflowToolbar>
+        <ToolbarSpacer />
+        <Button text="Registrar baixa" type="Emphasized" press=".onConfirmWriteOff" />
+        <Button text="Fechar" press=".onCloseWriteOff" />
+      </OverflowToolbar>
+    </footer>
+  </Dialog>
+</core:FragmentDefinition>

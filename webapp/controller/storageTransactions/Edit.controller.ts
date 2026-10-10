@@ -1,3 +1,4 @@
+import RoyaltyFieldsHelper from "siagrob1/controller/royalties/RoyaltyFieldsHelper";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
@@ -46,6 +47,7 @@ export default class Edit extends BaseController {
 
             const sPath = `/StorageTransactions(${id})`;
 			      this.bindElement(sPath);
+            void RoyaltyFieldsHelper.applyToBoundRecord(this, true, (ctx) => ctx.getProperty("TransactionType") !== "Purchase");
 
           })
           .catch(() =>{ 

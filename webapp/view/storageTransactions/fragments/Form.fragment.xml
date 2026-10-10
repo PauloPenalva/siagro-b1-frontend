@@ -72,6 +72,7 @@
             <Select 
               editable="{ui>/editable}"
               forceSelection="false"
+              change=".onTransactionTypeChange"
               required="true"
               selectedKey="{
                 path: 'TransactionType',
@@ -262,6 +263,8 @@
                 <l:GridData span="XL1 L1 M1 S1" />
               </core:layoutData>
             </core:Icon>
+
+            <core:Fragment fragmentName="siagrob1.view.royalties.fragments.RoyaltyFields" type="XML" />
             
             <Label visible="true" text="Tabela de Custos" />
             <Input 

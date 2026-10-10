@@ -1180,6 +1180,11 @@
           "target": "financialAccountsEdit"
         },
         {
+          "pattern": "royalty-write-offs",
+          "name": "royaltyWriteOffs",
+          "target": "royaltyWriteOffs"
+        },
+        {
           "pattern": "accounts-payable",
           "name": "accountsPayable",
           "target": "accountsPayable"
@@ -2469,6 +2474,12 @@
           "id": "financialAccountsEdit",
           "level": 2,
           "name": "siagrob1.view.financialAccounts.Edit",
+          "clearControlAggregation": true
+        },
+        "royaltyWriteOffs": {
+          "id": "royaltyWriteOffs",
+          "level": 1,
+          "name": "siagrob1.view.royalties.Main",
           "clearControlAggregation": true
         },
         "accountsPayable": {

@@ -1,0 +1,38 @@
+<mvc:View
+  controllerName="siagrob1.controller.royalties.Main"
+  displayBlock="true"
+  xmlns="sap.m"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns:core="sap.ui.core"
+  xmlns:f="sap.f">
+  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading><Title text="Royalties ITS" /></f:heading>
+      </f:DynamicPageTitle>
+    </f:title>
+    <f:header>
+      <f:DynamicPageHeader>
+        <f:content>
+          <core:Fragment fragmentName="siagrob1.view.royalties.fragments.Filterbar" type="XML" />
+        </f:content>
+      </f:DynamicPageHeader>
+    </f:header>
+    <f:content>
+      <IconTabBar id="royaltyTabs" expandable="false" stretchContentHeight="true" select=".onTabSelect">
+        <items>
+          <IconTabFilter key="pending" text="Romaneios">
+            <content>
+              <core:Fragment fragmentName="siagrob1.view.royalties.fragments.PendingTable" type="XML" />
+            </content>
+          </IconTabFilter>
+          <IconTabFilter key="writeOffs" text="Baixas">
+            <content>
+              <core:Fragment fragmentName="siagrob1.view.royalties.fragments.WriteOffsTable" type="XML" />
+            </content>
+          </IconTabFilter>
+        </items>
+      </IconTabBar>
+    </f:content>
+  </f:DynamicPage>
+</mvc:View>

@@ -4,6 +4,8 @@ import MessageBox from "sap/m/MessageBox";
 import Context from "sap/ui/model/odata/v4/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { BaseController } from "./BaseController";
+import RoyaltyFieldsHelper from "siagrob1/controller/royalties/RoyaltyFieldsHelper";
+import type { Input$ValueHelpRequestEvent } from "sap/m/Input";
 
 /**
  * @namespace siagrob1.controller.storageContracts
@@ -45,8 +47,22 @@ export default class Add extends BaseController {
     }, false, false, false);
 
     oView.setBindingContext(oContext);
+    await RoyaltyFieldsHelper.apply(this, undefined, true);
       
     this.setBusy(false)
+	}
+
+	/**
+	 * O produto é escolhido na tela: os campos de royalty dependem dele (e do tipo, pois na Compra a origem é o armazém).
+	 */
+	override openItemValueHelp(ev: Input$ValueHelpRequestEvent) {
+		void this.applyItemValueHelp(ev);
+	}
+
+	private async applyItemValueHelp(ev: Input$ValueHelpRequestEvent) {
+		await this.applyValueHelp(ev, "ItemsSelectDialog", ["ItemCode", "ItemName"], "ItemCode");
+		const ctx = this.getView().getBindingContext() as Context;
+		await RoyaltyFieldsHelper.apply(this, ctx?.getProperty("ItemCode") as string, true, ctx?.getProperty("TransactionType") !== "Purchase");
 	}
 
 	async onSave() {

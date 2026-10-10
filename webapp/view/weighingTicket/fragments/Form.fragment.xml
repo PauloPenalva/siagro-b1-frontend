@@ -244,6 +244,8 @@
             </core:layoutData>
           </core:Icon>
 
+          <core:Fragment fragmentName="siagrob1.view.royalties.fragments.RoyaltyFields" type="XML" />
+
           <Label visible="{ui>/visible}" text="Observações"/>
           <TextArea 
             visible="{ui>/visible}"

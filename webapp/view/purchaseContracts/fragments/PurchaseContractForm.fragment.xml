@@ -212,7 +212,7 @@
               >
               <core:ListItem key="None" text="Não se aplica"/>
               <core:ListItem key="Intacta" text="Intacta"/>
-              <core:ListItem key="Conventinal" text="Convencional"/>
+              <core:ListItem key="Conventional" text="Convencional"/>
             </Select>
             <Label text="Safra" />
             <Input 

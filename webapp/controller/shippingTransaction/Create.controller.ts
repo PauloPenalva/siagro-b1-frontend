@@ -1,6 +1,7 @@
  
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
+import RoyaltyFieldsHelper from "siagrob1/controller/royalties/RoyaltyFieldsHelper";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { BaseController } from "./BaseController";
 import RequestModel from "siagrob1/model/RequestModel";
@@ -61,6 +62,8 @@ type ShippingTransactionForm = {
     TruckDriverCode?: string,
     TruckDriverName?: string,
     ShipmentReleaseKey?: string,
+    RoyaltySituation?: string,
+    RoyaltyTestCode?: string,
     QualityInspections?: { QualityAttribCode?: string, QualityAttribName?: string, Value: number }[],
   },
 }
@@ -154,6 +157,7 @@ export default class Create extends BaseController {
         });
         
         this._itemCode = data?.PurchaseContract?.ItemCode;
+        await RoyaltyFieldsHelper.initPurchase(this, viewModel.getProperty("/StorageTransaction/ItemCode") as string);
 
         return;
       } finally {
@@ -185,6 +189,8 @@ export default class Create extends BaseController {
       delete oCopy.QualityAttribName;
       return oCopy;
     });
+
+    Object.assign(oPayload, RoyaltyFieldsHelper.purchasePayload(this));
 
     return oPayload;
   }

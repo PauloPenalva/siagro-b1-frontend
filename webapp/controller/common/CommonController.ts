@@ -373,6 +373,10 @@ export default abstract class CommonController extends BaseController {
     void this.applyValueHelp(ev, "BusinessPartnersSelectDialog", ['CardCode', 'CardName', 'CardFName'], "CardCode");
   }
 
+  openRoyaltyOriginValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "BusinessPartnersSelectDialog", ['CardCode', 'CardName', 'CardFName'], "CardCode");
+  }
+
   openSuppliersValueHelp(ev: Input$ValueHelpRequestEvent) {
     void this.applyValueHelp(ev, "SuppliersSelectDialog", ['CardCode', 'CardName', 'CardFName'], "CardCode",
       [ new Filter("CardType", FilterOperator.EQ, 'S') ]);

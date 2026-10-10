@@ -55,6 +55,12 @@
 					<Label text="" />
 					<Text text="Preenchidos os dois campos, o preço do contrato (sempre em KG) passa a ser exibido nesta unidade. Deixe os dois em branco para voltar a exibir em KG." />
 
+					<core:Title text="Royalties (ITS)" emphasized="true" />
+					<Label text="Controla royalties" />
+					<CheckBox id="controlsRoyalties" selected="{complement>/ControlsRoyalties}" />
+					<Label text="" />
+					<Text text="Marcado, os tickets e romaneios de entrada deste produto exigem a situação de royalty (Declarada, Testada, Convencional ou Armazém Participante) e entram no controle de baixas do ITS." />
+
 					<core:Title />
 				</f:content>
 			</f:SimpleForm>

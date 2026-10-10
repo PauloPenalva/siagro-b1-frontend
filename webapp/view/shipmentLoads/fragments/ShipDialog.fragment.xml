@@ -73,6 +73,21 @@
 									</Input>
 								</f:fields>
 							</f:FormElement>
+							<f:FormElement label="Situação Royalty" visible="{ui>/royaltyVisible}">
+								<f:fields>
+									<Select forceSelection="true" selectedKey="{royalty>/RoyaltySituation}"
+										tooltip="Vazio: Armazém Participante quando o armazém do carregamento é participante">
+										<core:ListItem key="" text="(padrão do armazém)"/>
+										<core:ListItem key="Declared" text="Declarada"/>
+										<core:ListItem key="Tested" text="Testada"/>
+										<core:ListItem key="Conventional" text="Convencional"/>
+										<core:ListItem key="ParticipantWarehouse" text="Armazém Participante"/>
+									</Select>
+									<Input enabled="{= ${royalty>/RoyaltySituation} === 'Tested' }"
+										required="{= ${royalty>/RoyaltySituation} === 'Tested' }"
+										placeholder="Código do teste" maxLength="50" value="{royalty>/RoyaltyTestCode}"/>
+								</f:fields>
+							</f:FormElement>
 							<f:FormElement label="Data">
 								<f:fields>
 									<DatePicker

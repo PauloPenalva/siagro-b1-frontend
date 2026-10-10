@@ -1,0 +1,40 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout">
+  <Label visible="{ui>/royaltyVisible}" text="Situação Royalty" required="true" />
+  <Select
+    visible="{ui>/royaltyVisible}"
+    editable="{ui>/royaltyEditable}"
+    forceSelection="false"
+    selectedKey="{ path: 'RoyaltySituation', targetType: 'any' }">
+    <core:ListItem key="Declared" text="Declarada" />
+    <core:ListItem key="Tested" text="Testada" />
+    <core:ListItem key="Conventional" text="Convencional" />
+    <core:ListItem key="ParticipantWarehouse" text="Armazém Participante" />
+    <layoutData>
+      <l:GridData span="XL3 L3 M3 S8" />
+    </layoutData>
+  </Select>
+  <Input
+    visible="{ui>/royaltyVisible}"
+    editable="{= ${ui>/royaltyEditable} === true &amp;&amp; ${ path: 'RoyaltySituation', targetType: 'any' } === 'Tested' }"
+    required="{= ${ path: 'RoyaltySituation', targetType: 'any' } === 'Tested' }"
+    placeholder="Código do teste"
+    maxLength="50"
+    value="{RoyaltyTestCode}" />
+
+  <Label visible="{= ${ui>/royaltyVisible} === true &amp;&amp; ${ui>/royaltyOriginVisible} === true }" text="Origem da Carga" required="true" />
+  <Input
+    visible="{= ${ui>/royaltyVisible} === true &amp;&amp; ${ui>/royaltyOriginVisible} === true }"
+    editable="{ui>/royaltyEditable}"
+    showValueHelp="true"
+    valueHelpOnly="true"
+    valueHelpRequest=".openRoyaltyOriginValueHelp"
+    value="{RoyaltyOriginCode}">
+    <customData>
+      <core:CustomData key="descriptionProperty" value="RoyaltyOriginName:CardName" />
+    </customData>
+    <layoutData>
+      <l:GridData span="XL3 L3 M3 S8" />
+    </layoutData>
+  </Input>
+  <Input visible="{= ${ui>/royaltyVisible} === true &amp;&amp; ${ui>/royaltyOriginVisible} === true }" value="{RoyaltyOriginName}" editable="false" />
+</core:FragmentDefinition>

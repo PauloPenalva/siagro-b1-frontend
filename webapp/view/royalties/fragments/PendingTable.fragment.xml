@@ -1,0 +1,50 @@
+<core:FragmentDefinition core:require="{ formatter: 'siagrob1/model/formatter' }" xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:t="sap.ui.table">
+  <t:Table
+    id="pendingTable"
+    busyIndicatorDelay="0"
+    selectionMode="MultiToggle"
+    selectionBehavior="RowSelector"
+    class="sapUiSizeCondensed"
+    visibleRowCountMode="Auto"
+    enableBusyIndicator="true"
+    alternateRowColors="true"
+    rows="{ path: '/RoyaltyTransactionBalances', parameters: { $filter: 'Balance gt 0', $count: true },
+            sorter: [ { path: 'TransactionDate' }, { path: 'Code' } ] }">
+    <t:extension>
+      <OverflowToolbar>
+        <Title text="{totals>/title}" />
+        <ToolbarSpacer />
+        <Text text="{totals>/summary}" />
+        <ToolbarSpacer />
+        <Button type="Transparent" text="Exportar PDF" icon="sap-icon://pdf-attachment" press=".onPrintPdf" />
+        <Button type="Emphasized" text="Baixar selecionados" press=".onOpenWriteOff" />
+        <Button type="Transparent" text="Atualizar" press=".onRefresh" />
+      </OverflowToolbar>
+    </t:extension>
+    <t:columns>
+      <t:Column width="8rem"><Label text="Romaneio" /><t:template><Text text="{Code}" wrapping="false" /></t:template></t:Column>
+      <t:Column width="7rem"><Label text="Tipo" /><t:template>
+        <Text text="{= ${ path: 'TransactionType', targetType: 'any' } === 'Purchase' ? 'Compra' : 'Recebimento' }" wrapping="false" />
+      </t:template></t:Column>
+      <t:Column width="6rem"><Label text="Data" /><t:template>
+        <Text text="{ path: 'TransactionDate', type: 'sap.ui.model.odata.type.DateTimeOffset', formatOptions: { pattern: 'dd/MM/yyyy' } }" wrapping="false" />
+      </t:template></t:Column>
+      <t:Column width="14rem"><Label text="Parceiro" /><t:template><Text text="{CardCode} - {CardName}" wrapping="false" /></t:template></t:Column>
+      <t:Column width="14rem"><Label text="Origem" /><t:template><Text text="{RoyaltyOriginCode} - {RoyaltyOriginName}" wrapping="false" /></t:template></t:Column>
+      <t:Column width="10rem"><Label text="Produto" /><t:template><Text text="{ItemName}" wrapping="false" /></t:template></t:Column>
+      <t:Column width="10rem"><Label text="Situação" /><t:template>
+        <Text text="{ path: 'Situation', targetType: 'any', formatter: 'formatter.royaltySituation' }" wrapping="false" />
+      </t:template></t:Column>
+      <t:Column width="8rem"><Label text="Cód. Teste" /><t:template><Text text="{RoyaltyTestCode}" wrapping="false" /></t:template></t:Column>
+      <t:Column width="9rem" hAlign="End"><Label text="Peso Líquido" /><t:template>
+        <Text text="{ path: 'NetWeight', type: 'sap.ui.model.odata.type.Decimal', formatOptions: { maxFractionDigits: 3 } }" wrapping="false" />
+      </t:template></t:Column>
+      <t:Column width="9rem" hAlign="End"><Label text="Baixado" /><t:template>
+        <Text text="{ path: 'WrittenOffWeight', type: 'sap.ui.model.odata.type.Decimal', formatOptions: { maxFractionDigits: 3 } }" wrapping="false" />
+      </t:template></t:Column>
+      <t:Column width="9rem" hAlign="End"><Label text="Saldo (kg)" /><t:template>
+        <Text text="{ path: 'Balance', type: 'sap.ui.model.odata.type.Decimal', formatOptions: { maxFractionDigits: 3 } }" wrapping="false" />
+      </t:template></t:Column>
+    </t:columns>
+  </t:Table>
+</core:FragmentDefinition>
