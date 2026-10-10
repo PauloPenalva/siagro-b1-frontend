@@ -3,6 +3,9 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import GenericController from "./GenericController";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import Context from "sap/ui/model/odata/v4/Context";
+import type { Input$ValueHelpRequestEvent } from "sap/m/Input";
+import RoyaltyFieldsHelper from "siagrob1/controller/royalties/RoyaltyFieldsHelper";
 
 /**
  * @namespace siagrob1.controller.weighinTicket
@@ -46,8 +49,21 @@ export default class Add extends GenericController {
     }, false, false, false);
 
     oView.setBindingContext(oContext);
+    // O model "ui" é global: esconde os campos de royalty até o produto ser escolhido.
+    await RoyaltyFieldsHelper.apply(this, undefined, true);
     
     this.setBusy(false);
+	}
+
+	/** O produto é escolhido na tela: os campos de royalty dependem dele. */
+	override openItemValueHelp(ev: Input$ValueHelpRequestEvent) {
+		void this.applyItemValueHelp(ev);
+	}
+
+	private async applyItemValueHelp(ev: Input$ValueHelpRequestEvent) {
+		await this.applyValueHelp(ev, "ItemsSelectDialog", ["ItemCode", "ItemName"], "ItemCode");
+		const ctx = this.getView().getBindingContext() as Context;
+		await RoyaltyFieldsHelper.apply(this, ctx?.getProperty("ItemCode") as string, true);
 	}
 
 	async onSave() {

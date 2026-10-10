@@ -9,29 +9,29 @@ import ServerRoutes from "siagrob1/model/ServerRoutes";
  * O backend valida de qualquer forma; aqui é só para não poluir a tela de milho.
  */
 export default class RoyaltyFieldsHelper {
-	/** Contador por view: só a chamada mais recente pode gravar o resultado (evita resposta atrasada de outro registro). */
-	private static readonly tokens = new WeakMap<object, number>();
+	/**
+	 * Contador único do componente: o model "ui" é global, então só a chamada mais recente
+	 * (de qualquer view) pode gravar o resultado; resposta atrasada de outra tela é descartada.
+	 */
+	private static token = 0;
 
-	private static nextToken(controller: CommonController): number {
-		const view = controller.getView();
-		const token = (RoyaltyFieldsHelper.tokens.get(view) ?? 0) + 1;
-		RoyaltyFieldsHelper.tokens.set(view, token);
-		return token;
+	private static nextToken(): number {
+		return ++RoyaltyFieldsHelper.token;
 	}
 
-	private static isCurrent(controller: CommonController, token: number): boolean {
-		return RoyaltyFieldsHelper.tokens.get(controller.getView()) === token;
+	private static isCurrent(token: number): boolean {
+		return RoyaltyFieldsHelper.token === token;
 	}
 
 	static async apply(
 		controller: CommonController, itemCode: string, editable: boolean, showOrigin = true,
 	): Promise<void> {
-		const token = RoyaltyFieldsHelper.nextToken(controller);
+		const token = RoyaltyFieldsHelper.nextToken();
 		const ui = controller.getView().getModel("ui") as JSONModel;
 		ui.setProperty("/royaltyEditable", editable);
 		ui.setProperty("/royaltyOriginVisible", showOrigin);
 		const visible = itemCode ? await RoyaltyFieldsHelper.controls(controller, itemCode) : false;
-		if (RoyaltyFieldsHelper.isCurrent(controller, token)) {
+		if (RoyaltyFieldsHelper.isCurrent(token)) {
 			ui.setProperty("/royaltyVisible", visible);
 		}
 	}
@@ -45,7 +45,7 @@ export default class RoyaltyFieldsHelper {
 	static async applyToBoundRecord(
 		controller: CommonController, editable: boolean, showOrigin?: (ctx: Context) => boolean,
 	): Promise<void> {
-		const token = RoyaltyFieldsHelper.nextToken(controller);
+		const token = RoyaltyFieldsHelper.nextToken();
 		const view = controller.getView();
 		(view.getModel("ui") as JSONModel).setProperty("/royaltyVisible", false);
 
@@ -56,12 +56,12 @@ export default class RoyaltyFieldsHelper {
 				binding.attachEventOnce("change", () => resolve(binding.getBoundContext() as Context | undefined));
 			});
 		}
-		if (!ctx || !RoyaltyFieldsHelper.isCurrent(controller, token)) {
+		if (!ctx || !RoyaltyFieldsHelper.isCurrent(token)) {
 			return;
 		}
 		const path = ctx.getPath();
 		await ctx.requestObject();
-		if (!RoyaltyFieldsHelper.isCurrent(controller, token) || view.getBindingContext()?.getPath() !== path) {
+		if (!RoyaltyFieldsHelper.isCurrent(token) || view.getBindingContext()?.getPath() !== path) {
 			return;
 		}
 		await RoyaltyFieldsHelper.apply(
