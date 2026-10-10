@@ -52,6 +52,10 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/nfeReturn", false);
       uiModel.setProperty("/taxMode", false);
       uiModel.setProperty("/isCounterNote", false);
+      // Vínculos da contra-nota: só o Detail os preenche (depois de conferir que o documento é o mesmo). O `ui` é do
+      // componente, então Incluir/Editar não podem herdar o link do último documento aberto.
+      uiModel.setProperty("/counterNote", { key: "", text: "" });
+      uiModel.setProperty("/producerInvoice", { key: "", text: "" });
     }
 
     if (!oContext) {
@@ -103,6 +107,8 @@ export abstract class BaseController extends CommonController {
         uiModel.setProperty("/nfeReturn", false);
         uiModel.setProperty("/taxMode", false);
         uiModel.setProperty("/isCounterNote", false);
+        uiModel.setProperty("/counterNote", { key: "", text: "" });
+        uiModel.setProperty("/producerInvoice", { key: "", text: "" });
       }
     }
   }

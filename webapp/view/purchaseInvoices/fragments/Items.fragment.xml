@@ -33,8 +33,9 @@
       </OverflowToolbar>
     </t:extension>
     <t:columns>
-      <!-- `showValueHelp` liga em `{ui>/editable}`, e não em "true": este fragmento é o MESMO do
-           Detail, onde a grade é read-only e o botão do diálogo não pode aparecer. -->
+      <!-- `showValueHelp` liga em `{ui>/editable}` (e em `{ui>/isCounterNote}`), e não em "true": este fragmento é
+           o MESMO do Detail, onde a grade é read-only e o botão do diálogo não pode aparecer. Na contra-nota as linhas
+           vêm da escrituração do produtor e também ficam somente leitura. -->
       <!-- `.openLineItemValueHelp`, não o genérico `.openItemValueHelp`: aqui a troca de produto
            também precisa desamarrar o contrato da linha (coluna "Contrato" abaixo). -->
       <t:Column label="Produto" width="10rem">
