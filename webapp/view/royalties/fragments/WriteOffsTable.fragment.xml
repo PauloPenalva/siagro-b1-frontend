@@ -12,6 +12,21 @@
             sorter: { path: 'RowId', descending: true } }">
     <t:extension>
       <OverflowToolbar>
+        <DatePicker width="9rem" placeholder="Data de" value="{writeOffFilter>/FromDate}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" />
+        <DatePicker width="9rem" placeholder="Data até" value="{writeOffFilter>/ToDate}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" />
+        <Input width="9rem" placeholder="ID do ITS" value="{writeOffFilter>/ItsId}" submit=".onFilterWriteOffs" />
+        <Input width="10rem" placeholder="CPF/CNPJ" value="{writeOffFilter>/TaxId}" submit=".onFilterWriteOffs" />
+        <Select width="11rem" forceSelection="true" selectedKey="{writeOffFilter>/Situation}">
+          <core:ListItem key="" text="Todas" />
+          <core:ListItem key="Declared" text="Declarada" />
+          <core:ListItem key="Tested" text="Testada" />
+          <core:ListItem key="Conventional" text="Convencional" />
+          <core:ListItem key="ParticipantWarehouse" text="Armazém Participante" />
+        </Select>
+        <Button type="Emphasized" text="Filtrar" press=".onFilterWriteOffs" />
+        <Button text="Limpar" press=".onClearWriteOffFilter" />
+      </OverflowToolbar>
+      <OverflowToolbar>
         <Title text="Baixas registradas" />
         <ToolbarSpacer />
         <Button type="Transparent" text="Visualizar" press=".onWriteOffDetail" />

@@ -2,6 +2,8 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import Dialog from "sap/m/Dialog";
+import type InputBase from "sap/m/InputBase";
+import { ValueState } from "sap/ui/core/library";
 import Table from "sap/ui/table/Table";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
@@ -13,6 +15,7 @@ type RoyaltyFilter = {
 	FromDate?: string, ToDate?: string, Situation?: string, CardCode?: string,
 	OriginCode?: string, ItemCode?: string, StorageAddressCode?: string,
 };
+type WriteOffFilter = { FromDate: string, ToDate: string, ItsId: string, TaxId: string, Situation: string };
 type RoyaltyTotal = { Situation: string, Count: number, Balance: number };
 
 const SITUATION_LABEL: Record<string, string> = {
@@ -28,6 +31,7 @@ export default class Main extends CommonController {
 		this.createFilterModel(Main.defaultFilter());
 		this.getView().setModel(new JSONModel({ summary: "" }), "totals");
 		this.getView().setModel(new JSONModel({ writeOff: {} }), "viewModel");
+		this.getView().setModel(new JSONModel(Main.emptyWriteOffFilter()), "writeOffFilter");
 		this.getRouter().getRoute("royaltyWriteOffs").attachPatternMatched(() => this.onRouteMatched());
 	}
 
@@ -145,6 +149,11 @@ export default class Main extends CommonController {
 		return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 	}
 
+	/** Pesos em kg têm 3 casas; o saldo vem do banco com ruído de ponto flutuante. */
+	private static round3(value: number): number {
+		return Math.round(value * 1000) / 1000;
+	}
+
 	async onOpenWriteOff(): Promise<void> {
 		const table = this.byId("pendingTable") as Table;
 		const contexts = table.getSelectedIndices()
@@ -163,8 +172,8 @@ export default class Main extends CommonController {
 			key: c.getProperty("StorageTransactionKey") as string,
 			code: c.getProperty("Code") as string,
 			partner: `${c.getProperty("CardCode") as string} - ${c.getProperty("CardName") as string}`,
-			balance: Number(c.getProperty("Balance")),
-			weight: Number(c.getProperty("Balance")),
+			balance: Main.round3(Number(c.getProperty("Balance"))),
+			weight: Main.round3(Number(c.getProperty("Balance"))),
 		}));
 		(this.getModel("viewModel") as JSONModel).setProperty("/writeOff", {
 			situationLabel: SITUATION_LABEL[situations[0]] ?? situations[0],
@@ -198,6 +207,14 @@ export default class Main extends CommonController {
 			MessageBox.warning("Informe data, ID do ITS, CPF/CNPJ e nome.");
 			return;
 		}
+		// Valor digitado que o tipo Float não consegue interpretar deixa o model com o valor antigo
+		// (o saldo inteiro): não pode seguir adiante.
+		const hasParseError = this.writeOffDialog?.findAggregatedObjects(true, c => c.isA("sap.m.InputBase"))
+			.some(c => (c as InputBase).getValueState() === ValueState.Error);
+		if (hasParseError) {
+			MessageBox.warning("Corrija o peso a baixar das linhas destacadas.");
+			return;
+		}
 		const invalid = form.lines.find(l => !(l.weight > 0) || l.weight > l.balance + 1e-9);
 		if (invalid) {
 			MessageBox.warning(`Peso inválido no romaneio ${invalid.code}: informe de 0 a ${invalid.balance} kg.`);
@@ -220,11 +237,36 @@ export default class Main extends CommonController {
 			(this.byId("pendingTable") as Table).clearSelection();
 			this.onRefresh();
 			this.onRefreshWriteOffs();
-		} catch (err) {
-			MessageBox.error((err as Error).message || "Erro ao registrar a baixa.");
+		} catch {
+			// A mensagem do servidor já aparece pelo handler global de mensagens OData; o diálogo
+			// continua aberto para o usuário corrigir.
 		} finally {
 			this.setBusy(false);
 		}
+	}
+
+	private static emptyWriteOffFilter(): WriteOffFilter {
+		return { FromDate: "", ToDate: "", ItsId: "", TaxId: "", Situation: "" };
+	}
+
+	/** $filter cru das baixas: WriteOffDate é Edm.Date (literal sem aspas) e enum nunca vai por sap.ui.model.Filter. */
+	onFilterWriteOffs(): void {
+		const f = (this.getModel("writeOffFilter") as JSONModel).getData() as WriteOffFilter;
+		const parts: string[] = [];
+		if (f.FromDate) { parts.push(`WriteOffDate ge ${f.FromDate}`); }
+		if (f.ToDate) { parts.push(`WriteOffDate le ${f.ToDate}`); }
+		if (f.ItsId?.trim()) { parts.push(`contains(ItsId,${Main.literal(f.ItsId.trim())})`); }
+		// O CPF/CNPJ é gravado só com dígitos: ignora máscara digitada.
+		const digits = (f.TaxId ?? "").replace(/\D/g, "");
+		if (digits) { parts.push(`contains(TaxId,${Main.literal(digits)})`); }
+		if (f.Situation) { parts.push(`Situation eq ${Main.literal(f.Situation)}`); }
+		(this.byId("writeOffsTable").getBinding("rows") as ODataListBinding)
+			?.changeParameters({ $filter: parts.join(" and ") });
+	}
+
+	onClearWriteOffFilter(): void {
+		(this.getModel("writeOffFilter") as JSONModel).setData(Main.emptyWriteOffFilter());
+		this.onFilterWriteOffs();
 	}
 
 	onTabSelect(): void { this.onRefreshWriteOffs(); }
@@ -263,8 +305,9 @@ export default class Main extends CommonController {
 			MessageToast.show("Baixa ITS cancelada.");
 			this.onRefreshWriteOffs();
 			this.onRefresh();
-		} catch (err) {
-			MessageBox.error((err as Error).message || "Erro ao cancelar a baixa.");
+		} catch {
+			// A mensagem do servidor já aparece pelo handler global de mensagens OData; o diálogo
+			// de detalhe continua aberto.
 		} finally {
 			this.setBusy(false);
 		}
