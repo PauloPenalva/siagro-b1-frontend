@@ -1,0 +1,14 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+  <Label visible="{ui>/royaltyVisible}" text="Situação Royalty" />
+  <Select visible="{ui>/royaltyVisible}" forceSelection="false" selectedKey="{royalty>/RoyaltySituation}"
+    tooltip="Vazio: Armazém Participante quando o armazém do carregamento é participante">
+    <core:ListItem key="" text="(padrão do armazém)" />
+    <core:ListItem key="Declared" text="Declarada" />
+    <core:ListItem key="Tested" text="Testada" />
+    <core:ListItem key="Conventional" text="Convencional" />
+    <core:ListItem key="ParticipantWarehouse" text="Armazém Participante" />
+  </Select>
+  <Input visible="{ui>/royaltyVisible}" enabled="{= ${royalty>/RoyaltySituation} === 'Tested' }"
+    required="{= ${royalty>/RoyaltySituation} === 'Tested' }"
+    placeholder="Código do teste" maxLength="50" value="{royalty>/RoyaltyTestCode}" />
+</core:FragmentDefinition>

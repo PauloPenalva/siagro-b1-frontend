@@ -171,6 +171,7 @@
               </customData>
             </Input>
             <Input value="{viewModel>/StorageTransaction/WarehouseName}" editable="false" />
+            <core:Fragment fragmentName="siagrob1.view.royalties.fragments.RoyaltyPurchaseFields" type="XML" />
             <Label text="Motorista" />
             <Input
               editable="{ui>/editable}"

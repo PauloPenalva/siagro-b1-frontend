@@ -1,5 +1,6 @@
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
+import RoyaltyFieldsHelper from "siagrob1/controller/royalties/RoyaltyFieldsHelper";
 import MessageToast from "sap/m/MessageToast";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { BaseController } from "./BaseController";
@@ -50,6 +51,8 @@ type StorageEntryForm = {
     TruckDriverCode?: string,
     TruckDriverName?: string,
     ShipmentReleaseKey?: string,
+    RoyaltySituation?: string,
+    RoyaltyTestCode?: string,
     QualityInspections?: { QualityAttribCode?: string, QualityAttribName?: string, Value: number }[],
   },
 }
@@ -146,6 +149,7 @@ export default class Create extends BaseController {
           }),
         }
       });
+      await RoyaltyFieldsHelper.initPurchase(this, viewModel.getProperty("/StorageTransaction/ItemCode") as string);
     } finally {
       this.setBusy(false);
     }
@@ -186,6 +190,8 @@ export default class Create extends BaseController {
       delete oCopy.QualityAttribName;
       return oCopy;
     });
+
+    Object.assign(oPayload, RoyaltyFieldsHelper.purchasePayload(this));
 
     return oPayload;
   }

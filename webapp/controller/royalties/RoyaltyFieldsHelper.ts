@@ -69,6 +69,24 @@ export default class RoyaltyFieldsHelper {
 		);
 	}
 
+	/** Telas de Compra: situação/código num model "royalty" próprio, enviado junto da compra. */
+	static async initPurchase(controller: CommonController, itemCode?: string): Promise<void> {
+		controller.getView().setModel(new JSONModel({ RoyaltySituation: "", RoyaltyTestCode: "" }), "royalty");
+		const ui = controller.getView().getModel("ui") as JSONModel;
+		ui.setProperty("/royaltyVisible", itemCode ? await RoyaltyFieldsHelper.controls(controller, itemCode) : false);
+	}
+
+	/** null explícito, nunca undefined/"" — enum vazio derruba o EntityParameter. */
+	static purchasePayload(controller: CommonController): { RoyaltySituation: string, RoyaltyTestCode: string } {
+		const data = ((controller.getView().getModel("royalty") as JSONModel)?.getData() ?? {}) as
+			{ RoyaltySituation?: string, RoyaltyTestCode?: string };
+		const situation = data.RoyaltySituation || null;
+		return {
+			RoyaltySituation: situation,
+			RoyaltyTestCode: situation === "Tested" ? (data.RoyaltyTestCode?.trim() || null) : null,
+		};
+	}
+
 	static async controls(controller: CommonController, itemCode: string): Promise<boolean> {
 		const model = controller.getView().getModel() as ODataModel;
 		const func = model.bindContext(ServerRoutes.itemsGetComplement);

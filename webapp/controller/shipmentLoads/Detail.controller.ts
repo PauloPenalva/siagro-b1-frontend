@@ -9,6 +9,7 @@ import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import SapMTable from "sap/m/Table";
 import Table from "sap/ui/table/Table";
+import RoyaltyFieldsHelper from "siagrob1/controller/royalties/RoyaltyFieldsHelper";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
@@ -199,6 +200,7 @@ export default class Detail extends BaseController {
       GrossWeight: "",
       Comments: "",
     });
+    await RoyaltyFieldsHelper.initPurchase(this, load.ItemCode);
 
     this._shipDialogLoading ??= (Fragment.load({
       id: this.getView().getId(),
@@ -285,6 +287,9 @@ export default class Detail extends BaseController {
       action.setParameter("TransactionDate", `${ship.TransactionDate}T12:00:00-03:00`);
       action.setParameter("GrossWeight", Number(ship.GrossWeight));
       action.setParameter("Comments", ship.Comments);
+      const royalty = RoyaltyFieldsHelper.purchasePayload(this);
+      action.setParameter("RoyaltySituation", royalty.RoyaltySituation);
+      action.setParameter("RoyaltyTestCode", royalty.RoyaltyTestCode);
 
       this.setBusy(true);
       try {
