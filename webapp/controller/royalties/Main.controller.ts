@@ -256,12 +256,12 @@ export default class Main extends CommonController {
 		if (f.FromDate) { parts.push(`WriteOffDate ge ${f.FromDate}`); }
 		if (f.ToDate) { parts.push(`WriteOffDate le ${f.ToDate}`); }
 		if (f.ItsId?.trim()) { parts.push(`contains(ItsId,${Main.literal(f.ItsId.trim())})`); }
-		// O CPF/CNPJ é gravado só com dígitos: ignora máscara digitada.
-		const digits = (f.TaxId ?? "").replace(/\D/g, "");
+		// O CPF/CNPJ é gravado em maiúsculas, sem pontuação (CNPJ alfanumérico): ignora a máscara digitada.
+		const digits = (f.TaxId ?? "").replace(/[^0-9A-Za-z]/g, "").toUpperCase();
 		if (digits) { parts.push(`contains(TaxId,${Main.literal(digits)})`); }
 		if (f.Situation) { parts.push(`Situation eq ${Main.literal(f.Situation)}`); }
 		(this.byId("writeOffsTable").getBinding("rows") as ODataListBinding)
-			?.changeParameters({ $filter: parts.join(" and ") });
+			?.changeParameters({ $filter: parts.length ? parts.join(" and ") : undefined });
 	}
 
 	onClearWriteOffFilter(): void {
