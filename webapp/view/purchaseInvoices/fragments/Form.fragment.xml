@@ -42,7 +42,7 @@
           <Label text="Filial" />
           <Select
             selectedKey="{BranchCode}"
-            editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !${path: 'NfeRandomCode', targetType: 'any'} &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === undefined || ${path: 'NfeStatus', targetType: 'any'} === null || ${path: 'NfeStatus', targetType: 'any'} === 'None') }"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !${path: 'ProducerInvoiceKey', targetType: 'any'} &amp;&amp; !${path: 'NfeRandomCode', targetType: 'any'} &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === undefined || ${path: 'NfeStatus', targetType: 'any'} === null || ${path: 'NfeStatus', targetType: 'any'} === 'None') }"
             forceSelection="false"
             change=".onBranchChange"
             items="{ path: '/Branchs', sorter: { path: 'Code' } }"
@@ -84,6 +84,13 @@
             <core:Item key="Own" text="Própria" />
           </Select>
 
+          <!-- Vínculos da contra-nota (spec 2026-10-10 §9): a escrituração mostra a contra-nota válida; a contra-nota mostra
+               a escrituração do produtor de que nasceu. -->
+          <Label text="Contra-nota" visible="{= !!${ui>/counterNote/key} }" />
+          <Link text="{ui>/counterNote/text}" visible="{= !!${ui>/counterNote/key} }" press=".onOpenCounterNote" />
+          <Label text="Escrituração do produtor" visible="{= !!${ui>/producerInvoice/key} }" />
+          <Link text="{ui>/producerInvoice/text}" visible="{= !!${ui>/producerInvoice/key} }" press=".onOpenProducerInvoice" />
+
           <!-- Documento de terceiro Normal na filial que emite NF-e pelo Siagro: NF-e (eletrônica, com a chave
                conferida) ou outro documento (serviço, papel/talão), sem chave. Fora disso o campo some: a emissão
                própria é sempre NF-e, a devolução do cliente não tem chave e a filial sem a regra (SAPB1, MH Agro)
@@ -103,8 +110,8 @@
           <Label text="Emitente" required="true" />
           <Input
               value="{CardCode}"
-              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true }"
-              showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true }"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !${path: 'ProducerInvoiceKey', targetType: 'any'} }"
+              showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !${path: 'ProducerInvoiceKey', targetType: 'any'} }"
               valueHelpOnly="true"
               valueHelpRequest=".openBusinessPartnersValueHelp">
             <layoutData>
@@ -169,7 +176,7 @@
           <!-- ui5lint-disable no-deprecated-api -->
           <Input
             visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
-            editable="{ui>/editable}"
+            editable="{= ${ui>/editable} === true &amp;&amp; !${path: 'ProducerInvoiceKey', targetType: 'any'} }"
             showValueHelp="true"
             valueHelpOnly="true"
             valueHelpRequest=".openPaymentConditionsValueHelp"

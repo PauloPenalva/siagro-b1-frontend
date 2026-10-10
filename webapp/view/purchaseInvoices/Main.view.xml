@@ -41,7 +41,7 @@
 				alternateRowColors="true"
 				rows="{
 					path: '/PurchaseInvoices',
-					parameters: { $select: 'NfeStatus,NfeCancelledAt,InvoiceStatus,IssuerType,IsNfeReturn' },
+					parameters: { $select: 'NfeStatus,NfeCancelledAt,InvoiceStatus,IssuerType,IsNfeReturn,ProducerInvoiceKey', $expand: 'ProducerInvoice($select=Key,TaxDocumentNumber)' },
 					sorter: {
 						path: 'IssueDate',
 						descending: true
@@ -85,6 +85,12 @@
 								targetType: 'any',
 								formatter: 'formatter.formatPurchaseInvoiceIssuerType'
 							}" />
+						</t:template>
+					</t:Column>
+					<!-- Contra-nota (spec 2026-10-10 §9): o número da NF-e do produtor escriturada de que ela nasceu. -->
+					<t:Column label="Contra-nota de" width="9rem" hAlign="Center">
+						<t:template>
+							<Text text="{ProducerInvoice/TaxDocumentNumber}" wrapping="false" />
 						</t:template>
 					</t:Column>
 					<t:Column label="Situação" width="10rem" hAlign="Center" sortProperty="InvoiceStatus">

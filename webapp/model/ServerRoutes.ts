@@ -198,6 +198,7 @@ export default {
   purchaseInvoicesNfeXml: '/odata/PurchaseInvoicesNfeXml',
   purchaseInvoicesDanfeReport: '/reports/Danfe/purchase-invoices',
   purchaseInvoicesCreateNfeReturn: '/PurchaseInvoicesCreateNfeReturn(...)',
+  purchaseInvoicesCreateCounterNote: '/PurchaseInvoicesCreateCounterNote(...)',
   purchaseInvoicesNfeReturnableItems: '/odata/PurchaseInvoicesNfeReturnableItems',
   // Cancelamento da NF-e (evento 110111): ação com justificativa, conclusão da fase local e XML do evento.
   salesInvoicesCancelNfe: '/odata/SalesInvoicesCancelNfe',

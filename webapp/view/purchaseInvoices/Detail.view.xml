@@ -127,6 +127,7 @@
         <Button text="XML da inutilização" icon="sap-icon://download"
                 visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Voided' &amp;&amp; ${path: 'NfeStatusCode', targetType: 'any'} === '102' }"
                 press=".onNfeVoidNumberXml" />
+        <Button text="Gerar contra-nota" icon="sap-icon://create-form" visible="{ui>/canCreateCounterNote}" press=".onCreateCounterNote" />
         <Button text="Devolver" icon="sap-icon://undo" visible="{ui>/canReturn}" press=".onNfeReturn" />
         <Button
           text="Editar"

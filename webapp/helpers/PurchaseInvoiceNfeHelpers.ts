@@ -9,6 +9,9 @@ export type PurchaseNfeState = {
 	IsNfeReturn: boolean;
 	NfeStatus: string;
 	ChaveNFe?: string;
+	TaxDocumentKind?: string;
+	/** Preenchido = contra-nota (spec 2026-10-10): não é devolvida; a devolução parte da escrituração. */
+	ProducerInvoiceKey?: string;
 };
 
 /** Modo NF-e: a filial emite pelo Siagro (regra ativa) e o documento é de emissão própria. */
@@ -65,9 +68,9 @@ export function canIssuePurchaseNfe(doc: PurchaseNfeState, nfeMode: boolean): bo
 		(doc.NfeStatus === "None" || doc.NfeStatus === "Rejected" || !doc.NfeStatus);
 }
 
-/** "Devolver": entrada própria Normal, confirmada, com NF-e autorizada. */
+/** "Devolver": entrada própria Normal, confirmada, com NF-e autorizada — e que não seja contra-nota (spec 2026-10-10 D9). */
 export function canReturnPurchase(doc: PurchaseNfeState, nfeMode: boolean): boolean {
-	return nfeMode === true && doc.InvoiceType === "Normal" && doc.IsNfeReturn !== true &&
+	return nfeMode === true && doc.InvoiceType === "Normal" && doc.IsNfeReturn !== true && !doc.ProducerInvoiceKey &&
 		doc.InvoiceStatus === "Confirmed" && doc.NfeStatus === "Authorized";
 }
 
@@ -75,6 +78,33 @@ export function canReturnPurchase(doc: PurchaseNfeState, nfeMode: boolean): bool
 export function canReturnThirdPartyPurchase(doc: PurchaseNfeState, taxLocked: boolean): boolean {
 	return taxLocked === true && doc.IssuerType === "ThirdParty" && doc.InvoiceType === "Normal" &&
 		doc.InvoiceStatus === "Confirmed" && /^\d{44}$/.test(doc.ChaveNFe ?? "");
+}
+
+/**
+ * "Gerar contra-nota" (spec 2026-10-10 §5): escrituração NF-e do produtor (terceiro, Normal, confirmada, chave de 44) na
+ * filial que emite pelo Siagro, sem contra-nota válida. A flag "Permite contra-nota" de cada natureza quem confere é o
+ * servidor.
+ */
+export function canCreateCounterNote(doc: PurchaseNfeState, taxLocked: boolean, hasValidCounterNote: boolean): boolean {
+	return canReturnThirdPartyPurchase(doc, taxLocked) && doc.TaxDocumentKind === "Nfe" && hasValidCounterNote !== true;
+}
+
+/** Contra-nota que ainda trava a escrituração: não cancelada e com a NF-e fora de cancelada, inutilizada ou denegada (§7). */
+export function isValidCounterNote(note: { InvoiceStatus: string; NfeStatus: string }): boolean {
+	return note.InvoiceStatus !== "Cancelled" && !["Cancelled", "Voided", "Denied"].includes(note.NfeStatus);
+}
+
+const NFE_STATUS_TEXT: Record<string, string> = {
+	Processing: "em processamento", Authorized: "Autorizada", Rejected: "Rejeitada", Denied: "Denegada",
+	Cancelled: "Cancelada", Voided: "Inutilizada",
+};
+
+/** "DE000123 — NF-e 10 Autorizada"; sem número, "DE000123 — NF-e não emitida". */
+export function counterNoteText(note: { InvoiceNumber: string; TaxDocumentNumber: string; NfeStatus: string }): string {
+	const number = note.TaxDocumentNumber ? String(Number(note.TaxDocumentNumber)) : "";
+	const status = NFE_STATUS_TEXT[note.NfeStatus];
+
+	return number && status ? `${note.InvoiceNumber} — NF-e ${number} ${status}` : `${note.InvoiceNumber} — NF-e não emitida`;
 }
 
 /** Linha do diálogo "Devolver" no que toca ao nItem da nota de origem. */
