@@ -9,6 +9,8 @@ import MessageToast from "sap/m/MessageToast";
 import Table from "sap/m/Table";
 import ColumnListItem from "sap/m/ColumnListItem";
 import Text from "sap/m/Text";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
 import ODataDate from "sap/ui/model/odata/type/Date";
 import ODataDecimal from "sap/ui/model/odata/type/Decimal";
 
@@ -16,6 +18,9 @@ import ODataDecimal from "sap/ui/model/odata/type/Decimal";
  * @namespace siagrob1.controller.storageTransactions
  */
 export default class Detail extends BaseController {
+
+	/** Último romaneio cujo saldo foi pedido; descarta respostas atrasadas. */
+	private royaltyRequestedKey = "";
 
 	onInit(): void  {	
 		this.getRouter().getRoute("storageTransactionsDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
@@ -45,6 +50,7 @@ export default class Detail extends BaseController {
     // royaltyVisible é definida de forma assíncrona pelo helper; a seção cuida da visibilidade,
     // então as baixas e o saldo são carregados para todo registro (barato; não elegível = sem saldo).
     this.bindRoyaltyLines(id);
+    this.royaltyRequestedKey = id;
     void this.loadRoyaltyBalance(id);
   }
 
@@ -70,18 +76,26 @@ export default class Detail extends BaseController {
     const ui = this.getModel("ui") as JSONModel;
     const fmt = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 3 });
     ui.setProperty("/royaltyBalance", { netText: "-", writtenOffText: "-", balanceText: "-" });
+    // Lista filtrada (vazia quando não elegível) em vez de leitura por chave, que daria 404 e popup global.
+    const binding = (this.getModel() as ODataModel).bindList(
+      "/RoyaltyTransactionBalances", undefined, undefined, [new Filter("StorageTransactionKey", FilterOperator.EQ, key)],
+    );
     try {
-      const ctx = (this.getModel() as ODataModel).bindContext(`/RoyaltyTransactionBalances(${key})`);
-      const row = await ctx.requestObject() as { NetWeight: number, WrittenOffWeight: number, Balance: number };
+      const contexts = await binding.requestContexts(0, 1);
       // Resposta atrasada de outro romaneio não pode sobrescrever o atual.
-      if ((this.getView().getBindingContext()?.getProperty("Key") as string) !== key) {
+      if (this.royaltyRequestedKey !== key) {
         return;
       }
-      ui.setProperty("/royaltyBalance", {
-        netText: fmt.format(row.NetWeight), writtenOffText: fmt.format(row.WrittenOffWeight), balanceText: fmt.format(row.Balance),
-      });
-    } catch {
-      // Romaneio não elegível (pendente, sem situação, saída...): seção sem saldo.
+      if (contexts.length > 0) {
+        const row = contexts[0].getObject() as { NetWeight: number, WrittenOffWeight: number, Balance: number };
+        ui.setProperty("/royaltyBalance", {
+          netText: fmt.format(row.NetWeight), writtenOffText: fmt.format(row.WrittenOffWeight), balanceText: fmt.format(row.Balance),
+        });
+      }
+    } catch (error) {
+      console.warn("Falha ao carregar o saldo de royalty do romaneio", error);
+    } finally {
+      binding.destroy();
     }
   }
 
