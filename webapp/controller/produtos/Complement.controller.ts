@@ -15,6 +15,7 @@ type ComplementForm = {
   ItemName?: string,
   CommercialUnitOfMeasureCode?: string,
   CommercialFactor?: number,
+  ControlsRoyalties?: boolean,
 }
 
 /**
@@ -46,6 +47,7 @@ export default class Complement extends BaseController {
         ItemName: item?.ItemName,
         CommercialUnitOfMeasureCode: complement?.CommercialUnitOfMeasureCode,
         CommercialFactor: complement?.CommercialFactor,
+        ControlsRoyalties: !!complement?.ControlsRoyalties,
       } as ComplementForm);
     } finally {
       this.setBusy(false);
@@ -141,6 +143,7 @@ export default class Complement extends BaseController {
     // 500 de corpo vazio — por isso null explicito, nunca undefined.
     action.setParameter("CommercialUnitOfMeasureCode", uom);
     action.setParameter("CommercialFactor", factor);
+    action.setParameter("ControlsRoyalties", !!model.getProperty("/ControlsRoyalties"));
 
     this.setBusy(true);
     try {

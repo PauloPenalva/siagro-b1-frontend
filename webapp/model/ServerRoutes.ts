@@ -37,6 +37,10 @@ export default {
   // saldo/preço em KG, que continua sendo a fonte de verdade.
   itemsGetComplement: '/ItemsGetComplement(...)',
   itemsSetComplement: '/ItemsSetComplement(...)',
+  // Baixas de royalty (ITS). Actions e function OData, invocadas via bindContext.
+  royaltyWriteOffsCreate: '/RoyaltyWriteOffsCreate(...)',
+  royaltyWriteOffsCancel: '/RoyaltyWriteOffsCancel(...)',
+  royaltyBalanceTotals: '/RoyaltyBalanceTotals',
   salesContractsGetFiscalComplement: '/SalesContractsGetFiscalComplement(...)',
   salesContractsSetFiscalComplement: '/SalesContractsSetFiscalComplement(...)',
   unitsOfMeasure: '/odata/UnitsOfMeasure',
@@ -113,6 +117,7 @@ export default {
   contractPositionReport: '/reports/ContractPosition',
   contractMonthlyPositionReport: '/reports/ContractMonthlyPosition',
   funruralWithholdingReport: '/reports/FunruralWithholding',
+  royaltyPendingReport: '/reports/RoyaltyPending',
 
   purchaseContractsPriceFixations: '/odata/PurchaseContractsPriceFixations',
   // Actions OData invocadas via ODataModel.bindContext — formato relativo à raiz
