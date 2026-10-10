@@ -125,6 +125,12 @@
               value="{ReturnUsageName}"
               editable="false"
               visible="{ui>/identityEditable}" />
+          <!-- Contra-nota a partir da escrituração da NF-e do produtor (spec 2026-10-10 D4): só natureza de entrada, só
+               STANDALONE. A contra-nota usa esta mesma natureza e os mesmos tributos da escrituração. -->
+          <Label text="Permite contra-nota"
+                 visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
+          <CheckBox selected="{AllowsCounterNote}"
+                    visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
           <!-- Flags da natureza (equivalem a "Atualiza Estoque" e "Gera Duplicata" da TES do
                Protheus). Só cadastro por enquanto: o estoque FISCAL e o financeiro a partir
                do documento fiscal ainda não existem. -->
