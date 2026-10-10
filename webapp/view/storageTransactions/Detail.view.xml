@@ -64,6 +64,31 @@
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Baixas ITS" visible="{ui>/royaltyVisible}">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <VBox>
+                <HBox class="sapUiSmallMarginBottom">
+                  <ObjectAttribute title="Peso líquido" text="{ui>/royaltyBalance/netText} kg" class="sapUiMediumMarginEnd" />
+                  <ObjectAttribute title="Baixado" text="{ui>/royaltyBalance/writtenOffText} kg" class="sapUiMediumMarginEnd" />
+                  <ObjectAttribute title="Saldo" text="{ui>/royaltyBalance/balanceText} kg" />
+                </HBox>
+                <Table id="royaltyLinesTable" noDataText="Nenhuma baixa ITS para este romaneio.">
+                  <columns>
+                    <Column><Text text="Data" /></Column>
+                    <Column><Text text="ID do ITS" /></Column>
+                    <Column><Text text="CPF/CNPJ" /></Column>
+                    <Column><Text text="Nome" /></Column>
+                    <Column hAlign="End"><Text text="Peso (kg)" /></Column>
+                    <Column><Text text="Status" /></Column>
+                  </columns>
+                </Table>
+              </VBox>
+            </uxap:blocks>
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
       <uxap:ObjectPageSection titleUppercase="false" title="Classificação">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection>
