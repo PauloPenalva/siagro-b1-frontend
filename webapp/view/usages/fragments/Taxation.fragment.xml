@@ -138,6 +138,15 @@
           <Label text="Alíquotas" />
           <Text text="Vêm da tabela de Alíquotas IBS/CBS vigente na data de emissão." />
 
+          <core:Title text="Funrural (retenção do produtor rural)" emphasized="true" />
+          <!-- Spec 2026-10-09 §2: alíquotas da retenção na compra. PF, PJ (INSS e RAT combinados no INSS) e decisão
+               judicial (só SENAR) são naturezas diferentes. Vazio = parcela não retida. -->
+          <Label text="INSS %" />
+          <Input value="{ path: 'FunruralInssRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+          <Label text="RAT/GILRAT %" />
+          <Input value="{ path: 'FunruralRatRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+          <Label text="SENAR %" />
+          <Input value="{ path: 'FunruralSenarRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
           <core:Title text="Informações complementares" emphasized="true" />
           <Label text="Texto padrão na NF-e" />
           <TextArea value="{DefaultAdditionalInfo}" rows="4" maxLength="2000" growing="true" />
