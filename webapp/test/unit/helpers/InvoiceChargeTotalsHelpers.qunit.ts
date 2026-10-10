@@ -1,5 +1,5 @@
 import {
-	ChargeLine, chargeLineOf, formatAmount, formatLineGrandTotal, LINE_CHARGES_SELECT, lineGrandTotal, summarizeInvoiceCharges,
+	ChargeLine, chargeLineOf, formatAmount, formatLineGrandTotal, LINE_CHARGES_SELECT, lineFunrural, lineGrandTotal, summarizeInvoiceCharges,
 } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
 import { PURCHASE_ITEM_SELECT } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 
@@ -83,4 +83,32 @@ QUnit.test("o $select das linhas da entrada traz os campos da seção Totais", f
 	const purchase = PURCHASE_ITEM_SELECT.split(",");
 
 	assert.deepEqual(LINE_CHARGES_SELECT.split(",").filter((field) => !purchase.includes(field)), []);
+});
+
+QUnit.test("com Funrural, a seção mostra o retido e o líquido a pagar depois do total geral", function (assert) {
+	const result = summarizeInvoiceCharges(
+		[{ Quantity: 1000, UnitPrice: 1.5, FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0 }],
+		24.45,
+	);
+
+	assert.deepEqual(result.rows.slice(-3), [
+		{ Label: "Total geral", Value: 1500, Emphasized: true },
+		{ Label: "(−) Funrural retido", Value: 24.45, Emphasized: false },
+		{ Label: "Líquido a pagar", Value: 1475.55, Emphasized: true },
+	]);
+	assert.strictEqual(result.netPayable, 1475.55);
+});
+
+QUnit.test("sem Funrural, a seção termina no total geral", function (assert) {
+	const result = summarizeInvoiceCharges(
+		[{ Quantity: 1, UnitPrice: 10, FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0 }]);
+
+	assert.strictEqual(result.rows[result.rows.length - 1].Label, "Total geral");
+	assert.strictEqual(result.netPayable, 10);
+});
+
+QUnit.test("lineFunrural soma INSS, RAT e SENAR da linha, aceitando string e vazio", function (assert) {
+	const values: Record<string, unknown> = { FunruralInssValue: "19.80", FunruralRatValue: 1.65, FunruralSenarValue: undefined };
+
+	assert.strictEqual(lineFunrural({ getProperty: (path: string) => values[path] }), 21.45);
 });
