@@ -1,5 +1,11 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
 	<VBox class="sapUiSmallMargin">
+		<MessageStrip
+			type="Error"
+			showIcon="true"
+			text="{remittance>/loadError}"
+			visible="{= !!${remittance>/loadError} }"/>
+		<VBox visible="{remittance>/loaded}">
 		<HBox>
 			<Link
 				text="Remessa nº {remittance>/summary/RemittanceNumber}"
@@ -61,5 +67,6 @@
 				</ColumnListItem>
 			</items>
 		</Table>
+		</VBox>
 	</VBox>
 </core:FragmentDefinition>

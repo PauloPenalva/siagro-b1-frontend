@@ -36,7 +36,16 @@
 						</f:FormElement>
 						<f:FormElement label="Preço unitário">
 							<f:fields>
-								<Input value="{remittance>/dialog/unitPrice}" required="true"/>
+								<Input
+									value="{
+										path: 'remittance>/dialog/unitPrice',
+										type: 'sap.ui.model.type.Float',
+										formatOptions: { decimalSeparator: ',', groupingSeparator: '.', groupingEnabled: true, maxFractionDigits: 6 }
+									}"
+									required="true"
+									parseError=".onRemittancePriceValidationError"
+									validationError=".onRemittancePriceValidationError"
+									validationSuccess=".onRemittancePriceValidationSuccess"/>
 							</f:fields>
 						</f:FormElement>
 					</f:formElements>
