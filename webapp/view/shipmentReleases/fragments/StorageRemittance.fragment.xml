@@ -1,0 +1,65 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+	<VBox class="sapUiSmallMargin">
+		<HBox>
+			<Link
+				text="Remessa nº {remittance>/summary/RemittanceNumber}"
+				visible="{= !!${remittance>/summary/RemittanceKey} }"
+				press=".onOpenRemittance"/>
+			<Text text="Sem remessa" visible="{= !${remittance>/summary/RemittanceKey} }"/>
+		</HBox>
+		<HBox class="sapUiSmallMarginTopBottom">
+			<VBox class="sapUiMediumMarginEnd">
+				<Label text="Remetido"/>
+				<ObjectNumber number="{ path: 'remittance>/summary/RemittedQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+			</VBox>
+			<VBox class="sapUiMediumMarginEnd">
+				<Label text="Retornado"/>
+				<ObjectNumber number="{ path: 'remittance>/summary/ReturnedQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+			</VBox>
+			<VBox class="sapUiMediumMarginEnd">
+				<Label text="A retornar"/>
+				<ObjectNumber number="{ path: 'remittance>/summary/PendingReturnQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+			</VBox>
+			<VBox>
+				<Label text="Expedido sem retorno"/>
+				<ObjectNumber number="{ path: 'remittance>/summary/ShippedWithoutReturnQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+			</VBox>
+		</HBox>
+		<Table headerText="Retornos" items="{remittance>/summary/Returns}" noDataText="Nenhum retorno">
+			<columns>
+				<Column><Text text="Número"/></Column>
+				<Column><Text text="Data"/></Column>
+				<Column hAlign="End"><Text text="Quantidade"/></Column>
+			</columns>
+			<items>
+				<ColumnListItem>
+					<cells>
+						<Link text="{remittance>Number}" press=".onOpenReturn"/>
+						<Text text="{ path: 'remittance>InvoiceDate', formatter: '.formatter.formatDate' }"/>
+						<ObjectNumber number="{ path: 'remittance>Quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+					</cells>
+				</ColumnListItem>
+			</items>
+		</Table>
+		<Table class="sapUiSmallMarginTop" headerText="Romaneios expedidos" items="{remittance>/summary/Transactions}" noDataText="Nenhum romaneio">
+			<columns>
+				<Column><Text text="Código"/></Column>
+				<Column><Text text="Data"/></Column>
+				<Column><Text text="Placa"/></Column>
+				<Column hAlign="End"><Text text="Peso Líquido"/></Column>
+				<Column><Text text="Retorno"/></Column>
+			</columns>
+			<items>
+				<ColumnListItem>
+					<cells>
+						<Text text="{remittance>Code}"/>
+						<Text text="{ path: 'remittance>TransactionDate', formatter: '.formatter.formatDate' }"/>
+						<Text text="{remittance>TruckCode}"/>
+						<ObjectNumber number="{ path: 'remittance>NetWeight', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+						<Text text="{= ${remittance>ReturnNumber} || 'Sem retorno' }"/>
+					</cells>
+				</ColumnListItem>
+			</items>
+		</Table>
+	</VBox>
+</core:FragmentDefinition>
