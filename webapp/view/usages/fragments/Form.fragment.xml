@@ -131,6 +131,17 @@
                  visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
           <CheckBox selected="{AllowsCounterNote}"
                     visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
+          <!-- Remessa para depósito em armazém de terceiro (spec backend 2026-10-10 §2.1): só STANDALONE. Remessa é
+               natureza de saída e Retorno de entrada; o servidor recusa a combinação errada. -->
+          <Label text="Papel no depósito" visible="{ui>/identityEditable}" />
+          <Select
+            visible="{ui>/identityEditable}"
+            selectedKey="{ path: 'StorageDepositRole', targetType: 'any' }"
+            forceSelection="false">
+            <core:ListItem key="None" text="Nenhum" />
+            <core:ListItem key="Remittance" text="Remessa para depósito" />
+            <core:ListItem key="Return" text="Retorno de depósito" />
+          </Select>
           <!-- Flags da natureza (equivalem a "Atualiza Estoque" e "Gera Duplicata" da TES do
                Protheus). Só cadastro por enquanto: o estoque FISCAL e o financeiro a partir
                do documento fiscal ainda não existem. -->
