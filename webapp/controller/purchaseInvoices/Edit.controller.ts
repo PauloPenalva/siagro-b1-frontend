@@ -40,6 +40,7 @@ export default class Edit extends BaseController {
 
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setProperty("/editable", true);
+    uiModel.setProperty("/remittanceNumbers", {});
     uiModel.setProperty("/typeEditable", false);
 
     const oModel = this.getModel() as ODataModel;

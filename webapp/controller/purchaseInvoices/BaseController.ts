@@ -17,6 +17,10 @@ import { chargeLineOf, formatAmount, lineFunrural, summarizeInvoiceCharges } fro
 /** Sequência compartilhada por Add/Edit/Detail: só a chamada mais recente de refreshNfeMode escreve no `ui`. */
 let nfeModeSequence = 0;
 
+/** Modo do ERP (STANDALONE?) lido uma vez; undefined = ainda não lido. */
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- strictNullChecks desligado; undefined = ainda não lido
+let isStandaloneErp: boolean | undefined;
+
 /**
  * Comum às telas do documento de entrada.
  *
@@ -46,12 +50,6 @@ export abstract class BaseController extends CommonController {
     const oContext = this.getView().getBindingContext() as Context;
     const isCurrent = () => sequence === nfeModeSequence && this.getView().getBindingContext() === oContext;
 
-    // Remessa para depósito (spec backend 2026-10-10 §5.3): só STANDALONE mostra a coluna "Remessa".
-    const systemInfo = await this.getSystemInfo();
-    if (isCurrent()) {
-      uiModel.setProperty("/storageDepositMode", systemInfo?.erp?.trim().toUpperCase() === "STANDALONE");
-    }
-
     if (reset || !oContext) {
       uiModel.setProperty("/taxLocked", false);
       uiModel.setProperty("/nfeMode", false);
@@ -63,6 +61,10 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/counterNote", { key: "", text: "" });
       uiModel.setProperty("/producerInvoice", { key: "", text: "" });
     }
+
+    // Remessa para depósito (spec backend 2026-10-10 §5.3): só STANDALONE mostra a coluna "Remessa". Depois do reset
+    // e guardado por isCurrent(); o modo do ERP é lido uma vez só (cache de módulo).
+    await this.refreshStorageDepositMode(uiModel, isCurrent);
 
     if (!oContext) {
       return;
@@ -116,6 +118,21 @@ export abstract class BaseController extends CommonController {
         uiModel.setProperty("/counterNote", { key: "", text: "" });
         uiModel.setProperty("/producerInvoice", { key: "", text: "" });
       }
+    }
+  }
+
+  private async refreshStorageDepositMode(uiModel: JSONModel, isCurrent: () => boolean): Promise<void> {
+    if (isStandaloneErp === undefined) {
+      try {
+        isStandaloneErp = (await this.getSystemInfo())?.erp?.trim().toUpperCase() === "STANDALONE";
+      } catch {
+        // Sem resposta: sem a coluna; a próxima chamada tenta de novo.
+        if (isCurrent()) uiModel.setProperty("/storageDepositMode", false);
+        return;
+      }
+    }
+    if (isCurrent()) {
+      uiModel.setProperty("/storageDepositMode", isStandaloneErp);
     }
   }
 

@@ -1,4 +1,4 @@
-<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" core:require="{ formatter: 'siagrob1/model/formatter' }">
 <!-- Escolha dos romaneios do retorno de depósito. O rodapé mostra a diferença entre a nota e os pesos marcados. -->
 <Dialog title="Reconciliar romaneios" contentWidth="40rem" class="sapUiSizeCompact">
   <content>
@@ -14,7 +14,7 @@
         <ColumnListItem>
           <cells>
             <Text text="{storageReturn>Code}" />
-            <Text text="{ path: 'storageReturn>TransactionDate', type: 'sap.ui.model.type.Date', formatOptions: { style: 'short' } }" />
+            <Text text="{ path: 'storageReturn>TransactionDate', formatter: 'formatter.formatDate' }" />
             <Text text="{storageReturn>TruckCode}" />
             <ObjectNumber number="{ path: 'storageReturn>NetWeight', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" unit="{storageReturn>UnitOfMeasureCode}" />
           </cells>

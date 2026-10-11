@@ -8,7 +8,7 @@ import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import formatter from "siagrob1/model/formatter";
 import { missingUsageMessage } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
-import { blankItemRow, draftItemRows, ImportedInvoiceItem, toNumber } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
+import { blankItemRow, draftItemRows, ImportedInvoiceItem, remittanceNumbersByItem, toNumber } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 import { BaseController } from "./BaseController";
 
 /** Rascunho devolvido pela leitura do XML — não é gravado ainda. */
@@ -132,6 +132,7 @@ export default class Add extends BaseController {
   private createDraft(draft?: ImportedInvoice, xmlContent?: string, branchCode?: string) {
     const oModel = this.getModel() as ODataModel;
     const oBinding = oModel.bindList("/PurchaseInvoices");
+    (this.getModel("ui") as JSONModel).setProperty("/remittanceNumbers", remittanceNumbersByItem(draft?.Items));
 
     if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
       oModel.resetChanges(oModel.getUpdateGroupId());

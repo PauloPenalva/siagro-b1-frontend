@@ -65,6 +65,25 @@ export interface ImportedInvoiceItem {
   OtherExpensesValue?: number | string;
 }
 
+/**
+ * Número da remessa de cada linha do XML, por nItem. Fica só no cliente (modelo `ui`): o POST não o leva, porque quem grava
+ * é o SalesInvoiceItemKey; serve para a coluna "Remessa" não parecer vazia antes de salvar.
+ */
+export function remittanceNumbersByItem(items?: ImportedInvoiceItem[]): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const item of items ?? []) {
+    if (item.NfeItemNumber != null && item.RemittanceNumber) {
+      map[String(item.NfeItemNumber)] = item.RemittanceNumber;
+    }
+  }
+  return map;
+}
+
+/** Texto da coluna "Remessa": o da navegação (documento salvo) ou, antes de salvar, o número vindo do XML. */
+export function formatRemittanceNumber(navigationText?: string, nfeItemNumber?: number, numbers?: Record<string, string>): string {
+  return navigationText || (nfeItemNumber != null ? numbers?.[String(nfeItemNumber)] : "") || "";
+}
+
 /** Linha em branco do "Incluir Item" e da digitação manual. */
 export function blankItemRow(): InvoiceItemPayload {
   return {

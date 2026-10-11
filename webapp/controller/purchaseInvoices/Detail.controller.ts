@@ -70,7 +70,7 @@ export default class Detail extends BaseController {
 
   onInit(): void {
     this.getView().setModel(new JSONModel({
-      visible: false, canReconcile: false, rows: [], candidates: [], reconciled: [],
+      visible: false, loadError: "", canReconcile: false, rows: [], candidates: [], reconciled: [],
       dialog: { selectedKeys: [], summaryText: "" },
     }), "storageReturn");
     this.getRouter().getRoute("purchaseInvoicesDetail")
@@ -86,6 +86,7 @@ export default class Detail extends BaseController {
 
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setProperty("/editable", false);
+    uiModel.setProperty("/remittanceNumbers", {});
     uiModel.setProperty("/typeEditable", false);
     uiModel.setProperty("/canIssueNfe", false);
     uiModel.setProperty("/canReturn", false);
@@ -158,6 +159,7 @@ export default class Detail extends BaseController {
   private resetStorageReturn(): void {
     const model = this.getView().getModel("storageReturn") as JSONModel;
     model.setProperty("/visible", false);
+    model.setProperty("/loadError", "");
     model.setProperty("/canReconcile", false);
     model.setProperty("/rows", []);
     model.setProperty("/candidates", []);
@@ -169,13 +171,15 @@ export default class Detail extends BaseController {
    * Soma das quantidades das linhas que apontam uma linha de remessa (SalesInvoiceItemKey), fora da Devolução;
    * null quando o documento não é um retorno de depósito. Falha na leitura = não é retorno.
    */
-  private async hasRemittanceLine(ctx: Context): Promise<number> {
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- strictNullChecks desligado; null = não é retorno
+  private async remittanceQuantity(ctx: Context): Promise<number | null> {
     try {
       if (await ctx.requestProperty("InvoiceType") === "Return") return null;
       const items = await ctx.requestObject("Items") as { SalesInvoiceItemKey: string; Quantity: number | string }[];
       const lines = (items ?? []).filter((item) => !!item.SalesInvoiceItemKey);
       return lines.length === 0 ? null : lines.reduce((sum, item) => sum + Number(item.Quantity ?? 0), 0);
-    } catch {
+    } catch (e) {
+      console.warn("Não foi possível ler as linhas para o retorno de depósito.", e);
       return null;
     }
   }
@@ -184,7 +188,7 @@ export default class Detail extends BaseController {
   private async loadStorageReturn(ctx: Context): Promise<void> {
     const model = this.getView().getModel("storageReturn") as JSONModel;
     const ui = this.getModel("ui") as JSONModel;
-    const quantity = ui.getProperty("/storageDepositMode") === true ? await this.hasRemittanceLine(ctx) : null;
+    const quantity = ui.getProperty("/storageDepositMode") === true ? await this.remittanceQuantity(ctx) : null;
 
     // Outro documento foi aberto enquanto esperava.
     if (this.getView().getBindingContext() !== ctx) return;
@@ -197,9 +201,20 @@ export default class Detail extends BaseController {
     const result = await sendJson("GET", `${ServerRoutes.purchaseInvoicesStorageReturnTransactions}(Key=${ctx.getProperty("Key") as string})`);
     if (this.getView().getBindingContext() !== ctx) return;
 
-    const rows = result.ok ? (odataValue<StorageReturnRow[]>(result.data) ?? []) : [];
     this.returnQuantity = quantity;
     model.setProperty("/visible", true);
+    if (!result.ok) {
+      // Falha não pode parecer "Nenhum romaneio reconciliado": a seção mostra o erro.
+      model.setProperty("/loadError", result.message);
+      model.setProperty("/rows", []);
+      model.setProperty("/candidates", []);
+      model.setProperty("/reconciled", []);
+      model.setProperty("/canReconcile", false);
+      return;
+    }
+
+    const rows = odataValue<StorageReturnRow[]>(result.data) ?? [];
+    model.setProperty("/loadError", "");
     model.setProperty("/rows", rows);
     model.setProperty("/candidates", rows.filter((r) => !r.IsReconciled));
     model.setProperty("/reconciled", rows.filter((r) => r.IsReconciled));
