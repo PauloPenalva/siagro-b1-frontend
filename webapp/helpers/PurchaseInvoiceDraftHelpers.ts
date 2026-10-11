@@ -55,11 +55,35 @@ export interface ImportedInvoiceItem {
   Quantity: number | string;
   UnitPrice: number | string;
   NfeItemNumber?: number;
+  /** Retorno de depósito (spec backend 2026-10-10): a linha da remessa casada pelo XML; o número só serve para exibir. */
+  SalesInvoiceItemKey?: string;
+  RemittanceNumber?: string;
   /** Frete, seguro, desconto e outras despesas do `det/prod` (Edm.Decimal da action, em string); ausentes = 0. */
   FreightValue?: number | string;
   InsuranceValue?: number | string;
   DiscountValue?: number | string;
   OtherExpensesValue?: number | string;
+}
+
+/**
+ * Número da remessa de cada linha do XML, por nItem. Fica só no cliente (modelo `ui`): o POST não o leva, porque quem grava
+ * é o SalesInvoiceItemKey; serve para a coluna "Remessa" não parecer vazia antes de salvar.
+ */
+export function remittanceNumbersByItem(items?: ImportedInvoiceItem[]): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const item of items ?? []) {
+    if (item.NfeItemNumber != null && item.RemittanceNumber) {
+      map[String(item.NfeItemNumber)] = item.RemittanceNumber;
+    }
+  }
+  return map;
+}
+
+/** Texto da coluna "Remessa": o da navegação (documento salvo) ou, antes de salvar, o número vindo do XML. */
+export function formatRemittanceNumber(
+  navigationText?: string, navigationInvoiceNumber?: string, nfeItemNumber?: number, numbers?: Record<string, string>
+): string {
+  return navigationText || navigationInvoiceNumber || (nfeItemNumber != null ? numbers?.[String(nfeItemNumber)] : "") || "";
 }
 
 /** Linha em branco do "Incluir Item" e da digitação manual. */
@@ -91,6 +115,7 @@ export function draftItemRows(items?: ImportedInvoiceItem[]): InvoiceItemPayload
     Quantity: toNumber(item.Quantity),
     UnitPrice: toNumber(item.UnitPrice),
     NfeItemNumber: item.NfeItemNumber ?? null,
+    SalesInvoiceItemKey: item.SalesInvoiceItemKey ?? null,
     FreightValue: toNumber(item.FreightValue),
     InsuranceValue: toNumber(item.InsuranceValue),
     DiscountValue: toNumber(item.DiscountValue),

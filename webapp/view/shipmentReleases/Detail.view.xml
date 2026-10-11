@@ -23,6 +23,7 @@
 					<Title text="Liberação de Entrega"/>
 				</uxap:snappedHeading>
 				<uxap:actions>
+					<Button text="Emitir remessa" type="Emphasized" visible="{remittance>/canIssue}" press=".onOpenRemittanceDialog"/>
 					<Button text="Voltar" type="Transparent" press=".onNavBack"/>
 				</uxap:actions>
 			</uxap:ObjectPageDynamicHeaderTitle>
@@ -77,6 +78,15 @@
 					<uxap:ObjectPageSubSection>
 						<uxap:blocks>
 							<core:Fragment fragmentName="siagrob1.view.shipmentReleases.fragments.Transactions" type="XML"/>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+			<uxap:ObjectPageSection titleUppercase="false" title="Remessa para depósito" visible="{remittance>/visible}">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<uxap:blocks>
+							<core:Fragment fragmentName="siagrob1.view.shipmentReleases.fragments.StorageRemittance" type="XML"/>
 						</uxap:blocks>
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>

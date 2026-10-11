@@ -1,0 +1,33 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" core:require="{ formatter: 'siagrob1/model/formatter' }">
+<!-- Escolha dos romaneios do retorno de depósito. O rodapé mostra a diferença entre a nota e os pesos marcados. -->
+<Dialog title="Reconciliar romaneios" contentWidth="40rem" class="sapUiSizeCompact">
+  <content>
+    <Table id="storageReturnCandidates" items="{storageReturn>/candidates}" mode="MultiSelect"
+           noDataText="Nenhum romaneio disponível" selectionChange=".onReconcileSelectionChange">
+      <columns>
+        <Column><Text text="Código" /></Column>
+        <Column><Text text="Data" /></Column>
+        <Column><Text text="Placa" /></Column>
+        <Column hAlign="End"><Text text="Peso Líquido" /></Column>
+      </columns>
+      <items>
+        <ColumnListItem>
+          <cells>
+            <Text text="{storageReturn>Code}" />
+            <Text text="{ path: 'storageReturn>TransactionDate', formatter: 'formatter.formatDate' }" />
+            <Text text="{storageReturn>TruckCode}" />
+            <ObjectNumber number="{ path: 'storageReturn>NetWeight', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" unit="{storageReturn>UnitOfMeasureCode}" />
+          </cells>
+        </ColumnListItem>
+      </items>
+    </Table>
+    <Text class="sapUiSmallMargin" text="{storageReturn>/dialog/summaryText}" />
+  </content>
+  <beginButton>
+    <Button text="Reconciliar" type="Emphasized" enabled="{= ${storageReturn>/dialog/selectedKeys}.length > 0 }" press=".onConfirmReconcile" />
+  </beginButton>
+  <endButton>
+    <Button text="Cancelar" press=".onCancelReconcile" />
+  </endButton>
+</Dialog>
+</core:FragmentDefinition>

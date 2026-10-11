@@ -199,6 +199,12 @@ export default {
   purchaseInvoicesDanfeReport: '/reports/Danfe/purchase-invoices',
   purchaseInvoicesCreateNfeReturn: '/PurchaseInvoicesCreateNfeReturn(...)',
   purchaseInvoicesCreateCounterNote: '/PurchaseInvoicesCreateCounterNote(...)',
+  // Remessa para depósito em armazém de terceiro: emissão, resumo da liberação e reconciliação do retorno.
+  shipmentReleasesCreateStorageRemittance: '/odata/ShipmentReleasesCreateStorageRemittance',
+  shipmentReleasesStorageRemittanceSummary: '/odata/ShipmentReleasesStorageRemittanceSummary',
+  purchaseInvoicesStorageReturnTransactions: '/odata/PurchaseInvoicesStorageReturnTransactions',
+  purchaseInvoicesReconcileStorageReturn: '/odata/PurchaseInvoicesReconcileStorageReturn',
+  purchaseInvoicesUndoStorageReturnReconciliation: '/odata/PurchaseInvoicesUndoStorageReturnReconciliation',
   purchaseInvoicesNfeReturnableItems: '/odata/PurchaseInvoicesNfeReturnableItems',
   // Cancelamento da NF-e (evento 110111): ação com justificativa, conclusão da fase local e XML do evento.
   salesInvoicesCancelNfe: '/odata/SalesInvoicesCancelNfe',

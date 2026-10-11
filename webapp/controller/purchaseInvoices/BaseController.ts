@@ -17,6 +17,10 @@ import { chargeLineOf, formatAmount, lineFunrural, summarizeInvoiceCharges } fro
 /** Sequência compartilhada por Add/Edit/Detail: só a chamada mais recente de refreshNfeMode escreve no `ui`. */
 let nfeModeSequence = 0;
 
+/** Modo do ERP (STANDALONE?) lido uma vez; undefined = ainda não lido. */
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- strictNullChecks desligado; undefined = ainda não lido
+let isStandaloneErp: boolean | undefined;
+
 /**
  * Comum às telas do documento de entrada.
  *
@@ -57,6 +61,10 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/counterNote", { key: "", text: "" });
       uiModel.setProperty("/producerInvoice", { key: "", text: "" });
     }
+
+    // Remessa para depósito (spec backend 2026-10-10 §5.3): só STANDALONE mostra a coluna "Remessa". Depois do reset
+    // e guardado por isCurrent(); o modo do ERP é lido uma vez só (cache de módulo).
+    await this.refreshStorageDepositMode(uiModel, isCurrent);
 
     if (!oContext) {
       return;
@@ -110,6 +118,21 @@ export abstract class BaseController extends CommonController {
         uiModel.setProperty("/counterNote", { key: "", text: "" });
         uiModel.setProperty("/producerInvoice", { key: "", text: "" });
       }
+    }
+  }
+
+  private async refreshStorageDepositMode(uiModel: JSONModel, isCurrent: () => boolean): Promise<void> {
+    if (isStandaloneErp === undefined) {
+      try {
+        isStandaloneErp = (await this.getSystemInfo())?.erp?.trim().toUpperCase() === "STANDALONE";
+      } catch {
+        // Sem resposta: sem a coluna; a próxima chamada tenta de novo.
+        if (isCurrent()) uiModel.setProperty("/storageDepositMode", false);
+        return;
+      }
+    }
+    if (isCurrent()) {
+      uiModel.setProperty("/storageDepositMode", isStandaloneErp);
     }
   }
 
@@ -235,6 +258,29 @@ export abstract class BaseController extends CommonController {
     }
 
     oInput.setValue(oSelected.getProperty("SalesInvoice/InvoiceNumber") as string);
+    await oTarget.setProperty("SalesInvoiceItemKey", oSelected.getProperty("Key"));
+  }
+
+  /** Value help da REMESSA PARA DEPÓSITO da linha de retorno: remessas ativas do armazém emitente do documento. */
+  async openRemittanceItemValueHelp(ev: Input$ValueHelpRequestEvent) {
+    const oInput = ev.getSource();
+    const oTarget = oInput.getBindingContext() as Context;
+    const cardCode = (this.getView().getBindingContext() as Context)?.getProperty("CardCode") as string;
+
+    if (!cardCode) {
+      MessageBox.warning("Informe o emitente (o armazém) antes de indicar a remessa.");
+      return;
+    }
+
+    const oSelected = await DialogHelper.openTableSelectDialog(
+      this, "StorageRemittanceItemsSelectDialog", ["SalesInvoice/InvoiceNumber", "SalesInvoice/TaxDocumentNumber", "ItemName"],
+      [new Filter("SalesInvoice/CardCode", FilterOperator.EQ, cardCode)]);
+
+    if (!oSelected) {
+      return;
+    }
+
+    oInput.setValue((oSelected.getProperty("SalesInvoice/TaxDocumentNumber") || oSelected.getProperty("SalesInvoice/InvoiceNumber") || "") as string);
     await oTarget.setProperty("SalesInvoiceItemKey", oSelected.getProperty("Key"));
   }
 

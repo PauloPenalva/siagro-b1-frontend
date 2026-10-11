@@ -1,0 +1,26 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" core:require="{ formatter: 'siagrob1/model/formatter' }">
+<!-- Romaneios reconciliados com este retorno de depósito (spec backend 2026-10-10 §3.5). -->
+<VBox>
+<MessageStrip type="Error" showIcon="true" text="{storageReturn>/loadError}" visible="{= !!${storageReturn>/loadError} }" />
+<Table visible="{= !${storageReturn>/loadError} }" items="{storageReturn>/reconciled}" noDataText="Nenhum romaneio reconciliado" class="sapUiSizeCompact">
+  <columns>
+    <Column><Text text="Código" /></Column>
+    <Column><Text text="Data" /></Column>
+    <Column><Text text="Placa" /></Column>
+    <Column hAlign="End"><Text text="Peso Líquido" /></Column>
+    <Column width="8rem" />
+  </columns>
+  <items>
+    <ColumnListItem>
+      <cells>
+        <Text text="{storageReturn>Code}" />
+        <Text text="{ path: 'storageReturn>TransactionDate', formatter: 'formatter.formatDate' }" />
+        <Text text="{storageReturn>TruckCode}" />
+        <ObjectNumber number="{ path: 'storageReturn>NetWeight', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" unit="{storageReturn>UnitOfMeasureCode}" />
+        <Button text="Desfazer" icon="sap-icon://undo" type="Transparent" press=".onUndoReconciliation" />
+      </cells>
+    </ColumnListItem>
+  </items>
+</Table>
+</VBox>
+</core:FragmentDefinition>
