@@ -47,11 +47,14 @@ export default class BaseController extends RootBaseController {
 
 	/**
 	 * A natureza de devolução é do sentido oposto: trocar o tipo invalida a escolhida antes, então o vínculo
-	 * é limpo. Sem await: o contexto está num update group diferido.
+	 * é limpo. "Permite contra-nota" só vale para Entrada e a caixa some fora dela: marcada e escondida, o servidor recusa
+	 * gravar a natureza de saída sem o usuário ter como desmarcar — então também é limpa. Sem await: o contexto está num
+	 * update group diferido.
 	 */
 	onDirectionChange(ev: Select$ChangeEvent) {
 		const oTarget = ev.getSource().getBindingContext() as Context;
 		void oTarget.setProperty("ReturnUsageCode", null);
 		void oTarget.setProperty("ReturnUsageName", null);
+		void oTarget.setProperty("AllowsCounterNote", false);
 	}
 }

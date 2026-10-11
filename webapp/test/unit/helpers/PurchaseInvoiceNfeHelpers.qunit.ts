@@ -1,6 +1,7 @@
 import {
-	buildPurchaseItemNumbers, canIssuePurchaseNfe, canReturnPurchase, canReturnThirdPartyPurchase, isPurchaseNfeMode,
-	isPurchaseTaxMode, missingUsageMessage, mustFallBackToNormal, PurchaseNfeState, requiresSupplierKey, supplierNfeAuthorizationText
+	allUsagesAllowCounterNote, buildPurchaseItemNumbers, canCreateCounterNote, canIssuePurchaseNfe, canReturnPurchase, canReturnThirdPartyPurchase,
+	counterNoteText, isPurchaseNfeMode, isPurchaseTaxMode, isValidCounterNote, missingUsageMessage, mustFallBackToNormal,
+	PurchaseNfeState, requiresSupplierKey, supplierNfeAuthorizationText
 } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 
 QUnit.module("PurchaseInvoiceNfeHelpers - NF-e do documento de entrada");
@@ -161,4 +162,52 @@ QUnit.test("mensagem da natureza: linha sem produto aparece como (sem produto) e
 		"Informe a natureza de operação do item (sem produto): os tributos da entrada são calculados por ela.");
 	assert.strictEqual(missingUsageMessage(["TRIGO", "TRIGO"]),
 		"Informe a natureza de operação do item TRIGO: os tributos da entrada são calculados por ela.");
+});
+
+const producer: PurchaseNfeState = {
+	InvoiceStatus: "Confirmed", InvoiceType: "Normal", IssuerType: "ThirdParty", IsNfeReturn: false, NfeStatus: "None",
+	ChaveNFe: "35261011222333000181550010000007891000067823", TaxDocumentKind: "Nfe",
+};
+
+QUnit.test("gera contra-nota da escrituração NF-e confirmada, com a chave, sem contra-nota válida e natureza que permite", function (assert) {
+	assert.strictEqual(canCreateCounterNote(producer, true, false, true), true);
+	assert.strictEqual(canCreateCounterNote(producer, true, true, true), false);
+	assert.strictEqual(canCreateCounterNote(producer, false, false, true), false);
+	assert.strictEqual(canCreateCounterNote(producer, true, false, false), false);
+	assert.strictEqual(canCreateCounterNote({ ...producer, TaxDocumentKind: "Other" }, true, false, true), false);
+	assert.strictEqual(canCreateCounterNote({ ...producer, InvoiceStatus: "Pending" }, true, false, true), false);
+	assert.strictEqual(canCreateCounterNote({ ...producer, IssuerType: "Own" }, true, false, true), false);
+	assert.strictEqual(canCreateCounterNote({ ...producer, ChaveNFe: "" }, true, false, true), false);
+});
+
+QUnit.test("contra-nota só com toda linha numa natureza que permite", function (assert) {
+	const usages = [{ Code: 1, AllowsCounterNote: true }, { Code: 2, AllowsCounterNote: false }];
+	assert.strictEqual(allUsagesAllowCounterNote([1, 1], usages), true);
+	assert.strictEqual(allUsagesAllowCounterNote([1, 2], usages), false);
+	assert.strictEqual(allUsagesAllowCounterNote([1, null], usages), false);
+	assert.strictEqual(allUsagesAllowCounterNote([1, 3], usages), false);
+	assert.strictEqual(allUsagesAllowCounterNote([], usages), false);
+});
+
+QUnit.test("contra-nota válida: não cancelada e NF-e fora de cancelada, inutilizada ou denegada", function (assert) {
+	assert.strictEqual(isValidCounterNote({ InvoiceStatus: "Pending", NfeStatus: "None" }), true);
+	assert.strictEqual(isValidCounterNote({ InvoiceStatus: "Pending", NfeStatus: "Rejected" }), true);
+	assert.strictEqual(isValidCounterNote({ InvoiceStatus: "Confirmed", NfeStatus: "Authorized" }), true);
+	assert.strictEqual(isValidCounterNote({ InvoiceStatus: "Cancelled", NfeStatus: "Rejected" }), false);
+	assert.strictEqual(isValidCounterNote({ InvoiceStatus: "Confirmed", NfeStatus: "Cancelled" }), false);
+	assert.strictEqual(isValidCounterNote({ InvoiceStatus: "Pending", NfeStatus: "Voided" }), false);
+	assert.strictEqual(isValidCounterNote({ InvoiceStatus: "Pending", NfeStatus: "Denied" }), false);
+});
+
+QUnit.test("a contra-nota autorizada não abre o Devolver", function (assert) {
+	const authorized: PurchaseNfeState = { ...pending, InvoiceStatus: "Confirmed", NfeStatus: "Authorized" };
+	assert.strictEqual(canReturnPurchase(authorized, true), true);
+	assert.strictEqual(canReturnPurchase({ ...authorized, ProducerInvoiceKey: "a1b2" }, true), false);
+});
+
+QUnit.test("texto do vínculo da contra-nota", function (assert) {
+	assert.strictEqual(counterNoteText({ InvoiceNumber: "DE000123", TaxDocumentNumber: "000000010", NfeStatus: "Authorized" }),
+		"DE000123 — NF-e 10 Autorizada");
+	assert.strictEqual(counterNoteText({ InvoiceNumber: "DE000124", TaxDocumentNumber: null, NfeStatus: "None" }),
+		"DE000124 — NF-e não emitida");
 });

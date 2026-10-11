@@ -51,6 +51,11 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/nfeMode", false);
       uiModel.setProperty("/nfeReturn", false);
       uiModel.setProperty("/taxMode", false);
+      uiModel.setProperty("/isCounterNote", false);
+      // Vínculos da contra-nota: só o Detail os preenche (depois de conferir que o documento é o mesmo). O `ui` é do
+      // componente, então Incluir/Editar não podem herdar o link do último documento aberto.
+      uiModel.setProperty("/counterNote", { key: "", text: "" });
+      uiModel.setProperty("/producerInvoice", { key: "", text: "" });
     }
 
     if (!oContext) {
@@ -63,6 +68,7 @@ export abstract class BaseController extends CommonController {
       const isNfeReturn = await oContext.requestProperty("IsNfeReturn") === true;
       const invoiceType = await oContext.requestProperty("InvoiceType") as string;
       const paymentConditionCode = await oContext.requestProperty("PaymentConditionCode") as number;
+      const producerInvoiceKey = await oContext.requestProperty("ProducerInvoiceKey") as string;
       const taxLocked = await this.isTaxCalculationActive(branchCode);
 
       if (!isCurrent()) {
@@ -73,6 +79,8 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/taxLocked", taxLocked);
       uiModel.setProperty("/nfeMode", nfeMode);
       uiModel.setProperty("/nfeReturn", isNfeReturn);
+      // Contra-nota (spec 2026-10-10): cabeçalho e linhas vêm da escrituração do produtor e ficam somente leitura.
+      uiModel.setProperty("/isCounterNote", !!producerInvoiceKey);
       // Natureza, CFOP, "Tributos do item", condição de pagamento e Transporte: própria e terceiro Normal, com a
       // mesma tela (spec terceiro-chave D1).
       const taxMode = isPurchaseTaxMode(taxLocked, issuerType, invoiceType);
@@ -98,6 +106,9 @@ export abstract class BaseController extends CommonController {
         uiModel.setProperty("/nfeMode", false);
         uiModel.setProperty("/nfeReturn", false);
         uiModel.setProperty("/taxMode", false);
+        uiModel.setProperty("/isCounterNote", false);
+        uiModel.setProperty("/counterNote", { key: "", text: "" });
+        uiModel.setProperty("/producerInvoice", { key: "", text: "" });
       }
     }
   }
@@ -129,6 +140,22 @@ export abstract class BaseController extends CommonController {
   /** Trocar o tipo (Normal/Devolução) do terceiro liga ou desliga o cálculo: a devolução do cliente não tem natureza. */
   onInvoiceTypeChange() {
     void this.refreshNfeMode(false);
+  }
+
+  /** Link "Contra-nota" na escrituração. */
+  onOpenCounterNote() {
+    const key = (this.getModel("ui") as JSONModel).getProperty("/counterNote/key") as string;
+    if (key) {
+      this.navTo("purchaseInvoicesDetail", { id: key });
+    }
+  }
+
+  /** Link "Escrituração" na contra-nota. */
+  onOpenProducerInvoice() {
+    const key = (this.getModel("ui") as JSONModel).getProperty("/producerInvoice/key") as string;
+    if (key) {
+      this.navTo("purchaseInvoicesDetail", { id: key });
+    }
   }
 
   /**

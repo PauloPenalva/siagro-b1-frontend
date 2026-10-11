@@ -33,16 +33,17 @@
       </OverflowToolbar>
     </t:extension>
     <t:columns>
-      <!-- `showValueHelp` liga em `{ui>/editable}`, e não em "true": este fragmento é o MESMO do
-           Detail, onde a grade é read-only e o botão do diálogo não pode aparecer. -->
+      <!-- `showValueHelp` liga em `{ui>/editable}` (e em `{ui>/isCounterNote}`), e não em "true": este fragmento é
+           o MESMO do Detail, onde a grade é read-only e o botão do diálogo não pode aparecer. Na contra-nota as linhas
+           vêm da escrituração do produtor e também ficam somente leitura. -->
       <!-- `.openLineItemValueHelp`, não o genérico `.openItemValueHelp`: aqui a troca de produto
            também precisa desamarrar o contrato da linha (coluna "Contrato" abaixo). -->
       <t:Column label="Produto" width="10rem">
         <t:template>
           <Input
             value="{ItemCode}"
-            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
-            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
+            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
             valueHelpOnly="true"
             valueHelpRequest=".openLineItemValueHelp">
             <customData>
@@ -65,8 +66,8 @@
           <!-- ui5lint-disable no-deprecated-api -->
           <Input
             value="{UsageName}"
-            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
-            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
+            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
             valueHelpOnly="true"
             valueHelpRequest=".openPurchaseUsageValueHelp" />
           <!-- ui5lint-enable no-deprecated-api -->
@@ -81,8 +82,8 @@
         <t:template>
           <Input
             value="{UnitOfMeasureCode}"
-            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
-            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
+            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
             valueHelpOnly="true"
             valueHelpRequest=".openUnitsOfMeasureValueHelp" />
         </t:template>
@@ -95,7 +96,7 @@
       <t:Column label="Quantidade" width="10rem" hAlign="End">
         <t:template>
           <Input
-            editable="{ui>/editable}"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"
             change=".onItemAmountChange"
             value="{
               path: 'Quantity',
@@ -112,7 +113,7 @@
       <t:Column label="Preço Unitário" width="11rem" hAlign="End">
         <t:template>
           <Input
-            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
             change=".onItemAmountChange"
             value="{
               path: 'UnitPrice',
@@ -132,7 +133,7 @@
       <t:Column label="Frete" hAlign="End" width="9rem">
         <t:template>
           <Input
-              editable="{ui>/editable}"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"
               textAlign="End"
               change=".onItemAmountChange"
               value="{
@@ -146,7 +147,7 @@
       <t:Column label="Seguro" hAlign="End" width="9rem">
         <t:template>
           <Input
-              editable="{ui>/editable}"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"
               textAlign="End"
               change=".onItemAmountChange"
               value="{
@@ -160,7 +161,7 @@
       <t:Column label="Desconto" hAlign="End" width="9rem">
         <t:template>
           <Input
-              editable="{ui>/editable}"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"
               textAlign="End"
               change=".onItemAmountChange"
               value="{
@@ -174,7 +175,7 @@
       <t:Column label="Outras despesas" hAlign="End" width="9rem">
         <t:template>
           <Input
-              editable="{ui>/editable}"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"
               textAlign="End"
               change=".onItemAmountChange"
               value="{
@@ -212,9 +213,9 @@
                 visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }">
         <t:template>
           <Input
-            editable="{ui>/editable}"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"
             value="{path: 'PurchaseContract/Code', mode: 'OneWay'}"
-            showValueHelp="{ui>/editable}"
+            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"
             valueHelpOnly="true"
             valueHelpRequest=".openContractValueHelp" />
         </t:template>
@@ -231,9 +232,9 @@
                não amarrada `SalesInvoiceItem` é null, então escolher a origem estourava
                "Cannot set properties of null (setting 'SalesInvoice')". -->
           <Input
-            editable="{ui>/editable}"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"
             value="{path: 'SalesInvoiceItem/SalesInvoice/InvoiceNumber', mode: 'OneWay'}"
-            showValueHelp="{ui>/editable}"
+            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"
             valueHelpOnly="true"
             valueHelpRequest=".openOriginItemValueHelp" />
         </t:template>

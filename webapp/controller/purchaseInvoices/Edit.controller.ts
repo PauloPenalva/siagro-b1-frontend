@@ -132,8 +132,10 @@ export default class Edit extends BaseController {
     }
 
     // Aviso, não bloqueio: amarrar depois é caminho legítimo, e a conciliação fiscal-contratual
-    // fica incompleta enquanto isso. Só faz sentido no tipo Normal.
-    if (oContext.getProperty("InvoiceType") === "Normal") {
+    // fica incompleta enquanto isso. Só faz sentido no tipo Normal — e não na contra-nota (spec 2026-10-10 §7): o
+    // contrato da linha vem da escrituração e fica travado, então o aviso não teria o que o usuário fazer.
+    const isCounterNote = !!await oContext.requestProperty("ProducerInvoiceKey");
+    if (oContext.getProperty("InvoiceType") === "Normal" && !isCounterNote) {
       const unlinked = (oBinding?.getAllCurrentContexts() ?? [])
         .filter(ctx => !ctx.getProperty("PurchaseContractKey"));
 

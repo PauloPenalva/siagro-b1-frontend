@@ -5,6 +5,8 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import MessageToast from "sap/m/MessageToast";
 import MessageBox from "sap/m/MessageBox";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
 import Dialog from "sap/m/Dialog";
 import Input from "sap/m/Input";
 import { ValueState } from "sap/ui/core/library";
@@ -20,8 +22,8 @@ import { runNfeVoidNumber } from "siagrob1/dialogs/NfeVoidNumberAction";
 import { summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
 import { ReturnableRow, prefillNfeReturnRows, hasReturnableBalance, buildNfeReturnPayload } from "siagrob1/helpers/NfeReturnHelpers";
 import {
-  PURCHASE_ITEM_SELECT, PurchaseNfeState, buildPurchaseItemNumbers, canIssuePurchaseNfe, canReturnPurchase,
-  canReturnThirdPartyPurchase, PurchaseReturnItemRow,
+  PURCHASE_ITEM_SELECT, PurchaseNfeState, buildPurchaseItemNumbers, canCreateCounterNote, canIssuePurchaseNfe,
+  allUsagesAllowCounterNote, canReturnPurchase, canReturnThirdPartyPurchase, counterNoteText, isValidCounterNote, PurchaseReturnItemRow,
 } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { openDanfeViewer, openNfeCorrectionViewer } from "siagrob1/dialogs/DanfeViewer";
 import { openNfeCorrectionDialog } from "siagrob1/dialogs/NfeCorrectionDialog";
@@ -33,6 +35,11 @@ import { BaseController } from "./BaseController";
 type PurchaseReturnRow = ReturnableRow & PurchaseReturnItemRow & {
   ItemName: string; PurchasedQuantity: number; ReturnedQuantity: number;
 };
+
+/** Link do vínculo da contra-nota no modelo `ui` (`/counterNote`, `/producerInvoice`); `key` vazio = sem link. */
+type DocumentLink = { key: string; text: string };
+
+const NO_LINK: DocumentLink = { key: "", text: "" };
 
 /**
  * Visualização do documento de entrada, com o ciclo de vida (confirmar, estornar, cancelar) e os
@@ -60,6 +67,9 @@ export default class Detail extends BaseController {
     uiModel.setProperty("/typeEditable", false);
     uiModel.setProperty("/canIssueNfe", false);
     uiModel.setProperty("/canReturn", false);
+    uiModel.setProperty("/canCreateCounterNote", false);
+    uiModel.setProperty("/counterNote", { ...NO_LINK });
+    uiModel.setProperty("/producerInvoice", { ...NO_LINK });
     // O quadro "Tributos" do documento anterior não pode aparecer enquanto as linhas deste não chegam.
     uiModel.setProperty("/taxTotals", { visible: false, rows: [] });
     uiModel.setProperty("/chargeTotals", summarizeInvoiceCharges([]));
@@ -101,10 +111,136 @@ export default class Detail extends BaseController {
     }
 
     const nfeMode = uiModel.getProperty("/nfeMode") === true;
+    const taxLocked = uiModel.getProperty("/taxLocked") === true;
+    const links = state ? await this.readCounterNoteLinks(oContext, state) : undefined;
 
+    // De novo: a leitura dos vínculos também espera, e o documento pode ter sido trocado nela.
+    if (this.getView().getBindingContext() !== oContext) {
+      return;
+    }
+
+    uiModel.setProperty("/counterNote", links?.counterNote ?? { ...NO_LINK });
+    uiModel.setProperty("/producerInvoice", links?.producerInvoice ?? { ...NO_LINK });
     uiModel.setProperty("/canIssueNfe", !!state && canIssuePurchaseNfe(state, nfeMode));
     uiModel.setProperty("/canReturn", !!state && (canReturnPurchase(state, nfeMode) ||
-      canReturnThirdPartyPurchase(state, uiModel.getProperty("/taxLocked") === true)));
+      canReturnThirdPartyPurchase(state, taxLocked)));
+    uiModel.setProperty("/canCreateCounterNote", !!state &&
+      canCreateCounterNote(state, taxLocked, !!links?.counterNote.key, links?.allUsagesAllow === true));
+  }
+
+  /**
+   * Vínculos da contra-nota (spec 2026-10-10 §9): na contra-nota, a escrituração de origem; na escrituração, a contra-nota
+   * válida (que esconde o "Gerar contra-nota"). Sem contra-nota válida, também se toda linha está numa natureza que
+   * "Permite contra-nota" (§5/§9). Só lê: quem escreve no `ui` é o refreshDetailNfe, depois de conferir que o documento
+   * ainda é o mesmo. Falha na leitura = sem vínculo (o servidor ainda recusa a segunda contra-nota) e sem o botão.
+   */
+  private async readCounterNoteLinks(
+    oContext: Context, state: PurchaseNfeState
+  ): Promise<{ counterNote: DocumentLink; producerInvoice: DocumentLink; allUsagesAllow: boolean }> {
+    const model = oContext.getModel() as ODataModel;
+    const links = { counterNote: { ...NO_LINK }, producerInvoice: { ...NO_LINK }, allUsagesAllow: false };
+
+    if (state.ProducerInvoiceKey) {
+      const binding = model.bindContext(`/PurchaseInvoices(${state.ProducerInvoiceKey})`, undefined,
+        { $select: "Key,TaxDocumentNumber,TaxDocumentSeries" });
+      try {
+        const producer = await binding.requestObject() as { TaxDocumentNumber: string; TaxDocumentSeries: string };
+        links.producerInvoice = {
+          key: state.ProducerInvoiceKey, text: `NF ${producer.TaxDocumentNumber} série ${producer.TaxDocumentSeries}`,
+        };
+      } catch {
+        // sem a escrituração, a contra-nota fica sem o link
+      } finally {
+        binding.destroy();
+      }
+      return links;
+    }
+
+    if (state.IssuerType !== "ThirdParty") {
+      return links;
+    }
+
+    const binding = model.bindList("/PurchaseInvoices", undefined, undefined,
+      [new Filter("ProducerInvoiceKey", FilterOperator.EQ, oContext.getProperty("Key"))],
+      { $select: "Key,InvoiceNumber,TaxDocumentNumber,InvoiceStatus,NfeStatus" });
+    try {
+      const notes = await binding.requestContexts(0, 50);
+      const valid = notes.map((ctx) => ctx.getObject() as {
+        Key: string; InvoiceNumber: string; TaxDocumentNumber: string; InvoiceStatus: string; NfeStatus: string;
+      }).find((note) => isValidCounterNote(note));
+
+      if (valid) {
+        links.counterNote = { key: valid.Key, text: counterNoteText(valid) };
+      }
+    } catch {
+      // sem a lista, a escrituração fica sem o link
+    } finally {
+      binding.destroy();
+    }
+
+    if (!links.counterNote.key) {
+      links.allUsagesAllow = await this.readAllUsagesAllowCounterNote(oContext);
+    }
+
+    return links;
+  }
+
+  /**
+   * As naturezas das linhas (já carregadas pelo $expand de Items) e a flag "Permite contra-nota" de cada uma.
+   * Qualquer falha = false: o botão some e quem decide de verdade é o servidor.
+   */
+  private async readAllUsagesAllowCounterNote(oContext: Context): Promise<boolean> {
+    let lineUsageCodes: number[];
+    try {
+      const items = await oContext.requestObject("Items") as { UsageCode: number }[];
+      lineUsageCodes = (items ?? []).map((item) => item.UsageCode ?? null);
+    } catch {
+      return false;
+    }
+
+    const codes = [...new Set(lineUsageCodes.filter((code) => code != null))];
+    // Linha sem natureza já basta para não oferecer: nem precisa ler as naturezas.
+    if (codes.length === 0 || lineUsageCodes.includes(null)) {
+      return false;
+    }
+
+    const binding = (oContext.getModel() as ODataModel).bindList("/Usages", undefined, undefined,
+      [new Filter({ filters: codes.map((code) => new Filter("Code", FilterOperator.EQ, code)), and: false })],
+      { $select: "Code,AllowsCounterNote" });
+    try {
+      const usages = (await binding.requestContexts(0, codes.length)).map((ctx) =>
+        ctx.getObject() as { Code: number; AllowsCounterNote: boolean });
+      return allUsagesAllowCounterNote(lineUsageCodes, usages);
+    } catch {
+      return false;
+    } finally {
+      binding.destroy();
+    }
+  }
+
+  /** Cria a contra-nota da escrituração e abre a tela dela, onde fica o "Emitir NF-e". */
+  async onCreateCounterNote() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx || !(await confirmDialog(
+      "Gerar a contra-nota desta escrituração ? Ela sai com a mesma natureza e os mesmos tributos, e referencia a chave da NF-e do produtor.",
+      "Gerar contra-nota ?"))) {
+      return;
+    }
+
+    this.setBusy(true);
+    try {
+      const action = (ctx.getModel() as ODataModel).bindContext(ServerRoutes.purchaseInvoicesCreateCounterNote);
+      action.setParameter("Key", ctx.getProperty("Key"));
+      await action.invoke();
+
+      const key = action.getBoundContext().getProperty("value") as string;
+      MessageToast.show("Contra-nota criada. Confira o transporte e os pesos e emita a NF-e.", { closeOnBrowserNavigation: false });
+      this.navTo("purchaseInvoicesDetail", { id: key });
+    } catch {
+      // O handler global de mensagens do OData (Component) já mostrou o erro do servidor.
+    } finally {
+      this.setBusy(false);
+    }
   }
 
   async onIssueNfe() {

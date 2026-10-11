@@ -52,6 +52,7 @@ export default class Add extends BaseController {
 			// Natureza de devolução (NF-e de devolução de venda) — só natureza de Saída.
 			ReturnUsageCode: null,
 			ReturnUsageName: null,
+			AllowsCounterNote: false,
 			InvoiceOperationText: null,
 			DefaultAdditionalInfo: null,
 			MovesFiscalInventory: false,
