@@ -247,7 +247,7 @@
         <t:template>
           <Input
             editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"
-            value="{parts: [{path: 'SalesInvoiceItem/SalesInvoice/TaxDocumentNumber', mode: 'OneWay'}, {path: 'NfeItemNumber', mode: 'OneWay'}, {path: 'ui>/remittanceNumbers', mode: 'OneWay'}], formatter: 'draft.formatRemittanceNumber', mode: 'OneWay'}"
+            value="{parts: [{path: 'SalesInvoiceItem/SalesInvoice/TaxDocumentNumber', mode: 'OneWay'}, {path: 'SalesInvoiceItem/SalesInvoice/InvoiceNumber', mode: 'OneWay'}, {path: 'NfeItemNumber', mode: 'OneWay'}, {path: 'ui>/remittanceNumbers', mode: 'OneWay'}], formatter: 'draft.formatRemittanceNumber', mode: 'OneWay'}"
             showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"
             valueHelpOnly="true"
             valueHelpRequest=".openRemittanceItemValueHelp" />

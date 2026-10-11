@@ -280,7 +280,7 @@ export abstract class BaseController extends CommonController {
       return;
     }
 
-    oInput.setValue(oSelected.getProperty("SalesInvoice/TaxDocumentNumber") as string);
+    oInput.setValue((oSelected.getProperty("SalesInvoice/TaxDocumentNumber") || oSelected.getProperty("SalesInvoice/InvoiceNumber") || "") as string);
     await oTarget.setProperty("SalesInvoiceItemKey", oSelected.getProperty("Key"));
   }
 

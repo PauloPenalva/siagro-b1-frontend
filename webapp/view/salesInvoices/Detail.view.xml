@@ -92,7 +92,7 @@
           visible="{ parts: [ { path: 'InvoiceStatus', targetType: 'any' }, { path: 'ReturnedQuantity', targetType: 'any' } ], formatter: '.formatter.isPartiallyReturned' }"/>
         <!-- Remessa para depósito (spec backend 2026-10-10 §5.2): volta para a liberação de origem. -->
         <Link class="sapUiSmallMarginBegin" text="Liberação da remessa para depósito"
-              visible="{= !!${ShipmentReleaseKey} }" press=".onOpenShipmentRelease" />
+              visible="{= !!${path: 'ShipmentReleaseKey', targetType: 'any'} }" press=".onOpenShipmentRelease" />
       </HBox>
    	</uxap:headerContent> 
     

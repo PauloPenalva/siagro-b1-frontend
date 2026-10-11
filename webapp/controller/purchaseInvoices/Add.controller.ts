@@ -279,7 +279,7 @@ export default class Add extends BaseController {
     // (a conciliação fiscal-contratual fica incompleta, não o documento).
     if (oContext.getProperty("InvoiceType") === "Normal") {
       const unlinked = (oBinding?.getAllCurrentContexts() ?? [])
-        .filter(ctx => !ctx.getProperty("PurchaseContractKey"));
+        .filter(ctx => !ctx.getProperty("PurchaseContractKey") && !ctx.getProperty("SalesInvoiceItemKey"));
 
       if (unlinked.length > 0 && !await confirmDialog(
         `${unlinked.length} item(ns) sem contrato amarrado. Salvar assim mesmo ?`,

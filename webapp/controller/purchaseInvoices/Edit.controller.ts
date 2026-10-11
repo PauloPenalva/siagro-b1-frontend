@@ -138,7 +138,7 @@ export default class Edit extends BaseController {
     const isCounterNote = !!await oContext.requestProperty("ProducerInvoiceKey");
     if (oContext.getProperty("InvoiceType") === "Normal" && !isCounterNote) {
       const unlinked = (oBinding?.getAllCurrentContexts() ?? [])
-        .filter(ctx => !ctx.getProperty("PurchaseContractKey"));
+        .filter(ctx => !ctx.getProperty("PurchaseContractKey") && !ctx.getProperty("SalesInvoiceItemKey"));
 
       if (unlinked.length > 0 && !await confirmDialog(
         `${unlinked.length} item(ns) sem contrato amarrado. Salvar assim mesmo ?`,

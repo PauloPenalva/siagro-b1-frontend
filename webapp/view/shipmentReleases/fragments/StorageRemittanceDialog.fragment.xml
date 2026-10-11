@@ -9,10 +9,8 @@
 					<f:formElements>
 						<f:FormElement label="Armazém">
 							<f:fields>
-								<HBox>
-									<Text text="{DeliveryLocationCode}" class="sapUiTinyMarginEnd"/>
-									<Text text="{DeliveryLocationName}"/>
-								</HBox>
+								<Text text="{DeliveryLocationCode}"/>
+								<Text text="{DeliveryLocationName}"/>
 							</f:fields>
 						</f:FormElement>
 						<f:FormElement label="Natureza">

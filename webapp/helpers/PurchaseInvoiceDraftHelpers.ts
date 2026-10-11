@@ -80,8 +80,10 @@ export function remittanceNumbersByItem(items?: ImportedInvoiceItem[]): Record<s
 }
 
 /** Texto da coluna "Remessa": o da navegação (documento salvo) ou, antes de salvar, o número vindo do XML. */
-export function formatRemittanceNumber(navigationText?: string, nfeItemNumber?: number, numbers?: Record<string, string>): string {
-  return navigationText || (nfeItemNumber != null ? numbers?.[String(nfeItemNumber)] : "") || "";
+export function formatRemittanceNumber(
+  navigationText?: string, navigationInvoiceNumber?: string, nfeItemNumber?: number, numbers?: Record<string, string>
+): string {
+  return navigationText || navigationInvoiceNumber || (nfeItemNumber != null ? numbers?.[String(nfeItemNumber)] : "") || "";
 }
 
 /** Linha em branco do "Incluir Item" e da digitação manual. */

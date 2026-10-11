@@ -11,6 +11,16 @@
 				text="Remessa nº {remittance>/summary/RemittanceNumber}"
 				visible="{= !!${remittance>/summary/RemittanceKey} }"
 				press=".onOpenRemittance"/>
+			<ObjectStatus
+				class="sapUiSmallMarginBegin"
+				text="{ path: 'remittance>/summary/RemittanceStatus', formatter: '.formatter.formatSalesInvoiceStatus' }"
+				state="{ path: 'remittance>/summary/RemittanceStatus', formatter: '.formatter.stateSalesInvoiceStatus' }"
+				visible="{= !!${remittance>/summary/RemittanceKey} }"/>
+			<ObjectStatus
+				class="sapUiSmallMarginBegin"
+				text="{ path: 'remittance>/summary/RemittanceNfeStatus', formatter: '.formatter.formatNfeStatus' }"
+				state="{ path: 'remittance>/summary/RemittanceNfeStatus', formatter: '.formatter.stateNfeStatus' }"
+				visible="{= !!${remittance>/summary/RemittanceKey} }"/>
 			<Text text="Sem remessa" visible="{= !${remittance>/summary/RemittanceKey} }"/>
 		</HBox>
 		<HBox class="sapUiSmallMarginTopBottom">
