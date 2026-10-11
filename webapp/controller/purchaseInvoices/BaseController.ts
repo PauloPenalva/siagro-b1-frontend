@@ -46,6 +46,12 @@ export abstract class BaseController extends CommonController {
     const oContext = this.getView().getBindingContext() as Context;
     const isCurrent = () => sequence === nfeModeSequence && this.getView().getBindingContext() === oContext;
 
+    // Remessa para depósito (spec backend 2026-10-10 §5.3): só STANDALONE mostra a coluna "Remessa".
+    const systemInfo = await this.getSystemInfo();
+    if (isCurrent()) {
+      uiModel.setProperty("/storageDepositMode", systemInfo?.erp?.trim().toUpperCase() === "STANDALONE");
+    }
+
     if (reset || !oContext) {
       uiModel.setProperty("/taxLocked", false);
       uiModel.setProperty("/nfeMode", false);
@@ -235,6 +241,29 @@ export abstract class BaseController extends CommonController {
     }
 
     oInput.setValue(oSelected.getProperty("SalesInvoice/InvoiceNumber") as string);
+    await oTarget.setProperty("SalesInvoiceItemKey", oSelected.getProperty("Key"));
+  }
+
+  /** Value help da REMESSA PARA DEPÓSITO da linha de retorno: remessas ativas do armazém emitente do documento. */
+  async openRemittanceItemValueHelp(ev: Input$ValueHelpRequestEvent) {
+    const oInput = ev.getSource();
+    const oTarget = oInput.getBindingContext() as Context;
+    const cardCode = (this.getView().getBindingContext() as Context)?.getProperty("CardCode") as string;
+
+    if (!cardCode) {
+      MessageBox.warning("Informe o emitente (o armazém) antes de indicar a remessa.");
+      return;
+    }
+
+    const oSelected = await DialogHelper.openTableSelectDialog(
+      this, "StorageRemittanceItemsSelectDialog", ["SalesInvoice/InvoiceNumber", "SalesInvoice/TaxDocumentNumber", "ItemName"],
+      [new Filter("SalesInvoice/CardCode", FilterOperator.EQ, cardCode)]);
+
+    if (!oSelected) {
+      return;
+    }
+
+    oInput.setValue(oSelected.getProperty("SalesInvoice/TaxDocumentNumber") as string);
     await oTarget.setProperty("SalesInvoiceItemKey", oSelected.getProperty("Key"));
   }
 

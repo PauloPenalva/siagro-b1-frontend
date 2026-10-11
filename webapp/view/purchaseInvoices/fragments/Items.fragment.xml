@@ -240,6 +240,20 @@
         </t:template>
       </t:Column>
 
+      <!-- Retorno de depósito (spec backend 2026-10-10 §5.3): a linha aponta a linha da remessa. OneWay pelo mesmo
+           motivo da NF de Origem: o campo exibe uma NAVEGAÇÃO e quem grava é o SalesInvoiceItemKey. -->
+      <t:Column label="Remessa" width="10rem"
+                visible="{= ${ui>/storageDepositMode} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'Return' }">
+        <t:template>
+          <Input
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"
+            value="{path: 'SalesInvoiceItem/SalesInvoice/TaxDocumentNumber', mode: 'OneWay'}"
+            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"
+            valueHelpOnly="true"
+            valueHelpRequest=".openRemittanceItemValueHelp" />
+        </t:template>
+      </t:Column>
+
       <t:Column label="Quebra Apurada" width="11rem" hAlign="End"
                 visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Return' &amp;&amp; ${IsNfeReturn} !== true }">
         <t:template>

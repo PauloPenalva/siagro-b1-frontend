@@ -1,0 +1,24 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+<!-- Linhas de remessa para depósito ativas. O armazém (CardCode) muda a cada documento e entra pelo controller; o
+     saldo a retornar é conferido pelo servidor ao salvar. -->
+<TableSelectDialog class="sapUiSizeCompact" growing="true" growingThreshold="20"
+  items="{ path: '/SalesInvoicesItems', parameters: {
+    $filter: 'SalesInvoice/ShipmentReleaseKey ne null and SalesInvoice/InvoiceStatus ne \'Cancelled\'',
+    $expand: 'SalesInvoice' } }"
+  rememberSelections="true" title="Remessa para depósito">
+  <columns>
+    <Column><header><Text text="Documento" /></header></Column>
+    <Column><header><Text text="NF-e" /></header></Column>
+    <Column><header><Text text="Produto" /></header></Column>
+    <Column hAlign="End"><header><Text text="Remetido" /></header></Column>
+  </columns>
+  <ColumnListItem>
+    <cells>
+      <Text text="{SalesInvoice/InvoiceNumber}" />
+      <Text text="{SalesInvoice/TaxDocumentNumber}" />
+      <Text text="{ItemName}" />
+      <ObjectNumber number="{ path: 'Quantity', type: 'sap.ui.model.odata.type.Decimal', formatOptions: { maxFractionDigits: 3 } }" unit="{UnitOfMeasureCode}" />
+    </cells>
+  </ColumnListItem>
+</TableSelectDialog>
+</core:FragmentDefinition>

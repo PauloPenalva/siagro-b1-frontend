@@ -11,6 +11,10 @@ import Dialog from "sap/m/Dialog";
 import Input from "sap/m/Input";
 import { ValueState } from "sap/ui/core/library";
 import Table from "sap/ui/table/Table";
+import SapTable from "sap/m/Table";
+import Fragment from "sap/ui/core/Fragment";
+import Event from "sap/ui/base/Event";
+import Control from "sap/ui/core/Control";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import formatter from "siagrob1/model/formatter";
@@ -25,10 +29,10 @@ import {
   PURCHASE_ITEM_SELECT, PurchaseNfeState, buildPurchaseItemNumbers, canCreateCounterNote, canIssuePurchaseNfe,
   allUsagesAllowCounterNote, canReturnPurchase, canReturnThirdPartyPurchase, counterNoteText, isValidCounterNote, PurchaseReturnItemRow,
 } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
+import { reconciliationDifference } from "siagrob1/helpers/StorageDepositHelpers";
 import { openDanfeViewer, openNfeCorrectionViewer } from "siagrob1/dialogs/DanfeViewer";
 import { openNfeCorrectionDialog } from "siagrob1/dialogs/NfeCorrectionDialog";
 import { Button$PressEvent } from "sap/m/Button";
-import Control from "sap/ui/core/Control";
 import { BaseController } from "./BaseController";
 
 /** Linha do "Devolver" da entrada: o comprado no lugar do vendido. */
@@ -41,6 +45,15 @@ type DocumentLink = { key: string; text: string };
 
 const NO_LINK: DocumentLink = { key: "", text: "" };
 
+/** Romaneio do retorno de depósito: candidato ou já reconciliado com este documento. */
+type StorageReturnRow = {
+  Key: string; Code: string; TransactionDate: string; TruckCode: string; NetWeight: number;
+  UnitOfMeasureCode: string; IsReconciled: boolean;
+};
+
+const formatWeight = (value: number): string =>
+  value.toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+
 /**
  * Visualização do documento de entrada, com o ciclo de vida (confirmar, estornar, cancelar) e os
  * comentários.
@@ -50,7 +63,16 @@ const NO_LINK: DocumentLink = { key: "", text: "" };
 export default class Detail extends BaseController {
   formatter = { ...formatter }
 
+  private reconcileDialog?: Dialog;
+
+  /** Quantidade das linhas de retorno (as que apontam a remessa), base do cálculo da diferença no diálogo. */
+  private returnQuantity = 0;
+
   onInit(): void {
+    this.getView().setModel(new JSONModel({
+      visible: false, canReconcile: false, rows: [], candidates: [], reconciled: [],
+      dialog: { selectedKeys: [], summaryText: "" },
+    }), "storageReturn");
     this.getRouter().getRoute("purchaseInvoicesDetail")
       .attachPatternMatched((ev) => this.detailRouteMatched(ev));
   }
@@ -68,6 +90,7 @@ export default class Detail extends BaseController {
     uiModel.setProperty("/canIssueNfe", false);
     uiModel.setProperty("/canReturn", false);
     uiModel.setProperty("/canCreateCounterNote", false);
+    this.resetStorageReturn();
     uiModel.setProperty("/counterNote", { ...NO_LINK });
     uiModel.setProperty("/producerInvoice", { ...NO_LINK });
     // O quadro "Tributos" do documento anterior não pode aparecer enquanto as linhas deste não chegam.
@@ -126,6 +149,131 @@ export default class Detail extends BaseController {
       canReturnThirdPartyPurchase(state, taxLocked)));
     uiModel.setProperty("/canCreateCounterNote", !!state &&
       canCreateCounterNote(state, taxLocked, !!links?.counterNote.key, links?.allUsagesAllow === true));
+
+    if (oContext) {
+      await this.loadStorageReturn(oContext);
+    }
+  }
+
+  private resetStorageReturn(): void {
+    const model = this.getView().getModel("storageReturn") as JSONModel;
+    model.setProperty("/visible", false);
+    model.setProperty("/canReconcile", false);
+    model.setProperty("/rows", []);
+    model.setProperty("/candidates", []);
+    model.setProperty("/reconciled", []);
+    this.returnQuantity = 0;
+  }
+
+  /**
+   * Soma das quantidades das linhas que apontam uma linha de remessa (SalesInvoiceItemKey), fora da Devolução;
+   * null quando o documento não é um retorno de depósito. Falha na leitura = não é retorno.
+   */
+  private async hasRemittanceLine(ctx: Context): Promise<number> {
+    try {
+      if (await ctx.requestProperty("InvoiceType") === "Return") return null;
+      const items = await ctx.requestObject("Items") as { SalesInvoiceItemKey: string; Quantity: number | string }[];
+      const lines = (items ?? []).filter((item) => !!item.SalesInvoiceItemKey);
+      return lines.length === 0 ? null : lines.reduce((sum, item) => sum + Number(item.Quantity ?? 0), 0);
+    } catch {
+      return null;
+    }
+  }
+
+  /** Romaneios do retorno de depósito: candidatos e já reconciliados (spec backend 2026-10-10 §3.5). */
+  private async loadStorageReturn(ctx: Context): Promise<void> {
+    const model = this.getView().getModel("storageReturn") as JSONModel;
+    const ui = this.getModel("ui") as JSONModel;
+    const quantity = ui.getProperty("/storageDepositMode") === true ? await this.hasRemittanceLine(ctx) : null;
+
+    // Outro documento foi aberto enquanto esperava.
+    if (this.getView().getBindingContext() !== ctx) return;
+
+    if (quantity === null) {
+      this.resetStorageReturn();
+      return;
+    }
+
+    const result = await sendJson("GET", `${ServerRoutes.purchaseInvoicesStorageReturnTransactions}(Key=${ctx.getProperty("Key") as string})`);
+    if (this.getView().getBindingContext() !== ctx) return;
+
+    const rows = result.ok ? (odataValue<StorageReturnRow[]>(result.data) ?? []) : [];
+    this.returnQuantity = quantity;
+    model.setProperty("/visible", true);
+    model.setProperty("/rows", rows);
+    model.setProperty("/candidates", rows.filter((r) => !r.IsReconciled));
+    model.setProperty("/reconciled", rows.filter((r) => r.IsReconciled));
+    model.setProperty("/canReconcile",
+      ctx.getProperty("InvoiceStatus") !== "Cancelled" && rows.some((r) => !r.IsReconciled));
+  }
+
+  async onOpenReconcileDialog(): Promise<void> {
+    const model = this.getView().getModel("storageReturn") as JSONModel;
+    model.setProperty("/dialog", { selectedKeys: [], summaryText: this.reconcileSummary([]) });
+    if (!this.reconcileDialog) {
+      this.reconcileDialog = await Fragment.load({
+        id: this.getView().getId(),
+        name: "siagrob1.view.purchaseInvoices.fragments.StorageReturnReconcileDialog",
+        controller: this,
+      }) as Dialog;
+      this.getView().addDependent(this.reconcileDialog);
+    }
+    (this.byId("storageReturnCandidates") as SapTable)?.removeSelections(true);
+    this.reconcileDialog.open();
+  }
+
+  private reconcileSummary(weights: number[]): string {
+    const { selected, difference } = reconciliationDifference(this.returnQuantity, weights);
+    return `Nota: ${formatWeight(this.returnQuantity)} · Romaneios: ${formatWeight(selected)} · Diferença: ${formatWeight(difference)}`;
+  }
+
+  onReconcileSelectionChange(ev: Event): void {
+    const model = this.getView().getModel("storageReturn") as JSONModel;
+    const table = ev.getSource<SapTable>();
+    const rows = table.getSelectedItems()
+      .map((item) => item.getBindingContext("storageReturn").getObject() as StorageReturnRow);
+    model.setProperty("/dialog/selectedKeys", rows.map((r) => r.Key));
+    model.setProperty("/dialog/summaryText", this.reconcileSummary(rows.map((r) => Number(r.NetWeight ?? 0))));
+  }
+
+  onCancelReconcile(): void {
+    this.reconcileDialog?.close();
+  }
+
+  async onConfirmReconcile(): Promise<void> {
+    const model = this.getView().getModel("storageReturn") as JSONModel;
+    const keys = model.getProperty("/dialog/selectedKeys") as string[];
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx || keys.length === 0) return;
+
+    this.setBusy(true);
+    try {
+      const result = await sendJson("POST", ServerRoutes.purchaseInvoicesReconcileStorageReturn,
+        { Key: ctx.getProperty("Key") as string, TransactionKeys: keys });
+      if (!result.ok) { MessageBox.error(result.message); return; }
+      this.reconcileDialog?.close();
+      MessageToast.show("Romaneios reconciliados.");
+      await this.loadStorageReturn(ctx);
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  async onUndoReconciliation(ev: Event): Promise<void> {
+    const row = ev.getSource<Control>().getBindingContext("storageReturn").getObject() as StorageReturnRow;
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx || !(await confirmDialog(`Desfazer a reconciliação do romaneio ${row.Code} ?`))) return;
+
+    this.setBusy(true);
+    try {
+      const result = await sendJson("POST", ServerRoutes.purchaseInvoicesUndoStorageReturnReconciliation,
+        { Key: ctx.getProperty("Key") as string, TransactionKey: row.Key });
+      if (!result.ok) { MessageBox.error(result.message); return; }
+      MessageToast.show("Reconciliação desfeita.");
+      await this.loadStorageReturn(ctx);
+    } finally {
+      this.setBusy(false);
+    }
   }
 
   /**

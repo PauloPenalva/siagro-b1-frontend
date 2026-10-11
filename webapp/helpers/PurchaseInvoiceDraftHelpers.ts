@@ -55,6 +55,9 @@ export interface ImportedInvoiceItem {
   Quantity: number | string;
   UnitPrice: number | string;
   NfeItemNumber?: number;
+  /** Retorno de depósito (spec backend 2026-10-10): a linha da remessa casada pelo XML; o número só serve para exibir. */
+  SalesInvoiceItemKey?: string;
+  RemittanceNumber?: string;
   /** Frete, seguro, desconto e outras despesas do `det/prod` (Edm.Decimal da action, em string); ausentes = 0. */
   FreightValue?: number | string;
   InsuranceValue?: number | string;
@@ -91,6 +94,7 @@ export function draftItemRows(items?: ImportedInvoiceItem[]): InvoiceItemPayload
     Quantity: toNumber(item.Quantity),
     UnitPrice: toNumber(item.UnitPrice),
     NfeItemNumber: item.NfeItemNumber ?? null,
+    SalesInvoiceItemKey: item.SalesInvoiceItemKey ?? null,
     FreightValue: toNumber(item.FreightValue),
     InsuranceValue: toNumber(item.InsuranceValue),
     DiscountValue: toNumber(item.DiscountValue),
