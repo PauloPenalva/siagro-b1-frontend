@@ -68,6 +68,12 @@ export default class Detail extends BaseController {
     }
   }
 
+  /** Remessa para depósito: volta para a liberação de origem. */
+  onOpenShipmentRelease(): void {
+    const key = (this.getView().getBindingContext() as Context)?.getProperty("ShipmentReleaseKey") as string;
+    if (key) this.navTo("shipmentReleasesDetail", { id: key });
+  }
+
   async onConfirm() {
     const ctx = this.getView().getBindingContext() as Context;
     if (!ctx) {
