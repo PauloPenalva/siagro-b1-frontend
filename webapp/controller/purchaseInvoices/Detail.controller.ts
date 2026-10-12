@@ -732,11 +732,7 @@ export default class Detail extends BaseController {
       return;
     }
 
-    // Vai direto para a edição: quem estorna quer alterar o documento, e o estorno é justamente o
-    // que o destrava (só documento pendente é alterável).
-    await this.invokeAction(
-      "/PurchaseInvoicesReverseConfirm(...)", ctx, "Confirmação estornada.",
-      () => this.onEdit());
+    await this.invokeAction("/PurchaseInvoicesReverseConfirm(...)", ctx, "Confirmação estornada.");
   }
 
   async onCancelInvoice() {
@@ -767,15 +763,12 @@ export default class Detail extends BaseController {
   /**
    * Actions do ciclo de vida vão por `bindContext`, não por `callFunction`: é a forma do OData v4
    * no UI5.
+   *
+   * Confirmar, estornar e cancelar mantêm o operador no detalhe: é dali que ele segue (editar depois
+   * do estorno, transmitir depois de confirmar). O documento é relido no lugar — situação, botões e o
+   * bloco da NF-e dependem dele —, como já faz o runNfeAction.
    */
-  /**
-   * `onSuccess` existe porque o destino depois da ação NÃO é o mesmo para todas: confirmar e
-   * cancelar encerram o trabalho no documento e voltam à lista, mas estornar existe justamente
-   * para alterar algo — e largar o operador na lista o obrigaria a procurar de novo o documento
-   * que ele acabou de destravar. Sem parâmetro, mantém o comportamento antigo.
-   */
-  private async invokeAction(
-    path: string, ctx: Context, message: string, onSuccess?: () => void) {
+  private async invokeAction(path: string, ctx: Context, message: string) {
     const action = (ctx.getModel() as ODataModel).bindContext(path);
     action.setParameter("Key", ctx.getProperty("Key"));
 
@@ -785,12 +778,12 @@ export default class Detail extends BaseController {
 
       MessageToast.show(message);
 
-      if (onSuccess) {
-        onSuccess();
-        return;
+      try {
+        await ctx.requestRefresh();
+      } catch {
+        // a releitura falhar não pode deixar a tela ocupada
       }
-
-      this.navTo("purchaseInvoices");
+      void this.refreshDetailNfe(false);
     } finally {
       this.setBusy(false);
     }

@@ -239,11 +239,18 @@ export default class Add extends BaseController {
     this.navTo("salesInvoices");
   }
 
+  /**
+   * Sem chave, cai na lista em vez de deixar o operador preso na tela de inclusão de um documento
+   * que já foi gravado.
+   */
   private navToDetail() {
-    const oContext = this.getView().getBindingContext() as Context;
+    const key = (this.getView().getBindingContext() as Context)?.getProperty("Key") as string;
 
-    if (oContext) {
-      this.navTo("salesInvoicesDetail", { id: oContext.getProperty("Key") as string });
+    if (!key) {
+      this.navTo("salesInvoices");
+      return;
     }
+
+    this.navTo("salesInvoicesDetail", { id: key });
   }
 }
