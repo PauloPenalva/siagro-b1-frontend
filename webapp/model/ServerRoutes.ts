@@ -114,6 +114,7 @@ export default {
   salesShipmentReleasesByPeriodReport: '/reports/SalesShipmentReleasesByPeriod',
   shipmentReleasesByPeriodReport: '/reports/ShipmentReleasesByPeriod',
   salesShipmentsByPeriodReport: '/reports/SalesShipmentsByPeriod',
+  storageRemittancesByPeriodReport: '/reports/StorageRemittancesByPeriod',
   contractPositionReport: '/reports/ContractPosition',
   contractMonthlyPositionReport: '/reports/ContractMonthlyPosition',
   funruralWithholdingReport: '/reports/FunruralWithholding',
