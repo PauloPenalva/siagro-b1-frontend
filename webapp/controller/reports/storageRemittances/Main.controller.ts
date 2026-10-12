@@ -3,8 +3,8 @@ import ServerRoutes from "siagrob1/model/ServerRoutes";
 
 /**
  * Remessas para Depósito (só STANDALONE — o menu some em SAPB1). Situação de retorno:
- * 0 Todas, 1 Em aberto (A retornar > 0), 2 Totalmente retornada. Detalhado lista, abaixo de cada
- * remessa, os retornos e os romaneios de carregamento com o retorno reconciliado.
+ * 0 Todas, 1 Em aberto (A retornar > 0), 2 Totalmente retornada. Os retornos saem sempre; Detalhado lista, abaixo de cada
+ * remessa, os romaneios de carregamento com o retorno reconciliado.
  * @namespace siagrob1.controller.reports.storageRemittances
  */
 export default class Main extends InvoiceReportController {

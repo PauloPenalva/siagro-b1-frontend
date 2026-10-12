@@ -35,7 +35,7 @@
 					<core:Item key="2" text="Totalmente retornada"/>
 				</Select>
 				<Label text="Detalhado"/>
-				<CheckBox selected="{params>/Detailed}" text="Listar retornos e romaneios de cada remessa"/>
+				<CheckBox selected="{params>/Detailed}" text="Listar romaneios de carregamento de cada remessa"/>
 				<core:Title text="Filtros" emphasized="true"/>
 				<core:Fragment fragmentName="siagrob1.view.reports.fragments.InvoiceReportCommonFilters" type="XML"/>
 				<Label text="Armazém"/>
