@@ -4,15 +4,8 @@ import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import Context from "sap/ui/model/odata/v4/Context";
-import { CheckBox$SelectEvent } from "sap/m/CheckBox";
 
 export abstract class BaseController extends CommonController {
-
-  /** QryGroup23 = 'Y' marca o parceiro como ARMAZÉM (STANDALONE); é o que o lista em Armazéns. */
-  onWarehouseFlagSelect(event: CheckBox$SelectEvent): void {
-    const context = this.getView().getBindingContext() as Context;
-    void context.setProperty("QryGroup23", event.getParameter("selected") ? "Y" : "N");
-  }
 
   onAddAddress() {
     const tb = this.byId("businessPartnerAddressesTable") as Table;
