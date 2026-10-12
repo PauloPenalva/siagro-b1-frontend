@@ -60,6 +60,15 @@
             <core:ListItem key="C" text="Cliente" />
             <core:ListItem key="S" text="Fornecedor" />
           </Select>
+          <Label text="Armazém" visible="{ui>/standalone}" />
+          <Select
+              selectedKey="{QryGroup23}"
+              forceSelection="false"
+              visible="{ui>/standalone}"
+          >
+            <core:ListItem key="N" text="Não" />
+            <core:ListItem key="Y" text="Sim" />
+          </Select>
           <Label text="CNPJ/CPF" />
           <Input
               value="{TaxId}"

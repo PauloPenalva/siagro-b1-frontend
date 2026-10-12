@@ -28,7 +28,7 @@ export default class Add extends BaseController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-    //QryGroup23 = Y --> Cadastro de Armazem
+    // QryGroup23 = 'Y' marca o parceiro como armazém (campo "Armazém" do formulário).
 		const oContext = oBinding.create({
       "QryGroup23": "N",
       "Addresses": [],

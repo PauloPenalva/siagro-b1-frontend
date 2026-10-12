@@ -190,7 +190,7 @@ class VersionService {
 
   /**
    * As rotas de criação e edição seguem convenção estável no `manifest.json`
-   * (`parceirosNegocioAdd`, `armazensNew`, `produtosEdit`, ...).
+   * (`parceirosNegocioAdd`, `truckScalesNew`, `produtosEdit`, ...).
    */
   private isEditingRoute(): boolean {
     return /(Add|New|Edit)$/.test(this.currentRoute);

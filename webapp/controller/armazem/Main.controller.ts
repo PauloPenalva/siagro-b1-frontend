@@ -5,11 +5,11 @@ import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import Table from "sap/ui/table/Table";
 import MessageBox from "sap/m/MessageBox";
-import ODataModel from "sap/ui/model/odata/v4/ODataModel";
-import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import formatter from "siagrob1/model/formatter";
 
 /**
+ * Lista de armazéns: parceiros de negócio marcados como "Armazém" (QryGroup23 = 'Y').
+ * Incluir/editar é feito no cadastro do Parceiro de Negócio; aqui só o complemento.
  * @namespace siagrob1.controller.armazem
  */
 export default class Main extends BaseController {
@@ -41,61 +41,16 @@ export default class Main extends BaseController {
 		(this.getView().byId("tableArmazens").getBinding("rows") as ODataListBinding).filter([oFilters]);
 	}
 
-	onCreate() {
-			this.navTo("armazensNew");
-	}
-
-	onEdit(): void {
-		const oTable = this.byId("tableArmazens") as Table;
-    const oContext = this.getSelectRowContext(oTable);
-		
-		if (!oContext) {
-			MessageBox.alert("Selecione um item para editar.");
-			return;
-		}
-    
-		const sId = oContext.getProperty("Code") as string;
-		this.navTo("armazensEdit", {id: sId});
-	}
-
 	onComplement(): void {
 		const oTable = this.byId("tableArmazens") as Table;
 		const oContext = this.getSelectRowContext(oTable);
 
 		if (!oContext) {
-			MessageBox.alert("Selecione um item para editar.");
+			MessageBox.alert("Selecione um armazém.");
 			return;
 		}
 
 		const sId = oContext.getProperty("Code") as string;
 		this.navTo("armazensComplement", {id: sId});
-	}
-
-	async onDelete() {
-		const oModel = this.getView().getModel() as ODataModel;
-		const oTable = this.byId("tableArmazens") as Table;
-		const oBindingContext = this.getSelectRowContext(oTable);
-
-		if (!oBindingContext)  {
-			MessageBox.alert("Selecione um item para editar.");
-			return;
-		}
-
-		if (await confirmDialog("Deseja realmente deletar este registro ?", "Deletar registro ?")) {
-			try{
-				this.setBusy(true)
-	
-				await oBindingContext.delete("$auto");
-	
-				await oModel.submitBatch(oModel.getUpdateGroupId())
-					
-				if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
-					MessageBox.information("Registro deletado.")
-				}
-			} finally {
-				this.setBusy(false)
-			}
-		}
-
 	}
 }
