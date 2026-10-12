@@ -1030,6 +1030,11 @@
           "target": "salesShipmentsReport"
         },
         {
+          "pattern": "storage-remittances/report",
+          "name": "storageRemittancesReport",
+          "target": "storageRemittancesReport"
+        },
+        {
           "pattern": "contract-position/report",
           "name": "contractPositionReport",
           "target": "contractPositionReport"
@@ -2266,6 +2271,12 @@
           "id": "salesShipmentsReport",
           "level": 1,
           "name": "siagrob1.view.reports.salesShipments.Main",
+          "clearControlAggregation": true
+        },
+        "storageRemittancesReport": {
+          "id": "storageRemittancesReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.storageRemittances.Main",
           "clearControlAggregation": true
         },
         "contractPositionReport": {
