@@ -60,6 +60,12 @@
             <core:ListItem key="C" text="Cliente" />
             <core:ListItem key="S" text="Fornecedor" />
           </Select>
+          <Label text="Armazém" visible="{ui>/standalone}" />
+          <CheckBox
+              selected="{= ${QryGroup23} === 'Y' }"
+              select=".onWarehouseFlagSelect"
+              visible="{ui>/standalone}"
+          />
           <Label text="CNPJ/CPF" />
           <Input
               value="{TaxId}"
