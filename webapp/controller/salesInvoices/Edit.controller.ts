@@ -1,6 +1,7 @@
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
+import MessageToast from "sap/m/MessageToast";
 import Context from "sap/ui/model/odata/v4/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { BaseController } from "./BaseController";
@@ -54,6 +55,7 @@ export default class Edit extends BaseController {
 			await oModel.submitBatch(oModel.getUpdateGroupId());
 			if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 				oModel.resetChanges(oModel.getUpdateGroupId())
+				MessageToast.show("Documento alterado.", { closeOnBrowserNavigation: false });
 				this.navToDetail();
 			}
 		} finally {

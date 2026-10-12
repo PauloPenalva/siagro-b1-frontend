@@ -82,7 +82,7 @@ export default class Detail extends BaseController {
     }
 
     if (await DialogHelper.confirmDialog("Confirmar documento de saída ?")) {
-      this.confirmAction(ctx);
+      await this.invokeAction("/SalesInvoicesConfirm(...)", ctx, "Documento de saída confirmado com sucesso.");
     }
   }
 
@@ -342,19 +342,6 @@ export default class Detail extends BaseController {
     }
   }
 
-  private confirmAction(ctx:Context) {
-    const action = (ctx.getModel() as ODataModel).bindContext("/SalesInvoicesConfirm(...)");
-    action.setParameter("Key", ctx.getProperty("Key"));
-
-    this.setBusy(false);
-    void action.invoke()
-      .then(() => {
-        MessageToast.show("Documento de saída confirmado com sucesso.");
-        this.navToSalesInvoices();
-      })
-      .finally(() => this.setBusy(false));
-  }
-
   async onReverse() {
     const ctx = this.getView().getBindingContext() as Context;
     if (!ctx) {
@@ -363,21 +350,8 @@ export default class Detail extends BaseController {
     }
 
     if (await DialogHelper.confirmDialog("Estornar documento de saída ?")) {
-      this.reverseAction(ctx);
+      await this.invokeAction("/SalesInvoicesReverseConfirm(...)", ctx, "Documento de saída estornado com sucesso.");
     }
-  }
-
-  private reverseAction(ctx:Context) {
-    const action = (ctx.getModel() as ODataModel).bindContext("/SalesInvoicesReverseConfirm(...)");
-    action.setParameter("Key", ctx.getProperty("Key"));
-
-    this.setBusy(false);
-    void action.invoke()
-      .then(() => {
-        MessageToast.show("Documento de saída estornado com sucesso.");
-        this.navToSalesInvoices();
-      })
-      .finally(() => this.setBusy(false));
   }
 
   async onCancel() {
@@ -397,25 +371,32 @@ export default class Detail extends BaseController {
     }
 
     if (await DialogHelper.confirmDialog("Cancelar documento de saída ?")) {
-      this.cancelAction(ctx);
+      await this.invokeAction("/SalesInvoicesCancel(...)", ctx, "Documento de saída cancelado com sucesso.");
     }
   }
 
-  private cancelAction(ctx:Context) {
-    const action = (ctx.getModel() as ODataModel).bindContext("/SalesInvoicesCancel(...)");
+  /**
+   * Confirmar, estornar e cancelar mantêm o operador no detalhe: é dali que ele segue (editar depois
+   * do estorno, transmitir depois de confirmar). O documento é relido no lugar — situação e botões
+   * dependem dele —, como já faz o runNfeAction.
+   */
+  private async invokeAction(path: string, ctx: Context, message: string) {
+    const action = (ctx.getModel() as ODataModel).bindContext(path);
     action.setParameter("Key", ctx.getProperty("Key"));
 
-    this.setBusy(false);
-    void action.invoke()
-      .then(() => {
-        MessageToast.show("Documento de saída cancelado com sucesso.");
-        this.navToSalesInvoices();
-      })
-      .finally(() => this.setBusy(false));
-  }
+    this.setBusy(true);
+    try {
+      await action.invoke();
+      MessageToast.show(message);
 
-  private navToSalesInvoices(){
-    this.navTo("salesInvoices");
+      try {
+        await ctx.requestRefresh();
+      } catch {
+        // a releitura falhar não pode deixar a tela ocupada
+      }
+    } finally {
+      this.setBusy(false);
+    }
   }
 
   /* ------------------------------------------------------------------ */
