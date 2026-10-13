@@ -529,6 +529,11 @@
           "target": "purchaseDischarges"
         },
         {
+          "pattern": "purchase-fiscal-reconciliations:?query:",
+          "name": "purchaseFiscalReconciliations",
+          "target": "purchaseFiscalReconciliations"
+        },
+        {
           "pattern": "warehouse-reconciliations/new",
           "name": "warehouseReconciliationsNew",
           "target": "warehouseReconciliationsNew"
@@ -1638,6 +1643,12 @@
           "id": "purchaseDischarges",
           "level": 1,
           "name": "siagrob1.view.purchaseDischarges.Main",
+          "clearControlAggregation": true
+        },
+        "purchaseFiscalReconciliations": {
+          "id": "purchaseFiscalReconciliations",
+          "level": 1,
+          "name": "siagrob1.view.purchaseFiscalReconciliations.Main",
           "clearControlAggregation": true
         },
         "warehouseReconciliationsNew": {

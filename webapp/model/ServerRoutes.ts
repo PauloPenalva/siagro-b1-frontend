@@ -116,6 +116,7 @@ export default {
   salesShipmentsByPeriodReport: '/reports/SalesShipmentsByPeriod',
   storageRemittancesByPeriodReport: '/reports/StorageRemittancesByPeriod',
   storageCustodyByPeriodReport: '/reports/StorageCustodyByPeriod',
+  purchaseFiscalReconciliationReport: '/reports/PurchaseFiscalReconciliation',
   contractPositionReport: '/reports/ContractPosition',
   contractMonthlyPositionReport: '/reports/ContractMonthlyPosition',
   funruralWithholdingReport: '/reports/FunruralWithholding',
@@ -317,4 +318,14 @@ export default {
 
   // Troca nota: romaneios de quebra/sobra de descarga (tela "Ajustes de Descarga").
   purchaseDischargesList: '/odata/PurchaseDischargesList',
+
+  // Conciliação Fiscal de Compras: NF do fornecedor × romaneio de compra.
+  purchaseFiscalReconciliationTransactions: '/odata/PurchaseFiscalReconciliationTransactions',
+  purchaseFiscalReconciliationInvoiceLines: '/odata/PurchaseFiscalReconciliationInvoiceLines',
+  purchaseFiscalReconciliationLinks: '/odata/PurchaseFiscalReconciliationLinks',
+  purchaseFiscalReconciliationSuggest: '/odata/PurchaseFiscalReconciliationSuggest',
+  purchaseFiscalReconciliationSave: '/odata/PurchaseFiscalReconciliationSave',
+  purchaseFiscalReconciliationRemove: '/odata/PurchaseFiscalReconciliationRemove',
+  purchaseFiscalReconciliationConfirm: '/odata/PurchaseFiscalReconciliationConfirm',
+  purchaseFiscalReconciliationUnconfirm: '/odata/PurchaseFiscalReconciliationUnconfirm',
 }

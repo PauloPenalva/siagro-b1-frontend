@@ -1,0 +1,53 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:fb="sap.ui.comp.filterbar">
+<fb:FilterBar search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+  <fb:filterGroupItems>
+    <fb:FilterGroupItem name="supplier" label="Fornecedor" groupName="G1" visibleInFilterBar="true" mandatory="true">
+      <fb:control>
+        <Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openSuppliersValueHelp"
+          value="{filter>/CardCode}" description="{filter>/CardName}" fieldWidth="35%">
+          <customData><core:CustomData key="descriptionProperty" value="CardName"/></customData>
+        </Input>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="item" label="Produto" groupName="G2" visibleInFilterBar="true" mandatory="true">
+      <fb:control>
+        <Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openItemValueHelp"
+          value="{filter>/ItemCode}" description="{filter>/ItemName}" fieldWidth="35%">
+          <customData><core:CustomData key="descriptionProperty" value="ItemName"/></customData>
+        </Input>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="contract" label="Contrato de compra" groupName="G3" visibleInFilterBar="true">
+      <fb:control><Input showClearIcon="true" value="{filter>/ContractCode}"/></fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="dateFrom" label="Data de" groupName="G4" visibleInFilterBar="true">
+      <fb:control>
+        <DatePicker value="{ path: 'filter>/DateFrom', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="dateTo" label="Data até" groupName="G5" visibleInFilterBar="true">
+      <fb:control>
+        <DatePicker value="{ path: 'filter>/DateTo', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="status" label="Situação" groupName="G6" visibleInFilterBar="true">
+      <fb:control>
+        <MultiComboBox selectedKeys="{filter>/Statuses}" selectionFinish=".onStatusChange">
+          <core:Item key="WithoutInvoice" text="Sem NF"/>
+          <core:Item key="Partial" text="Parcial"/>
+          <core:Item key="Reconciled" text="Conciliado"/>
+        </MultiComboBox>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="issuer" label="Emitente da NF" groupName="G7" visibleInFilterBar="true">
+      <fb:control>
+        <Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBusinessPartnersValueHelp"
+          showClearIcon="true" value="{filter>/IssuerCardCode}" placeholder="Fornecedor e mesmas inscrições"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="fullyLinked" label="NFs" groupName="G8" visibleInFilterBar="true">
+      <fb:control><CheckBox text="Mostrar totalmente vinculadas" selected="{filter>/IncludeFullyLinked}"/></fb:control>
+    </fb:FilterGroupItem>
+  </fb:filterGroupItems>
+</fb:FilterBar>
+</core:FragmentDefinition>
