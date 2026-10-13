@@ -142,6 +142,20 @@
             <core:ListItem key="Remittance" text="Remessa para depósito" />
             <core:ListItem key="Return" text="Retorno de depósito" />
           </Select>
+          <!-- Notas de custódia em armazém próprio (spec backend 2026-10-12 §3.1): só STANDALONE. Entradas são
+               naturezas de entrada; devolução e retornos, de saída — o servidor recusa a combinação errada. -->
+          <Label text="Papel na custódia (armazenagem)" visible="{ui>/identityEditable}" />
+          <Select
+            visible="{ui>/identityEditable}"
+            selectedKey="{ path: 'StorageCustodyRole', targetType: 'any' }"
+            forceSelection="false">
+            <core:ListItem key="None" text="Nenhum" />
+            <core:ListItem key="ProcessingEntry" text="Entrada para beneficiamento" />
+            <core:ListItem key="ProcessingSymbolicReturn" text="Devolução simbólica do beneficiamento" />
+            <core:ListItem key="StorageEntry" text="Entrada para armazenagem" />
+            <core:ListItem key="StorageReturn" text="Retorno de armazenagem" />
+            <core:ListItem key="StorageSymbolicReturn" text="Retorno simbólico de armazenagem" />
+          </Select>
           <!-- Flags da natureza (equivalem a "Atualiza Estoque" e "Gera Duplicata" da TES do
                Protheus). Só cadastro por enquanto: o estoque FISCAL e o financeiro a partir
                do documento fiscal ainda não existem. -->

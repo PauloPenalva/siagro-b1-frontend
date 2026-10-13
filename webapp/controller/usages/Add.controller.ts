@@ -54,6 +54,7 @@ export default class Add extends BaseController {
 			ReturnUsageName: null,
 			AllowsCounterNote: false,
 			StorageDepositRole: "None",
+			StorageCustodyRole: "None",
 			InvoiceOperationText: null,
 			DefaultAdditionalInfo: null,
 			MovesFiscalInventory: false,
