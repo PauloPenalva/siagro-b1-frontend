@@ -1,0 +1,33 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+  <Dialog id="fiscalLinksDialog" title="Romaneio {links>/transaction/Code} — NFs vinculadas" contentWidth="48rem" busyIndicatorDelay="0" busy="{links>/busy}">
+    <content>
+      <ObjectHeader
+        title="{links>/transaction/StatusName}"
+        number="{ path: 'links>/transaction/Difference', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+        numberUnit="KG de diferença">
+        <ObjectAttribute text="{= ${links>/transaction/FiscalReconciledBy} ? 'Conciliado manualmente por ' + ${links>/transaction/FiscalReconciledBy} : '' }"/>
+      </ObjectHeader>
+      <Table items="{links>/links}" noDataText="Nenhuma NF vinculada.">
+        <columns>
+          <Column><Text text="NF/Série"/></Column>
+          <Column><Text text="Emitente"/></Column>
+          <Column hAlign="End"><Text text="Quantidade (KG)"/></Column>
+          <Column width="4rem"/>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <Text text="{links>TaxDocument}"/>
+            <Text text="{links>CardCode} - {links>CardName}"/>
+            <ObjectNumber number="{ path: 'links>Quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+            <Button icon="sap-icon://broken-link" type="Transparent" tooltip="Desvincular" press=".onRemoveLink"/>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </content>
+    <buttons>
+      <Button text="Marcar como conciliado" type="Emphasized" visible="{= !${links>/transaction/FiscalReconciledAt} }" press=".onConfirmTransaction"/>
+      <Button text="Desfazer conciliação" visible="{= !!${links>/transaction/FiscalReconciledAt} }" press=".onUnconfirmTransaction"/>
+      <Button text="Fechar" press=".onCloseLinksDialog"/>
+    </buttons>
+  </Dialog>
+</core:FragmentDefinition>
