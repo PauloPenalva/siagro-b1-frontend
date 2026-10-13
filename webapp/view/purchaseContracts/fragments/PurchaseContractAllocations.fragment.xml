@@ -27,6 +27,7 @@
       <OverflowToolbar>
         <content>
           <Title text="Entregas do Contrato de Compra" />
+          <Button text="Conciliar NFs" icon="sap-icon://chain-link" type="Transparent" press=".onOpenFiscalReconciliation" />
           <ToolbarSpacer />
           <!-- Legenda das faixas de cor: uma entrada por origem (helpers/AllocationOriginHelpers) -->
           <HBox items="{allocationOrigins>/}" alignItems="Center">
@@ -118,6 +119,29 @@
       <t:Column label="Nota Fiscal Venda" tooltip="Nota Fiscal Venda">
         <t:template>
           <Text text="{allocationModel>NotaFiscalVenda}" tooltip="{allocationModel>NotaFiscalVenda}" wrapping="false" />
+        </t:template>
+      </t:Column>
+      <t:Column label="NF do fornecedor" tooltip="NFs do fornecedor vinculadas ao romaneio" width="12rem">
+        <t:template>
+          <Text text="{allocationModel>SupplierInvoiceNumbers}" tooltip="{allocationModel>SupplierInvoiceNumbers}" wrapping="false" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Fiscal" tooltip="Quantidade das NFs vinculadas ao romaneio inteiro" hAlign="End">
+        <t:template>
+          <Text wrapping="false" text="{ path: 'allocationModel>FiscalQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Diferença" tooltip="Fiscal − peso líquido do romaneio" hAlign="End">
+        <t:template>
+          <Text wrapping="false" text="{ path: 'allocationModel>FiscalDifference', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Situação fiscal" width="9rem">
+        <t:template>
+          <ObjectStatus text="{allocationModel>FiscalStatus}"
+            icon="{= ${allocationModel>IsSplitAcrossContracts} ? 'sap-icon://split' : '' }"
+            tooltip="{= ${allocationModel>IsSplitAcrossContracts} ? 'Romaneio rateado em mais de um contrato: os números fiscais são do romaneio inteiro.' : '' }"
+            state="{= ${allocationModel>FiscalStatus} === 'Conciliado' ? 'Success' : ${allocationModel>FiscalStatus} === 'Parcial' ? 'Warning' : 'None' }" />
         </t:template>
       </t:Column>
     </t:columns>

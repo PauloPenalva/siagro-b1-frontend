@@ -1321,6 +1321,19 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
     }
   }
 
+  /** Abre a Conciliação Fiscal de Compras já filtrada pelo fornecedor, produto e código deste contrato. */
+  onOpenFiscalReconciliation(): void {
+    const contract = this.getView().getBindingContext()?.getObject() as { CardCode?: string; ItemCode?: string; Code?: string };
+    if (!contract?.CardCode || !contract.ItemCode) {
+      MessageBox.information("Contrato sem fornecedor ou produto.");
+      return;
+    }
+
+    this.getRouter().navTo("purchaseFiscalReconciliations", {
+      "?query": { cardCode: contract.CardCode, itemCode: contract.ItemCode, contractCode: contract.Code ?? "" },
+    });
+  }
+
   getAllocations(key: string){
     const oView = this.getView();
     const allocationModel = new JSONModel();
