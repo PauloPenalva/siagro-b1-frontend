@@ -1,0 +1,27 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+<!-- Recepções confirmadas de lote de armazenagem de terceiro. Depositante e produto mudam a cada documento e entram pelo
+     controller; a etapa pendente é conferida pelo servidor ao gravar (spec backend 2026-10-12 §4.4). Enum vai no
+     $filter estático: em sap.ui.model.Filter o OData V4 não o serializa. -->
+<TableSelectDialog class="sapUiSizeCompact" growing="true" growingThreshold="20"
+  items="{ path: '/StorageTransactions', parameters: {
+    $filter: 'TransactionType eq \'Receipt\' and (TransactionStatus eq \'Confirmed\' or TransactionStatus eq \'Invoiced\') and StorageAddress/OwnershipType eq \'ThirdParty\'',
+    $orderby: 'TransactionDate desc' } }"
+  rememberSelections="true" title="Romaneio de recepção (lote de terceiro)">
+  <columns>
+    <Column><header><Text text="Romaneio" /></header></Column>
+    <Column><header><Text text="Data" /></header></Column>
+    <Column><header><Text text="Lote" /></header></Column>
+    <Column hAlign="End"><header><Text text="Peso bruto" /></header></Column>
+    <Column hAlign="End"><header><Text text="Peso líquido" /></header></Column>
+  </columns>
+  <ColumnListItem>
+    <cells>
+      <Text text="{Code}" />
+      <Text text="{ path: 'TransactionDate', type: 'sap.ui.model.odata.type.DateTimeOffset', formatOptions: { pattern: 'dd/MM/yyyy' } }" />
+      <Text text="{StorageAddressCode}" />
+      <ObjectNumber number="{ path: 'GrossWeight', type: 'sap.ui.model.odata.type.Decimal', formatOptions: { maxFractionDigits: 3 } }" unit="{UnitOfMeasureCode}" />
+      <ObjectNumber number="{ path: 'NetWeight', type: 'sap.ui.model.odata.type.Decimal', formatOptions: { maxFractionDigits: 3 } }" unit="{UnitOfMeasureCode}" />
+    </cells>
+  </ColumnListItem>
+</TableSelectDialog>
+</core:FragmentDefinition>

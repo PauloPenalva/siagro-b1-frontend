@@ -115,6 +115,7 @@ export default {
   shipmentReleasesByPeriodReport: '/reports/ShipmentReleasesByPeriod',
   salesShipmentsByPeriodReport: '/reports/SalesShipmentsByPeriod',
   storageRemittancesByPeriodReport: '/reports/StorageRemittancesByPeriod',
+  storageCustodyByPeriodReport: '/reports/StorageCustodyByPeriod',
   contractPositionReport: '/reports/ContractPosition',
   contractMonthlyPositionReport: '/reports/ContractMonthlyPosition',
   funruralWithholdingReport: '/reports/FunruralWithholding',
@@ -203,6 +204,9 @@ export default {
   // Remessa para depósito em armazém de terceiro: emissão, resumo da liberação e reconciliação do retorno.
   shipmentReleasesCreateStorageRemittance: '/odata/ShipmentReleasesCreateStorageRemittance',
   shipmentReleasesStorageRemittanceSummary: '/odata/ShipmentReleasesStorageRemittanceSummary',
+  // Notas de custódia em armazém próprio: gerar a nota do romaneio e resumo das etapas.
+  storageTransactionsCreateCustodyDocument: '/odata/StorageTransactionsCreateCustodyDocument',
+  storageTransactionsCustodySummary: '/odata/StorageTransactionsCustodySummary',
   purchaseInvoicesStorageReturnTransactions: '/odata/PurchaseInvoicesStorageReturnTransactions',
   purchaseInvoicesReconcileStorageReturn: '/odata/PurchaseInvoicesReconcileStorageReturn',
   purchaseInvoicesUndoStorageReturnReconciliation: '/odata/PurchaseInvoicesUndoStorageReturnReconciliation',

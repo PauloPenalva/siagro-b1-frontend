@@ -1,4 +1,5 @@
 import Table from "sap/ui/table/Table";
+import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import JSONModel from "sap/ui/model/json/JSONModel";
@@ -60,6 +61,7 @@ export abstract class BaseController extends CommonController {
       // componente, então Incluir/Editar não podem herdar o link do último documento aberto.
       uiModel.setProperty("/counterNote", { key: "", text: "" });
       uiModel.setProperty("/producerInvoice", { key: "", text: "" });
+      uiModel.setProperty("/custody", { key: "", code: "" });
     }
 
     // Remessa para depósito (spec backend 2026-10-10 §5.3): só STANDALONE mostra a coluna "Remessa". Depois do reset
@@ -77,11 +79,14 @@ export abstract class BaseController extends CommonController {
       const invoiceType = await oContext.requestProperty("InvoiceType") as string;
       const paymentConditionCode = await oContext.requestProperty("PaymentConditionCode") as number;
       const producerInvoiceKey = await oContext.requestProperty("ProducerInvoiceKey") as string;
+      const custodyKey = await oContext.requestProperty("CustodyStorageTransactionKey") as string;
       const taxLocked = await this.isTaxCalculationActive(branchCode);
 
       if (!isCurrent()) {
         return;
       }
+
+      void this.refreshCustodyCode(custodyKey, isCurrent);
 
       const nfeMode = isPurchaseNfeMode(taxLocked, issuerType);
       uiModel.setProperty("/taxLocked", taxLocked);
@@ -117,8 +122,58 @@ export abstract class BaseController extends CommonController {
         uiModel.setProperty("/isCounterNote", false);
         uiModel.setProperty("/counterNote", { key: "", text: "" });
         uiModel.setProperty("/producerInvoice", { key: "", text: "" });
+        uiModel.setProperty("/custody", { key: "", code: "" });
       }
     }
+  }
+
+  /** Código do romaneio de custódia do documento (o EDM só traz a chave). */
+  private async refreshCustodyCode(key: string, isCurrent: () => boolean): Promise<void> {
+    const uiModel = this.getModel("ui") as JSONModel;
+    if (!key) {
+      uiModel.setProperty("/custody", { key: "", code: "" });
+      return;
+    }
+    try {
+      const code = await (this.getModel() as ODataModel).bindContext(`/StorageTransactions(${key})`).requestObject("Code") as string;
+      if (isCurrent()) uiModel.setProperty("/custody", { key, code });
+    } catch {
+      if (isCurrent()) uiModel.setProperty("/custody", { key, code: key });
+    }
+  }
+
+  /**
+   * Value help do romaneio de custódia: Recepções do mesmo depositante (emitente) e produto da primeira linha. Grava a
+   * CHAVE no documento e mostra o código; a etapa pendente é conferida pelo servidor.
+   */
+  async openCustodyTransactionValueHelp(): Promise<void> {
+    const oInvoice = this.getView().getBindingContext() as Context;
+    const cardCode = oInvoice.getProperty("CardCode") as string;
+    if (!cardCode) {
+      MessageBox.warning("Informe o emitente (depositante) antes do romaneio.");
+      return;
+    }
+    const filters = [new Filter("CardCode", FilterOperator.EQ, cardCode)];
+    const firstItem = (this.byId("tablePurchaseInvoiceItems") as Table | undefined)?.getContextByIndex?.(0)?.getProperty("ItemCode") as string;
+    if (firstItem) filters.push(new Filter("ItemCode", FilterOperator.EQ, firstItem));
+
+    const selected = await DialogHelper.openTableSelectDialog(this, "StorageCustodyTransactionsSelectDialog", ["Code"], filters);
+    if (!selected) return;
+
+    // O `ui` primeiro e sem await: a escrita no documento cai no grupo diferido e só resolve no submitBatch.
+    (this.getModel("ui") as JSONModel).setProperty("/custody", { key: selected.getProperty("Key") as string, code: selected.getProperty("Code") as string });
+    void oInvoice.setProperty("CustodyStorageTransactionKey", selected.getProperty("Key"));
+  }
+
+  /** Limpa o romaneio de custódia escolhido (o campo é só value help). */
+  onClearCustodyTransaction(): void {
+    (this.getModel("ui") as JSONModel).setProperty("/custody", { key: "", code: "" });
+    void (this.getView().getBindingContext() as Context).setProperty("CustodyStorageTransactionKey", null);
+  }
+
+  onOpenCustodyTransaction(): void {
+    const key = (this.getModel("ui") as JSONModel).getProperty("/custody/key") as string;
+    if (key) this.navTo("storageTransactionsDetail", { id: key });
   }
 
   private async refreshStorageDepositMode(uiModel: JSONModel, isCurrent: () => boolean): Promise<void> {

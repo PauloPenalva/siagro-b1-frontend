@@ -17,6 +17,7 @@ export default class Add extends LoteArmazenagemBaseController {
 	private async newRouteMatched() {
 		
     this.clearStates("formLoteArmazenagem");
+    void this.refreshStandaloneFlag();
     
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;
@@ -51,6 +52,7 @@ export default class Add extends LoteArmazenagemBaseController {
       // Nasce Comum, igual ao default da entidade (GAC-1181 fase 2): Transbordo é uma escolha
       // deliberada do operador, só depois de escolher um armazém PRÓPRIO.
       "Nature": "Regular",
+      "RequiresProcessing": false,
     }, false, false, false);
 
     oView.setBindingContext(oContext);

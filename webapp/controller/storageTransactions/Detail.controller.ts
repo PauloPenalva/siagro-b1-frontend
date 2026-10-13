@@ -13,6 +13,15 @@ import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import ODataDate from "sap/ui/model/odata/type/Date";
 import ODataDecimal from "sap/ui/model/odata/type/Decimal";
+import Dialog from "sap/m/Dialog";
+import Input from "sap/m/Input";
+import MessageBox from "sap/m/MessageBox";
+import Fragment from "sap/ui/core/Fragment";
+import Control from "sap/ui/core/Control";
+import Event from "sap/ui/base/Event";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
+import { sendJson, odataValue } from "siagrob1/helpers/FetchHelpers";
+import { canGenerateCustody, custodyStepState, custodyUsageFilter, isCustodyPriceValid, isPurchaseRole, StorageCustodyStep, StorageCustodySummary } from "siagrob1/helpers/StorageCustodyHelpers";
 
 /**
  * @namespace siagrob1.controller.storageTransactions
@@ -22,7 +31,13 @@ export default class Detail extends BaseController {
 	/** Último romaneio cujo saldo foi pedido; descarta respostas atrasadas. */
 	private royaltyRequestedKey = "";
 
-	onInit(): void  {	
+	private custodyDialog?: Dialog;
+
+	/** Formatter da situação da etapa (usado na tabela). */
+	custodyStepState = custodyStepState;
+
+	onInit(): void  {
+		this.getView().setModel(new JSONModel({ visible: false, loadError: "", canGenerate: false, summary: undefined, dialog: {} }), "custody");
 		this.getRouter().getRoute("storageTransactionsDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
 	}
 
@@ -52,6 +67,120 @@ export default class Detail extends BaseController {
     this.bindRoyaltyLines(id);
     this.royaltyRequestedKey = id;
     void this.loadRoyaltyBalance(id);
+    void this.loadCustody(id);
+  }
+
+  /**
+   * Notas de custódia (spec backend 2026-10-12 §5): só STANDALONE; em SAPB1 a seção some e nada é pedido. Resposta de
+   * outro romaneio (o usuário navegou enquanto esperava) é descartada.
+   */
+  private async loadCustody(id: string): Promise<void> {
+    const model = this.getView().getModel("custody") as JSONModel;
+    model.setData({ visible: false, loadError: "", canGenerate: false, summary: undefined, dialog: {} });
+
+    const isStandalone = (await this.getSystemInfo())?.erp?.trim().toUpperCase() === "STANDALONE";
+    if (!isStandalone) return;
+
+    const result = await sendJson("GET", `${ServerRoutes.storageTransactionsCustodySummary}(Key=${id})`);
+    const current = (this.getView().getBindingContext() as Context | undefined)?.getProperty("Key") as string;
+    if (current && current.toLowerCase() !== id.toLowerCase()) return;
+
+    if (!result.ok) {
+      model.setProperty("/visible", true);
+      model.setProperty("/loadError", result.message);
+      return;
+    }
+
+    const summary = odataValue<StorageCustodySummary>(result.data);
+    model.setProperty("/summary", summary);
+    model.setProperty("/visible", summary.Applies);
+    model.setProperty("/canGenerate", canGenerateCustody(summary, true));
+  }
+
+  async onOpenCustodyDialog(): Promise<void> {
+    const model = this.getView().getModel("custody") as JSONModel;
+    const summary = model.getProperty("/summary") as StorageCustodySummary;
+    const missing = summary.Steps.filter((s) => s.Situation === "Missing");
+    model.setProperty("/dialog", { roles: missing, usageCode: null, usageName: "", unitPrice: null, priceInvalid: false });
+    this.selectCustodyRole(summary.NextRole);
+
+    if (!this.custodyDialog) {
+      this.custodyDialog = await Fragment.load({
+        id: this.getView().getId(),
+        name: "siagrob1.view.storageTransactions.fragments.CustodyDocumentDialog",
+        controller: this,
+      }) as Dialog;
+      this.getView().addDependent(this.custodyDialog);
+    }
+    this.custodyDialog.open();
+  }
+
+  /** Etapa escolhida: troca a natureza (é por papel) e mostra a quantidade que a nota terá. */
+  private selectCustodyRole(role: string): void {
+    const model = this.getView().getModel("custody") as JSONModel;
+    const step = (model.getProperty("/dialog/roles") as StorageCustodyStep[]).find((s) => s.Role === role);
+    model.setProperty("/dialog/role", role);
+    model.setProperty("/dialog/quantity", step?.ExpectedQuantity ?? null);
+    model.setProperty("/dialog/usageCode", null);
+    model.setProperty("/dialog/usageName", "");
+  }
+
+  onCustodyRoleChange(): void {
+    const model = this.getView().getModel("custody") as JSONModel;
+    this.selectCustodyRole(model.getProperty("/dialog/role") as string);
+  }
+
+  async onCustodyUsageValueHelp(): Promise<void> {
+    const model = this.getView().getModel("custody") as JSONModel;
+    const role = model.getProperty("/dialog/role") as string;
+    const selected = await DialogHelper.openTableSelectDialog(
+      this, "UsagesSelectDialog", ["Name", "Description"],
+      [new Filter("Inactive", FilterOperator.EQ, false)], undefined, custodyUsageFilter(role));
+    if (!selected) return;
+    model.setProperty("/dialog/usageCode", selected.getProperty("Code"));
+    model.setProperty("/dialog/usageName", selected.getProperty("Name"));
+  }
+
+  async onConfirmCustody(): Promise<void> {
+    const model = this.getView().getModel("custody") as JSONModel;
+    const dialog = model.getProperty("/dialog") as { role: string; usageCode: number; unitPrice: number; priceInvalid: boolean };
+    if (!dialog.usageCode) { MessageBox.warning("Escolha a natureza da etapa."); return; }
+    if (dialog.priceInvalid || !isCustodyPriceValid(dialog.unitPrice)) { MessageBox.warning("Informe o preço unitário da nota."); return; }
+
+    const key = (this.getView().getBindingContext() as Context).getProperty("Key") as string;
+    this.setBusy(true);
+    try {
+      const result = await sendJson("POST", ServerRoutes.storageTransactionsCreateCustodyDocument,
+        { StorageTransactionKey: key, Role: dialog.role, UsageCode: dialog.usageCode, UnitPrice: dialog.unitPrice });
+      if (!result.ok) { MessageBox.error(result.message); return; }
+      this.custodyDialog?.close();
+      MessageToast.show("Nota criada. Confira transporte e pesos e emita a NF-e.", { closeOnBrowserNavigation: false });
+      const created = odataValue<string>(result.data);
+      this.navTo(isPurchaseRole(dialog.role) ? "purchaseInvoicesDetail" : "salesInvoicesDetail", { id: created });
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  onCustodyPriceValidationError(ev: Event): void {
+    const input = ev.getSource<Input>();
+    input.setValueState("Error");
+    input.setValueStateText("Preço unitário inválido.");
+    (this.getView().getModel("custody") as JSONModel).setProperty("/dialog/priceInvalid", true);
+  }
+
+  onCustodyPriceValidationSuccess(ev: Event): void {
+    ev.getSource<Input>().setValueState("None");
+    (this.getView().getModel("custody") as JSONModel).setProperty("/dialog/priceInvalid", false);
+  }
+
+  onCancelCustody(): void { this.custodyDialog?.close(); }
+
+  onOpenCustodyDocument(ev: Event): void {
+    const ctx = ev.getSource<Control>().getBindingContext("custody");
+    const key = ctx?.getProperty("DocumentKey") as string;
+    if (!key) return;
+    this.navTo(ctx.getProperty("IsSalesInvoice") ? "salesInvoicesDetail" : "purchaseInvoicesDetail", { id: key });
   }
 
   private bindRoyaltyLines(key: string): void {

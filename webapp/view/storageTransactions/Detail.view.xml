@@ -64,6 +64,45 @@
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
+      <!-- Notas de custódia em armazém próprio (spec backend 2026-10-12 §5): só STANDALONE e romaneio de lote de
+           terceiro. Uma linha por etapa esperada; "Gerar nota" cria a próxima pendente. -->
+      <uxap:ObjectPageSection titleUppercase="false" title="Notas fiscais de custódia" visible="{custody>/visible}">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection>
+            <uxap:blocks>
+              <VBox>
+                <MessageStrip text="{custody>/loadError}" type="Error" visible="{= !!${custody>/loadError} }" showIcon="true" class="sapUiSmallMarginBottom"/>
+                <OverflowToolbar style="Clear">
+                  <ToolbarSpacer/>
+                  <Button text="Gerar nota" type="Emphasized" enabled="{custody>/canGenerate}" press=".onOpenCustodyDialog"/>
+                </OverflowToolbar>
+                <Table items="{custody>/summary/Steps}" noDataText="Este romaneio não espera nota de custódia.">
+                  <columns>
+                    <Column><Text text="Etapa"/></Column>
+                    <Column><Text text="Situação"/></Column>
+                    <Column><Text text="Documento"/></Column>
+                    <Column><Text text="NF/Série"/></Column>
+                    <Column><Text text="Chave"/></Column>
+                    <Column hAlign="End"><Text text="Quantidade"/></Column>
+                    <Column hAlign="End"><Text text="Diferença"/></Column>
+                  </columns>
+                  <ColumnListItem>
+                    <cells>
+                      <Text text="{custody>RoleText}" wrapping="false"/>
+                      <ObjectStatus text="{custody>SituationText}" state="{ path: 'custody>Situation', formatter: '.custodyStepState' }"/>
+                      <Link text="{custody>InvoiceNumber}" press=".onOpenCustodyDocument" enabled="{= !!${custody>DocumentKey} }"/>
+                      <Text text="{= ${custody>Number} ? ${custody>Number} + (${custody>TaxDocumentSeries} ? '-' + ${custody>TaxDocumentSeries} : '') : '' }" wrapping="false"/>
+                      <Text text="{custody>ChaveNFe}" wrapping="false"/>
+                      <Text text="{ path: 'custody>Quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+                      <Text text="{ path: 'custody>Difference', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+                    </cells>
+                  </ColumnListItem>
+                </Table>
+              </VBox>
+            </uxap:blocks>
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
       <uxap:ObjectPageSection titleUppercase="false" title="Baixas ITS" visible="{ui>/royaltyVisible}">
         <uxap:subSections>
           <uxap:ObjectPageSubSection>

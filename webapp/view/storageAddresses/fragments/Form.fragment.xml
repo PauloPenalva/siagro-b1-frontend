@@ -96,6 +96,13 @@
               <core:ListItem key="OwnedInOurCustody" text="Próprio - em nosso poder"/>
               <core:ListItem key="OwnedInThirdPartyCustody" text="Próprio - em poder de terceiros"/>
             </Select>
+            <!-- Beneficiamento fiscal (spec backend 2026-10-12 §3.2): só STANDALONE e só tem efeito em lote de terceiro.
+                 Com nota de custódia ativa no lote o servidor recusa a troca. -->
+            <Label text="Passa por beneficiamento (fiscal)" visible="{ui>/standalone}" />
+            <CheckBox
+              visible="{ui>/standalone}"
+              editable="{ui>/editable}"
+              selected="{ path: 'RequiresProcessing', targetType: 'any' }" />
             <Label text="Produto" />
             <Input 
 								required="true"

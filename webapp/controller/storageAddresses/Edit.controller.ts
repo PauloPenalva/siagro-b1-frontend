@@ -17,6 +17,7 @@ export default class Edit extends LoteArmazenagemBaseController {
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
 		this.clearStates("formLoteArmazenagem");
+    void this.refreshStandaloneFlag();
 
     const oModel = this.getView().getModel() as ODataModel;
 		const oView = this.getView();
