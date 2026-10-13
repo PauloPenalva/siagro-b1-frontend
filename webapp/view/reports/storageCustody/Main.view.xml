@@ -1,0 +1,60 @@
+<mvc:View
+	controllerName="siagrob1.controller.reports.storageCustody.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:l="sap.ui.layout">
+	<Page title="Custódia de Armazenagem">
+		<f:SimpleForm
+			id="storageCustodyReportForm"
+			editable="true"
+			layout="ResponsiveGridLayout"
+			labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12"
+			adjustLabelSpan="false"
+			emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0"
+			columnsXL="2" columnsL="2" columnsM="2"
+			singleContainerFullSize="false"
+			busyIndicatorDelay="0">
+			<f:content>
+				<core:Title text="Período e situação" emphasized="true"/>
+				<core:Fragment fragmentName="siagrob1.view.reports.fragments.ReportDateRangeFilters" type="XML"/>
+				<Label text="Situação"/>
+				<Select selectedKey="{params>/Situation}">
+					<core:Item key="0" text="Todas"/>
+					<core:Item key="1" text="Com pendência fiscal"/>
+					<core:Item key="2" text="Completa"/>
+				</Select>
+				<core:Title text="Filtros" emphasized="true"/>
+				<core:Fragment fragmentName="siagrob1.view.reports.fragments.InvoiceReportCommonFilters" type="XML"/>
+				<Label text="Depositante"/>
+				<Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBusinessPartnersValueHelp" value="{params>/CardCode}">
+					<layoutData><l:GridData span="XL3 L3 M3 S12"/></layoutData>
+					<customData>
+						<core:CustomData key="descriptionProperty" value="CardName"/>
+					</customData>
+				</Input>
+				<Input value="{params>/CardName}" editable="false">
+					<layoutData><l:GridData span="XL5 L5 M5 S12"/></layoutData>
+				</Input>
+				<Label text="Lote"/>
+				<Input showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openStorageAddressesValueHelp" value="{params>/StorageAddressCode}">
+					<layoutData><l:GridData span="XL3 L3 M3 S12"/></layoutData>
+					<customData>
+						<core:CustomData key="descriptionProperty" value="StorageAddressDescription:Description"/>
+					</customData>
+				</Input>
+				<Input value="{params>/StorageAddressDescription}" editable="false">
+					<layoutData><l:GridData span="XL5 L5 M5 S12"/></layoutData>
+				</Input>
+			</f:content>
+		</f:SimpleForm>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Imprimir" type="Emphasized" press=".onPrintReport"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

@@ -1040,6 +1040,11 @@
           "target": "storageRemittancesReport"
         },
         {
+          "pattern": "storage-custody/report",
+          "name": "storageCustodyReport",
+          "target": "storageCustodyReport"
+        },
+        {
           "pattern": "contract-position/report",
           "name": "contractPositionReport",
           "target": "contractPositionReport"
@@ -2288,6 +2293,12 @@
           "id": "storageRemittancesReport",
           "level": 1,
           "name": "siagrob1.view.reports.storageRemittances.Main",
+          "clearControlAggregation": true
+        },
+        "storageCustodyReport": {
+          "id": "storageCustodyReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.storageCustody.Main",
           "clearControlAggregation": true
         },
         "contractPositionReport": {
