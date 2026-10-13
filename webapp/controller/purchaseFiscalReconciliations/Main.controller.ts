@@ -258,7 +258,9 @@ export default class Main extends CommonController {
 
   onExport(): void {
     const sheet = new Spreadsheet({
-      dataSource: (this.getModel("fiscal") as JSONModel).getProperty("/transactions") as object[],
+      // A data chega como string ISO; o Spreadsheet só preenche coluna Date a partir de um objeto Date.
+      dataSource: ((this.getModel("fiscal") as JSONModel).getProperty("/transactions") as FiscalReconciliationTransaction[])
+        .map(t => ({ ...t, TransactionDate: t.TransactionDate ? new Date(t.TransactionDate) : null })),
       fileName: "Conciliação Fiscal de Compras.xlsx",
       workbook: {
         columns: [
