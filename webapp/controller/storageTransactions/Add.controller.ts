@@ -43,7 +43,9 @@ export default class Add extends BaseController {
       "DocNumberKey": docNumberInfo.Key,
       "BranchCode": branchInfo.code,
       "UnitOfMeasureCode": systemSetup.DefaultUoM,
-      "FreightPrice": 0,
+      // O total (FreightPrice) é derivado pelo backend a partir destes dois.
+      "FreightCalculationMethod": systemSetup.DefaultFreightCalculationMethod ?? "Fixed",
+      "FreightUnitPrice": 0,
     }, false, false, false);
 
     oView.setBindingContext(oContext);

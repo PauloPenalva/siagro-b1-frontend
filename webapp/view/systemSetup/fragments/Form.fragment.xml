@@ -73,6 +73,20 @@
               <core:ListItem key="Brl" text="BRL"/>
               <core:ListItem key="Usd" text="USD"/>
             </Select>
+            <Label text="Cálculo do Frete Padrão"/>
+            <Select
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{
+                path: 'DefaultFreightCalculationMethod',
+                targetType: 'any'
+              }"
+              tooltip="Vem selecionado no romaneio e no ticket de pesagem novos; o usuário pode trocar em cada documento."
+              >
+              <core:ListItem key="Fixed" text="Fixo"/>
+              <core:ListItem key="PerBag" text="Saco (60 kg)"/>
+            </Select>
             <Label text="Ativo ?"/>
             <CheckBox selected="{IsActive}" />
             <core:Title />

@@ -242,23 +242,41 @@
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
             </Input>
-            <Label text="Frete/Remoção" />
+            <Label text="Cálculo do Frete" />
+            <Select
+              editable="{ui>/editable}"
+              forceSelection="false"
+              required="true"
+              selectedKey="{
+                path: 'FreightCalculationMethod',
+                targetType: 'any'
+              }"
+              >
+              <core:ListItem key="Fixed" text="Fixo"/>
+              <core:ListItem key="PerBag" text="Saco (60 kg)"/>
+            </Select>
+            <Label text="Frete/Remoção Unit." />
             <Input
               editable="{ui>/editable}"
               required="true"
               liveChange=".validateField"
               value="{
-                path: 'FreightPrice',
+                path: 'FreightUnitPrice',
                 type: 'sap.ui.model.odata.type.Double',
                 formatOptions: {
                     decimals: 2,
                     decimalSeparator: ',',
                     groupingEnabled: true,
                     groupingSeparator: '.'
-                } 
+                }
+              }"
+              description="{
+                path: 'FreightCalculationMethod',
+                targetType: 'any',
+                formatter: 'formatter.freightUnitDescription'
               }"
             />
-            <core:Icon tooltip="Informar o valor total do serviço de frete/remoção" src="sap-icon://information" >
+            <core:Icon tooltip="Fixo: valor da viagem. Saco: valor por saco de 60 kg, multiplicado pelo peso bruto. O total aparece em Valores." src="sap-icon://information" >
               <core:layoutData>
                 <l:GridData span="XL1 L1 M1 S1" />
               </core:layoutData>
@@ -427,7 +445,20 @@
                   decimalSeparator: ',',
                   groupingEnabled: true,
                   groupingSeparator: '.'
-              } 
+              }
+            }"
+            description="{ui>/currency}"
+          />
+          <Label text="Frete/Remoção"/>
+          <Input
+            editable="false"
+            value="{
+              parts: [
+                { path: 'FreightCalculationMethod', targetType: 'any' },
+                { path: 'FreightUnitPrice', targetType: 'any' },
+                { path: 'GrossWeight', targetType: 'any' }
+              ],
+              formatter: 'formatter.formatFreightPrice'
             }"
             description="{ui>/currency}"
           />
