@@ -24,9 +24,9 @@ import { summarizeContractFunrural } from "siagrob1/helpers/PurchaseContractFunr
 export type PurchaseFiscalComplement = {
   UsageCode?: number,
   UsageName?: string,
-  FunruralInssRate?: number,
-  FunruralRatRate?: number,
-  FunruralSenarRate?: number,
+  FunruralInssRate?: number | string,
+  FunruralRatRate?: number | string,
+  FunruralSenarRate?: number | string,
   UpdatedAt?: string,
   UpdatedBy?: string,
   IsComplete?: boolean,
@@ -1183,8 +1183,12 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
         return;
       }
 
-      const rate = (value?: number) => value === null || value === undefined
-        ? "" : value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+      // Edm.Decimal chega como string pelo modelo V4; String.toLocaleString ignora as opcoes.
+      const rate = (value?: number | string) => {
+        const n = Number(value);
+        return value === null || value === undefined || value === "" || isNaN(n)
+          ? "" : n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+      };
 
       model.setData({
         ...data,

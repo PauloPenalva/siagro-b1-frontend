@@ -136,8 +136,8 @@ export default class Detail extends PurchaseContractsBaseController {
         MessageToast.show(`Contrato ${code} aprovado com sucesso.`)
         this.navToPurchaseContractsApprovalList();
       },
-      error: () => {
-        //MessageBox.error((err.responseJSON as { message?: string })?.message  || "Erro ao aprovar contrato.")
+      error: (err: JQueryXHR) => {
+        MessageBox.error(this.getApprovalErrorMessage(err, "Erro ao aprovar contrato."));
         this.setBusy(false);
       }
     })  
@@ -163,8 +163,8 @@ export default class Detail extends PurchaseContractsBaseController {
         MessageToast.show(`Contrato ${code} rejeitado com sucesso.`)
         this.navToPurchaseContractsApprovalList();
       },
-      error: () => {
-        //MessageBox.error((err.responseJSON as { message?: string })?.message  || "Erro ao rejeitar contrato.")
+      error: (err: JQueryXHR) => {
+        MessageBox.error(this.getApprovalErrorMessage(err, "Erro ao rejeitar contrato."));
         this.setBusy(false);
       }
     })  
@@ -191,21 +191,28 @@ export default class Detail extends PurchaseContractsBaseController {
         this.navToPurchaseContractsApprovalList();
       },
       error: (err: JQueryXHR) => {
-        // O backend responde BadRequest(string), entao responseJSON e a PROPRIA string, nao um
-        // objeto. Ler so `.message` devolvia undefined e trocava a mensagem de negocio pelo texto
-        // generico: o guard de adiantamento pago nomeia o titulo e as tres saidas, e nada disso
-        // chegava ao usuario. As outras duas formas ficam aceitas por seguranca.
-        const body: unknown = err.responseJSON;
-        const message = typeof body === "string"
-          ? body
-          : (body as { message?: string })?.message
-            ?? (body as { error?: { message?: string } })?.error?.message;
-
-        MessageBox.error(message || "Erro ao cancelar contrato.")
+        MessageBox.error(this.getApprovalErrorMessage(err, "Erro ao cancelar contrato."));
         this.setBusy(false);
       }
     })  
   }
+
+  /**
+   * O backend responde BadRequest(string), entao responseJSON e a PROPRIA string, nao um objeto.
+   * Ler so `.message` trocava a mensagem de negocio pelo texto generico. As outras duas formas
+   * ficam aceitas por seguranca.
+   */
+  private getApprovalErrorMessage(err: JQueryXHR, fallback: string): string {
+    const body: unknown = err.responseJSON;
+    const message = typeof body === "string"
+      ? body
+      : (body as { message?: string })?.message
+        ?? (body as { error?: { message?: string } })?.error?.message;
+    return message || fallback;
+  }
+
+  // Aprovação é somente leitura: o fragmento reutilizado referencia este handler no botão oculto.
+  onOpenFiscalComplementDialog(): void { /* sem ação */ }
 
   onCloseApprovalDialog() {
     this._approvalDialog?.close();
