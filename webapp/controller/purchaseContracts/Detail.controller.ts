@@ -8,13 +8,40 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import ODataModel from "sap/ui/model/odata/v4/ODataModel";
+import Dialog from "sap/m/Dialog";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import SessionService from "siagrob1/services/SessionService";
+
+/** Complemento fiscal do contrato de compra (DTO PascalCase da function; nulo quando ainda não existe). */
+type PurchaseFiscalComplement = {
+  UsageCode?: number,
+  UsageName?: string,
+  FunruralInssRate?: number,
+  FunruralRatRate?: number,
+  FunruralSenarRate?: number,
+  UpdatedAt?: string,
+  UpdatedBy?: string,
+  IsComplete?: boolean,
+}
+
+/** Status em que o complemento ainda pode mudar (backend recusa Finished/Canceled). */
+const FISCAL_LOCKED_STATUSES = ["Finished", "Canceled"];
 
 /**
  * @namespace siagrob1.controller.purchaseContracts
  */
 export default class Detail extends PurchaseContractsBaseController {
 
+  private _fiscalContractKey: string;
+  private _fiscalComplementDialog: Dialog;
+  private _fiscalSaving = false;
+
 	onInit(): void  {	
+		this.getView().setModel(new JSONModel({}), "fiscalComplement");
+		this.getView().setModel(new JSONModel({}), "fiscalComplementDialog");
 		this.initContractDrafts();
 		this.getRouter().getRoute("purchaseContractsDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
 	}
@@ -45,6 +72,12 @@ export default class Detail extends PurchaseContractsBaseController {
       this.getAttachments(id);
       void this.reloadContractDrafts(id);
 
+      this._fiscalContractKey = id;
+      (this.getModel("fiscalComplement") as JSONModel).setData({});
+      void this.refreshStandaloneFlag()
+        .then(() => this.loadFiscalComplement(id))
+        .catch(() => { /* sem systemInfo a seção fica oculta; nada depende disso */ });
+
       const requestModel = new RequestModel({Key: id});
       requestModel.post(this.api.purchaseContractsTotals)
         .then((data: PurchaseContractsTotals) => {
@@ -65,6 +98,130 @@ export default class Detail extends PurchaseContractsBaseController {
 		}
 
 	}
+
+  /**
+   * Seção "Complemento Fiscal": só existe em STANDALONE (`ui>/standalone`). A function devolve null quando o
+   * contrato ainda não tem complemento - caso comum, vira objeto vazio e o aviso aparece.
+   */
+  private async loadFiscalComplement(contractKey: string): Promise<void> {
+    const model = this.getModel("fiscalComplement") as JSONModel;
+
+    if ((this.getModel("ui") as JSONModel).getProperty("/standalone") !== true) {
+      return;
+    }
+
+    await SessionService.whenReady();
+
+    try {
+      const func = (this.getModel() as ODataModel).bindContext(this.api.purchaseContractsGetFiscalComplement);
+      func.setParameter("Key", contractKey);
+      await func.invoke();
+
+      const data = (func.getBoundContext().getObject() as PurchaseFiscalComplement) ?? {};
+      // Resposta atrasada de outro contrato (troca rápida de rota) não pode sobrescrever a tela.
+      if (contractKey !== this._fiscalContractKey) {
+        return;
+      }
+
+      const rate = (value?: number) => value === null || value === undefined
+        ? "" : value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+      const status = (this.getView().getBindingContext() as Context)?.getProperty("Status") as string;
+
+      model.setData({
+        ...data,
+        InssRateText: rate(data.FunruralInssRate),
+        RatRateText: rate(data.FunruralRatRate),
+        SenarRateText: rate(data.FunruralSenarRate),
+        UpdatedAtText: data.UpdatedAt ? new Date(data.UpdatedAt).toLocaleString("pt-BR") : "",
+        canEdit: SessionService.hasPermission("PURCHASE_CONTRACT_FISCAL_EDIT")
+          && !FISCAL_LOCKED_STATUSES.includes(status)
+          && (this.getModel("ui") as JSONModel).getProperty("/readonly") !== true,
+      });
+    } catch {
+      // O handler global do OData já mostra o erro do servidor.
+      if (contractKey !== this._fiscalContractKey) {
+        return;
+      }
+      model.setData({ canEdit: false });
+    }
+  }
+
+  async onOpenFiscalComplementDialog() {
+    const current = (this.getModel("fiscalComplement") as JSONModel).getData() as PurchaseFiscalComplement;
+
+    (this.getModel("fiscalComplementDialog") as JSONModel).setData({
+      UsageCode: current.UsageCode ?? null,
+      UsageName: current.UsageName ?? "",
+    });
+
+    this._fiscalComplementDialog ??= await DialogHelper.createDialog(
+      this, "siagrob1.view.purchaseContracts.fragments.PurchaseContractFiscalComplementDialog");
+
+    this._fiscalComplementDialog.open();
+  }
+
+  onCloseFiscalComplementDialog() {
+    this._fiscalComplementDialog?.close();
+  }
+
+  /** Só naturezas de Entrada ativas ($filter estático do enum: `Filter` sobre enum estoura). */
+  async openFiscalComplementUsageValueHelp() {
+    const selected = await DialogHelper.openTableSelectDialog(
+      this, "UsagesSelectDialog", ["Name", "Description"],
+      [new Filter("Inactive", FilterOperator.EQ, false)], undefined, "Direction eq 'Incoming'");
+
+    if (!selected) {
+      return;
+    }
+
+    const model = this.getModel("fiscalComplementDialog") as JSONModel;
+    model.setProperty("/UsageCode", selected.getProperty("Code"));
+    model.setProperty("/UsageName", selected.getProperty("Name"));
+  }
+
+  onClearFiscalComplementUsage() {
+    const model = this.getModel("fiscalComplementDialog") as JSONModel;
+    model.setProperty("/UsageCode", null);
+    model.setProperty("/UsageName", "");
+  }
+
+  async onSaveFiscalComplement() {
+    // Trava antes do primeiro await: duplo clique não pode disparar duas actions.
+    if (this._fiscalSaving) {
+      return;
+    }
+    this._fiscalSaving = true;
+
+    try {
+      const form = (this.getModel("fiscalComplementDialog") as JSONModel).getData() as PurchaseFiscalComplement;
+      // Int do EDM: número ou null, nunca string (o binder do OData recusa o corpo inteiro).
+      const usageCode = form.UsageCode === null || form.UsageCode === undefined || (form.UsageCode as unknown) === ""
+        ? null : Number(form.UsageCode);
+
+      const action = (this.getModel() as ODataModel).bindContext(this.api.purchaseContractsSetFiscalComplement);
+      action.setParameter("Key", this._fiscalContractKey);
+      action.setParameter("UsageCode", usageCode);
+
+      this._fiscalComplementDialog.setBusy(true);
+      try {
+        await action.invoke();
+      } catch {
+        // Recusa do servidor (400 em pt-BR) já foi exibida pelo handler global; diálogo segue aberto.
+        return;
+      } finally {
+        this._fiscalComplementDialog.setBusy(false);
+      }
+
+      this._fiscalComplementDialog.close();
+      MessageToast.show("Complemento fiscal salvo.");
+      await this.loadFiscalComplement(this._fiscalContractKey);
+      this.refreshContractTotals();
+      // O log de alterações ganhou uma linha: a tabela tem cache próprio ($$ownRequest).
+      this.refreshChangeLogs();
+    } finally {
+      this._fiscalSaving = false;
+    }
+  }
 
 	onEdit() {
     const oContext = this.getView().getBindingContext() as Context

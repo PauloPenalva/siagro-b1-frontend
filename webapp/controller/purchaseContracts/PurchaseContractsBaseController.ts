@@ -1119,7 +1119,7 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
    * Os erros são exibidos de propósito: a versão anterior engolia a falha e o usuário
    * ficava vendo número desatualizado sem nenhum aviso de que a atualização falhara.
    */
-  private refreshContractTotals() {
+  protected refreshContractTotals() {
     const ctx = this.getView().getBindingContext() as Context;
     if (!ctx) {
       MessageBox.error(
