@@ -74,6 +74,12 @@ export default class Detail extends BaseController {
     if (key) this.navTo("shipmentReleasesDetail", { id: key });
   }
 
+  /** Nota de custódia: volta para o romaneio de origem. */
+  onOpenCustodyTransaction(): void {
+    const key = (this.getView().getBindingContext() as Context)?.getProperty("CustodyStorageTransactionKey") as string;
+    if (key) this.navTo("storageTransactionsDetail", { id: key });
+  }
+
   async onConfirm() {
     const ctx = this.getView().getBindingContext() as Context;
     if (!ctx) {

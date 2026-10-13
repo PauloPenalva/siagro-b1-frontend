@@ -91,6 +91,26 @@
           <Label text="Escrituração do produtor" visible="{= !!${ui>/producerInvoice/key} }" />
           <Link text="{ui>/producerInvoice/text}" visible="{= !!${ui>/producerInvoice/key} }" press=".onOpenProducerInvoice" />
 
+          <!-- Nota de custódia em armazém próprio (spec backend 2026-10-12 §4.4): romaneio do lote de terceiro que esta
+               entrada cumpre. Escolhido à mão na escrituração da NF-e do depositante (o XML não o identifica); a nota
+               própria gerada pelo romaneio já nasce com ele. O servidor exige quando a natureza da linha é de custódia. -->
+          <Label text="Romaneio (custódia)"
+                 visible="{= ${ui>/storageDepositMode} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; (${ui>/editable} === true || !!${ui>/custody/key}) }" />
+          <HBox
+            visible="{= ${ui>/editable} === true &amp;&amp; ${ui>/storageDepositMode} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }">
+            <Input
+              width="100%"
+              value="{ui>/custody/code}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openCustodyTransactionValueHelp" />
+            <Button icon="sap-icon://decline" type="Transparent" tooltip="Limpar romaneio"
+                    visible="{= !!${ui>/custody/key} }" press=".onClearCustodyTransaction" />
+          </HBox>
+          <Link text="{ui>/custody/code}"
+                visible="{= ${ui>/editable} !== true &amp;&amp; !!${ui>/custody/key} }"
+                press=".onOpenCustodyTransaction" />
+
           <!-- Documento de terceiro Normal na filial que emite NF-e pelo Siagro: NF-e (eletrônica, com a chave
                conferida) ou outro documento (serviço, papel/talão), sem chave. Fora disso o campo some: a emissão
                própria é sempre NF-e, a devolução do cliente não tem chave e a filial sem a regra (SAPB1, MH Agro)

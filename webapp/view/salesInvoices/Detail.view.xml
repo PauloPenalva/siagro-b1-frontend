@@ -93,6 +93,9 @@
         <!-- Remessa para depósito (spec backend 2026-10-10 §5.2): volta para a liberação de origem. -->
         <Link class="sapUiSmallMarginBegin" text="Liberação da remessa para depósito"
               visible="{= !!${path: 'ShipmentReleaseKey', targetType: 'any'} }" press=".onOpenShipmentRelease" />
+        <!-- Nota de custódia (spec backend 2026-10-12 §5): volta para o romaneio de origem. -->
+        <Link class="sapUiSmallMarginBegin" text="Romaneio da nota de custódia"
+              visible="{= !!${path: 'CustodyStorageTransactionKey', targetType: 'any'} }" press=".onOpenCustodyTransaction" />
       </HBox>
    	</uxap:headerContent> 
     
