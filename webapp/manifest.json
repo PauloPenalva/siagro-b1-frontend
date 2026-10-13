@@ -1045,6 +1045,11 @@
           "target": "storageRemittancesReport"
         },
         {
+          "pattern": "purchase-fiscal-reconciliation/report",
+          "name": "purchaseFiscalReconciliationReport",
+          "target": "purchaseFiscalReconciliationReport"
+        },
+        {
           "pattern": "storage-custody/report",
           "name": "storageCustodyReport",
           "target": "storageCustodyReport"
@@ -2304,6 +2309,12 @@
           "id": "storageRemittancesReport",
           "level": 1,
           "name": "siagrob1.view.reports.storageRemittances.Main",
+          "clearControlAggregation": true
+        },
+        "purchaseFiscalReconciliationReport": {
+          "id": "purchaseFiscalReconciliationReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.purchaseFiscalReconciliation.Main",
           "clearControlAggregation": true
         },
         "storageCustodyReport": {

@@ -1,0 +1,54 @@
+<mvc:View
+	controllerName="siagrob1.controller.reports.purchaseFiscalReconciliation.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:l="sap.ui.layout">
+	<Page title="Entregas × NF do Fornecedor">
+		<f:SimpleForm id="purchaseFiscalReconciliationReportForm" editable="true" layout="ResponsiveGridLayout"
+			labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12" adjustLabelSpan="false"
+			emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0" columnsXL="2" columnsL="2" columnsM="2"
+			singleContainerFullSize="false" busyIndicatorDelay="0">
+			<f:content>
+				<core:Title text="Fornecedor e produto" emphasized="true"/>
+				<Label text="Fornecedor" required="true"/>
+				<Input required="true" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openSuppliersValueHelp" value="{params>/CardCode}">
+					<layoutData><l:GridData span="XL3 L3 M3 S12"/></layoutData>
+					<customData><core:CustomData key="descriptionProperty" value="CardName"/></customData>
+				</Input>
+				<Input value="{params>/CardName}" editable="false">
+					<layoutData><l:GridData span="XL5 L5 M5 S12"/></layoutData>
+				</Input>
+				<Label text="Produto" required="true"/>
+				<Input required="true" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openItemValueHelp" value="{params>/ItemCode}">
+					<layoutData><l:GridData span="XL3 L3 M3 S12"/></layoutData>
+					<customData><core:CustomData key="descriptionProperty" value="ItemName"/></customData>
+				</Input>
+				<Input value="{params>/ItemName}" editable="false">
+					<layoutData><l:GridData span="XL5 L5 M5 S12"/></layoutData>
+				</Input>
+				<Label text="Contrato de compra"/>
+				<Input value="{params>/ContractCode}"/>
+				<core:Title text="Período e situação" emphasized="true"/>
+				<Label text="Data de"/>
+				<DatePicker value="{ path: 'params>/FromDate', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+				<Label text="Data até"/>
+				<DatePicker value="{ path: 'params>/ToDate', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+				<Label text="Situação"/>
+				<MultiComboBox selectedKeys="{params>/FiscalStatuses}">
+					<core:Item key="0" text="Sem NF"/>
+					<core:Item key="1" text="Parcial"/>
+					<core:Item key="2" text="Conciliado"/>
+				</MultiComboBox>
+			</f:content>
+		</f:SimpleForm>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Imprimir" type="Emphasized" press=".onPrintReport"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>
