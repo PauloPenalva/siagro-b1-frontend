@@ -50,7 +50,7 @@
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
-      <uxap:ObjectPageSection titleUppercase="false" title="Impostos">
+      <uxap:ObjectPageSection titleUppercase="false" title="Impostos" visible="{= ${ui>/standalone} !== true }">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection>
             <uxap:blocks>

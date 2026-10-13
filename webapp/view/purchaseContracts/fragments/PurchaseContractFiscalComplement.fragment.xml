@@ -20,7 +20,7 @@
       <Button
         text="Editar"
         icon="sap-icon://edit"
-        visible="{fiscalComplement>/canEdit}"
+        visible="{= ${fiscalComplement>/canEditPermission} === true &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Finished' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Canceled' }"
         press=".onOpenFiscalComplementDialog" />
     </Toolbar>
     <f:Form editable="false">

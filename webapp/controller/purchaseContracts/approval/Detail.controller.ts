@@ -17,6 +17,7 @@ export default class Detail extends PurchaseContractsBaseController {
   private viewModel: JSONModel;
 
 	onInit(): void  {	
+		this.initFiscalComplementModel();
 		this.getRouter().getRoute("purchaseContractsApprovalDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
 	}
 
@@ -38,20 +39,11 @@ export default class Detail extends PurchaseContractsBaseController {
 			const sPath = `/PurchaseContracts(${id})`;
 			this.bindElement(sPath);
 
+      void this.startFiscalComplement(id, false);
+
       const requestModel = new RequestModel({Key: id});
       requestModel.post(this.api.purchaseContractsTotals)
-        .then((data: PurchaseContractsTotals) => {
-          
-          this.viewModel.setProperty("/TotalPrice", data.TotalPrice ?? 0)
-          this.viewModel.setProperty("/TotalTax", data.TotalTax ?? 0)
-          this.viewModel.setProperty("/AvailableVolumeToPricing", data.AvailableVolumeToPricing ?? 0)
-          this.viewModel.setProperty("/FixedVolume", data.FixedVolume ?? 0)
-          this.viewModel.setProperty("/TotalAvailableToRelease", data.TotalAvailableToRelease ?? 0)
-          this.viewModel.setProperty("/TotalShipmentReleases", data.TotalShipmentReleases ?? 0)
-          this.viewModel.setProperty("/TotalVolume", data.TotalVolume ?? 0)
-          this.viewModel.setProperty("/TotalStandard", data.TotalStandard ?? 0)
-          this.viewModel.setProperty("/AvaiableVolume", data.AvaiableVolume ?? 0)
-        });
+        .then((data: PurchaseContractsTotals) => this.applyContractTotals(this.viewModel, data));
 
 			return;
 		}

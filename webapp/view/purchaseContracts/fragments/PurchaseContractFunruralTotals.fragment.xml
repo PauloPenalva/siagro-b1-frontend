@@ -1,0 +1,52 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    core:require="{
+      funrural: 'siagrob1/helpers/PurchaseContractFunruralHelpers'
+    }"
+>
+  <!-- Quadro "Impostos" do contrato de compra em STANDALONE: Funrural da natureza do complemento fiscal,
+       calculado no backend (purchaseContractsTotals) e gravado em viewModel>/funrural. Somente leitura. -->
+  <VBox width="100%">
+    <Table
+      id="tablePurchaseContractFunrural"
+      class="sapUiSizeCondensed"
+      width="48rem"
+      items="{viewModel>/funrural/rows}"
+      noDataText="Sem Funrural: informe a natureza de operação no Complemento Fiscal ou confirme uma fixação."
+    >
+      <columns>
+        <Column width="12rem">
+          <Text text="Tributo" />
+        </Column>
+        <Column hAlign="End">
+          <Text text="Base de cálculo" />
+        </Column>
+        <Column hAlign="End">
+          <Text text="Alíquota (%)" />
+        </Column>
+        <Column hAlign="End">
+          <Text text="Valor" />
+        </Column>
+      </columns>
+      <items>
+        <ColumnListItem>
+          <cells>
+            <Text text="{viewModel>Tax}" />
+            <Text text="{path: 'viewModel>Base', formatter: 'funrural.formatFunruralAmount'}" />
+            <Text text="{path: 'viewModel>Rate', formatter: 'funrural.formatFunruralRate'}" />
+            <Text text="{path: 'viewModel>Value', formatter: 'funrural.formatFunruralAmount'}" />
+          </cells>
+        </ColumnListItem>
+      </items>
+    </Table>
+    <HBox class="sapUiSmallMarginTop">
+      <Label text="Total Funrural:" class="sapUiMediumMarginEnd" />
+      <Text text="{path: 'viewModel>/funrural/total', formatter: 'funrural.formatFunruralAmount'}" />
+    </HBox>
+    <HBox class="sapUiTinyMarginTop">
+      <Label text="Líquido ao produtor:" design="Bold" class="sapUiMediumMarginEnd" />
+      <Text text="{path: 'viewModel>/funrural/net', formatter: 'funrural.formatFunruralAmount'}" />
+    </HBox>
+  </VBox>
+</core:FragmentDefinition>

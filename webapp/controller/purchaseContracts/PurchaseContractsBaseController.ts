@@ -16,11 +16,29 @@ import { ALLOCATION_ORIGINS } from "siagrob1/helpers/AllocationOriginHelpers";
 import { WashoutDialogState, WashoutFixationOption, WashoutReverseState } from "siagrob1/types/PurchaseContractWashout";
 import { openAttachmentViewer } from "siagrob1/dialogs/AttachmentViewer";
 import { Link$PressEvent } from "sap/m/Link";
+import SessionService from "siagrob1/services/SessionService";
+import { PurchaseContractsTotals } from "siagrob1/types/PurchaseContractsTotal";
+import { summarizeContractFunrural } from "siagrob1/helpers/PurchaseContractFunruralHelpers";
+
+/** Complemento fiscal do contrato de compra (DTO PascalCase da function; nulo quando ainda não existe). */
+export type PurchaseFiscalComplement = {
+  UsageCode?: number,
+  UsageName?: string,
+  FunruralInssRate?: number,
+  FunruralRatRate?: number,
+  FunruralSenarRate?: number,
+  UpdatedAt?: string,
+  UpdatedBy?: string,
+  IsComplete?: boolean,
+}
 
 /**
  * @namespace siagrob1.controller.purchaseContracts
  */
 export default abstract class PurchaseContractsBaseController extends ContractDraftsSectionController {
+
+  /** Contrato cujo complemento fiscal a tela mostra; descarta resposta atrasada de outro contrato. */
+  protected _fiscalContractKey: string;
 
   /** Lado do contrato para a seção "Minutas" (ver ContractDraftsSectionController). */
   protected contractDraftType(): string {
@@ -1107,6 +1125,87 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
   }
 
   /**
+   * Grava no viewModel os totais do contrato. Porta única: Detail, Aprovação e o refresh pós-ação liam cada um
+   * a sua lista de campos e a da Aprovação já tinha esquecido o WashedOutVolume.
+   */
+  protected applyContractTotals(viewModel: JSONModel, data: PurchaseContractsTotals) {
+    viewModel.setProperty("/TotalPrice", data.TotalPrice ?? 0);
+    viewModel.setProperty("/TotalTax", data.TotalTax ?? 0);
+    viewModel.setProperty("/AvailableVolumeToPricing", data.AvailableVolumeToPricing ?? 0);
+    viewModel.setProperty("/FixedVolume", data.FixedVolume ?? 0);
+    viewModel.setProperty("/TotalVolume", data.TotalVolume ?? 0);
+    viewModel.setProperty("/TotalStandard", data.TotalStandard ?? 0);
+    viewModel.setProperty("/TotalShipmentReleases", data.TotalShipmentReleases ?? 0);
+    viewModel.setProperty("/TotalAvailableToRelease", data.TotalAvailableToRelease ?? 0);
+    viewModel.setProperty("/AvaiableVolume", data.AvaiableVolume ?? 0);
+    viewModel.setProperty("/WashedOutVolume", data.WashedOutVolume ?? 0);
+    viewModel.setProperty("/NetToProducer", data.NetToProducer ?? 0);
+    viewModel.setProperty("/funrural", summarizeContractFunrural(data));
+  }
+
+  /** Registra o JSONModel do complemento fiscal; chamar no onInit de quem mostra a seção. */
+  protected initFiscalComplementModel(): void {
+    this.getView().setModel(new JSONModel({}), "fiscalComplement");
+  }
+
+  /** Marca o contrato corrente, zera o modelo e carrega o complemento assim que o modo (STANDALONE) é conhecido. */
+  protected startFiscalComplement(contractKey: string, allowEdit: boolean): Promise<void> {
+    this._fiscalContractKey = contractKey;
+    (this.getModel("fiscalComplement") as JSONModel).setData({});
+    return this.refreshStandaloneFlag()
+      .then(() => this.loadFiscalComplement(contractKey, allowEdit))
+      .catch(() => { /* sem systemInfo a seção fica oculta; nada depende disso */ });
+  }
+
+  /**
+   * Seção "Complemento Fiscal": só existe em STANDALONE (`ui>/standalone`). A function devolve null quando o
+   * contrato ainda não tem complemento - caso comum, vira objeto vazio e o aviso aparece.
+   * `canEditPermission` guarda só permissão + allowEdit + não somente-leitura; o bloqueio por situação
+   * (Finalizado/Cancelado) fica na expressão do botão, porque o Status muda sem recarregar o modelo.
+   */
+  protected async loadFiscalComplement(contractKey: string, allowEdit: boolean): Promise<void> {
+    const model = this.getModel("fiscalComplement") as JSONModel;
+
+    if ((this.getModel("ui") as JSONModel).getProperty("/standalone") !== true) {
+      return;
+    }
+
+    await SessionService.whenReady();
+
+    try {
+      const func = (this.getModel() as ODataModel).bindContext(this.api.purchaseContractsGetFiscalComplement);
+      func.setParameter("Key", contractKey);
+      await func.invoke();
+
+      const data = (func.getBoundContext().getObject() as PurchaseFiscalComplement) ?? {};
+      // Resposta atrasada de outro contrato (troca rápida de rota) não pode sobrescrever a tela.
+      if (contractKey !== this._fiscalContractKey) {
+        return;
+      }
+
+      const rate = (value?: number) => value === null || value === undefined
+        ? "" : value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+
+      model.setData({
+        ...data,
+        InssRateText: rate(data.FunruralInssRate),
+        RatRateText: rate(data.FunruralRatRate),
+        SenarRateText: rate(data.FunruralSenarRate),
+        UpdatedAtText: data.UpdatedAt ? new Date(data.UpdatedAt).toLocaleString("pt-BR") : "",
+        canEditPermission: allowEdit
+          && SessionService.hasPermission("PURCHASE_CONTRACT_FISCAL_EDIT")
+          && (this.getModel("ui") as JSONModel).getProperty("/readonly") !== true,
+      });
+    } catch {
+      // O handler global do OData já mostra o erro do servidor.
+      if (contractKey !== this._fiscalContractKey) {
+        return;
+      }
+      model.setData({ canEditPermission: false });
+    }
+  }
+
+  /**
    * Recarrega apenas os TOTAIS do contrato (Total Fixado, Volume fixado, Volume a
    * fixar). Eles não vêm do binding OData do contrato: são carregados à parte, de
    * PurchaseContractsTotals, para o viewModel — então uma mudança nas fixações não
@@ -1132,29 +1231,7 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
     const requestModel = new RequestModel({ Key: ctx.getProperty("Key") as string });
 
     requestModel.post(this.api.purchaseContractsTotals)
-      .then((data: {
-        TotalPrice?: number;
-        TotalTax?: number;
-        AvailableVolumeToPricing?: number;
-        FixedVolume?: number;
-        TotalVolume?: number;
-        TotalStandard?: number;
-        TotalShipmentReleases?: number;
-        TotalAvailableToRelease?: number;
-        AvaiableVolume?: number;
-        WashedOutVolume?: number;
-      }) => {
-        viewModel.setProperty("/TotalPrice", data.TotalPrice ?? 0);
-        viewModel.setProperty("/TotalTax", data.TotalTax ?? 0);
-        viewModel.setProperty("/AvailableVolumeToPricing", data.AvailableVolumeToPricing ?? 0);
-        viewModel.setProperty("/FixedVolume", data.FixedVolume ?? 0);
-        viewModel.setProperty("/TotalVolume", data.TotalVolume ?? 0);
-        viewModel.setProperty("/TotalStandard", data.TotalStandard ?? 0);
-        viewModel.setProperty("/TotalShipmentReleases", data.TotalShipmentReleases ?? 0);
-        viewModel.setProperty("/TotalAvailableToRelease", data.TotalAvailableToRelease ?? 0);
-        viewModel.setProperty("/AvaiableVolume", data.AvaiableVolume ?? 0);
-        viewModel.setProperty("/WashedOutVolume", data.WashedOutVolume ?? 0);
-      })
+      .then((data: PurchaseContractsTotals) => this.applyContractTotals(viewModel, data))
       .fail((err: JQuery.jqXHR) => {
         MessageBox.error(
           this.extractErrorMessage(err, "Falha ao atualizar os saldos do contrato.") +

@@ -15,6 +15,7 @@ export default class Add extends BaseController {
 	}
 
 	private async newRouteMatched() {
+		void this.refreshStandaloneFlag();
 		
     const uiModel = this.getModel("ui") as JSONModel;
    

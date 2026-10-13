@@ -9,4 +9,13 @@ export type PurchaseContractsTotals = {
   TotalVolume?: number,
   TotalStandard?: number,
   WashedOutVolume?: number,
+  FunruralBase?: number,
+  FunruralInssRate?: number,
+  FunruralRatRate?: number,
+  FunruralSenarRate?: number,
+  FunruralInssValue?: number,
+  FunruralRatValue?: number,
+  FunruralSenarValue?: number,
+  TotalFunrural?: number,
+  NetToProducer?: number,
 }
