@@ -70,7 +70,8 @@
             state="{ path: 'allocationModel>Origin', formatter: '.formatter.allocationOriginState' }"
             icon="{ path: 'allocationModel>Origin', formatter: '.formatter.allocationOriginIcon' }"
             tooltip="{
-              parts: ['allocationModel>Origin', 'allocationModel>WarehouseReconciliationCode'],
+              parts: ['allocationModel>Origin', 'allocationModel>WarehouseReconciliationCode',
+                      'allocationModel>DischargeInvoiceNumber', 'allocationModel>DischargeLoadCode'],
               formatter: '.formatter.allocationOriginTooltip'
             }" />
         </t:template>

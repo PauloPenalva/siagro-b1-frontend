@@ -1,0 +1,49 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:fb="sap.ui.comp.filterbar"
+>
+<fb:FilterBar search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+  <fb:filterGroupItems>
+    <fb:FilterGroupItem name="dateFrom" label="Data de" groupName="GroupDateFrom" visibleInFilterBar="true" mandatory="true">
+      <fb:control>
+        <DatePicker value="{ path: 'filter>/DateFrom', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="dateTo" label="Data até" groupName="GroupDateTo" visibleInFilterBar="true" mandatory="true">
+      <fb:control>
+        <DatePicker value="{ path: 'filter>/DateTo', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="type" label="Tipo" groupName="GroupType" visibleInFilterBar="true">
+      <fb:control>
+        <Select forceSelection="false" selectedKey="{ path: 'filter>/TransactionType', type: 'sap.ui.model.type.String' }">
+          <core:ListItem key="" text="Todos"/>
+          <core:ListItem key="PurchaseDischargeLoss" text="Quebra Descarga"/>
+          <core:ListItem key="PurchaseDischargeGain" text="Sobra Descarga"/>
+        </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="supplier" label="Fornecedor" groupName="GroupSupplier" visibleInFilterBar="true">
+      <fb:control>
+        <Input showClearIcon="true" value="{filter>/Supplier}" placeholder="Código ou nome"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="contract" label="Contrato de compra" groupName="GroupContract" visibleInFilterBar="true">
+      <fb:control>
+        <Input showClearIcon="true" value="{filter>/ContractCode}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="load" label="Carga" groupName="GroupLoad" visibleInFilterBar="true">
+      <fb:control>
+        <Input showClearIcon="true" value="{filter>/LoadCode}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="cancelled" label="Cancelados" groupName="GroupCancelled" visibleInFilterBar="true">
+      <fb:control>
+        <CheckBox text="Mostrar cancelados" selected="{filter>/ShowCancelled}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+  </fb:filterGroupItems>
+</fb:FilterBar>
+</core:FragmentDefinition>

@@ -40,6 +40,26 @@ QUnit.test("tooltip cita o número da conferência só na perda", function (asse
 
 QUnit.test("a legenda lista cada origem uma vez, começando pela normal", function (assert) {
 	const keys = ALLOCATION_ORIGINS.map((o) => o.key);
-	assert.deepEqual(keys, ["Standard", "WarehouseLoss"]);
+	assert.deepEqual(keys, ["Standard", "WarehouseLoss", "DischargeLoss", "DischargeGain"]);
 	assert.strictEqual(ALLOCATION_ORIGINS[0].legend, "Normal");
+});
+
+QUnit.test("quebra de descarga (troca nota) é destacada em vermelho", function (assert) {
+	assert.strictEqual(allocationOriginHighlight("DischargeLoss"), "Error");
+	assert.strictEqual(allocationOriginState("DischargeLoss"), "Error");
+	assert.strictEqual(allocationOriginText("DischargeLoss"), "Quebra de descarga");
+	assert.ok(allocationOriginIcon("DischargeLoss").startsWith("sap-icon://"));
+});
+
+QUnit.test("sobra de descarga (troca nota) é destacada em verde", function (assert) {
+	assert.strictEqual(allocationOriginHighlight("DischargeGain"), "Success");
+	assert.strictEqual(allocationOriginText("DischargeGain"), "Sobra de descarga");
+});
+
+QUnit.test("tooltip da descarga cita a nota de venda e a carga", function (assert) {
+	assert.strictEqual(
+		allocationOriginTooltip("DischargeLoss", null, "000002376", "CG000009"),
+		"Conferência da nota 000002376 (carga CG000009)");
+	assert.strictEqual(allocationOriginTooltip("DischargeGain", null, "000002376", null), "Conferência da nota 000002376");
+	assert.strictEqual(allocationOriginTooltip("DischargeLoss", null, null, null), "");
 });

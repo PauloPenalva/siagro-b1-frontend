@@ -600,6 +600,8 @@ const formatter = {
     m.set("WarehouseGain", "Sobra Armazém");
     // Romaneio 15 (GAC-1181): entrada do transbordo em armazém de TERCEIRO.
     m.set("TransshipmentReceipt", "Entrada em Transbordo");
+    m.set("PurchaseDischargeLoss", "Quebra Descarga");
+    m.set("PurchaseDischargeGain", "Sobra Descarga");
 
     return m.get(value);
   },

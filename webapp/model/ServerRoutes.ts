@@ -310,4 +310,7 @@ export default {
   branchNfeSettingsSave: '/odata/BranchNfeSettingsSave',
   branchNfeSettingsUploadCertificate: '/odata/BranchNfeSettingsUploadCertificate',
   branchNfeSettingsTestConnection: '/odata/BranchNfeSettingsTestConnection',
+
+  // Troca nota: romaneios de quebra/sobra de descarga (tela "Ajustes de Descarga").
+  purchaseDischargesList: '/odata/PurchaseDischargesList',
 }

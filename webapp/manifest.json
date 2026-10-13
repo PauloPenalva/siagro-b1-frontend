@@ -524,6 +524,11 @@
           "target": "warehouseReconciliations"
         },
         {
+          "pattern": "purchase-discharges",
+          "name": "purchaseDischarges",
+          "target": "purchaseDischarges"
+        },
+        {
           "pattern": "warehouse-reconciliations/new",
           "name": "warehouseReconciliationsNew",
           "target": "warehouseReconciliationsNew"
@@ -1624,6 +1629,12 @@
 					"name": "siagrob1.view.warehouseReconciliations.Main",
           "clearControlAggregation": true
 				},
+        "purchaseDischarges": {
+          "id": "purchaseDischarges",
+          "level": 1,
+          "name": "siagrob1.view.purchaseDischarges.Main",
+          "clearControlAggregation": true
+        },
         "warehouseReconciliationsNew": {
 					"id": "warehouseReconciliationsNew",
           "level": 2,
