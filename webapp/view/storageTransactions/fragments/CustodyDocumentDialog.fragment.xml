@@ -1,0 +1,49 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
+	<Dialog title="Gerar nota de custódia" contentWidth="32rem">
+		<f:Form editable="true">
+			<f:layout>
+				<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+			</f:layout>
+			<f:formContainers>
+				<f:FormContainer>
+					<f:formElements>
+						<f:FormElement label="Etapa">
+							<f:fields>
+								<Select selectedKey="{custody>/dialog/role}" items="{custody>/dialog/roles}" change=".onCustodyRoleChange">
+									<core:Item key="{custody>Role}" text="{custody>RoleText}"/>
+								</Select>
+							</f:fields>
+						</f:FormElement>
+						<f:FormElement label="Natureza">
+							<f:fields>
+								<Input value="{custody>/dialog/usageName}" required="true" showValueHelp="true" valueHelpOnly="true"
+									valueHelpRequest=".onCustodyUsageValueHelp"/>
+							</f:fields>
+						</f:FormElement>
+						<f:FormElement label="Quantidade">
+							<f:fields>
+								<Text text="{ path: 'custody>/dialog/quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+							</f:fields>
+						</f:FormElement>
+						<f:FormElement label="Preço unitário">
+							<f:fields>
+								<Input
+									value="{ path: 'custody>/dialog/unitPrice', type: 'sap.ui.model.type.Float', formatOptions: { decimalSeparator: ',', groupingSeparator: '.', groupingEnabled: true, maxFractionDigits: 6 } }"
+									required="true"
+									parseError=".onCustodyPriceValidationError"
+									validationError=".onCustodyPriceValidationError"
+									validationSuccess=".onCustodyPriceValidationSuccess"/>
+							</f:fields>
+						</f:FormElement>
+					</f:formElements>
+				</f:FormContainer>
+			</f:formContainers>
+		</f:Form>
+		<beginButton>
+			<Button text="Gerar" type="Emphasized" press=".onConfirmCustody"/>
+		</beginButton>
+		<endButton>
+			<Button text="Cancelar" press=".onCancelCustody"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>
