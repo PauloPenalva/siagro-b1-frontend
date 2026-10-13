@@ -529,6 +529,11 @@
           "target": "purchaseDischarges"
         },
         {
+          "pattern": "purchase-fiscal-reconciliations:?query:",
+          "name": "purchaseFiscalReconciliations",
+          "target": "purchaseFiscalReconciliations"
+        },
+        {
           "pattern": "warehouse-reconciliations/new",
           "name": "warehouseReconciliationsNew",
           "target": "warehouseReconciliationsNew"
@@ -1038,6 +1043,11 @@
           "pattern": "storage-remittances/report",
           "name": "storageRemittancesReport",
           "target": "storageRemittancesReport"
+        },
+        {
+          "pattern": "purchase-fiscal-reconciliation/report",
+          "name": "purchaseFiscalReconciliationReport",
+          "target": "purchaseFiscalReconciliationReport"
         },
         {
           "pattern": "storage-custody/report",
@@ -1638,6 +1648,12 @@
           "id": "purchaseDischarges",
           "level": 1,
           "name": "siagrob1.view.purchaseDischarges.Main",
+          "clearControlAggregation": true
+        },
+        "purchaseFiscalReconciliations": {
+          "id": "purchaseFiscalReconciliations",
+          "level": 1,
+          "name": "siagrob1.view.purchaseFiscalReconciliations.Main",
           "clearControlAggregation": true
         },
         "warehouseReconciliationsNew": {
@@ -2293,6 +2309,12 @@
           "id": "storageRemittancesReport",
           "level": 1,
           "name": "siagrob1.view.reports.storageRemittances.Main",
+          "clearControlAggregation": true
+        },
+        "purchaseFiscalReconciliationReport": {
+          "id": "purchaseFiscalReconciliationReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.purchaseFiscalReconciliation.Main",
           "clearControlAggregation": true
         },
         "storageCustodyReport": {

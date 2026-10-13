@@ -1,0 +1,130 @@
+<mvc:View
+  controllerName="siagrob1.controller.purchaseFiscalReconciliations.Main"
+  displayBlock="true"
+  xmlns="sap.m"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns:core="sap.ui.core"
+  xmlns:t="sap.ui.table"
+  xmlns:f="sap.f"
+  core:require="{ formatter: 'siagrob1/model/formatter' }">
+  <f:DynamicPage busyIndicatorDelay="0" busy="{fiscal>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading><Title text="Conciliação Fiscal de Compras"/></f:heading>
+        <f:snappedContent>
+          <Text text="NF de venda do fornecedor × romaneios de compra. Só conciliação: nada aqui altera saldo de contrato ou de armazém."/>
+        </f:snappedContent>
+      </f:DynamicPageTitle>
+    </f:title>
+    <f:header>
+      <f:DynamicPageHeader>
+        <f:content>
+          <core:Fragment fragmentName="siagrob1.view.purchaseFiscalReconciliations.fragments.Filterbar" type="XML"/>
+        </f:content>
+      </f:DynamicPageHeader>
+    </f:header>
+    <f:content>
+      <VBox>
+        <t:Table id="fiscalTransactionsTable" selectionMode="MultiToggle" class="sapUiSizeCondensed"
+          visibleRowCount="10" alternateRowColors="true" rows="{ path: 'fiscal>/transactions' }">
+          <t:extension>
+            <OverflowToolbar>
+              <Title text="Romaneios ({= ${fiscal>/transactionCount} })"/>
+              <ToolbarSpacer/>
+              <Button text="Vincular" type="Emphasized" icon="sap-icon://chain-link" press=".onLink"/>
+              <Button text="Exportar" icon="sap-icon://excel-attachment" press=".onExport"/>
+            </OverflowToolbar>
+          </t:extension>
+          <t:columns>
+            <t:Column width="3rem">
+              <t:template><Button icon="sap-icon://detail-view" type="Transparent" tooltip="Vínculos" press=".onOpenLinks"/></t:template>
+            </t:Column>
+            <t:Column label="Romaneio" width="9rem" sortProperty="Code">
+              <t:template><Text text="{fiscal>Code}" wrapping="false"/></t:template>
+            </t:Column>
+            <t:Column label="Data" width="7rem" sortProperty="TransactionDate">
+              <t:template><Text wrapping="false" text="{ path: 'fiscal>TransactionDate', formatter: 'formatter.formatDate' }"/></t:template>
+            </t:Column>
+            <t:Column label="Tipo" width="9rem">
+              <t:template><Text text="{fiscal>TransactionTypeName}" wrapping="false"/></t:template>
+            </t:Column>
+            <t:Column label="Contrato" width="10rem">
+              <t:template><Text text="{fiscal>ContractCodesText}" wrapping="false" tooltip="{fiscal>ContractCodesText}"/></t:template>
+            </t:Column>
+            <t:Column label="Placa" width="7rem">
+              <t:template><Text text="{fiscal>TruckCode}" wrapping="false"/></t:template>
+            </t:Column>
+            <t:Column label="Físico" hAlign="End" width="10rem" sortProperty="PhysicalQuantity">
+              <t:template><ObjectNumber number="{ path: 'fiscal>PhysicalQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" unit="KG"/></t:template>
+            </t:Column>
+            <t:Column label="Fiscal" hAlign="End" width="10rem" sortProperty="FiscalQuantity">
+              <t:template><ObjectNumber number="{ path: 'fiscal>FiscalQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" unit="KG"/></t:template>
+            </t:Column>
+            <t:Column label="Diferença" hAlign="End" width="10rem" sortProperty="Difference">
+              <t:template><ObjectNumber state="{= ${fiscal>Difference} === 0 ? 'None' : 'Warning' }" number="{ path: 'fiscal>Difference', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" unit="KG"/></t:template>
+            </t:Column>
+            <t:Column label="Situação" width="8rem" sortProperty="Status">
+              <t:template>
+                <ObjectStatus text="{fiscal>StatusName}" inverted="true"
+                  state="{= ${fiscal>Status} === 'Reconciled' ? 'Success' : ${fiscal>Status} === 'Partial' ? 'Warning' : 'Error' }"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="NFs vinculadas" width="14rem">
+              <t:template><Text text="{fiscal>InvoiceNumbersText}" wrapping="false" tooltip="{fiscal>InvoiceNumbersText}"/></t:template>
+            </t:Column>
+          </t:columns>
+        </t:Table>
+
+        <t:Table id="fiscalInvoiceLinesTable" selectionMode="MultiToggle" class="sapUiSizeCondensed sapUiSmallMarginTop"
+          visibleRowCount="8" alternateRowColors="true" rows="{ path: 'fiscal>/invoiceLines' }">
+          <t:extension>
+            <OverflowToolbar>
+              <Title text="Linhas de NF do fornecedor ({= ${fiscal>/invoiceLines}.length })"/>
+            </OverflowToolbar>
+          </t:extension>
+          <t:columns>
+            <t:Column label="NF/Série" width="9rem" sortProperty="TaxDocument">
+              <t:template><Text text="{fiscal>TaxDocument}" wrapping="false"/></t:template>
+            </t:Column>
+            <t:Column label="Tipo" width="6rem">
+              <t:template><Text text="{= ${fiscal>InvoiceType} === 'Return' ? 'Devolução' : 'Normal' }" wrapping="false"/></t:template>
+            </t:Column>
+            <t:Column label="Emitente" width="18rem">
+              <t:template>
+                <ObjectStatus text="{fiscal>CardCode} - {fiscal>CardName}"
+                  icon="{= ${fiscal>IssuerMatchesSupplier} ? '' : 'sap-icon://alert' }"
+                  state="{= ${fiscal>IssuerMatchesSupplier} ? 'None' : 'Warning' }"
+                  tooltip="{= ${fiscal>IssuerMatchesSupplier} ? '' : 'Emitente com CPF/CNPJ diferente do fornecedor' }"/>
+              </t:template>
+            </t:Column>
+            <t:Column label="Emissão" width="7rem" sortProperty="IssueDate">
+              <t:template><Text wrapping="false" text="{ path: 'fiscal>IssueDate', formatter: 'formatter.formatDate' }"/></t:template>
+            </t:Column>
+            <t:Column label="Natureza" width="14rem">
+              <t:template><Text text="{fiscal>UsageName}" wrapping="false" tooltip="{fiscal>UsageName}"/></t:template>
+            </t:Column>
+            <t:Column label="Contrato" width="9rem">
+              <t:template><Text text="{fiscal>ContractCode}" wrapping="false"/></t:template>
+            </t:Column>
+            <t:Column label="Quantidade" hAlign="End" width="10rem">
+              <t:template><ObjectNumber number="{ path: 'fiscal>Quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" unit="{fiscal>UnitOfMeasureCode}"/></t:template>
+            </t:Column>
+            <t:Column label="Vinculada" hAlign="End" width="10rem">
+              <t:template><ObjectNumber number="{ path: 'fiscal>LinkedQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" unit="KG"/></t:template>
+            </t:Column>
+            <t:Column label="Disponível" hAlign="End" width="10rem">
+              <t:template>
+                <HBox justifyContent="End">
+                  <ObjectNumber visible="{= ${fiscal>AvailableQuantity} !== null }"
+                    number="{ path: 'fiscal>AvailableQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" unit="KG"/>
+                  <ObjectStatus visible="{= ${fiscal>AvailableQuantity} === null }" text="UM sem fator" state="Error"
+                    tooltip="Cadastre o fator da unidade no Complemento do Produto"/>
+                </HBox>
+              </t:template>
+            </t:Column>
+          </t:columns>
+        </t:Table>
+      </VBox>
+    </f:content>
+  </f:DynamicPage>
+</mvc:View>

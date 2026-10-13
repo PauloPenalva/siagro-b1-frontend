@@ -1,0 +1,26 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+  <Dialog id="fiscalLinkDialog" title="Vincular NF × romaneio" contentWidth="52rem" busyIndicatorDelay="0" busy="{link>/busy}">
+    <content>
+      <MessageStrip class="sapUiSmallMargin" showIcon="true" type="Information"
+        text="Distribuição sugerida: cada NF preenche o saldo dos romaneios por data; a sobra da NF fica no último. Ajuste as quantidades (KG) — zero desfaz o par."/>
+      <Table items="{link>/pairs}">
+        <columns>
+          <Column><Text text="NF/Série"/></Column>
+          <Column><Text text="Romaneio"/></Column>
+          <Column hAlign="End"><Text text="Atual (KG)"/></Column>
+          <Column hAlign="End" width="12rem"><Text text="Quantidade (KG)"/></Column>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <Text text="{link>TaxDocument}"/>
+            <Text text="{link>TransactionCode}"/>
+            <ObjectNumber number="{ path: 'link>CurrentQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+            <Input textAlign="End" value="{ path: 'link>Quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }, constraints: { minimum: 0 } }"/>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </content>
+    <beginButton><Button text="Gravar" type="Emphasized" press=".onSaveLinks"/></beginButton>
+    <endButton><Button text="Cancelar" press=".onCloseLinkDialog"/></endButton>
+  </Dialog>
+</core:FragmentDefinition>
