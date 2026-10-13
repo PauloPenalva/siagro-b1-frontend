@@ -1,0 +1,43 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+  <!--
+    Edição da natureza de operação do contrato de compra. Escreve no JSONModel "fiscalComplementDialog";
+    o valor só chega ao servidor ao salvar (action PurchaseContractsSetFiscalComplement).
+  -->
+  <Dialog id="purchaseFiscalComplementDialog" title="Complemento Fiscal" contentWidth="560px">
+    <content>
+      <f:Form editable="true">
+        <f:layout>
+          <f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1" />
+        </f:layout>
+        <f:formContainers>
+          <f:FormContainer>
+            <f:formElements>
+              <f:FormElement label="Natureza da operação">
+                <f:fields>
+                  <Input
+                    value="{fiscalComplementDialog>/UsageCode}"
+                    description="{fiscalComplementDialog>/UsageName}"
+                    showValueHelp="true"
+                    valueHelpOnly="true"
+                    valueHelpRequest=".openFiscalComplementUsageValueHelp" />
+                  <Button text="Limpar" press=".onClearFiscalComplementUsage" />
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+        </f:formContainers>
+      </f:Form>
+    </content>
+    <footer>
+      <OverflowToolbar>
+        <ToolbarSpacer />
+        <Button text="Salvar" type="Emphasized" press=".onSaveFiscalComplement" />
+        <Button text="Cancelar" press=".onCloseFiscalComplementDialog" />
+      </OverflowToolbar>
+    </footer>
+  </Dialog>
+</core:FragmentDefinition>

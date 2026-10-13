@@ -17,6 +17,7 @@ export default class Detail extends PurchaseContractsBaseController {
   private viewModel: JSONModel;
 
 	onInit(): void  {	
+		this.initFiscalComplementModel();
 		this.getRouter().getRoute("purchaseContractsApprovalDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
 	}
 
@@ -38,20 +39,11 @@ export default class Detail extends PurchaseContractsBaseController {
 			const sPath = `/PurchaseContracts(${id})`;
 			this.bindElement(sPath);
 
+      void this.startFiscalComplement(id, false);
+
       const requestModel = new RequestModel({Key: id});
       requestModel.post(this.api.purchaseContractsTotals)
-        .then((data: PurchaseContractsTotals) => {
-          
-          this.viewModel.setProperty("/TotalPrice", data.TotalPrice ?? 0)
-          this.viewModel.setProperty("/TotalTax", data.TotalTax ?? 0)
-          this.viewModel.setProperty("/AvailableVolumeToPricing", data.AvailableVolumeToPricing ?? 0)
-          this.viewModel.setProperty("/FixedVolume", data.FixedVolume ?? 0)
-          this.viewModel.setProperty("/TotalAvailableToRelease", data.TotalAvailableToRelease ?? 0)
-          this.viewModel.setProperty("/TotalShipmentReleases", data.TotalShipmentReleases ?? 0)
-          this.viewModel.setProperty("/TotalVolume", data.TotalVolume ?? 0)
-          this.viewModel.setProperty("/TotalStandard", data.TotalStandard ?? 0)
-          this.viewModel.setProperty("/AvaiableVolume", data.AvaiableVolume ?? 0)
-        });
+        .then((data: PurchaseContractsTotals) => this.applyContractTotals(this.viewModel, data));
 
 			return;
 		}
@@ -144,8 +136,8 @@ export default class Detail extends PurchaseContractsBaseController {
         MessageToast.show(`Contrato ${code} aprovado com sucesso.`)
         this.navToPurchaseContractsApprovalList();
       },
-      error: () => {
-        //MessageBox.error((err.responseJSON as { message?: string })?.message  || "Erro ao aprovar contrato.")
+      error: (err: JQueryXHR) => {
+        MessageBox.error(this.getApprovalErrorMessage(err, "Erro ao aprovar contrato."));
         this.setBusy(false);
       }
     })  
@@ -171,8 +163,8 @@ export default class Detail extends PurchaseContractsBaseController {
         MessageToast.show(`Contrato ${code} rejeitado com sucesso.`)
         this.navToPurchaseContractsApprovalList();
       },
-      error: () => {
-        //MessageBox.error((err.responseJSON as { message?: string })?.message  || "Erro ao rejeitar contrato.")
+      error: (err: JQueryXHR) => {
+        MessageBox.error(this.getApprovalErrorMessage(err, "Erro ao rejeitar contrato."));
         this.setBusy(false);
       }
     })  
@@ -199,21 +191,28 @@ export default class Detail extends PurchaseContractsBaseController {
         this.navToPurchaseContractsApprovalList();
       },
       error: (err: JQueryXHR) => {
-        // O backend responde BadRequest(string), entao responseJSON e a PROPRIA string, nao um
-        // objeto. Ler so `.message` devolvia undefined e trocava a mensagem de negocio pelo texto
-        // generico: o guard de adiantamento pago nomeia o titulo e as tres saidas, e nada disso
-        // chegava ao usuario. As outras duas formas ficam aceitas por seguranca.
-        const body: unknown = err.responseJSON;
-        const message = typeof body === "string"
-          ? body
-          : (body as { message?: string })?.message
-            ?? (body as { error?: { message?: string } })?.error?.message;
-
-        MessageBox.error(message || "Erro ao cancelar contrato.")
+        MessageBox.error(this.getApprovalErrorMessage(err, "Erro ao cancelar contrato."));
         this.setBusy(false);
       }
     })  
   }
+
+  /**
+   * O backend responde BadRequest(string), entao responseJSON e a PROPRIA string, nao um objeto.
+   * Ler so `.message` trocava a mensagem de negocio pelo texto generico. As outras duas formas
+   * ficam aceitas por seguranca.
+   */
+  private getApprovalErrorMessage(err: JQueryXHR, fallback: string): string {
+    const body: unknown = err.responseJSON;
+    const message = typeof body === "string"
+      ? body
+      : (body as { message?: string })?.message
+        ?? (body as { error?: { message?: string } })?.error?.message;
+    return message || fallback;
+  }
+
+  // Aprovação é somente leitura: o fragmento reutilizado referencia este handler no botão oculto.
+  onOpenFiscalComplementDialog(): void { /* sem ação */ }
 
   onCloseApprovalDialog() {
     this._approvalDialog?.close();

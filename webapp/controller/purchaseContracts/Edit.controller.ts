@@ -15,6 +15,7 @@ export default class Edit extends PurchaseContractsBaseController {
 	}
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
+		void this.refreshStandaloneFlag();
     const uiModel = this.getModel("ui") as JSONModel;
     
     uiModel.setProperty("/editable", true);
