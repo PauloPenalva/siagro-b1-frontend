@@ -16,7 +16,9 @@ import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import { localIsoDate } from "siagrob1/helpers/DateHelpers";
 import { Button$PressEvent } from "sap/m/Button";
 import { Link$PressEvent } from "sap/m/Link";
-import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
+import { odataCollection, odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
+import { FinancialAdvanceCandidate } from "siagrob1/types/FinancialAdvanceCandidate";
+import { Select$ChangeEvent } from "sap/m/Select";
 import { FinancialComposition, FinancialCompositionCandidate, FinancialCompositionLine } from "siagrob1/types/FinancialComposition";
 
 export default class Detail extends CommonController {
@@ -270,6 +272,90 @@ export default class Detail extends CommonController {
     this.onCloseNettingDialog();
     await this.runDocumentAction(this.api.financialDocumentsNetting,
       { Key: this._compositionKey, CounterpartKey: counterpartKey }, "Devolução compensada.");
+  }
+
+  private _applyAdvanceDialog: Dialog;
+
+  /**
+   * "Compensar adiantamento" (spec 2026-10-14): carrega os candidatos ANTES de abrir (o Select precisa dos itens antes
+   * do selectedKey) e sugere min(disponível do provisório, crédito do adiantamento), calculado no backend.
+   */
+  async onOpenApplyAdvanceDialog(): Promise<void> {
+    const ctx = this.documentContext();
+    if (!ctx) return;
+
+    const key = this._compositionKey;
+    const result = await sendJson("GET", `${this.api.financialDocumentsGetAdvanceCandidates}(Key=${key})`);
+    // Resposta atrasada de outro título (troca rápida de rota) não abre diálogo na tela errada.
+    if (key !== this._compositionKey) return;
+
+    if (!result.ok) {
+      MessageBox.error(result.message);
+      return;
+    }
+
+    const candidates = odataCollection<FinancialAdvanceCandidate>(result.data);
+    if (!candidates.length) {
+      MessageBox.information("Nenhum adiantamento com crédito disponível neste contrato.");
+      return;
+    }
+
+    (this.getModel("viewModel") as JSONModel).setProperty("/applyAdvanceDialog", {
+      candidates,
+      advanceKey: candidates[0].DocumentKey,
+      amount: Number(candidates[0].SuggestedAmount),
+      settlementDate: localIsoDate(new Date()),
+      availableToSettle: Number(ctx.getProperty("AvailableToSettleAmount") ?? 0),
+    });
+
+    this._applyAdvanceDialog ??= await DialogHelper.createDialog(
+      this, "siagrob1.view.financialDocuments.fragments.ApplyAdvanceDialog");
+    this._applyAdvanceDialog.open();
+  }
+
+  /** Trocar o adiantamento troca o valor sugerido (lido do item escolhido, não do binding ainda por atualizar). */
+  onApplyAdvanceCandidateChange(ev: Select$ChangeEvent): void {
+    const advanceKey = ev.getParameter("selectedItem")?.getKey() ?? "";
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    const candidates = (viewModel.getProperty("/applyAdvanceDialog/candidates") as FinancialAdvanceCandidate[]) ?? [];
+    const chosen = candidates.find((c) => c.DocumentKey === advanceKey);
+
+    viewModel.setProperty("/applyAdvanceDialog/advanceKey", advanceKey);
+    viewModel.setProperty("/applyAdvanceDialog/amount", chosen ? Number(chosen.SuggestedAmount) : 0);
+  }
+
+  onCloseApplyAdvanceDialog(): void {
+    this._applyAdvanceDialog?.close();
+  }
+
+  async onConfirmApplyAdvance(): Promise<void> {
+    const form = (this.getModel("viewModel") as JSONModel).getProperty("/applyAdvanceDialog") as {
+      advanceKey: string; amount: number; settlementDate: string;
+    };
+
+    if (!form.advanceKey) {
+      MessageBox.alert("Selecione o adiantamento.");
+      return;
+    }
+
+    if (!(Number(form.amount) > 0)) {
+      MessageBox.alert("Informe um valor maior que zero.");
+      return;
+    }
+
+    if (!form.settlementDate) {
+      MessageBox.alert("Informe a data da compensação.");
+      return;
+    }
+
+    this.onCloseApplyAdvanceDialog();
+    // Tetos (disponível e crédito) quem decide é o backend: a recusa A5/A6 aparece pelo MessageBox do runDocumentAction.
+    await this.runDocumentAction(this.api.financialDocumentsApplyAdvance, {
+      Key: this._compositionKey,
+      AdvanceKey: form.advanceKey,
+      Amount: Number(form.amount),
+      SettlementDate: form.settlementDate,
+    }, "Adiantamento compensado.");
   }
 
   /** A lista de origem foi guardada pelo FinancialDocumentsBaseController ao navegar para ca. */

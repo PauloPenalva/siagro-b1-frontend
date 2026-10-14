@@ -1,0 +1,72 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }"
+>
+  <!--
+    Compensar adiantamento no provisório (spec 2026-10-14, regras 1 a 4): adiantamentos do mesmo contrato e moeda com
+    crédito, pela function FinancialDocumentsGetAdvanceCandidates. Itens e chave chegam no mesmo setProperty, antes de
+    abrir: o Select precisa dos itens antes do selectedKey. Trocar o adiantamento troca o valor sugerido.
+  -->
+  <Dialog title="Compensar adiantamento">
+    <content>
+      <VBox class="sapUiSmallMargin" width="520px">
+        <f:Form editable="true">
+          <f:layout>
+            <f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+          </f:layout>
+          <f:formContainers>
+            <f:FormContainer>
+              <f:formElements>
+                <f:FormElement label="Disponível para baixa">
+                  <f:fields>
+                    <Text text="{path: 'viewModel>/applyAdvanceDialog/availableToSettle', formatter: 'formatter.formatDecimal2'}"/>
+                  </f:fields>
+                </f:FormElement>
+                <f:FormElement label="Adiantamento">
+                  <f:fields>
+                    <Select
+                      id="financialApplyAdvanceSelect"
+                      width="100%"
+                      forceSelection="false"
+                      selectedKey="{viewModel>/applyAdvanceDialog/advanceKey}"
+                      items="{viewModel>/applyAdvanceDialog/candidates}"
+                      change=".onApplyAdvanceCandidateChange">
+                      <core:Item
+                        key="{viewModel>DocumentKey}"
+                        text="{viewModel>Code} · crédito {path: 'viewModel>AvailableAdvanceAmount', formatter: 'formatter.formatDecimal2'}"/>
+                    </Select>
+                  </f:fields>
+                </f:FormElement>
+                <f:FormElement label="Valor">
+                  <f:fields>
+                    <Input value="{path: 'viewModel>/applyAdvanceDialog/amount', type: 'sap.ui.model.odata.type.Double'}" required="true"/>
+                  </f:fields>
+                </f:FormElement>
+                <f:FormElement label="Data">
+                  <f:fields>
+                    <DatePicker
+                      value="{viewModel>/applyAdvanceDialog/settlementDate}"
+                      required="true"
+                      displayFormat="dd/MM/yyyy"
+                      valueFormat="yyyy-MM-dd"/>
+                  </f:fields>
+                </f:FormElement>
+              </f:formElements>
+            </f:FormContainer>
+          </f:formContainers>
+        </f:Form>
+      </VBox>
+    </content>
+    <footer>
+      <OverflowToolbar>
+        <ToolbarSpacer />
+        <Button text="Compensar" type="Emphasized" press=".onConfirmApplyAdvance"/>
+        <Button text="Fechar" press=".onCloseApplyAdvanceDialog"/>
+      </OverflowToolbar>
+    </footer>
+  </Dialog>
+</core:FragmentDefinition>
