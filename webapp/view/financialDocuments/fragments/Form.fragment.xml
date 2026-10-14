@@ -108,7 +108,7 @@
                 state="{= ${path: 'IsOverdue', targetType: 'any'} ? 'Error' : 'None' }"/>
             </f:fields>
           </f:FormElement>
-          <f:FormElement label="Aplicado" visible="{= ${path: 'Nature', targetType: 'any'} === 'Advance' }">
+          <f:FormElement label="Aplicado / transferido"visible="{= ${path: 'Nature', targetType: 'any'} === 'Advance' }">
             <f:fields>
               <Text text="{
                 path: 'AppliedAmount',

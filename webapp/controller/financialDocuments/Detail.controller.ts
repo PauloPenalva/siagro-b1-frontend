@@ -107,6 +107,16 @@ export default class Detail extends CommonController {
     });
   }
 
+  /**
+   * Erro de uma action chamada por bindContext().invoke(). O ODataModel v4 já registra a falha no message model como
+   * mensagem técnica (e marca o erro com $reported), e o handler global do Component.ts mostra o MessageBox. Mostrar
+   * outro aqui duplicava a caixa; só o erro que o modelo não reportou (falha local, rede) ainda precisa de aviso.
+   */
+  private showActionError(err: unknown, fallback: string): void {
+    if ((err as { $reported?: boolean })?.$reported) return;
+    MessageBox.error((err as Error)?.message || fallback);
+  }
+
   /** Executa uma action uma vez só (trava de duplo clique); recarrega o título e o quadro. Recusa aparece na tela. */
   private async runDocumentAction(path: string, payload: object, success: string): Promise<boolean> {
     if (this._actionRunning) return false;
@@ -348,14 +358,18 @@ export default class Detail extends CommonController {
       return;
     }
 
-    this.onCloseApplyAdvanceDialog();
-    // Tetos (disponível e crédito) quem decide é o backend: a recusa A5/A6 aparece pelo MessageBox do runDocumentAction.
-    await this.runDocumentAction(this.api.financialDocumentsApplyAdvance, {
+    // Tetos (disponível e crédito) quem decide é o backend: a recusa A5/A6 aparece pelo MessageBox do runDocumentAction
+    // e o diálogo fica aberto para o usuário corrigir o valor; só o sucesso o fecha.
+    const applied = await this.runDocumentAction(this.api.financialDocumentsApplyAdvance, {
       Key: this._compositionKey,
       AdvanceKey: form.advanceKey,
       Amount: Number(form.amount),
       SettlementDate: form.settlementDate,
     }, "Adiantamento compensado.");
+
+    if (applied) {
+      this.onCloseApplyAdvanceDialog();
+    }
   }
 
   /** A lista de origem foi guardada pelo FinancialDocumentsBaseController ao navegar para ca. */
@@ -478,7 +492,7 @@ export default class Detail extends CommonController {
       MessageToast.show("Baixa registrada.");
       this.refreshDocument();
     } catch (err) {
-      MessageBox.error((err as Error).message || "Erro ao registrar a baixa.");
+      this.showActionError(err, "Erro ao registrar a baixa.");
     } finally {
       this.setBusy(false);
     }
@@ -529,7 +543,7 @@ export default class Detail extends CommonController {
       this.clearSettlementSelection();
       this.refreshDocument();
     } catch (err) {
-      MessageBox.error((err as Error).message || "Erro ao estornar a baixa.");
+      this.showActionError(err, "Erro ao estornar a baixa.");
     } finally {
       this.setBusy(false);
     }
@@ -583,7 +597,7 @@ export default class Detail extends CommonController {
       MessageToast.show("Vencimento alterado.");
       this.refreshDocument();
     } catch (err) {
-      MessageBox.error((err as Error).message || "Erro ao alterar o vencimento.");
+      this.showActionError(err, "Erro ao alterar o vencimento.");
     } finally {
       this.setBusy(false);
     }
@@ -610,7 +624,7 @@ export default class Detail extends CommonController {
       MessageToast.show("Título cancelado.");
       this.refreshDocument();
     } catch (err) {
-      MessageBox.error((err as Error).message || "Erro ao cancelar o título.");
+      this.showActionError(err, "Erro ao cancelar o título.");
     } finally {
       this.setBusy(false);
     }
@@ -738,7 +752,7 @@ export default class Detail extends CommonController {
         : "Devolução registrada. O título foi cancelado.");
       this.refreshDocument();
     } catch (err) {
-      MessageBox.error((err as Error).message || "Erro ao registrar a devolução.");
+      this.showActionError(err, "Erro ao registrar a devolução.");
     } finally {
       this.setBusy(false);
     }
@@ -846,7 +860,7 @@ export default class Detail extends CommonController {
         : `Adiantamento vinculado ao contrato ${form.contractCode}.`);
       this.refreshDocument();
     } catch (err) {
-      MessageBox.error((err as Error).message || "Erro ao vincular o adiantamento.");
+      this.showActionError(err, "Erro ao vincular o adiantamento.");
     } finally {
       this.setBusy(false);
     }

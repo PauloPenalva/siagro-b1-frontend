@@ -24,7 +24,10 @@
         <Title text="Baixas" />
         <ToolbarSpacer />
         <Button type="Emphasized" text="Baixar" press=".onSettle"
-                visible="{= !${path: 'IsBlockedForSettlement', targetType: 'any'} }"/>
+                visible="{= !${path: 'IsBlockedForSettlement', targetType: 'any'}
+                          &amp;&amp; !(${path: 'Nature', targetType: 'any'} === 'Advance'
+                              &amp;&amp; (${path: 'Status', targetType: 'any'} === 'Settled'
+                                  || ${path: 'Status', targetType: 'any'} === 'Canceled')) }"/>
         <Button type="Transparent" text="Baixar por dação" press=".onOpenDationDialog"
                 visible="{= ${path: 'Nature', targetType: 'any'} === 'Firm'
                           &amp;&amp; (${path: 'OriginType', targetType: 'any'} === 'PurchaseFiscalReconciliation'

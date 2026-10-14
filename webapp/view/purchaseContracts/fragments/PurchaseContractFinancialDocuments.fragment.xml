@@ -22,7 +22,7 @@
       <Column hAlign="End"><Text text="Composto" /></Column>
       <Column hAlign="End"><Text text="Baixado" /></Column>
       <Column hAlign="End"><Text text="Em aberto" /></Column>
-      <Column hAlign="End"><Text text="Aplicado" /></Column>
+      <Column hAlign="End"><Text text="Aplicado / transferido" /></Column>
       <Column hAlign="End"><Text text="Crédito disponível" /></Column>
     </columns>
     <items>
