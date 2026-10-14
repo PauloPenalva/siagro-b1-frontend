@@ -68,3 +68,37 @@ QUnit.test("data com offset vira dd/MM/yyyy HH:mm, nunca Invalid Date", function
 	assert.ok(/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/.test(text), text);
 	assert.strictEqual(formatter.formatDateTime(null), "");
 });
+
+QUnit.module("formatter - títulos firmes de compra (spec 2026-10-13)");
+
+QUnit.test("natureza Devolução, origem da conciliação e campo Composição do log", function (assert) {
+	assert.strictEqual(formatter.formatFinancialNature("PurchaseReturn"), "Devolução");
+	assert.strictEqual(formatter.formatFinancialOrigin("PurchaseFiscalReconciliation"), "Conciliação fiscal de compras");
+	assert.strictEqual(formatter.formatFinancialChangeLogField("Composition"), "Composição");
+});
+
+QUnit.test("origem da baixa traduzida", function (assert) {
+	assert.strictEqual(formatter.formatFinancialSettlementOrigin("Manual"), "Manual");
+	assert.strictEqual(formatter.formatFinancialSettlementOrigin("Reversal"), "Estorno");
+	assert.strictEqual(formatter.formatFinancialSettlementOrigin("InvoiceOffset"), "Abatimento");
+	assert.strictEqual(formatter.formatFinancialSettlementOrigin("Netting"), "Encontro de contas");
+	assert.strictEqual(formatter.formatFinancialSettlementOrigin("Dation"), "Dação");
+	assert.strictEqual(formatter.formatFinancialSettlementOrigin("AdvanceRefund"), "Devolução de adiantamento");
+	assert.strictEqual(formatter.formatFinancialSettlementOrigin("AdvanceApplication"), "Amortização de adiantamento");
+});
+
+QUnit.test("Cancelar título some no firme da conciliação e no provisório composto", function (assert) {
+	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Firm", "PurchaseFiscalReconciliation", "0"), false);
+	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "PurchaseReturn", "PurchaseFiscalReconciliation", "0"), false);
+	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Provisional", "PurchaseContractPriceFixation", "500.00"), false);
+	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Provisional", "PurchaseContractPriceFixation", "0"), true);
+	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Firm", "PurchaseInvoice", "0"), false);
+	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Firm", "PurchaseContractWashout", "0"), true);
+	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0"), true);
+});
+
+QUnit.test("formatDecimal2 aceita string do Edm.Decimal e não lança em vazio", function (assert) {
+	assert.strictEqual(formatter.formatDecimal2("19728.33"), "19.728,33");
+	assert.strictEqual(formatter.formatDecimal2(-2959.25), "-2.959,25");
+	assert.strictEqual(formatter.formatDecimal2("abc"), "");
+});

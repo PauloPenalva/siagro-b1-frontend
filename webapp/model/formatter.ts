@@ -296,6 +296,12 @@ const formatter = {
     return Number.isFinite(num) ? formatter.formatDecimal(num, 3) : "";
   },
 
+  /** Valor monetário pt-BR com 2 casas para JSONModel (Edm.Decimal chega string). Como formatDecimal3, não lança. */
+  formatDecimal2: (value: number | string): string => {
+    const num = Number(value ?? 0);
+    return Number.isFinite(num) ? formatter.formatDecimal(num, 2) : "";
+  },
+
   /**
    * Diferença entre o peso dos TICKETS e o peso conferido do relatório da trading, exibida
    * SOMENTE quando os dois são maiores que zero (GAC-1171).
@@ -569,14 +575,24 @@ const formatter = {
 
   /**
    * O botão "Cancelar título" só deve aparecer enquanto o cancelamento é possível.
-   * FinancialDocumentsCancelService recusa em DOIS casos — já cancelado, e SettledAmount != 0
-   * ("possui baixas, estorne-as antes de cancelar") — então mostrar o botão com baixa lançada só
-   * rende um 400 evitável.
+   * FinancialDocumentsCancelService recusa: já cancelado; SettledAmount != 0 ("possui baixas"); firme ou devolução da
+   * Conciliação Fiscal (nasce e morre com o vínculo); provisório com composição (spec 2026-10-13, títulos firmes).
    * `!!status` segura o piscar antes dos dados: binding indefinido avalia como verdadeiro.
    * OData v4 serializa Edm.Decimal como string — coagir antes de comparar.
    */
-  formatFinancialDocumentCancelable: (status: string, settledAmount: number | string) =>
-    !!status && status !== "Canceled" && !Number(settledAmount),
+  formatFinancialDocumentCancelable: (
+    status: string, settledAmount: number | string, nature?: string, originType?: string, composedAmount?: number | string,
+  ) =>
+    !!status && status !== "Canceled" && !Number(settledAmount)
+    && !formatter.isPurchaseFirmPayable(nature, originType) && !Number(composedAmount ?? 0),
+
+  /**
+   * Firme ou devolução da Conciliação Fiscal de Compras, ou firme do documento "Complemento de valor" (origem
+   * PurchaseInvoice, spec D11): sai só por composição, dação ou encontro de contas.
+   */
+  isPurchaseFirmPayable: (nature?: string, originType?: string) =>
+    ((nature === "Firm" || nature === "PurchaseReturn") && originType === "PurchaseFiscalReconciliation")
+    || (nature === "Firm" && originType === "PurchaseInvoice"),
 
   formatPriceDifferenceState: (value: number | string) => {
     // OData v4 serializa Edm.Decimal como string — coagir antes de comparar.
@@ -1375,6 +1391,7 @@ const formatter = {
     m.set("Firm", "Firme");
     m.set("Advance", "Adiantamento");
     m.set("TaxWithholding", "Retenção");
+    m.set("PurchaseReturn", "Devolução");
 
     return m.get(value) ?? "";
   },
@@ -1412,6 +1429,7 @@ const formatter = {
     m.set("Contract", "Contrato");
     // Provisório ajustado no lugar pelo washout.
     m.set("NetAmount", "Valor");
+    m.set("Composition", "Composição");
 
     return m.get(value) ?? value;
   },
@@ -1426,6 +1444,21 @@ const formatter = {
     m.set("SalesInvoice", "Documento de saída");
     m.set("FinancialDocument", "Documento financeiro");
     m.set("PurchaseContractWashout", "Washout de contrato de compra");
+    m.set("PurchaseFiscalReconciliation", "Conciliação fiscal de compras");
+
+    return m.get(value) ?? value ?? "";
+  },
+
+  /** Origem da linha do ledger de baixas (enum FinancialSettlementOrigin). Código novo cai para ele mesmo. */
+  formatFinancialSettlementOrigin: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Manual", "Manual");
+    m.set("Reversal", "Estorno");
+    m.set("InvoiceOffset", "Abatimento");
+    m.set("AdvanceApplication", "Amortização de adiantamento");
+    m.set("Netting", "Encontro de contas");
+    m.set("AdvanceRefund", "Devolução de adiantamento");
+    m.set("Dation", "Dação");
 
     return m.get(value) ?? value ?? "";
   },

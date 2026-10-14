@@ -60,6 +60,14 @@ export default class Detail extends CommonController {
     this.navTo(origin || "accountsPayable");
   }
 
+  /** Documento de entrada do firme (spec 2026-10-13): a NF que deu o preço. */
+  onOpenPurchaseInvoice(): void {
+    const key = this.documentContext()?.getProperty("PurchaseInvoiceKey") as string;
+    if (key) {
+      this.navTo("purchaseInvoicesDetail", { id: key });
+    }
+  }
+
   async openFinancialAccountsValueHelp(ev: Input$ValueHelpRequestEvent): Promise<void> {
     await this.applyValueHelp(ev, "FinancialAccountsSelectDialog", ["Code", "Name"], "Code",
       [ new Filter("Inactive", FilterOperator.EQ, false) ]);
@@ -75,15 +83,17 @@ export default class Detail extends CommonController {
     }
 
     if (ctx.getProperty("IsBlockedForSettlement")) {
-      MessageBox.warning(
-        "Título provisório não pode ser baixado. Ele será liberado quando o documento fiscal for confirmado.");
+      MessageBox.warning(ctx.getProperty("Nature") === "Provisional"
+        ? "Nada disponível para baixa: componha títulos firmes no provisório antes."
+        : "Título firme não recebe baixa direta: componha no provisório ou baixe por dação.");
       return;
     }
 
-    const openAmount = Number(ctx.getProperty("OpenAmount") ?? 0);
+    // Provisório baixa só o composto (spec 2026-10-13); nas demais naturezas o disponível é o saldo em aberto.
+    const openAmount = Number(ctx.getProperty("AvailableToSettleAmount") ?? ctx.getProperty("OpenAmount") ?? 0);
 
     if (openAmount <= 0) {
-      MessageBox.warning("O título não tem saldo em aberto.");
+      MessageBox.warning("O título não tem saldo disponível para baixa.");
       return;
     }
 
@@ -134,11 +144,11 @@ export default class Detail extends CommonController {
     }
 
     const amount = Number(form.amount);
-    const openAmount = Number(ctx.getProperty("OpenAmount") ?? 0);
+    const openAmount = Number(ctx.getProperty("AvailableToSettleAmount") ?? ctx.getProperty("OpenAmount") ?? 0);
 
     if (amount > openAmount) {
       MessageBox.warning(
-        `O valor da baixa (${formatter.formatDecimal(amount, 2)}) excede o saldo em aberto ` +
+        `O valor da baixa (${formatter.formatDecimal(amount, 2)}) excede o disponível para baixa ` +
         `(${formatter.formatDecimal(openAmount, 2)}).`);
       return;
     }
