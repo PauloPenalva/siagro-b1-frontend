@@ -5,6 +5,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageBox from "sap/m/MessageBox";
 import Table from "sap/ui/table/Table";
 import CommonController from "siagrob1/controller/common/CommonController";
+import { pendingResolutionFilter } from "siagrob1/helpers/FinancialDocumentFilterHelpers";
 
 /**
  * Lógica comum das três listas de documento financeiro (Contas a Pagar, Contas a Receber e
@@ -35,6 +36,15 @@ export abstract class FinancialDocumentsBaseController extends CommonController 
 
   /** Nome da rota desta lista, guardado ao abrir o detalhe para o botão Voltar acertar o alvo. */
   protected abstract get originRoute(): string;
+
+  /**
+   * Flag lida pela barra de filtros compartilhada (`pf>/payables`): Natureza firme/devolução e "Com saldo a
+   * resolver" só existem no Contas a Pagar. O modelo precisa existir nas três listas, senão o binding de
+   * `visible` não resolve e o item aparece em todas.
+   */
+  protected setPayablesFilters(payables: boolean): void {
+    this.getView().setModel(new JSONModel({ payables }), "pf");
+  }
 
   protected binding(): ODataListBinding {
     return this.byId(this.tableId).getBinding("rows") as ODataListBinding;
@@ -118,6 +128,9 @@ export abstract class FinancialDocumentsBaseController extends CommonController 
         ].join("-");
 
         filters.push(`DueDate lt ${iso} and NetAmount gt SettledAmount`);
+      } else if (key === "PendingResolution") {
+        // "Com saldo a resolver" (spec 2026-10-13, títulos firmes).
+        filters.push(`(${pendingResolutionFilter()})`);
       } else if (key === "BranchCode" || key === "CardCode") {
         filters.push(`${key} eq '${FinancialDocumentsBaseController.escapeODataLiteral(String(value))}'`);
       } else {
@@ -160,7 +173,7 @@ export abstract class FinancialDocumentsBaseController extends CommonController 
     aCols.push({
       label: "Natureza", property: "Nature", type: EdmType.Enumeration,
       valueMap: {
-        "Provisional": "Provisório", "Firm": "Firme",
+        "Provisional": "Provisório", "Firm": "Firme", "PurchaseReturn": "Devolução",
         "Advance": "Adiantamento", "TaxWithholding": "Retenção",
       },
     });
@@ -177,6 +190,8 @@ export abstract class FinancialDocumentsBaseController extends CommonController 
     aCols.push({ label: "Baixado", property: "SettledAmount", type: EdmType.Number, scale: 2, delimiter: true });
     aCols.push({ label: "Em aberto", property: "OpenAmount", type: EdmType.Number, scale: 2, delimiter: true });
     aCols.push({ label: "Contrato", property: "OriginDocNumber", type: EdmType.String });
+    aCols.push({ label: "NF", property: "TaxDocumentNumber", type: EdmType.String });
+    aCols.push({ label: "Romaneio", property: "StorageTransactionCode", type: EdmType.String });
     aCols.push({ label: "Filial", property: "BranchCode", type: EdmType.String });
     return aCols;
   }

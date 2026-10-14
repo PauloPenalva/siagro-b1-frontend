@@ -33,6 +33,7 @@ export default class Main extends FinancialDocumentsBaseController {
 
   onInit(): void {
     this.createFilterModel();
+    this.setPayablesFilters(false);
 
     this.getRouter().getRoute("financialAdvances")
       .attachPatternMatched(() => this.onRouteMatched());

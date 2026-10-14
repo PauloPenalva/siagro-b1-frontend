@@ -38,11 +38,24 @@
       </fb:control>
     </fb:FilterGroupItem>
 
-    <fb:FilterGroupItem name="nature" label="Natureza" groupName="GroupNature" visibleInFilterBar="false">
+    <fb:FilterGroupItem name="nature" label="Natureza" groupName="GroupNature" visibleInFilterBar="false" visible="{= !${pf>/payables} }">
       <fb:control>
         <Select forceSelection="false" selectedKey="{filter>/Nature}">
           <core:ListItem key="" text="Todas"/>
           <core:ListItem key="Provisional" text="Provisório"/>
+          <core:ListItem key="Advance" text="Adiantamento"/>
+        </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <!-- Somente Contas a Pagar: Firme e Devolução existem só no contas a pagar da compra. -->
+    <fb:FilterGroupItem name="naturePayable" label="Natureza" groupName="GroupNaturePayable" visibleInFilterBar="true" visible="{= !!${pf>/payables} }">
+      <fb:control>
+        <Select forceSelection="false" selectedKey="{filter>/Nature}">
+          <core:ListItem key="" text="Todas"/>
+          <core:ListItem key="Provisional" text="Provisório"/>
+          <core:ListItem key="Firm" text="Firme"/>
+          <core:ListItem key="PurchaseReturn" text="Devolução"/>
           <core:ListItem key="Advance" text="Adiantamento"/>
         </Select>
       </fb:control>
@@ -91,6 +104,12 @@
     <fb:FilterGroupItem name="overdueOnly" label="Somente vencidos" groupName="GroupOverdue" visibleInFilterBar="true">
       <fb:control>
         <CheckBox selected="{filter>/OverdueOnly}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+
+    <fb:FilterGroupItem name="pendingResolution" label="Com saldo a resolver" groupName="GroupPendingResolution" visibleInFilterBar="true" visible="{= !!${pf>/payables} }">
+      <fb:control>
+        <CheckBox selected="{filter>/PendingResolution}"/>
       </fb:control>
     </fb:FilterGroupItem>
 

@@ -23,6 +23,8 @@ export default class Main extends FinancialDocumentsBaseController {
 
   onInit(): void {
     this.createFilterModel();
+    // Filtros exclusivos do contas a pagar (Natureza firme/devolucao, "Com saldo a resolver").
+    this.setPayablesFilters(true);
 
     this.getRouter().getRoute("accountsPayable")
       .attachPatternMatched(() => this.onRouteMatched());
