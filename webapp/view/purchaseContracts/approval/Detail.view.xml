@@ -102,27 +102,10 @@
               formatter: '.formatter.formatCurrency'
             }"  />
           </HBox>
-          <HBox class="sapUiTinyMarginBottom">
+          <HBox class="sapUiTinyMarginBottom" visible="{= ${ui>/standalone} !== true }">
             <Text text="Total Impostos:" class="sapUiMediumMarginEnd" />
             <ObjectNumber number="{
               path: 'viewModel>/TotalTax',
-              type: 'sap.ui.model.odata.type.Double',
-              formatOptions:{
-                decimals: 2,
-                decimalSeparator: ',',
-                groupingEnabled: true,
-                groupingSeparator: '.'
-              }
-            }" unit="{
-              path: 'StandardCurrency',
-              targetType: 'any',
-              formatter: '.formatter.formatCurrency'
-            }" />
-          </HBox>
-          <HBox class="sapUiTinyMarginBottom" visible="{= ${ui>/standalone} === true }">
-            <Text text="Líquido ao produtor:" class="sapUiMediumMarginEnd" />
-            <ObjectNumber number="{
-              path: 'viewModel>/NetToProducer',
               type: 'sap.ui.model.odata.type.Double',
               formatOptions:{
                 decimals: 2,
@@ -220,24 +203,10 @@
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
-      <uxap:ObjectPageSection titleUppercase="false" title="Complemento Fiscal" visible="{= ${ui>/standalone} === true }">
-				<uxap:subSections>
-					<uxap:ObjectPageSubSection titleUppercase="false">
-						<core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractFiscalComplement" type="XML" />
-					</uxap:ObjectPageSubSection>
-				</uxap:subSections>
-			</uxap:ObjectPageSection>
       <uxap:ObjectPageSection titleUppercase="false" title="Impostos" visible="{= ${ui>/standalone} !== true }">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection titleUppercase="false">
 						<core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractTaxes" type="XML" />
-					</uxap:ObjectPageSubSection>
-				</uxap:subSections>
-			</uxap:ObjectPageSection>
-      <uxap:ObjectPageSection titleUppercase="false" title="Impostos" visible="{= ${ui>/standalone} === true }">
-				<uxap:subSections>
-					<uxap:ObjectPageSubSection titleUppercase="false">
-						<core:Fragment fragmentName="siagrob1.view.purchaseContracts.fragments.PurchaseContractFunruralTotals" type="XML" />
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>

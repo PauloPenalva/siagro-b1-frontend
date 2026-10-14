@@ -1064,7 +1064,6 @@ const formatter = {
     m.set("Attachment", "Anexo");
     m.set("PriceFixation", "Fixação de preço");
     m.set("Washout", "Washout");
-    m.set("Usage", "Natureza de operação");
     // Singular: é a coleção de comentários do Detail (CommentEntries). Não confundir com
     // "Comments" abaixo, que é a observação do cabeçalho.
     m.set("Comment", "Comentário");

@@ -43,8 +43,6 @@ export default {
   royaltyBalanceTotals: '/RoyaltyBalanceTotals',
   salesContractsGetFiscalComplement: '/SalesContractsGetFiscalComplement(...)',
   salesContractsSetFiscalComplement: '/SalesContractsSetFiscalComplement(...)',
-  purchaseContractsGetFiscalComplement: '/PurchaseContractsGetFiscalComplement(...)',
-  purchaseContractsSetFiscalComplement: '/PurchaseContractsSetFiscalComplement(...)',
   unitsOfMeasure: '/odata/UnitsOfMeasure',
   harvestSeasons: '/odata/HarvestSeasons',
   warehouses: '/odata/Warehouses',

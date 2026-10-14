@@ -29,4 +29,3 @@ import "./helpers/DateHelpers.qunit";
 import "./helpers/ShellBarSearchHelpers.qunit";
 import "./helpers/StorageDepositHelpers.qunit";
 import "./helpers/StorageCustodyHelpers.qunit";
-import "./helpers/PurchaseContractFunruralHelpers.qunit";
