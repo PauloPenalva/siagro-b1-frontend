@@ -14,13 +14,33 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import { localIsoDate } from "siagrob1/helpers/DateHelpers";
+import { Button$PressEvent } from "sap/m/Button";
+import { Link$PressEvent } from "sap/m/Link";
+import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
+import { FinancialComposition, FinancialCompositionCandidate, FinancialCompositionLine } from "siagrob1/types/FinancialComposition";
 
 export default class Detail extends CommonController {
   formatter = { ...formatter }
 
+  private _composeDialog: Dialog;
+  /** Título cujo quadro de composição a tela mostra; descarta resposta atrasada de outro título. */
+  private _compositionKey: string;
+  /** Trava de duplo clique das ações de composição, dação e compensação. */
+  private _actionRunning = false;
+
   onInit(): void {
+    this.getView().setModel(new JSONModel(Detail.emptyComposition()), "composition");
     this.getRouter().getRoute("financialDocumentsDetail")
       .attachPatternMatched((ev) => this.routeMatched(ev));
+  }
+
+  private static emptyComposition() {
+    return {
+      lines: [] as FinancialCompositionLine[],
+      candidates: [] as FinancialCompositionCandidate[],
+      composedInKey: null as string,
+      composedInCode: "",
+    };
   }
 
   private routeMatched(ev: Route$MatchedEvent): void {
@@ -34,6 +54,8 @@ export default class Detail extends CommonController {
     this.bindElement(`/FinancialDocuments(${id})`, {
       $expand: "Settlements,ChangeLogs",
     });
+
+    void this.loadComposition(id);
   }
 
   protected documentContext(): Context | null {
@@ -50,6 +72,115 @@ export default class Detail extends CommonController {
     // cancelamento). Refrescar o pai ja basta: refreshInternal cascateia para as
     // bindings dependentes, e o $expand traz as duas colecoes de novo.
     this.getView().getElementBinding()?.refresh();
+  }
+
+  /**
+   * Quadro de composição (provisório), "composto em" (firme/devolução) e candidatos (compor ou compensar), pela function
+   * FinancialDocumentsGetComposition (spec 2026-10-13, títulos firmes).
+   */
+  private async loadComposition(documentKey: string): Promise<void> {
+    this._compositionKey = documentKey;
+    const model = this.getModel("composition") as JSONModel;
+    model.setData(Detail.emptyComposition());
+
+    const result = await sendJson("GET", `${this.api.financialDocumentsGetComposition}(Key=${documentKey})`);
+    // Resposta atrasada de outro título (troca rápida de rota) não pode sobrescrever a tela.
+    if (documentKey !== this._compositionKey) return;
+
+    if (!result.ok) {
+      MessageBox.error(result.message);
+      return;
+    }
+
+    const data = odataValue<FinancialComposition>(result.data) ?? { Lines: [], Candidates: [] };
+    const lines = data.Lines ?? [];
+    const composedIn = lines.find((l) => l.DocumentKey === documentKey);
+
+    model.setData({
+      lines,
+      candidates: data.Candidates ?? [],
+      composedInKey: composedIn?.ProvisionalDocumentKey ?? null,
+      composedInCode: composedIn?.ProvisionalCode ?? "",
+    });
+  }
+
+  /** Executa uma action uma vez só (trava de duplo clique); recarrega o título e o quadro. Recusa aparece na tela. */
+  private async runDocumentAction(path: string, payload: object, success: string): Promise<boolean> {
+    if (this._actionRunning) return false;
+    this._actionRunning = true;
+    this.setBusy(true);
+
+    try {
+      const result = await sendJson("POST", path, payload);
+      if (!result.ok) {
+        MessageBox.error(result.message);
+        return false;
+      }
+
+      MessageToast.show(success);
+      this.refreshDocument();
+      await this.loadComposition(this._compositionKey);
+      return true;
+    } finally {
+      this.setBusy(false);
+      this._actionRunning = false;
+    }
+  }
+
+  async onOpenComposeDialog(): Promise<void> {
+    const model = this.getModel("composition") as JSONModel;
+    const candidates = (model.getProperty("/candidates") as FinancialCompositionCandidate[]) ?? [];
+
+    if (!candidates.length) {
+      MessageBox.information("Nenhum título firme ou de devolução com saldo neste contrato.");
+      return;
+    }
+
+    model.setProperty("/candidates", candidates.map((c) => ({ ...c, selected: false })));
+
+    this._composeDialog ??= await DialogHelper.createDialog(
+      this, "siagrob1.view.financialDocuments.fragments.ComposeDialog");
+    this._composeDialog.open();
+  }
+
+  onCloseComposeDialog(): void {
+    this._composeDialog?.close();
+  }
+
+  async onConfirmCompose(): Promise<void> {
+    const candidates = (this.getModel("composition") as JSONModel).getProperty("/candidates") as FinancialCompositionCandidate[];
+    // Na ordem da lista: é a ordem em que entram no provisório (regra 10).
+    const keys = candidates.filter((c) => c.selected).map((c) => c.DocumentKey);
+
+    if (!keys.length) {
+      MessageBox.alert("Selecione ao menos um título firme ou de devolução.");
+      return;
+    }
+
+    this.onCloseComposeDialog();
+    await this.runDocumentAction(this.api.financialDocumentsCompose,
+      { Key: this._compositionKey, ComposedKeys: keys }, "Títulos compostos no provisório.");
+  }
+
+  async onUncompose(ev: Button$PressEvent): Promise<void> {
+    const line = ev.getSource().getBindingContext("composition").getObject() as FinancialCompositionLine;
+
+    if (!(await DialogHelper.confirmDialog(`Desfazer a composição do título ${line.DocumentCode}?`))) return;
+
+    await this.runDocumentAction(this.api.financialDocumentsUncompose,
+      { CompositionKey: line.CompositionKey }, "Composição desfeita.");
+  }
+
+  onOpenCompositionDocument(ev: Link$PressEvent): void {
+    const line = ev.getSource().getBindingContext("composition").getObject() as FinancialCompositionLine;
+    this.navTo("financialDocumentsDetail", { id: line.DocumentKey });
+  }
+
+  onOpenComposedIn(): void {
+    const key = (this.getModel("composition") as JSONModel).getProperty("/composedInKey") as string;
+    if (key) {
+      this.navTo("financialDocumentsDetail", { id: key });
+    }
   }
 
   /** A lista de origem foi guardada pelo FinancialDocumentsBaseController ao navegar para ca. */

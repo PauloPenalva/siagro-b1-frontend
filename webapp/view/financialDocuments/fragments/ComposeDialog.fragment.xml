@@ -1,0 +1,57 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }"
+>
+  <!--
+    Candidatos à composição: firmes e devoluções do mesmo contrato, com saldo. A seleção fica no próprio JSONModel
+    (composition>selected), na ordem da lista, que é a ordem em que entram no provisório.
+  -->
+  <Dialog title="Compor títulos no provisório" contentWidth="64rem">
+    <content>
+      <MessageStrip
+        type="Information"
+        showIcon="true"
+        class="sapUiSmallMargin"
+        text="Os títulos entram na ordem da lista. O firme que não couber entra parcial; a sobra pode ser baixada por dação. A devolução entra negativa." />
+      <Table
+        class="sapUiSizeCondensed"
+        items="{composition>/candidates}"
+        noDataText="Nenhum título firme ou de devolução com saldo neste contrato.">
+        <columns>
+          <Column width="3rem" />
+          <Column width="9rem"><Text text="Título" /></Column>
+          <Column width="8rem"><Text text="Tipo" /></Column>
+          <Column width="9rem"><Text text="Romaneio" /></Column>
+          <Column width="9rem"><Text text="NF" /></Column>
+          <Column><Text text="Produtor" /></Column>
+          <Column width="9rem" hAlign="End"><Text text="Em aberto" /></Column>
+          <Column width="9rem" hAlign="End"><Text text="Entra com" /></Column>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <cells>
+              <CheckBox selected="{composition>selected}" />
+              <Text text="{composition>Code}" />
+              <Text text="{path: 'composition>Nature', formatter: 'formatter.formatFinancialNature'}" />
+              <Text text="{composition>StorageTransactionCode}" />
+              <Text text="{composition>TaxDocumentNumber}" />
+              <Text text="({composition>CardCode}) {composition>CardName}" />
+              <Text text="{path: 'composition>OpenAmount', formatter: 'formatter.formatDecimal2'}" />
+              <Text text="{path: 'composition>SuggestedAmount', formatter: 'formatter.formatDecimal2'}" />
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </content>
+    <footer>
+      <OverflowToolbar>
+        <ToolbarSpacer />
+        <Button text="Compor" type="Emphasized" press=".onConfirmCompose" />
+        <Button text="Fechar" press=".onCloseComposeDialog" />
+      </OverflowToolbar>
+    </footer>
+  </Dialog>
+</core:FragmentDefinition>

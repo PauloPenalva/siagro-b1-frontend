@@ -127,6 +127,11 @@
               <Link text="Abrir documento de entrada" enabled="{= !!${PurchaseInvoiceKey} }" press=".onOpenPurchaseInvoice"/>
             </f:fields>
           </f:FormElement>
+          <f:FormElement label="Composto em" visible="{= !!${composition>/composedInKey} }">
+            <f:fields>
+              <Link text="{composition>/composedInCode}" press=".onOpenComposedIn"/>
+            </f:fields>
+          </f:FormElement>
         </f:formElements>
       </f:FormContainer>
       <f:FormContainer title="Observações">

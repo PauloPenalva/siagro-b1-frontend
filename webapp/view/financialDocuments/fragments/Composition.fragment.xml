@@ -1,0 +1,53 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }"
+>
+  <!--
+    Composição do provisório (spec 2026-10-13, títulos firmes): firmes e devoluções aglutinados pelo operador.
+    Dados da function FinancialDocumentsGetComposition no JSONModel "composition". Devolução entra negativa.
+  -->
+  <Table
+    class="sapUiSizeCondensed"
+    items="{composition>/lines}"
+    noDataText="Nenhum título composto. Use Compor para trazer os títulos firmes deste contrato.">
+    <headerToolbar>
+      <OverflowToolbar>
+        <Title text="Composição" />
+        <ToolbarSpacer />
+        <Button
+          text="Compor"
+          type="Emphasized"
+          icon="sap-icon://add"
+          visible="{= ${path: 'Status', targetType: 'any'} !== 'Canceled' }"
+          press=".onOpenComposeDialog" />
+      </OverflowToolbar>
+    </headerToolbar>
+    <columns>
+      <Column width="9rem"><Text text="Título" /></Column>
+      <Column width="9rem"><Text text="Romaneio" /></Column>
+      <Column width="9rem"><Text text="NF" /></Column>
+      <Column><Text text="Produtor" /></Column>
+      <Column width="8rem"><Text text="Tipo" /></Column>
+      <Column width="10rem" hAlign="End"><Text text="Valor" /></Column>
+      <Column width="4rem" />
+    </columns>
+    <items>
+      <ColumnListItem>
+        <cells>
+          <Link text="{composition>DocumentCode}" press=".onOpenCompositionDocument" />
+          <Text text="{composition>StorageTransactionCode}" />
+          <Text text="{composition>TaxDocumentNumber}" />
+          <Text text="({composition>CardCode}) {composition>CardName}" />
+          <Text text="{path: 'composition>Nature', formatter: 'formatter.formatFinancialNature'}" />
+          <ObjectNumber
+            number="{path: 'composition>Amount', formatter: 'formatter.formatDecimal2'}"
+            state="{= Number(${composition>Amount}) &lt; 0 ? 'Error' : 'None' }" />
+          <Button icon="sap-icon://undo" type="Transparent" tooltip="Desfazer a composição" press=".onUncompose" />
+        </cells>
+      </ColumnListItem>
+    </items>
+  </Table>
+</core:FragmentDefinition>
