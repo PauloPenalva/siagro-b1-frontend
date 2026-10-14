@@ -14,7 +14,7 @@ import CommonController from "siagrob1/controller/common/CommonController";
 import { isPurchaseNfeMode, isPurchaseTaxMode, mustFallBackToNormal, requiresSupplierKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { summarizeInvoiceTaxes, TaxLine } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 import { formatAmount, lineFunrural, purchaseChargeLineOf, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
-import { toNumber } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
+import { missingUnitOfMeasureMessage, toNumber, unitSuggestionToApply } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 
 /** Sequência compartilhada por Add/Edit/Detail: só a chamada mais recente de refreshNfeMode escreve no `ui`. */
 let nfeModeSequence = 0;
@@ -28,6 +28,9 @@ let isStandaloneErp: boolean | undefined;
  *
  * @namespace siagrob1.controller.purchaseInvoices
  */
+/** Última unidade SUGERIDA por linha: permite renovar a sugestão sem tocar na unidade escolhida à mão. */
+const lastSuggestedUnit = new WeakMap<Context, string>();
+
 export abstract class BaseController extends CommonController {
 
   private itemFiscalDialog: Dialog;
@@ -58,6 +61,7 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/nfeReturn", false);
       uiModel.setProperty("/taxMode", false);
       uiModel.setProperty("/isCounterNote", false);
+      uiModel.setProperty("/valueComplement", false);
       // Vínculos da contra-nota: só o Detail os preenche (depois de conferir que o documento é o mesmo). O `ui` é do
       // componente, então Incluir/Editar não podem herdar o link do último documento aberto.
       uiModel.setProperty("/counterNote", { key: "", text: "" });
@@ -95,6 +99,8 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/nfeReturn", isNfeReturn);
       // Contra-nota (spec 2026-10-10): cabeçalho e linhas vêm da escrituração do produtor e ficam somente leitura.
       uiModel.setProperty("/isCounterNote", !!producerInvoiceKey);
+      // Complemento de valor não tem unidade de medida (linha só com valor): a coluna UM deixa de ser obrigatória.
+      uiModel.setProperty("/valueComplement", invoiceType === "ValueComplement");
       // Natureza, CFOP, "Tributos do item", condição de pagamento e Transporte: própria e terceiro Normal, com a
       // mesma tela (spec terceiro-chave D1).
       const taxMode = isPurchaseTaxMode(taxLocked, issuerType, invoiceType);
@@ -407,6 +413,54 @@ export abstract class BaseController extends CommonController {
   }
 
   /**
+   * B7: ao escolher o produto, sugere a unidade da linha — a unidade comercial do complemento do produto ou, sem ela, a
+   * padrão do sistema. Roda sem `await` (a leitura do complemento não pode atrasar a limpeza do contrato). A unidade que
+   * o operador escolheu à mão nunca é sobrescrita; uma sugestão anterior é renovada quando o produto muda, e a resposta
+   * de um produto que já foi trocado é descartada (ver `unitSuggestionToApply`).
+   */
+  private async suggestUnitOfMeasure(line: Context): Promise<void> {
+    const requestedItemCode = line.getProperty("ItemCode") as string;
+
+    let commercial: string;
+    try {
+      const model = this.getModel() as ODataModel;
+      const func = model.bindContext(this.api.itemsGetComplement);
+      func.setParameter("ItemCode", requestedItemCode);
+      await func.invoke();
+      commercial = (func.getBoundContext().getObject() as { CommercialUnitOfMeasureCode?: string })
+        ?.CommercialUnitOfMeasureCode;
+    } catch {
+      // Sem complemento legível, cai na unidade padrão.
+      commercial = undefined;
+    }
+
+    const suggested = unitSuggestionToApply(
+      requestedItemCode, line.getProperty("ItemCode") as string, line.getProperty("UnitOfMeasureCode") as string,
+      lastSuggestedUnit.get(line), commercial, this.getSystemSetup().DefaultUoM);
+
+    if (suggested) {
+      lastSuggestedUnit.set(line, suggested);
+      // Sem `await`, como a chave do contrato: no grupo deferido a Promise só resolve no Save.
+      void line.setProperty("UnitOfMeasureCode", suggested);
+    }
+  }
+
+  /** Mensagem do Save para linha sem unidade de medida (vazio = todas informadas). Ver `missingUnitOfMeasureMessage`. */
+  protected missingUnitOfMeasure(lines: Context[], invoiceType?: string): string {
+    // Devolução com NF-e e contra-nota: a unidade vem da origem e a tela a trava; o servidor também não a exige aqui.
+    const ui = this.getModel("ui") as JSONModel;
+    if (ui.getProperty("/nfeReturn") === true || ui.getProperty("/isCounterNote") === true) {
+      return "";
+    }
+    return missingUnitOfMeasureMessage(
+      lines.map((line) => ({
+        ItemCode: line.getProperty("ItemCode") as string,
+        UnitOfMeasureCode: line.getProperty("UnitOfMeasureCode") as string,
+      })),
+      invoiceType);
+  }
+
+  /**
    * Value help do PRODUTO da linha.
    *
    * Não usa `.openItemValueHelp` — o genérico do `CommonController`, compartilhado por muitas
@@ -436,6 +490,8 @@ export abstract class BaseController extends CommonController {
     // fica correto no cache local de imediato, e a gravação de fato acontece no próximo Save.
     await oTarget.setProperty("PurchaseContract/Code", null, null);
     void oTarget.setProperty("PurchaseContractKey", null);
+
+    void this.suggestUnitOfMeasure(oTarget).catch((): void => undefined);
   }
 
   /** Quantidade, preço ou um dos quatro valores da linha mudou: o "Total geral" acompanha. */

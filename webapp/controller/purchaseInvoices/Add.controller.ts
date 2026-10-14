@@ -260,6 +260,13 @@ export default class Add extends BaseController {
       }
     }
 
+    const missingUnit = this.missingUnitOfMeasure(
+      oBinding?.getAllCurrentContexts() ?? [], oContext.getProperty("InvoiceType") as string);
+    if (missingUnit) {
+      MessageBox.warning(missingUnit);
+      return;
+    }
+
     if (this.isSupplierKeyMissing(oContext)) {
       MessageBox.warning("Informe a chave de acesso da NF-e do fornecedor.");
       return;
