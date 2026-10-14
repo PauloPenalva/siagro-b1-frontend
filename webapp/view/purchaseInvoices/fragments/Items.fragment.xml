@@ -228,12 +228,12 @@
         </t:template>
       </t:Column>
 
-      <!-- A amarração fiscal, só relevante no tipo Normal: o campo mostra o CÓDIGO do contrato e o
+      <!-- A amarração fiscal (Normal, Complemento de valor e Devolução — a devolução digitada à mão precisa informá-lo para nascer o título PurchaseReturn): o campo mostra o CÓDIGO do contrato e o
            value help grava a CHAVE. OneWay é obrigatório porque o campo exibe uma NAVEGAÇÃO — em
            linha ainda não amarrada `PurchaseContract` é null, e no modo TwoWay o setValue tentaria
            escrever dentro do null. Mesmo desenho da coluna "NF de Origem" abaixo. -->
       <t:Column label="{= ${path: 'InvoiceType', targetType: 'any'} === 'ValueComplement' ? 'Contrato (obrigatório)' : 'Contrato' }" width="12rem"
-                visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Normal' || ${path: 'InvoiceType', targetType: 'any'} === 'ValueComplement' }">
+                visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Normal' || ${path: 'InvoiceType', targetType: 'any'} === 'ValueComplement' || ${path: 'InvoiceType', targetType: 'any'} === 'Return' }">
         <t:template>
           <Input
             editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"

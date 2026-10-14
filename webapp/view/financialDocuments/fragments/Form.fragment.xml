@@ -124,7 +124,7 @@
           </f:FormElement>
           <f:FormElement label="Documento de entrada">
             <f:fields>
-              <Link text="Abrir documento de entrada" enabled="{= !!${PurchaseInvoiceKey} }" press=".onOpenPurchaseInvoice"/>
+              <Link text="Abrir documento de entrada" enabled="{= !!${path: 'PurchaseInvoiceKey', targetType: 'any'} }" press=".onOpenPurchaseInvoice"/>
             </f:fields>
           </f:FormElement>
           <f:FormElement label="Composto em" visible="{= !!${composition>/composedInKey} }">
