@@ -11,6 +11,7 @@ QUnit.test("a linha em branco já traz as chaves que a tela edita, nulas", funct
 		ItemCode: "", ItemName: "", UnitOfMeasureCode: "", Quantity: 0, UnitPrice: 0,
 		SalesInvoiceItemKey: null, PurchaseContractKey: null, UsageCode: null, UsageName: null,
 		NfeItemNumber: null, FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0,
+		ComplementAmount: 0,
 	});
 });
 
@@ -65,4 +66,12 @@ QUnit.test("XML importado leva frete, seguro, desconto e outras despesas da linh
 
 	assert.deepEqual(rows.map((row) => [row.FreightValue, row.InsuranceValue, row.DiscountValue, row.OtherExpensesValue]),
 		[[100, 20, 50, 30], [0, 0, 0, 0]]);
+});
+
+QUnit.test("NF-e de complemento importada leva o valor do complemento em número, sem quantidade (spec D11)", function (assert) {
+	const rows = draftItemRows([
+		{ ItemCode: "TRIGO", ItemName: "TRIGO", UnitOfMeasureCode: "KG", Quantity: "0", UnitPrice: "0", ComplementAmount: "271.67" },
+	]);
+
+	assert.deepEqual(rows.map((row) => [row.Quantity, row.UnitPrice, row.ComplementAmount]), [[0, 0, 271.67]]);
 });

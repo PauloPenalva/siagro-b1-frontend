@@ -28,6 +28,7 @@
           <core:ListItem key="" text="Todos"/>
           <core:ListItem key="Normal" text="Normal"/>
           <core:ListItem key="Return" text="Devolução"/>
+          <core:ListItem key="ValueComplement" text="Complemento de valor"/>
         </Select>
       </fb:control>
     </fb:FilterGroupItem>

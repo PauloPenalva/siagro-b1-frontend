@@ -240,6 +240,7 @@ export default class Main extends BaseController {
       valueMap: {
         "Normal": "Normal",
         "Return": "Devolução",
+        "ValueComplement": "Complemento de valor",
       },
     });
 

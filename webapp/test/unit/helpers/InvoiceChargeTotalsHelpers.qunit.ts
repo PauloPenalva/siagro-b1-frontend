@@ -1,5 +1,5 @@
 import {
-	ChargeLine, chargeLineOf, formatAmount, formatLineGrandTotal, LINE_CHARGES_SELECT, lineFunrural, lineGrandTotal, summarizeInvoiceCharges,
+	ChargeLine, chargeLineOf, formatAmount, formatLineGrandTotal, LINE_CHARGES_SELECT, lineFunrural, lineItemsTotal, lineGrandTotal, summarizeInvoiceCharges,
 } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
 import { PURCHASE_ITEM_SELECT } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 
@@ -83,6 +83,7 @@ QUnit.test("o $select das linhas da entrada traz os campos da seção Totais", f
 	const purchase = PURCHASE_ITEM_SELECT.split(",");
 
 	assert.deepEqual(LINE_CHARGES_SELECT.split(",").filter((field) => !purchase.includes(field)), []);
+	assert.ok(purchase.includes("ComplementAmount"), "ComplementAmount no $select evita a late property (404) no Detail/Edit");
 });
 
 QUnit.test("com Funrural, a seção mostra o retido e o líquido a pagar depois do total geral", function (assert) {
@@ -124,4 +125,21 @@ QUnit.test("lineFunrural soma INSS, RAT e SENAR da linha, aceitando string e vaz
 	const values: Record<string, unknown> = { FunruralInssValue: "19.80", FunruralRatValue: 1.65, FunruralSenarValue: undefined };
 
 	assert.strictEqual(lineFunrural({ getProperty: (path: string) => values[path] }), 21.45);
+});
+
+QUnit.module("InvoiceChargeTotalsHelpers - complemento de valor (spec D11)");
+
+QUnit.test("o valor do complemento é o total dos itens da linha, sem quantidade", function (assert) {
+	assert.strictEqual(lineItemsTotal(0, 0, "1500.00"), 1500);
+	assert.strictEqual(formatLineGrandTotal("0", "0", "10", "0", "0", "0", "1500"), "1.510,00");
+	assert.strictEqual(formatLineGrandTotal("30000", "2", "1000", "100", "500", "400"), "61.000,00");
+});
+
+QUnit.test("os totais do documento somam o complemento", function (assert) {
+	const totals = summarizeInvoiceCharges([{
+		Quantity: 0, UnitPrice: 0, FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0,
+		ComplementAmount: "271.67",
+	}]);
+	assert.strictEqual(totals.items, 271.67);
+	assert.strictEqual(totals.grandTotal, 271.67);
 });

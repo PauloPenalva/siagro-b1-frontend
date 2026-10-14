@@ -19,6 +19,8 @@ export type ChargeLine = {
 	InsuranceValue: Amount;
 	DiscountValue: Amount;
 	OtherExpensesValue: Amount;
+	/** Valor do complemento (só a linha da entrada do tipo Complemento de valor, spec D11). */
+	ComplementAmount?: Amount;
 };
 
 /** Linha da seção "Totais". */
@@ -46,16 +48,17 @@ function cents(value: number): number {
 	return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
-/** Total dos itens da linha (o vProd): quantidade × preço, em centavos — como o `Total` do servidor. */
-export function lineItemsTotal(quantity: unknown, unitPrice: unknown): number {
-	return cents(toNumber(quantity) * toNumber(unitPrice));
+/** Total dos itens da linha (o vProd): quantidade × preço, mais o valor do complemento (D11), em centavos — como o `Total` do servidor. */
+export function lineItemsTotal(quantity: unknown, unitPrice: unknown, complement?: unknown): number {
+	return cents(toNumber(quantity) * toNumber(unitPrice) + toNumber(complement));
 }
 
 /** Total geral da linha (spec D2): itens + frete + seguro + outras despesas − desconto. */
 export function lineGrandTotal(
 	quantity: unknown, unitPrice: unknown, freight: unknown, insurance: unknown, discount: unknown, otherExpenses: unknown,
+	complement?: unknown,
 ): number {
-	return cents(lineItemsTotal(quantity, unitPrice) + toNumber(freight) + toNumber(insurance) +
+	return cents(lineItemsTotal(quantity, unitPrice, complement) + toNumber(freight) + toNumber(insurance) +
 		toNumber(otherExpenses) - toNumber(discount));
 }
 
@@ -64,11 +67,12 @@ export function formatAmount(value: number): string {
 	return (value ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-/** Formatter da coluna "Total" da grade: seis partes, todas com `targetType: 'any'`. */
+/** Formatter da coluna "Total" da grade: seis partes na saída, sete na entrada, todas com `targetType: 'any'`. */
 export function formatLineGrandTotal(
 	quantity: unknown, unitPrice: unknown, freight: unknown, insurance: unknown, discount: unknown, otherExpenses: unknown,
+	complement?: unknown,
 ): string {
-	return formatAmount(lineGrandTotal(quantity, unitPrice, freight, insurance, discount, otherExpenses));
+	return formatAmount(lineGrandTotal(quantity, unitPrice, freight, insurance, discount, otherExpenses, complement));
 }
 
 /**
@@ -86,6 +90,11 @@ export function chargeLineOf(context: { getProperty(path: string): unknown }): C
 	};
 }
 
+/** `chargeLineOf` da ENTRADA: acrescenta o valor do complemento (D11). A saída não tem a propriedade e usa `chargeLineOf`. */
+export function purchaseChargeLineOf(context: { getProperty(path: string): unknown }): ChargeLine {
+	return { ...chargeLineOf(context), ComplementAmount: context.getProperty("ComplementAmount") as Amount };
+}
+
 /**
  * Funrural retido na linha (INSS + RAT + SENAR), pelo `getProperty` como `chargeLineOf`. Calculado pelo SERVIDOR ao
  * salvar: numa linha em digitação ainda é 0, e a seção mostra o retido quando o documento volta gravado.
@@ -100,7 +109,7 @@ export function summarizeInvoiceCharges(allLines: ChargeLine[], funrural = 0, is
 	const lines = allLines.filter((line) => !!line);
 	const sum = (pick: (line: ChargeLine) => number) => cents(lines.reduce((total, line) => total + pick(line), 0));
 
-	const items = sum((line) => lineItemsTotal(line.Quantity, line.UnitPrice));
+	const items = sum((line) => lineItemsTotal(line.Quantity, line.UnitPrice, line.ComplementAmount));
 	const freight = sum((line) => toNumber(line.FreightValue));
 	const insurance = sum((line) => toNumber(line.InsuranceValue));
 	const otherExpenses = sum((line) => toNumber(line.OtherExpensesValue));

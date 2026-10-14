@@ -1161,6 +1161,7 @@ const formatter = {
     const m = new Map<string, string>();
     m.set("Normal", "Normal");
     m.set("Return", "Devolução");
+    m.set("ValueComplement", "Complemento de valor");
 
     return m.get(value) ?? "";
   },
