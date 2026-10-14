@@ -8,13 +8,20 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import { Link$PressEvent } from "sap/m/Link";
+import { odataCollection, sendJson } from "siagrob1/helpers/FetchHelpers";
+import { FinancialDocumentByContract } from "siagrob1/types/FinancialDocumentByContract";
 
 /**
  * @namespace siagrob1.controller.purchaseContracts
  */
 export default class Detail extends PurchaseContractsBaseController {
 
+  /** Contrato cuja seção Financeiro a tela mostra; descarta resposta atrasada de outro contrato. */
+  private _financialContractKey: string;
+
 	onInit(): void  {	
+		this.getView().setModel(new JSONModel({ rows: [] }), "contractFinancial");
 		this.initContractDrafts();
 		this.getRouter().getRoute("purchaseContractsDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
 	}
@@ -46,6 +53,7 @@ export default class Detail extends PurchaseContractsBaseController {
       void this.reloadContractDrafts(id);
 
       void this.refreshStandaloneFlag();
+      void this.loadContractFinancial(id);
 
       const requestModel = new RequestModel({Key: id});
       requestModel.post(this.api.purchaseContractsTotals)
@@ -55,6 +63,29 @@ export default class Detail extends PurchaseContractsBaseController {
 		}
 
 	}
+
+  /** Seção "Financeiro" (spec 2026-10-13, títulos firmes): provisórios, firmes e devoluções do contrato. */
+  private async loadContractFinancial(contractKey: string): Promise<void> {
+    this._financialContractKey = contractKey;
+    const model = this.getModel("contractFinancial") as JSONModel;
+    model.setData({ rows: [] });
+
+    const result = await sendJson("GET",
+      `${this.api.financialDocumentsGetByContract}(ContractType='Purchase',ContractKey=${contractKey})`);
+    if (contractKey !== this._financialContractKey) return;
+
+    if (!result.ok) {
+      MessageBox.error(result.message);
+      return;
+    }
+
+    model.setData({ rows: odataCollection<FinancialDocumentByContract>(result.data) });
+  }
+
+  onOpenContractFinancialDocument(ev: Link$PressEvent): void {
+    const row = ev.getSource().getBindingContext("contractFinancial").getObject() as FinancialDocumentByContract;
+    this.navTo("financialDocumentsDetail", { id: row.Key });
+  }
 
 	onEdit() {
     const oContext = this.getView().getBindingContext() as Context
