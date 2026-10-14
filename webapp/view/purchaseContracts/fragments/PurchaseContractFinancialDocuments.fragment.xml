@@ -5,7 +5,7 @@
   <!--
     Seção Financeiro do contrato de compra (spec 2026-10-13, títulos firmes): provisórios, firmes e devoluções,
     pela function FinancialDocumentsGetByContract, no JSONModel "contractFinancial". Somente leitura. Composto só
-    existe no provisório (nos demais vem 0,00). Os formatters vêm do controller (.formatter), como nas demais
+    existe no provisório (nos demais vem 0,00). Aplicado e crédito disponível só aparecem no adiantamento (spec 2026-10-14). Os formatters vêm do controller (.formatter), como nas demais
     seções do Detail, sem core:require no fragmento.
   -->
   <Table
@@ -22,6 +22,8 @@
       <Column hAlign="End"><Text text="Composto" /></Column>
       <Column hAlign="End"><Text text="Baixado" /></Column>
       <Column hAlign="End"><Text text="Em aberto" /></Column>
+      <Column hAlign="End"><Text text="Aplicado / transferido" /></Column>
+      <Column hAlign="End"><Text text="Crédito disponível" /></Column>
     </columns>
     <items>
       <ColumnListItem>
@@ -37,6 +39,10 @@
           <Text text="{path: 'contractFinancial>ComposedAmount', formatter: '.formatter.formatDecimal2'}" />
           <Text text="{path: 'contractFinancial>SettledAmount', formatter: '.formatter.formatDecimal2'}" />
           <Text text="{path: 'contractFinancial>OpenAmount', formatter: '.formatter.formatDecimal2'}" />
+          <Text text="{path: 'contractFinancial>AppliedAmount', formatter: '.formatter.formatDecimal2'}"
+                visible="{= ${contractFinancial>Nature} === 'Advance' }" />
+          <Text text="{path: 'contractFinancial>AvailableAdvanceAmount', formatter: '.formatter.formatDecimal2'}"
+                visible="{= ${contractFinancial>Nature} === 'Advance' }" />
         </cells>
       </ColumnListItem>
     </items>

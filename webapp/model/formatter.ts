@@ -1431,6 +1431,8 @@ const formatter = {
     // Provisório ajustado no lugar pelo washout.
     m.set("NetAmount", "Valor");
     m.set("Composition", "Composição");
+    m.set("AdvanceApplication", "Compensação de adiantamento");
+    m.set("AdvanceTransfer", "Transferência de adiantamento");
 
     return m.get(value) ?? value;
   },
@@ -1460,6 +1462,7 @@ const formatter = {
     m.set("Netting", "Encontro de contas");
     m.set("AdvanceRefund", "Devolução de adiantamento");
     m.set("Dation", "Dação");
+    m.set("AdvanceTransfer", "Transferência de adiantamento");
 
     return m.get(value) ?? value ?? "";
   },

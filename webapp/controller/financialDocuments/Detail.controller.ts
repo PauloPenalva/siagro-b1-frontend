@@ -16,7 +16,9 @@ import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import { localIsoDate } from "siagrob1/helpers/DateHelpers";
 import { Button$PressEvent } from "sap/m/Button";
 import { Link$PressEvent } from "sap/m/Link";
-import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
+import { odataCollection, odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
+import { FinancialAdvanceCandidate } from "siagrob1/types/FinancialAdvanceCandidate";
+import { Select$ChangeEvent } from "sap/m/Select";
 import { FinancialComposition, FinancialCompositionCandidate, FinancialCompositionLine } from "siagrob1/types/FinancialComposition";
 
 export default class Detail extends CommonController {
@@ -103,6 +105,16 @@ export default class Detail extends CommonController {
       composedInKey: composedIn?.ProvisionalDocumentKey ?? null,
       composedInCode: composedIn?.ProvisionalCode ?? "",
     });
+  }
+
+  /**
+   * Erro de uma action chamada por bindContext().invoke(). O ODataModel v4 já registra a falha no message model como
+   * mensagem técnica (e marca o erro com $reported), e o handler global do Component.ts mostra o MessageBox. Mostrar
+   * outro aqui duplicava a caixa; só o erro que o modelo não reportou (falha local, rede) ainda precisa de aviso.
+   */
+  private showActionError(err: unknown, fallback: string): void {
+    if ((err as { $reported?: boolean })?.$reported) return;
+    MessageBox.error((err as Error)?.message || fallback);
   }
 
   /** Executa uma action uma vez só (trava de duplo clique); recarrega o título e o quadro. Recusa aparece na tela. */
@@ -272,6 +284,94 @@ export default class Detail extends CommonController {
       { Key: this._compositionKey, CounterpartKey: counterpartKey }, "Devolução compensada.");
   }
 
+  private _applyAdvanceDialog: Dialog;
+
+  /**
+   * "Compensar adiantamento" (spec 2026-10-14): carrega os candidatos ANTES de abrir (o Select precisa dos itens antes
+   * do selectedKey) e sugere min(disponível do provisório, crédito do adiantamento), calculado no backend.
+   */
+  async onOpenApplyAdvanceDialog(): Promise<void> {
+    const ctx = this.documentContext();
+    if (!ctx) return;
+
+    const key = this._compositionKey;
+    const result = await sendJson("GET", `${this.api.financialDocumentsGetAdvanceCandidates}(Key=${key})`);
+    // Resposta atrasada de outro título (troca rápida de rota) não abre diálogo na tela errada.
+    if (key !== this._compositionKey) return;
+
+    if (!result.ok) {
+      MessageBox.error(result.message);
+      return;
+    }
+
+    const candidates = odataCollection<FinancialAdvanceCandidate>(result.data);
+    if (!candidates.length) {
+      MessageBox.information("Nenhum adiantamento com crédito disponível neste contrato.");
+      return;
+    }
+
+    (this.getModel("viewModel") as JSONModel).setProperty("/applyAdvanceDialog", {
+      candidates,
+      advanceKey: candidates[0].DocumentKey,
+      amount: Number(candidates[0].SuggestedAmount),
+      settlementDate: localIsoDate(new Date()),
+      availableToSettle: Number(ctx.getProperty("AvailableToSettleAmount") ?? 0),
+    });
+
+    this._applyAdvanceDialog ??= await DialogHelper.createDialog(
+      this, "siagrob1.view.financialDocuments.fragments.ApplyAdvanceDialog");
+    this._applyAdvanceDialog.open();
+  }
+
+  /** Trocar o adiantamento troca o valor sugerido (lido do item escolhido, não do binding ainda por atualizar). */
+  onApplyAdvanceCandidateChange(ev: Select$ChangeEvent): void {
+    const advanceKey = ev.getParameter("selectedItem")?.getKey() ?? "";
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    const candidates = (viewModel.getProperty("/applyAdvanceDialog/candidates") as FinancialAdvanceCandidate[]) ?? [];
+    const chosen = candidates.find((c) => c.DocumentKey === advanceKey);
+
+    viewModel.setProperty("/applyAdvanceDialog/advanceKey", advanceKey);
+    viewModel.setProperty("/applyAdvanceDialog/amount", chosen ? Number(chosen.SuggestedAmount) : 0);
+  }
+
+  onCloseApplyAdvanceDialog(): void {
+    this._applyAdvanceDialog?.close();
+  }
+
+  async onConfirmApplyAdvance(): Promise<void> {
+    const form = (this.getModel("viewModel") as JSONModel).getProperty("/applyAdvanceDialog") as {
+      advanceKey: string; amount: number; settlementDate: string;
+    };
+
+    if (!form.advanceKey) {
+      MessageBox.alert("Selecione o adiantamento.");
+      return;
+    }
+
+    if (!(Number(form.amount) > 0)) {
+      MessageBox.alert("Informe um valor maior que zero.");
+      return;
+    }
+
+    if (!form.settlementDate) {
+      MessageBox.alert("Informe a data da compensação.");
+      return;
+    }
+
+    // Tetos (disponível e crédito) quem decide é o backend: a recusa A5/A6 aparece pelo MessageBox do runDocumentAction
+    // e o diálogo fica aberto para o usuário corrigir o valor; só o sucesso o fecha.
+    const applied = await this.runDocumentAction(this.api.financialDocumentsApplyAdvance, {
+      Key: this._compositionKey,
+      AdvanceKey: form.advanceKey,
+      Amount: Number(form.amount),
+      SettlementDate: form.settlementDate,
+    }, "Adiantamento compensado.");
+
+    if (applied) {
+      this.onCloseApplyAdvanceDialog();
+    }
+  }
+
   /** A lista de origem foi guardada pelo FinancialDocumentsBaseController ao navegar para ca. */
   onBack(): void {
     const origin = (this.getModel("viewModel") as JSONModel)
@@ -392,7 +492,7 @@ export default class Detail extends CommonController {
       MessageToast.show("Baixa registrada.");
       this.refreshDocument();
     } catch (err) {
-      MessageBox.error((err as Error).message || "Erro ao registrar a baixa.");
+      this.showActionError(err, "Erro ao registrar a baixa.");
     } finally {
       this.setBusy(false);
     }
@@ -443,7 +543,7 @@ export default class Detail extends CommonController {
       this.clearSettlementSelection();
       this.refreshDocument();
     } catch (err) {
-      MessageBox.error((err as Error).message || "Erro ao estornar a baixa.");
+      this.showActionError(err, "Erro ao estornar a baixa.");
     } finally {
       this.setBusy(false);
     }
@@ -497,7 +597,7 @@ export default class Detail extends CommonController {
       MessageToast.show("Vencimento alterado.");
       this.refreshDocument();
     } catch (err) {
-      MessageBox.error((err as Error).message || "Erro ao alterar o vencimento.");
+      this.showActionError(err, "Erro ao alterar o vencimento.");
     } finally {
       this.setBusy(false);
     }
@@ -524,7 +624,7 @@ export default class Detail extends CommonController {
       MessageToast.show("Título cancelado.");
       this.refreshDocument();
     } catch (err) {
-      MessageBox.error((err as Error).message || "Erro ao cancelar o título.");
+      this.showActionError(err, "Erro ao cancelar o título.");
     } finally {
       this.setBusy(false);
     }
@@ -583,17 +683,19 @@ export default class Detail extends CommonController {
       return;
     }
 
-    const settled = Number(ctx.getProperty("SettledAmount") ?? 0);
+    // Spec 2026-10-14 (regra 7): devolve só o crédito disponível (pago − aplicado).
+    const credit = Number(ctx.getProperty("AvailableAdvanceAmount") ?? 0);
 
-    if (!(settled > 0)) {
-      MessageBox.warning("O adiantamento não tem valor pago: não há o que devolver.");
+    if (!(credit > 0)) {
+      MessageBox.warning("O adiantamento não tem crédito disponível para devolver.");
       return;
     }
 
     (this.getModel("viewModel") as JSONModel).setProperty("/refundDialog", {
       financialAccountCode: await this.lastSettlementAccount(),
       refundDate: localIsoDate(new Date()),
-      amountText: formatter.formatDecimal(settled, 2),
+      amountText: formatter.formatDecimal(credit, 2),
+      partial: Number(ctx.getProperty("AppliedAmount") ?? 0) > 0,
       documentReference: "",
       reason: "",
     });
@@ -644,10 +746,13 @@ export default class Detail extends CommonController {
       action.setParameter("Reason", form.reason);
       await action.invoke();
 
-      MessageToast.show("Devolução registrada. O título foi cancelado.");
+      const partial = (this.getModel("viewModel") as JSONModel).getProperty("/refundDialog/partial") as boolean;
+      MessageToast.show(partial
+        ? "Devolução registrada. O título continua ativo pelo valor aplicado."
+        : "Devolução registrada. O título foi cancelado.");
       this.refreshDocument();
     } catch (err) {
-      MessageBox.error((err as Error).message || "Erro ao registrar a devolução.");
+      this.showActionError(err, "Erro ao registrar a devolução.");
     } finally {
       this.setBusy(false);
     }
@@ -662,10 +767,27 @@ export default class Detail extends CommonController {
       return;
     }
 
+    // Spec 2026-10-14 (regra 8): com algo aplicado o revínculo DESMEMBRA — só o crédito vai para o destino.
+    const applied = Number(ctx.getProperty("AppliedAmount") ?? 0);
+    const credit = Number(ctx.getProperty("AvailableAdvanceAmount") ?? 0);
+    const split = applied > 0;
+
+    if (split && !(credit > 0)) {
+      MessageBox.warning("O adiantamento não tem crédito disponível para vincular a outro contrato.");
+      return;
+    }
+
     (this.getModel("viewModel") as JSONModel).setProperty("/relinkDialog", {
       currentContractCode: (ctx.getProperty("OriginDocNumber") as string) || "(sem contrato)",
       contractCode: "",
       contractKey: null,
+      split,
+      creditText: formatter.formatDecimal(credit, 2),
+      splitText: split
+        ? `Este adiantamento tem ${formatter.formatDecimal(applied, 2)} aplicado: só o crédito disponível ` +
+          `(${formatter.formatDecimal(credit, 2)}) vai para o contrato de destino, num adiantamento novo. ` +
+          "O original fica neste contrato com o valor aplicado."
+        : "",
     });
 
     this._relinkDialog ??= await DialogHelper.createDialog(
@@ -714,7 +836,7 @@ export default class Detail extends CommonController {
     if (!ctx) return;
 
     const form = (this.getModel("viewModel") as JSONModel)
-      .getProperty("/relinkDialog") as { contractCode: string; contractKey: string };
+      .getProperty("/relinkDialog") as { contractCode: string; contractKey: string; split: boolean; creditText: string };
 
     if (!form.contractKey) {
       MessageBox.alert("Selecione o contrato de destino.");
@@ -733,10 +855,12 @@ export default class Detail extends CommonController {
       action.setParameter("ContractKey", form.contractKey);
       await action.invoke();
 
-      MessageToast.show(`Adiantamento vinculado ao contrato ${form.contractCode}.`);
+      MessageToast.show(form.split
+        ? `Crédito de ${form.creditText} transferido para um adiantamento novo no contrato ${form.contractCode}.`
+        : `Adiantamento vinculado ao contrato ${form.contractCode}.`);
       this.refreshDocument();
     } catch (err) {
-      MessageBox.error((err as Error).message || "Erro ao vincular o adiantamento.");
+      this.showActionError(err, "Erro ao vincular o adiantamento.");
     } finally {
       this.setBusy(false);
     }

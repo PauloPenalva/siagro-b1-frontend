@@ -7,9 +7,16 @@
   <content>
     <VBox class="sapUiSmallMargin" width="560px">
       <MessageStrip
-        text="A devolução é sempre pelo valor INTEIRO já pago. O título fica cancelado e o crédito do adiantamento deixa de existir."
+        text="Nada deste adiantamento foi compensado: a devolução é pelo crédito inteiro e o título fica cancelado."
         type="Warning"
         showIcon="true"
+        visible="{= !${viewModel>/refundDialog/partial} }"
+        class="sapUiSmallMarginBottom"/>
+      <MessageStrip
+        text="A devolução é só do crédito disponível. O que já foi compensado fica no título, que continua ativo pelo valor aplicado."
+        type="Information"
+        showIcon="true"
+        visible="{= !!${viewModel>/refundDialog/partial} }"
         class="sapUiSmallMarginBottom"/>
       <f:Form editable="true">
         <f:layout>

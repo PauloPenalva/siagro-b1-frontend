@@ -9,6 +9,8 @@ export type FinancialDocumentByContract = {
   SettledAmount: number | string;
   OpenAmount: number | string;
   ComposedAmount: number | string;
+  AppliedAmount: number | string;
+  AvailableAdvanceAmount: number | string;
   StorageTransactionCode: string;
   TaxDocumentNumber: string;
 };

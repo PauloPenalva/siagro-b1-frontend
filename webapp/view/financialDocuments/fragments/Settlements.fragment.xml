@@ -24,7 +24,10 @@
         <Title text="Baixas" />
         <ToolbarSpacer />
         <Button type="Emphasized" text="Baixar" press=".onSettle"
-                visible="{= !${path: 'IsBlockedForSettlement', targetType: 'any'} }"/>
+                visible="{= !${path: 'IsBlockedForSettlement', targetType: 'any'}
+                          &amp;&amp; !(${path: 'Nature', targetType: 'any'} === 'Advance'
+                              &amp;&amp; (${path: 'Status', targetType: 'any'} === 'Settled'
+                                  || ${path: 'Status', targetType: 'any'} === 'Canceled')) }"/>
         <Button type="Transparent" text="Baixar por dação" press=".onOpenDationDialog"
                 visible="{= ${path: 'Nature', targetType: 'any'} === 'Firm'
                           &amp;&amp; (${path: 'OriginType', targetType: 'any'} === 'PurchaseFiscalReconciliation'
@@ -35,6 +38,11 @@
                 visible="{= ${path: 'Nature', targetType: 'any'} === 'PurchaseReturn'
                           &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Canceled'
                           &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Settled' }"/>
+        <!-- Provisório com disponível para baixa recebe o crédito do adiantamento do contrato (spec 2026-10-14) -->
+        <Button type="Transparent" text="Compensar adiantamento" press=".onOpenApplyAdvanceDialog"
+                visible="{= ${path: 'Nature', targetType: 'any'} === 'Provisional'
+                          &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Canceled'
+                          &amp;&amp; ${path: 'AvailableToSettleAmount', targetType: 'any'} > 0 }"/>
         <!-- Abatimento (desfaz pela composição), estorno e devolução de adiantamento o backend recusa: some com a linha selecionada -->
         <Button type="Transparent" text="Estornar baixa" press=".onReverseSettlement"
                 visible="{= ${path: 'Status', targetType: 'any'} !== 'Canceled'

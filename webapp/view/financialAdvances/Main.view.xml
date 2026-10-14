@@ -91,6 +91,16 @@
 							}" wrapping="false"/>
 						</t:template>
 					</t:Column>
+					<t:Column label="Aplicado / transferido" width="11rem" hAlign="End">
+						<t:template>
+							<Text text="{
+								path: 'AppliedAmount',
+								type: 'sap.ui.model.odata.type.Decimal',
+								constraints: { precision: 18, scale: 2 },
+								formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+							}" wrapping="false"/>
+						</t:template>
+					</t:Column>
 					<t:Column label="Crédito disponível" width="13rem" hAlign="End">
 						<t:template>
 							<Text text="{

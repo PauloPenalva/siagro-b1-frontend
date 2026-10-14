@@ -107,3 +107,12 @@ QUnit.test("tipo Complemento de valor do documento de entrada (spec D11)", funct
 	assert.strictEqual(formatter.formatPurchaseInvoiceType("ValueComplement"), "Complemento de valor");
 	assert.strictEqual(formatter.formatPurchaseInvoiceType("Return"), "Devolução");
 });
+
+QUnit.module("formatter - compensação de adiantamento (spec 2026-10-14)");
+
+QUnit.test("origem Transferência de adiantamento e campos do log", function (assert) {
+	assert.strictEqual(formatter.formatFinancialSettlementOrigin("AdvanceTransfer"), "Transferência de adiantamento");
+	assert.strictEqual(formatter.formatFinancialSettlementOrigin("AdvanceApplication"), "Amortização de adiantamento");
+	assert.strictEqual(formatter.formatFinancialChangeLogField("AdvanceApplication"), "Compensação de adiantamento");
+	assert.strictEqual(formatter.formatFinancialChangeLogField("AdvanceTransfer"), "Transferência de adiantamento");
+});

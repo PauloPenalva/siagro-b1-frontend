@@ -78,13 +78,15 @@
           icon="sap-icon://undo"
           visible="{= ${path: 'Nature', targetType: 'any'} === 'Advance'
                     &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Canceled'
-                    &amp;&amp; ${path: 'SettledAmount', targetType: 'any'} > 0 }"
+                    &amp;&amp; ${path: 'AvailableAdvanceAmount', targetType: 'any'} > 0 }"
           press=".onRefundAdvance" />
         <Button
           text="Vincular a outro contrato"
           icon="sap-icon://chain-link"
           visible="{= ${path: 'Nature', targetType: 'any'} === 'Advance'
-                    &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Canceled' }"
+                    &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Canceled'
+                    &amp;&amp; !(Number(${path: 'AppliedAmount', targetType: 'any'}) > 0
+                              &amp;&amp; Number(${path: 'AvailableAdvanceAmount', targetType: 'any'}) &lt;= 0) }"
           press=".onRelinkContract" />
         <Button
           text="Cancelar título"

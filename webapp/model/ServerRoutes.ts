@@ -291,6 +291,9 @@ export default {
   financialDocumentsNetting: '/odata/FinancialDocumentsNetting',
   financialDocumentsGetComposition: '/odata/FinancialDocumentsGetComposition',
   financialDocumentsGetByContract: '/odata/FinancialDocumentsGetByContract',
+  // Compensação de adiantamento no provisório (spec 2026-10-14): chamados por sendJson (recusa nas três formas).
+  financialDocumentsApplyAdvance: '/odata/FinancialDocumentsApplyAdvance',
+  financialDocumentsGetAdvanceCandidates: '/odata/FinancialDocumentsGetAdvanceCandidates',
 
   // Conferência de Saldo de Armazém (GAC-1164). Chamadas por fetch: o backend responde
   // BadRequest(string) e a mensagem de negócio precisa chegar inteira ao usuário.
