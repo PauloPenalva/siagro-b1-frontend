@@ -1,0 +1,50 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+  <!-- Dação (spec 2026-10-13, regra 17): baixa sem conta e sem dinheiro da sobra do firme, com motivo obrigatório. -->
+  <Dialog title="Baixar por dação">
+    <content>
+      <VBox class="sapUiSmallMargin" width="480px">
+        <f:Form editable="true">
+          <f:layout>
+            <f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+          </f:layout>
+          <f:formContainers>
+            <f:FormContainer>
+              <f:formElements>
+                <f:FormElement label="Valor">
+                  <f:fields>
+                    <Input value="{path: 'viewModel>/dationDialog/amount', type: 'sap.ui.model.odata.type.Double'}" required="true"/>
+                  </f:fields>
+                </f:FormElement>
+                <f:FormElement label="Data">
+                  <f:fields>
+                    <DatePicker
+                      value="{viewModel>/dationDialog/settlementDate}"
+                      required="true"
+                      displayFormat="dd/MM/yyyy"
+                      valueFormat="yyyy-MM-dd"/>
+                  </f:fields>
+                </f:FormElement>
+                <f:FormElement label="Motivo">
+                  <f:fields>
+                    <TextArea value="{viewModel>/dationDialog/notes}" rows="3" width="100%" maxLength="500" required="true"/>
+                  </f:fields>
+                </f:FormElement>
+              </f:formElements>
+            </f:FormContainer>
+          </f:formContainers>
+        </f:Form>
+      </VBox>
+    </content>
+    <footer>
+      <OverflowToolbar>
+        <ToolbarSpacer />
+        <Button text="Baixar por dação" type="Emphasized" press=".onConfirmDation"/>
+        <Button text="Fechar" press=".onCloseDationDialog"/>
+      </OverflowToolbar>
+    </footer>
+  </Dialog>
+</core:FragmentDefinition>

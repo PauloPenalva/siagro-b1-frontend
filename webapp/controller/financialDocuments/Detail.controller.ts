@@ -183,6 +183,94 @@ export default class Detail extends CommonController {
     }
   }
 
+  private _dationDialog: Dialog;
+  private _nettingDialog: Dialog;
+
+  async onOpenDationDialog(): Promise<void> {
+    const ctx = this.documentContext();
+    if (!ctx) return;
+
+    (this.getModel("viewModel") as JSONModel).setProperty("/dationDialog", {
+      amount: Number(ctx.getProperty("OpenAmount") ?? 0),
+      settlementDate: localIsoDate(new Date()),
+      notes: "",
+    });
+
+    this._dationDialog ??= await DialogHelper.createDialog(
+      this, "siagrob1.view.financialDocuments.fragments.DationDialog");
+    this._dationDialog.open();
+  }
+
+  onCloseDationDialog(): void {
+    this._dationDialog?.close();
+  }
+
+  async onConfirmDation(): Promise<void> {
+    const form = (this.getModel("viewModel") as JSONModel).getProperty("/dationDialog") as {
+      amount: number; settlementDate: string; notes: string;
+    };
+
+    if (!(Number(form.amount) > 0)) {
+      MessageBox.alert("O valor da dação deve ser maior que zero.");
+      return;
+    }
+
+    if (!form.settlementDate) {
+      MessageBox.alert("Informe a data da dação.");
+      return;
+    }
+
+    if (!form.notes?.trim()) {
+      MessageBox.alert("Informe o motivo da dação.");
+      return;
+    }
+
+    this.onCloseDationDialog();
+    await this.runDocumentAction(this.api.financialDocumentsDation, {
+      Key: this._compositionKey,
+      Amount: Number(form.amount),
+      // JSON cru (sendJson): DateTimeOffset exige ISO completo; meio-dia UTC não troca o dia no Brasil.
+      SettlementDate: `${form.settlementDate}T12:00:00Z`,
+      Notes: form.notes,
+    }, "Dação registrada.");
+  }
+
+  async onOpenNettingDialog(): Promise<void> {
+    const candidates = ((this.getModel("composition") as JSONModel)
+      .getProperty("/candidates") as FinancialCompositionCandidate[]) ?? [];
+
+    if (!candidates.length) {
+      MessageBox.information("Nenhum título firme solto com saldo neste contrato para compensar.");
+      return;
+    }
+
+    (this.getModel("viewModel") as JSONModel).setProperty("/nettingDialog", {
+      counterpartKey: candidates[0].DocumentKey,
+    });
+
+    this._nettingDialog ??= await DialogHelper.createDialog(
+      this, "siagrob1.view.financialDocuments.fragments.NettingDialog");
+    this._nettingDialog.open();
+  }
+
+  onCloseNettingDialog(): void {
+    this._nettingDialog?.close();
+  }
+
+  async onConfirmNetting(): Promise<void> {
+    const counterpartKey = (this.getModel("viewModel") as JSONModel)
+      .getProperty("/nettingDialog/counterpartKey") as string;
+
+    if (!counterpartKey) {
+      MessageBox.alert("Selecione o título firme.");
+      return;
+    }
+
+    this.onCloseNettingDialog();
+    await this.runDocumentAction(this.api.financialDocumentsNetting,
+      { Key: this._compositionKey, CounterpartKey: counterpartKey }, "Devolução compensada.");
+  }
+
   /** A lista de origem foi guardada pelo FinancialDocumentsBaseController ao navegar para ca. */
   onBack(): void {
     const origin = (this.getModel("viewModel") as JSONModel)

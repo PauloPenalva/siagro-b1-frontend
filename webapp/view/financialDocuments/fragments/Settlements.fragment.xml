@@ -24,6 +24,16 @@
         <ToolbarSpacer />
         <Button type="Emphasized" text="Baixar" press=".onSettle"
                 visible="{= !${path: 'IsBlockedForSettlement', targetType: 'any'} }"/>
+        <Button type="Transparent" text="Baixar por dação" press=".onOpenDationDialog"
+                visible="{= ${path: 'Nature', targetType: 'any'} === 'Firm'
+                          &amp;&amp; (${path: 'OriginType', targetType: 'any'} === 'PurchaseFiscalReconciliation'
+                              || ${path: 'OriginType', targetType: 'any'} === 'PurchaseInvoice')
+                          &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Canceled'
+                          &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Settled' }"/>
+        <Button type="Transparent" text="Compensar com firme" press=".onOpenNettingDialog"
+                visible="{= ${path: 'Nature', targetType: 'any'} === 'PurchaseReturn'
+                          &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Canceled'
+                          &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Settled' }"/>
         <Button type="Transparent" text="Estornar baixa" press=".onReverseSettlement"
                 visible="{= ${path: 'Status', targetType: 'any'} !== 'Canceled' }"/>
       </OverflowToolbar>
