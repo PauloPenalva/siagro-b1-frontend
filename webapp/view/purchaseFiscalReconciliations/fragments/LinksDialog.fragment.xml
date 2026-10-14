@@ -12,6 +12,8 @@
           <Column><Text text="NF/Série"/></Column>
           <Column><Text text="Emitente"/></Column>
           <Column hAlign="End"><Text text="Quantidade (KG)"/></Column>
+          <Column><Text text="Título"/></Column>
+          <Column><Text text="Situação do título"/></Column>
           <Column width="4rem"/>
         </columns>
         <items>
@@ -19,6 +21,10 @@
             <Text text="{links>TaxDocument}"/>
             <Text text="{links>CardCode} - {links>CardName}"/>
             <ObjectNumber number="{ path: 'links>Quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+            <Link text="{links>FirmDocumentCode}" visible="{= !!${links>FirmDocumentKey} }" press=".onOpenFirmDocument"/>
+            <ObjectStatus
+              text="{links>FirmSituation}"
+              state="{= ${links>FirmSituation} === 'Composto' ? 'Success' : ${links>FirmSituation} === 'Cancelado' ? 'Error' : 'Warning' }"/>
             <Button icon="sap-icon://broken-link" type="Transparent" tooltip="Desvincular" press=".onRemoveLink"/>
           </ColumnListItem>
         </items>

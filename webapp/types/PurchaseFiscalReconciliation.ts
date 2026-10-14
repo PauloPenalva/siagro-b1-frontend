@@ -16,6 +16,11 @@ export type FiscalReconciliationLink = {
   Quantity: number;
   CreatedAt: string;
   CreatedBy: string;
+  /** Título firme/devolução do vínculo (spec 2026-10-13, títulos firmes); null quando a linha não gera financeiro. */
+  FirmDocumentKey: string;
+  FirmDocumentCode: string;
+  /** "Solto" | "Composto" | "Cancelado". */
+  FirmSituation: string;
 };
 
 export type FiscalReconciliationTransaction = {
