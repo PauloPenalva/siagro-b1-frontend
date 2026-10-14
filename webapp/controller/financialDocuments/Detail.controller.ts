@@ -48,6 +48,7 @@ export default class Detail extends CommonController {
     if (id == null) return;
 
     (this.getModel("ui") as JSONModel).setProperty("/editable", false);
+    this.clearSettlementSelection();
 
     // $expand explicito: sem ele o $select auto-gerado nao traz as colecoes e as duas
     // tabelas do detalhe nascem vazias.
@@ -397,6 +398,24 @@ export default class Detail extends CommonController {
     }
   }
 
+  /**
+   * Origem da baixa selecionada: o "Estornar baixa" some para abatimento de composição (InvoiceOffset, que se desfaz
+   * pela composição), estorno e devolução de adiantamento, que o backend recusa.
+   */
+  onSettlementSelectionChange(): void {
+    const oTable = this.byId("financialSettlementsTable") as Table;
+    const i = oTable.getSelectedIndex();
+    const ctx = i < 0 ? null : oTable.getContextByIndex(i) as Context;
+    (this.getModel("viewModel") as JSONModel).setProperty("/financialSettlementSelectedOrigin",
+      ctx ? String(ctx.getProperty("Origin") ?? "") : "");
+  }
+
+  /** Limpa a seleção da grade de baixas (troca de título, estorno feito) e com ela a origem guardada. */
+  private clearSettlementSelection(): void {
+    (this.byId("financialSettlementsTable") as Table | undefined)?.clearSelection();
+    (this.getModel("viewModel") as JSONModel).setProperty("/financialSettlementSelectedOrigin", "");
+  }
+
   async onReverseSettlement(): Promise<void> {
     const oTable = this.byId("financialSettlementsTable") as Table;
     const i = oTable.getSelectedIndex();
@@ -421,6 +440,7 @@ export default class Detail extends CommonController {
       await action.invoke();
 
       MessageToast.show("Baixa estornada.");
+      this.clearSettlementSelection();
       this.refreshDocument();
     } catch (err) {
       MessageBox.error((err as Error).message || "Erro ao estornar a baixa.");

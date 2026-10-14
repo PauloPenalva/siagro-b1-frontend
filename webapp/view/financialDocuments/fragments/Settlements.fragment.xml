@@ -14,6 +14,7 @@
     visibleRowCountMode="Fixed"
     visibleRowCount="6"
     alternateRowColors="true"
+    rowSelectionChange=".onSettlementSelectionChange"
     rows="{
       path: 'Settlements',
       sorter: { path: 'SettlementDate' }
@@ -34,8 +35,12 @@
                 visible="{= ${path: 'Nature', targetType: 'any'} === 'PurchaseReturn'
                           &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Canceled'
                           &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Settled' }"/>
+        <!-- Abatimento (desfaz pela composição), estorno e devolução de adiantamento o backend recusa: some com a linha selecionada -->
         <Button type="Transparent" text="Estornar baixa" press=".onReverseSettlement"
-                visible="{= ${path: 'Status', targetType: 'any'} !== 'Canceled' }"/>
+                visible="{= ${path: 'Status', targetType: 'any'} !== 'Canceled'
+                          &amp;&amp; ${viewModel>/financialSettlementSelectedOrigin} !== 'InvoiceOffset'
+                          &amp;&amp; ${viewModel>/financialSettlementSelectedOrigin} !== 'Reversal'
+                          &amp;&amp; ${viewModel>/financialSettlementSelectedOrigin} !== 'AdvanceRefund' }"/>
       </OverflowToolbar>
     </t:extension>
     <t:columns>
