@@ -78,7 +78,7 @@
           icon="sap-icon://undo"
           visible="{= ${path: 'Nature', targetType: 'any'} === 'Advance'
                     &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Canceled'
-                    &amp;&amp; ${path: 'SettledAmount', targetType: 'any'} > 0 }"
+                    &amp;&amp; ${path: 'AvailableAdvanceAmount', targetType: 'any'} > 0 }"
           press=".onRefundAdvance" />
         <Button
           text="Vincular a outro contrato"

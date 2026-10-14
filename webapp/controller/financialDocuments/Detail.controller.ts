@@ -669,17 +669,19 @@ export default class Detail extends CommonController {
       return;
     }
 
-    const settled = Number(ctx.getProperty("SettledAmount") ?? 0);
+    // Spec 2026-10-14 (regra 7): devolve só o crédito disponível (pago − aplicado).
+    const credit = Number(ctx.getProperty("AvailableAdvanceAmount") ?? 0);
 
-    if (!(settled > 0)) {
-      MessageBox.warning("O adiantamento não tem valor pago: não há o que devolver.");
+    if (!(credit > 0)) {
+      MessageBox.warning("O adiantamento não tem crédito disponível para devolver.");
       return;
     }
 
     (this.getModel("viewModel") as JSONModel).setProperty("/refundDialog", {
       financialAccountCode: await this.lastSettlementAccount(),
       refundDate: localIsoDate(new Date()),
-      amountText: formatter.formatDecimal(settled, 2),
+      amountText: formatter.formatDecimal(credit, 2),
+      partial: Number(ctx.getProperty("AppliedAmount") ?? 0) > 0,
       documentReference: "",
       reason: "",
     });
@@ -730,7 +732,10 @@ export default class Detail extends CommonController {
       action.setParameter("Reason", form.reason);
       await action.invoke();
 
-      MessageToast.show("Devolução registrada. O título foi cancelado.");
+      const partial = (this.getModel("viewModel") as JSONModel).getProperty("/refundDialog/partial") as boolean;
+      MessageToast.show(partial
+        ? "Devolução registrada. O título continua ativo pelo valor aplicado."
+        : "Devolução registrada. O título foi cancelado.");
       this.refreshDocument();
     } catch (err) {
       MessageBox.error((err as Error).message || "Erro ao registrar a devolução.");
@@ -748,10 +753,27 @@ export default class Detail extends CommonController {
       return;
     }
 
+    // Spec 2026-10-14 (regra 8): com algo aplicado o revínculo DESMEMBRA — só o crédito vai para o destino.
+    const applied = Number(ctx.getProperty("AppliedAmount") ?? 0);
+    const credit = Number(ctx.getProperty("AvailableAdvanceAmount") ?? 0);
+    const split = applied > 0;
+
+    if (split && !(credit > 0)) {
+      MessageBox.warning("O adiantamento não tem crédito disponível para vincular a outro contrato.");
+      return;
+    }
+
     (this.getModel("viewModel") as JSONModel).setProperty("/relinkDialog", {
       currentContractCode: (ctx.getProperty("OriginDocNumber") as string) || "(sem contrato)",
       contractCode: "",
       contractKey: null,
+      split,
+      creditText: formatter.formatDecimal(credit, 2),
+      splitText: split
+        ? `Este adiantamento tem ${formatter.formatDecimal(applied, 2)} aplicado: só o crédito disponível ` +
+          `(${formatter.formatDecimal(credit, 2)}) vai para o contrato de destino, num adiantamento novo. ` +
+          "O original fica neste contrato com o valor aplicado."
+        : "",
     });
 
     this._relinkDialog ??= await DialogHelper.createDialog(
@@ -800,7 +822,7 @@ export default class Detail extends CommonController {
     if (!ctx) return;
 
     const form = (this.getModel("viewModel") as JSONModel)
-      .getProperty("/relinkDialog") as { contractCode: string; contractKey: string };
+      .getProperty("/relinkDialog") as { contractCode: string; contractKey: string; split: boolean; creditText: string };
 
     if (!form.contractKey) {
       MessageBox.alert("Selecione o contrato de destino.");
@@ -819,7 +841,9 @@ export default class Detail extends CommonController {
       action.setParameter("ContractKey", form.contractKey);
       await action.invoke();
 
-      MessageToast.show(`Adiantamento vinculado ao contrato ${form.contractCode}.`);
+      MessageToast.show(form.split
+        ? `Crédito de ${form.creditText} transferido para um adiantamento novo no contrato ${form.contractCode}.`
+        : `Adiantamento vinculado ao contrato ${form.contractCode}.`);
       this.refreshDocument();
     } catch (err) {
       MessageBox.error((err as Error).message || "Erro ao vincular o adiantamento.");

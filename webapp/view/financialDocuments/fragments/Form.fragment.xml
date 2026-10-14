@@ -108,6 +108,28 @@
                 state="{= ${path: 'IsOverdue', targetType: 'any'} ? 'Error' : 'None' }"/>
             </f:fields>
           </f:FormElement>
+          <f:FormElement label="Aplicado" visible="{= ${path: 'Nature', targetType: 'any'} === 'Advance' }">
+            <f:fields>
+              <Text text="{
+                path: 'AppliedAmount',
+                type: 'sap.ui.model.odata.type.Decimal',
+                constraints: { precision: 18, scale: 2 },
+                formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Crédito disponível" visible="{= ${path: 'Nature', targetType: 'any'} === 'Advance' }">
+            <f:fields>
+              <ObjectNumber
+                number="{
+                  path: 'AvailableAdvanceAmount',
+                  type: 'sap.ui.model.odata.type.Decimal',
+                  constraints: { precision: 18, scale: 2 },
+                  formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"
+                state="Success"/>
+            </f:fields>
+          </f:FormElement>
           <f:FormElement label="Condição de pagamento">
             <f:fields><Text text="{PaymentTermsText}"/></f:fields>
           </f:FormElement>

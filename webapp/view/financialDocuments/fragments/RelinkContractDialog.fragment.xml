@@ -10,6 +10,13 @@
         text="O adiantamento migra INTEIRO. O contrato de destino precisa ser do mesmo parceiro, da mesma filial, na mesma moeda e estar aprovado."
         type="Information"
         showIcon="true"
+        visible="{= !${viewModel>/relinkDialog/split} }"
+        class="sapUiSmallMarginBottom"/>
+      <MessageStrip
+        text="{viewModel>/relinkDialog/splitText}"
+        type="Warning"
+        showIcon="true"
+        visible="{= !!${viewModel>/relinkDialog/split} }"
         class="sapUiSmallMarginBottom"/>
       <f:Form editable="true">
         <f:layout>
