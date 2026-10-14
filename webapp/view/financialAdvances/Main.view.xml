@@ -91,7 +91,7 @@
 							}" wrapping="false"/>
 						</t:template>
 					</t:Column>
-					<t:Column label="Aplicado / transferido"width="11rem" hAlign="End">
+					<t:Column label="Aplicado / transferido" width="11rem" hAlign="End">
 						<t:template>
 							<Text text="{
 								path: 'AppliedAmount',
