@@ -90,6 +90,48 @@ export function formatRemittanceNumber(
   return navigationText || navigationInvoiceNumber || (nfeItemNumber != null ? numbers?.[String(nfeItemNumber)] : "") || "";
 }
 
+/**
+ * Unidade sugerida ao escolher o produto da linha (B7): a que o operador já escolheu NUNCA é trocada; senão a unidade
+ * comercial do complemento do produto e, sem ela, a unidade padrão do sistema. Vazio quando nada se aplica.
+ */
+export function suggestedUnitOfMeasure(current?: string, commercial?: string, systemDefault?: string): string {
+  return (current ?? "").trim() || (commercial ?? "").trim() || (systemDefault ?? "").trim();
+}
+
+/**
+ * Decide se a sugestão de unidade (lida de forma assíncrona) ainda vale e qual unidade gravar; vazio = não gravar.
+ *
+ * - Descarta o resultado se o produto da linha mudou enquanto o complemento era lido (resposta velha).
+ * - Só substitui a unidade quando ela está vazia OU ainda é a última que foi SUGERIDA (o operador não mexeu): a que ele
+ *   escolheu à mão nunca é sobrescrita, mas uma sugestão é renovada quando ele troca o produto.
+ */
+export function unitSuggestionToApply(
+  requestedItemCode: string, currentItemCode: string, currentUnit: string, lastSuggested: string,
+  commercial?: string, systemDefault?: string
+): string {
+  if (requestedItemCode !== currentItemCode) {
+    return "";
+  }
+  const unit = (currentUnit ?? "").trim();
+  if (unit && unit !== (lastSuggested ?? "")) {
+    return "";
+  }
+  return suggestedUnitOfMeasure("", commercial, systemDefault);
+}
+
+/**
+ * Mensagem do Save quando há linha sem unidade de medida (o servidor recusa do mesmo jeito): nomeia a primeira, na
+ * ordem da grade (nº = posição, a partir de 1). Vazio quando todas têm unidade. Complemento de valor não tem
+ * quantidade, então fica fora.
+ */
+export function missingUnitOfMeasureMessage(lines: { ItemCode?: string, UnitOfMeasureCode?: string }[], invoiceType?: string): string {
+  if (invoiceType === "ValueComplement") {
+    return "";
+  }
+  const index = lines.findIndex((line) => !(line.UnitOfMeasureCode ?? "").trim());
+  return index < 0 ? "" : `Informe a unidade de medida da linha ${index + 1} (${(lines[index].ItemCode ?? "").trim() || "sem produto"}).`;
+}
+
 /** Linha em branco do "Incluir Item" e da digitação manual. */
 export function blankItemRow(): InvoiceItemPayload {
   return {

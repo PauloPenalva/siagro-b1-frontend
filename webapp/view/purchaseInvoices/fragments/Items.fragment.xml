@@ -82,6 +82,7 @@
         <t:template>
           <Input
             value="{UnitOfMeasureCode}"
+            required="{= ${ui>/valueComplement} !== true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
             editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
             showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
             valueHelpOnly="true"

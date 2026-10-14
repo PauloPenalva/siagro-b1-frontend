@@ -1,4 +1,4 @@
-import { blankItemRow, draftItemRows, toNumber } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
+import { blankItemRow, draftItemRows, missingUnitOfMeasureMessage, suggestedUnitOfMeasure, toNumber, unitSuggestionToApply } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 
 QUnit.module("PurchaseInvoiceDraftHelpers - linhas do rascunho da entrada");
 
@@ -74,4 +74,38 @@ QUnit.test("NF-e de complemento importada leva o valor do complemento em número
 	]);
 
 	assert.deepEqual(rows.map((row) => [row.Quantity, row.UnitPrice, row.ComplementAmount]), [[0, 0, 271.67]]);
+});
+
+QUnit.module("PurchaseInvoiceDraftHelpers - unidade de medida da linha (B7)");
+
+QUnit.test("a unidade já escolhida nunca é trocada", function (assert) {
+	assert.strictEqual(suggestedUnitOfMeasure("SC", "KG", "UN"), "SC");
+});
+
+QUnit.test("sem unidade, vale a comercial do produto e depois a padrão do sistema", function (assert) {
+	assert.strictEqual(suggestedUnitOfMeasure("", "KG", "UN"), "KG");
+	assert.strictEqual(suggestedUnitOfMeasure(undefined, "  ", "UN"), "UN");
+	assert.strictEqual(suggestedUnitOfMeasure(null, null, undefined), "");
+});
+
+QUnit.test("o Save nomeia a primeira linha sem unidade pela posição na grade", function (assert) {
+	assert.strictEqual(
+		missingUnitOfMeasureMessage([{ ItemCode: "SOJA", UnitOfMeasureCode: "KG" }, { ItemCode: "MILHO", UnitOfMeasureCode: " " }]),
+		"Informe a unidade de medida da linha 2 (MILHO).");
+	assert.strictEqual(missingUnitOfMeasureMessage([{ ItemCode: "SOJA", UnitOfMeasureCode: "KG" }]), "");
+});
+
+QUnit.test("complemento de valor não exige unidade", function (assert) {
+	assert.strictEqual(missingUnitOfMeasureMessage([{ ItemCode: "SOJA" }], "ValueComplement"), "");
+});
+
+QUnit.test("sugestão de produto que já foi trocado é descartada", function (assert) {
+	assert.strictEqual(unitSuggestionToApply("SOJA", "MILHO", "", "", "KG", "UN"), "");
+});
+
+QUnit.test("a unidade escolhida à mão não é sobrescrita; a sugerida anteriormente é renovada", function (assert) {
+	assert.strictEqual(unitSuggestionToApply("MILHO", "MILHO", "SC", "KG", "TON", "UN"), "", "escolhida à mão");
+	assert.strictEqual(unitSuggestionToApply("MILHO", "MILHO", "KG", "KG", "SC", "UN"), "SC", "sugestão renovada");
+	assert.strictEqual(unitSuggestionToApply("MILHO", "MILHO", "", "KG", undefined, "UN"), "UN", "vazia usa a padrão");
+	assert.strictEqual(unitSuggestionToApply("MILHO", "MILHO", "SC", "", "KG", "UN"), "", "sem sugestão anterior, a unidade existente é do operador");
 });
