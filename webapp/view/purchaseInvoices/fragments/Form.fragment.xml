@@ -71,6 +71,7 @@
             width="100%">
             <core:Item key="Normal" text="Normal" />
             <core:Item key="Return" text="Devolução" />
+            <core:Item key="ValueComplement" text="Complemento de valor" />
           </Select>
 
           <Label text="Emissão" />

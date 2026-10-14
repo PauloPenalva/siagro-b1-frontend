@@ -41,6 +41,14 @@
           </uxap:ObjectPageSubSection>
         </uxap:subSections>
       </uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Composição"
+        visible="{= ${path: 'Nature', targetType: 'any'} === 'Provisional' }">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <core:Fragment fragmentName="siagrob1.view.financialDocuments.fragments.Composition" type="XML" />
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
       <uxap:ObjectPageSection titleUppercase="false" title="Baixas">
         <uxap:subSections>
           <uxap:ObjectPageSubSection title=" " titleUppercase="false">
@@ -84,7 +92,10 @@
           visible="{
             parts: [
               { path: 'Status', targetType: 'any' },
-              { path: 'SettledAmount', targetType: 'any' }
+              { path: 'SettledAmount', targetType: 'any' },
+              { path: 'Nature', targetType: 'any' },
+              { path: 'OriginType', targetType: 'any' },
+              { path: 'ComposedAmount', targetType: 'any' }
             ],
             formatter: '.formatter.formatFinancialDocumentCancelable'
           }"

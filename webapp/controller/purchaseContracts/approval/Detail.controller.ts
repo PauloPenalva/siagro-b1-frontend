@@ -17,7 +17,6 @@ export default class Detail extends PurchaseContractsBaseController {
   private viewModel: JSONModel;
 
 	onInit(): void  {	
-		this.initFiscalComplementModel();
 		this.getRouter().getRoute("purchaseContractsApprovalDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
 	}
 
@@ -39,7 +38,7 @@ export default class Detail extends PurchaseContractsBaseController {
 			const sPath = `/PurchaseContracts(${id})`;
 			this.bindElement(sPath);
 
-      void this.startFiscalComplement(id, false);
+      void this.refreshStandaloneFlag();
 
       const requestModel = new RequestModel({Key: id});
       requestModel.post(this.api.purchaseContractsTotals)
@@ -210,9 +209,6 @@ export default class Detail extends PurchaseContractsBaseController {
         ?? (body as { error?: { message?: string } })?.error?.message;
     return message || fallback;
   }
-
-  // Aprovação é somente leitura: o fragmento reutilizado referencia este handler no botão oculto.
-  onOpenFiscalComplementDialog(): void { /* sem ação */ }
 
   onCloseApprovalDialog() {
     this._approvalDialog?.close();

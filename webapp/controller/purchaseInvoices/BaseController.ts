@@ -13,7 +13,8 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
 import { isPurchaseNfeMode, isPurchaseTaxMode, mustFallBackToNormal, requiresSupplierKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { summarizeInvoiceTaxes, TaxLine } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
-import { chargeLineOf, formatAmount, lineFunrural, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
+import { formatAmount, lineFunrural, purchaseChargeLineOf, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
+import { toNumber } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 
 /** Sequência compartilhada por Add/Edit/Detail: só a chamada mais recente de refreshNfeMode escreve no `ui`. */
 let nfeModeSequence = 0;
@@ -217,7 +218,26 @@ export abstract class BaseController extends CommonController {
 
   /** Trocar o tipo (Normal/Devolução) do terceiro liga ou desliga o cálculo: a devolução do cliente não tem natureza. */
   onInvoiceTypeChange() {
+    this.clearHiddenAmountColumns();
     void this.refreshNfeMode(false);
+  }
+
+  /**
+   * Complemento de valor (D11): a troca de tipo esconde Quantidade/Preço (ou o Valor do complemento). O valor escondido
+   * seria somado no total e o servidor o recusaria (P11), então zera o que deixou de valer em cada linha.
+   */
+  private clearHiddenAmountColumns() {
+    const invoiceType = this.getView().getBindingContext()?.getProperty("InvoiceType") as string;
+    const binding = (this.byId("tablePurchaseInvoiceItems") as Table | undefined)?.getBinding("rows") as ODataListBinding;
+    for (const ctx of binding?.getAllCurrentContexts?.() ?? []) {
+      if (invoiceType === "ValueComplement") {
+        void ctx.setProperty("Quantity", 0);
+        void ctx.setProperty("UnitPrice", 0);
+      } else if (toNumber(ctx.getProperty("ComplementAmount")) !== 0) {
+        void ctx.setProperty("ComplementAmount", 0);
+      }
+    }
+    this.refreshDocumentTotal();
   }
 
   /** Link "Contra-nota" na escrituração. */
@@ -448,7 +468,7 @@ export abstract class BaseController extends CommonController {
     const funrural = contexts.reduce((total, ctx) => total + lineFunrural(ctx), 0);
     // Devolução de compra: o líquido é a receber e o Funrural é estornado. O contexto pai da grade é o cabeçalho.
     const isReturn = (oBinding.getContext() as Context | undefined)?.getProperty("IsNfeReturn") === true;
-    const charges = summarizeInvoiceCharges(contexts.map((ctx) => chargeLineOf(ctx)), funrural, isReturn);
+    const charges = summarizeInvoiceCharges(contexts.map((ctx) => purchaseChargeLineOf(ctx)), funrural, isReturn);
 
     uiModel.setProperty("/documentTotal", formatAmount(charges.grandTotal));
     uiModel.setProperty("/chargeTotals", charges);

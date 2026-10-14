@@ -54,7 +54,7 @@
               <Text text="{path: 'DueDate', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy' }}"/>
             </f:fields>
           </f:FormElement>
-          <f:FormElement label="Valor">
+          <f:FormElement label="{= ${path: 'Nature', targetType: 'any'} === 'Provisional' ? 'Valor contratado' : 'Valor' }">
             <f:fields>
               <Text text="{
                 path: 'NetAmount',
@@ -74,6 +74,28 @@
               }"/>
             </f:fields>
           </f:FormElement>
+          <f:FormElement label="Composto" visible="{= ${path: 'Nature', targetType: 'any'} === 'Provisional' }">
+            <f:fields>
+              <Text text="{
+                path: 'ComposedAmount',
+                type: 'sap.ui.model.odata.type.Decimal',
+                constraints: { precision: 18, scale: 2 },
+                formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Disponível para baixa" visible="{= ${path: 'Nature', targetType: 'any'} === 'Provisional' }">
+            <f:fields>
+              <ObjectNumber
+                number="{
+                  path: 'AvailableToSettleAmount',
+                  type: 'sap.ui.model.odata.type.Decimal',
+                  constraints: { precision: 18, scale: 2 },
+                  formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                }"
+                state="Success"/>
+            </f:fields>
+          </f:FormElement>
           <f:FormElement label="Em aberto">
             <f:fields>
               <ObjectNumber
@@ -88,6 +110,27 @@
           </f:FormElement>
           <f:FormElement label="Condição de pagamento">
             <f:fields><Text text="{PaymentTermsText}"/></f:fields>
+          </f:FormElement>
+        </f:formElements>
+      </f:FormContainer>
+      <f:FormContainer title="Documento fiscal"
+        visible="{= ${path: 'OriginType', targetType: 'any'} === 'PurchaseFiscalReconciliation' || ${path: 'OriginType', targetType: 'any'} === 'PurchaseInvoice' }">
+        <f:formElements>
+          <f:FormElement label="Romaneio">
+            <f:fields><Text text="{StorageTransactionCode}"/></f:fields>
+          </f:FormElement>
+          <f:FormElement label="NF">
+            <f:fields><Text text="{TaxDocumentNumber}"/></f:fields>
+          </f:FormElement>
+          <f:FormElement label="Documento de entrada">
+            <f:fields>
+              <Link text="Abrir documento de entrada" enabled="{= !!${path: 'PurchaseInvoiceKey', targetType: 'any'} }" press=".onOpenPurchaseInvoice"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Composto em" visible="{= !!${composition>/composedInKey} }">
+            <f:fields>
+              <Link text="{composition>/composedInCode}" press=".onOpenComposedIn"/>
+            </f:fields>
           </f:FormElement>
         </f:formElements>
       </f:FormContainer>

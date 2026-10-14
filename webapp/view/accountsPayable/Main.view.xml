@@ -132,6 +132,16 @@
 							<Text text="{OriginDocNumber}" wrapping="false"/>
 						</t:template>
 					</t:Column>
+					<t:Column label="NF" width="10rem" sortProperty="TaxDocumentNumber">
+						<t:template>
+							<Text text="{TaxDocumentNumber}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Romaneio" width="10rem" sortProperty="StorageTransactionCode">
+						<t:template>
+							<Text text="{StorageTransactionCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
 					<t:Column label="Filial" width="8rem" sortProperty="BranchCode">
 						<t:template>
 							<Text text="{BranchCode}" wrapping="false"/>

@@ -14,13 +14,33 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import { localIsoDate } from "siagrob1/helpers/DateHelpers";
+import { Button$PressEvent } from "sap/m/Button";
+import { Link$PressEvent } from "sap/m/Link";
+import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
+import { FinancialComposition, FinancialCompositionCandidate, FinancialCompositionLine } from "siagrob1/types/FinancialComposition";
 
 export default class Detail extends CommonController {
   formatter = { ...formatter }
 
+  private _composeDialog: Dialog;
+  /** Título cujo quadro de composição a tela mostra; descarta resposta atrasada de outro título. */
+  private _compositionKey: string;
+  /** Trava de duplo clique das ações de composição, dação e compensação. */
+  private _actionRunning = false;
+
   onInit(): void {
+    this.getView().setModel(new JSONModel(Detail.emptyComposition()), "composition");
     this.getRouter().getRoute("financialDocumentsDetail")
       .attachPatternMatched((ev) => this.routeMatched(ev));
+  }
+
+  private static emptyComposition() {
+    return {
+      lines: [] as FinancialCompositionLine[],
+      candidates: [] as FinancialCompositionCandidate[],
+      composedInKey: null as string,
+      composedInCode: "",
+    };
   }
 
   private routeMatched(ev: Route$MatchedEvent): void {
@@ -28,12 +48,15 @@ export default class Detail extends CommonController {
     if (id == null) return;
 
     (this.getModel("ui") as JSONModel).setProperty("/editable", false);
+    this.clearSettlementSelection();
 
     // $expand explicito: sem ele o $select auto-gerado nao traz as colecoes e as duas
     // tabelas do detalhe nascem vazias.
     this.bindElement(`/FinancialDocuments(${id})`, {
       $expand: "Settlements,ChangeLogs",
     });
+
+    void this.loadComposition(id);
   }
 
   protected documentContext(): Context | null {
@@ -52,12 +75,217 @@ export default class Detail extends CommonController {
     this.getView().getElementBinding()?.refresh();
   }
 
+  /**
+   * Quadro de composição (provisório), "composto em" (firme/devolução) e candidatos (compor ou compensar), pela function
+   * FinancialDocumentsGetComposition (spec 2026-10-13, títulos firmes).
+   */
+  private async loadComposition(documentKey: string): Promise<void> {
+    this._compositionKey = documentKey;
+    const model = this.getModel("composition") as JSONModel;
+    model.setData(Detail.emptyComposition());
+
+    const result = await sendJson("GET", `${this.api.financialDocumentsGetComposition}(Key=${documentKey})`);
+    // Resposta atrasada de outro título (troca rápida de rota) não pode sobrescrever a tela.
+    if (documentKey !== this._compositionKey) return;
+
+    if (!result.ok) {
+      MessageBox.error(result.message);
+      return;
+    }
+
+    const data = odataValue<FinancialComposition>(result.data) ?? { Lines: [], Candidates: [] };
+    const lines = data.Lines ?? [];
+    const composedIn = lines.find((l) => l.DocumentKey === documentKey);
+
+    model.setData({
+      lines,
+      candidates: data.Candidates ?? [],
+      composedInKey: composedIn?.ProvisionalDocumentKey ?? null,
+      composedInCode: composedIn?.ProvisionalCode ?? "",
+    });
+  }
+
+  /** Executa uma action uma vez só (trava de duplo clique); recarrega o título e o quadro. Recusa aparece na tela. */
+  private async runDocumentAction(path: string, payload: object, success: string): Promise<boolean> {
+    if (this._actionRunning) return false;
+    this._actionRunning = true;
+    this.setBusy(true);
+
+    try {
+      const result = await sendJson("POST", path, payload);
+      if (!result.ok) {
+        MessageBox.error(result.message);
+        return false;
+      }
+
+      MessageToast.show(success);
+      this.refreshDocument();
+      await this.loadComposition(this._compositionKey);
+      return true;
+    } finally {
+      this.setBusy(false);
+      this._actionRunning = false;
+    }
+  }
+
+  async onOpenComposeDialog(): Promise<void> {
+    const model = this.getModel("composition") as JSONModel;
+    const candidates = (model.getProperty("/candidates") as FinancialCompositionCandidate[]) ?? [];
+
+    if (!candidates.length) {
+      MessageBox.information("Nenhum título firme ou de devolução com saldo neste contrato.");
+      return;
+    }
+
+    model.setProperty("/candidates", candidates.map((c) => ({ ...c, selected: false })));
+
+    this._composeDialog ??= await DialogHelper.createDialog(
+      this, "siagrob1.view.financialDocuments.fragments.ComposeDialog");
+    this._composeDialog.open();
+  }
+
+  onCloseComposeDialog(): void {
+    this._composeDialog?.close();
+  }
+
+  async onConfirmCompose(): Promise<void> {
+    const candidates = (this.getModel("composition") as JSONModel).getProperty("/candidates") as FinancialCompositionCandidate[];
+    // Na ordem da lista: é a ordem em que entram no provisório (regra 10).
+    const keys = candidates.filter((c) => c.selected).map((c) => c.DocumentKey);
+
+    if (!keys.length) {
+      MessageBox.alert("Selecione ao menos um título firme ou de devolução.");
+      return;
+    }
+
+    this.onCloseComposeDialog();
+    await this.runDocumentAction(this.api.financialDocumentsCompose,
+      { Key: this._compositionKey, ComposedKeys: keys }, "Títulos compostos no provisório.");
+  }
+
+  async onUncompose(ev: Button$PressEvent): Promise<void> {
+    const line = ev.getSource().getBindingContext("composition").getObject() as FinancialCompositionLine;
+
+    if (!(await DialogHelper.confirmDialog(`Desfazer a composição do título ${line.DocumentCode}?`))) return;
+
+    await this.runDocumentAction(this.api.financialDocumentsUncompose,
+      { CompositionKey: line.CompositionKey }, "Composição desfeita.");
+  }
+
+  onOpenCompositionDocument(ev: Link$PressEvent): void {
+    const line = ev.getSource().getBindingContext("composition").getObject() as FinancialCompositionLine;
+    this.navTo("financialDocumentsDetail", { id: line.DocumentKey });
+  }
+
+  onOpenComposedIn(): void {
+    const key = (this.getModel("composition") as JSONModel).getProperty("/composedInKey") as string;
+    if (key) {
+      this.navTo("financialDocumentsDetail", { id: key });
+    }
+  }
+
+  private _dationDialog: Dialog;
+  private _nettingDialog: Dialog;
+
+  async onOpenDationDialog(): Promise<void> {
+    const ctx = this.documentContext();
+    if (!ctx) return;
+
+    (this.getModel("viewModel") as JSONModel).setProperty("/dationDialog", {
+      amount: Number(ctx.getProperty("OpenAmount") ?? 0),
+      settlementDate: localIsoDate(new Date()),
+      notes: "",
+    });
+
+    this._dationDialog ??= await DialogHelper.createDialog(
+      this, "siagrob1.view.financialDocuments.fragments.DationDialog");
+    this._dationDialog.open();
+  }
+
+  onCloseDationDialog(): void {
+    this._dationDialog?.close();
+  }
+
+  async onConfirmDation(): Promise<void> {
+    const form = (this.getModel("viewModel") as JSONModel).getProperty("/dationDialog") as {
+      amount: number; settlementDate: string; notes: string;
+    };
+
+    if (!(Number(form.amount) > 0)) {
+      MessageBox.alert("O valor da dação deve ser maior que zero.");
+      return;
+    }
+
+    if (!form.settlementDate) {
+      MessageBox.alert("Informe a data da dação.");
+      return;
+    }
+
+    if (!form.notes?.trim()) {
+      MessageBox.alert("Informe o motivo da dação.");
+      return;
+    }
+
+    this.onCloseDationDialog();
+    await this.runDocumentAction(this.api.financialDocumentsDation, {
+      Key: this._compositionKey,
+      Amount: Number(form.amount),
+      // JSON cru (sendJson): DateTimeOffset exige ISO completo; meio-dia UTC não troca o dia no Brasil.
+      SettlementDate: `${form.settlementDate}T12:00:00Z`,
+      Notes: form.notes,
+    }, "Dação registrada.");
+  }
+
+  async onOpenNettingDialog(): Promise<void> {
+    const candidates = ((this.getModel("composition") as JSONModel)
+      .getProperty("/candidates") as FinancialCompositionCandidate[]) ?? [];
+
+    if (!candidates.length) {
+      MessageBox.information("Nenhum título firme solto com saldo neste contrato para compensar.");
+      return;
+    }
+
+    (this.getModel("viewModel") as JSONModel).setProperty("/nettingDialog", {
+      counterpartKey: candidates[0].DocumentKey,
+    });
+
+    this._nettingDialog ??= await DialogHelper.createDialog(
+      this, "siagrob1.view.financialDocuments.fragments.NettingDialog");
+    this._nettingDialog.open();
+  }
+
+  onCloseNettingDialog(): void {
+    this._nettingDialog?.close();
+  }
+
+  async onConfirmNetting(): Promise<void> {
+    const counterpartKey = (this.getModel("viewModel") as JSONModel)
+      .getProperty("/nettingDialog/counterpartKey") as string;
+
+    if (!counterpartKey) {
+      MessageBox.alert("Selecione o título firme.");
+      return;
+    }
+
+    this.onCloseNettingDialog();
+    await this.runDocumentAction(this.api.financialDocumentsNetting,
+      { Key: this._compositionKey, CounterpartKey: counterpartKey }, "Devolução compensada.");
+  }
+
   /** A lista de origem foi guardada pelo FinancialDocumentsBaseController ao navegar para ca. */
   onBack(): void {
     const origin = (this.getModel("viewModel") as JSONModel)
       .getProperty("/financialDocumentOriginRoute") as string;
 
     this.navTo(origin || "accountsPayable");
+  }
+
+  /** Documento de entrada do firme (spec 2026-10-13): a NF que deu o preço. */
+  onOpenPurchaseInvoice(): void {
+    const key = this.documentContext()?.getProperty("PurchaseInvoiceKey") as string;
+    if (key) {
+      this.navTo("purchaseInvoicesDetail", { id: key });
+    }
   }
 
   async openFinancialAccountsValueHelp(ev: Input$ValueHelpRequestEvent): Promise<void> {
@@ -75,15 +303,17 @@ export default class Detail extends CommonController {
     }
 
     if (ctx.getProperty("IsBlockedForSettlement")) {
-      MessageBox.warning(
-        "Título provisório não pode ser baixado. Ele será liberado quando o documento fiscal for confirmado.");
+      MessageBox.warning(ctx.getProperty("Nature") === "Provisional"
+        ? "Nada disponível para baixa: componha títulos firmes no provisório antes."
+        : "Título firme não recebe baixa direta: componha no provisório ou baixe por dação.");
       return;
     }
 
-    const openAmount = Number(ctx.getProperty("OpenAmount") ?? 0);
+    // Provisório baixa só o composto (spec 2026-10-13); nas demais naturezas o disponível é o saldo em aberto.
+    const openAmount = Number(ctx.getProperty("AvailableToSettleAmount") ?? ctx.getProperty("OpenAmount") ?? 0);
 
     if (openAmount <= 0) {
-      MessageBox.warning("O título não tem saldo em aberto.");
+      MessageBox.warning("O título não tem saldo disponível para baixa.");
       return;
     }
 
@@ -134,11 +364,11 @@ export default class Detail extends CommonController {
     }
 
     const amount = Number(form.amount);
-    const openAmount = Number(ctx.getProperty("OpenAmount") ?? 0);
+    const openAmount = Number(ctx.getProperty("AvailableToSettleAmount") ?? ctx.getProperty("OpenAmount") ?? 0);
 
     if (amount > openAmount) {
       MessageBox.warning(
-        `O valor da baixa (${formatter.formatDecimal(amount, 2)}) excede o saldo em aberto ` +
+        `O valor da baixa (${formatter.formatDecimal(amount, 2)}) excede o disponível para baixa ` +
         `(${formatter.formatDecimal(openAmount, 2)}).`);
       return;
     }
@@ -168,6 +398,24 @@ export default class Detail extends CommonController {
     }
   }
 
+  /**
+   * Origem da baixa selecionada: o "Estornar baixa" some para abatimento de composição (InvoiceOffset, que se desfaz
+   * pela composição), estorno e devolução de adiantamento, que o backend recusa.
+   */
+  onSettlementSelectionChange(): void {
+    const oTable = this.byId("financialSettlementsTable") as Table;
+    const i = oTable.getSelectedIndex();
+    const ctx = i < 0 ? null : oTable.getContextByIndex(i) as Context;
+    (this.getModel("viewModel") as JSONModel).setProperty("/financialSettlementSelectedOrigin",
+      ctx ? String(ctx.getProperty("Origin") ?? "") : "");
+  }
+
+  /** Limpa a seleção da grade de baixas (troca de título, estorno feito) e com ela a origem guardada. */
+  private clearSettlementSelection(): void {
+    (this.byId("financialSettlementsTable") as Table | undefined)?.clearSelection();
+    (this.getModel("viewModel") as JSONModel).setProperty("/financialSettlementSelectedOrigin", "");
+  }
+
   async onReverseSettlement(): Promise<void> {
     const oTable = this.byId("financialSettlementsTable") as Table;
     const i = oTable.getSelectedIndex();
@@ -192,6 +440,7 @@ export default class Detail extends CommonController {
       await action.invoke();
 
       MessageToast.show("Baixa estornada.");
+      this.clearSettlementSelection();
       this.refreshDocument();
     } catch (err) {
       MessageBox.error((err as Error).message || "Erro ao estornar a baixa.");

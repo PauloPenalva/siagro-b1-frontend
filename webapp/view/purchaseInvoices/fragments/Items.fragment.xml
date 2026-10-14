@@ -61,7 +61,7 @@
       </t:Column>
       <!-- Natureza da linha (própria e terceiro Normal na filial que calcula tributos): só naturezas de Entrada. Na devolução de compra vem da natureza de
            devolução da linha comprada e não muda. -->
-      <t:Column label="Natureza" width="14rem" visible="{= ${ui>/taxMode} === true }">
+      <t:Column label="Natureza" width="14rem" visible="{= ${ui>/taxMode} === true || ${path: 'InvoiceType', targetType: 'any'} === 'ValueComplement' }">
         <t:template>
           <!-- ui5lint-disable no-deprecated-api -->
           <Input
@@ -93,7 +93,8 @@
            backend recusa Edm.Decimal em string — o POST volta 400 "The entity field is required",
            sem dizer qual campo. `Double` faz parse para número e passa.
            Só vale para binding que GRAVA; os de exibição abaixo podem continuar com `Decimal`. -->
-      <t:Column label="Quantidade" width="10rem" hAlign="End">
+      <t:Column label="Quantidade" width="10rem" hAlign="End"
+                visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'ValueComplement' }">
         <t:template>
           <Input
             editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"
@@ -110,7 +111,8 @@
             }" />
         </t:template>
       </t:Column>
-      <t:Column label="Preço Unitário" width="11rem" hAlign="End">
+      <t:Column label="Preço Unitário" width="11rem" hAlign="End"
+                visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'ValueComplement' }">
         <t:template>
           <Input
             editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
@@ -120,6 +122,26 @@
               type: 'sap.ui.model.odata.type.Double',
               formatOptions: {
                 decimals: 8,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+              }
+            }" />
+        </t:template>
+      </t:Column>
+      <!-- Complemento de valor (spec 2026-10-13 D11): a linha não tem quantidade nem preço, só o valor. Escrita de decimal
+           em Double, como frete e seguro. -->
+      <t:Column label="Valor do complemento" width="11rem" hAlign="End"
+                visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'ValueComplement' }">
+        <t:template>
+          <Input
+            editable="{= ${ui>/editable} === true }"
+            change=".onItemAmountChange"
+            value="{
+              path: 'ComplementAmount',
+              type: 'sap.ui.model.odata.type.Double',
+              formatOptions: {
+                decimals: 2,
                 decimalSeparator: ',',
                 groupingEnabled: true,
                 groupingSeparator: '.'
@@ -197,7 +219,8 @@
                   { path: 'FreightValue', targetType: 'any' },
                   { path: 'InsuranceValue', targetType: 'any' },
                   { path: 'DiscountValue', targetType: 'any' },
-                  { path: 'OtherExpensesValue', targetType: 'any' }
+                  { path: 'OtherExpensesValue', targetType: 'any' },
+                  { path: 'ComplementAmount', targetType: 'any' }
                 ],
                 formatter: 'charges.formatLineGrandTotal'
               }"
@@ -205,12 +228,12 @@
         </t:template>
       </t:Column>
 
-      <!-- A amarração fiscal, só relevante no tipo Normal: o campo mostra o CÓDIGO do contrato e o
+      <!-- A amarração fiscal (Normal, Complemento de valor e Devolução — a devolução digitada à mão precisa informá-lo para nascer o título PurchaseReturn): o campo mostra o CÓDIGO do contrato e o
            value help grava a CHAVE. OneWay é obrigatório porque o campo exibe uma NAVEGAÇÃO — em
            linha ainda não amarrada `PurchaseContract` é null, e no modo TwoWay o setValue tentaria
            escrever dentro do null. Mesmo desenho da coluna "NF de Origem" abaixo. -->
-      <t:Column label="Contrato" width="12rem"
-                visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }">
+      <t:Column label="{= ${path: 'InvoiceType', targetType: 'any'} === 'ValueComplement' ? 'Contrato (obrigatório)' : 'Contrato' }" width="12rem"
+                visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Normal' || ${path: 'InvoiceType', targetType: 'any'} === 'ValueComplement' || ${path: 'InvoiceType', targetType: 'any'} === 'Return' }">
         <t:template>
           <Input
             editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"

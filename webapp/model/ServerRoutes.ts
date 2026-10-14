@@ -43,8 +43,6 @@ export default {
   royaltyBalanceTotals: '/RoyaltyBalanceTotals',
   salesContractsGetFiscalComplement: '/SalesContractsGetFiscalComplement(...)',
   salesContractsSetFiscalComplement: '/SalesContractsSetFiscalComplement(...)',
-  purchaseContractsGetFiscalComplement: '/PurchaseContractsGetFiscalComplement(...)',
-  purchaseContractsSetFiscalComplement: '/PurchaseContractsSetFiscalComplement(...)',
   unitsOfMeasure: '/odata/UnitsOfMeasure',
   harvestSeasons: '/odata/HarvestSeasons',
   warehouses: '/odata/Warehouses',
@@ -286,6 +284,13 @@ export default {
   financialAdvancesCreate: '/FinancialAdvancesCreate(...)',
   financialAdvancesRefund: '/FinancialAdvancesRefund(...)',
   financialAdvancesRelinkContract: '/FinancialAdvancesRelinkContract(...)',
+  // Títulos firmes de compra (spec 2026-10-13): chamados por sendJson (erro de negócio nas três formas).
+  financialDocumentsCompose: '/odata/FinancialDocumentsCompose',
+  financialDocumentsUncompose: '/odata/FinancialDocumentsUncompose',
+  financialDocumentsDation: '/odata/FinancialDocumentsDation',
+  financialDocumentsNetting: '/odata/FinancialDocumentsNetting',
+  financialDocumentsGetComposition: '/odata/FinancialDocumentsGetComposition',
+  financialDocumentsGetByContract: '/odata/FinancialDocumentsGetByContract',
 
   // Conferência de Saldo de Armazém (GAC-1164). Chamadas por fetch: o backend responde
   // BadRequest(string) e a mensagem de negócio precisa chegar inteira ao usuário.

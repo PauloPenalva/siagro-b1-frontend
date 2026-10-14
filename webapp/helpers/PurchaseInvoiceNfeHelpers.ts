@@ -196,5 +196,5 @@ export const PURCHASE_ITEM_SELECT =
 	"CstIcms,IcmsBase,IcmsRate,IcmsValue,IcmsBaseReduction,IcmsDeferral,IcmsOperationValue,IcmsDeferredValue," +
 	"IcmsBenefitCode,CstPis,PisBase,PisRate,PisValue,CstCofins,CofinsBase,CofinsRate,CofinsValue,IbsCbsCst," +
 	"IbsCbsClassCode,IbsCbsBase,CbsRate,CbsRateReduction,CbsValue,IbsStateRate,IbsMunicipalRate,IbsRateReduction," +
-	"IbsStateValue,IbsMunicipalValue,NfeItemNumber,FreightValue,InsuranceValue,DiscountValue,OtherExpensesValue," +
+	"IbsStateValue,IbsMunicipalValue,NfeItemNumber,FreightValue,InsuranceValue,DiscountValue,OtherExpensesValue,ComplementAmount," +
 	"FunruralBase,FunruralInssRate,FunruralInssValue,FunruralRatRate,FunruralRatValue,FunruralSenarRate,FunruralSenarValue";

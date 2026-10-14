@@ -13,6 +13,8 @@ import { BaseController } from "./BaseController";
 
 /** Rascunho devolvido pela leitura do XML — não é gravado ainda. */
 interface ImportedInvoice {
+  /** "Normal" ou, na NF-e de complemento (finNFe=2), "ValueComplement" (spec D11). */
+  InvoiceType?: string;
   CardCode: string;
   CardName: string;
   TaxDocumentNumber: string;
@@ -144,7 +146,8 @@ export default class Add extends BaseController {
     const today = new Date().toISOString();
 
     const oContext = oBinding.create({
-      InvoiceType: "Normal",
+      // NF-e de complemento (finNFe=2) importada nasce como Complemento de valor, com linhas só de valor (D11).
+      InvoiceType: draft?.InvoiceType === "ValueComplement" ? "ValueComplement" : "Normal",
       IssuerType: "ThirdParty",
       TaxDocumentKind: "Nfe",
       BranchCode: branchCode ?? null,

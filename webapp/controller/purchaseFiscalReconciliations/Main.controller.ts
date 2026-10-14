@@ -5,6 +5,7 @@ import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import Dialog from "sap/m/Dialog";
 import Fragment from "sap/ui/core/Fragment";
 import { Button$PressEvent } from "sap/m/Button";
+import { Link$PressEvent } from "sap/m/Link";
 import Spreadsheet from "sap/ui/export/Spreadsheet";
 import { EdmType } from "sap/ui/export/library";
 import CommonController from "../common/CommonController";
@@ -213,6 +214,15 @@ export default class Main extends CommonController {
   async onRemoveLink(ev: Button$PressEvent): Promise<void> {
     const link = ev.getSource().getBindingContext("links").getObject() as FiscalReconciliationLink;
     await this.runOnLinks(() => sendJson("POST", this.api.purchaseFiscalReconciliationRemove, { Key: link.Key }));
+  }
+
+  /** Abre o título firme do vínculo (spec 2026-10-13, títulos firmes). */
+  onOpenFirmDocument(ev: Link$PressEvent): void {
+    const link = ev.getSource().getBindingContext("links").getObject() as FiscalReconciliationLink;
+    if (!link.FirmDocumentKey) return;
+
+    this._linksDialog.close();
+    this.navTo("financialDocumentsDetail", { id: link.FirmDocumentKey });
   }
 
   async onConfirmTransaction(): Promise<void> {

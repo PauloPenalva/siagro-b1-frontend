@@ -28,6 +28,8 @@ export interface InvoiceItemPayload {
   InsuranceValue: number;
   DiscountValue: number;
   OtherExpensesValue: number;
+  /** Valor do complemento (documento do tipo Complemento de valor, spec D11): 0 nos demais tipos. */
+  ComplementAmount: number;
 }
 
 /**
@@ -63,6 +65,8 @@ export interface ImportedInvoiceItem {
   InsuranceValue?: number | string;
   DiscountValue?: number | string;
   OtherExpensesValue?: number | string;
+  /** Complemento de valor (finNFe=2): valor da linha, sem quantidade nem preço (Edm.Decimal da action, em string). */
+  ComplementAmount?: number | string;
 }
 
 /**
@@ -92,6 +96,7 @@ export function blankItemRow(): InvoiceItemPayload {
     ItemCode: "", ItemName: "", UnitOfMeasureCode: "", Quantity: 0, UnitPrice: 0,
     SalesInvoiceItemKey: null, PurchaseContractKey: null, UsageCode: null, UsageName: null,
     NfeItemNumber: null, FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0,
+    ComplementAmount: 0,
   };
 }
 
@@ -120,5 +125,6 @@ export function draftItemRows(items?: ImportedInvoiceItem[]): InvoiceItemPayload
     InsuranceValue: toNumber(item.InsuranceValue),
     DiscountValue: toNumber(item.DiscountValue),
     OtherExpensesValue: toNumber(item.OtherExpensesValue),
+    ComplementAmount: toNumber(item.ComplementAmount),
   }));
 }

@@ -2,6 +2,9 @@
     xmlns="sap.m"
     xmlns:core="sap.ui.core"
     xmlns:t="sap.ui.table"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }"
 >
   <t:Table
     id="financialSettlementsTable"
@@ -11,6 +14,7 @@
     visibleRowCountMode="Fixed"
     visibleRowCount="6"
     alternateRowColors="true"
+    rowSelectionChange=".onSettlementSelectionChange"
     rows="{
       path: 'Settlements',
       sorter: { path: 'SettlementDate' }
@@ -21,14 +25,33 @@
         <ToolbarSpacer />
         <Button type="Emphasized" text="Baixar" press=".onSettle"
                 visible="{= !${path: 'IsBlockedForSettlement', targetType: 'any'} }"/>
+        <Button type="Transparent" text="Baixar por dação" press=".onOpenDationDialog"
+                visible="{= ${path: 'Nature', targetType: 'any'} === 'Firm'
+                          &amp;&amp; (${path: 'OriginType', targetType: 'any'} === 'PurchaseFiscalReconciliation'
+                              || ${path: 'OriginType', targetType: 'any'} === 'PurchaseInvoice')
+                          &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Canceled'
+                          &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Settled' }"/>
+        <Button type="Transparent" text="Compensar com firme" press=".onOpenNettingDialog"
+                visible="{= ${path: 'Nature', targetType: 'any'} === 'PurchaseReturn'
+                          &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Canceled'
+                          &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Settled' }"/>
+        <!-- Abatimento (desfaz pela composição), estorno e devolução de adiantamento o backend recusa: some com a linha selecionada -->
         <Button type="Transparent" text="Estornar baixa" press=".onReverseSettlement"
-                visible="{= ${path: 'Status', targetType: 'any'} !== 'Canceled' }"/>
+                visible="{= ${path: 'Status', targetType: 'any'} !== 'Canceled'
+                          &amp;&amp; ${viewModel>/financialSettlementSelectedOrigin} !== 'InvoiceOffset'
+                          &amp;&amp; ${viewModel>/financialSettlementSelectedOrigin} !== 'Reversal'
+                          &amp;&amp; ${viewModel>/financialSettlementSelectedOrigin} !== 'AdvanceRefund' }"/>
       </OverflowToolbar>
     </t:extension>
     <t:columns>
       <t:Column label="Data" width="10rem">
         <t:template>
           <Text text="{path: 'SettlementDate', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy' }}" wrapping="false"/>
+        </t:template>
+      </t:Column>
+      <t:Column label="Origem" width="12rem">
+        <t:template>
+          <Text text="{path: 'Origin', targetType: 'any', formatter: 'formatter.formatFinancialSettlementOrigin'}" wrapping="false"/>
         </t:template>
       </t:Column>
       <t:Column label="Conta" width="10rem">
