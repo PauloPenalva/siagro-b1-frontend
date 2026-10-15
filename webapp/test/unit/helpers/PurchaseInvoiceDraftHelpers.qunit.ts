@@ -1,4 +1,9 @@
-import { blankItemRow, draftItemRows, missingUnitOfMeasureMessage, suggestedUnitOfMeasure, toNumber, unitSuggestionToApply } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
+import {
+	blankItemRow, complementedItemLabel, complementedItemLabels, complementLineFrom, draftItemRows, formatComplementedItem,
+	formatContractCode, inheritedContracts, isLineContractEditable, missingUnitOfMeasureMessage, suggestedUnitOfMeasure, toNumber,
+	unitSuggestionToApply, withEntry
+} from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
+import { PurchaseInvoiceComplementCandidate } from "siagrob1/types/PurchaseInvoiceComplementCandidate";
 
 QUnit.module("PurchaseInvoiceDraftHelpers - linhas do rascunho da entrada");
 
@@ -11,7 +16,7 @@ QUnit.test("a linha em branco já traz as chaves que a tela edita, nulas", funct
 		ItemCode: "", ItemName: "", UnitOfMeasureCode: "", Quantity: 0, UnitPrice: 0,
 		SalesInvoiceItemKey: null, PurchaseContractKey: null, UsageCode: null, UsageName: null,
 		NfeItemNumber: null, FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0,
-		ComplementAmount: 0,
+		ComplementAmount: 0, ComplementedItemKey: null,
 	});
 });
 
@@ -108,4 +113,66 @@ QUnit.test("a unidade escolhida à mão não é sobrescrita; a sugerida anterior
 	assert.strictEqual(unitSuggestionToApply("MILHO", "MILHO", "KG", "KG", "SC", "UN"), "SC", "sugestão renovada");
 	assert.strictEqual(unitSuggestionToApply("MILHO", "MILHO", "", "KG", undefined, "UN"), "UN", "vazia usa a padrão");
 	assert.strictEqual(unitSuggestionToApply("MILHO", "MILHO", "SC", "", "KG", "UN"), "", "sem sugestão anterior, a unidade existente é do operador");
+});
+
+QUnit.module("PurchaseInvoiceDraftHelpers - complemento de valor próprio (spec 2026-10-14)");
+
+const candidate: PurchaseInvoiceComplementCandidate = {
+	ItemKey: "item-1", InvoiceKey: "nota-5", InvoiceNumber: "DE000005", InvoiceDate: "2026-10-01T00:00:00",
+	AccessKey: "3526", LineNumber: 1, ItemCode: "TRIGO", ItemName: "TRIGO EM GRAOS", UnitOfMeasure: "KG",
+	Quantity: 1000, UnitPrice: 1.5, Total: 1500, UsageCode: 4, UsageName: "COMPRA DE MERCADORIA",
+	PurchaseContractKey: "contrato-1", PurchaseContractCode: "CC000002",
+};
+
+QUnit.test("a linha nasce do item escolhido: herda produto, unidade, natureza e o contrato do original, sem quantidade nem preço", function (assert) {
+	assert.deepEqual(complementLineFrom(candidate), {
+		...blankItemRow(),
+		ItemCode: "TRIGO", ItemName: "TRIGO EM GRAOS", UnitOfMeasureCode: "KG", PurchaseContractKey: "contrato-1",
+		UsageCode: 4, UsageName: "COMPRA DE MERCADORIA", ComplementedItemKey: "item-1",
+	});
+	assert.strictEqual(complementLineFrom(candidate).Quantity, 0);
+	assert.strictEqual(complementLineFrom(candidate).UnitPrice, 0);
+});
+
+QUnit.test("original sem contrato (D5): a linha nasce sem contrato, para o operador escolher", function (assert) {
+	const line = complementLineFrom({ ...candidate, PurchaseContractKey: null, PurchaseContractCode: null });
+	assert.strictEqual(line.PurchaseContractKey, null);
+	assert.strictEqual(line.ComplementedItemKey, "item-1");
+	assert.strictEqual(line.ItemCode, "TRIGO");
+});
+
+QUnit.test("contrato herdado trava; original sem contrato deixa editável", function (assert) {
+	const withoutContract: PurchaseInvoiceComplementCandidate = { ...candidate, ItemKey: "item-2", PurchaseContractKey: null, PurchaseContractCode: null };
+	const inherited = inheritedContracts([candidate, withoutContract]);
+	assert.deepEqual(inherited, { "item-1": "contrato-1" });
+	assert.strictEqual(isLineContractEditable(true, false, "item-1", inherited), false, "herdado");
+	assert.strictEqual(isLineContractEditable(true, false, "item-2", inherited), true, "original sem contrato");
+	assert.strictEqual(isLineContractEditable(true, false, null, inherited), true, "linha comum");
+	assert.strictEqual(isLineContractEditable(true, false, "item-1", undefined), true, "mapa ainda não carregado: o servidor protege (C10)");
+	assert.strictEqual(isLineContractEditable(false, false, "item-2", inherited), false, "Detail");
+	assert.strictEqual(isLineContractEditable(true, true, null, inherited), false, "contra-nota");
+});
+
+QUnit.test("Nota original = documento/item; sem nItem, interrogação", function (assert) {
+	assert.strictEqual(complementedItemLabel("DE000005", 1), "DE000005/1");
+	assert.strictEqual(complementedItemLabel("DE000005", null), "DE000005/?");
+	assert.deepEqual(complementedItemLabels([candidate]), { "item-1": "DE000005/1" });
+	assert.strictEqual(formatComplementedItem("item-1", { "item-1": "DE000005/1" }), "DE000005/1");
+	assert.strictEqual(formatComplementedItem("", { "item-1": "DE000005/1" }), "");
+	assert.strictEqual(formatComplementedItem("item-2", undefined), "");
+});
+
+QUnit.test("código do contrato: o escolhido na tela vale mais que a navegação; sem chave, vazio", function (assert) {
+	assert.strictEqual(formatContractCode(undefined, "contrato-1", { "contrato-1": "CC000002" }), "CC000002", "linha nova");
+	assert.strictEqual(formatContractCode("CC000001", "contrato-1", { "contrato-1": "CC000002" }), "CC000002", "trocado na tela");
+	assert.strictEqual(formatContractCode("CC000001", "contrato-9", {}), "CC000001", "linha gravada");
+	assert.strictEqual(formatContractCode("CC000001", null, {}), "", "produto trocado: contrato desamarrado");
+});
+
+QUnit.test("withEntry devolve um mapa NOVO (o JSONModel só notifica quando o objeto muda)", function (assert) {
+	const before = { a: "1" };
+	const after = withEntry(before, "b", "2");
+	assert.notStrictEqual(after, before);
+	assert.deepEqual(after, { a: "1", b: "2" });
+	assert.deepEqual(withEntry(undefined, "", "x"), {});
 });

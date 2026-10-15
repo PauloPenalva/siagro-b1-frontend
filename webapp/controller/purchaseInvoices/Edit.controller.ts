@@ -74,6 +74,12 @@ export default class Edit extends BaseController {
       return;
     }
 
+    // Complemento de valor próprio (spec 2026-10-14): a linha nasce do item da nota original escolhido.
+    if (this.isOwnComplementDraft()) {
+      void this.addOwnComplementLine(oBinding);
+      return;
+    }
+
     // Toda propriedade editável entra no create() inicial, nem que seja como null: sem isso a
     // primeira alteração abre "Must not change a property before it has been read".
     // Decimais vão como NÚMERO — em string o POST volta 400 no vínculo do corpo.
@@ -82,6 +88,7 @@ export default class Edit extends BaseController {
       Quantity: 0, UnitPrice: 0, SalesInvoiceItemKey: null, PurchaseContractKey: null,
       UsageCode: null, UsageName: null,
       FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0,
+      ComplementedItemKey: null,
     }, false, false, false);
 
     this.refreshDocumentTotal();

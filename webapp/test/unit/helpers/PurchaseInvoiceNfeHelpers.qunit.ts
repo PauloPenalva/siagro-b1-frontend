@@ -1,7 +1,7 @@
 import {
 	allUsagesAllowCounterNote, buildPurchaseItemNumbers, canCreateCounterNote, canIssuePurchaseNfe, canReturnPurchase, canReturnThirdPartyPurchase,
-	counterNoteText, isPurchaseNfeMode, isPurchaseTaxMode, isValidCounterNote, missingUsageMessage, mustFallBackToNormal,
-	PurchaseNfeState, requiresSupplierKey, supplierNfeAuthorizationText
+	complementCandidatesPath, counterNoteText, isOwnComplement, isPurchaseNfeMode, isPurchaseTaxMode, isValidCounterNote, missingUsageMessage, mustFallBackToNormal,
+	PURCHASE_ITEM_SELECT, PurchaseNfeState, requiresSupplierKey, supplierNfeAuthorizationText
 } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 
 QUnit.module("PurchaseInvoiceNfeHelpers - NF-e do documento de entrada");
@@ -210,4 +210,52 @@ QUnit.test("texto do vínculo da contra-nota", function (assert) {
 		"DE000123 — NF-e 10 Autorizada");
 	assert.strictEqual(counterNoteText({ InvoiceNumber: "DE000124", TaxDocumentNumber: null, NfeStatus: "None" }),
 		"DE000124 — NF-e não emitida");
+});
+
+QUnit.module("PurchaseInvoiceNfeHelpers - complemento de valor próprio (spec 2026-10-14)");
+
+QUnit.test("emite o complemento de valor próprio pendente, sem NF-e ou rejeitada", function (assert) {
+	const complement = { ...pending, InvoiceType: "ValueComplement" };
+	assert.strictEqual(canIssuePurchaseNfe(complement, true), true);
+	assert.strictEqual(canIssuePurchaseNfe({ ...complement, NfeStatus: "Rejected" }, true), true);
+	assert.strictEqual(canIssuePurchaseNfe({ ...complement, NfeStatus: "Authorized" }, true), false);
+	assert.strictEqual(canIssuePurchaseNfe(complement, false), false, "terceiro ou filial sem NF-e");
+});
+
+QUnit.test("o complemento próprio calcula tributos como a entrada própria", function (assert) {
+	assert.strictEqual(isPurchaseTaxMode(true, "Own", "ValueComplement"), true);
+	assert.strictEqual(isPurchaseTaxMode(false, "Own", "ValueComplement"), false);
+});
+
+QUnit.test("o complemento não oferece Devolver", function (assert) {
+	const authorized = { ...pending, InvoiceType: "ValueComplement", InvoiceStatus: "Confirmed", NfeStatus: "Authorized" };
+	assert.strictEqual(canReturnPurchase(authorized, true), false);
+});
+
+QUnit.test("no modo NF-e o Complemento de valor não volta para Normal", function (assert) {
+	assert.strictEqual(mustFallBackToNormal("ValueComplement", false, true, true), false);
+});
+
+QUnit.test("complemento próprio só no modo NF-e e no tipo Complemento de valor", function (assert) {
+	assert.strictEqual(isOwnComplement(true, "ValueComplement"), true);
+	assert.strictEqual(isOwnComplement(false, "ValueComplement"), false, "terceiro ou filial sem NF-e");
+	assert.strictEqual(isOwnComplement(true, "Normal"), false);
+});
+
+QUnit.test("caminho da function de candidatos com aspas e códigos codificados", function (assert) {
+	assert.strictEqual(
+		complementCandidatesPath("/odata/PurchaseInvoicesGetComplementCandidates", "F 01", "01"),
+		"/odata/PurchaseInvoicesGetComplementCandidates(CardCode='F%2001',BranchCode='01')");
+	assert.strictEqual(
+		complementCandidatesPath("/odata/PurchaseInvoicesGetComplementCandidates", "D'AGUA", "01"),
+		"/odata/PurchaseInvoicesGetComplementCandidates(CardCode='D''AGUA',BranchCode='01')",
+		"apóstrofo dobrado no literal do OData");
+	assert.strictEqual(
+		complementCandidatesPath("/odata/PurchaseInvoicesGetComplementCandidates", "A&B#1", "0'1"),
+		"/odata/PurchaseInvoicesGetComplementCandidates(CardCode='A%26B%231',BranchCode='0''1')",
+		"caracteres reservados codificados nos dois códigos");
+});
+
+QUnit.test("as linhas do Detail/Edit trazem o item da nota original", function (assert) {
+	assert.ok(PURCHASE_ITEM_SELECT.split(",").includes("ComplementedItemKey"));
 });

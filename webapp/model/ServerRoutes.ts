@@ -212,6 +212,8 @@ export default {
   purchaseInvoicesReconcileStorageReturn: '/odata/PurchaseInvoicesReconcileStorageReturn',
   purchaseInvoicesUndoStorageReturnReconciliation: '/odata/PurchaseInvoicesUndoStorageReturnReconciliation',
   purchaseInvoicesNfeReturnableItems: '/odata/PurchaseInvoicesNfeReturnableItems',
+  // Complemento de valor próprio (spec 2026-10-14): itens das entradas próprias autorizadas do fornecedor e da filial.
+  purchaseInvoicesGetComplementCandidates: '/odata/PurchaseInvoicesGetComplementCandidates',
   // Cancelamento da NF-e (evento 110111): ação com justificativa, conclusão da fase local e XML do evento.
   salesInvoicesCancelNfe: '/odata/SalesInvoicesCancelNfe',
   salesInvoicesCompleteNfeCancellation: '/odata/SalesInvoicesCompleteNfeCancellation',

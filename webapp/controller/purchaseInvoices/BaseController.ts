@@ -11,10 +11,19 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
-import { isPurchaseNfeMode, isPurchaseTaxMode, mustFallBackToNormal, requiresSupplierKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
+import { complementCandidatesPath, isOwnComplement, isPurchaseNfeMode, isPurchaseTaxMode, mustFallBackToNormal, requiresSupplierKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { summarizeInvoiceTaxes, TaxLine } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 import { formatAmount, lineFunrural, purchaseChargeLineOf, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
-import { missingUnitOfMeasureMessage, toNumber, unitSuggestionToApply } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
+import {
+  complementedItemLabel, complementedItemLabels, complementLineFrom, inheritedContracts, missingUnitOfMeasureMessage, toNumber,
+  unitSuggestionToApply, withEntry
+} from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
+import Fragment from "sap/ui/core/Fragment";
+import TableSelectDialog, { TableSelectDialog$ConfirmEvent, TableSelectDialog$SearchEvent } from "sap/m/TableSelectDialog";
+import JSONListBinding from "sap/ui/model/json/JSONListBinding";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
+import { odataCollection, sendJson } from "siagrob1/helpers/FetchHelpers";
+import { PurchaseInvoiceComplementCandidate } from "siagrob1/types/PurchaseInvoiceComplementCandidate";
 
 /** Sequência compartilhada por Add/Edit/Detail: só a chamada mais recente de refreshNfeMode escreve no `ui`. */
 let nfeModeSequence = 0;
@@ -62,6 +71,13 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/taxMode", false);
       uiModel.setProperty("/isCounterNote", false);
       uiModel.setProperty("/valueComplement", false);
+      // Complemento de valor próprio (spec 2026-10-14): a flag e os mapas que a grade lê ("Nota original", contrato
+      // herdado e travado (D5) e o código do contrato da linha nova, que não tem a navegação). Do componente: zerados
+      // a cada documento.
+      uiModel.setProperty("/ownComplement", false);
+      uiModel.setProperty("/complementedItemLabels", {});
+      uiModel.setProperty("/inheritedContracts", {});
+      uiModel.setProperty("/contractCodes", {});
       // Vínculos da contra-nota: só o Detail os preenche (depois de conferir que o documento é o mesmo). O `ui` é do
       // componente, então Incluir/Editar não podem herdar o link do último documento aberto.
       uiModel.setProperty("/counterNote", { key: "", text: "" });
@@ -82,6 +98,7 @@ export abstract class BaseController extends CommonController {
       const issuerType = await oContext.requestProperty("IssuerType") as string;
       const isNfeReturn = await oContext.requestProperty("IsNfeReturn") === true;
       const invoiceType = await oContext.requestProperty("InvoiceType") as string;
+      const cardCode = await oContext.requestProperty("CardCode") as string;
       const paymentConditionCode = await oContext.requestProperty("PaymentConditionCode") as number;
       const producerInvoiceKey = await oContext.requestProperty("ProducerInvoiceKey") as string;
       const custodyKey = await oContext.requestProperty("CustodyStorageTransactionKey") as string;
@@ -101,6 +118,12 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/isCounterNote", !!producerInvoiceKey);
       // Complemento de valor não tem unidade de medida (linha só com valor): a coluna UM deixa de ser obrigatória.
       uiModel.setProperty("/valueComplement", invoiceType === "ValueComplement");
+      // Complemento de valor próprio (spec 2026-10-14): "Incluir Item" abre a lista de itens das notas originais.
+      const ownComplement = isOwnComplement(nfeMode, invoiceType);
+      uiModel.setProperty("/ownComplement", ownComplement);
+      if (ownComplement) {
+        void this.refreshComplementedItemLabels(cardCode, branchCode, isCurrent);
+      }
       // Natureza, CFOP, "Tributos do item", condição de pagamento e Transporte: própria e terceiro Normal, com a
       // mesma tela (spec terceiro-chave D1).
       const taxMode = isPurchaseTaxMode(taxLocked, issuerType, invoiceType);
@@ -127,6 +150,7 @@ export abstract class BaseController extends CommonController {
         uiModel.setProperty("/nfeReturn", false);
         uiModel.setProperty("/taxMode", false);
         uiModel.setProperty("/isCounterNote", false);
+        uiModel.setProperty("/ownComplement", false);
         uiModel.setProperty("/counterNote", { key: "", text: "" });
         uiModel.setProperty("/producerInvoice", { key: "", text: "" });
         uiModel.setProperty("/custody", { key: "", code: "" });
@@ -219,13 +243,32 @@ export abstract class BaseController extends CommonController {
   }
 
   onIssuerTypeChange() {
-    void this.refreshNfeMode(false);
+    void this.refreshNfeMode(false).then(() => this.dropBlankLinesForOwnComplement());
   }
 
   /** Trocar o tipo (Normal/Devolução) do terceiro liga ou desliga o cálculo: a devolução do cliente não tem natureza. */
   onInvoiceTypeChange() {
     this.clearHiddenAmountColumns();
-    void this.refreshNfeMode(false);
+    void this.refreshNfeMode(false).then(() => this.dropBlankLinesForOwnComplement());
+  }
+
+  /**
+   * Complemento próprio em digitação (spec 2026-10-14): a linha em branco do rascunho não tem item original e voltaria
+   * recusada (C1); as linhas nascem do "Incluir Item".
+   */
+  private dropBlankLinesForOwnComplement(): void {
+    const ui = this.getModel("ui") as JSONModel;
+    if (ui.getProperty("/ownComplement") !== true || ui.getProperty("/typeEditable") !== true) {
+      return;
+    }
+
+    const binding = (this.byId("tablePurchaseInvoiceItems") as Table | undefined)?.getBinding("rows") as ODataListBinding;
+    for (const ctx of binding?.getAllCurrentContexts?.() ?? []) {
+      if (ctx.isTransient() && !ctx.getProperty("ItemCode") && !ctx.getProperty("ComplementedItemKey")) {
+        void ctx.delete();
+      }
+    }
+    this.refreshDocumentTotal();
   }
 
   /**
@@ -239,8 +282,14 @@ export abstract class BaseController extends CommonController {
       if (invoiceType === "ValueComplement") {
         void ctx.setProperty("Quantity", 0);
         void ctx.setProperty("UnitPrice", 0);
-      } else if (toNumber(ctx.getProperty("ComplementAmount")) !== 0) {
-        void ctx.setProperty("ComplementAmount", 0);
+      } else {
+        if (toNumber(ctx.getProperty("ComplementAmount")) !== 0) {
+          void ctx.setProperty("ComplementAmount", 0);
+        }
+        // Fora do complemento o vínculo com a nota original é recusado (C7): sai junto com o valor.
+        if (ctx.getProperty("ComplementedItemKey")) {
+          void ctx.setProperty("ComplementedItemKey", null);
+        }
       }
     }
     this.refreshDocumentTotal();
@@ -408,6 +457,12 @@ export abstract class BaseController extends CommonController {
       return;
     }
 
+    // A célula lê o mapa antes da navegação (draft.formatContractCode): grava o código ANTES da chave, senão a
+    // reavaliação disparada pela chave apagaria o que o setValue escreveu.
+    const ui = this.getModel("ui") as JSONModel;
+    ui.setProperty("/contractCodes", withEntry(
+      ui.getProperty("/contractCodes") as Record<string, string>, oSelected.getProperty("Key") as string,
+      oSelected.getProperty("Code") as string));
     oInput.setValue(oSelected.getProperty("Code") as string);
     await oTarget.setProperty("PurchaseContractKey", oSelected.getProperty("Key"));
   }
@@ -492,6 +547,141 @@ export abstract class BaseController extends CommonController {
     void oTarget.setProperty("PurchaseContractKey", null);
 
     void this.suggestUnitOfMeasure(oTarget).catch((): void => undefined);
+  }
+
+  private complementDialog: TableSelectDialog;
+
+  /** Complemento de valor de emissão própria em edição: "Incluir Item" escolhe o item da nota original (spec 2026-10-14). */
+  protected isOwnComplementDraft(): boolean {
+    return (this.getModel("ui") as JSONModel).getProperty("/ownComplement") === true;
+  }
+
+  /**
+   * "Incluir Item" no complemento de valor próprio: a linha nasce do item escolhido, com produto, unidade e natureza
+   * herdados e travados, o contrato herdado e travado quando o original tem (sem contrato, o operador escolhe: D5),
+   * quantidade e preço 0 e o foco no "Valor do complemento".
+   */
+  protected async addOwnComplementLine(binding: ODataListBinding): Promise<void> {
+    const invoice = this.getView().getBindingContext() as Context;
+    const cardCode = invoice?.getProperty("CardCode") as string;
+
+    if (!cardCode) {
+      MessageBox.warning("Informe o fornecedor antes de incluir itens.");
+      return;
+    }
+
+    const candidate = await this.pickComplementCandidate(cardCode, invoice.getProperty("BranchCode") as string);
+    if (!candidate) {
+      return;
+    }
+
+    // Antes do create: "Contrato" e "Nota original" leem estes mapas (a linha nova não tem as navegações). Original com
+    // contrato: o contrato vem herdado e a célula trava (D5); sem contrato, a célula fica editável e o operador escolhe.
+    const ui = this.getModel("ui") as JSONModel;
+    ui.setProperty("/contractCodes", withEntry(
+      ui.getProperty("/contractCodes") as Record<string, string>, candidate.PurchaseContractKey, candidate.PurchaseContractCode));
+    ui.setProperty("/inheritedContracts", withEntry(
+      ui.getProperty("/inheritedContracts") as Record<string, string>,
+      candidate.PurchaseContractKey ? candidate.ItemKey : "", candidate.PurchaseContractKey));
+    ui.setProperty("/complementedItemLabels", withEntry(
+      ui.getProperty("/complementedItemLabels") as Record<string, string>, candidate.ItemKey,
+      complementedItemLabel(candidate.InvoiceNumber, candidate.LineNumber)));
+
+    const created = binding.create(complementLineFrom(candidate), false, false, false);
+    this.refreshDocumentTotal();
+    this.focusComplementAmount(created);
+  }
+
+  /**
+   * Lista os itens elegíveis e resolve com o escolhido, ou undefined ao cancelar (o contrato do openTableSelectDialog,
+   * que aqui não serve: a lista vem de uma function, num JSONModel).
+   */
+  private async pickComplementCandidate(
+    cardCode: string, branchCode: string
+  ): Promise<PurchaseInvoiceComplementCandidate> {
+    const result = await sendJson("GET",
+      complementCandidatesPath(ServerRoutes.purchaseInvoicesGetComplementCandidates, cardCode, branchCode));
+
+    if (!result.ok) {
+      MessageBox.error(result.message);
+      return undefined;
+    }
+
+    // A view morre ao navegar (clearControlAggregation) e leva o diálogo junto: recria quando preciso.
+    if (!this.complementDialog || this.complementDialog.isDestroyed()) {
+      this.complementDialog = await Fragment.load({
+        name: "siagrob1.view.purchaseInvoices.fragments.ComplementCandidatesDialog",
+        controller: this,
+        id: this.getView().getId(),
+      }) as TableSelectDialog;
+      this.complementDialog.setModel(new JSONModel({ rows: [] }), "candidates");
+      this.getView().addDependent(this.complementDialog);
+    }
+
+    const dialog = this.complementDialog;
+    (dialog.getModel("candidates") as JSONModel).setData({
+      rows: odataCollection<PurchaseInvoiceComplementCandidate>(result.data),
+    });
+    (dialog.getBinding("items") as JSONListBinding)?.filter([]);
+
+    return new Promise((resolve) => {
+      // Ligados por abertura e desligados no primeiro disparo: o diálogo é reaproveitado.
+      const finish = (row?: PurchaseInvoiceComplementCandidate) => {
+        dialog.detachConfirm(onConfirm);
+        dialog.detachCancel(onCancel);
+        resolve(row);
+      };
+      const onConfirm = (ev: TableSelectDialog$ConfirmEvent) =>
+        finish(ev.getParameter("selectedItem")?.getBindingContext("candidates")?.getObject() as PurchaseInvoiceComplementCandidate);
+      const onCancel = () => finish(undefined);
+
+      dialog.attachConfirm(onConfirm);
+      dialog.attachCancel(onCancel);
+      dialog.open("");
+    });
+  }
+
+  /** Busca do diálogo, no cliente (a lista já veio inteira): nota, produto ou contrato. */
+  onComplementCandidateSearch(ev: TableSelectDialog$SearchEvent): void {
+    const value = (ev.getParameter("value") ?? "").trim();
+    const binding = ev.getSource().getBinding("items") as JSONListBinding;
+
+    binding.filter(value
+      ? [new Filter({
+          filters: ["InvoiceNumber", "ItemCode", "ItemName", "PurchaseContractCode"]
+            .map((path) => new Filter(path, FilterOperator.Contains, value)),
+          and: false,
+        })]
+      : []);
+  }
+
+  /** "Nota original" e contrato herdado das linhas já gravadas (Detail/Edit), lidos da mesma function do diálogo. */
+  private async refreshComplementedItemLabels(cardCode: string, branchCode: string, isCurrent: () => boolean): Promise<void> {
+    if (!cardCode || !branchCode) {
+      return;
+    }
+
+    const result = await sendJson("GET",
+      complementCandidatesPath(ServerRoutes.purchaseInvoicesGetComplementCandidates, cardCode, branchCode));
+
+    if (!isCurrent() || !result.ok) {
+      return;
+    }
+
+    const rows = odataCollection<PurchaseInvoiceComplementCandidate>(result.data);
+    const ui = this.getModel("ui") as JSONModel;
+    ui.setProperty("/complementedItemLabels", complementedItemLabels(rows));
+    ui.setProperty("/inheritedContracts", inheritedContracts(rows));
+  }
+
+  /** Foco no "Valor do complemento" da linha criada. getCells() pula coluna invisível: a célula é achada pelo binding. */
+  private focusComplementAmount(line: Context): void {
+    const table = this.byId("tablePurchaseInvoiceItems") as Table;
+
+    table?.attachEventOnce("rowsUpdated", () => {
+      const row = table.getRows().find((r) => r.getBindingContext() === line);
+      row?.getCells().find((cell) => cell.getBinding("value")?.getPath() === "ComplementAmount")?.focus();
+    });
   }
 
   /** Quantidade, preço ou um dos quatro valores da linha mudou: o "Total geral" acompanha. */

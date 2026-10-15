@@ -42,8 +42,8 @@
         <t:template>
           <Input
             value="{ItemCode}"
-            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
-            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true &amp;&amp; !${path: 'ComplementedItemKey', targetType: 'any'} }"
+            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true &amp;&amp; !${path: 'ComplementedItemKey', targetType: 'any'} }"
             valueHelpOnly="true"
             valueHelpRequest=".openLineItemValueHelp">
             <customData>
@@ -66,8 +66,8 @@
           <!-- ui5lint-disable no-deprecated-api -->
           <Input
             value="{UsageName}"
-            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
-            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true &amp;&amp; !${path: 'ComplementedItemKey', targetType: 'any'} }"
+            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true &amp;&amp; !${path: 'ComplementedItemKey', targetType: 'any'} }"
             valueHelpOnly="true"
             valueHelpRequest=".openPurchaseUsageValueHelp" />
           <!-- ui5lint-enable no-deprecated-api -->
@@ -83,8 +83,8 @@
           <Input
             value="{UnitOfMeasureCode}"
             required="{= ${ui>/valueComplement} !== true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
-            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
-            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true &amp;&amp; !${path: 'ComplementedItemKey', targetType: 'any'} }"
+            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true &amp;&amp; !${path: 'ComplementedItemKey', targetType: 'any'} }"
             valueHelpOnly="true"
             valueHelpRequest=".openUnitsOfMeasureValueHelp" />
         </t:template>
@@ -236,12 +236,26 @@
       <t:Column label="{= ${path: 'InvoiceType', targetType: 'any'} === 'ValueComplement' ? 'Contrato (obrigatório)' : 'Contrato' }" width="12rem"
                 visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Normal' || ${path: 'InvoiceType', targetType: 'any'} === 'ValueComplement' || ${path: 'InvoiceType', targetType: 'any'} === 'Return' }">
         <t:template>
+          <!-- O código escolhido na tela (ui>/contractCodes) vale mais que a NAVEGAÇÃO: a linha nova do complemento
+               próprio não tem a navegação, e ela fica velha quando o contrato é trocado (draft.formatContractCode).
+               Complemento próprio (D5): travado quando o item original tem contrato (herdado), editável pelo value help
+               de sempre quando não tem (draft.isLineContractEditable lê ui>/inheritedContracts). -->
           <Input
-            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"
-            value="{path: 'PurchaseContract/Code', mode: 'OneWay'}"
-            showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"
+            editable="{parts: [{path: 'ui>/editable'}, {path: 'ui>/isCounterNote'}, {path: 'ComplementedItemKey', targetType: 'any'}, {path: 'ui>/inheritedContracts'}], formatter: 'draft.isLineContractEditable'}"
+            value="{parts: [{path: 'PurchaseContract/Code', mode: 'OneWay'}, {path: 'PurchaseContractKey', mode: 'OneWay'}, {path: 'ui>/contractCodes', mode: 'OneWay'}], formatter: 'draft.formatContractCode', mode: 'OneWay'}"
+            showValueHelp="{parts: [{path: 'ui>/editable'}, {path: 'ui>/isCounterNote'}, {path: 'ComplementedItemKey', targetType: 'any'}, {path: 'ui>/inheritedContracts'}], formatter: 'draft.isLineContractEditable'}"
             valueHelpOnly="true"
             valueHelpRequest=".openContractValueHelp" />
+        </t:template>
+      </t:Column>
+
+      <!-- Complemento de valor próprio (spec 2026-10-14): o item da nota original que a linha complementa, como
+           documento/item. Lido do mapa ui>/complementedItemLabels (function de candidatos), não de $expand. -->
+      <t:Column label="Nota original" width="9rem" visible="{= ${ui>/ownComplement} === true }">
+        <t:template>
+          <Text
+            wrapping="false"
+            text="{parts: [{path: 'ComplementedItemKey', targetType: 'any'}, {path: 'ui>/complementedItemLabels'}], formatter: 'draft.formatComplementedItem'}" />
         </t:template>
       </t:Column>
 
