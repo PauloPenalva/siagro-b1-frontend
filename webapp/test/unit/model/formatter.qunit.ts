@@ -74,6 +74,7 @@ QUnit.module("formatter - títulos firmes de compra (spec 2026-10-13)");
 QUnit.test("natureza Devolução, origem da conciliação e campo Composição do log", function (assert) {
 	assert.strictEqual(formatter.formatFinancialNature("PurchaseReturn"), "Devolução");
 	assert.strictEqual(formatter.formatFinancialOrigin("PurchaseFiscalReconciliation"), "Conciliação fiscal de compras");
+	assert.strictEqual(formatter.formatFinancialOrigin("SalesContractWashout"), "Washout de contrato de venda");
 	assert.strictEqual(formatter.formatFinancialChangeLogField("Composition"), "Composição");
 });
 
