@@ -138,6 +138,11 @@ export default {
   purchaseContractsWashoutApproval: '/PurchaseContractsWashoutApproval(...)',
   purchaseContractsWashoutReject: '/PurchaseContractsWashoutReject(...)',
   purchaseContractsWashoutReverse: '/PurchaseContractsWashoutReverse(...)',
+  // Washout do contrato de venda (spec 2026-10-15). Nas actions de decisão e de estorno, Key é a chave do WASHOUT.
+  salesContractsWashoutCreate: '/SalesContractsWashoutCreate(...)',
+  salesContractsWashoutApproval: '/SalesContractsWashoutApproval(...)',
+  salesContractsWashoutReject: '/SalesContractsWashoutReject(...)',
+  salesContractsWashoutReverse: '/SalesContractsWashoutReverse(...)',
 
   // Comentários do contrato: no Update/Delete a chave é a do COMENTÁRIO, não a do contrato.
   purchaseContractsCommentCreate: '/PurchaseContractsCommentCreate(...)',

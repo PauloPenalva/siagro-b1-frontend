@@ -1453,6 +1453,7 @@ const formatter = {
     m.set("FinancialDocument", "Documento financeiro");
     m.set("PurchaseContractWashout", "Washout de contrato de compra");
     m.set("PurchaseFiscalReconciliation", "Conciliação fiscal de compras");
+    m.set("SalesContractWashout", "Washout de contrato de venda");
 
     return m.get(value) ?? value ?? "";
   },

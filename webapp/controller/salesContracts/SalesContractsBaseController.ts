@@ -12,6 +12,9 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import RequestModel from "siagrob1/model/RequestModel";
 import { openAttachmentViewer } from "siagrob1/dialogs/AttachmentViewer";
 import { Link$PressEvent } from "sap/m/Link";
+import { sendJson } from "siagrob1/helpers/FetchHelpers";
+import { calculateSalesWashoutAmount, formatNumberPtBr } from "siagrob1/helpers/WashoutHelpers";
+import { WashoutDialogState, WashoutFixationOption, WashoutReverseState } from "siagrob1/types/PurchaseContractWashout";
 
 /**
  * @namespace siagrob1.controller.salesContracts
@@ -151,6 +154,8 @@ export default abstract class SalesContractsBaseController extends ContractDraft
   }
 
   private _priceFixationDialog: Dialog;
+  private _washoutDialog: Dialog;
+  private _washoutReverseDialog: Dialog;
   private _priceFixationDetailsDialog: Dialog;
   private _signatureStatusDialog: Dialog;
 
@@ -371,6 +376,311 @@ export default abstract class SalesContractsBaseController extends ContractDraft
 
     // Toda mutação de fixação passa por aqui, e todas geram linha no log — refrescar neste
     // ponto evita depender de lembrar do log em cada handler.
+    this.refreshChangeLogs();
+  }
+
+  /**
+   * Abre "Registrar Washout" (spec 2026-10-15). Fixações e washouts ativos são lidos antes de abrir, para o Select
+   * nascer com os itens; os saldos vêm do contexto OData (requestProperty garante o valor fora do $select). Tudo é
+   * auxílio visual: as travas reais são as do servidor (SalesContractsWashoutGuard).
+   */
+  async onOpenWashoutDialog() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) {
+      MessageBox.alert("Contrato não carregado.");
+      return;
+    }
+
+    const contractKey = ctx.getProperty("Key") as string;
+    const isPaf = (ctx.getProperty("Type") as string) === "ToBeDetermined";
+    const viewModel = this.getModel("viewModel") as JSONModel;
+
+    let fixations: WashoutFixationOption[];
+    let availablePhysical = 0;
+    let availableToRelease = 0;
+    let availableToPricing = 0;
+    this.setBusy(true);
+    try {
+      fixations = await this.loadWashoutFixationOptions(contractKey);
+      // Edm.Decimal chega como string: Number() antes de usar.
+      availablePhysical = Number((await ctx.requestProperty("AvaiableVolume")) ?? 0);
+      availableToRelease = Number((await ctx.requestProperty("TotalAvailableToRelease")) ?? 0);
+      availableToPricing = isPaf ? Number((await ctx.requestProperty("AvailableVolumeToPricing")) ?? 0) : 0;
+    } catch (err) {
+      MessageBox.error((err as Error).message || "Erro ao carregar as fixações do contrato.");
+      return;
+    } finally {
+      this.setBusy(false);
+    }
+
+    const firstAvailable = fixations.find(f => f.Remaining > 0) ?? fixations[0];
+
+    const state: WashoutDialogState = {
+      contractKey,
+      isPaf,
+      fixations,
+      priceFixationKey: firstAvailable?.Key ?? "",
+      contractPrice: firstAvailable?.Price ?? 0,
+      fixedVolume: 0,
+      unfixedVolume: 0,
+      marketPrice: 0,
+      penaltyAmount: 0,
+      amount: 0,
+      dueDate: null,
+      reason: "",
+      availablePhysical,
+      availableToRelease,
+      availableToPricing,
+    };
+    viewModel.setProperty("/washout", state);
+
+    this._washoutDialog ??= await DialogHelper.createDialog(
+      this,
+      "siagrob1.view.salesContracts.fragments.SalesContractWashoutDialog"
+    );
+
+    this._washoutDialog?.open();
+  }
+
+  onCloseWashoutDialog() {
+    this._washoutDialog?.close();
+  }
+
+  /** Recalcula a prévia do valor (fórmula da VENDA) sempre que fixação, volume, mercado ou multa mudam. */
+  onWashoutValuesChange() {
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    const state = viewModel.getProperty("/washout") as WashoutDialogState;
+    const fixation = state.fixations.find(f => f.Key === state.priceFixationKey);
+    const contractPrice = fixation?.Price ?? 0;
+
+    viewModel.setProperty("/washout/contractPrice", contractPrice);
+    viewModel.setProperty(
+      "/washout/amount",
+      calculateSalesWashoutAmount(
+        Number(state.marketPrice ?? 0),
+        contractPrice,
+        Number(state.fixedVolume ?? 0),
+        Number(state.penaltyAmount ?? 0)
+      )
+    );
+  }
+
+  async onConfirmWashout() {
+    this.onWashoutValuesChange();
+
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    const state = viewModel.getProperty("/washout") as WashoutDialogState;
+    const fixedVolume = Number(state.fixedVolume ?? 0);
+    const unfixedVolume = state.isPaf ? Number(state.unfixedVolume ?? 0) : 0;
+    const reason = (state.reason ?? "").trim();
+
+    if (fixedVolume < 0 || unfixedVolume < 0) {
+      MessageBox.error("Os volumes do washout não podem ser negativos.");
+      return;
+    }
+    if (fixedVolume + unfixedVolume <= 0) {
+      MessageBox.error("Informe o volume do washout.");
+      return;
+    }
+    if (fixedVolume > 0 && !state.priceFixationKey) {
+      MessageBox.error("Selecione a fixação de preço do volume fixado.");
+      return;
+    }
+    if (!reason) {
+      MessageBox.error("Informe o motivo do washout.");
+      return;
+    }
+    if (state.amount > 0 && !state.dueDate) {
+      MessageBox.error("Informe o vencimento do título a receber.");
+      return;
+    }
+
+    // Pré-checagens de saldo: só auxílio. O servidor continua sendo a autoridade — inclusive no volume já
+    // faturado, que o cliente não calcula.
+    const selectedFixation = state.fixations.find(f => f.Key === state.priceFixationKey);
+    if (fixedVolume > 0 && fixedVolume > (selectedFixation?.Remaining ?? 0)) {
+      MessageBox.error(
+        `Volume fixado excede o saldo da fixação (${formatNumberPtBr(selectedFixation?.Remaining ?? 0, 3)}).`
+      );
+      return;
+    }
+    if (state.isPaf && unfixedVolume > state.availableToPricing) {
+      MessageBox.error(
+        `Volume não fixado excede o saldo a fixar (${formatNumberPtBr(state.availableToPricing, 3)}).`
+      );
+      return;
+    }
+    if (fixedVolume + unfixedVolume > state.availablePhysical) {
+      MessageBox.error(
+        `Volume do washout excede o saldo físico do contrato (${formatNumberPtBr(state.availablePhysical, 3)}).`
+      );
+      return;
+    }
+    if (fixedVolume + unfixedVolume > state.availableToRelease) {
+      MessageBox.error(
+        `Volume do washout excede o saldo não liberado do contrato (${formatNumberPtBr(state.availableToRelease, 3)}).`
+      );
+      return;
+    }
+
+    // Diálogo ABERTO e ocupado durante o invoke: se o servidor recusar, nada do que foi digitado se perde.
+    this._washoutDialog?.setBusy(true);
+    this.setBusy(true);
+
+    const oModel = this.getView().getModel() as ODataModel;
+    const action = oModel.bindContext(this.api.salesContractsWashoutCreate);
+    action.setParameter("SalesContractKey", state.contractKey);
+    action.setParameter("Washout", {
+      PriceFixationKey: fixedVolume > 0 ? state.priceFixationKey : null,
+      FixedVolume: fixedVolume,
+      UnfixedVolume: unfixedVolume,
+      MarketPrice: Number(state.marketPrice ?? 0),
+      PenaltyAmount: Number(state.penaltyAmount ?? 0),
+      DueDate: state.dueDate ?? null,
+      Reason: reason,
+    });
+
+    try {
+      await action.invoke();
+      MessageToast.show("Washout enviado para aprovação.");
+      this.onCloseWashoutDialog();
+      this.refreshContractTotals();
+      this.refreshWashoutsList();
+    } catch (err) {
+      MessageBox.error((err as Error).message || "Erro ao registrar washout.");
+    } finally {
+      this._washoutDialog?.setBusy(false);
+      this.setBusy(false);
+    }
+  }
+
+  async onReverseWashout() {
+    const oTable = this.byId("salesContractWashoutsTable") as Table;
+    const selected = oTable.getSelectedIndex();
+
+    if (selected < 0) {
+      MessageBox.alert("Selecione um washout para estornar.");
+      return;
+    }
+
+    const ctx = oTable.getContextByIndex(selected);
+
+    if ((ctx.getProperty("Status") as string) !== "Approved") {
+      MessageBox.error(
+        "Só é possível estornar washout aprovado. Washout em aprovação é rejeitado na tela de aprovação."
+      );
+      return;
+    }
+
+    const amount = Number(ctx.getProperty("Amount") ?? 0);
+    const fixedVolume = Number(ctx.getProperty("FixedVolume") ?? 0);
+    const clauses: string[] = ["o volume volta ao saldo"];
+    if (fixedVolume > 0) {
+      clauses.push("o provisório da fixação é restaurado");
+    }
+    if (amount > 0) {
+      clauses.push(`o título a receber de R$ ${formatNumberPtBr(amount, 2)} é cancelado`);
+    }
+    const summaryBody =
+      clauses.length === 1
+        ? clauses[0]
+        : `${clauses.slice(0, -1).join(", ")} e ${clauses[clauses.length - 1]}`;
+    const state: WashoutReverseState = {
+      key: ctx.getProperty("Key") as string,
+      summary: `WO-${ctx.getProperty("Sequence") as number}: ${summaryBody}.`,
+      reason: "",
+    };
+    (this.getModel("viewModel") as JSONModel).setProperty("/washoutReverse", state);
+
+    // Fragmento genérico da compra: só liga viewModel>/washoutReverse e os handlers abaixo.
+    this._washoutReverseDialog ??= await DialogHelper.createDialog(
+      this,
+      "siagrob1.view.purchaseContracts.fragments.WashoutReverseDialog"
+    );
+
+    this._washoutReverseDialog?.open();
+  }
+
+  onCloseWashoutReverseDialog() {
+    this._washoutReverseDialog?.close();
+  }
+
+  async onConfirmWashoutReverse() {
+    const state = (this.getModel("viewModel") as JSONModel).getProperty("/washoutReverse") as WashoutReverseState;
+    const reason = (state.reason ?? "").trim();
+
+    if (!reason) {
+      MessageBox.error("Informe o motivo do estorno.");
+      return;
+    }
+
+    this._washoutReverseDialog?.setBusy(true);
+    this.setBusy(true);
+
+    const oModel = this.getView().getModel() as ODataModel;
+    const action = oModel.bindContext(this.api.salesContractsWashoutReverse);
+    action.setParameter("Key", state.key);
+    action.setParameter("Reason", reason);
+
+    try {
+      await action.invoke();
+      MessageToast.show("Washout estornado.");
+      this.onCloseWashoutReverseDialog();
+      this.refreshContractTotals();
+      this.refreshWashoutsList();
+    } catch (err) {
+      MessageBox.error((err as Error).message || "Erro ao estornar washout.");
+    } finally {
+      this._washoutReverseDialog?.setBusy(false);
+      this.setBusy(false);
+    }
+  }
+
+  /**
+   * Fixações confirmadas do contrato com o saldo lavável de cada uma (volume menos washouts em aprovação e
+   * aprovados). Lido por fetch: dado de diálogo, e o filtro é feito aqui para não depender de $filter sobre enum.
+   */
+  private async loadWashoutFixationOptions(contractKey: string): Promise<WashoutFixationOption[]> {
+    type FixationRow = { Key: string; FixationDate?: string; FixationVolume: number | string; FixationPrice: number | string; Status: string };
+    type WashoutRow = { PriceFixationKey?: string; FixedVolume: number | string; Status: string };
+
+    const [fixations, washouts] = await Promise.all([
+      sendJson("GET", `/odata/SalesContracts(${contractKey})/PriceFixations`),
+      sendJson("GET", `/odata/SalesContracts(${contractKey})/Washouts`),
+    ]);
+
+    if (!fixations.ok) throw new Error(fixations.message);
+    if (!washouts.ok) throw new Error(washouts.message);
+
+    const activeWashouts = ((washouts.data as { value?: WashoutRow[] })?.value ?? [])
+      .filter(w => w.Status === "InApproval" || w.Status === "Approved");
+
+    return ((fixations.data as { value?: FixationRow[] })?.value ?? [])
+      .filter(f => f.Status === "Confirmed")
+      .map(f => {
+        const volume = Number(f.FixationVolume ?? 0);
+        const price = Number(f.FixationPrice ?? 0);
+        const washed = activeWashouts
+          .filter(w => w.PriceFixationKey === f.Key)
+          .reduce((sum, w) => sum + Number(w.FixedVolume ?? 0), 0);
+        const remaining = volume - washed;
+        const date = f.FixationDate ? new Date(f.FixationDate).toLocaleDateString("pt-BR") : "";
+
+        return {
+          Key: f.Key,
+          Price: price,
+          Remaining: remaining,
+          Text: `${date} · ${formatNumberPtBr(volume, 3)} @ ${formatNumberPtBr(price, 8)} · saldo ${formatNumberPtBr(remaining, 3)}`,
+        };
+      });
+  }
+
+  /** Mesmo motivo de refreshPriceFixationsList: a tabela tem $$ownRequest e cache próprio. */
+  private refreshWashoutsList() {
+    const oBinding = (this.byId("salesContractWashoutsTable") as Table)
+      .getBinding("rows") as ODataListBinding;
+    oBinding?.refresh();
+
     this.refreshChangeLogs();
   }
 
