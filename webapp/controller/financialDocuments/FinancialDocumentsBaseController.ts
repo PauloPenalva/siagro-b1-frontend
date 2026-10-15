@@ -38,12 +38,12 @@ export abstract class FinancialDocumentsBaseController extends CommonController 
   protected abstract get originRoute(): string;
 
   /**
-   * Flag lida pela barra de filtros compartilhada (`pf>/payables`): Natureza firme/devolução e "Com saldo a
-   * resolver" só existem no Contas a Pagar. O modelo precisa existir nas três listas, senão o binding de
-   * `visible` não resolve e o item aparece em todas.
+   * Flags lidas pela barra de filtros compartilhada (`pf>`): Natureza firme/devolução e "Com saldo a resolver" existem
+   * no Pagar e no Receber (spec 2026-10-15); o item de devolução muda de chave e texto conforme o lado. O modelo precisa
+   * existir nas três listas, senão o binding de `visible` não resolve e o item aparece em todas.
    */
-  protected setPayablesFilters(payables: boolean): void {
-    this.getView().setModel(new JSONModel({ payables }), "pf");
+  protected setPayablesFilters(payables: boolean, returnNature = "PurchaseReturn", returnText = "Devolução"): void {
+    this.getView().setModel(new JSONModel({ payables, returnNature, returnText }), "pf");
   }
 
   protected binding(): ODataListBinding {
@@ -130,7 +130,7 @@ export abstract class FinancialDocumentsBaseController extends CommonController 
         filters.push(`DueDate lt ${iso} and NetAmount gt SettledAmount`);
       } else if (key === "PendingResolution") {
         // "Com saldo a resolver" (spec 2026-10-13, títulos firmes).
-        filters.push(`(${pendingResolutionFilter()})`);
+        filters.push(`(${pendingResolutionFilter(this.direction === "Receivable" ? "Receivable" : "Payable")})`);
       } else if (key === "BranchCode" || key === "CardCode") {
         filters.push(`${key} eq '${FinancialDocumentsBaseController.escapeODataLiteral(String(value))}'`);
       } else {
@@ -173,7 +173,7 @@ export abstract class FinancialDocumentsBaseController extends CommonController 
     aCols.push({
       label: "Natureza", property: "Nature", type: EdmType.Enumeration,
       valueMap: {
-        "Provisional": "Provisório", "Firm": "Firme", "PurchaseReturn": "Devolução",
+        "Provisional": "Provisório", "Firm": "Firme", "PurchaseReturn": "Devolução", "SalesReturn": "Devolução de venda",
         "Advance": "Adiantamento", "TaxWithholding": "Retenção",
       },
     });

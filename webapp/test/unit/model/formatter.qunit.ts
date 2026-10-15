@@ -95,6 +95,11 @@ QUnit.test("Cancelar título some no firme da conciliação e no provisório com
 	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Firm", "PurchaseInvoice", "0"), false);
 	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Firm", "PurchaseContractWashout", "0"), true);
 	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0"), true);
+	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Firm", "SalesInvoice", "0"), false);
+	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "SalesReturn", "SalesInvoice", "0"), false);
+	assert.strictEqual(formatter.isSalesFirmReceivable("Firm", "SalesInvoice"), true);
+	assert.strictEqual(formatter.isSalesFirmReceivable("Firm", "PurchaseInvoice"), false);
+	assert.strictEqual(formatter.formatFinancialNature("SalesReturn"), "Devolução de venda");
 });
 
 QUnit.test("formatDecimal2 aceita string do Edm.Decimal e não lança em vazio", function (assert) {

@@ -388,6 +388,13 @@ export default class Detail extends CommonController {
     }
   }
 
+  onOpenSalesInvoice(): void {
+    const key = this.documentContext()?.getProperty("SalesInvoiceKey") as string;
+    if (key) {
+      this.navTo("salesInvoicesDetail", { id: key });
+    }
+  }
+
   async openFinancialAccountsValueHelp(ev: Input$ValueHelpRequestEvent): Promise<void> {
     await this.applyValueHelp(ev, "FinancialAccountsSelectDialog", ["Code", "Name"], "Code",
       [ new Filter("Inactive", FilterOperator.EQ, false) ]);
