@@ -15,6 +15,8 @@ type ComplementForm = {
   ItemName?: string,
   CommercialUnitOfMeasureCode?: string,
   CommercialFactor?: number,
+  TaxableUnitOfMeasureCode?: string,
+  TaxableFactor?: number,
   ControlsRoyalties?: boolean,
 }
 
@@ -47,6 +49,8 @@ export default class Complement extends BaseController {
         ItemName: item?.ItemName,
         CommercialUnitOfMeasureCode: complement?.CommercialUnitOfMeasureCode,
         CommercialFactor: complement?.CommercialFactor,
+        TaxableUnitOfMeasureCode: complement?.TaxableUnitOfMeasureCode,
+        TaxableFactor: complement?.TaxableFactor,
         ControlsRoyalties: !!complement?.ControlsRoyalties,
       } as ComplementForm);
     } finally {
@@ -91,7 +95,7 @@ export default class Complement extends BaseController {
       "/CommercialUnitOfMeasureCode", ctx.getProperty("Code") as string);
   }
 
-  /** Zera os dois campos: e a unica forma de voltar a exibir em KG, ja que a unidade e valueHelpOnly. */
+  /** Zera a UoM comercial e a unidade tributavel: e a unica forma de voltar a exibir em KG, ja que a unidade comercial e valueHelpOnly. */
   onClear(): void {
     const model = this.getModel("complement") as JSONModel;
     model.setProperty("/CommercialUnitOfMeasureCode", null);
@@ -100,15 +104,22 @@ export default class Complement extends BaseController {
     const factor = this.byId("commercialFactor") as Input;
     factor.setValue("");
     factor.setValueState(ValueState.None);
+
+    model.setProperty("/TaxableUnitOfMeasureCode", null);
+    model.setProperty("/TaxableFactor", null);
+
+    const taxableFactor = this.byId("taxableFactor") as Input;
+    taxableFactor.setValue("");
+    taxableFactor.setValueState(ValueState.None);
   }
 
   /**
-   * Le o fator direto do Input, nao do model: com `sap.ui.model.type.Float`, apagar o campo lanca
+   * Le um fator direto do Input, nao do model: com `sap.ui.model.type.Float`, apagar o campo lanca
    * ParseException, o binding fica em erro e o model MANTEM o valor anterior. Pelo model, limpar o
    * campo gravaria silenciosamente o numero velho de volta.
    */
-  private readFactor(): number {
-    const raw = (this.byId("commercialFactor") as Input).getValue().trim();
+  private readFactor(inputId: string): number {
+    const raw = (this.byId(inputId) as Input).getValue().trim();
 
     if (!raw) {
       return null;
@@ -122,7 +133,7 @@ export default class Complement extends BaseController {
     const model = this.getModel("complement") as JSONModel;
     const itemCode = model.getProperty("/ItemCode") as string;
     const uom = ((model.getProperty("/CommercialUnitOfMeasureCode") as string) || "").trim() || null;
-    const factor = this.readFactor();
+    const factor = this.readFactor("commercialFactor");
 
     // Meio preenchido nao converte nada e ainda deixa a tela mentindo (sigla comercial ao lado de
     // preco em KG). Ou os dois, ou nenhum.
@@ -136,6 +147,19 @@ export default class Complement extends BaseController {
       return;
     }
 
+    const taxableUom = ((model.getProperty("/TaxableUnitOfMeasureCode") as string) || "").trim().toUpperCase() || null;
+    const taxableFactor = this.readFactor("taxableFactor");
+
+    if ((taxableUom === null) !== (taxableFactor === null)) {
+      MessageBox.warning("Informe a unidade tributável e o fator juntos, ou deixe os dois em branco.");
+      return;
+    }
+
+    if (taxableFactor !== null && !(taxableFactor > 0)) {
+      MessageBox.warning("O fator da unidade tributável deve ser maior que zero.");
+      return;
+    }
+
     const oModel = this.getModel() as ODataModel;
     const action = oModel.bindContext(this.api.itemsSetComplement);
     action.setParameter("ItemCode", itemCode);
@@ -144,13 +168,18 @@ export default class Complement extends BaseController {
     action.setParameter("CommercialUnitOfMeasureCode", uom);
     action.setParameter("CommercialFactor", factor);
     action.setParameter("ControlsRoyalties", !!model.getProperty("/ControlsRoyalties"));
+    action.setParameter("TaxableUnitOfMeasureCode", taxableUom);
+    action.setParameter("TaxableFactor", taxableFactor);
 
     this.setBusy(true);
     try {
       await action.invoke();
       model.setProperty("/CommercialUnitOfMeasureCode", uom);
       model.setProperty("/CommercialFactor", factor);
+      model.setProperty("/TaxableUnitOfMeasureCode", taxableUom);
+      model.setProperty("/TaxableFactor", taxableFactor);
       (this.byId("commercialFactor") as Input).setValueState(ValueState.None);
+      (this.byId("taxableFactor") as Input).setValueState(ValueState.None);
       MessageToast.show("Complemento salvo com sucesso.", { closeOnBrowserNavigation: false });
     } finally {
       this.setBusy(false);
