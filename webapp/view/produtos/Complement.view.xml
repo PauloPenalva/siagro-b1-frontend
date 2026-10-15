@@ -55,6 +55,25 @@
 					<Label text="" />
 					<Text text="Preenchidos os dois campos, o preço do contrato (sempre em KG) passa a ser exibido nesta unidade. Deixe os dois em branco para voltar a exibir em KG." />
 
+					<core:Title text="Exportação (NF-e)" emphasized="true" />
+					<Label text="Unidade tributável" />
+					<Input
+						id="taxableUnitOfMeasureCode"
+						value="{complement>/TaxableUnitOfMeasureCode}"
+						maxLength="6"
+					/>
+					<Label text="Fator (KG por unidade tributável)" />
+					<Input
+						id="taxableFactor"
+						value="{
+							path: 'complement>/TaxableFactor',
+							type: 'sap.ui.model.type.Float',
+							formatOptions: { decimals: 6, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+						}"
+					/>
+					<Label text="" />
+					<Text text="Preenchidos os dois campos, a NF-e com CFOP de exportação (7xxx, 5501/6501, 5502/6502, 5504/6504, 5505/6505) informa a quantidade e o valor tributados nesta unidade (ex.: TON com fator 1000). Deixe os dois em branco para usar a unidade do documento." />
+
 					<core:Title text="Royalties (ITS)" emphasized="true" />
 					<Label text="Controla royalties" />
 					<CheckBox id="controlsRoyalties" selected="{complement>/ControlsRoyalties}" />
