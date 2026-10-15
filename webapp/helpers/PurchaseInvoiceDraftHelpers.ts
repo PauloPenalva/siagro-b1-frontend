@@ -1,3 +1,5 @@
+import { PurchaseInvoiceComplementCandidate } from "siagrob1/types/PurchaseInvoiceComplementCandidate";
+
 /**
  * Linha enviada no deep-insert do documento de entrada.
  *
@@ -30,6 +32,8 @@ export interface InvoiceItemPayload {
   OtherExpensesValue: number;
   /** Valor do complemento (documento do tipo Complemento de valor, spec D11): 0 nos demais tipos. */
   ComplementAmount: number;
+  /** Complemento de valor próprio (spec 2026-10-14): o item da nota original. Nulo nos demais. (strictNullChecks off.) */
+  ComplementedItemKey: string;
 }
 
 /**
@@ -138,7 +142,7 @@ export function blankItemRow(): InvoiceItemPayload {
     ItemCode: "", ItemName: "", UnitOfMeasureCode: "", Quantity: 0, UnitPrice: 0,
     SalesInvoiceItemKey: null, PurchaseContractKey: null, UsageCode: null, UsageName: null,
     NfeItemNumber: null, FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0,
-    ComplementAmount: 0,
+    ComplementAmount: 0, ComplementedItemKey: null,
   };
 }
 
@@ -169,4 +173,74 @@ export function draftItemRows(items?: ImportedInvoiceItem[]): InvoiceItemPayload
     OtherExpensesValue: toNumber(item.OtherExpensesValue),
     ComplementAmount: toNumber(item.ComplementAmount),
   }));
+}
+
+/**
+ * Linha nova do complemento de valor próprio (spec 2026-10-14): herda do item escolhido produto, unidade, natureza e o
+ * contrato quando o original tem (o servidor herda de novo e recusa divergência); original sem contrato (D5) = contrato
+ * nulo, o operador escolhe pelo value help. Sem quantidade nem preço; o operador digita o valor.
+ */
+export function complementLineFrom(candidate: PurchaseInvoiceComplementCandidate): InvoiceItemPayload {
+  return {
+    ...blankItemRow(),
+    ItemCode: candidate.ItemCode,
+    ItemName: candidate.ItemName,
+    UnitOfMeasureCode: candidate.UnitOfMeasure,
+    PurchaseContractKey: candidate.PurchaseContractKey,
+    UsageCode: candidate.UsageCode,
+    UsageName: candidate.UsageName,
+    ComplementedItemKey: candidate.ItemKey,
+  };
+}
+
+/** "DE000005/1": número do documento original e nItem do item (o mesmo formato da recusa C4). */
+export function complementedItemLabel(invoiceNumber: string, lineNumber: number): string {
+  return `${invoiceNumber ?? ""}/${lineNumber ?? "?"}`;
+}
+
+/** Mapa item original → rótulo, a partir da function de candidatos (Detail/Edit). */
+export function complementedItemLabels(rows: PurchaseInvoiceComplementCandidate[]): Record<string, string> {
+  return (rows ?? []).reduce<Record<string, string>>((labels, row) => {
+    labels[row.ItemKey] = complementedItemLabel(row.InvoiceNumber, row.LineNumber);
+    return labels;
+  }, {});
+}
+
+/** Item original para contrato herdado, só dos itens que têm contrato (D5): a linha que aponta um deles trava o contrato. */
+export function inheritedContracts(rows: PurchaseInvoiceComplementCandidate[]): Record<string, string> {
+  return (rows ?? []).reduce<Record<string, string>>((contracts, row) => {
+    if (row.PurchaseContractKey) {
+      contracts[row.ItemKey] = row.PurchaseContractKey;
+    }
+    return contracts;
+  }, {});
+}
+
+/**
+ * Célula "Contrato" editável: tela editável, fora da contra-nota e, na linha do complemento próprio, só quando o item
+ * original NÃO tem contrato (D5). Mapa ainda não carregado conta como editável: o servidor recusa a troca (C10).
+ */
+export function isLineContractEditable(
+  editable: boolean, isCounterNote: boolean, complementedItemKey: string, inherited: Record<string, string>
+): boolean {
+  return editable === true && isCounterNote !== true && !(complementedItemKey && inherited?.[complementedItemKey]);
+}
+
+/** Coluna "Nota original": o rótulo do item da linha; vazio fora do complemento próprio. */
+export function formatComplementedItem(key: string, labels: Record<string, string>): string {
+  return key ? labels?.[key] ?? "" : "";
+}
+
+/**
+ * Coluna "Contrato": o código escolhido na tela (mapa `ui>/contractCodes`, alimentado pelo value help e pela linha do
+ * complemento) vale mais que a NAVEGAÇÃO, que não existe na linha nova e fica velha quando o contrato é trocado. Sem
+ * chave, vazio (o produto trocado desamarra o contrato).
+ */
+export function formatContractCode(navigationCode: string, key: string, codes: Record<string, string>): string {
+  return key ? codes?.[key] || navigationCode || "" : "";
+}
+
+/** Cópia do mapa com a entrada nova: o binding do JSONModel só reavalia quando o objeto muda de identidade. */
+export function withEntry(map: Record<string, string>, key: string, value: string): Record<string, string> {
+  return key ? { ...(map ?? {}), [key]: value ?? "" } : { ...(map ?? {}) };
 }

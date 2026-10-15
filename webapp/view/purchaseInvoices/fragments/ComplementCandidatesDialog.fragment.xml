@@ -1,0 +1,41 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }"
+>
+  <!--
+    Item da nota original do complemento de valor próprio (spec 2026-10-14): itens das entradas próprias autorizadas do
+    fornecedor e da filial do cabeçalho, pela function PurchaseInvoicesGetComplementCandidates. JSONModel "candidates"
+    no próprio diálogo: a lista vem de uma function, não de um entity set, e por isso não passa pelo
+    openTableSelectDialog (que filtra um ODataListBinding do modelo padrão). Valores em double: formatDecimal aceita.
+  -->
+  <TableSelectDialog
+      title="Item da nota original"
+      noDataText="Nenhuma entrada própria autorizada deste fornecedor nesta filial."
+      items="{candidates>/rows}"
+      search=".onComplementCandidateSearch"
+      contentWidth="64rem">
+    <columns>
+      <Column><header><Text text="Nota" /></header></Column>
+      <Column><header><Text text="Data" /></header></Column>
+      <Column width="4rem"><header><Text text="Item" /></header></Column>
+      <Column><header><Text text="Produto" /></header></Column>
+      <Column hAlign="End"><header><Text text="Quantidade" /></header></Column>
+      <Column hAlign="End"><header><Text text="Valor" /></header></Column>
+      <Column><header><Text text="Contrato" /></header></Column>
+    </columns>
+    <ColumnListItem>
+      <cells>
+        <Text text="{candidates>InvoiceNumber}" wrapping="false" />
+        <Text text="{path: 'candidates>InvoiceDate', formatter: 'formatter.formatDate'}" wrapping="false" />
+        <Text text="{candidates>LineNumber}" wrapping="false" />
+        <ObjectIdentifier title="{candidates>ItemCode}" text="{candidates>ItemName}" />
+        <Text text="{path: 'candidates>Quantity', formatter: 'formatter.formatDecimal3'}" wrapping="false" />
+        <Text text="{path: 'candidates>Total', formatter: 'formatter.formatDecimal2'}" wrapping="false" />
+        <Text text="{candidates>PurchaseContractCode}" wrapping="false" />
+      </cells>
+    </ColumnListItem>
+  </TableSelectDialog>
+</core:FragmentDefinition>

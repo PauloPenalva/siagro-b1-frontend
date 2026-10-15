@@ -207,6 +207,12 @@ export default class Add extends BaseController {
       return;
     }
 
+    // Complemento de valor próprio (spec 2026-10-14): a linha nasce do item da nota original escolhido.
+    if (this.isOwnComplementDraft()) {
+      void this.addOwnComplementLine(oBinding);
+      return;
+    }
+
     oBinding.create(blankItemRow(), false, false, false);
 
     this.refreshDocumentTotal();
