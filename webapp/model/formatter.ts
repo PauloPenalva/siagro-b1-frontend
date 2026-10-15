@@ -584,7 +584,7 @@ const formatter = {
     status: string, settledAmount: number | string, nature?: string, originType?: string, composedAmount?: number | string,
   ) =>
     !!status && status !== "Canceled" && !Number(settledAmount)
-    && !formatter.isPurchaseFirmPayable(nature, originType) && !Number(composedAmount ?? 0),
+    && !formatter.isPurchaseFirmPayable(nature, originType) && !formatter.isSalesFirmReceivable(nature, originType) && !Number(composedAmount ?? 0),
 
   /**
    * Firme ou devolução da Conciliação Fiscal de Compras, ou firme do documento "Complemento de valor" (origem
@@ -593,6 +593,10 @@ const formatter = {
   isPurchaseFirmPayable: (nature?: string, originType?: string) =>
     ((nature === "Firm" || nature === "PurchaseReturn") && originType === "PurchaseFiscalReconciliation")
     || (nature === "Firm" && originType === "PurchaseInvoice"),
+
+  /** Firme ou devolução nascidos do documento de saída (spec 2026-10-15): sai só por composição, dação ou encontro de contas. */
+  isSalesFirmReceivable: (nature?: string, originType?: string) =>
+    (nature === "Firm" || nature === "SalesReturn") && originType === "SalesInvoice",
 
   formatPriceDifferenceState: (value: number | string) => {
     // OData v4 serializa Edm.Decimal como string — coagir antes de comparar.
@@ -1393,6 +1397,7 @@ const formatter = {
     m.set("Advance", "Adiantamento");
     m.set("TaxWithholding", "Retenção");
     m.set("PurchaseReturn", "Devolução");
+    m.set("SalesReturn", "Devolução de venda");
 
     return m.get(value) ?? "";
   },

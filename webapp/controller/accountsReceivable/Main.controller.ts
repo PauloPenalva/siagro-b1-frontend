@@ -22,7 +22,7 @@ export default class Main extends FinancialDocumentsBaseController {
 
   onInit(): void {
     this.createFilterModel();
-    this.setPayablesFilters(false);
+    this.setPayablesFilters(true, "SalesReturn", "Devolução de venda");
 
     this.getRouter().getRoute("accountsReceivable")
       .attachPatternMatched(() => this.onRouteMatched());

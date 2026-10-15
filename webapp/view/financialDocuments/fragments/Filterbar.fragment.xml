@@ -48,14 +48,14 @@
       </fb:control>
     </fb:FilterGroupItem>
 
-    <!-- Somente Contas a Pagar: Firme e Devolução existem só no contas a pagar da compra. -->
+    <!-- Pagar e Receber: Firme e Devolução existem nos dois lados; a chave e o texto da devolução vêm do modelo pf. -->
     <fb:FilterGroupItem name="naturePayable" label="Natureza" groupName="GroupNaturePayable" visibleInFilterBar="true" visible="{= !!${pf>/payables} }">
       <fb:control>
         <Select forceSelection="false" selectedKey="{filter>/Nature}">
           <core:ListItem key="" text="Todas"/>
           <core:ListItem key="Provisional" text="Provisório"/>
           <core:ListItem key="Firm" text="Firme"/>
-          <core:ListItem key="PurchaseReturn" text="Devolução"/>
+          <core:ListItem key="{pf>/returnNature}" text="{pf>/returnText}"/>
           <core:ListItem key="Advance" text="Adiantamento"/>
         </Select>
       </fb:control>

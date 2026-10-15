@@ -156,6 +156,24 @@
           </f:FormElement>
         </f:formElements>
       </f:FormContainer>
+      <f:FormContainer title="Documento de saída"
+        visible="{= ${path: 'OriginType', targetType: 'any'} === 'SalesInvoice' }">
+        <f:formElements>
+          <f:FormElement label="NF">
+            <f:fields><Text text="{TaxDocumentNumber}"/></f:fields>
+          </f:FormElement>
+          <f:FormElement label="Documento de saída">
+            <f:fields>
+              <Link text="Abrir documento de saída" enabled="{= !!${path: 'SalesInvoiceKey', targetType: 'any'} }" press=".onOpenSalesInvoice"/>
+            </f:fields>
+          </f:FormElement>
+          <f:FormElement label="Composto em" visible="{= !!${composition>/composedInKey} }">
+            <f:fields>
+              <Link text="{composition>/composedInCode}" press=".onOpenComposedIn"/>
+            </f:fields>
+          </f:FormElement>
+        </f:formElements>
+      </f:FormContainer>
       <f:FormContainer title="Observações">
         <f:formElements>
           <f:FormElement label="Comentários">

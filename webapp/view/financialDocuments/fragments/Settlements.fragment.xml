@@ -31,11 +31,12 @@
         <Button type="Transparent" text="Baixar por dação" press=".onOpenDationDialog"
                 visible="{= ${path: 'Nature', targetType: 'any'} === 'Firm'
                           &amp;&amp; (${path: 'OriginType', targetType: 'any'} === 'PurchaseFiscalReconciliation'
-                              || ${path: 'OriginType', targetType: 'any'} === 'PurchaseInvoice')
+                              || ${path: 'OriginType', targetType: 'any'} === 'PurchaseInvoice'
+                              || ${path: 'OriginType', targetType: 'any'} === 'SalesInvoice')
                           &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Canceled'
                           &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Settled' }"/>
         <Button type="Transparent" text="Compensar com firme" press=".onOpenNettingDialog"
-                visible="{= ${path: 'Nature', targetType: 'any'} === 'PurchaseReturn'
+                visible="{= (${path: 'Nature', targetType: 'any'} === 'PurchaseReturn' || ${path: 'Nature', targetType: 'any'} === 'SalesReturn')
                           &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Canceled'
                           &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Settled' }"/>
         <!-- Provisório com disponível para baixa recebe o crédito do adiantamento do contrato (spec 2026-10-14) -->
