@@ -11,7 +11,7 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
-import { isPurchaseNfeMode, isPurchaseTaxMode, mustFallBackToNormal, requiresSupplierKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
+import { isOwnComplement, isPurchaseNfeMode, isPurchaseTaxMode, mustFallBackToNormal, requiresSupplierKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { summarizeInvoiceTaxes, TaxLine } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 import { formatAmount, lineFunrural, purchaseChargeLineOf, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
 import { missingUnitOfMeasureMessage, toNumber, unitSuggestionToApply } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
@@ -62,6 +62,13 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/taxMode", false);
       uiModel.setProperty("/isCounterNote", false);
       uiModel.setProperty("/valueComplement", false);
+      // Complemento de valor próprio (spec 2026-10-14): a flag e os mapas que a grade lê ("Nota original", contrato
+      // herdado e travado (D5) e o código do contrato da linha nova, que não tem a navegação). Do componente: zerados
+      // a cada documento.
+      uiModel.setProperty("/ownComplement", false);
+      uiModel.setProperty("/complementedItemLabels", {});
+      uiModel.setProperty("/inheritedContracts", {});
+      uiModel.setProperty("/contractCodes", {});
       // Vínculos da contra-nota: só o Detail os preenche (depois de conferir que o documento é o mesmo). O `ui` é do
       // componente, então Incluir/Editar não podem herdar o link do último documento aberto.
       uiModel.setProperty("/counterNote", { key: "", text: "" });
@@ -101,6 +108,8 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/isCounterNote", !!producerInvoiceKey);
       // Complemento de valor não tem unidade de medida (linha só com valor): a coluna UM deixa de ser obrigatória.
       uiModel.setProperty("/valueComplement", invoiceType === "ValueComplement");
+      // Complemento de valor próprio (spec 2026-10-14): "Incluir Item" abre a lista de itens das notas originais.
+      uiModel.setProperty("/ownComplement", isOwnComplement(nfeMode, invoiceType));
       // Natureza, CFOP, "Tributos do item", condição de pagamento e Transporte: própria e terceiro Normal, com a
       // mesma tela (spec terceiro-chave D1).
       const taxMode = isPurchaseTaxMode(taxLocked, issuerType, invoiceType);
@@ -127,6 +136,7 @@ export abstract class BaseController extends CommonController {
         uiModel.setProperty("/nfeReturn", false);
         uiModel.setProperty("/taxMode", false);
         uiModel.setProperty("/isCounterNote", false);
+        uiModel.setProperty("/ownComplement", false);
         uiModel.setProperty("/counterNote", { key: "", text: "" });
         uiModel.setProperty("/producerInvoice", { key: "", text: "" });
         uiModel.setProperty("/custody", { key: "", code: "" });

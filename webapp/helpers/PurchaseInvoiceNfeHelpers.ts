@@ -61,9 +61,13 @@ export function supplierNfeAuthorizationText(protocol: string, checkedAt: string
 	return `Autorizada na SEFAZ — protocolo ${protocol}${when}`;
 }
 
-/** Entrada própria Normal ou devolução de compra, Pendente, sem NF-e ou com a anterior rejeitada. */
+/**
+ * Entrada própria Normal, complemento de valor próprio (NF-e complementar, spec 2026-10-14) ou devolução de compra,
+ * Pendente, sem NF-e ou com a anterior rejeitada.
+ */
 export function canIssuePurchaseNfe(doc: PurchaseNfeState, nfeMode: boolean): boolean {
-	const issuable = doc.InvoiceType === "Normal" || (doc.InvoiceType === "Return" && doc.IsNfeReturn === true);
+	const issuable = doc.InvoiceType === "Normal" || doc.InvoiceType === "ValueComplement" ||
+		(doc.InvoiceType === "Return" && doc.IsNfeReturn === true);
 	return nfeMode === true && issuable && doc.InvoiceStatus === "Pending" &&
 		(doc.NfeStatus === "None" || doc.NfeStatus === "Rejected" || !doc.NfeStatus);
 }
@@ -187,12 +191,26 @@ export function mustFallBackToNormal(invoiceType: string, isNfeReturn: boolean, 
 }
 
 /**
+ * Complemento de valor de EMISSÃO PRÓPRIA no modo NF-e (spec 2026-10-14): cada linha nasce de um item de uma entrada
+ * própria autorizada ("Incluir Item" abre a lista) e herda produto, unidade e natureza, travados na grade (o contrato
+ * também, quando o original tem: D5).
+ */
+export function isOwnComplement(nfeMode: boolean, invoiceType: string): boolean {
+	return nfeMode === true && invoiceType === "ValueComplement";
+}
+
+/** URL da function de candidatos: strings OData entre aspas simples, códigos codificados para a URL. */
+export function complementCandidatesPath(base: string, cardCode: string, branchCode: string): string {
+	return `${base}(CardCode='${encodeURIComponent(cardCode ?? "")}',BranchCode='${encodeURIComponent(branchCode ?? "")}')`;
+}
+
+/**
  * $select das linhas no Detail/Edit. Explícito porque as colunas fiscais só aparecem no modo NF-e — informação
  * que ainda não chegou quando o UI5 monta o $select automático — e o diálogo fiscal lê a fotografia inteira.
  */
 export const PURCHASE_ITEM_SELECT =
 	"Key,ItemCode,ItemName,UnitOfMeasureCode,Quantity,UnitPrice,Total,AssessedShortage,Difference," +
-	"SalesInvoiceItemKey,PurchaseContractKey,PurchaseInvoiceItemOriginKey,UsageCode,UsageName,Cfop,Ncm,GoodsOrigin," +
+	"SalesInvoiceItemKey,PurchaseContractKey,PurchaseInvoiceItemOriginKey,ComplementedItemKey,UsageCode,UsageName,Cfop,Ncm,GoodsOrigin," +
 	"CstIcms,IcmsBase,IcmsRate,IcmsValue,IcmsBaseReduction,IcmsDeferral,IcmsOperationValue,IcmsDeferredValue," +
 	"IcmsBenefitCode,CstPis,PisBase,PisRate,PisValue,CstCofins,CofinsBase,CofinsRate,CofinsValue,IbsCbsCst," +
 	"IbsCbsClassCode,IbsCbsBase,CbsRate,CbsRateReduction,CbsValue,IbsStateRate,IbsMunicipalRate,IbsRateReduction," +
