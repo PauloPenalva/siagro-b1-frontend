@@ -246,6 +246,14 @@ QUnit.test("caminho da function de candidatos com aspas e códigos codificados",
 	assert.strictEqual(
 		complementCandidatesPath("/odata/PurchaseInvoicesGetComplementCandidates", "F 01", "01"),
 		"/odata/PurchaseInvoicesGetComplementCandidates(CardCode='F%2001',BranchCode='01')");
+	assert.strictEqual(
+		complementCandidatesPath("/odata/PurchaseInvoicesGetComplementCandidates", "D'AGUA", "01"),
+		"/odata/PurchaseInvoicesGetComplementCandidates(CardCode='D''AGUA',BranchCode='01')",
+		"apóstrofo dobrado no literal do OData");
+	assert.strictEqual(
+		complementCandidatesPath("/odata/PurchaseInvoicesGetComplementCandidates", "A&B#1", "0'1"),
+		"/odata/PurchaseInvoicesGetComplementCandidates(CardCode='A%26B%231',BranchCode='0''1')",
+		"caracteres reservados codificados nos dois códigos");
 });
 
 QUnit.test("as linhas do Detail/Edit trazem o item da nota original", function (assert) {

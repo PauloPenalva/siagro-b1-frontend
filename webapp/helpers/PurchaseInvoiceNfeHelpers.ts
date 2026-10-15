@@ -199,9 +199,17 @@ export function isOwnComplement(nfeMode: boolean, invoiceType: string): boolean 
 	return nfeMode === true && invoiceType === "ValueComplement";
 }
 
-/** URL da function de candidatos: strings OData entre aspas simples, códigos codificados para a URL. */
+/**
+ * Literal de string do OData para um parâmetro de function: o apóstrofo do valor vai dobrado ('D''AGUA'), e o valor é
+ * codificado para a URL (espaço, &, # e afins).
+ */
+function odataStringLiteral(value: string): string {
+	return `'${encodeURIComponent((value ?? "").replace(/'/g, "''"))}'`;
+}
+
+/** URL da function de candidatos: os dois códigos como literais de string do OData. */
 export function complementCandidatesPath(base: string, cardCode: string, branchCode: string): string {
-	return `${base}(CardCode='${encodeURIComponent(cardCode ?? "")}',BranchCode='${encodeURIComponent(branchCode ?? "")}')`;
+	return `${base}(CardCode=${odataStringLiteral(cardCode)},BranchCode=${odataStringLiteral(branchCode)})`;
 }
 
 /**
