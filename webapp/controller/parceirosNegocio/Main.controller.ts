@@ -83,6 +83,10 @@ export default class Main extends BaseController {
 				if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 					MessageBox.information("Registro deletado.")
 				}
+			} catch (err) {
+				// O backend recusa excluir parceiro em uso (contrato, liberação, romaneio...) com 400 e
+				// o motivo na mensagem; sem este catch a recusa sumia sem aviso.
+				MessageBox.error((err as Error).message || "Não foi possível excluir o parceiro.");
 			} finally {
 				this.setBusy(false)
 			}
