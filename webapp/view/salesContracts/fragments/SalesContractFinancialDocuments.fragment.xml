@@ -1,0 +1,45 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+  <!--
+    Seção Financeiro do contrato de venda (spec 2026-10-15, firmes a receber): provisórios, firmes, devoluções de venda e adiantamentos, pela function FinancialDocumentsGetByContract, no JSONModel "contractFinancial". Somente leitura. A coluna NF mostra TaxDocumentNumber, que traz o número interno quando o documento não tem NF.
+  -->
+  <Table
+    class="sapUiSizeCondensed"
+    items="{contractFinancial>/rows}"
+    noDataText="Nenhum título financeiro neste contrato.">
+    <columns>
+      <Column width="9rem"><Text text="Título" /></Column>
+      <Column width="8rem"><Text text="Natureza" /></Column>
+      <Column width="9rem"><Text text="Situação" /></Column>
+      <Column width="9rem"><Text text="NF" /></Column>
+      <Column hAlign="End"><Text text="Valor" /></Column>
+      <Column hAlign="End"><Text text="Composto" /></Column>
+      <Column hAlign="End"><Text text="Baixado" /></Column>
+      <Column hAlign="End"><Text text="Em aberto" /></Column>
+      <Column hAlign="End"><Text text="Aplicado / transferido" /></Column>
+      <Column hAlign="End"><Text text="Crédito disponível" /></Column>
+    </columns>
+    <items>
+      <ColumnListItem>
+        <cells>
+          <Link text="{contractFinancial>Code}" press=".onOpenContractFinancialDocument" />
+          <Text text="{path: 'contractFinancial>Nature', formatter: '.formatter.formatFinancialNature'}" />
+          <ObjectStatus
+            text="{path: 'contractFinancial>Status', formatter: '.formatter.formatFinancialStatus'}"
+            state="{path: 'contractFinancial>Status', formatter: '.formatter.stateFinancialStatus'}" />
+          <Text text="{contractFinancial>TaxDocumentNumber}" />
+          <Text text="{path: 'contractFinancial>NetAmount', formatter: '.formatter.formatDecimal2'}" />
+          <Text text="{path: 'contractFinancial>ComposedAmount', formatter: '.formatter.formatDecimal2'}" />
+          <Text text="{path: 'contractFinancial>SettledAmount', formatter: '.formatter.formatDecimal2'}" />
+          <Text text="{path: 'contractFinancial>OpenAmount', formatter: '.formatter.formatDecimal2'}" />
+          <Text text="{path: 'contractFinancial>AppliedAmount', formatter: '.formatter.formatDecimal2'}"
+                visible="{= ${contractFinancial>Nature} === 'Advance' }" />
+          <Text text="{path: 'contractFinancial>AvailableAdvanceAmount', formatter: '.formatter.formatDecimal2'}"
+                visible="{= ${contractFinancial>Nature} === 'Advance' }" />
+        </cells>
+      </ColumnListItem>
+    </items>
+  </Table>
+</core:FragmentDefinition>

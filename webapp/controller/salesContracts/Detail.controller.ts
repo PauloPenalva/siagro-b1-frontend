@@ -14,6 +14,9 @@ import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import SessionService from "siagrob1/services/SessionService";
+import { Link$PressEvent } from "sap/m/Link";
+import { odataCollection, sendJson } from "siagrob1/helpers/FetchHelpers";
+import { FinancialDocumentByContract } from "siagrob1/types/FinancialDocumentByContract";
 
 /** Complemento fiscal do contrato (DTO PascalCase da function; vem nulo quando ainda não existe). */
 type FiscalComplement = {
@@ -37,10 +40,12 @@ export default class Detail extends SalesContractsBaseController {
   private _fiscalContractKey: string;
   private _fiscalComplementDialog: Dialog;
   private _fiscalSaving = false;
+  private _financialContractKey: string;
 
 	onInit(): void  {	
 		this.getView().setModel(new JSONModel({}), "fiscalComplement");
 		this.getView().setModel(new JSONModel({}), "fiscalComplementDialog");
+		this.getView().setModel(new JSONModel({ rows: [] }), "contractFinancial");
 		this.initContractDrafts();
 		this.getRouter().getRoute("salesContractsDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
 	}
@@ -70,6 +75,7 @@ export default class Detail extends SalesContractsBaseController {
 			const sPath = `/SalesContracts(${id})`;
 			this.bindElement(sPath);
       this.getInvoices(id);
+      void this.loadContractFinancial(id);
       this.getAttachments(id);
       void this.reloadContractDrafts(id);
       void this.applyPostApprovalEditable(sPath);
@@ -91,6 +97,29 @@ export default class Detail extends SalesContractsBaseController {
 		}
 
 	}
+
+  /** Seção "Financeiro" (spec 2026-10-15, firmes a receber): provisórios, firmes, devoluções e adiantamentos do contrato. */
+  private async loadContractFinancial(contractKey: string): Promise<void> {
+    this._financialContractKey = contractKey;
+    const model = this.getModel("contractFinancial") as JSONModel;
+    model.setData({ rows: [] });
+
+    const result = await sendJson("GET",
+      `${this.api.financialDocumentsGetByContract}(ContractType='Sales',ContractKey=${contractKey})`);
+    if (contractKey !== this._financialContractKey) return;
+
+    if (!result.ok) {
+      MessageBox.error(result.message);
+      return;
+    }
+
+    model.setData({ rows: odataCollection<FinancialDocumentByContract>(result.data) });
+  }
+
+  onOpenContractFinancialDocument(ev: Link$PressEvent): void {
+    const row = ev.getSource().getBindingContext("contractFinancial").getObject() as FinancialDocumentByContract;
+    this.navTo("financialDocumentsDetail", { id: row.Key });
+  }
 
   /**
    * Seção "Complemento Fiscal": só existe em STANDALONE (`ui>/standalone`), então nem consulta o
