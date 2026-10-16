@@ -484,7 +484,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 - Create: `webapp/dialogs/fragments/CompaniesSelectDialog.fragment.xml`
 
 **Interfaces:**
-- Consumes: `sessionModel>/companyCode` (Task 1); OData `UsersProfiles.CompanyCode` + nav `Company` (backend); `applyValueHelp(ev, name, filters, property)`.
+- Consumes: `sessionModel>/companyCode` (Task 1); OData `UsersProfiles.CompanyCode` (backend — a nav `Company` NÃO está no EDM, de propósito); `applyValueHelp(ev, name, filters, property)`.
 - Produces: `CommonController.openCompaniesValueHelp(ev)`; fragment `CompaniesSelectDialog`.
 
 - [ ] **Step 1: Diálogo de seleção de empresas**
@@ -546,28 +546,19 @@ Após `openProfilesValueHelp` em `webapp/controller/common/CommonController.ts`:
 
 Em `webapp/view/users/fragments/Profiles.fragment.xml`, **antes** da coluna "Codigo":
 ```xml
-      <t:Column label="Empresa" width="12rem">
+      <t:Column label="Empresa" width="10rem">
         <t:template>
           <Input
-            width="10rem"
+            width="8rem"
             required="true"
             value="{CompanyCode}"
             showValueHelp="true"
             valueHelpOnly="true"
-            valueHelpRequest=".openCompaniesValueHelp">
-            <customData>
-              <core:CustomData key="descriptionProperty" value="Company/CompanyName" />
-            </customData>
-          </Input>
-        </t:template>
-      </t:Column>
-      <t:Column label="Nome da Empresa" width="14rem">
-        <t:template>
-          <Text text="{Company/CompanyName}" />
+            valueHelpRequest=".openCompaniesValueHelp"/>
         </t:template>
       </t:Column>
 ```
-(`autoExpandSelect: true` no manifest traz `Company/CompanyName` junto da linha.)
+**Sem** coluna "Nome da Empresa" e **sem** `descriptionProperty`: a navegação `UserProfile → Company` foi retirada do EDM pela revisão final do backend (um `$expand=Company` devolvia a string de conexão em claro), então `Company/CompanyName` não existe para o OData. O nome aparece no value help (código + nome) e na tela de Empresas.
 
 - [ ] **Step 4: Padrão da empresa ao incluir perfil**
 
