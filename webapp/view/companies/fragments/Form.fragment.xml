@@ -1,0 +1,55 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+    <f:SimpleForm
+      id="companiesForm"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="3"
+      labelSpanL="3"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="1"
+      columnsL="1"
+      columnsM="1"
+      singleContainerFullSize="true"
+      busyIndicatorDelay="0"
+    >
+        <f:content>
+            <core:Title text="Dados da Empresa" emphasized="true" />
+            <Label text="Código" />
+            <Input
+                value="{Code}"
+                maxLength="4"
+                width="8rem"
+                required="true"
+                editable="{screen>/codeEditable}"
+                placeholder="0002"
+                liveChange=".validateField"
+            />
+            <Label text="Nome" />
+            <Input value="{CompanyName}" required="true" maxLength="100" liveChange=".validateField" />
+            <Label text="String de conexão" />
+            <TextArea
+                value="{ConnectionString}"
+                required="true"
+                rows="3"
+                growing="true"
+                maxLength="500"
+                placeholder="Server=servidor;Database=EMPRESA_SIAGRO;User Id=usuario;Password=senha;TrustServerCertificate=True"
+                liveChange=".validateField"
+            />
+            <Label text="Banco no SAP B1" visible="{= ${sessionModel>/erp} === 'SAPB1' }" />
+            <Input value="{SapCompanyDb}" maxLength="100" visible="{= ${sessionModel>/erp} === 'SAPB1' }" />
+            <Label text="" />
+            <Text text="O banco precisa existir e estar com as migrations aplicadas (dotnet ef database update --context AppDbContext --connection &quot;...&quot;) antes do cadastro. A senha volta mascarada (*****) na edição: deixe assim para mantê-la." class="sapUiTinyMarginTop" />
+        </f:content>
+    </f:SimpleForm>
+</core:FragmentDefinition>

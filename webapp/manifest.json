@@ -904,6 +904,21 @@
           "target": "docNumbersEdit"
         },
         {
+          "pattern": "companies",
+          "name": "companies",
+          "target": "companies"
+        },
+        {
+          "pattern": "companies/new",
+          "name": "companiesNew",
+          "target": "companiesNew"
+        },
+        {
+          "pattern": "companies/{id}/edit",
+          "name": "companiesEdit",
+          "target": "companiesEdit"
+        },
+        {
           "pattern": "processing-services",
           "name": "processingServices",
           "target": "processingServices"
@@ -2136,6 +2151,24 @@
 					"name": "siagrob1.view.docNumbers.Edit",
           "clearControlAggregation": true
 				},
+        "companies": {
+          "id": "companies",
+          "level": 1,
+          "name": "siagrob1.view.companies.Main",
+          "clearControlAggregation": true
+        },
+        "companiesNew": {
+          "id": "companiesNew",
+          "level": 2,
+          "name": "siagrob1.view.companies.Add",
+          "clearControlAggregation": true
+        },
+        "companiesEdit": {
+          "id": "companiesEdit",
+          "level": 2,
+          "name": "siagrob1.view.companies.Edit",
+          "clearControlAggregation": true
+        },
         "processingServices": {
 					"id": "processingServices",
           "level": 1,
