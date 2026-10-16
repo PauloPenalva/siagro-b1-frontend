@@ -10,6 +10,7 @@ import { MenuItem$PressEvent } from "sap/m/MenuItem";
 import ShellBar, { ShellBar$ProductSwitcherPressedEvent } from "sap/f/ShellBar";
 import Avatar, { Avatar$PressEvent } from "sap/m/Avatar";
 import Dialog from "sap/m/Dialog";
+import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import MessageBox from "sap/m/MessageBox";
 import { ListItemBase$PressEvent } from "sap/m/ListItemBase";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
@@ -131,6 +132,14 @@ export default class App extends BaseController {
 
     try {
       const oDialog = await this.getRequiredBranchDialog();
+
+      // A lista é da empresa/da sessão corrente e precisa ser relida a cada abertura: o admin pode
+      // ter acabado de cadastrar a primeira filial e o diálogo reaproveitado ainda mostraria "Sem dados".
+      const oBinding = oDialog.getContent().find(c => c.isA("sap.m.Table"))?.getBinding("items") as ODataListBinding;
+      if (oBinding && !oBinding.hasPendingChanges()) {
+        oBinding.refresh();
+      }
+
       oDialog.open();
     } catch (error) {
       this._selectingBranch = false;
