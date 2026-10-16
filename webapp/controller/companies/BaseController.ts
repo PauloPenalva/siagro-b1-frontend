@@ -40,10 +40,12 @@ export abstract class BaseController extends CommonController {
 
       const result = action.getBoundContext().getObject() as CompanyTestConnectionResult;
       const details = [
-        result.Server ? `Servidor: ${result.Server}` : "",
-        result.Database ? `Banco: ${result.Database}` : "",
+        ...[
+          result.Server ? `Servidor: ${result.Server}` : "",
+          result.Database ? `Banco: ${result.Database}` : ""
+        ].filter(Boolean),
         ...(result.PendingMigrations?.length ? ["", "Migrations pendentes:", ...result.PendingMigrations] : [])
-      ].filter(line => line !== undefined).join("\n");
+      ].join("\n");
 
       if (result.Success) {
         MessageBox.success(`${result.Message}\n\n${details}`, { title: "Testar conexão" });

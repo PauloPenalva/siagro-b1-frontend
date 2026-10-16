@@ -194,8 +194,7 @@ export default class Component extends UIComponent {
         return;
       }
 
-      SessionService.clearSessionState();
-      this.getRouter().navTo("login", {}, undefined, true);
+      SessionService.restartAtLogin();
       return;
     }
 

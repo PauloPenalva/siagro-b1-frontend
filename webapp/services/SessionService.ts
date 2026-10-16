@@ -129,13 +129,20 @@ class SessionService {
     } catch (error) {
       console.warn("Falha ao encerrar a sessão no servidor.", error);
     } finally {
-      this.clearSessionState();
-      // Recarrega a página em vez de só navegar: a troca de empresa é por relogin, e só o reload
-      // garante que bindings OData e caches da empresa anterior morram (o diálogo de filial
-      // mostrava as filiais da outra empresa).
-      window.location.hash = "#/login";
-      window.location.reload();
+      this.restartAtLogin();
     }
+  }
+
+  /**
+   * Limpa a sessão local e recarrega a página na tela de login. Recarrega em vez de só navegar:
+   * a troca de empresa é por relogin, e só o reload garante que bindings OData, caches de
+   * diálogos e views mantidas da empresa anterior morram (o diálogo de filial mostrava as
+   * filiais da outra empresa).
+   */
+  public restartAtLogin(): void {
+    this.clearSessionState();
+    window.location.hash = "#/login";
+    window.location.reload();
   }
 
   /** Consulta `/security/auth/status` e atualiza o cache. */
