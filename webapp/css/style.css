@@ -21,3 +21,14 @@
 .siagroLiveWeight .sapMObjectNumberUnit {
   font-size: 1.25rem;
 }
+
+/* Painel da home: cartões de indicador (spec 2026-10-16-home-dashboard-design) */
+.siagroKpiNumber .sapMObjectNumberText,
+.siagroKpiNumber .sapMObjectNumberUnit {
+  font-size: 1.75rem;
+  line-height: 2.25rem;
+}
+.siagroKpiFooter {
+  color: var(--sapContent_LabelColor);
+  font-size: 0.875rem;
+}

@@ -470,6 +470,46 @@ const formatter = {
     return m.get(value);
   },
 
+  // ---- Painel da home (spec 2026-10-16-home-dashboard-design) ----
+
+  /** R$ 1.234,56 — valor em BRL do painel. Nulo/undefined vira R$ 0,00. */
+  formatBrl: (value: number | string): string => {
+    const num = typeof value === "string" ? parseFloat(value) : value;
+    return (Number.isFinite(num) ? num : 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  },
+
+  /** "1.240" — quantidade sem casas decimais; vazio para nulo/não numérico. */
+  formatWholeQuantity: (value: number | string): string => {
+    const num = typeof value === "string" ? parseFloat(value) : value;
+    return Number.isFinite(num) ? formatter.formatDecimal(num, 0) : "";
+  },
+
+  /** "1.240 KG" — quantidade inteira com a UM do próprio dado; sem conversão de unidade. */
+  formatQuantityUom: (quantity: number | string, uom: string): string => {
+    const num = typeof quantity === "string" ? parseFloat(quantity) : quantity;
+    if (!Number.isFinite(num)) return "";
+    return `${formatter.formatDecimal(num, 0)} ${uom ?? ""}`.trim();
+  },
+
+  /** Lista "1.240 KG · 30 SC" das quantidades por UM de um cartão; vazio sem itens. */
+  formatQuantityList: (quantities: { unitOfMeasure: string; quantity: number }[]): string =>
+    (quantities ?? []).map((q) => formatter.formatQuantityUom(q.quantity, q.unitOfMeasure)).join(" · "),
+
+  /** Hoje / Ontem / Anteontem / dd/MM, pela distância entre a data (só dia) e hoje. */
+  formatRelativeDay: (date: string): string => {
+    if (!date) return "";
+    const d = new Date(date);
+    const today = new Date();
+    const dayMs = 24 * 60 * 60 * 1000;
+    const diff = Math.round(
+      (Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) -
+        Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) / dayMs);
+    if (diff === 0) return "Hoje";
+    if (diff === 1) return "Ontem";
+    if (diff === 2) return "Anteontem";
+    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+  },
+
   formatCurrency: (value: string) => {
     const m = new Map<string, string>();
     m.set("Brl" , "BRL");

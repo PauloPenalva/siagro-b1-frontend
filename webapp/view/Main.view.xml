@@ -4,58 +4,232 @@
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:core="sap.ui.core"
-	xmlns:uxap="sap.uxap"
+	xmlns:f="sap.f"
+	xmlns:card="sap.f.cards"
+	xmlns:l="sap.ui.layout"
 	core:require="{
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-<!--
-	<uxap:ObjectPageLayout
-    showFooter="true"
-    toggleHeaderOnTitleClick="true"
-		preserveHeaderStateOnScroll="false"
-    busy="{ui>/busy}"
-    busyIndicatorDelay="0">
-    <uxap:sections>
-      <uxap:ObjectPageSection titleUppercase="false" title="Beneficiamento e Armazenagem">
-				<uxap:subSections>
-					<uxap:ObjectPageSubSection>
-            <uxap:blocks>
-              <HBox 
-                class="sapUiResponsiveContentPadding"
-                fitContainer="true"
-                justifyContent="Start"
-                alignItems="Start"
-                alignContent="Center"
-              >
-              <GenericTile header="Tabela de Custos" class="sapUiTinyMargin"/>
-              <GenericTile header="Romaneios de Movimentação"  class="sapUiTinyMargin" />
-              <GenericTile header="Numeração de Documentos" subheader="Numeração de Documentos" class="sapUiTinyMargin" />
-              
-              </HBox>
-            </uxap:blocks>
-					</uxap:ObjectPageSubSection>
-				</uxap:subSections>
-			</uxap:ObjectPageSection>
-      <uxap:ObjectPageSection titleUppercase="false" title="Originação de Grãos">
-				<uxap:subSections>
-					<uxap:ObjectPageSubSection>
-            <uxap:blocks>
-              <GenericTile header="Romaneios de Movimentação"  />
-            </uxap:blocks>
-					</uxap:ObjectPageSubSection>
-				</uxap:subSections>
-			</uxap:ObjectPageSection>
-      <uxap:ObjectPageSection titleUppercase="false" title="Configurações">
-				<uxap:subSections>
-					<uxap:ObjectPageSubSection>
-            <uxap:blocks>
-              <GenericTile header="Numeração de Documentos" subheader="Numeração de Documentos" />
-            </uxap:blocks>
-					</uxap:ObjectPageSubSection>
-				</uxap:subSections>
-			</uxap:ObjectPageSection>
-    </uxap:sections>
-  </uxap:ObjectPageLayout>
--->
+	<!-- Painel da home (spec 2026-10-16-home-dashboard-design). Em SAPB1 o painel fica oculto: a home volta a ser vazia. -->
+	<f:DynamicPage busyIndicatorDelay="0" busy="{dashboard>/loading}" visible="{= !${dashboard>/hidden}}">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="Painel"/>
+				</f:heading>
+				<f:actions>
+					<Text text="{= ${dashboard>/loadedAt} ? 'Atualizado às ' + ${path: 'dashboard>/loadedAt', formatter: 'formatter.formatDateTime'} : ''}" class="sapUiTinyMarginEnd sapUiTinyMarginTop"/>
+					<Button icon="sap-icon://refresh" text="Atualizar" press="onRefresh"/>
+				</f:actions>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:content>
+			<VBox>
+
+				<!-- Cartões: só o que pede ação hoje -->
+				<l:Grid defaultSpan="XL2 L2 M4 S6" hSpacing="1" vSpacing="1" containerQuery="true" class="sapUiSmallMarginBottom">
+					<f:Card class="sapUiTinyMargin">
+						<f:header>
+							<card:Header title="A pagar hoje" press="onOpenPayables"/>
+						</f:header>
+						<f:content>
+							<VBox class="sapUiSmallMargin">
+								<ObjectNumber number="{path: 'dashboard>/financial/payablesDueToday/amount', formatter: 'formatter.formatBrl'}" emphasized="true" state="{= ${dashboard>/financial/payablesOverdue/amount} > 0 ? 'Error' : 'None'}" class="siagroKpiNumber"/>
+								<Text text="{= ${dashboard>/financial/payablesDueToday/count} + ' títulos · vencidos ' + ${path: 'dashboard>/financial/payablesOverdue/amount', formatter: 'formatter.formatBrl'} + ' (' + ${dashboard>/financial/payablesOverdue/count} + ')'}" class="siagroKpiFooter" wrapping="true"/>
+							</VBox>
+						</f:content>
+					</f:Card>
+					<f:Card class="sapUiTinyMargin">
+						<f:header>
+							<card:Header title="A receber hoje" press="onOpenReceivables"/>
+						</f:header>
+						<f:content>
+							<VBox class="sapUiSmallMargin">
+								<ObjectNumber number="{path: 'dashboard>/financial/receivablesDueToday/amount', formatter: 'formatter.formatBrl'}" emphasized="true" state="Success" class="siagroKpiNumber"/>
+								<Text text="{= ${dashboard>/financial/receivablesDueToday/count} + ' títulos · vencidos ' + ${path: 'dashboard>/financial/receivablesOverdue/amount', formatter: 'formatter.formatBrl'} + ' (' + ${dashboard>/financial/receivablesOverdue/count} + ')'}" class="siagroKpiFooter" wrapping="true"/>
+							</VBox>
+						</f:content>
+					</f:Card>
+					<f:Card class="sapUiTinyMargin">
+						<f:header>
+							<card:Header title="Compras com entrega vencida" press="onOpenPurchaseContracts"/>
+						</f:header>
+						<f:content>
+							<VBox class="sapUiSmallMargin">
+								<ObjectNumber number="{dashboard>/overdueContracts/purchase/count}" emphasized="true" state="{= ${dashboard>/overdueContracts/purchase/count} > 0 ? 'Warning' : 'None'}" class="siagroKpiNumber"/>
+								<Text text="{= ${path: 'dashboard>/overdueContracts/purchase/quantities', formatter: 'formatter.formatQuantityList'} || 'nada a receber'}" class="siagroKpiFooter" wrapping="true"/>
+							</VBox>
+						</f:content>
+					</f:Card>
+					<f:Card class="sapUiTinyMargin">
+						<f:header>
+							<card:Header title="Vendas com entrega vencida" press="onOpenSalesContracts"/>
+						</f:header>
+						<f:content>
+							<VBox class="sapUiSmallMargin">
+								<ObjectNumber number="{dashboard>/overdueContracts/sales/count}" emphasized="true" state="{= ${dashboard>/overdueContracts/sales/count} > 0 ? 'Warning' : 'None'}" class="siagroKpiNumber"/>
+								<Text text="{= ${path: 'dashboard>/overdueContracts/sales/quantities', formatter: 'formatter.formatQuantityList'} || 'nada a entregar'}" class="siagroKpiFooter" wrapping="true"/>
+							</VBox>
+						</f:content>
+					</f:Card>
+					<f:Card class="sapUiTinyMargin">
+						<f:header>
+							<card:Header title="Cargas em andamento" press="onOpenLoads"/>
+						</f:header>
+						<f:content>
+							<VBox class="sapUiSmallMargin">
+								<ObjectNumber number="{dashboard>/loadsInProgress/total}" emphasized="true" state="None" class="siagroKpiNumber"/>
+								<Text text="{= ${dashboard>/loadsInProgress/planned} + ' planej. · ' + ${dashboard>/loadsInProgress/loading} + ' carreg. · ' + ${dashboard>/loadsInProgress/inTransshipment} + ' transb. · ' + ${dashboard>/loadsInProgress/inTransit} + ' trânsito · ' + ${dashboard>/loadsInProgress/refusalPending} + ' recusa'}" class="siagroKpiFooter" wrapping="true"/>
+							</VBox>
+						</f:content>
+					</f:Card>
+				</l:Grid>
+
+				<l:Grid defaultSpan="XL6 L6 M12 S12" hSpacing="1" vSpacing="1" containerQuery="true">
+
+					<!-- Esquerda: mercadoria -->
+					<VBox>
+						<Panel headerText="Estoque e posição por produto" class="sapUiSmallMarginBottom">
+							<Table fixedLayout="false" items="{dashboard>/stock}" noDataText="Sem estoque nem contrato aberto">
+								<columns>
+									<Column><Text text="Produto"/></Column>
+									<Column><Text text="UM" wrapping="false"/></Column>
+									<Column hAlign="End"><Text text="Físico" wrapping="false"/></Column>
+									<Column hAlign="End"><Text text="Em carga"/></Column>
+									<Column hAlign="End"><Text text="Compra a receber"/></Column>
+									<Column hAlign="End"><Text text="Venda a entregar"/></Column>
+									<Column hAlign="End"><Text text="Líquido" wrapping="false"/></Column>
+								</columns>
+								<items>
+									<ColumnListItem>
+										<cells>
+											<Text text="{dashboard>itemName} ({dashboard>itemCode})"/>
+											<Text text="{dashboard>unitOfMeasure}" wrapping="false"/>
+											<Text text="{= ${dashboard>physical} === null || ${dashboard>physical} === undefined ? '' : ${path: 'dashboard>physical', formatter: 'formatter.formatWholeQuantity'}}" wrapping="false"/>
+											<Text text="{path: 'dashboard>inLoad', formatter: 'formatter.formatWholeQuantity'}" wrapping="false"/>
+											<Text text="{path: 'dashboard>purchaseToDeliver', formatter: 'formatter.formatWholeQuantity'}" wrapping="false"/>
+											<Text text="{path: 'dashboard>salesToDeliver', formatter: 'formatter.formatWholeQuantity'}" wrapping="false"/>
+											<ObjectNumber number="{= ${dashboard>net} === null || ${dashboard>net} === undefined ? '' : ${path: 'dashboard>net', formatter: 'formatter.formatWholeQuantity'}}"
+												state="{= ${dashboard>net} &lt; 0 ? 'Error' : 'None'}"/>
+										</cells>
+									</ColumnListItem>
+								</items>
+							</Table>
+						</Panel>
+
+						<Panel headerText="Comprado x vendido por mês">
+							<headerToolbar>
+								<OverflowToolbar>
+									<Title text="Comprado x vendido por mês"/>
+									<ToolbarSpacer/>
+									<Button text="Relatório" icon="sap-icon://pdf-attachment" press="onOpenMonthlyReport"/>
+								</OverflowToolbar>
+							</headerToolbar>
+							<Table items="{path: 'dashboard>/monthlyPosition', sorter: {path: 'group', group: true}}" noDataText="Sem contrato aprovado">
+								<columns>
+									<Column><Text text="Prazo"/></Column>
+									<Column hAlign="End"><Text text="Compra"/></Column>
+									<Column hAlign="End"><Text text="Venda"/></Column>
+									<Column hAlign="End" width="6rem"><Text text="Líquido"/></Column>
+									<Column hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="Acumulado"/></Column>
+								</columns>
+								<items>
+									<ColumnListItem>
+										<cells>
+											<Text text="{dashboard>bucket}"/>
+											<Text text="{path: 'dashboard>purchaseQuantity', formatter: 'formatter.formatWholeQuantity'}"/>
+											<Text text="{path: 'dashboard>salesQuantity', formatter: 'formatter.formatWholeQuantity'}"/>
+											<ObjectNumber number="{path: 'dashboard>netQuantity', formatter: 'formatter.formatWholeQuantity'}" state="{= ${dashboard>netQuantity} &lt; 0 ? 'Error' : 'None'}"/>
+											<ObjectNumber number="{path: 'dashboard>accumulatedQuantity', formatter: 'formatter.formatWholeQuantity'}" state="{= ${dashboard>accumulatedQuantity} &lt; 0 ? 'Error' : 'None'}"/>
+										</cells>
+									</ColumnListItem>
+								</items>
+							</Table>
+						</Panel>
+					</VBox>
+
+					<!-- Direita: filas de trabalho -->
+					<VBox>
+						<Panel headerText="Cargas dos últimos 7 dias" class="sapUiSmallMarginBottom">
+							<Table items="{dashboard>/recentLoads}">
+								<columns>
+									<Column><Text text="Dia"/></Column>
+									<Column hAlign="End" width="6rem"><Text text="Cargas"/></Column>
+									<Column hAlign="End"><Text text="Quantidade"/></Column>
+								</columns>
+								<items>
+									<ColumnListItem type="Navigation" press="onOpenLoads">
+										<cells>
+											<Text text="{path: 'dashboard>date', formatter: 'formatter.formatRelativeDay'}"/>
+											<Text text="{dashboard>count}"/>
+											<Text text="{path: 'dashboard>quantities', formatter: 'formatter.formatQuantityList'}"/>
+										</cells>
+									</ColumnListItem>
+								</items>
+							</Table>
+						</Panel>
+
+						<Panel class="sapUiSmallMarginBottom">
+							<headerToolbar>
+								<OverflowToolbar>
+									<Title text="Vendas a entregar"/>
+									<ToolbarSpacer/>
+									<Text text="{dashboard>/salesToDeliver/total} contratos"/>
+									<Button text="Ver todos" press="onOpenSalesContracts"><layoutData><OverflowToolbarLayoutData priority="NeverOverflow"/></layoutData></Button>
+								</OverflowToolbar>
+							</headerToolbar>
+							<Table items="{dashboard>/salesToDeliver/items}" noDataText="Nada a entregar">
+								<columns>
+									<Column><Text text="Cliente"/></Column>
+									<Column hAlign="End" width="7rem"><Text text="Saldo"/></Column>
+									<Column hAlign="End" width="6.5rem"><Text text="Recebe em ↑"/></Column>
+									<Column hAlign="End" width="6.5rem"><Text text="Entrega até ↑"/></Column>
+								</columns>
+								<items>
+									<ColumnListItem type="Navigation" press="onOpenSalesContract">
+										<cells>
+											<ObjectIdentifier title="{dashboard>cardName}" text="{dashboard>code} · {dashboard>itemName} · safra {dashboard>harvestSeasonCode}"/>
+											<Text text="{parts: ['dashboard>toDeliver', 'dashboard>unitOfMeasure'], formatter: 'formatter.formatQuantityUom'}"/>
+											<Text text="{path: 'dashboard>cashFlowDate', formatter: 'formatter.formatDate'}"/>
+											<ObjectStatus text="{= ${dashboard>deliveryEndDate} ? ${path: 'dashboard>deliveryEndDate', formatter: 'formatter.formatDate'} : 'Sem prazo'}" state="{= ${dashboard>isOverdue} ? 'Error' : 'None'}"/>
+										</cells>
+									</ColumnListItem>
+								</items>
+							</Table>
+						</Panel>
+
+						<Panel>
+							<headerToolbar>
+								<OverflowToolbar>
+									<Title text="Compras a receber"/>
+									<ToolbarSpacer/>
+									<Text text="{dashboard>/purchasesToReceive/total} contratos"/>
+									<Button text="Ver todos" press="onOpenPurchaseContracts"><layoutData><OverflowToolbarLayoutData priority="NeverOverflow"/></layoutData></Button>
+								</OverflowToolbar>
+							</headerToolbar>
+							<Table items="{dashboard>/purchasesToReceive/items}" noDataText="Nada a receber">
+								<columns>
+									<Column><Text text="Fornecedor"/></Column>
+									<Column hAlign="End" width="7rem"><Text text="Saldo"/></Column>
+									<Column hAlign="End" width="6.5rem"><Text text="Paga em ↑"/></Column>
+									<Column hAlign="End" width="6.5rem"><Text text="Entrega até ↑"/></Column>
+								</columns>
+								<items>
+									<ColumnListItem type="Navigation" press="onOpenPurchaseContract">
+										<cells>
+											<ObjectIdentifier title="{dashboard>cardName}" text="{dashboard>code} · {dashboard>itemName} · safra {dashboard>harvestSeasonCode}"/>
+											<Text text="{parts: ['dashboard>toDeliver', 'dashboard>unitOfMeasure'], formatter: 'formatter.formatQuantityUom'}"/>
+											<Text text="{path: 'dashboard>cashFlowDate', formatter: 'formatter.formatDate'}"/>
+											<ObjectStatus text="{= ${dashboard>deliveryEndDate} ? ${path: 'dashboard>deliveryEndDate', formatter: 'formatter.formatDate'} : 'Sem prazo'}" state="{= ${dashboard>isOverdue} ? 'Error' : 'None'}"/>
+										</cells>
+									</ColumnListItem>
+								</items>
+							</Table>
+						</Panel>
+					</VBox>
+				</l:Grid>
+			</VBox>
+		</f:content>
+	</f:DynamicPage>
 </mvc:View>
