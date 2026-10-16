@@ -130,7 +130,11 @@ class SessionService {
       console.warn("Falha ao encerrar a sessão no servidor.", error);
     } finally {
       this.clearSessionState();
-      this.navToLogin();
+      // Recarrega a página em vez de só navegar: a troca de empresa é por relogin, e só o reload
+      // garante que bindings OData e caches da empresa anterior morram (o diálogo de filial
+      // mostrava as filiais da outra empresa).
+      window.location.hash = "#/login";
+      window.location.reload();
     }
   }
 
@@ -512,10 +516,6 @@ class SessionService {
       "application/json",
       "text"
     );
-  }
-
-  private navToLogin(): void {
-    this.component.getRouter().navTo("login", {}, undefined, true);
   }
 
   private getSessionModel(): JSONModel {

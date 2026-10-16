@@ -102,6 +102,18 @@ export default class App extends BaseController {
 
     // O boot pode ter terminado antes deste controller existir.
     void SessionService.whenReady().then(() => this.ensureBranchSelected());
+
+    // Empresa sem filial: o admin sai do diálogo para cadastrar a primeira (onRequiredBranchCreate).
+    // Ao sair das telas de filial, a regra normal volta e o diálogo reabre listando a filial nova.
+    this.getRouter().attachRouteMatched(() => void this.ensureBranchSelected());
+  }
+
+  /** Telas de cadastro de filial, onde o diálogo obrigatório não pode reabrir por cima. */
+  private isOnBranchRoutes(): boolean {
+    const hash = this.getRouter().getHashChanger().getHash();
+    const routeName = this.getRouter().getRouteInfoByHash(hash)?.name ?? "";
+
+    return routeName.startsWith("branchs");
   }
 
   /**
@@ -111,7 +123,7 @@ export default class App extends BaseController {
    * livremente cancelável.
    */
   private async ensureBranchSelected(): Promise<void> {
-    if (this._selectingBranch || !SessionService.isAuthenticated() || SessionService.getBranchInfo()?.code) {
+    if (this._selectingBranch || !SessionService.isAuthenticated() || SessionService.getBranchInfo()?.code || this.isOnBranchRoutes()) {
       return;
     }
 
@@ -158,6 +170,17 @@ export default class App extends BaseController {
     } finally {
       this.setBusy(false);
     }
+  }
+
+  /**
+   * Só para admin (botão visível por `sessionModel>/isAdmin`): empresa recém-criada não tem filial,
+   * e sem esta saída o diálogo obrigatório trancava o admin fora do próprio cadastro de filiais.
+   */
+  onRequiredBranchCreate(): void {
+    this._requiredBranchDialog.close();
+    this._selectingBranch = false;
+
+    this.navTo("branchsNew");
   }
 
   async onRequiredBranchExit(): Promise<void> {
