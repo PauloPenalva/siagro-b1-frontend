@@ -1,3 +1,4 @@
+import MessageBox from "sap/m/MessageBox";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Event from "sap/ui/base/Event";
 import ListItemBase from "sap/m/ListItemBase";
@@ -49,7 +50,8 @@ export default class Main extends BaseController {
         model.setProperty("/hidden", true);
         return;
       }
-      throw error;
+      // RequestModel.get é um jQuery.get cru: ninguém mais mostra o erro (revisão do branch).
+      MessageBox.error("Não foi possível carregar o painel. Tente atualizar.");
     }
   }
 

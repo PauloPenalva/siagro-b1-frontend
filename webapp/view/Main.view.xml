@@ -25,7 +25,8 @@
 			</f:DynamicPageTitle>
 		</f:title>
 		<f:content>
-			<VBox>
+			<!-- Só com dado carregado: antes disso as expressões dos cartões renderizariam "undefined". -->
+			<VBox visible="{= !!${dashboard>/loadedAt}}">
 
 				<!-- Cartões: só o que pede ação hoje -->
 				<l:Grid defaultSpan="XL2 L2 M4 S6" hSpacing="1" vSpacing="1" containerQuery="true" class="sapUiSmallMarginBottom">
