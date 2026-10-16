@@ -179,6 +179,26 @@ export default class App extends BaseController {
     await SessionService.loadBranchInfo();
   }
 
+  /**
+   * Trocar de empresa é sair e entrar de novo (decisão da spec 2026-10-16): sessão, menu, caches
+   * locais e o modelo OData são todos da empresa — trocá-la "por dentro" exigiria recarregar tudo
+   * isso, e o login já lembra a última empresa escolhida.
+   */
+  async onChangeCompany(): Promise<void> {
+    this._avatarPopover?.close();
+
+    if (!await DialogHelper.confirmDialog("Para trocar de empresa é preciso sair e entrar novamente. Continuar?", "Trocar Empresa")) {
+      return;
+    }
+
+    try {
+      this.setBusy(true);
+      await SessionService.logout();
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
   /** Recarrega a página para carregar a versão recém-publicada. */
   onApplyUpdate(): void {
     VersionService.applyUpdate();
