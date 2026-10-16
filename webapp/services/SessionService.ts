@@ -9,6 +9,8 @@ import RequestModel from "siagrob1/model/RequestModel";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import formatter from "siagrob1/model/formatter";
 import TableLayoutService from "siagrob1/services/TableLayoutService";
+import { CompanyOption } from "siagrob1/types/Company";
+import { rememberCompany } from "siagrob1/helpers/CompanySelectionHelpers";
 import { BranchInfo } from "siagrob1/types/BranchInfo";
 import { SystemInfo } from "siagrob1/types/SystemInfo";
 import { AuthStatus, LoginResult, UserIdentity } from "siagrob1/types/UserIdentity";
@@ -36,6 +38,8 @@ export const AVAILABLE_THEMES = [
 export type Credentials = {
   Username: string;
   Password: string;
+  /** Empresa escolhida na tela. Ausente só quando há uma única empresa (o servidor a escolhe). */
+  CompanyCode?: string;
 };
 
 /**
@@ -86,6 +90,13 @@ class SessionService {
   /* Autenticação                                                        */
   /* ------------------------------------------------------------------ */
 
+  /** Empresas do seletor da tela de login. Endpoint anônimo. */
+  public async loadLoginCompanies(): Promise<CompanyOption[]> {
+    const companies = await new RequestModel().get<CompanyOption[]>(ServerRoutes.loginCompanies);
+
+    return companies ?? [];
+  }
+
   public async login(credentials: Credentials): Promise<void> {
     // A própria resposta do login traz o usuário: aproveitá-la evita uma segunda ida ao
     // /status só para saber quem entrou.
@@ -94,6 +105,8 @@ class SessionService {
     this.authenticated = true;
     this.getSessionModel().setProperty("/logged", true);
     this.applyUserIdentity(result?.user, result?.passwordRequirements);
+    // Lembra a empresa para o próximo login nesta máquina (a do servidor, que é a que valeu).
+    rememberCompany(result?.user?.companyCode ?? credentials.CompanyCode);
 
     // Uma falha ao carregar menu/filial não invalida o login já concedido.
     try {
@@ -208,6 +221,8 @@ class SessionService {
     sessionModel.setProperty("/isAdmin", identity?.isAdmin === true);
     sessionModel.setProperty("/fullName", identity?.fullName ?? null);
     sessionModel.setProperty("/email", identity?.email ?? null);
+    sessionModel.setProperty("/companyCode", identity?.companyCode ?? null);
+    sessionModel.setProperty("/companyName", identity?.companyName ?? null);
     sessionModel.setProperty("/initials", formatter.formatInitials(identity?.fullName));
     sessionModel.setProperty("/permissions", identity?.permissions ?? []);
     sessionModel.setProperty("/roles", identity?.roles ?? []);

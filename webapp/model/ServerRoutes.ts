@@ -4,6 +4,8 @@ export default {
   systemInfo: '/security/auth/info',
   logout: '/security/auth/logout',
   userMenu: '/security/auth/GetUserMenu',
+  // Seleção de empresa no login (spec 2026-10-16). Anônimo: a tela ainda não tem sessão.
+  loginCompanies: '/security/auth/companies',
 
   getBranchInfo: '/security/auth/GetBranchInfo',
   setDefaultBranch: '/security/auth/SetDefaultBranch',
@@ -84,6 +86,9 @@ export default {
   storageTransactions: 'odata/StorageTransactions',
   menuItems: 'odata/MenuItems',
   permissions: 'odata/Permissions',
+  // Cadastro de empresas (bancos do deploy) e teste da string de conexão (action via bindContext).
+  companies: '/odata/Companies',
+  companiesTestConnection: '/CompaniesTestConnection(...)',
   roles: 'odata/Roles',
   profiles: 'odata/Profiles',
   

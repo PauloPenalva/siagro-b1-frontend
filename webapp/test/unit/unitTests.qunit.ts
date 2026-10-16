@@ -31,3 +31,4 @@ import "./helpers/StorageDepositHelpers.qunit";
 import "./helpers/StorageCustodyHelpers.qunit";
 import "./helpers/FinancialDocumentFilterHelpers.qunit";
 import "./helpers/WashoutHelpers.qunit";
+import "./helpers/CompanySelectionHelpers.qunit";
