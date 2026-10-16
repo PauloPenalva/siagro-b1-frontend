@@ -29,6 +29,8 @@ export default class Add extends BaseController {
       CompanyName: "",
       ConnectionString: ""
     }, false, false, false);
+		// O Cancelar chama resetChanges, que rejeita a promessa created() do contexto transitório.
+		oContext.created()?.catch(() => { /* criação cancelada pelo usuário: nada a fazer */ });
 
 		oView.setBindingContext(oContext);
 	}
