@@ -7,10 +7,16 @@ import Context from "sap/ui/model/odata/v4/Context";
 
 export abstract class BaseController extends CommonController {
   
+  /**
+   * O perfil nasce na empresa da SESSÃO de quem cadastra: é o caso comum (o admin da CEAGUI
+   * cadastra gente da CEAGUI) e evita uma linha sem empresa, que o servidor recusaria.
+   */
   onAddProfile() {
     const oTable = this.byId("usersProfilesTable") as Table;
     const oBinding = oTable.getBinding("rows") as ODataListBinding;
-    oBinding.create({}, false, true, false);
+    const companyCode = this.getView().getModel("sessionModel")?.getProperty("/companyCode") as string;
+
+    oBinding.create(companyCode ? { CompanyCode: companyCode } : {}, false, true, false);
   }
 
   onRemoveProfile() {

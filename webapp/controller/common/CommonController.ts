@@ -450,6 +450,11 @@ export default abstract class CommonController extends BaseController {
     void this.applyValueHelp(ev, "ProfilesSelectDialog", ["Description", "Code"], "Code");
   }
 
+  /** Empresas do deploy (COMMON). Só administradores abrem a tela de usuários, então a lista é visível aqui. */
+  openCompaniesValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "CompaniesSelectDialog", ["Code", "CompanyName"], "Code");
+  }
+
   /**
    * Natureza de devolução de compra de terceiro da filial (spec terceiro D3): só naturezas de Saída ativas ($filter
    * estático do enum). setProperty sem await: o grupo é diferido.
