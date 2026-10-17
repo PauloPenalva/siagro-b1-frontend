@@ -12,7 +12,7 @@ import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
 import { complementCandidatesPath, isOwnComplement, isPurchaseNfeMode, isPurchaseTaxMode, mustFallBackToNormal, requiresSupplierKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
-import { summarizeInvoiceTaxes, TaxLine } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
+import { PurchasePurpose, summarizeInvoiceTaxes, TaxLine, Withholdings } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 import { formatAmount, lineFunrural, purchaseChargeLineOf, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
 import {
   complementedItemLabel, complementedItemLabels, complementLineFrom, inheritedContracts, isOtherPurchaseDocument, isOtherPurchaseEligible, isOtherPurchaseUsage,
@@ -39,7 +39,17 @@ let isStandaloneErp: boolean | undefined;
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- strictNullChecks desligado; undefined = ainda não lido
 let otherPurchaseUsagesCache: Record<string, boolean> | undefined;
 
+/** Destinação por código de natureza de entrada (`Usage.PurchasePurpose`); só STANDALONE. Mesmo ciclo do mapa acima. */
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- strictNullChecks desligado; undefined = ainda não lido
+let usagePurposesCache: Record<string, PurchasePurpose> | undefined;
+
+/** CRT e regime de PIS/COFINS da filial, para a coluna "Efeito" da tabela Tributos. */
+type BranchTaxProfile = { simples: boolean; pisCofinsRegime: "Cumulative" | "NonCumulative" };
+
+const SIMPLES_REGIMES = ["SimplesNacional", "SimplesNacionalExcess", "Mei"];
+
 interface UsageFlagsRow {
+  PurchasePurpose?: string; purchasePurpose?: string;
   Code?: number; code?: number;
   RequiresContract?: boolean; requiresContract?: boolean;
   CreatesFinancialDocument?: boolean; createsFinancialDocument?: boolean;
@@ -124,6 +134,7 @@ export abstract class BaseController extends CommonController {
       }
 
       void this.refreshCustodyCode(custodyKey, isCurrent);
+      void this.refreshBranchTaxProfile(uiModel, branchCode, isCurrent);
 
       const nfeMode = isPurchaseNfeMode(taxLocked, issuerType);
       uiModel.setProperty("/taxLocked", taxLocked);
@@ -241,19 +252,25 @@ export abstract class BaseController extends CommonController {
       }
       if (!isStandaloneErp) {
         otherPurchaseUsagesCache = {};
+        usagePurposesCache = {};
         return otherPurchaseUsagesCache;
       }
 
       const result = await sendJson("GET",
-        `${ServerRoutes.usages}?$select=Code,RequiresContract,CreatesFinancialDocument&$top=1000` +
+        `${ServerRoutes.usages}?$select=Code,RequiresContract,CreatesFinancialDocument,PurchasePurpose&$top=1000` +
         `&$filter=${encodeURIComponent("Direction eq 'Incoming'")}`);
       if (!result.ok) {
         return {};
       }
 
       const map: Record<string, boolean> = {};
+      const purposes: Record<string, PurchasePurpose> = {};
       for (const row of odataCollection<UsageFlagsRow>(result.data)) {
         const code = row.Code ?? row.code;
+        const purpose = row.PurchasePurpose ?? row.purchasePurpose;
+        if (code !== undefined && purpose) {
+          purposes[String(code)] = purpose as PurchasePurpose;
+        }
         const requiresContract = row.RequiresContract ?? row.requiresContract;
         const createsTitle = row.CreatesFinancialDocument ?? row.createsFinancialDocument;
         if (code !== undefined && requiresContract === false && createsTitle === true) {
@@ -261,10 +278,41 @@ export abstract class BaseController extends CommonController {
         }
       }
       otherPurchaseUsagesCache = map;
+      usagePurposesCache = purposes;
       return map;
     } catch {
       // Sem resposta: tudo é grão; a próxima chamada tenta de novo.
       return {};
+    }
+  }
+
+  /**
+   * Regime da filial para a coluna "Efeito" da tabela Tributos: CRT (Simples?) e regime de PIS/COFINS. Só STANDALONE
+   * (fora dele valem os padrões e nada muda). Leitura separada, com `$select` explícito, porque a filial não é
+   * expandida no documento.
+   */
+  private async refreshBranchTaxProfile(uiModel: JSONModel, branchCode: string, isCurrent: () => boolean): Promise<void> {
+    let profile: BranchTaxProfile = { simples: false, pisCofinsRegime: "Cumulative" };
+
+    try {
+      if (branchCode && isStandaloneErp === true) {
+        const result = await sendJson("GET",
+          `${ServerRoutes.branchs}('${encodeURIComponent(branchCode)}')?$select=TaxRegime,PisCofinsRegime`);
+        if (result.ok) {
+          const data = result.data as { TaxRegime?: string; taxRegime?: string; PisCofinsRegime?: string; pisCofinsRegime?: string };
+          profile = {
+            simples: SIMPLES_REGIMES.includes(data.TaxRegime ?? data.taxRegime ?? ""),
+            pisCofinsRegime: (data.PisCofinsRegime ?? data.pisCofinsRegime) === "NonCumulative" ? "NonCumulative" : "Cumulative",
+          };
+        }
+      }
+    } catch {
+      // Sem resposta: padrões (filial normal, cumulativa).
+    }
+
+    if (isCurrent()) {
+      uiModel.setProperty("/branchTaxProfile", profile);
+      this.refreshDocumentTotal();
     }
   }
 
@@ -275,6 +323,7 @@ export abstract class BaseController extends CommonController {
       return;
     }
     uiModel.setProperty("/otherPurchaseUsages", map);
+    uiModel.setProperty("/usagePurposes", usagePurposesCache ?? {});
     // Há alguma natureza de outra compra (só STANDALONE): libera a coluna "Natureza" também fora do modo de tributos.
     uiModel.setProperty("/hasOtherPurchaseUsages", Object.keys(map).length > 0);
     this.updateOtherPurchaseDocument();
@@ -863,7 +912,24 @@ export abstract class BaseController extends CommonController {
 
     uiModel.setProperty("/documentTotal", formatAmount(charges.grandTotal));
     uiModel.setProperty("/chargeTotals", charges);
-    uiModel.setProperty("/taxTotals", summarizeInvoiceTaxes(contexts.map((ctx) => ctx.getObject() as TaxLine)));
+    const header = oBinding.getContext() as Context | undefined;
+    const profile = (uiModel.getProperty("/branchTaxProfile") ?? {}) as Partial<BranchTaxProfile>;
+    const purposes = (uiModel.getProperty("/usagePurposes") ?? {}) as Record<string, PurchasePurpose>;
+    // Retenções só existem no documento de outra compra; nos demais os campos voltam 0 e as linhas somem.
+    const withholdings: Withholdings = header ? {
+      base: toNumber(header.getProperty("WithholdingBase")), iss: toNumber(header.getProperty("WithheldIss")),
+      irrf: toNumber(header.getProperty("WithheldIrrf")), inss: toNumber(header.getProperty("WithheldInss")),
+      pis: toNumber(header.getProperty("WithheldPis")), cofins: toNumber(header.getProperty("WithheldCofins")),
+      csll: toNumber(header.getProperty("WithheldCsll")),
+    } : undefined;
+    uiModel.setProperty("/taxTotals", summarizeInvoiceTaxes(contexts.map((ctx) => ctx.getObject() as TaxLine), {
+      direction: "Incoming",
+      isReturn,
+      branchSimples: profile.simples === true,
+      pisCofinsRegime: profile.pisCofinsRegime ?? "Cumulative",
+      purposeOf: (taxLine) => purposes[String(taxLine.UsageCode)] ?? "ResaleOrInput",
+      withholdings,
+    }));
     this.updateOtherPurchaseDocument();
   }
 

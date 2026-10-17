@@ -1,3 +1,5 @@
+import { DIFAL_SELECT } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
+
 /**
  * Regras de tela da NF-e do Documento de Entrada (spec 2026-10-05), puras para poderem ser testadas sem view.
  * Quem decide de verdade é o servidor; isto só esconde o botão que voltaria recusado.
@@ -223,4 +225,5 @@ export const PURCHASE_ITEM_SELECT =
 	"IcmsBenefitCode,CstPis,PisBase,PisRate,PisValue,CstCofins,CofinsBase,CofinsRate,CofinsValue,IbsCbsCst," +
 	"IbsCbsClassCode,IbsCbsBase,CbsRate,CbsRateReduction,CbsValue,IbsStateRate,IbsMunicipalRate,IbsRateReduction," +
 	"IbsStateValue,IbsMunicipalValue,NfeItemNumber,FreightValue,InsuranceValue,DiscountValue,OtherExpensesValue,ComplementAmount," +
-	"FunruralBase,FunruralInssRate,FunruralInssValue,FunruralRatRate,FunruralRatValue,FunruralSenarRate,FunruralSenarValue";
+	"FunruralBase,FunruralInssRate,FunruralInssValue,FunruralRatRate,FunruralRatValue,FunruralSenarRate,FunruralSenarValue," +
+	DIFAL_SELECT;

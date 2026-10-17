@@ -39,6 +39,7 @@ export default {
   items: '/odata/Items',
   // Naturezas de operação (flags RequiresContract/CreatesFinancialDocument decidem a linha de "outra compra").
   usages: '/odata/Usages',
+  branchs: '/odata/Branchs',
   // Complemento cadastral do item (UoM comercial + fator) — só exibição, não participa do
   // saldo/preço em KG, que continua sendo a fonte de verdade.
   itemsGetComplement: '/ItemsGetComplement(...)',

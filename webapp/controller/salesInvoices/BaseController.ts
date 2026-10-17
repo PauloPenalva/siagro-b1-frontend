@@ -230,7 +230,12 @@ export abstract class BaseController extends CommonController {
 
       uiModel.setProperty("/documentTotal", formatAmount(charges.grandTotal));
       uiModel.setProperty("/chargeTotals", charges);
-      uiModel.setProperty("/taxTotals", summarizeInvoiceTaxes(contexts.map((ctx) => ctx.getObject() as TaxLine)));
+      // Saída de devolução/retorno é crédito na apuração; venda normal é débito (spec 2026-10-17 §3, decisão 7).
+      const header = oBinding.getContext() as Context | undefined;
+      const isReturn = header?.getProperty("InvoiceType") === "Return" || header?.getProperty("IsNfeReturn") === true;
+      uiModel.setProperty("/taxTotals", summarizeInvoiceTaxes(contexts.map((ctx) => ctx.getObject() as TaxLine), {
+        direction: "Outgoing", isReturn, branchSimples: false, pisCofinsRegime: "Cumulative", purposeOf: () => "ResaleOrInput",
+      }));
     }
 
     /** Quantidade, preço ou um dos quatro valores da linha mudou: o total geral acompanha. */

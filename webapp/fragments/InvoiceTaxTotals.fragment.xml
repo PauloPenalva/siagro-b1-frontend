@@ -10,13 +10,16 @@
   <Table
     id="tableInvoiceTaxTotals"
     class="sapUiSizeCondensed"
-    width="40rem"
+    width="52rem"
     items="{ui>/taxTotals/rows}"
     noDataText="Nenhum tributo nas linhas deste documento."
   >
     <columns>
       <Column width="12rem">
         <Text text="Tributo" />
+      </Column>
+      <Column width="12rem">
+        <Text text="Efeito" />
       </Column>
       <Column hAlign="End">
         <Text text="Base de cálculo" />
@@ -29,6 +32,7 @@
       <ColumnListItem>
         <cells>
           <Text text="{ui>Tax}" />
+          <Text text="{ui>Effect}" />
           <Text text="{path: 'ui>Base', formatter: 'taxTotals.formatTaxAmount'}" />
           <Text text="{path: 'ui>Value', formatter: 'taxTotals.formatTaxAmount'}" />
         </cells>
