@@ -34,6 +34,12 @@ export default class Main extends BaseController {
   public async load(): Promise<void> {
     const model = this.getModel("dashboard") as JSONModel;
 
+    // Sem sessão a rota da home ainda casa (o guard redireciona para o login no mesmo ciclo):
+    // carregar aqui mostrava "Não foi possível carregar o painel" por cima da tela de login.
+    if (!SessionService.isAuthenticated()) {
+      return;
+    }
+
     if (SessionService.isSapMode()) {
       model.setProperty("/hidden", true);
       return;
