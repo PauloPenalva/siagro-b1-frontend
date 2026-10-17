@@ -171,6 +171,21 @@ export default abstract class CommonController extends BaseController {
   }
 
   /**
+   * Diálogo de "Tributos do item" (Entrada e Saída), criado a CADA abertura e destruído ao fechar.
+   *
+   * Não pode ser reaproveitado: o contexto explícito é uma linha da grade de itens, e ela morre
+   * quando a view troca de documento. Com o contexto próprio destruído, o diálogo (dependente da
+   * view) volta a herdar o contexto do documento, e cada campo relativo vira uma late property do
+   * documento — `GET PurchaseInvoices(<id>)/ItemCode` → 404 "Communication error" ao abrir outro
+   * documento. Destruir no `afterClose` tira o diálogo da view junto com o contexto morto.
+   */
+  protected async createItemFiscalDialog(name: string, itemContext: Context): Promise<Dialog> {
+    const dialog = await DialogHelper.createDialog(this, name, itemContext);
+    dialog.attachEventOnce("afterClose", () => dialog.destroy());
+    return dialog;
+  }
+
+  /**
    * Abre um value help e aplica a propriedade escolhida ao Input de origem.
    *
    * Cancelar resolve com `undefined`, e nesse caso o valor atual é preservado.
