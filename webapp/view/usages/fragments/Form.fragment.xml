@@ -237,8 +237,8 @@
 
           <!-- Retenções sobre serviço (spec 2026-10-17, Outras compras): só natureza de entrada em STANDALONE.
                Percentuais editáveis usam Double, nunca Decimal (o Decimal grava string e o OData recusa). Vazio = não retém. -->
-          <core:Title text="Retenções de serviço" emphasized="true"
-                      visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
+          <core:Title emphasized="true"
+                      text="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' ? 'Retenções de serviço' : '' }" />
           <Label text="ISS %" visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
           <Input visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" value="{ path: 'WithholdingIssRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
           <Label text="IRRF %" visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
