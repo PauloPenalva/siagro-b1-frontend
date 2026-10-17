@@ -15,7 +15,7 @@ import { complementCandidatesPath, isOwnComplement, isPurchaseNfeMode, isPurchas
 import { summarizeInvoiceTaxes, TaxLine } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 import { formatAmount, lineFunrural, purchaseChargeLineOf, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
 import {
-  complementedItemLabel, complementedItemLabels, complementLineFrom, inheritedContracts, isOtherPurchaseDocument, isOtherPurchaseUsage,
+  complementedItemLabel, complementedItemLabels, complementLineFrom, inheritedContracts, isOtherPurchaseDocument, isOtherPurchaseEligible, isOtherPurchaseUsage,
   missingUnitOfMeasureMessage, toNumber, unitSuggestionToApply, withEntry
 } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 import Fragment from "sap/ui/core/Fragment";
@@ -273,13 +273,21 @@ export abstract class BaseController extends CommonController {
       return;
     }
     uiModel.setProperty("/otherPurchaseUsages", map);
+    // Há alguma natureza de outra compra (só STANDALONE): libera a coluna "Natureza" também fora do modo de tributos.
+    uiModel.setProperty("/hasOtherPurchaseUsages", Object.keys(map).length > 0);
     this.updateOtherPurchaseDocument();
+  }
+
+  /** O documento da view pode ser de outra compra? (Normal e não devolução, como no servidor.) */
+  protected isOtherPurchaseEligibleDocument(): boolean {
+    const invoice = this.getView().getBindingContext() as Context;
+    return isOtherPurchaseEligible(invoice?.getProperty("InvoiceType"), invoice?.getProperty("IsNfeReturn"));
   }
 
   /** A linha tem natureza de outra compra? */
   protected isOtherPurchaseLine(line: Context): boolean {
     const map = (this.getModel("ui") as JSONModel).getProperty("/otherPurchaseUsages") as Record<string, boolean>;
-    return isOtherPurchaseUsage(line.getProperty("UsageCode"), map);
+    return this.isOtherPurchaseEligibleDocument() && isOtherPurchaseUsage(line.getProperty("UsageCode"), map);
   }
 
   /**
@@ -295,9 +303,17 @@ export abstract class BaseController extends CommonController {
 
     const map = uiModel.getProperty("/otherPurchaseUsages") as Record<string, boolean>;
     const codes = binding.getAllCurrentContexts().map((line) => line.getProperty("UsageCode") as unknown);
-    const isOther = isOtherPurchaseDocument(codes, map);
+    const invoice = this.getView().getBindingContext() as Context;
+    const invoiceType = invoice?.getProperty("InvoiceType") as unknown;
+    const isNfeReturn = invoice?.getProperty("IsNfeReturn") as unknown;
+    const isOther = isOtherPurchaseDocument(invoiceType, isNfeReturn, codes, map);
     if (uiModel.getProperty("/otherPurchaseDoc") !== isOther) {
       uiModel.setProperty("/otherPurchaseDoc", isOther);
+    }
+    // A trava do contrato e o value help de produto por linha só valem em documento Normal que não é devolução.
+    const eligible = isOtherPurchaseEligible(invoiceType, isNfeReturn);
+    if (uiModel.getProperty("/otherPurchaseEligible") !== eligible) {
+      uiModel.setProperty("/otherPurchaseEligible", eligible);
     }
   }
 
@@ -443,7 +459,7 @@ export abstract class BaseController extends CommonController {
     const ui = this.getModel("ui") as JSONModel;
     const map = await this.loadOtherPurchaseUsages();
     ui.setProperty("/otherPurchaseUsages", map);
-    if (isOtherPurchaseUsage(usageCode, map) && oTarget.getProperty("PurchaseContractKey")) {
+    if (this.isOtherPurchaseEligibleDocument() && isOtherPurchaseUsage(usageCode, map) && oTarget.getProperty("PurchaseContractKey")) {
       await oTarget.setProperty("PurchaseContract/Code", null, null);
       void oTarget.setProperty("PurchaseContractKey", null);
     }
@@ -646,7 +662,8 @@ export abstract class BaseController extends CommonController {
     const previousItemCode = oTarget?.getProperty("ItemCode") as string;
 
     // Linha de outra compra (serviço, consumo, ativo): qualquer produto ativo; a de grão segue só com o grupo de grão.
-    const otherPurchase = isOtherPurchaseUsage(oTarget?.getProperty("UsageCode"), await this.loadOtherPurchaseUsages());
+    const otherPurchase = this.isOtherPurchaseEligibleDocument()
+      && isOtherPurchaseUsage(oTarget?.getProperty("UsageCode"), await this.loadOtherPurchaseUsages());
     await this.applyValueHelp(
       ev, otherPurchase ? "ActiveItemsSelectDialog" : "ItemsSelectDialog", ["ItemCode", "ItemName"], "ItemCode");
 
@@ -836,6 +853,11 @@ export abstract class BaseController extends CommonController {
     // Devolução de compra: o líquido é a receber e o Funrural é estornado. O contexto pai da grade é o cabeçalho.
     const isReturn = (oBinding.getContext() as Context | undefined)?.getProperty("IsNfeReturn") === true;
     const charges = summarizeInvoiceCharges(contexts.map((ctx) => purchaseChargeLineOf(ctx)), funrural, isReturn);
+    // Outra compra: o único "Líquido a pagar" é o da seção Retenções (desconta as retenções); a barra de Totais não o repete.
+    this.updateOtherPurchaseDocument();
+    if (uiModel.getProperty("/otherPurchaseDoc") === true) {
+      charges.rows = charges.rows.filter((row) => row.Label !== "Líquido a pagar");
+    }
 
     uiModel.setProperty("/documentTotal", formatAmount(charges.grandTotal));
     uiModel.setProperty("/chargeTotals", charges);

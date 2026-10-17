@@ -222,10 +222,10 @@ export function inheritedContracts(rows: PurchaseInvoiceComplementCandidate[]): 
  */
 export function isLineContractEditable(
   editable: boolean, isCounterNote: boolean, complementedItemKey: string, inherited: Record<string, string>,
-  usageCode?: number, otherPurchaseUsages?: Record<string, boolean>
+  usageCode?: number, otherPurchaseUsages?: Record<string, boolean>, otherPurchaseEligible?: boolean
 ): boolean {
   return editable === true && isCounterNote !== true && !(complementedItemKey && inherited?.[complementedItemKey])
-    && !isOtherPurchaseUsage(usageCode, otherPurchaseUsages);
+    && !(otherPurchaseEligible === true && isOtherPurchaseUsage(usageCode, otherPurchaseUsages));
 }
 
 /**
@@ -236,11 +236,23 @@ export function isOtherPurchaseUsage(usageCode: unknown, otherPurchaseUsages?: R
   return (typeof usageCode === "number" || typeof usageCode === "string") && otherPurchaseUsages?.[String(usageCode)] === true;
 }
 
-/** O documento é de outra compra quando TODAS as linhas (e há pelo menos uma com natureza) têm natureza de outra compra. */
+/** Só o documento Normal que não é devolução pode ser de outra compra (espelha o servidor). */
+export function isOtherPurchaseEligible(invoiceType: unknown, isNfeReturn: unknown): boolean {
+  return invoiceType === "Normal" && isNfeReturn !== true;
+}
+
+/**
+ * Espelha o servidor: o documento é de outra compra quando é Normal e não é devolução, alguma linha tem natureza de
+ * outra compra e TODAS as linhas COM natureza são de outra compra (linha sem natureza é ignorada).
+ */
 export function isOtherPurchaseDocument(
-  usageCodes: unknown[], otherPurchaseUsages?: Record<string, boolean>
+  invoiceType: unknown, isNfeReturn: unknown, usageCodes: unknown[], otherPurchaseUsages?: Record<string, boolean>
 ): boolean {
-  return usageCodes.length > 0 && usageCodes.every((code) => isOtherPurchaseUsage(code, otherPurchaseUsages));
+  if (!isOtherPurchaseEligible(invoiceType, isNfeReturn)) {
+    return false;
+  }
+  const withUsage = usageCodes.filter((code) => code !== undefined && code !== null && code !== "");
+  return withUsage.length > 0 && withUsage.every((code) => isOtherPurchaseUsage(code, otherPurchaseUsages));
 }
 
 /** Soma em centavos dos seis valores retidos (ISS, IRRF, INSS, PIS, COFINS, CSLL). */
