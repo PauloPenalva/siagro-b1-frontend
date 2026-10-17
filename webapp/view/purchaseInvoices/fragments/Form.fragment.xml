@@ -342,7 +342,7 @@
 
           <!-- Na entrada de terceiro são os dados da nota do fornecedor, digitados ou lidos do XML. No modo NF-e
                quem grava número, série e chave é a emissão. -->
-          <core:Title text="Dados da NF-e" />
+          <core:Title text="{= ${ui>/isCte} === true ? 'Dados do CT-e' : 'Dados da NF-e' }" />
 
           <Label text="Número" />
           <Input value="{TaxDocumentNumber}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="9" />

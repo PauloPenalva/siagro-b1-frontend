@@ -7,7 +7,7 @@ import Control from "sap/ui/core/Control";
 import { normalizeAccessKey } from "siagrob1/helpers/TransportedDocumentsHelpers";
 
 /**
- * Pede a chave de acesso (44 dígitos) de uma NF-e transportada pelo CT-e. Devolve a chave só com dígitos ou
+ * Pede a chave de acesso (44 dígitos) de uma NF-e referenciada pelo CT-e. Devolve a chave só com dígitos ou
  * `null` se o usuário desistiu. O botão só habilita com 44 dígitos (espaços colados do portal são ignorados).
  */
 export function openTransportedDocumentKeyDialog(owner: Control): Promise<string> {

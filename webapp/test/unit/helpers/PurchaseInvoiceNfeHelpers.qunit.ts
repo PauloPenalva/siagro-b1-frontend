@@ -60,6 +60,8 @@ QUnit.test("devolve a entrada de terceiro confirmada, com chave, na filial que e
 	assert.strictEqual(canReturnThirdPartyPurchase({ ...thirdParty, ChaveNFe: "123" }, true), false);
 	assert.strictEqual(canReturnThirdPartyPurchase({ ...thirdParty, InvoiceType: "Return" }, true), false, "devolução do cliente");
 	assert.strictEqual(canReturnThirdPartyPurchase({ ...thirdParty, IssuerType: "Own" }, true), false);
+	assert.strictEqual(canReturnThirdPartyPurchase({ ...thirdParty, TaxDocumentKind: "Cte" }, true), false, "CT-e não devolve");
+	assert.strictEqual(canReturnThirdPartyPurchase({ ...thirdParty, TaxDocumentKind: "Other" }, true), false, "outro documento não devolve");
 });
 
 QUnit.test("número do item: zero quando a linha já tem, o digitado quando falta", function (assert) {

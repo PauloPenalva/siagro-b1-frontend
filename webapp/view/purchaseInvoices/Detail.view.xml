@@ -40,18 +40,17 @@
       </uxap:ObjectPageDynamicHeaderTitle>
     </uxap:headerTitle>
 
-    <uxap:headerContent>
-      <MessageStrip
-        text="{ui>/cteIcmsWarning}"
-        type="Warning"
-        showIcon="true"
-        visible="{= !!${ui>/cteIcmsWarning} }" />
-    </uxap:headerContent>
-
     <uxap:sections>
       <uxap:ObjectPageSection titleUppercase="false" title="Dados do Documento">
         <uxap:subSections>
           <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <!-- Aviso de ICMS do CT-e aqui (e não no cabeçalho): continua visível com o cabeçalho recolhido. -->
+            <MessageStrip
+              text="{ui>/cteIcmsWarning}"
+              type="Warning"
+              showIcon="true"
+              class="sapUiTinyMarginBottom"
+              visible="{= !!${ui>/cteIcmsWarning} }" />
             <core:Fragment fragmentName="siagrob1.view.purchaseInvoices.fragments.Form" type="XML" />
           </uxap:ObjectPageSubSection>
         </uxap:subSections>
@@ -74,7 +73,7 @@
           </uxap:ObjectPageSubSection>
         </uxap:subSections>
       </uxap:ObjectPageSection>
-      <uxap:ObjectPageSection titleUppercase="false" title="NF-e transportadas" visible="{= ${ui>/isCte} === true }">
+      <uxap:ObjectPageSection titleUppercase="false" title="NF-e Referenciadas" visible="{= ${ui>/isCte} === true }">
         <uxap:subSections>
           <uxap:ObjectPageSubSection title=" " titleUppercase="false">
             <core:Fragment fragmentName="siagrob1.view.purchaseInvoices.fragments.TransportedDocuments" type="XML" />

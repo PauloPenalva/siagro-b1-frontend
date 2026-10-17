@@ -1017,7 +1017,7 @@ export abstract class BaseController extends CommonController {
   }
 
   /**
-   * Seção "NF-e transportadas" do CT-e (Edit e Detail; no Add o vínculo nasce no servidor, ao salvar, a partir do XML).
+   * Seção "NF-e Referenciadas" do CT-e (Edit e Detail; no Add o vínculo nasce no servidor, ao salvar, a partir do XML).
    * A lista nasce suspensa e só consulta quando o documento é CT-e. Chamar DEPOIS de refreshNfeMode, que decide `/isCte`.
    */
   protected refreshTransportedDocuments(): void {

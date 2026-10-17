@@ -82,7 +82,8 @@ export function canReturnPurchase(doc: PurchaseNfeState, nfeMode: boolean): bool
 
 /** "Devolver" da entrada de TERCEIRO (NF-e do fornecedor): filial que emite pelo Siagro, Normal, confirmada, com a chave. */
 export function canReturnThirdPartyPurchase(doc: PurchaseNfeState, taxLocked: boolean): boolean {
-	return taxLocked === true && doc.IssuerType === "ThirdParty" && doc.InvoiceType === "Normal" &&
+	// Só NF-e: o servidor recusa devolver CT-e e "outro documento".
+	return taxLocked === true && doc.IssuerType === "ThirdParty" && doc.InvoiceType === "Normal" && doc.TaxDocumentKind === "Nfe" &&
 		doc.InvoiceStatus === "Confirmed" && /^\d{44}$/.test(doc.ChaveNFe ?? "");
 }
 

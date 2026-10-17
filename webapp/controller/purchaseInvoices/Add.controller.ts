@@ -36,7 +36,8 @@ interface ImportedInvoice {
   CteIcmsCst?: string;
   CteIcmsValue?: number | string;
   TruckingCompanyCode?: string;
-  /** Avisos da leitura do XML (ex.: NF-e transportada não encontrada). */
+  TruckingCompanyName?: string;
+  /** Avisos da leitura do XML (ex.: NF-e Referenciada não encontrada). */
   Warnings?: string[];
 }
 
@@ -183,7 +184,7 @@ export default class Add extends BaseController {
       // Transporte, pesos e volume da NF-e: precisam existir no payload inicial (entidade transiente). Frete
       // "None" = modFrete 9, o que todas as entradas reais usam; sem a chave o servidor assume Cif.
       TruckingCompanyCode: draft?.TruckingCompanyCode ?? null,
-      TruckingCompanyName: null,
+      TruckingCompanyName: draft?.TruckingCompanyName ?? null,
       TruckCode: null,
       FreightTerms: "None",
       GrossWeight: 0,
