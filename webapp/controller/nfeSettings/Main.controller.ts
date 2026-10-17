@@ -2,6 +2,8 @@ import CommonController from "../common/CommonController";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Dialog from "sap/m/Dialog";
 import MessageBox from "sap/m/MessageBox";
+import { Button$PressEvent } from "sap/m/Button";
+import { RadioButton$SelectEvent } from "sap/m/RadioButton";
 import MessageToast from "sap/m/MessageToast";
 import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import FileUploader, { FileUploader$ChangeEvent } from "sap/ui/unified/FileUploader";
@@ -12,14 +14,15 @@ import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
   certificateDaysToExpire, certificateState, environmentCode, readFileAsBase64,
 } from "siagrob1/helpers/NfeHelpers";
+import { NfeSeries, NfeSeriesRow, buildSeriesSavePayload } from "siagrob1/helpers/NfeSeriesHelpers";
 
 const CERTIFICATE_FRAGMENT = "siagrob1.view.nfeSettings.fragments.CertificateDialog";
 
 type Settings = {
   BranchCode: string;
   Environment: string;
-  Series: number | string;
-  NextNumber: number | string;
+  DefaultSeries: number;
+  SeriesList: NfeSeriesRow[];
   HasCertificate: boolean;
   CertificateSubject?: string;
   CertificateTaxId?: string;
@@ -88,6 +91,7 @@ export default class Main extends CommonController {
 
     this.model().setData({
       ...settings,
+      SeriesList: ((settings.SeriesList ?? []) as NfeSeries[]).map((row) => ({ ...row, isNew: false })),
       loaded: true,
       certificateState: certificateState(days),
       certificateText: !settings.HasCertificate
@@ -97,6 +101,26 @@ export default class Main extends CommonController {
     });
   }
 
+  onAddSeries() {
+    const row: NfeSeriesRow = { Series: "" as unknown as number, Description: "", NextNumber: 1, IsUsed: false, isNew: true };
+    this.model().setProperty("/SeriesList", [...(this.model().getProperty("/SeriesList") as NfeSeriesRow[]), row]);
+  }
+
+  /** Só tira a linha do modelo; o servidor valida (série usada, padrão) ao salvar. */
+  onDeleteSeries(ev: Button$PressEvent) {
+    const row = ev.getSource().getBindingContext("nfe").getObject() as NfeSeriesRow;
+    const list = (this.model().getProperty("/SeriesList") as NfeSeriesRow[]).filter((r) => r !== row);
+    this.model().setProperty("/SeriesList", list);
+  }
+
+  onSelectDefaultSeries(ev: RadioButton$SelectEvent) {
+    if (!ev.getParameter("selected")) {
+      return;
+    }
+    const row = ev.getSource().getBindingContext("nfe").getObject() as NfeSeriesRow;
+    this.model().setProperty("/DefaultSeries", Number(row.Series));
+  }
+
   async onSave() {
     const data = this.model().getData() as Settings;
     this.setBusy(true);
@@ -104,8 +128,8 @@ export default class Main extends CommonController {
       const result = await sendJson("POST", ServerRoutes.branchNfeSettingsSave, {
         BranchCode: data.BranchCode,
         Environment: environmentCode(data.Environment),
-        Series: Number(data.Series),
-        NextNumber: Number(data.NextNumber),
+        DefaultSeries: Number(data.DefaultSeries),
+        ...buildSeriesSavePayload(data.SeriesList ?? []),
       });
 
       if (!result.ok) {

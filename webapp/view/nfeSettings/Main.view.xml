@@ -33,10 +33,6 @@
 						<core:Item key="Homologation" text="Homologação" />
 						<core:Item key="Production" text="Produção" />
 					</Select>
-					<Label text="Série" />
-					<Input value="{nfe>/Series}" type="Number" enabled="{= ${nfe>/loaded} === true }" />
-					<Label text="Próximo número" />
-					<Input value="{nfe>/NextNumber}" type="Number" enabled="{= ${nfe>/loaded} === true }" />
 
 					<core:Title text="Certificado digital (A1)" />
 					<Label text="Titular" />
@@ -47,6 +43,37 @@
 					<ObjectStatus text="{nfe>/certificateText}" state="{nfe>/certificateState}" />
 				</f:content>
 			</f:SimpleForm>
+
+			<Table items="{nfe>/SeriesList}" class="sapUiSmallMarginBeginEnd" visible="{= ${nfe>/loaded} === true }">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="Séries" />
+						<ToolbarSpacer />
+						<Button text="Adicionar série" icon="sap-icon://add" press=".onAddSeries" />
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column width="8rem"><Text text="Série" /></Column>
+					<Column><Text text="Descrição" /></Column>
+					<Column width="12rem"><Text text="Próximo número" /></Column>
+					<Column width="6rem" hAlign="Center"><Text text="Padrão" /></Column>
+					<Column width="4rem" hAlign="Center"><Text text="" /></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Input value="{nfe>Series}" type="Number" enabled="{nfe>isNew}" />
+							<Input value="{nfe>Description}" maxLength="60" />
+							<Input value="{nfe>NextNumber}" type="Number" />
+							<RadioButton groupName="nfeDefaultSeries"
+								selected="{= Number(${nfe>Series}) === ${nfe>/DefaultSeries} }"
+								select=".onSelectDefaultSeries" />
+							<Button icon="sap-icon://delete" type="Transparent" press=".onDeleteSeries"
+								enabled="{= !${nfe>IsUsed} &amp;&amp; Number(${nfe>Series}) !== ${nfe>/DefaultSeries} }" />
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
 		</content>
 		<footer>
 			<OverflowToolbar>

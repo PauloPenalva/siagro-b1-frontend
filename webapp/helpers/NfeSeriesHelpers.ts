@@ -14,3 +14,18 @@ export function pickInitialSeries(list: NfeSeries[], defaultSeries: number, docu
   const wanted = Number.parseInt(documentSeries ?? "", 10);
   return Number.isNaN(wanted) || !list.some((s) => s.Series === wanted) ? defaultSeries : wanted;
 }
+
+/** Linha da tabela de séries da Configuração da NF-e; `isNew` libera a edição do número da série. */
+export type NfeSeriesRow = NfeSeries & { isNew: boolean };
+
+/**
+ * Vetores paralelos que o `BranchNfeSettingsSave` espera. Os Inputs entregam texto (linhas novas
+ * guardam a série como string), por isso a conversão para número; a descrição é aparada.
+ */
+export function buildSeriesSavePayload(rows: NfeSeriesRow[]): { Series: number[]; Descriptions: string[]; NextNumbers: number[] } {
+  return {
+    Series: rows.map((r) => Number(r.Series)),
+    Descriptions: rows.map((r) => (r.Description ?? "").trim()),
+    NextNumbers: rows.map((r) => Number(r.NextNumber)),
+  };
+}

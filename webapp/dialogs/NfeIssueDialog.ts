@@ -23,18 +23,42 @@ export type NfeIssueDialogOptions = {
 };
 
 /**
+ * Trava de reentrância: o duplo clique em "emitir" chamaria o diálogo duas vezes (a leitura das séries
+ * é assíncrona e o botão que o abre continua clicável). Enquanto um diálogo carrega ou está aberto,
+ * outra chamada resolve null na hora.
+ */
+let dialogActive = false;
+
+/**
  * Confirma a emissão da NF-e pedindo a série. Lê as séries da filial; devolve a série escolhida
  * ou `null` se o usuário desistiu (ou se a leitura das séries falhou, caso em que mostra o erro).
  */
 export async function openNfeIssueDialog(owner: Control, opts: NfeIssueDialogOptions): Promise<number> {
-  const result = await sendJson("GET", `${ServerRoutes.branchNfeSettingsGet}(BranchCode='${encodeURIComponent(opts.branchCode)}')`);
-  if (!result.ok) {
-    MessageBox.error(result.message);
+  if (dialogActive) {
     return null;
   }
+  dialogActive = true;
 
-  const settings = odataValue<BranchNfeSeriesSettings>(result.data);
+  let settings: BranchNfeSeriesSettings;
+  try {
+    const result = await sendJson("GET", `${ServerRoutes.branchNfeSettingsGet}(BranchCode='${encodeURIComponent(opts.branchCode)}')`);
+    if (!result.ok) {
+      MessageBox.error(result.message);
+      dialogActive = false;
+      return null;
+    }
+    settings = odataValue<BranchNfeSeriesSettings>(result.data);
+  } catch (error) {
+    dialogActive = false;
+    throw error;
+  }
+
   const list = settings.SeriesList ?? [];
+  if (list.length === 0) {
+    MessageBox.error("Nenhuma série cadastrada na Configuração da NF-e da filial.");
+    dialogActive = false;
+    return null;
+  }
 
   return new Promise((resolve) => {
     let chosen: number = null;
@@ -60,7 +84,7 @@ export async function openNfeIssueDialog(owner: Control, opts: NfeIssueDialogOpt
         press: () => { chosen = Number(select.getSelectedKey()); dialog.close(); },
       }),
       endButton: new Button({ text: "Cancelar", press: () => dialog.close() }),
-      afterClose: () => { dialog.destroy(); resolve(chosen); },
+      afterClose: () => { dialog.destroy(); dialogActive = false; resolve(chosen); },
     });
 
     owner.addDependent(dialog);

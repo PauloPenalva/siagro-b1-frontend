@@ -1,5 +1,5 @@
-import { formatNfeSeries, pickInitialSeries } from "siagrob1/helpers/NfeSeriesHelpers";
-import type { NfeSeries } from "siagrob1/helpers/NfeSeriesHelpers";
+import { buildSeriesSavePayload, formatNfeSeries, pickInitialSeries } from "siagrob1/helpers/NfeSeriesHelpers";
+import type { NfeSeries, NfeSeriesRow } from "siagrob1/helpers/NfeSeriesHelpers";
 
 const list: NfeSeries[] = [
 	{ Series: 1, Description: "Normal", NextNumber: 10, IsUsed: true },
@@ -27,4 +27,21 @@ QUnit.test("pickInitialSeries cai na padrão sem série no documento", function 
 
 QUnit.test("pickInitialSeries compara pelo número, ignorando zeros à esquerda", function (assert) {
 	assert.strictEqual(pickInitialSeries(list, 300, "001"), 1);
+});
+
+QUnit.test("buildSeriesSavePayload converte strings em números, apara a descrição e mantém a ordem", function (assert) {
+	const rows = [
+		{ Series: "300", Description: "  Remessa  ", NextNumber: "5", IsUsed: false, isNew: true },
+		{ Series: 1, Description: "Normal", NextNumber: 10, IsUsed: true, isNew: false },
+	] as unknown as NfeSeriesRow[];
+
+	assert.deepEqual(buildSeriesSavePayload(rows), {
+		Series: [300, 1],
+		Descriptions: ["Remessa", "Normal"],
+		NextNumbers: [5, 10],
+	});
+});
+
+QUnit.test("buildSeriesSavePayload com lista vazia devolve vetores vazios", function (assert) {
+	assert.deepEqual(buildSeriesSavePayload([]), { Series: [], Descriptions: [], NextNumbers: [] });
 });
