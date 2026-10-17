@@ -187,7 +187,7 @@ export default class Detail extends BaseController {
     }
 
     binding.changeParameters({
-      $filter: `PurchaseInvoiceKey eq ${this.generatedTitlesInvoiceKey} and OriginType eq 'OtherPurchaseInvoice'`,
+      $filter: `PurchaseInvoiceKey eq ${this.generatedTitlesInvoiceKey} and OriginType eq 'OtherPurchaseInvoice' and Status ne 'Canceled'`,
     });
 
     if (binding.isSuspended()) {

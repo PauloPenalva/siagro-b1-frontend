@@ -3,8 +3,8 @@
     xmlns:core="sap.ui.core"
     core:require="{ formatter: 'siagrob1/model/formatter', draft: 'siagrob1/helpers/PurchaseInvoiceDraftHelpers' }"
 >
-  <!-- Títulos a pagar gerados por este documento de outra compra (parcelas e retenções de imposto). Nascem ao confirmar e
-       são cancelados no estorno/cancelamento. A lista nasce SUSPENSA: o $filter depende da chave do documento e é
+  <!-- Títulos a pagar gerados por este documento de outra compra (parcelas e retenções de imposto). Nascem ao confirmar; os
+       cancelados (estorno/cancelamento) ficam fora, por Status ne 'Canceled' no filtro do controller. A lista nasce SUSPENSA: o $filter depende da chave do documento e é
        aplicado pelo controller (refreshGeneratedTitles). O filtro de enum é estático (string), pois sap.ui.model.Filter
        não sabe formatar enum. -->
   <Table
@@ -21,13 +21,13 @@
     }"
   >
     <columns>
-      <Column width="8rem"><Text text="Título" /></Column>
-      <Column width="14rem"><Text text="Descrição" /></Column>
-      <Column width="18rem"><Text text="Credor" /></Column>
-      <Column width="8rem" hAlign="Center"><Text text="Vencimento" /></Column>
-      <Column width="9rem" hAlign="End"><Text text="Valor" /></Column>
-      <Column width="9rem" hAlign="End"><Text text="Em aberto" /></Column>
-      <Column width="9rem" hAlign="Center"><Text text="Situação" /></Column>
+      <Column width="7rem"><Text text="Título" /></Column>
+      <Column width="12rem"><Text text="Descrição" /></Column>
+      <Column width="14rem"><Text text="Credor" /></Column>
+      <Column width="7rem" hAlign="Center"><Text text="Vencimento" /></Column>
+      <Column width="8rem" hAlign="End"><Text text="Valor" /></Column>
+      <Column width="8rem" hAlign="End"><Text text="Em aberto" /></Column>
+      <Column width="8rem" hAlign="Center"><Text text="Situação" /></Column>
     </columns>
     <items>
       <ColumnListItem>
