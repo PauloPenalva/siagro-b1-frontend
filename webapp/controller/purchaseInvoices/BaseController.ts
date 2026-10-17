@@ -102,7 +102,7 @@ export abstract class BaseController extends CommonController {
     // Remessa para depósito (spec backend 2026-10-10 §5.3): só STANDALONE mostra a coluna "Remessa". Depois do reset
     // e guardado por isCurrent(); o modo do ERP é lido uma vez só (cache de módulo).
     await this.refreshStorageDepositMode(uiModel, isCurrent);
-    await this.refreshOtherPurchaseUsages(uiModel, isCurrent);
+    await this.refreshOtherPurchaseUsages(uiModel, isCurrent, reset);
 
     if (!oContext) {
       return;
@@ -228,8 +228,10 @@ export abstract class BaseController extends CommonController {
    * Lido por fetch com `$select` explícito (e não do contexto do diálogo de naturezas): o `$select` automático do
    * diálogo só traz as colunas que ele exibe, e ler o resto do contexto escolhido dá "invalid segment".
    */
-  protected async loadOtherPurchaseUsages(): Promise<Record<string, boolean>> {
-    if (otherPurchaseUsagesCache) {
+  protected async loadOtherPurchaseUsages(forceReload = false): Promise<Record<string, boolean>> {
+    // A cópia do módulo só serve às ações dentro do mesmo documento; a cada match de rota (reset) o mapa é relido,
+    // porque uma natureza criada/alterada no meio da sessão precisa valer na hora.
+    if (otherPurchaseUsagesCache && !forceReload) {
       return otherPurchaseUsagesCache;
     }
 
@@ -267,8 +269,8 @@ export abstract class BaseController extends CommonController {
   }
 
   /** Publica o mapa de naturezas de outra compra no `ui` e recalcula se o documento inteiro é de outra compra. */
-  private async refreshOtherPurchaseUsages(uiModel: JSONModel, isCurrent: () => boolean): Promise<void> {
-    const map = await this.loadOtherPurchaseUsages();
+  private async refreshOtherPurchaseUsages(uiModel: JSONModel, isCurrent: () => boolean, forceReload: boolean): Promise<void> {
+    const map = await this.loadOtherPurchaseUsages(forceReload);
     if (!isCurrent()) {
       return;
     }
