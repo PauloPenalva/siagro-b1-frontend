@@ -108,7 +108,6 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/custody", { key: "", code: "" });
       uiModel.setProperty("/otherPurchaseDoc", false);
       uiModel.setProperty("/isCte", false);
-      uiModel.setProperty("/taxDocumentKinds", this.taxDocumentKinds());
     }
 
     // Remessa para depósito (spec backend 2026-10-10 §5.3): só STANDALONE mostra a coluna "Remessa". Depois do reset
@@ -136,10 +135,8 @@ export abstract class BaseController extends CommonController {
         return;
       }
 
-      // CT-e (frete tomado): esconde pesos/volumes, mostra a prestação. A opção só aparece no STANDALONE (ou se o
-      // documento já é CT-e, para o Select não ficar sem a opção do valor gravado).
+      // CT-e (frete tomado): esconde pesos/volumes e mostra a prestação.
       uiModel.setProperty("/isCte", taxDocumentKind === "Cte");
-      uiModel.setProperty("/taxDocumentKinds", this.taxDocumentKinds(taxDocumentKind === "Cte"));
 
       void this.refreshCustodyCode(custodyKey, isCurrent);
       void this.refreshBranchTaxProfile(uiModel, branchCode, isCurrent);
@@ -193,41 +190,41 @@ export abstract class BaseController extends CommonController {
     }
   }
 
-  /** Opções de "Tipo de documento": "CT-e (frete)" só no STANDALONE (ou quando o documento já é CT-e). */
-  private taxDocumentKinds(forceCte = false): { key: string; text: string }[] {
-    const kinds = [
-      { key: "Nfe", text: "NF-e (eletrônica)" },
-      { key: "Other", text: "Outro (serviço, papel/talão…)" },
-    ];
-    if (isStandaloneErp === true || forceCte) {
-      kinds.splice(1, 0, { key: "Cte", text: "CT-e (frete)" });
-    }
-    return kinds;
-  }
-
   /**
-   * Trocou o tipo de documento: liga/desliga a seção da prestação do CT-e e, no CT-e digitado, sugere o CNPJ do
-   * tomador (o da filial do documento) quando vazio. Continua editável; o servidor confere.
+   * Trocou o tipo de documento: liga/desliga a seção da prestação do CT-e. Ao sair de CT-e limpa a prestação (não
+   * se aplica a NF-e/Outro e o servidor a recusaria); no CT-e digitado sugere o CNPJ do tomador.
    */
   async onTaxDocumentKindChange(): Promise<void> {
     const invoice = this.getView().getBindingContext() as Context;
     const isCte = invoice?.getProperty("TaxDocumentKind") === "Cte";
     (this.getModel("ui") as JSONModel).setProperty("/isCte", isCte);
     if (!isCte) {
+      for (const property of ["FreightStartState", "FreightEndState", "FreightStartCity", "FreightEndCity", "FreightPayerTaxId"]) {
+        if (invoice?.getProperty(property)) void invoice.setProperty(property, null);
+      }
+      (this.getModel("ui") as JSONModel).setProperty("/payerPrefill", "");
       return;
     }
+    await this.prefillFreightPayer();
+  }
 
-    const payer = (invoice.getProperty("FreightPayerTaxId") as string) ?? "";
-    if (payer.trim()) {
-      return;
-    }
+  /**
+   * Sugere o CNPJ da filial do documento como tomador do CT-e. Só escreve se o campo está vazio ou ainda guarda o que
+   * esta própria rotina sugeriu antes (filial anterior); o que o operador digitou não é tocado.
+   */
+  private async prefillFreightPayer(): Promise<void> {
+    const invoice = this.getView().getBindingContext() as Context;
+    const ui = this.getModel("ui") as JSONModel;
     try {
       const branchCode = invoice.getProperty("BranchCode") as string;
       const taxId = branchCode
         ? await (this.getModel() as ODataModel).bindContext(`/Branchs('${branchCode}')`).requestObject("TaxId") as string
         : (await this.getBranchInfo())?.taxId;
       const digits = (taxId ?? "").replace(/\D/g, "");
-      if (digits && invoice.getProperty("TaxDocumentKind") === "Cte" && !((invoice.getProperty("FreightPayerTaxId") as string) ?? "").trim()) {
+      const current = ((invoice.getProperty("FreightPayerTaxId") as string) ?? "").trim();
+      const previous = (ui.getProperty("/payerPrefill") as string) ?? "";
+      if (digits && invoice.getProperty("TaxDocumentKind") === "Cte" && (!current || current === previous)) {
+        ui.setProperty("/payerPrefill", digits);
         void invoice.setProperty("FreightPayerTaxId", digits);
       }
     } catch {
@@ -443,7 +440,6 @@ export abstract class BaseController extends CommonController {
     }
     if (isCurrent()) {
       uiModel.setProperty("/storageDepositMode", isStandaloneErp);
-      uiModel.setProperty("/taxDocumentKinds", this.taxDocumentKinds(uiModel.getProperty("/isCte") === true));
     }
   }
 
@@ -465,6 +461,9 @@ export abstract class BaseController extends CommonController {
   /** Trocar a filial ou a emissão muda o modo NF-e (a natureza e os tributos passam a valer, ou deixam). */
   onBranchChange() {
     void this.refreshNfeMode(false);
+    if ((this.getModel("ui") as JSONModel).getProperty("/isCte") === true) {
+      void this.prefillFreightPayer();
+    }
   }
 
   onIssuerTypeChange() {

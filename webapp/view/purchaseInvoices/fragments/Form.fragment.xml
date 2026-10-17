@@ -119,16 +119,20 @@
                própria é sempre NF-e, a devolução do cliente não tem chave e a filial sem a regra (SAPB1, MH Agro)
                fica como sempre foi. -->
           <Label text="Tipo de documento"
-            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }" />
+            visible="{= (${ui>/taxLocked} === true || ${ui>/storageDepositMode} === true) &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }" />
           <Select
-            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }"
+            visible="{= (${ui>/taxLocked} === true || ${ui>/storageDepositMode} === true) &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }"
             selectedKey="{path: 'TaxDocumentKind', targetType: 'any'}"
             enabled="{= ${ui>/editable} === true }"
             forceSelection="false"
             change=".onTaxDocumentKindChange"
-            items="{ui>/taxDocumentKinds}"
             width="100%">
-            <core:Item key="{ui>key}" text="{ui>text}" />
+            <core:Item key="Nfe" text="NF-e (eletrônica)" />
+            <!-- Itens estáticos: reconstruir os itens com selectedKey em duas vias esvazia/zera o valor gravado. O CT-e só
+                 é oferecido no STANDALONE (ou se o documento já é CT-e). -->
+            <core:Item key="Cte" text="CT-e (frete)"
+              enabled="{= ${ui>/storageDepositMode} === true || ${path: 'TaxDocumentKind', targetType: 'any'} === 'Cte' }" />
+            <core:Item key="Other" text="Outro (serviço, papel/talão…)" />
           </Select>
 
           <Label text="Emitente" required="true" />
@@ -354,21 +358,21 @@
 
           <!-- Prestação do CT-e (frete tomado, spec 2026-10-17): o CT-e é sempre de terceiro e tem uma linha só. O CNPJ
                do tomador precisa ser o da filial; o servidor confere. UF por value help da tabela de estados. -->
-          <Label text="UF de início da prestação" required="true" visible="{ui>/isCte}" />
+          <Label text="UF de início da prestação" required="{= ${ui>/editable} === true }" visible="{ui>/isCte}" />
           <!-- ui5lint-disable no-deprecated-api -->
           <Input value="{FreightStartState}" maxLength="2" visible="{ui>/isCte}"
                  editable="{ui>/editable}" showValueHelp="{ui>/editable}" valueHelpOnly="true"
                  valueHelpRequest=".openStatesAbbreviationValueHelp" />
           <Label text="Município de início" visible="{ui>/isCte}" />
           <Input value="{FreightStartCity}" maxLength="60" visible="{ui>/isCte}" editable="{ui>/editable}" />
-          <Label text="UF de fim da prestação" required="true" visible="{ui>/isCte}" />
+          <Label text="UF de fim da prestação" required="{= ${ui>/editable} === true }" visible="{ui>/isCte}" />
           <Input value="{FreightEndState}" maxLength="2" visible="{ui>/isCte}"
                  editable="{ui>/editable}" showValueHelp="{ui>/editable}" valueHelpOnly="true"
                  valueHelpRequest=".openStatesAbbreviationValueHelp" />
           <!-- ui5lint-enable no-deprecated-api -->
           <Label text="Município de fim" visible="{ui>/isCte}" />
           <Input value="{FreightEndCity}" maxLength="60" visible="{ui>/isCte}" editable="{ui>/editable}" />
-          <Label text="CNPJ do tomador" required="true" visible="{ui>/isCte}" />
+          <Label text="CNPJ do tomador" required="{= ${ui>/editable} === true }" visible="{ui>/isCte}" />
           <Input value="{FreightPayerTaxId}" maxLength="14" visible="{ui>/isCte}" editable="{ui>/editable}" />
 
           <!-- Autorização da NF-e do fornecedor gravada pelo confirmar com a filial em Produção (spec terceiro-chave R4). -->
