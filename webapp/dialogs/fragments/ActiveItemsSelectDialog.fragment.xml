@@ -1,0 +1,41 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+
+<!-- Produtos ativos de QUALQUER grupo: value help da linha de "outra compra" (serviço, consumo, ativo). Binda a
+     function /ActiveItems() (o /Items do ItemsSelectDialog traz só o grupo de grão). -->
+<TableSelectDialog
+  class=" sapUiSizeCompact"
+  growing="true"
+  growingThreshold="20"
+  items="{
+    path: '/ActiveItems()',
+    sorter: {
+      path: 'ItemName',
+      descending: false
+    }
+  }"
+  rememberSelections="true"
+  title="Produtos"
+>
+<columns>
+  <Column>
+    <header>
+      <Text text="Codigo" />
+    </header>
+  </Column>
+  <Column>
+    <header>
+      <Text text="Nome" />
+    </header>
+  </Column>
+</columns>
+<ColumnListItem >
+  <cells>
+    <Text text="{ItemCode}" />
+    <Text text="{ItemName}" />
+  </cells>
+</ColumnListItem>
+</TableSelectDialog>
+</core:FragmentDefinition>

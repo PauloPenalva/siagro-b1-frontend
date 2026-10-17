@@ -66,6 +66,13 @@
           </uxap:ObjectPageSubSection>
         </uxap:subSections>
       </uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Títulos gerados" visible="{= ${ui>/otherPurchaseDoc} === true }">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <core:Fragment fragmentName="siagrob1.view.purchaseInvoices.fragments.GeneratedTitles" type="XML" />
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
       <uxap:ObjectPageSection titleUppercase="false" title="Romaneios reconciliados" visible="{storageReturn>/visible}">
         <uxap:subSections>
           <uxap:ObjectPageSubSection title=" " titleUppercase="false">

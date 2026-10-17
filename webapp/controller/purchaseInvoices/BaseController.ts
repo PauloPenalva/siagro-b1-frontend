@@ -15,8 +15,8 @@ import { complementCandidatesPath, isOwnComplement, isPurchaseNfeMode, isPurchas
 import { summarizeInvoiceTaxes, TaxLine } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 import { formatAmount, lineFunrural, purchaseChargeLineOf, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
 import {
-  complementedItemLabel, complementedItemLabels, complementLineFrom, inheritedContracts, missingUnitOfMeasureMessage, toNumber,
-  unitSuggestionToApply, withEntry
+  complementedItemLabel, complementedItemLabels, complementLineFrom, inheritedContracts, isOtherPurchaseDocument, isOtherPurchaseUsage,
+  missingUnitOfMeasureMessage, toNumber, unitSuggestionToApply, withEntry
 } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 import Fragment from "sap/ui/core/Fragment";
 import TableSelectDialog, { TableSelectDialog$ConfirmEvent, TableSelectDialog$SearchEvent } from "sap/m/TableSelectDialog";
@@ -31,6 +31,19 @@ let nfeModeSequence = 0;
 /** Modo do ERP (STANDALONE?) lido uma vez; undefined = ainda não lido. */
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- strictNullChecks desligado; undefined = ainda não lido
 let isStandaloneErp: boolean | undefined;
+
+/**
+ * Naturezas de entrada que são de "outra compra" (serviço, consumo, ativo): não exigem contrato e geram título.
+ * Código → true. Vazio fora do STANDALONE; undefined = ainda não lido (uma falha de leitura não é gravada aqui).
+ */
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- strictNullChecks desligado; undefined = ainda não lido
+let otherPurchaseUsagesCache: Record<string, boolean> | undefined;
+
+interface UsageFlagsRow {
+  Code?: number; code?: number;
+  RequiresContract?: boolean; requiresContract?: boolean;
+  CreatesFinancialDocument?: boolean; createsFinancialDocument?: boolean;
+}
 
 /**
  * Comum às telas do documento de entrada.
@@ -83,11 +96,13 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/counterNote", { key: "", text: "" });
       uiModel.setProperty("/producerInvoice", { key: "", text: "" });
       uiModel.setProperty("/custody", { key: "", code: "" });
+      uiModel.setProperty("/otherPurchaseDoc", false);
     }
 
     // Remessa para depósito (spec backend 2026-10-10 §5.3): só STANDALONE mostra a coluna "Remessa". Depois do reset
     // e guardado por isCurrent(); o modo do ERP é lido uma vez só (cache de módulo).
     await this.refreshStorageDepositMode(uiModel, isCurrent);
+    await this.refreshOtherPurchaseUsages(uiModel, isCurrent);
 
     if (!oContext) {
       return;
@@ -205,6 +220,97 @@ export abstract class BaseController extends CommonController {
   onOpenCustodyTransaction(): void {
     const key = (this.getModel("ui") as JSONModel).getProperty("/custody/key") as string;
     if (key) this.navTo("storageTransactionsDetail", { id: key });
+  }
+
+  /**
+   * Naturezas de "outra compra": `RequiresContract = false` e `CreatesFinancialDocument = true`. Só STANDALONE.
+   *
+   * Lido por fetch com `$select` explícito (e não do contexto do diálogo de naturezas): o `$select` automático do
+   * diálogo só traz as colunas que ele exibe, e ler o resto do contexto escolhido dá "invalid segment".
+   */
+  protected async loadOtherPurchaseUsages(): Promise<Record<string, boolean>> {
+    if (otherPurchaseUsagesCache) {
+      return otherPurchaseUsagesCache;
+    }
+
+    try {
+      if (isStandaloneErp === undefined) {
+        isStandaloneErp = (await this.getSystemInfo())?.erp?.trim().toUpperCase() === "STANDALONE";
+      }
+      if (!isStandaloneErp) {
+        otherPurchaseUsagesCache = {};
+        return otherPurchaseUsagesCache;
+      }
+
+      const result = await sendJson("GET",
+        `${ServerRoutes.usages}?$select=Code,RequiresContract,CreatesFinancialDocument&$top=1000` +
+        `&$filter=${encodeURIComponent("Direction eq 'Incoming'")}`);
+      if (!result.ok) {
+        return {};
+      }
+
+      const map: Record<string, boolean> = {};
+      for (const row of odataCollection<UsageFlagsRow>(result.data)) {
+        const code = row.Code ?? row.code;
+        const requiresContract = row.RequiresContract ?? row.requiresContract;
+        const createsTitle = row.CreatesFinancialDocument ?? row.createsFinancialDocument;
+        if (code !== undefined && requiresContract === false && createsTitle === true) {
+          map[String(code)] = true;
+        }
+      }
+      otherPurchaseUsagesCache = map;
+      return map;
+    } catch {
+      // Sem resposta: tudo é grão; a próxima chamada tenta de novo.
+      return {};
+    }
+  }
+
+  /** Publica o mapa de naturezas de outra compra no `ui` e recalcula se o documento inteiro é de outra compra. */
+  private async refreshOtherPurchaseUsages(uiModel: JSONModel, isCurrent: () => boolean): Promise<void> {
+    const map = await this.loadOtherPurchaseUsages();
+    if (!isCurrent()) {
+      return;
+    }
+    uiModel.setProperty("/otherPurchaseUsages", map);
+    this.updateOtherPurchaseDocument();
+  }
+
+  /** A linha tem natureza de outra compra? */
+  protected isOtherPurchaseLine(line: Context): boolean {
+    const map = (this.getModel("ui") as JSONModel).getProperty("/otherPurchaseUsages") as Record<string, boolean>;
+    return isOtherPurchaseUsage(line.getProperty("UsageCode"), map);
+  }
+
+  /**
+   * `/otherPurchaseDoc`: todas as linhas são de outra compra. Governa a seção "Retenções". Barato e síncrono: roda a
+   * cada atualização da grade e a cada troca de natureza.
+   */
+  protected updateOtherPurchaseDocument(): void {
+    const uiModel = this.getModel("ui") as JSONModel;
+    const binding = (this.byId("tablePurchaseInvoiceItems") as Table | undefined)?.getBinding("rows") as ODataListBinding;
+    if (!uiModel || !binding) {
+      return;
+    }
+
+    const map = uiModel.getProperty("/otherPurchaseUsages") as Record<string, boolean>;
+    const codes = binding.getAllCurrentContexts().map((line) => line.getProperty("UsageCode") as unknown);
+    const isOther = isOtherPurchaseDocument(codes, map);
+    if (uiModel.getProperty("/otherPurchaseDoc") !== isOther) {
+      uiModel.setProperty("/otherPurchaseDoc", isOther);
+    }
+  }
+
+  /**
+   * Editar qualquer valor retido passa a valer como digitado: o servidor deixa de recalcular pelas alíquotas
+   * (`WithholdingsManual`). A propriedade é lida pelo CheckBox do formulário (entra no `$select`); sem isso o UI5
+   * recusaria a escrita ("Must not change a property before it has been read"). Sem await: grupo diferido.
+   */
+  onWithholdingChange(): void {
+    const invoice = this.getView().getBindingContext() as Context;
+    if (invoice && invoice.getProperty("WithholdingsManual") !== true) {
+      void invoice.setProperty("WithholdingsManual", true);
+    }
   }
 
   private async refreshStorageDepositMode(uiModel: JSONModel, isCurrent: () => boolean): Promise<void> {
@@ -329,7 +435,19 @@ export abstract class BaseController extends CommonController {
     }
 
     oInput.setValue(oSelected.getProperty("Name") as string);
-    void oTarget.setProperty("UsageCode", oSelected.getProperty("Code"));
+    const usageCode = oSelected.getProperty("Code") as number;
+    void oTarget.setProperty("UsageCode", usageCode);
+
+    // Natureza de outra compra não aceita contrato (o servidor recusa): desamarra o que estiver na linha. Mesma ordem
+    // do `openLineItemValueHelp` — navegação com grupo `null` primeiro (resolve na hora), chave depois sem `await`.
+    const ui = this.getModel("ui") as JSONModel;
+    const map = await this.loadOtherPurchaseUsages();
+    ui.setProperty("/otherPurchaseUsages", map);
+    if (isOtherPurchaseUsage(usageCode, map) && oTarget.getProperty("PurchaseContractKey")) {
+      await oTarget.setProperty("PurchaseContract/Code", null, null);
+      void oTarget.setProperty("PurchaseContractKey", null);
+    }
+    this.updateOtherPurchaseDocument();
   }
 
   /** Tributos calculados do item selecionado (somente leitura). */
@@ -527,7 +645,10 @@ export abstract class BaseController extends CommonController {
     const oTarget = ev.getSource().getBindingContext() as Context;
     const previousItemCode = oTarget?.getProperty("ItemCode") as string;
 
-    await this.applyValueHelp(ev, "ItemsSelectDialog", ["ItemCode", "ItemName"], "ItemCode");
+    // Linha de outra compra (serviço, consumo, ativo): qualquer produto ativo; a de grão segue só com o grupo de grão.
+    const otherPurchase = isOtherPurchaseUsage(oTarget?.getProperty("UsageCode"), await this.loadOtherPurchaseUsages());
+    await this.applyValueHelp(
+      ev, otherPurchase ? "ActiveItemsSelectDialog" : "ItemsSelectDialog", ["ItemCode", "ItemName"], "ItemCode");
 
     if (!oTarget || oTarget.getProperty("ItemCode") === previousItemCode) {
       return;
@@ -719,6 +840,7 @@ export abstract class BaseController extends CommonController {
     uiModel.setProperty("/documentTotal", formatAmount(charges.grandTotal));
     uiModel.setProperty("/chargeTotals", charges);
     uiModel.setProperty("/taxTotals", summarizeInvoiceTaxes(contexts.map((ctx) => ctx.getObject() as TaxLine)));
+    this.updateOtherPurchaseDocument();
   }
 
   /**

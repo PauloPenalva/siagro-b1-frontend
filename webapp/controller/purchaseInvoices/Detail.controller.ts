@@ -33,6 +33,7 @@ import { reconciliationDifference } from "siagrob1/helpers/StorageDepositHelpers
 import { openDanfeViewer, openNfeCorrectionViewer } from "siagrob1/dialogs/DanfeViewer";
 import { openNfeCorrectionDialog } from "siagrob1/dialogs/NfeCorrectionDialog";
 import { Button$PressEvent } from "sap/m/Button";
+import { Link$PressEvent } from "sap/m/Link";
 import { BaseController } from "./BaseController";
 
 /** Linha do "Devolver" da entrada: o comprado no lugar do vendido. */
@@ -65,6 +66,9 @@ export default class Detail extends BaseController {
 
   private reconcileDialog?: Dialog;
 
+  /** Chave do documento aberto: o filtro da seção "Títulos gerados" (a lista nasce suspensa). */
+  private generatedTitlesInvoiceKey = "";
+
   /** Quantidade das linhas de retorno (as que apontam a remessa), base do cálculo da diferença no diálogo. */
   private returnQuantity = 0;
 
@@ -91,6 +95,9 @@ export default class Detail extends BaseController {
     uiModel.setProperty("/canIssueNfe", false);
     uiModel.setProperty("/canReturn", false);
     uiModel.setProperty("/canCreateCounterNote", false);
+    uiModel.setProperty("/withholdingsRecalculable", false);
+    this.generatedTitlesInvoiceKey = id;
+    this.suspendGeneratedTitles();
     this.resetStorageReturn();
     uiModel.setProperty("/counterNote", { ...NO_LINK });
     uiModel.setProperty("/producerInvoice", { ...NO_LINK });
@@ -126,6 +133,7 @@ export default class Detail extends BaseController {
   private async refreshDetailNfe(reset = true) {
     const oContext = this.getView().getBindingContext() as Context;
     await this.refreshNfeMode(reset);
+    this.refreshGeneratedTitles();
     const uiModel = this.getModel("ui") as JSONModel;
     const state = oContext ? await oContext.requestObject() as PurchaseNfeState : undefined;
 
@@ -153,6 +161,46 @@ export default class Detail extends BaseController {
 
     if (oContext) {
       await this.loadStorageReturn(oContext);
+    }
+  }
+
+  /** Documento novo: esvazia a lista de títulos do anterior até a leitura deste. */
+  private suspendGeneratedTitles(): void {
+    const binding = (this.byId("generatedTitlesTable") as SapTable | undefined)?.getBinding("items") as ODataListBinding;
+    if (binding && !binding.isSuspended()) {
+      binding.suspend();
+    }
+  }
+
+  /**
+   * Seção "Títulos gerados": os títulos do documento de outra compra. O filtro de enum é ESTÁTICO (string no $filter):
+   * `sap.ui.model.Filter` não formata enum. Só STANDALONE com alguma natureza de outra compra cadastrada consulta;
+   * fora disso a lista fica suspensa. Chamado ao abrir o documento e depois de confirmar/estornar/cancelar, quando os
+   * títulos nascem ou são cancelados no servidor.
+   */
+  private refreshGeneratedTitles(): void {
+    const binding = (this.byId("generatedTitlesTable") as SapTable | undefined)?.getBinding("items") as ODataListBinding;
+    const map = (this.getModel("ui") as JSONModel).getProperty("/otherPurchaseUsages") as Record<string, boolean>;
+
+    if (!binding || !this.generatedTitlesInvoiceKey || Object.keys(map ?? {}).length === 0) {
+      return;
+    }
+
+    binding.changeParameters({
+      $filter: `PurchaseInvoiceKey eq ${this.generatedTitlesInvoiceKey} and OriginType eq 'OtherPurchaseInvoice'`,
+    });
+
+    if (binding.isSuspended()) {
+      binding.resume();
+    } else {
+      binding.refresh();
+    }
+  }
+
+  onOpenGeneratedTitle(ev: Link$PressEvent): void {
+    const key = (ev.getSource().getBindingContext() as Context)?.getProperty("Key") as string;
+    if (key) {
+      this.navTo("financialDocumentsDetail", { id: key });
     }
   }
 
