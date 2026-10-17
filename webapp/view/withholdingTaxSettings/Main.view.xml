@@ -1,0 +1,70 @@
+<mvc:View
+	controllerName="siagrob1.controller.withholdingTaxSettings.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core">
+
+	<Page title="Configuração de Retenções">
+		<content>
+			<MessageStrip
+				text="Credor e dia de vencimento do título gerado para cada imposto retido em compra de serviço. O dia vale para o mês seguinte ao da retenção."
+				type="Information"
+				showIcon="true"
+				class="sapUiSmallMargin" />
+			<!-- Linha existente: imposto somente leitura (o servidor recusa trocá-lo). Linha nova (transitória): Select. -->
+			<Table
+				id="withholdingTaxSettingsTable"
+				mode="SingleSelectLeft"
+				busyIndicatorDelay="0"
+				class="sapUiSizeCondensed"
+				items="{ path: '/WithholdingTaxSettings', sorter: { path: 'TaxType' } }">
+				<columns>
+					<Column width="12rem"><Text text="Imposto" /></Column>
+					<Column><Text text="Credor" /></Column>
+					<Column width="16rem"><Text text="Nome do credor" /></Column>
+					<Column width="10rem"><Text text="Dia de vencimento" /></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<HBox>
+								<Text
+									text="{ path: 'TaxType', formatter: '.formatTaxType' }"
+									visible="{= !%{@$ui5.context.isTransient} }" />
+								<Select
+									selectedKey="{TaxType}"
+									forceSelection="false"
+									items="{ path: 'taxTypes>/', templateShareable: true }"
+									visible="{= !!%{@$ui5.context.isTransient} }">
+									<core:Item key="{taxTypes>key}" text="{taxTypes>text}" />
+								</Select>
+							</HBox>
+							<!-- ui5lint-disable no-deprecated-api -->
+							<Input
+								value="{CardCode}"
+								showValueHelp="true"
+								valueHelpOnly="true"
+								valueHelpRequest=".onCreditorValueHelp" />
+							<!-- ui5lint-enable no-deprecated-api -->
+							<Text text="{CardName}" />
+							<Input
+								value="{ path: 'DueDay', type: 'sap.ui.model.odata.type.Int32' }"
+								type="Number"
+								maxLength="2" />
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<Button text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
+				<ToolbarSpacer />
+				<Button text="Incluir" icon="sap-icon://add" press=".onCreate" />
+				<Button text="Excluir" icon="sap-icon://delete" press=".onDelete" />
+				<Button text="Salvar" icon="sap-icon://save" type="Emphasized" press=".onSave" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>
