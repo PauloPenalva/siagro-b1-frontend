@@ -46,7 +46,7 @@ let usagePurposesCache: Record<string, PurchasePurpose> | undefined;
 /** CRT e regime de PIS/COFINS da filial, para a coluna "Efeito" da tabela Tributos. */
 type BranchTaxProfile = { simples: boolean; pisCofinsRegime: "Cumulative" | "NonCumulative" };
 
-const SIMPLES_REGIMES = ["SimplesNacional", "SimplesNacionalExcess", "Mei"];
+const SIMPLES_REGIMES = ["SimplesNacional", "Mei"];
 
 interface UsageFlagsRow {
   PurchasePurpose?: string; purchasePurpose?: string;

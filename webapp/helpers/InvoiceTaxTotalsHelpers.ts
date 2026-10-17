@@ -15,6 +15,7 @@ export type PurchasePurpose = "ResaleOrInput" | "UseAndConsumption" | "FixedAsse
 export type TaxLine = {
 	CstIcms: string;
 	CstPis: string;
+	CstCofins?: string;
 	IbsCbsCst: string;
 	IcmsBase: Amount;
 	IcmsValue: Amount;
@@ -60,7 +61,7 @@ export type TaxEffectContext = {
 	direction: "Incoming" | "Outgoing";
 	/** Documento de devolução: na saída o imposto vira crédito. */
 	isReturn: boolean;
-	/** Filial do Simples Nacional (CRT 1, 2 ou 4): sem crédito de ICMS e DIFAL em guia. */
+	/** Filial do Simples Nacional ou MEI (CRT 1 ou 4; o CRT 2 apura ICMS como regime normal): sem crédito de ICMS e DIFAL em guia. */
 	branchSimples: boolean;
 	pisCofinsRegime: "Cumulative" | "NonCumulative";
 	purposeOf: (line: TaxLine) => PurchasePurpose;
@@ -80,7 +81,7 @@ export const EFFECT_WITHHELD = "Retido na fonte";
  * e a grade de itens não mostra tributo: sem isto a soma leria `undefined` e o quadro nunca apareceria.
  */
 export const TAX_TOTALS_SELECT =
-	"CstIcms,CstPis,IbsCbsCst,IcmsBase,IcmsValue,IcmsDeferredValue,PisBase,PisValue,CofinsBase,CofinsValue," +
+	"CstIcms,CstPis,CstCofins,IbsCbsCst,IcmsBase,IcmsValue,IcmsDeferredValue,PisBase,PisValue,CofinsBase,CofinsValue," +
 	"IbsCbsBase,IbsStateValue,IbsMunicipalValue,CbsValue";
 
 /** DIFAL e FCP: só a linha de entrada tem (a de saída não tem os campos, então ficam fora de TAX_TOTALS_SELECT). */
@@ -126,7 +127,7 @@ function sum(lines: TaxLine[], field: keyof TaxLine): number {
 
 /** Linha com tributação gravada: sem CST nenhum (SAPB1, entrada digitada) a linha não foi tributada pelo Siagro. */
 function isTaxed(line: TaxLine): boolean {
-	return [line.CstIcms, line.CstPis, line.IbsCbsCst].some((cst) => typeof cst === "string" && cst.trim() !== "");
+	return [line.CstIcms, line.CstPis, line.CstCofins, line.IbsCbsCst].some((cst) => typeof cst === "string" && cst.trim() !== "");
 }
 
 /** CST de PIS/COFINS que dá direito a crédito (50 a 66). */
@@ -151,6 +152,10 @@ function effectOf(kind: TaxKind, line: TaxLine, ctx: TaxEffectContext): string {
 	if (ctx.direction === "Outgoing") {
 		return ctx.isReturn ? EFFECT_CREDIT : EFFECT_DEBIT;
 	}
+	// Devolução de compra: estorna o crédito que a entrada tinha dado (ruling R6).
+	if (ctx.isReturn) {
+		return EFFECT_DEBIT;
+	}
 
 	switch (kind) {
 		case "icms": {
@@ -164,8 +169,10 @@ function effectOf(kind: TaxKind, line: TaxLine, ctx: TaxEffectContext): string {
 			return purpose === "FixedAsset" ? EFFECT_CIAP : EFFECT_CREDIT;
 		}
 		case "pis":
-		case "cofins":
-			return ctx.pisCofinsRegime === "NonCumulative" && isPisCofinsCreditCst(line.CstPis) ? EFFECT_CREDIT : EFFECT_NO_CREDIT;
+		case "cofins": {
+			const cst = kind === "pis" ? line.CstPis : line.CstCofins;
+			return ctx.pisCofinsRegime === "NonCumulative" && isPisCofinsCreditCst(cst) ? EFFECT_CREDIT : EFFECT_NO_CREDIT;
+		}
 		default:
 			// IBS/CBS
 			return IBS_CBS_NO_CREDIT_CSTS.includes(String(line.IbsCbsCst ?? "").trim()) ? EFFECT_NO_CREDIT : EFFECT_CREDIT;

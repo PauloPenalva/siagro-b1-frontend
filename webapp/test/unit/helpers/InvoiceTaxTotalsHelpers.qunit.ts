@@ -117,7 +117,7 @@ QUnit.test("valor do quadro em pt-BR com 2 casas; base nula fica em branco", fun
 QUnit.test("$select do quadro traz todos os campos que a soma lê", function (assert) {
 	const selected = TAX_TOTALS_SELECT.split(",");
 	const read: (keyof TaxLine)[] = [
-		"CstIcms", "CstPis", "IbsCbsCst", "IcmsBase", "IcmsValue", "IcmsDeferredValue", "PisBase", "PisValue",
+		"CstIcms", "CstPis", "CstCofins", "IbsCbsCst", "IcmsBase", "IcmsValue", "IcmsDeferredValue", "PisBase", "PisValue",
 		"CofinsBase", "CofinsValue", "IbsCbsBase", "IbsStateValue", "IbsMunicipalValue", "CbsValue",
 	];
 
@@ -225,10 +225,39 @@ QUnit.test("Simples branch resale ICMS has no credit either", function (assert) 
 });
 
 QUnit.test("PIS CST 50 non-cumulative credit", function (assert) {
-	const rows = buildTaxTotals([line({ CstPis: "50", PisBase: 1000, PisValue: 16.5, CofinsBase: 1000, CofinsValue: 76 })], ctxOf());
+	const rows = buildTaxTotals([line({ CstPis: "50", CstCofins: "50", PisBase: 1000, PisValue: 16.5, CofinsBase: 1000, CofinsValue: 76 })], ctxOf());
 
 	assert.deepEqual(effectOfRow(rows, "PIS"), ["Crédito na apuração"]);
 	assert.deepEqual(effectOfRow(rows, "COFINS"), ["Crédito na apuração"]);
+});
+
+QUnit.test("PIS and COFINS with different CSTs", function (assert) {
+	const rows = buildTaxTotals([line({ CstPis: "50", CstCofins: "70", PisBase: 1000, PisValue: 16.5, CofinsBase: 1000, CofinsValue: 76 })],
+		ctxOf());
+
+	assert.deepEqual(effectOfRow(rows, "PIS"), ["Crédito na apuração"]);
+	assert.deepEqual(effectOfRow(rows, "COFINS"), ["Sem crédito"]);
+});
+
+QUnit.test("CRT 2 branch ICMS credit and DIFAL debit", function (assert) {
+	// SimplesNacionalExcess não é "Simples" para o ICMS (FiscalCodes.cs): a tela manda branchSimples falso.
+	const rows = buildTaxTotals([icmsLine({ DifalBase: 1000, DifalValue: 60 })], ctxOf({ branchSimples: false }));
+
+	assert.deepEqual(effectOfRow(rows, "ICMS"), ["Crédito na apuração"]);
+	assert.deepEqual(effectOfRow(rows, "DIFAL"), ["Débito na apuração"]);
+});
+
+QUnit.test("Incoming purchase return debit", function (assert) {
+	const rows = buildTaxTotals([line({ IcmsBase: 1000, IcmsValue: 180, IcmsDeferredValue: 5, PisBase: 1000, PisValue: 16.5,
+		CofinsBase: 1000, CofinsValue: 76, IbsCbsBase: 1000, CbsValue: 9, DifalBase: 1000, DifalValue: 60 })],
+		ctxOf({ isReturn: true, withholdings: { base: 100, iss: 5, irrf: 0, inss: 0, pis: 0, cofins: 0, csll: 0 } }));
+
+	for (const tax of ["ICMS", "PIS", "COFINS", "CBS"]) {
+		assert.deepEqual(effectOfRow(rows, tax), ["Débito na apuração"], tax);
+	}
+	assert.deepEqual(effectOfRow(rows, "ICMS diferido"), ["Diferido"]);
+	assert.deepEqual(effectOfRow(rows, "DIFAL"), ["Débito na apuração"]);
+	assert.deepEqual(effectOfRow(rows, "ISS retido"), ["Retido na fonte"]);
 });
 
 QUnit.test("PIS CST 50 cumulative no credit", function (assert) {
