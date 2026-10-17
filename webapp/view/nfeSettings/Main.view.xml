@@ -44,7 +44,7 @@
 				</f:content>
 			</f:SimpleForm>
 
-			<Table items="{nfe>/SeriesList}" class="sapUiSmallMarginBeginEnd" visible="{= ${nfe>/loaded} === true }">
+			<Table items="{nfe>/SeriesList}" width="auto" class="sapUiSmallMarginBeginEnd" visible="{= ${nfe>/loaded} === true }">
 				<headerToolbar>
 					<OverflowToolbar>
 						<Title text="Séries" />
@@ -62,7 +62,7 @@
 				<items>
 					<ColumnListItem>
 						<cells>
-							<Input value="{nfe>Series}" type="Number" enabled="{nfe>isNew}" />
+							<Input value="{nfe>Series}" type="Number" enabled="{nfe>isNew}" change=".onSeriesChange" />
 							<Input value="{nfe>Description}" maxLength="60" />
 							<Input value="{nfe>NextNumber}" type="Number" />
 							<RadioButton groupName="nfeDefaultSeries"

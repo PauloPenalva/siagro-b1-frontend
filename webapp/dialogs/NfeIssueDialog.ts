@@ -5,11 +5,12 @@ import VBox from "sap/m/VBox";
 import Label from "sap/m/Label";
 import Select from "sap/m/Select";
 import MessageBox from "sap/m/MessageBox";
+import MessageStrip from "sap/m/MessageStrip";
 import Item from "sap/ui/core/Item";
 import Control from "sap/ui/core/Control";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
-import { NfeSeries, formatNfeSeries, pickInitialSeries } from "siagrob1/helpers/NfeSeriesHelpers";
+import { NfeSeries, abandonedReservationWarning, formatNfeSeries, pickInitialSeries } from "siagrob1/helpers/NfeSeriesHelpers";
 
 type BranchNfeSeriesSettings = { DefaultSeries: number; SeriesList: NfeSeries[] };
 
@@ -20,6 +21,8 @@ export type NfeIssueDialogOptions = {
   branchCode: string;
   /** Série já gravada no documento (ex.: devolução própria); pré-seleciona se estiver na lista. */
   documentSeries?: string;
+  /** Nº já reservado no documento; com a série, serve para avisar que trocar de série abandona a reserva. */
+  documentNumber?: string;
 };
 
 /**
@@ -39,6 +42,9 @@ export async function openNfeIssueDialog(owner: Control, opts: NfeIssueDialogOpt
   }
   dialogActive = true;
 
+  // Ocupa a tela enquanto lê as séries (o owner é a view nos três chamadores).
+  const busyOwner = owner as Control & { setBusy?: (busy: boolean) => unknown };
+  busyOwner.setBusy?.(true);
   let settings: BranchNfeSeriesSettings;
   try {
     const result = await sendJson("GET", `${ServerRoutes.branchNfeSettingsGet}(BranchCode='${encodeURIComponent(opts.branchCode)}')`);
@@ -51,6 +57,8 @@ export async function openNfeIssueDialog(owner: Control, opts: NfeIssueDialogOpt
   } catch (error) {
     dialogActive = false;
     throw error;
+  } finally {
+    busyOwner.setBusy?.(false);
   }
 
   const list = settings.SeriesList ?? [];
@@ -62,14 +70,25 @@ export async function openNfeIssueDialog(owner: Control, opts: NfeIssueDialogOpt
 
   return new Promise((resolve) => {
     let chosen: number = null;
+    let dialog: Dialog;
+
+    try {
+    const warning = new MessageStrip({ type: "Warning", showIcon: true, visible: false }).addStyleClass("sapUiSmallMarginTop");
+    const updateWarning = () => {
+      const text = abandonedReservationWarning(opts.documentSeries, opts.documentNumber, Number(select.getSelectedKey()));
+      warning.setText(text);
+      warning.setVisible(text !== "");
+    };
 
     const select = new Select({
       width: "100%",
       items: list.map((s) => new Item({ key: String(s.Series), text: formatNfeSeries(s) })),
       selectedKey: String(pickInitialSeries(list, settings.DefaultSeries, opts.documentSeries)),
+      change: updateWarning,
     });
+    updateWarning();
 
-    const dialog = new Dialog({
+    dialog = new Dialog({
       title: opts.title,
       contentWidth: "28rem",
       content: new VBox({
@@ -77,6 +96,7 @@ export async function openNfeIssueDialog(owner: Control, opts: NfeIssueDialogOpt
           new Text({ text: opts.message }),
           new Label({ text: "Série", required: true, labelFor: select }).addStyleClass("sapUiSmallMarginTop"),
           select,
+          warning,
         ],
       }).addStyleClass("sapUiSmallMargin"),
       beginButton: new Button({
@@ -89,5 +109,12 @@ export async function openNfeIssueDialog(owner: Control, opts: NfeIssueDialogOpt
 
     owner.addDependent(dialog);
     dialog.open();
+    } catch (error) {
+      // Falha ao montar o diálogo: libera a trava, senão nenhuma emissão abriria até recarregar a página.
+      dialog?.destroy();
+      dialogActive = false;
+      MessageBox.error(error instanceof Error ? error.message : "Não foi possível abrir o diálogo.");
+      resolve(null);
+    }
   });
 }

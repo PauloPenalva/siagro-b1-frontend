@@ -1205,6 +1205,7 @@ export default class Detail extends BaseController {
     const series = await openNfeIssueDialog(this.getView(), {
       title: "Emitir NF-e", message: `Emitir a NF-e de entrada da devolução ${row.InvoiceNumber} ?`, confirmText: "Emitir NF-e",
       branchCode: row.BranchCode, documentSeries: row.TaxDocumentSeries,
+      documentNumber: row.TaxDocumentNumber,
     });
     if (series === null) return;
     await this.runRefusalNfeAction(ServerRoutes.salesInvoicesIssueNfe, row, { Series: series });

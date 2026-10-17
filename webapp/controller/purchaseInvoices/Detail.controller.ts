@@ -495,6 +495,7 @@ export default class Detail extends BaseController {
       title: "Emitir NF-e", message: "Emitir a NF-e deste documento ?", confirmText: "Emitir NF-e",
       branchCode: ctx.getProperty("BranchCode") as string,
       documentSeries: ctx.getProperty("TaxDocumentSeries") as string,
+      documentNumber: ctx.getProperty("TaxDocumentNumber") as string,
     });
     if (series === null) return;
 
