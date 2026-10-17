@@ -67,19 +67,19 @@
 					<Text text="{ path: 'IbsStateValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
 					<Label text="IBS municipal" />
 					<Text text="{ path: 'IbsMunicipalValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
-					<core:Title text="DIFAL" visible="{= (Number(${DifalValue}) || 0) !== 0 || (Number(${FcpValue}) || 0) !== 0 }" />
-					<Label text="Base do DIFAL" visible="{= (Number(${DifalValue}) || 0) !== 0 || (Number(${FcpValue}) || 0) !== 0 }" />
-					<Text text="{ path: 'DifalBase', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" visible="{= (Number(${DifalValue}) || 0) !== 0 || (Number(${FcpValue}) || 0) !== 0 }" />
-					<Label text="Alíquota interna %" visible="{= (Number(${DifalValue}) || 0) !== 0 || (Number(${FcpValue}) || 0) !== 0 }" />
-					<Text text="{ path: 'DifalInternalRate', type: 'Decimal', constraints: { precision: 7, scale: 4 } }" visible="{= (Number(${DifalValue}) || 0) !== 0 || (Number(${FcpValue}) || 0) !== 0 }" />
-					<Label text="Alíquota interestadual %" visible="{= (Number(${DifalValue}) || 0) !== 0 || (Number(${FcpValue}) || 0) !== 0 }" />
-					<Text text="{ path: 'DifalInterstateRate', type: 'Decimal', constraints: { precision: 7, scale: 4 } }" visible="{= (Number(${DifalValue}) || 0) !== 0 || (Number(${FcpValue}) || 0) !== 0 }" />
-					<Label text="DIFAL" visible="{= (Number(${DifalValue}) || 0) !== 0 || (Number(${FcpValue}) || 0) !== 0 }" />
-					<Text text="{ path: 'DifalValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" visible="{= (Number(${DifalValue}) || 0) !== 0 || (Number(${FcpValue}) || 0) !== 0 }" />
-					<Label text="FCP %" visible="{= (Number(${DifalValue}) || 0) !== 0 || (Number(${FcpValue}) || 0) !== 0 }" />
-					<Text text="{ path: 'FcpRate', type: 'Decimal', constraints: { precision: 7, scale: 4 } }" visible="{= (Number(${DifalValue}) || 0) !== 0 || (Number(${FcpValue}) || 0) !== 0 }" />
-					<Label text="FCP" visible="{= (Number(${DifalValue}) || 0) !== 0 || (Number(${FcpValue}) || 0) !== 0 }" />
-					<Text text="{ path: 'FcpValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" visible="{= (Number(${DifalValue}) || 0) !== 0 || (Number(${FcpValue}) || 0) !== 0 }" />
+					<core:Title text="DIFAL" />
+					<Label text="Base do DIFAL" visible="{= (Number(${path: 'DifalValue', targetType: 'any'}) || 0) !== 0 || (Number(${path: 'FcpValue', targetType: 'any'}) || 0) !== 0 }" />
+					<Text text="{ path: 'DifalBase', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" visible="{= (Number(${path: 'DifalValue', targetType: 'any'}) || 0) !== 0 || (Number(${path: 'FcpValue', targetType: 'any'}) || 0) !== 0 }" />
+					<Label text="Alíquota interna %" visible="{= (Number(${path: 'DifalValue', targetType: 'any'}) || 0) !== 0 || (Number(${path: 'FcpValue', targetType: 'any'}) || 0) !== 0 }" />
+					<Text text="{ path: 'DifalInternalRate', type: 'Decimal', constraints: { precision: 7, scale: 4 } }" visible="{= (Number(${path: 'DifalValue', targetType: 'any'}) || 0) !== 0 || (Number(${path: 'FcpValue', targetType: 'any'}) || 0) !== 0 }" />
+					<Label text="Alíquota interestadual %" visible="{= (Number(${path: 'DifalValue', targetType: 'any'}) || 0) !== 0 || (Number(${path: 'FcpValue', targetType: 'any'}) || 0) !== 0 }" />
+					<Text text="{ path: 'DifalInterstateRate', type: 'Decimal', constraints: { precision: 7, scale: 4 } }" visible="{= (Number(${path: 'DifalValue', targetType: 'any'}) || 0) !== 0 || (Number(${path: 'FcpValue', targetType: 'any'}) || 0) !== 0 }" />
+					<Label text="DIFAL" visible="{= (Number(${path: 'DifalValue', targetType: 'any'}) || 0) !== 0 || (Number(${path: 'FcpValue', targetType: 'any'}) || 0) !== 0 }" />
+					<Text text="{ path: 'DifalValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" visible="{= (Number(${path: 'DifalValue', targetType: 'any'}) || 0) !== 0 || (Number(${path: 'FcpValue', targetType: 'any'}) || 0) !== 0 }" />
+					<Label text="FCP %" visible="{= (Number(${path: 'DifalValue', targetType: 'any'}) || 0) !== 0 || (Number(${path: 'FcpValue', targetType: 'any'}) || 0) !== 0 }" />
+					<Text text="{ path: 'FcpRate', type: 'Decimal', constraints: { precision: 7, scale: 4 } }" visible="{= (Number(${path: 'DifalValue', targetType: 'any'}) || 0) !== 0 || (Number(${path: 'FcpValue', targetType: 'any'}) || 0) !== 0 }" />
+					<Label text="FCP" visible="{= (Number(${path: 'DifalValue', targetType: 'any'}) || 0) !== 0 || (Number(${path: 'FcpValue', targetType: 'any'}) || 0) !== 0 }" />
+					<Text text="{ path: 'FcpValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" visible="{= (Number(${path: 'DifalValue', targetType: 'any'}) || 0) !== 0 || (Number(${path: 'FcpValue', targetType: 'any'}) || 0) !== 0 }" />
 					<core:Title text="Funrural" />
 					<Label text="Base" />
 					<Text text="{ path: 'FunruralBase', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
