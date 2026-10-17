@@ -14,6 +14,7 @@ import "./helpers/PlaceholderSearch.qunit";
 import "./model/contractDrafts.qunit";
 import "./helpers/DischargeDistributionHelpers.qunit";
 import "./helpers/FreightHelpers.qunit";
+import "./helpers/TransportedDocumentsHelpers.qunit";
 import "./model/formatter.qunit";
 import "./model/fiscalCodes.qunit";
 import "./dialogs/DialogHelper.qunit";

@@ -1,0 +1,49 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+  <!-- CT-e de frete que transportaram este documento (somente leitura). A lista nasce SUSPENSA: o $filter depende da
+       chave do documento e é aplicado pelo controller. Cancelados ficam fora — o filtro de enum é ESTÁTICO (string),
+       pois sap.ui.model.Filter não sabe formatar enum. -->
+  <Table
+    id="cteFreightsTable"
+    class="sapUiSizeCompact"
+    noDataText="Nenhum CT-e de frete vinculado."
+    updateFinished=".onCteFreightsUpdated"
+    items="{
+      path: '/PurchaseInvoiceTransportedDocuments',
+      suspended: true,
+      parameters: {
+        $select: 'Key,PurchaseInvoiceKey',
+        $expand: {
+          PurchaseInvoice: { $select: 'Key,TaxDocumentNumber,CardName,CardCode,TotalDocumentValue,InvoiceStatus' }
+        }
+      }
+    }"
+  >
+    <columns>
+      <Column width="8rem"><Text text="CT-e" /></Column>
+      <Column><Text text="Transportadora" /></Column>
+      <Column width="8rem" hAlign="End"><Text text="Valor" /></Column>
+      <Column width="7rem" hAlign="Center"><Text text="Documento" /></Column>
+    </columns>
+    <items>
+      <ColumnListItem>
+        <cells>
+          <Text text="{PurchaseInvoice/TaxDocumentNumber}" />
+          <VBox>
+            <Text text="{PurchaseInvoice/CardName}" />
+            <Text text="{PurchaseInvoice/CardCode}" class="sapUiTinyMarginTop" />
+          </VBox>
+          <Text text="{
+            path: 'PurchaseInvoice/TotalDocumentValue',
+            type: 'sap.ui.model.odata.type.Decimal',
+            constraints: { precision: 18, scale: 2 },
+            formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+          }" />
+          <Link text="Abrir" press=".onOpenCteFreight" />
+        </cells>
+      </ColumnListItem>
+    </items>
+  </Table>
+</core:FragmentDefinition>

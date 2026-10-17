@@ -40,6 +40,14 @@
       </uxap:ObjectPageDynamicHeaderTitle>
     </uxap:headerTitle>
 
+    <uxap:headerContent>
+      <MessageStrip
+        text="{ui>/cteIcmsWarning}"
+        type="Warning"
+        showIcon="true"
+        visible="{= !!${ui>/cteIcmsWarning} }" />
+    </uxap:headerContent>
+
     <uxap:sections>
       <uxap:ObjectPageSection titleUppercase="false" title="Dados do Documento">
         <uxap:subSections>
@@ -63,6 +71,20 @@
         <uxap:subSections>
           <uxap:ObjectPageSubSection title=" " titleUppercase="false">
             <core:Fragment fragmentName="siagrob1.view.purchaseInvoices.fragments.Items" type="XML" />
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="NF-e transportadas" visible="{= ${ui>/isCte} === true }">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <core:Fragment fragmentName="siagrob1.view.purchaseInvoices.fragments.TransportedDocuments" type="XML" />
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="CT-e de frete" visible="{= ${ui>/cteFreightCount} &gt; 0 }">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <core:Fragment fragmentName="siagrob1.view.purchaseInvoices.fragments.CteFreights" type="XML" />
           </uxap:ObjectPageSubSection>
         </uxap:subSections>
       </uxap:ObjectPageSection>

@@ -23,6 +23,12 @@ import TableSelectDialog, { TableSelectDialog$ConfirmEvent, TableSelectDialog$Se
 import JSONListBinding from "sap/ui/model/json/JSONListBinding";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { odataCollection, sendJson } from "siagrob1/helpers/FetchHelpers";
+import SapTable from "sap/m/Table";
+import { ListBase$UpdateFinishedEvent } from "sap/m/ListBase";
+import { Link$PressEvent } from "sap/m/Link";
+import { openTransportedDocumentKeyDialog } from "siagrob1/dialogs/TransportedDocumentKeyDialog";
+import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import { suspendCteFreights } from "siagrob1/helpers/CteFreightsBinding";
 import { PurchaseInvoiceComplementCandidate } from "siagrob1/types/PurchaseInvoiceComplementCandidate";
 
 /** Sequência compartilhada por Add/Edit/Detail: só a chamada mais recente de refreshNfeMode escreve no `ui`. */
@@ -1008,5 +1014,119 @@ export abstract class BaseController extends CommonController {
 
     oTable.attachRowsUpdated(() => this.refreshDocumentTotal());
     this.documentTotalAttached = true;
+  }
+
+  /**
+   * Seção "NF-e transportadas" do CT-e (Edit e Detail; no Add o vínculo nasce no servidor, ao salvar, a partir do XML).
+   * A lista nasce suspensa e só consulta quando o documento é CT-e. Chamar DEPOIS de refreshNfeMode, que decide `/isCte`.
+   */
+  protected refreshTransportedDocuments(): void {
+    const binding = (this.byId("transportedDocumentsTable") as SapTable | undefined)?.getBinding("items") as ODataListBinding;
+    const key = (this.getView().getBindingContext() as Context)?.getProperty("Key") as string;
+    const isCte = (this.getModel("ui") as JSONModel).getProperty("/isCte") === true;
+
+    if (!binding) {
+      return;
+    }
+
+    if (!isCte || !key) {
+      if (!binding.isSuspended()) binding.suspend();
+      return;
+    }
+
+    binding.changeParameters({ $filter: `PurchaseInvoiceKey eq ${key}` });
+
+    if (binding.isSuspended()) {
+      binding.resume();
+    } else {
+      binding.refresh();
+    }
+  }
+
+  /** Documento novo: esvazia as duas listas do anterior até a leitura deste. */
+  protected suspendTransportedLists(): void {
+    suspendCteFreights(this.byId("cteFreightsTable") as SapTable | undefined);
+    const binding = (this.byId("transportedDocumentsTable") as SapTable | undefined)?.getBinding("items") as ODataListBinding;
+    if (binding && !binding.isSuspended()) binding.suspend();
+  }
+
+  /** Roda uma action dos vínculos e recarrega a lista; o erro do servidor já é mostrado pelo handler global do Component. */
+  private async runTransportedDocumentAction(path: string, parameters: Record<string, string>, successText: string): Promise<void> {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) return;
+
+    this.setBusy(true);
+    try {
+      const action = (ctx.getModel() as ODataModel).bindContext(path);
+      for (const [name, value] of Object.entries(parameters)) {
+        action.setParameter(name, value);
+      }
+      await action.invoke();
+      MessageToast.show(successText);
+      this.refreshTransportedDocuments();
+    } catch {
+      // O handler global de mensagens do OData (Component) já mostrou o erro do servidor.
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  async onAddTransportedDocument(): Promise<void> {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) return;
+
+    const accessKey = await openTransportedDocumentKeyDialog(this.getView());
+    if (!accessKey) return;
+
+    await this.runTransportedDocumentAction(ServerRoutes.purchaseInvoicesTransportedDocumentAdd,
+      { Key: ctx.getProperty("Key") as string, AccessKey: accessKey }, "Chave incluída.");
+  }
+
+  async onRemoveTransportedDocument(): Promise<void> {
+    const table = this.byId("transportedDocumentsTable") as SapTable;
+    const linkKey = (table?.getSelectedItem()?.getBindingContext() as Context)?.getProperty("Key") as string;
+
+    if (!linkKey) {
+      MessageBox.warning("Selecione uma chave.");
+      return;
+    }
+
+    if (!(await confirmDialog("Remover o vínculo desta chave ?", "Remover chave ?"))) return;
+
+    // No Remove a Key é a do VÍNCULO, não a do CT-e.
+    await this.runTransportedDocumentAction(ServerRoutes.purchaseInvoicesTransportedDocumentRemove,
+      { Key: linkKey }, "Chave removida.");
+  }
+
+  async onRelinkTransportedDocuments(): Promise<void> {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) return;
+
+    await this.runTransportedDocumentAction(ServerRoutes.purchaseInvoicesTransportedDocumentsRelink,
+      { Key: ctx.getProperty("Key") as string }, "Vínculos refeitos.");
+  }
+
+  /** Abre a saída ou a entrada que a chave aponta. */
+  onOpenTransportedDocument(ev: Link$PressEvent): void {
+    const ctx = ev.getSource().getBindingContext() as Context;
+    const salesKey = ctx?.getProperty("SalesInvoiceKey") as string;
+    const purchaseKey = ctx?.getProperty("TransportedPurchaseInvoiceKey") as string;
+
+    if (salesKey) {
+      this.navTo("salesInvoicesDetail", { id: salesKey });
+    } else if (purchaseKey) {
+      this.navTo("purchaseInvoicesDetail", { id: purchaseKey });
+    }
+  }
+
+  /** Abre o CT-e de frete da linha da lista "CT-e de frete". */
+  onOpenCteFreight(ev: Link$PressEvent): void {
+    const key = (ev.getSource().getBindingContext() as Context)?.getProperty("PurchaseInvoice/Key") as string;
+    if (key) this.navTo("purchaseInvoicesDetail", { id: key });
+  }
+
+  /** A seção "CT-e de frete" só aparece quando há algum. */
+  onCteFreightsUpdated(ev: ListBase$UpdateFinishedEvent): void {
+    (this.getModel("ui") as JSONModel).setProperty("/cteFreightCount", ev.getParameter("total") ?? 0);
   }
 }

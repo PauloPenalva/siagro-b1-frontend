@@ -65,7 +65,8 @@ export default class Edit extends BaseController {
     // percorreria uma lista ainda vazia, deixando "Total dos itens" parado em 0,00 para sempre.
     this.attachDocumentTotalRefresh();
 
-    void this.refreshNfeMode();
+    this.suspendTransportedLists();
+    void this.refreshNfeMode().then(() => this.refreshTransportedDocuments());
   }
 
   onAddItem() {
