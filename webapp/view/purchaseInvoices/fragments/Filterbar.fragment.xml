@@ -33,6 +33,17 @@
       </fb:control>
     </fb:FilterGroupItem>
 
+    <fb:FilterGroupItem name="taxDocumentKind" label="Tipo de documento" groupName="GroupTaxDocumentKind" visibleInFilterBar="true">
+      <fb:control>
+        <Select forceSelection="false" selectedKey="{filter>/TaxDocumentKind}">
+          <core:ListItem key="" text="Todos"/>
+          <core:ListItem key="Nfe" text="NF-e"/>
+          <core:ListItem key="Cte" text="CT-e"/>
+          <core:ListItem key="Other" text="Outro"/>
+        </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
+
     <fb:FilterGroupItem name="issuerType" label="Emissão própria" groupName="GroupIssuerType" visibleInFilterBar="true">
       <fb:control>
         <Select forceSelection="false" selectedKey="{filter>/IssuerType}">

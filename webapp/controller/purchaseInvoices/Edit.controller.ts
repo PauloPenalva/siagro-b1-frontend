@@ -152,7 +152,8 @@ export default class Edit extends BaseController {
     // fica incompleta enquanto isso. Só faz sentido no tipo Normal — e não na contra-nota (spec 2026-10-10 §7): o
     // contrato da linha vem da escrituração e fica travado, então o aviso não teria o que o usuário fazer.
     const isCounterNote = !!await oContext.requestProperty("ProducerInvoiceKey");
-    if (oContext.getProperty("InvoiceType") === "Normal" && !isCounterNote) {
+    // CT-e (frete) não amarra contrato: a linha é o serviço de transporte.
+    if (oContext.getProperty("InvoiceType") === "Normal" && !isCounterNote && oContext.getProperty("TaxDocumentKind") !== "Cte") {
       const unlinked = (oBinding?.getAllCurrentContexts() ?? [])
         .filter(ctx => !ctx.getProperty("PurchaseContractKey") && !ctx.getProperty("SalesInvoiceItemKey") && !this.isOtherPurchaseLine(ctx));
 

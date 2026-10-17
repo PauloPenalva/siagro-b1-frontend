@@ -25,6 +25,19 @@ interface ImportedInvoice {
   TaxPayerComments: string;
   XmlFileName: string;
   Items: ImportedInvoiceItem[];
+  /** CT-e (frete tomado): a importação devolve o tipo, a filial tomadora e a prestação. Ausentes na NF-e comum. */
+  TaxDocumentKind?: string;
+  BranchCode?: string;
+  FreightStartState?: string;
+  FreightEndState?: string;
+  FreightStartCity?: string;
+  FreightEndCity?: string;
+  FreightPayerTaxId?: string;
+  CteIcmsCst?: string;
+  CteIcmsValue?: number | string;
+  TruckingCompanyCode?: string;
+  /** Avisos da leitura do XML (ex.: NF-e transportada não encontrada). */
+  Warnings?: string[];
 }
 
 /**
@@ -121,6 +134,10 @@ export default class Add extends BaseController {
       MessageToast.show(
         `XML lido: ${draft.Items?.length ?? 0} item(ns).`,
         { closeOnBrowserNavigation: false });
+
+      if (draft.Warnings?.length) {
+        MessageBox.warning(draft.Warnings.map((warning) => `• ${warning}`).join("\n"));
+      }
     } finally {
       this.setBusy(false);
     }
@@ -150,13 +167,22 @@ export default class Add extends BaseController {
       // NF-e de complemento (finNFe=2) importada nasce como Complemento de valor, com linhas só de valor (D11).
       InvoiceType: draft?.InvoiceType === "ValueComplement" ? "ValueComplement" : "Normal",
       IssuerType: "ThirdParty",
-      TaxDocumentKind: "Nfe",
-      BranchCode: branchCode ?? null,
+      TaxDocumentKind: draft?.TaxDocumentKind === "Cte" ? "Cte" : "Nfe",
+      // A filial do CT-e é a do tomador lida do XML; vale mais que a da sessão.
+      BranchCode: draft?.BranchCode || (branchCode ?? null),
+      // Prestação do CT-e: existem no payload inicial (entidade transiente), nulas fora do CT-e.
+      FreightStartState: draft?.FreightStartState ?? null,
+      FreightEndState: draft?.FreightEndState ?? null,
+      FreightStartCity: draft?.FreightStartCity ?? null,
+      FreightEndCity: draft?.FreightEndCity ?? null,
+      FreightPayerTaxId: draft?.FreightPayerTaxId ?? null,
+      CteIcmsCst: draft?.CteIcmsCst ?? null,
+      CteIcmsValue: draft?.CteIcmsValue == null ? null : toNumber(draft.CteIcmsValue),
       PaymentConditionCode: null,
       IsNfeReturn: false,
       // Transporte, pesos e volume da NF-e: precisam existir no payload inicial (entidade transiente). Frete
       // "None" = modFrete 9, o que todas as entradas reais usam; sem a chave o servidor assume Cif.
-      TruckingCompanyCode: null,
+      TruckingCompanyCode: draft?.TruckingCompanyCode ?? null,
       TruckingCompanyName: null,
       TruckCode: null,
       FreightTerms: "None",
@@ -298,7 +324,8 @@ export default class Add extends BaseController {
 
     // Mesmo aviso, agora para o tipo Normal: item sem contrato amarrado é caminho legítimo
     // (a conciliação fiscal-contratual fica incompleta, não o documento).
-    if (oContext.getProperty("InvoiceType") === "Normal") {
+    // CT-e (frete) não amarra contrato: a linha é o serviço de transporte.
+    if (oContext.getProperty("InvoiceType") === "Normal" && oContext.getProperty("TaxDocumentKind") !== "Cte") {
       const unlinked = (oBinding?.getAllCurrentContexts() ?? [])
         .filter(ctx => !ctx.getProperty("PurchaseContractKey") && !ctx.getProperty("SalesInvoiceItemKey") && !this.isOtherPurchaseLine(ctx));
 

@@ -78,6 +78,15 @@
 							}" />
 						</t:template>
 					</t:Column>
+					<t:Column label="Tipo de documento" width="9rem" hAlign="Center" sortProperty="TaxDocumentKind">
+						<t:template>
+							<Text text="{
+								path: 'TaxDocumentKind',
+								targetType: 'any',
+								formatter: 'formatter.formatTaxDocumentKind'
+							}" />
+						</t:template>
+					</t:Column>
 					<t:Column label="Emissão própria" width="9rem" hAlign="Center" sortProperty="IssuerType">
 						<t:template>
 							<Text text="{

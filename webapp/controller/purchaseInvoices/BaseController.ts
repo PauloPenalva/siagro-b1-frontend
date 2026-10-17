@@ -107,6 +107,8 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/producerInvoice", { key: "", text: "" });
       uiModel.setProperty("/custody", { key: "", code: "" });
       uiModel.setProperty("/otherPurchaseDoc", false);
+      uiModel.setProperty("/isCte", false);
+      uiModel.setProperty("/taxDocumentKinds", this.taxDocumentKinds());
     }
 
     // Remessa para depósito (spec backend 2026-10-10 §5.3): só STANDALONE mostra a coluna "Remessa". Depois do reset
@@ -127,11 +129,17 @@ export abstract class BaseController extends CommonController {
       const paymentConditionCode = await oContext.requestProperty("PaymentConditionCode") as number;
       const producerInvoiceKey = await oContext.requestProperty("ProducerInvoiceKey") as string;
       const custodyKey = await oContext.requestProperty("CustodyStorageTransactionKey") as string;
+      const taxDocumentKind = await oContext.requestProperty("TaxDocumentKind") as string;
       const taxLocked = await this.isTaxCalculationActive(branchCode);
 
       if (!isCurrent()) {
         return;
       }
+
+      // CT-e (frete tomado): esconde pesos/volumes, mostra a prestação. A opção só aparece no STANDALONE (ou se o
+      // documento já é CT-e, para o Select não ficar sem a opção do valor gravado).
+      uiModel.setProperty("/isCte", taxDocumentKind === "Cte");
+      uiModel.setProperty("/taxDocumentKinds", this.taxDocumentKinds(taxDocumentKind === "Cte"));
 
       void this.refreshCustodyCode(custodyKey, isCurrent);
       void this.refreshBranchTaxProfile(uiModel, branchCode, isCurrent);
@@ -180,7 +188,50 @@ export abstract class BaseController extends CommonController {
         uiModel.setProperty("/counterNote", { key: "", text: "" });
         uiModel.setProperty("/producerInvoice", { key: "", text: "" });
         uiModel.setProperty("/custody", { key: "", code: "" });
+        uiModel.setProperty("/isCte", false);
       }
+    }
+  }
+
+  /** Opções de "Tipo de documento": "CT-e (frete)" só no STANDALONE (ou quando o documento já é CT-e). */
+  private taxDocumentKinds(forceCte = false): { key: string; text: string }[] {
+    const kinds = [
+      { key: "Nfe", text: "NF-e (eletrônica)" },
+      { key: "Other", text: "Outro (serviço, papel/talão…)" },
+    ];
+    if (isStandaloneErp === true || forceCte) {
+      kinds.splice(1, 0, { key: "Cte", text: "CT-e (frete)" });
+    }
+    return kinds;
+  }
+
+  /**
+   * Trocou o tipo de documento: liga/desliga a seção da prestação do CT-e e, no CT-e digitado, sugere o CNPJ do
+   * tomador (o da filial do documento) quando vazio. Continua editável; o servidor confere.
+   */
+  async onTaxDocumentKindChange(): Promise<void> {
+    const invoice = this.getView().getBindingContext() as Context;
+    const isCte = invoice?.getProperty("TaxDocumentKind") === "Cte";
+    (this.getModel("ui") as JSONModel).setProperty("/isCte", isCte);
+    if (!isCte) {
+      return;
+    }
+
+    const payer = (invoice.getProperty("FreightPayerTaxId") as string) ?? "";
+    if (payer.trim()) {
+      return;
+    }
+    try {
+      const branchCode = invoice.getProperty("BranchCode") as string;
+      const taxId = branchCode
+        ? await (this.getModel() as ODataModel).bindContext(`/Branchs('${branchCode}')`).requestObject("TaxId") as string
+        : (await this.getBranchInfo())?.taxId;
+      const digits = (taxId ?? "").replace(/\D/g, "");
+      if (digits && invoice.getProperty("TaxDocumentKind") === "Cte" && !((invoice.getProperty("FreightPayerTaxId") as string) ?? "").trim()) {
+        void invoice.setProperty("FreightPayerTaxId", digits);
+      }
+    } catch {
+      // Sem o CNPJ da filial o operador digita.
     }
   }
 
@@ -392,6 +443,7 @@ export abstract class BaseController extends CommonController {
     }
     if (isCurrent()) {
       uiModel.setProperty("/storageDepositMode", isStandaloneErp);
+      uiModel.setProperty("/taxDocumentKinds", this.taxDocumentKinds(uiModel.getProperty("/isCte") === true));
     }
   }
 
@@ -689,7 +741,8 @@ export abstract class BaseController extends CommonController {
   protected missingUnitOfMeasure(lines: Context[], invoiceType?: string): string {
     // Devolução com NF-e e contra-nota: a unidade vem da origem e a tela a trava; o servidor também não a exige aqui.
     const ui = this.getModel("ui") as JSONModel;
-    if (ui.getProperty("/nfeReturn") === true || ui.getProperty("/isCounterNote") === true) {
+    // CT-e: a linha é um serviço de frete, sem unidade de medida.
+    if (ui.getProperty("/nfeReturn") === true || ui.getProperty("/isCounterNote") === true || ui.getProperty("/isCte") === true) {
       return "";
     }
     return missingUnitOfMeasureMessage(
