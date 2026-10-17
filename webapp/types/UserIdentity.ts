@@ -10,6 +10,9 @@ export type UserIdentity = {
   /** Nome completo - é o que aparece no menu do avatar e origina as iniciais. */
   fullName?: string;
   email?: string;
+  /** Empresa da sessão (spec 2026-10-16). O código é o padrão do perfil novo na tela de usuários. */
+  companyCode?: string;
+  companyName?: string;
   /** Tema escolhido pelo usuário; ausente usa o tema padrão do bootstrap. */
   theme?: string;
   /** Diz à shell se deve buscar a imagem do avatar ou ficar nas iniciais. */

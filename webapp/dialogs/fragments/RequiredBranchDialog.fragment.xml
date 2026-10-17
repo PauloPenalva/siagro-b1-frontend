@@ -4,7 +4,8 @@
 >
     <!--
         Seleção obrigatória de filial: sem botão Cancelar e imune a Esc/clique fora.
-        A única saída sem escolher uma filial é sair do sistema.
+        A única saída sem escolher uma filial é sair do sistema; o admin também pode ir
+        cadastrar a filial (empresa nova nasce sem nenhuma).
     -->
     <Dialog
         class="sapUiSizeCompact"
@@ -61,8 +62,14 @@
                 </ColumnListItem>
             </Table>
         </content>
-        <endButton>
+        <buttons>
+            <Button
+                text="Cadastrar Filial"
+                type="Emphasized"
+                visible="{= ${sessionModel>/isAdmin} === true }"
+                press=".onRequiredBranchCreate"
+            />
             <Button text="Sair" press=".onRequiredBranchExit" />
-        </endButton>
+        </buttons>
     </Dialog>
 </core:FragmentDefinition>

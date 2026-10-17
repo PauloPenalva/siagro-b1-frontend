@@ -1,0 +1,22 @@
+<mvc:View
+	controllerName="siagrob1.controller.companies.Add"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core">
+
+	<Page showHeader="true" title="Nova Empresa" busy="{ui>/busy}" busyIndicatorDelay="0">
+		<content>
+			<core:Fragment fragmentName="siagrob1.view.companies.fragments.Form" type="XML" />
+		</content>
+		<footer>
+			<Toolbar>
+				<Button text="Testar conexão" icon="sap-icon://connected" press=".onTestConnection"/>
+				<ToolbarSpacer />
+				<Button text="Cancelar" press=".onCancel"  />
+				<Button text="Salvar" type="Emphasized" press=".onSave"/>
+			</Toolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

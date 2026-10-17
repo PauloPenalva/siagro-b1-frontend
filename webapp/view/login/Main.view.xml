@@ -33,6 +33,16 @@
               <Title text="Identifique-se para utilizar o sistema" level="H5" class="sapUiSmallMarginBottom"/>
               <VBox >
                 <items>
+                  <Label text="Empresa:" required="true" visible="{auth>/showCompanySelect}"/>
+                  <Select
+                    id="companySelect"
+                    width="250px"
+                    selectedKey="{auth>/CompanyCode}"
+                    items="{auth>/Companies}"
+                    forceSelection="true"
+                    visible="{auth>/showCompanySelect}">
+                    <core:Item key="{auth>code}" text="{auth>companyName}"/>
+                  </Select>
                   <Label text="Usuário:" required="true"/>
                   <Input value="{auth>/Username}" placeholder="Usuário..." width="250px" submit=".onLogin" showClearIcon="true"/>
                   <Label text="Senha:" required="true"/>

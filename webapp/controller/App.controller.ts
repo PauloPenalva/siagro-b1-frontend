@@ -10,6 +10,7 @@ import { MenuItem$PressEvent } from "sap/m/MenuItem";
 import ShellBar, { ShellBar$ProductSwitcherPressedEvent } from "sap/f/ShellBar";
 import Avatar, { Avatar$PressEvent } from "sap/m/Avatar";
 import Dialog from "sap/m/Dialog";
+import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import MessageBox from "sap/m/MessageBox";
 import { ListItemBase$PressEvent } from "sap/m/ListItemBase";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
@@ -102,6 +103,18 @@ export default class App extends BaseController {
 
     // O boot pode ter terminado antes deste controller existir.
     void SessionService.whenReady().then(() => this.ensureBranchSelected());
+
+    // Empresa sem filial: o admin sai do diálogo para cadastrar a primeira (onRequiredBranchCreate).
+    // Ao sair das telas de filial, a regra normal volta e o diálogo reabre listando a filial nova.
+    this.getRouter().attachRouteMatched(() => void this.ensureBranchSelected());
+  }
+
+  /** Telas de cadastro de filial, onde o diálogo obrigatório não pode reabrir por cima. */
+  private isOnBranchRoutes(): boolean {
+    const hash = this.getRouter().getHashChanger().getHash();
+    const routeName = this.getRouter().getRouteInfoByHash(hash)?.name ?? "";
+
+    return routeName.startsWith("branchs");
   }
 
   /**
@@ -111,7 +124,7 @@ export default class App extends BaseController {
    * livremente cancelável.
    */
   private async ensureBranchSelected(): Promise<void> {
-    if (this._selectingBranch || !SessionService.isAuthenticated() || SessionService.getBranchInfo()?.code) {
+    if (this._selectingBranch || !SessionService.isAuthenticated() || SessionService.getBranchInfo()?.code || this.isOnBranchRoutes()) {
       return;
     }
 
@@ -119,6 +132,14 @@ export default class App extends BaseController {
 
     try {
       const oDialog = await this.getRequiredBranchDialog();
+
+      // A lista é da empresa/da sessão corrente e precisa ser relida a cada abertura: o admin pode
+      // ter acabado de cadastrar a primeira filial e o diálogo reaproveitado ainda mostraria "Sem dados".
+      const oBinding = oDialog.getContent().find(c => c.isA("sap.m.Table"))?.getBinding("items") as ODataListBinding;
+      if (oBinding && !oBinding.hasPendingChanges()) {
+        oBinding.refresh();
+      }
+
       oDialog.open();
     } catch (error) {
       this._selectingBranch = false;
@@ -160,6 +181,17 @@ export default class App extends BaseController {
     }
   }
 
+  /**
+   * Só para admin (botão visível por `sessionModel>/isAdmin`): empresa recém-criada não tem filial,
+   * e sem esta saída o diálogo obrigatório trancava o admin fora do próprio cadastro de filiais.
+   */
+  onRequiredBranchCreate(): void {
+    this._requiredBranchDialog.close();
+    this._selectingBranch = false;
+
+    this.navTo("branchsNew");
+  }
+
   async onRequiredBranchExit(): Promise<void> {
     this._requiredBranchDialog.close();
     this._selectingBranch = false;
@@ -177,6 +209,26 @@ export default class App extends BaseController {
 
     await SessionService.setDefaultBranch(branchCode);
     await SessionService.loadBranchInfo();
+  }
+
+  /**
+   * Trocar de empresa é sair e entrar de novo (decisão da spec 2026-10-16): sessão, menu, caches
+   * locais e o modelo OData são todos da empresa — trocá-la "por dentro" exigiria recarregar tudo
+   * isso, e o login já lembra a última empresa escolhida.
+   */
+  async onChangeCompany(): Promise<void> {
+    this._avatarPopover?.close();
+
+    if (!await DialogHelper.confirmDialog("Para trocar de empresa é preciso sair e entrar novamente. Continuar?", "Trocar Empresa")) {
+      return;
+    }
+
+    try {
+      this.setBusy(true);
+      await SessionService.logout();
+    } finally {
+      this.setBusy(false);
+    }
   }
 
   /** Recarrega a página para carregar a versão recém-publicada. */

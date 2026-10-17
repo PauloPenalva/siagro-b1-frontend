@@ -38,6 +38,17 @@
       </OverflowToolbar>
     </t:extension>
     <t:columns>
+      <t:Column label="Empresa" width="10rem">
+        <t:template>
+          <Input
+            width="8rem"
+            required="true"
+            value="{CompanyCode}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openCompaniesValueHelp"/>
+        </t:template>
+      </t:Column>
       <t:Column label="Codigo">
         <t:template>
           <Input
