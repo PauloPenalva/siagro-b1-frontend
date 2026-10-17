@@ -1,0 +1,74 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    core:require="{ formatter: 'siagrob1/model/formatter', draft: 'siagrob1/helpers/PurchaseInvoiceDraftHelpers' }"
+>
+  <!-- Títulos a pagar gerados por este documento de outra compra (parcelas e retenções de imposto). Nascem ao confirmar; os
+       cancelados (estorno/cancelamento) ficam fora, por Status ne 'Canceled' no filtro do controller. A lista nasce SUSPENSA: o $filter depende da chave do documento e é
+       aplicado pelo controller (refreshGeneratedTitles). O filtro de enum é estático (string), pois sap.ui.model.Filter
+       não sabe formatar enum. -->
+  <Table
+    id="generatedTitlesTable"
+    class="sapUiSizeCompact"
+    noDataText="Nenhum título gerado. Os títulos nascem ao confirmar o documento."
+    items="{
+      path: '/FinancialDocuments',
+      suspended: true,
+      parameters: {
+        $select: 'Key,Code,Nature,InstallmentNumber,WithholdingTaxType,CardCode,CardName,DueDate,NetAmount,OpenAmount,Status',
+        $orderby: 'DueDate'
+      }
+    }"
+  >
+    <columns>
+      <Column width="7rem"><Text text="Título" /></Column>
+      <Column><Text text="Descrição" /></Column>
+      <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Credor" /></Column>
+      <Column width="6.5rem" hAlign="Center"><Text text="Vencimento" /></Column>
+      <Column width="6.5rem" hAlign="End"><Text text="Valor" /></Column>
+      <Column width="6.5rem" hAlign="End"><Text text="Em aberto" /></Column>
+      <Column width="7rem" hAlign="Center"><Text text="Situação" /></Column>
+    </columns>
+    <items>
+      <ColumnListItem>
+        <cells>
+          <Link text="{Code}" press=".onOpenGeneratedTitle" />
+          <Text text="{
+            parts: [
+              { path: 'Nature', targetType: 'any' },
+              { path: 'InstallmentNumber', targetType: 'any' },
+              { path: 'WithholdingTaxType', targetType: 'any' }
+            ],
+            formatter: 'draft.formatGeneratedTitle'
+          }" />
+          <VBox>
+            <Text text="{CardName}" />
+            <Text text="{CardCode}" class="sapUiTinyMarginTop" />
+          </VBox>
+          <Text text="{
+            path: 'DueDate',
+            type: 'sap.ui.model.odata.type.DateTimeOffset',
+            constraints: { precision: 7 },
+            formatOptions: { pattern: 'dd/MM/yyyy' }
+          }" />
+          <Text text="{
+            path: 'NetAmount',
+            type: 'sap.ui.model.odata.type.Decimal',
+            constraints: { precision: 18, scale: 2 },
+            formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+          }" />
+          <Text text="{
+            path: 'OpenAmount',
+            type: 'sap.ui.model.odata.type.Decimal',
+            constraints: { precision: 18, scale: 2 },
+            formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+          }" />
+          <ObjectStatus
+            inverted="true"
+            text="{ path: 'Status', targetType: 'any', formatter: 'formatter.formatFinancialStatus' }"
+            state="{ path: 'Status', targetType: 'any', formatter: 'formatter.stateFinancialStatus' }" />
+        </cells>
+      </ColumnListItem>
+    </items>
+  </Table>
+</core:FragmentDefinition>

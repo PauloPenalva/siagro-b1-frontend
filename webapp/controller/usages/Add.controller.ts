@@ -54,6 +54,7 @@ export default class Add extends BaseController {
 			ReturnUsageName: null,
 			AllowsCounterNote: false,
 			StorageDepositRole: "None",
+			PurchasePurpose: "ResaleOrInput",
 			StorageCustodyRole: "None",
 			InvoiceOperationText: null,
 			DefaultAdditionalInfo: null,
@@ -82,6 +83,13 @@ export default class Add extends BaseController {
 			FunruralInssRate: null,
 			FunruralRatRate: null,
 			FunruralSenarRate: null,
+			// Retenções de serviço (Form.fragment.xml) — só natureza de entrada.
+			WithholdingIssRate: null,
+			WithholdingIrrfRate: null,
+			WithholdingInssRate: null,
+			WithholdingPisRate: null,
+			WithholdingCofinsRate: null,
+			WithholdingCsllRate: null,
 		}, false, false, false);
 
 		oView.setBindingContext(oContext);

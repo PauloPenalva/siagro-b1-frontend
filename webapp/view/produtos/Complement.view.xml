@@ -83,6 +83,47 @@
 					<core:Title />
 				</f:content>
 			</f:SimpleForm>
+			<!-- ICMS por UF do produto (spec 2026-10-17): só STANDALONE. Alíquota/FCP vazios herdam o cadastro "ICMS por UF".
+			     Tabela do model OData (entidade própria), com Salvar próprio: o Salvar do rodapé grava só o complemento. -->
+			<Panel headerText="Alíquota interna por UF" class="sapUiSmallMarginTop" visible="{ui>/standalone}">
+				<Table
+					id="itemStateRatesTable"
+					mode="SingleSelectLeft"
+					busyIndicatorDelay="0"
+					class="sapUiSizeCondensed"
+					items="{ path: '/IcmsItemStateRates', sorter: { path: 'StateCode' }, suspended: true }">
+					<headerToolbar>
+						<OverflowToolbar>
+							<Text text="Vazio = usa a alíquota do cadastro ICMS por UF." />
+							<ToolbarSpacer />
+							<Button text="Incluir" icon="sap-icon://add" press=".onStateRateCreate" />
+							<Button text="Excluir" icon="sap-icon://delete" press=".onStateRateDelete" />
+							<Button text="Salvar alíquotas" icon="sap-icon://save" press=".onStateRatesSave" />
+						</OverflowToolbar>
+					</headerToolbar>
+					<columns>
+						<Column width="8rem"><Text text="UF" /></Column>
+						<Column width="10rem"><Text text="Alíquota interna %" /></Column>
+						<Column width="10rem"><Text text="FCP %" /></Column>
+					</columns>
+					<items>
+						<ColumnListItem>
+							<cells>
+								<Select
+									selectedKey="{StateCode}"
+									forceSelection="false"
+									items="{ path: 'stateCodes>/', templateShareable: true }">
+									<core:Item key="{stateCodes>key}" text="{stateCodes>text}" />
+								</Select>
+								<Input
+									value="{ path: 'InternalRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+								<Input
+									value="{ path: 'FcpRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+							</cells>
+						</ColumnListItem>
+					</items>
+				</Table>
+			</Panel>
 		</content>
 		<footer>
 			<Toolbar>

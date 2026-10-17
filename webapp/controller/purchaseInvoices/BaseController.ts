@@ -12,11 +12,11 @@ import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
 import { complementCandidatesPath, isOwnComplement, isPurchaseNfeMode, isPurchaseTaxMode, mustFallBackToNormal, requiresSupplierKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
-import { summarizeInvoiceTaxes, TaxLine } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
+import { PurchasePurpose, summarizeInvoiceTaxes, TaxLine, Withholdings } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 import { formatAmount, lineFunrural, purchaseChargeLineOf, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
 import {
-  complementedItemLabel, complementedItemLabels, complementLineFrom, inheritedContracts, missingUnitOfMeasureMessage, toNumber,
-  unitSuggestionToApply, withEntry
+  complementedItemLabel, complementedItemLabels, complementLineFrom, inheritedContracts, isOtherPurchaseDocument, isOtherPurchaseEligible, isOtherPurchaseUsage,
+  missingUnitOfMeasureMessage, toNumber, unitSuggestionToApply, withEntry
 } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 import Fragment from "sap/ui/core/Fragment";
 import TableSelectDialog, { TableSelectDialog$ConfirmEvent, TableSelectDialog$SearchEvent } from "sap/m/TableSelectDialog";
@@ -31,6 +31,29 @@ let nfeModeSequence = 0;
 /** Modo do ERP (STANDALONE?) lido uma vez; undefined = ainda não lido. */
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- strictNullChecks desligado; undefined = ainda não lido
 let isStandaloneErp: boolean | undefined;
+
+/**
+ * Naturezas de entrada que são de "outra compra" (serviço, consumo, ativo): não exigem contrato e geram título.
+ * Código → true. Vazio fora do STANDALONE; undefined = ainda não lido (uma falha de leitura não é gravada aqui).
+ */
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- strictNullChecks desligado; undefined = ainda não lido
+let otherPurchaseUsagesCache: Record<string, boolean> | undefined;
+
+/** Destinação por código de natureza de entrada (`Usage.PurchasePurpose`); só STANDALONE. Mesmo ciclo do mapa acima. */
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- strictNullChecks desligado; undefined = ainda não lido
+let usagePurposesCache: Record<string, PurchasePurpose> | undefined;
+
+/** CRT e regime de PIS/COFINS da filial, para a coluna "Efeito" da tabela Tributos. */
+type BranchTaxProfile = { simples: boolean; pisCofinsRegime: "Cumulative" | "NonCumulative" };
+
+const SIMPLES_REGIMES = ["SimplesNacional", "Mei"];
+
+interface UsageFlagsRow {
+  PurchasePurpose?: string; purchasePurpose?: string;
+  Code?: number; code?: number;
+  RequiresContract?: boolean; requiresContract?: boolean;
+  CreatesFinancialDocument?: boolean; createsFinancialDocument?: boolean;
+}
 
 /**
  * Comum às telas do documento de entrada.
@@ -83,11 +106,13 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/counterNote", { key: "", text: "" });
       uiModel.setProperty("/producerInvoice", { key: "", text: "" });
       uiModel.setProperty("/custody", { key: "", code: "" });
+      uiModel.setProperty("/otherPurchaseDoc", false);
     }
 
     // Remessa para depósito (spec backend 2026-10-10 §5.3): só STANDALONE mostra a coluna "Remessa". Depois do reset
     // e guardado por isCurrent(); o modo do ERP é lido uma vez só (cache de módulo).
     await this.refreshStorageDepositMode(uiModel, isCurrent);
+    await this.refreshOtherPurchaseUsages(uiModel, isCurrent, reset);
 
     if (!oContext) {
       return;
@@ -109,6 +134,7 @@ export abstract class BaseController extends CommonController {
       }
 
       void this.refreshCustodyCode(custodyKey, isCurrent);
+      void this.refreshBranchTaxProfile(uiModel, branchCode, isCurrent);
 
       const nfeMode = isPurchaseNfeMode(taxLocked, issuerType);
       uiModel.setProperty("/taxLocked", taxLocked);
@@ -205,6 +231,153 @@ export abstract class BaseController extends CommonController {
   onOpenCustodyTransaction(): void {
     const key = (this.getModel("ui") as JSONModel).getProperty("/custody/key") as string;
     if (key) this.navTo("storageTransactionsDetail", { id: key });
+  }
+
+  /**
+   * Naturezas de "outra compra": `RequiresContract = false` e `CreatesFinancialDocument = true`. Só STANDALONE.
+   *
+   * Lido por fetch com `$select` explícito (e não do contexto do diálogo de naturezas): o `$select` automático do
+   * diálogo só traz as colunas que ele exibe, e ler o resto do contexto escolhido dá "invalid segment".
+   */
+  protected async loadOtherPurchaseUsages(forceReload = false): Promise<Record<string, boolean>> {
+    // A cópia do módulo só serve às ações dentro do mesmo documento; a cada match de rota (reset) o mapa é relido,
+    // porque uma natureza criada/alterada no meio da sessão precisa valer na hora.
+    if (otherPurchaseUsagesCache && !forceReload) {
+      return otherPurchaseUsagesCache;
+    }
+
+    try {
+      if (isStandaloneErp === undefined) {
+        isStandaloneErp = (await this.getSystemInfo())?.erp?.trim().toUpperCase() === "STANDALONE";
+      }
+      if (!isStandaloneErp) {
+        otherPurchaseUsagesCache = {};
+        usagePurposesCache = {};
+        return otherPurchaseUsagesCache;
+      }
+
+      const result = await sendJson("GET",
+        `${ServerRoutes.usages}?$select=Code,RequiresContract,CreatesFinancialDocument,PurchasePurpose&$top=1000` +
+        `&$filter=${encodeURIComponent("Direction eq 'Incoming'")}`);
+      if (!result.ok) {
+        return {};
+      }
+
+      const map: Record<string, boolean> = {};
+      const purposes: Record<string, PurchasePurpose> = {};
+      for (const row of odataCollection<UsageFlagsRow>(result.data)) {
+        const code = row.Code ?? row.code;
+        const purpose = row.PurchasePurpose ?? row.purchasePurpose;
+        if (code !== undefined && purpose) {
+          purposes[String(code)] = purpose as PurchasePurpose;
+        }
+        const requiresContract = row.RequiresContract ?? row.requiresContract;
+        const createsTitle = row.CreatesFinancialDocument ?? row.createsFinancialDocument;
+        if (code !== undefined && requiresContract === false && createsTitle === true) {
+          map[String(code)] = true;
+        }
+      }
+      otherPurchaseUsagesCache = map;
+      usagePurposesCache = purposes;
+      return map;
+    } catch {
+      // Sem resposta: tudo é grão; a próxima chamada tenta de novo.
+      return {};
+    }
+  }
+
+  /**
+   * Regime da filial para a coluna "Efeito" da tabela Tributos: CRT (Simples?) e regime de PIS/COFINS. Só STANDALONE
+   * (fora dele valem os padrões e nada muda). Leitura separada, com `$select` explícito, porque a filial não é
+   * expandida no documento.
+   */
+  private async refreshBranchTaxProfile(uiModel: JSONModel, branchCode: string, isCurrent: () => boolean): Promise<void> {
+    let profile: BranchTaxProfile = { simples: false, pisCofinsRegime: "Cumulative" };
+
+    try {
+      if (branchCode && isStandaloneErp === true) {
+        const result = await sendJson("GET",
+          `${ServerRoutes.branchs}('${encodeURIComponent(branchCode)}')?$select=TaxRegime,PisCofinsRegime`);
+        if (result.ok) {
+          const data = result.data as { TaxRegime?: string; taxRegime?: string; PisCofinsRegime?: string; pisCofinsRegime?: string };
+          profile = {
+            simples: SIMPLES_REGIMES.includes(data.TaxRegime ?? data.taxRegime ?? ""),
+            pisCofinsRegime: (data.PisCofinsRegime ?? data.pisCofinsRegime) === "NonCumulative" ? "NonCumulative" : "Cumulative",
+          };
+        }
+      }
+    } catch {
+      // Sem resposta: padrões (filial normal, cumulativa).
+    }
+
+    if (isCurrent()) {
+      uiModel.setProperty("/branchTaxProfile", profile);
+      this.refreshDocumentTotal();
+    }
+  }
+
+  /** Publica o mapa de naturezas de outra compra no `ui` e recalcula se o documento inteiro é de outra compra. */
+  private async refreshOtherPurchaseUsages(uiModel: JSONModel, isCurrent: () => boolean, forceReload: boolean): Promise<void> {
+    const map = await this.loadOtherPurchaseUsages(forceReload);
+    if (!isCurrent()) {
+      return;
+    }
+    uiModel.setProperty("/otherPurchaseUsages", map);
+    uiModel.setProperty("/usagePurposes", usagePurposesCache ?? {});
+    // Há alguma natureza de outra compra (só STANDALONE): libera a coluna "Natureza" também fora do modo de tributos.
+    uiModel.setProperty("/hasOtherPurchaseUsages", Object.keys(map).length > 0);
+    this.updateOtherPurchaseDocument();
+  }
+
+  /** O documento da view pode ser de outra compra? (Normal e não devolução, como no servidor.) */
+  protected isOtherPurchaseEligibleDocument(): boolean {
+    const invoice = this.getView().getBindingContext() as Context;
+    return isOtherPurchaseEligible(invoice?.getProperty("InvoiceType"), invoice?.getProperty("IsNfeReturn"));
+  }
+
+  /** A linha tem natureza de outra compra? */
+  protected isOtherPurchaseLine(line: Context): boolean {
+    const map = (this.getModel("ui") as JSONModel).getProperty("/otherPurchaseUsages") as Record<string, boolean>;
+    return this.isOtherPurchaseEligibleDocument() && isOtherPurchaseUsage(line.getProperty("UsageCode"), map);
+  }
+
+  /**
+   * `/otherPurchaseDoc`: todas as linhas são de outra compra. Governa a seção "Retenções". Barato e síncrono: roda a
+   * cada atualização da grade e a cada troca de natureza.
+   */
+  protected updateOtherPurchaseDocument(): void {
+    const uiModel = this.getModel("ui") as JSONModel;
+    const binding = (this.byId("tablePurchaseInvoiceItems") as Table | undefined)?.getBinding("rows") as ODataListBinding;
+    if (!uiModel || !binding) {
+      return;
+    }
+
+    const map = uiModel.getProperty("/otherPurchaseUsages") as Record<string, boolean>;
+    const codes = binding.getAllCurrentContexts().map((line) => line.getProperty("UsageCode") as unknown);
+    const invoice = this.getView().getBindingContext() as Context;
+    const invoiceType = invoice?.getProperty("InvoiceType") as unknown;
+    const isNfeReturn = invoice?.getProperty("IsNfeReturn") as unknown;
+    const isOther = isOtherPurchaseDocument(invoiceType, isNfeReturn, codes, map);
+    if (uiModel.getProperty("/otherPurchaseDoc") !== isOther) {
+      uiModel.setProperty("/otherPurchaseDoc", isOther);
+    }
+    // A trava do contrato e o value help de produto por linha só valem em documento Normal que não é devolução.
+    const eligible = isOtherPurchaseEligible(invoiceType, isNfeReturn);
+    if (uiModel.getProperty("/otherPurchaseEligible") !== eligible) {
+      uiModel.setProperty("/otherPurchaseEligible", eligible);
+    }
+  }
+
+  /**
+   * Editar qualquer valor retido passa a valer como digitado: o servidor deixa de recalcular pelas alíquotas
+   * (`WithholdingsManual`). A propriedade é lida pelo CheckBox do formulário (entra no `$select`); sem isso o UI5
+   * recusaria a escrita ("Must not change a property before it has been read"). Sem await: grupo diferido.
+   */
+  onWithholdingChange(): void {
+    const invoice = this.getView().getBindingContext() as Context;
+    if (invoice && invoice.getProperty("WithholdingsManual") !== true) {
+      void invoice.setProperty("WithholdingsManual", true);
+    }
   }
 
   private async refreshStorageDepositMode(uiModel: JSONModel, isCurrent: () => boolean): Promise<void> {
@@ -329,7 +502,19 @@ export abstract class BaseController extends CommonController {
     }
 
     oInput.setValue(oSelected.getProperty("Name") as string);
-    void oTarget.setProperty("UsageCode", oSelected.getProperty("Code"));
+    const usageCode = oSelected.getProperty("Code") as number;
+    void oTarget.setProperty("UsageCode", usageCode);
+
+    // Natureza de outra compra não aceita contrato (o servidor recusa): desamarra o que estiver na linha. Mesma ordem
+    // do `openLineItemValueHelp` — navegação com grupo `null` primeiro (resolve na hora), chave depois sem `await`.
+    const ui = this.getModel("ui") as JSONModel;
+    const map = await this.loadOtherPurchaseUsages();
+    ui.setProperty("/otherPurchaseUsages", map);
+    if (this.isOtherPurchaseEligibleDocument() && isOtherPurchaseUsage(usageCode, map) && oTarget.getProperty("PurchaseContractKey")) {
+      await oTarget.setProperty("PurchaseContract/Code", null, null);
+      void oTarget.setProperty("PurchaseContractKey", null);
+    }
+    this.updateOtherPurchaseDocument();
   }
 
   /** Tributos calculados do item selecionado (somente leitura). */
@@ -527,7 +712,11 @@ export abstract class BaseController extends CommonController {
     const oTarget = ev.getSource().getBindingContext() as Context;
     const previousItemCode = oTarget?.getProperty("ItemCode") as string;
 
-    await this.applyValueHelp(ev, "ItemsSelectDialog", ["ItemCode", "ItemName"], "ItemCode");
+    // Linha de outra compra (serviço, consumo, ativo): qualquer produto ativo; a de grão segue só com o grupo de grão.
+    const otherPurchase = this.isOtherPurchaseEligibleDocument()
+      && isOtherPurchaseUsage(oTarget?.getProperty("UsageCode"), await this.loadOtherPurchaseUsages());
+    await this.applyValueHelp(
+      ev, otherPurchase ? "ActiveItemsSelectDialog" : "ItemsSelectDialog", ["ItemCode", "ItemName"], "ItemCode");
 
     if (!oTarget || oTarget.getProperty("ItemCode") === previousItemCode) {
       return;
@@ -713,12 +902,36 @@ export abstract class BaseController extends CommonController {
     const contexts = oBinding.getAllCurrentContexts();
     const funrural = contexts.reduce((total, ctx) => total + lineFunrural(ctx), 0);
     // Devolução de compra: o líquido é a receber e o Funrural é estornado. O contexto pai da grade é o cabeçalho.
-    const isReturn = (oBinding.getContext() as Context | undefined)?.getProperty("IsNfeReturn") === true;
+    const parent = oBinding.getContext() as Context | undefined;
+    const isReturn = parent?.getProperty("InvoiceType") === "Return" || parent?.getProperty("IsNfeReturn") === true;
     const charges = summarizeInvoiceCharges(contexts.map((ctx) => purchaseChargeLineOf(ctx)), funrural, isReturn);
+    // Outra compra: o único "Líquido a pagar" é o da seção Retenções (desconta as retenções); a barra de Totais não o repete.
+    this.updateOtherPurchaseDocument();
+    if (uiModel.getProperty("/otherPurchaseDoc") === true) {
+      charges.rows = charges.rows.filter((row) => row.Label !== "Líquido a pagar");
+    }
 
     uiModel.setProperty("/documentTotal", formatAmount(charges.grandTotal));
     uiModel.setProperty("/chargeTotals", charges);
-    uiModel.setProperty("/taxTotals", summarizeInvoiceTaxes(contexts.map((ctx) => ctx.getObject() as TaxLine)));
+    const header = oBinding.getContext() as Context | undefined;
+    const profile = (uiModel.getProperty("/branchTaxProfile") ?? {}) as Partial<BranchTaxProfile>;
+    const purposes = (uiModel.getProperty("/usagePurposes") ?? {}) as Record<string, PurchasePurpose>;
+    // Retenções só existem no documento de outra compra; nos demais os campos voltam 0 e as linhas somem.
+    const withholdings: Withholdings = header ? {
+      base: toNumber(header.getProperty("WithholdingBase")), iss: toNumber(header.getProperty("WithheldIss")),
+      irrf: toNumber(header.getProperty("WithheldIrrf")), inss: toNumber(header.getProperty("WithheldInss")),
+      pis: toNumber(header.getProperty("WithheldPis")), cofins: toNumber(header.getProperty("WithheldCofins")),
+      csll: toNumber(header.getProperty("WithheldCsll")),
+    } : undefined;
+    uiModel.setProperty("/taxTotals", summarizeInvoiceTaxes(contexts.map((ctx) => ctx.getObject() as TaxLine), {
+      direction: "Incoming",
+      isReturn,
+      branchSimples: profile.simples === true,
+      pisCofinsRegime: profile.pisCofinsRegime ?? "Cumulative",
+      purposeOf: (taxLine) => purposes[String(taxLine.UsageCode)] ?? "ResaleOrInput",
+      withholdings,
+    }));
+    this.updateOtherPurchaseDocument();
   }
 
   /**

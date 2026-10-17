@@ -3,7 +3,7 @@
     xmlns:f="sap.ui.layout.form"
     xmlns:l="sap.ui.layout"
     xmlns:core="sap.ui.core"
-    core:require="{ DoubleType: 'sap/ui/model/odata/type/Double', nfeHelpers: 'siagrob1/helpers/PurchaseInvoiceNfeHelpers' }"
+    core:require="{ DoubleType: 'sap/ui/model/odata/type/Double', nfeHelpers: 'siagrob1/helpers/PurchaseInvoiceNfeHelpers', draft: 'siagrob1/helpers/PurchaseInvoiceDraftHelpers' }"
 >
     <!-- Mesmo desenho do formulário do documento de saída (salesInvoices/fragments/Form): três colunas no XL,
          seções Dados do Documento, Transporte, Dados da NF-e, Informações Complementares e Outras Informações. -->
@@ -373,6 +373,143 @@
           <core:Title text="Outras Informações" />
           <Label text="Observações" />
           <TextArea value="{Comments}" editable="{ui>/editable}" rows="5" width="100%" />
+
+          <!-- Retenções de serviço (outra compra): só quando TODAS as linhas têm natureza de outra compra. core:Title não
+               tem visible, então o texto some junto (mesmo recurso do bloco Transporte). Valores gravados: Double e não
+               Decimal (o leitor OData recusa Edm.Decimal em string). Editar qualquer um liga WithholdingsManual
+               (onWithholdingChange); sem a flag o servidor recalcula tudo pelas alíquotas a cada gravação. Total retido
+               e Líquido a pagar são calculados aqui (TotalWithheld/NetPayable são [NotMapped] e viram late property). -->
+          <core:Title text="{= ${ui>/otherPurchaseDoc} === true ? 'Retenções' : '' }" />
+
+          <Label text="Base de cálculo" visible="{= ${ui>/otherPurchaseDoc} === true }" />
+          <Input
+              visible="{= ${ui>/otherPurchaseDoc} === true }"
+              editable="{ui>/editable}"
+              textAlign="End"
+              change=".onWithholdingChange"
+              value="{
+                path: 'WithholdingBase',
+                type: 'DoubleType',
+                formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }" />
+
+          <Label text="ISS retido" visible="{= ${ui>/otherPurchaseDoc} === true }" />
+          <Input
+              visible="{= ${ui>/otherPurchaseDoc} === true }"
+              editable="{ui>/editable}"
+              textAlign="End"
+              change=".onWithholdingChange"
+              value="{
+                path: 'WithheldIss',
+                type: 'DoubleType',
+                formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }" />
+
+          <Label text="IRRF retido" visible="{= ${ui>/otherPurchaseDoc} === true }" />
+          <Input
+              visible="{= ${ui>/otherPurchaseDoc} === true }"
+              editable="{ui>/editable}"
+              textAlign="End"
+              change=".onWithholdingChange"
+              value="{
+                path: 'WithheldIrrf',
+                type: 'DoubleType',
+                formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }" />
+
+          <Label text="INSS retido" visible="{= ${ui>/otherPurchaseDoc} === true }" />
+          <Input
+              visible="{= ${ui>/otherPurchaseDoc} === true }"
+              editable="{ui>/editable}"
+              textAlign="End"
+              change=".onWithholdingChange"
+              value="{
+                path: 'WithheldInss',
+                type: 'DoubleType',
+                formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }" />
+
+          <Label text="PIS retido" visible="{= ${ui>/otherPurchaseDoc} === true }" />
+          <Input
+              visible="{= ${ui>/otherPurchaseDoc} === true }"
+              editable="{ui>/editable}"
+              textAlign="End"
+              change=".onWithholdingChange"
+              value="{
+                path: 'WithheldPis',
+                type: 'DoubleType',
+                formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }" />
+
+          <Label text="COFINS retido" visible="{= ${ui>/otherPurchaseDoc} === true }" />
+          <Input
+              visible="{= ${ui>/otherPurchaseDoc} === true }"
+              editable="{ui>/editable}"
+              textAlign="End"
+              change=".onWithholdingChange"
+              value="{
+                path: 'WithheldCofins',
+                type: 'DoubleType',
+                formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }" />
+
+          <Label text="CSLL retido" visible="{= ${ui>/otherPurchaseDoc} === true }" />
+          <Input
+              visible="{= ${ui>/otherPurchaseDoc} === true }"
+              editable="{ui>/editable}"
+              textAlign="End"
+              change=".onWithholdingChange"
+              value="{
+                path: 'WithheldCsll',
+                type: 'DoubleType',
+                formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+              }" />
+
+          <Label text="Total retido" visible="{= ${ui>/otherPurchaseDoc} === true }" />
+          <Input
+              visible="{= ${ui>/otherPurchaseDoc} === true }"
+              editable="false"
+              textAlign="End"
+              value="{
+                parts: [
+                  { path: 'WithheldIss', targetType: 'any' }, { path: 'WithheldIrrf', targetType: 'any' },
+                  { path: 'WithheldInss', targetType: 'any' }, { path: 'WithheldPis', targetType: 'any' },
+                  { path: 'WithheldCofins', targetType: 'any' }, { path: 'WithheldCsll', targetType: 'any' }
+                ],
+                formatter: 'draft.formatTotalWithheld',
+                mode: 'OneWay'
+              }" />
+
+          <Label text="Líquido a pagar" visible="{= ${ui>/otherPurchaseDoc} === true }" />
+          <Input
+              visible="{= ${ui>/otherPurchaseDoc} === true }"
+              editable="false"
+              textAlign="End"
+              value="{
+                parts: [
+                  { path: 'WithheldIss', targetType: 'any' }, { path: 'WithheldIrrf', targetType: 'any' },
+                  { path: 'WithheldInss', targetType: 'any' }, { path: 'WithheldPis', targetType: 'any' },
+                  { path: 'WithheldCofins', targetType: 'any' }, { path: 'WithheldCsll', targetType: 'any' },
+                  { path: 'ui>/chargeTotals/netPayable' }
+                ],
+                formatter: 'draft.formatNetPayable',
+                mode: 'OneWay'
+              }" />
+
+          <!-- Indicador e, ao mesmo tempo, a leitura de WithholdingsManual (entra no $select; sem ela o UI5 recusa a
+               escrita da flag). Somente leitura: liga-se editando um valor e desliga-se em "Recalcular pelas alíquotas". -->
+          <Label text="Informadas manualmente" visible="{= ${ui>/otherPurchaseDoc} === true }" />
+          <CheckBox
+              visible="{= ${ui>/otherPurchaseDoc} === true }"
+              editable="false"
+              selected="{path: 'WithholdingsManual', mode: 'OneWay'}" />
+
+          <Label text="" visible="{= ${ui>/otherPurchaseDoc} === true &amp;&amp; ${ui>/withholdingsRecalculable} === true }" />
+          <Button
+              text="Recalcular pelas alíquotas"
+              icon="sap-icon://synchronize"
+              visible="{= ${ui>/otherPurchaseDoc} === true &amp;&amp; ${ui>/editable} === true &amp;&amp; ${ui>/withholdingsRecalculable} === true }"
+              press=".onRecalculateWithholdings" />
         </f:content>
     </f:SimpleForm>
 </core:FragmentDefinition>

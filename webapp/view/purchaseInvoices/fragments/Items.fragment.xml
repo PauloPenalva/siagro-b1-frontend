@@ -61,7 +61,7 @@
       </t:Column>
       <!-- Natureza da linha (própria e terceiro Normal na filial que calcula tributos): só naturezas de Entrada. Na devolução de compra vem da natureza de
            devolução da linha comprada e não muda. -->
-      <t:Column label="Natureza" width="14rem" visible="{= ${ui>/taxMode} === true || ${path: 'InvoiceType', targetType: 'any'} === 'ValueComplement' }">
+      <t:Column label="Natureza" width="14rem" visible="{= ${ui>/taxMode} === true || ${path: 'InvoiceType', targetType: 'any'} === 'ValueComplement' || (${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${ui>/hasOtherPurchaseUsages} === true) }">
         <t:template>
           <!-- ui5lint-disable no-deprecated-api -->
           <Input
@@ -229,6 +229,8 @@
         </t:template>
       </t:Column>
 
+      <!-- Linha de "outra compra" (natureza sem contrato que gera título): a célula trava e o value help some; o servidor
+           recusa contrato nessa linha. O produto dela vem de /ActiveItems() (openLineItemValueHelp). -->
       <!-- A amarração fiscal (Normal, Complemento de valor e Devolução — a devolução digitada à mão precisa informá-lo para nascer o título PurchaseReturn): o campo mostra o CÓDIGO do contrato e o
            value help grava a CHAVE. OneWay é obrigatório porque o campo exibe uma NAVEGAÇÃO — em
            linha ainda não amarrada `PurchaseContract` é null, e no modo TwoWay o setValue tentaria
@@ -241,9 +243,9 @@
                Complemento próprio (D5): travado quando o item original tem contrato (herdado), editável pelo value help
                de sempre quando não tem (draft.isLineContractEditable lê ui>/inheritedContracts). -->
           <Input
-            editable="{parts: [{path: 'ui>/editable'}, {path: 'ui>/isCounterNote'}, {path: 'ComplementedItemKey', targetType: 'any'}, {path: 'ui>/inheritedContracts'}], formatter: 'draft.isLineContractEditable'}"
+            editable="{parts: [{path: 'ui>/editable'}, {path: 'ui>/isCounterNote'}, {path: 'ComplementedItemKey', targetType: 'any'}, {path: 'ui>/inheritedContracts'}, {path: 'UsageCode', targetType: 'any'}, {path: 'ui>/otherPurchaseUsages'}, {path: 'ui>/otherPurchaseEligible'}], formatter: 'draft.isLineContractEditable'}"
             value="{parts: [{path: 'PurchaseContract/Code', mode: 'OneWay'}, {path: 'PurchaseContractKey', mode: 'OneWay'}, {path: 'ui>/contractCodes', mode: 'OneWay'}], formatter: 'draft.formatContractCode', mode: 'OneWay'}"
-            showValueHelp="{parts: [{path: 'ui>/editable'}, {path: 'ui>/isCounterNote'}, {path: 'ComplementedItemKey', targetType: 'any'}, {path: 'ui>/inheritedContracts'}], formatter: 'draft.isLineContractEditable'}"
+            showValueHelp="{parts: [{path: 'ui>/editable'}, {path: 'ui>/isCounterNote'}, {path: 'ComplementedItemKey', targetType: 'any'}, {path: 'ui>/inheritedContracts'}, {path: 'UsageCode', targetType: 'any'}, {path: 'ui>/otherPurchaseUsages'}, {path: 'ui>/otherPurchaseEligible'}], formatter: 'draft.isLineContractEditable'}"
             valueHelpOnly="true"
             valueHelpRequest=".openContractValueHelp" />
         </t:template>

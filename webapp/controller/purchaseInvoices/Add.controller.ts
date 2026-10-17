@@ -53,6 +53,7 @@ export default class Add extends BaseController {
     uiModel.setProperty("/typeEditable", true);
     uiModel.setProperty("/documentTotal", "0,00");
     uiModel.setProperty("/paymentConditionName", "");
+    uiModel.setProperty("/withholdingsRecalculable", false);
 
     const oModel = this.getModel() as ODataModel;
 
@@ -176,6 +177,10 @@ export default class Add extends BaseController {
       TotalDocumentValue: toNumber(draft?.TotalDocumentValue),
       TaxPayerComments: draft?.TaxPayerComments ?? null,
       Comments: null,
+      // Retenções de serviço (outra compra): existem no payload inicial como 0/false. Com WithholdingsManual falso o
+      // servidor calcula tudo pelas alíquotas da natureza ao gravar.
+      WithholdingBase: 0, WithheldIss: 0, WithheldIrrf: 0, WithheldInss: 0, WithheldPis: 0, WithheldCofins: 0, WithheldCsll: 0,
+      WithholdingsManual: false,
       // O XML volta ao servidor no POST: é a prova documental guardada com o documento.
       XmlFileName: draft?.XmlFileName ?? null,
       XmlData: xmlContent
@@ -295,7 +300,7 @@ export default class Add extends BaseController {
     // (a conciliação fiscal-contratual fica incompleta, não o documento).
     if (oContext.getProperty("InvoiceType") === "Normal") {
       const unlinked = (oBinding?.getAllCurrentContexts() ?? [])
-        .filter(ctx => !ctx.getProperty("PurchaseContractKey") && !ctx.getProperty("SalesInvoiceItemKey"));
+        .filter(ctx => !ctx.getProperty("PurchaseContractKey") && !ctx.getProperty("SalesInvoiceItemKey") && !this.isOtherPurchaseLine(ctx));
 
       if (unlinked.length > 0 && !await confirmDialog(
         `${unlinked.length} item(ns) sem contrato amarrado. Salvar assim mesmo ?`,

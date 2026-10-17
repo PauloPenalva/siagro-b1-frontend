@@ -79,6 +79,15 @@
             <core:ListItem key="Normal" text="3 - Regime normal" />
             <core:ListItem key="Mei" text="4 - MEI" />
           </Select>
+          <!-- Regime de PIS/COFINS (spec 2026-10-17): decide se o crédito da compra é apurado (não cumulativo) ou não. -->
+          <Label text="Regime de PIS/COFINS" visible="{ui>/standalone}" />
+          <Select
+            visible="{ui>/standalone}"
+            selectedKey="{ path: 'PisCofinsRegime', targetType: 'any' }"
+            forceSelection="false">
+            <core:ListItem key="Cumulative" text="Cumulativo (Lucro Presumido)" />
+            <core:ListItem key="NonCumulative" text="Não cumulativo (Lucro Real)" />
+          </Select>
           <Label text="Emite NF-e pelo Siagro ?" visible="{ui>/standalone}" />
           <CheckBox selected="{IssuesNfe}" visible="{ui>/standalone}" />
           <!-- Natureza aplicada à devolução de compra de uma entrada de terceiro (spec terceiro D3). Só faz sentido

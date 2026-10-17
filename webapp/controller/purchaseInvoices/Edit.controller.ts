@@ -42,6 +42,8 @@ export default class Edit extends BaseController {
     uiModel.setProperty("/editable", true);
     uiModel.setProperty("/remittanceNumbers", {});
     uiModel.setProperty("/typeEditable", false);
+    // "Recalcular pelas alíquotas" só existe aqui: na inclusão o documento ainda é transiente e o servidor já calcula ao gravar.
+    uiModel.setProperty("/withholdingsRecalculable", true);
 
     const oModel = this.getModel() as ODataModel;
 
@@ -152,7 +154,7 @@ export default class Edit extends BaseController {
     const isCounterNote = !!await oContext.requestProperty("ProducerInvoiceKey");
     if (oContext.getProperty("InvoiceType") === "Normal" && !isCounterNote) {
       const unlinked = (oBinding?.getAllCurrentContexts() ?? [])
-        .filter(ctx => !ctx.getProperty("PurchaseContractKey") && !ctx.getProperty("SalesInvoiceItemKey"));
+        .filter(ctx => !ctx.getProperty("PurchaseContractKey") && !ctx.getProperty("SalesInvoiceItemKey") && !this.isOtherPurchaseLine(ctx));
 
       if (unlinked.length > 0 && !await confirmDialog(
         `${unlinked.length} item(ns) sem contrato amarrado. Salvar assim mesmo ?`,
@@ -170,6 +172,39 @@ export default class Edit extends BaseController {
       if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
         MessageToast.show("Documento alterado.", { closeOnBrowserNavigation: false });
         this.navTo("purchaseInvoicesDetail", { id: oContext.getProperty("Key") as string });
+      }
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  /**
+   * "Recalcular pelas alíquotas": desliga WithholdingsManual e salva o documento; o servidor devolve os valores
+   * calculados pela natureza e a tela relê o cabeçalho para mostrá-los. Salva também o que estiver pendente nas linhas
+   * (um único lote), por isso pede confirmação.
+   */
+  async onRecalculateWithholdings() {
+    const oContext = this.getView().getBindingContext() as Context;
+    const oModel = this.getModel() as ODataModel;
+
+    if (!oContext) {
+      return;
+    }
+
+    if (!await confirmDialog(
+      "Descartar os valores informados, recalcular as retenções pelas alíquotas da natureza e salvar o documento ?",
+      "Recalcular retenções")) {
+      return;
+    }
+
+    try {
+      this.setBusy(true);
+      void oContext.setProperty("WithholdingsManual", false);
+      await oModel.submitBatch(oModel.getUpdateGroupId());
+
+      if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
+        await oContext.requestRefresh();
+        MessageToast.show("Retenções recalculadas pelas alíquotas.", { closeOnBrowserNavigation: false });
       }
     } finally {
       this.setBusy(false);

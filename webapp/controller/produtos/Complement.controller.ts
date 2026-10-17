@@ -7,6 +7,13 @@ import { unlockedUnitsOfMeasureFilter } from "siagrob1/helpers/FilterHelpers";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import Table from "sap/m/Table";
+import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
+import Context from "sap/ui/model/odata/v4/Context";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import { STATE_CODES } from "siagrob1/helpers/StateCodes";
+import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import { BaseController } from "./BaseController";
 
 /** Formulário da tela, no model JSON "complement" — não é uma entidade do model OData. */
@@ -27,6 +34,8 @@ export default class Complement extends BaseController {
 
   onInit(): void {
     this.getView().setModel(new JSONModel({}), "complement");
+    this.getView().setModel(new JSONModel(STATE_CODES), "stateCodes");
+    void this.refreshStandaloneFlag();
     this.getRouter().getRoute("produtosComplement")
       .attachPatternMatched((ev) => void this.routeMatched(ev));
   }
@@ -36,6 +45,11 @@ export default class Complement extends BaseController {
     const model = this.getModel("complement") as JSONModel;
 
     model.setData({ ItemCode: id });
+    // A tabela de alíquotas por UF só existe em STANDALONE: em SAPB1 o servidor responderia 400.
+    await this.refreshStandaloneFlag();
+    if ((this.getModel("ui") as JSONModel).getProperty("/standalone")) {
+      this.loadStateRates(id);
+    }
 
     this.setBusy(true);
     try {
@@ -181,6 +195,78 @@ export default class Complement extends BaseController {
       (this.byId("commercialFactor") as Input).setValueState(ValueState.None);
       (this.byId("taxableFactor") as Input).setValueState(ValueState.None);
       MessageToast.show("Complemento salvo com sucesso.", { closeOnBrowserNavigation: false });
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  private stateRatesTable(): Table {
+    return this.byId("itemStateRatesTable") as Table;
+  }
+
+  /** Filtra a tabela pelo produto da rota. A binding nasce suspensa (sem ItemCode ela traria tudo). */
+  private loadStateRates(itemCode: string): void {
+    const oModel = this.getModel() as ODataModel;
+    if (oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
+      oModel.resetChanges(oModel.getUpdateGroupId());
+    }
+
+    const binding = this.stateRatesTable().getBinding("items") as ODataListBinding;
+    binding.filter(new Filter("ItemCode", FilterOperator.EQ, itemCode));
+    if (binding.isSuspended()) {
+      binding.resume();
+    } else {
+      binding.refresh();
+    }
+  }
+
+  /** Linha nova: ItemCode vem da tela; FCP e alíquota vazios herdam a UF. */
+  onStateRateCreate(): void {
+    const itemCode = (this.getModel("complement") as JSONModel).getProperty("/ItemCode") as string;
+    (this.stateRatesTable().getBinding("items") as ODataListBinding).create(
+      { ItemCode: itemCode, StateCode: null, InternalRate: null, FcpRate: null }, true, true);
+  }
+
+  async onStateRatesSave(): Promise<void> {
+    const oModel = this.getModel() as ODataModel;
+    const groupId = oModel.getUpdateGroupId();
+
+    if (!oModel.hasPendingChanges(groupId)) {
+      MessageToast.show("Nada a gravar.");
+      return;
+    }
+
+    this.setBusy(true);
+    try {
+      await oModel.submitBatch(groupId);
+
+      if (oModel.hasPendingChanges(groupId)) {
+        // A mensagem do servidor já foi mostrada pelo handler global; as linhas com erro continuam editáveis.
+        return;
+      }
+
+      MessageToast.show("Alíquotas por UF gravadas.");
+      (this.stateRatesTable().getBinding("items") as ODataListBinding).refresh();
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  async onStateRateDelete(): Promise<void> {
+    const ctx = this.stateRatesTable().getSelectedItem()?.getBindingContext() as Context | undefined;
+    if (!ctx) {
+      MessageBox.alert("Selecione uma linha para excluir.");
+      return;
+    }
+
+    if (!(await confirmDialog("Deseja realmente excluir a alíquota da UF selecionada ?", "Excluir alíquota ?"))) {
+      return;
+    }
+
+    this.setBusy(true);
+    try {
+      await ctx.delete("$auto");
+      MessageToast.show("Alíquota excluída.");
     } finally {
       this.setBusy(false);
     }

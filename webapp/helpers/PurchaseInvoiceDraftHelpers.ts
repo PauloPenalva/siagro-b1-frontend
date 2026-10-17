@@ -221,9 +221,71 @@ export function inheritedContracts(rows: PurchaseInvoiceComplementCandidate[]): 
  * original NÃO tem contrato (D5). Mapa ainda não carregado conta como editável: o servidor recusa a troca (C10).
  */
 export function isLineContractEditable(
-  editable: boolean, isCounterNote: boolean, complementedItemKey: string, inherited: Record<string, string>
+  editable: boolean, isCounterNote: boolean, complementedItemKey: string, inherited: Record<string, string>,
+  usageCode?: number, otherPurchaseUsages?: Record<string, boolean>, otherPurchaseEligible?: boolean
 ): boolean {
-  return editable === true && isCounterNote !== true && !(complementedItemKey && inherited?.[complementedItemKey]);
+  return editable === true && isCounterNote !== true && !(complementedItemKey && inherited?.[complementedItemKey])
+    && !(otherPurchaseEligible === true && isOtherPurchaseUsage(usageCode, otherPurchaseUsages));
+}
+
+/**
+ * A natureza é de "outra compra" (serviço, consumo, ativo): não exige contrato e gera título. O mapa
+ * (`ui>/otherPurchaseUsages`, código → true) só é preenchido em STANDALONE; vazio = tudo é grão, como sempre foi.
+ */
+export function isOtherPurchaseUsage(usageCode: unknown, otherPurchaseUsages?: Record<string, boolean>): boolean {
+  return (typeof usageCode === "number" || typeof usageCode === "string") && otherPurchaseUsages?.[String(usageCode)] === true;
+}
+
+/** Só o documento Normal que não é devolução pode ser de outra compra (espelha o servidor). */
+export function isOtherPurchaseEligible(invoiceType: unknown, isNfeReturn: unknown): boolean {
+  return invoiceType === "Normal" && isNfeReturn !== true;
+}
+
+/**
+ * Espelha o servidor: o documento é de outra compra quando é Normal e não é devolução, alguma linha tem natureza de
+ * outra compra e TODAS as linhas COM natureza são de outra compra (linha sem natureza é ignorada).
+ */
+export function isOtherPurchaseDocument(
+  invoiceType: unknown, isNfeReturn: unknown, usageCodes: unknown[], otherPurchaseUsages?: Record<string, boolean>
+): boolean {
+  if (!isOtherPurchaseEligible(invoiceType, isNfeReturn)) {
+    return false;
+  }
+  const withUsage = usageCodes.filter((code) => code !== undefined && code !== null && code !== "");
+  return withUsage.length > 0 && withUsage.every((code) => isOtherPurchaseUsage(code, otherPurchaseUsages));
+}
+
+/** Soma em centavos dos seis valores retidos (ISS, IRRF, INSS, PIS, COFINS, CSLL). */
+function sumWithheldCents(values: unknown[]): number {
+  return values.reduce<number>((total, value) => total + Math.round(toNumber(value) * 100), 0);
+}
+
+function formatCents(cents: number): string {
+  return (cents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+/** "Total retido" do cabeçalho: calculado na tela (TotalWithheld é [NotMapped] e não vem no request principal). */
+export function formatTotalWithheld(iss: unknown, irrf: unknown, inss: unknown, pis: unknown, cofins: unknown, csll: unknown): string {
+  return formatCents(sumWithheldCents([iss, irrf, inss, pis, cofins, csll]));
+}
+
+/** "Líquido a pagar": total geral menos Funrural (`netPayable` da barra de totais) menos o total retido. */
+export function formatNetPayable(
+  iss: unknown, irrf: unknown, inss: unknown, pis: unknown, cofins: unknown, csll: unknown, netBeforeWithholdings: unknown
+): string {
+  return formatCents(Math.round(toNumber(netBeforeWithholdings) * 100) - sumWithheldCents([iss, irrf, inss, pis, cofins, csll]));
+}
+
+/** Natureza das linhas da seção "Títulos gerados": parcela (Firm) ou retenção de imposto. */
+const WITHHOLDING_TAX_LABELS: Record<string, string> = {
+  Iss: "ISS", Irrf: "IRRF", Inss: "INSS", Pis: "PIS", Cofins: "COFINS", Csll: "CSLL",
+};
+
+export function formatGeneratedTitle(nature: string, installment: unknown, taxType: string): string {
+  if (nature === "TaxWithholding") {
+    return `Retenção ${WITHHOLDING_TAX_LABELS[taxType] ?? ""}`.trim();
+  }
+  return typeof installment === "number" && installment > 0 ? `Parcela ${installment}` : "Título";
 }
 
 /** Coluna "Nota original": o rótulo do item da linha; vazio fora do complemento próprio. */
