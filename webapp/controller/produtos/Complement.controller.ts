@@ -45,7 +45,11 @@ export default class Complement extends BaseController {
     const model = this.getModel("complement") as JSONModel;
 
     model.setData({ ItemCode: id });
-    this.loadStateRates(id);
+    // A tabela de alíquotas por UF só existe em STANDALONE: em SAPB1 o servidor responderia 400.
+    await this.refreshStandaloneFlag();
+    if ((this.getModel("ui") as JSONModel).getProperty("/standalone")) {
+      this.loadStateRates(id);
+    }
 
     this.setBusy(true);
     try {

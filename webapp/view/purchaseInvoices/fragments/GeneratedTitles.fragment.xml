@@ -22,12 +22,12 @@
   >
     <columns>
       <Column width="7rem"><Text text="Título" /></Column>
-      <Column width="12rem"><Text text="Descrição" /></Column>
-      <Column width="14rem"><Text text="Credor" /></Column>
-      <Column width="7rem" hAlign="Center"><Text text="Vencimento" /></Column>
-      <Column width="8rem" hAlign="End"><Text text="Valor" /></Column>
-      <Column width="8rem" hAlign="End"><Text text="Em aberto" /></Column>
-      <Column width="8rem" hAlign="Center"><Text text="Situação" /></Column>
+      <Column><Text text="Descrição" /></Column>
+      <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Credor" /></Column>
+      <Column width="6.5rem" hAlign="Center"><Text text="Vencimento" /></Column>
+      <Column width="6.5rem" hAlign="End"><Text text="Valor" /></Column>
+      <Column width="6.5rem" hAlign="End"><Text text="Em aberto" /></Column>
+      <Column width="7rem" hAlign="Center"><Text text="Situação" /></Column>
     </columns>
     <items>
       <ColumnListItem>
