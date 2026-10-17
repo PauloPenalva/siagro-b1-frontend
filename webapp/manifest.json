@@ -804,6 +804,11 @@
           "target": "paymentConditions"
         },
         {
+          "pattern": "withholding-tax-settings",
+          "name": "withholdingTaxSettings",
+          "target": "withholdingTaxSettings"
+        },
+        {
           "pattern": "nfe-settings",
           "name": "nfeSettings",
           "target": "nfeSettings"
@@ -2029,6 +2034,12 @@
           "id": "paymentConditions",
           "level": 1,
           "name": "siagrob1.view.paymentConditions.Main",
+          "clearControlAggregation": true
+        },
+        "withholdingTaxSettings": {
+          "id": "withholdingTaxSettings",
+          "level": 1,
+          "name": "siagrob1.view.withholdingTaxSettings.Main",
           "clearControlAggregation": true
         },
         "nfeSettings": {
