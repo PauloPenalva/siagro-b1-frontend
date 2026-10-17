@@ -21,9 +21,9 @@
     }"
   >
     <columns>
-      <Column width="9rem"><Text text="Título" /></Column>
-      <Column><Text text="Descrição" /></Column>
-      <Column><Text text="Credor" /></Column>
+      <Column width="8rem"><Text text="Título" /></Column>
+      <Column width="14rem"><Text text="Descrição" /></Column>
+      <Column width="18rem"><Text text="Credor" /></Column>
       <Column width="8rem" hAlign="Center"><Text text="Vencimento" /></Column>
       <Column width="9rem" hAlign="End"><Text text="Valor" /></Column>
       <Column width="9rem" hAlign="End"><Text text="Em aberto" /></Column>
@@ -41,7 +41,10 @@
             ],
             formatter: 'draft.formatGeneratedTitle'
           }" />
-          <Text text="{CardCode}" />
+          <VBox>
+            <Text text="{CardName}" />
+            <Text text="{CardCode}" class="sapUiTinyMarginTop" />
+          </VBox>
           <Text text="{
             path: 'DueDate',
             type: 'sap.ui.model.odata.type.DateTimeOffset',
