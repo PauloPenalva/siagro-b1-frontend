@@ -151,10 +151,8 @@ export abstract class BaseController extends CommonController {
 
       const oItemContext = oTable.getContextByIndex(i) as Context;
 
-      this.itemFiscalDialog ??= await DialogHelper.createDialog(
-        this, "siagrob1.view.salesInvoices.fragments.ItemFiscalDialog", oItemContext);
-
-      this.itemFiscalDialog.setBindingContext(oItemContext);
+      this.itemFiscalDialog = await this.createItemFiscalDialog(
+        "siagrob1.view.salesInvoices.fragments.ItemFiscalDialog", oItemContext);
       this.itemFiscalDialog.open();
     }
 
