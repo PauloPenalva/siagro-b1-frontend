@@ -190,7 +190,17 @@ export default class Component extends UIComponent {
       // Nas telas públicas o 401 é o estado normal - o OData responde assim justamente por não
       // haver sessão. Redirecionar aqui expulsaria da redefinição de senha quem chegou pelo link
       // do e-mail, que é exatamente quem não consegue autenticar.
-      if (PUBLIC_ROUTES.includes(this.currentRoute)) {
+      if (PUBLIC_ROUTES.includes(this.currentRoute) || window.location.hash.startsWith("#/login")) {
+        return;
+      }
+
+      // Sem sessão conhecida não há nada da empresa anterior para purgar: só navega. O reload é
+      // para a sessão que EXISTIA e expirou. Recarregar aqui antes da primeira rota casar
+      // (currentRoute ainda vazio, $metadata respondendo 401) entrava em loop na própria tela
+      // de login.
+      if (!SessionService.isAuthenticated()) {
+        SessionService.clearSessionState();
+        this.getRouter().navTo("login", {}, undefined, true);
         return;
       }
 
