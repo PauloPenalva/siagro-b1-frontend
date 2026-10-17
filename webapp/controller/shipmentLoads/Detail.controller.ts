@@ -11,6 +11,7 @@ import SapMTable from "sap/m/Table";
 import Table from "sap/ui/table/Table";
 import RoyaltyFieldsHelper from "siagrob1/controller/royalties/RoyaltyFieldsHelper";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import { openNfeIssueDialog } from "siagrob1/dialogs/NfeIssueDialog";
 import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 import ShipmentBillingDialog, { BillingLoad } from "siagrob1/helpers/ShipmentBillingDialog";
@@ -51,6 +52,7 @@ type PendingRefusalRow = {
   NfeStatus: string;
   TaxDocumentNumber?: string;
   TaxDocumentSeries?: string;
+  BranchCode: string;
   NfeConfirmationError?: string;
 };
 
@@ -1187,10 +1189,10 @@ export default class Detail extends BaseController {
     return source.getBindingContext("pendingRefusal").getObject();
   }
 
-  private async runRefusalNfeAction(url: string, row: PendingRefusalRow): Promise<void> {
+  private async runRefusalNfeAction(url: string, row: PendingRefusalRow, extra: Record<string, unknown> = {}): Promise<void> {
     this.setBusy(true);
     try {
-      await runNfeAction(url, { Key: row.SalesInvoiceKey });
+      await runNfeAction(url, { Key: row.SalesInvoiceKey, ...extra });
     } finally {
       this.setBusy(false);
       // A autorização da última NF-e conclui a recusa e muda saldo/situação: relê a carga inteira.
@@ -1200,8 +1202,13 @@ export default class Detail extends BaseController {
 
   async onIssueRefusalNfe(ev: Button$PressEvent): Promise<void> {
     const row = this.pendingRefusalRow(ev);
-    if (!(await DialogHelper.confirmDialog(`Emitir a NF-e de entrada da devolução ${row.InvoiceNumber} ?`))) return;
-    await this.runRefusalNfeAction(ServerRoutes.salesInvoicesIssueNfe, row);
+    const series = await openNfeIssueDialog(this.getView(), {
+      title: "Emitir NF-e", message: `Emitir a NF-e de entrada da devolução ${row.InvoiceNumber} ?`, confirmText: "Emitir NF-e",
+      branchCode: row.BranchCode, documentSeries: row.TaxDocumentSeries,
+      documentNumber: row.TaxDocumentNumber,
+    });
+    if (series === null) return;
+    await this.runRefusalNfeAction(ServerRoutes.salesInvoicesIssueNfe, row, { Series: series });
   }
 
   async onConsultRefusalNfe(ev: Button$PressEvent): Promise<void> {
