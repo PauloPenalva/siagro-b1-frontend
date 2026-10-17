@@ -25,6 +25,10 @@ import { openDanfeViewer, openNfeCorrectionViewer } from "siagrob1/dialogs/Danfe
 import { openNfeCorrectionDialog } from "siagrob1/dialogs/NfeCorrectionDialog";
 import { Button$PressEvent } from "sap/m/Button";
 import Control from "sap/ui/core/Control";
+import SapTable from "sap/m/Table";
+import { ListBase$UpdateFinishedEvent } from "sap/m/ListBase";
+import { Link$PressEvent } from "sap/m/Link";
+import { showCteFreights, suspendCteFreights } from "siagrob1/helpers/CteFreightsBinding";
 
 /**
  * @namespace siagrob1.controller.salesInvoices
@@ -43,6 +47,8 @@ export default class Detail extends BaseController {
 
       uiModel.setProperty("/editable", false);
       uiModel.setProperty("/canPickContract", false);
+      uiModel.setProperty("/cteFreightCount", 0);
+      suspendCteFreights(this.byId("cteFreightsTable") as SapTable);
       // O quadro "Tributos" do documento anterior não pode aparecer enquanto as linhas deste não chegam.
       uiModel.setProperty("/taxTotals", { visible: false, rows: [] });
       uiModel.setProperty("/chargeTotals", summarizeInvoiceCharges([]));
@@ -52,6 +58,7 @@ export default class Detail extends BaseController {
 			// quadro "Tributos" somaria nada; idem para os quatro valores da seção Totais.
 			this.bindElement(sPath, { $expand: `Items($select=${TAX_TOTALS_SELECT},${LINE_CHARGES_SELECT})` });
 			this.attachDocumentTotalRefresh();
+			showCteFreights(this.byId("cteFreightsTable") as SapTable, "SalesInvoiceKey", id);
 			void this.refreshTaxLockFromContext();
 			void this.refreshNfeHeaderFromContext();
 			void this.refreshNfeReturnFromContext();
@@ -59,6 +66,17 @@ export default class Detail extends BaseController {
 			return;
 		}
 
+	}
+
+	/** A seção "CT-e de frete" só aparece quando há algum. */
+	onCteFreightsUpdated(ev: ListBase$UpdateFinishedEvent): void {
+		(this.getModel("ui") as JSONModel).setProperty("/cteFreightCount", ev.getParameter("total") ?? 0);
+	}
+
+	/** Abre o CT-e de frete da linha da lista. */
+	onOpenCteFreight(ev: Link$PressEvent): void {
+		const key = (ev.getSource().getBindingContext() as Context)?.getProperty("PurchaseInvoice/Key") as string;
+		if (key) this.navTo("purchaseInvoicesDetail", { id: key });
 	}
 
 	onEdit() {

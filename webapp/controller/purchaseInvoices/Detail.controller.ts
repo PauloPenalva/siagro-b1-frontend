@@ -29,6 +29,8 @@ import {
   PURCHASE_ITEM_SELECT, PurchaseNfeState, buildPurchaseItemNumbers, canCreateCounterNote, canIssuePurchaseNfe,
   allUsagesAllowCounterNote, canReturnPurchase, canReturnThirdPartyPurchase, counterNoteText, isValidCounterNote, PurchaseReturnItemRow,
 } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
+import { cteIcmsWarning } from "siagrob1/helpers/TransportedDocumentsHelpers";
+import { showCteFreights } from "siagrob1/helpers/CteFreightsBinding";
 import { reconciliationDifference } from "siagrob1/helpers/StorageDepositHelpers";
 import { openDanfeViewer, openNfeCorrectionViewer } from "siagrob1/dialogs/DanfeViewer";
 import { openNfeCorrectionDialog } from "siagrob1/dialogs/NfeCorrectionDialog";
@@ -98,6 +100,9 @@ export default class Detail extends BaseController {
     uiModel.setProperty("/withholdingsRecalculable", false);
     this.generatedTitlesInvoiceKey = id;
     this.suspendGeneratedTitles();
+    this.suspendTransportedLists();
+    uiModel.setProperty("/cteFreightCount", 0);
+    uiModel.setProperty("/cteIcmsWarning", "");
     this.resetStorageReturn();
     uiModel.setProperty("/counterNote", { ...NO_LINK });
     uiModel.setProperty("/producerInvoice", { ...NO_LINK });
@@ -134,6 +139,8 @@ export default class Detail extends BaseController {
     const oContext = this.getView().getBindingContext() as Context;
     await this.refreshNfeMode(reset);
     this.refreshGeneratedTitles();
+    this.refreshTransportedDocuments();
+    showCteFreights(this.byId("cteFreightsTable") as SapTable, "TransportedPurchaseInvoiceKey", this.generatedTitlesInvoiceKey);
     const uiModel = this.getModel("ui") as JSONModel;
     const state = oContext ? await oContext.requestObject() as PurchaseNfeState : undefined;
 
@@ -151,6 +158,11 @@ export default class Detail extends BaseController {
       return;
     }
 
+    await this.refreshCteIcmsWarning(oContext);
+    if (this.getView().getBindingContext() !== oContext) {
+      return;
+    }
+
     uiModel.setProperty("/counterNote", links?.counterNote ?? { ...NO_LINK });
     uiModel.setProperty("/producerInvoice", links?.producerInvoice ?? { ...NO_LINK });
     uiModel.setProperty("/canIssueNfe", !!state && canIssuePurchaseNfe(state, nfeMode));
@@ -162,6 +174,27 @@ export default class Detail extends BaseController {
     if (oContext) {
       await this.loadStorageReturn(oContext);
     }
+  }
+
+  /**
+   * Aviso de ICMS do CT-e: o ICMS do XML (CteIcmsCst/CteIcmsValue) contra a única linha do CT-e, que a natureza calculou.
+   * Falha na leitura = sem aviso (ele é informativo).
+   */
+  private async refreshCteIcmsWarning(ctx: Context): Promise<void> {
+    let warning = "";
+    try {
+      if ((this.getModel("ui") as JSONModel).getProperty("/isCte") === true && ctx) {
+        const cst = await ctx.requestProperty("CteIcmsCst") as string;
+        if (cst) {
+          const value = await ctx.requestProperty("CteIcmsValue") as number;
+          const items = await ctx.requestObject("Items") as { CstIcms?: string; IcmsValue?: number }[];
+          warning = cteIcmsWarning(cst, value, items?.[0]);
+        }
+      }
+    } catch (e) {
+      console.warn("Não foi possível conferir o ICMS do CT-e.", e);
+    }
+    (this.getModel("ui") as JSONModel).setProperty("/cteIcmsWarning", warning);
   }
 
   /** Documento novo: esvazia a lista de títulos do anterior até a leitura deste. */

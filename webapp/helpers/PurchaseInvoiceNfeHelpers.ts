@@ -30,12 +30,12 @@ export function isPurchaseTaxMode(taxLocked: boolean, issuerType: string, invoic
 	return taxLocked === true && (issuerType === "Own" || (issuerType === "ThirdParty" && invoiceType === "Normal"));
 }
 
-/** Chave da NF-e do fornecedor obrigatória: terceiro Normal do tipo NF-e na filial que emite pelo Siagro (spec terceiro-chave D3). */
+/** Chave da NF-e/CT-e do fornecedor obrigatória: terceiro Normal do tipo NF-e ou CT-e na filial que emite pelo Siagro (spec terceiro-chave D3). */
 export function requiresSupplierKey(
 	doc: { IssuerType: string; InvoiceType: string; TaxDocumentKind: string }, taxLocked: boolean
 ): boolean {
 	return taxLocked === true && doc.IssuerType === "ThirdParty" && doc.InvoiceType === "Normal" &&
-		doc.TaxDocumentKind === "Nfe";
+		(doc.TaxDocumentKind === "Nfe" || doc.TaxDocumentKind === "Cte");
 }
 
 /**
@@ -82,7 +82,8 @@ export function canReturnPurchase(doc: PurchaseNfeState, nfeMode: boolean): bool
 
 /** "Devolver" da entrada de TERCEIRO (NF-e do fornecedor): filial que emite pelo Siagro, Normal, confirmada, com a chave. */
 export function canReturnThirdPartyPurchase(doc: PurchaseNfeState, taxLocked: boolean): boolean {
-	return taxLocked === true && doc.IssuerType === "ThirdParty" && doc.InvoiceType === "Normal" &&
+	// Só NF-e: o servidor recusa devolver CT-e e "outro documento".
+	return taxLocked === true && doc.IssuerType === "ThirdParty" && doc.InvoiceType === "Normal" && doc.TaxDocumentKind === "Nfe" &&
 		doc.InvoiceStatus === "Confirmed" && /^\d{44}$/.test(doc.ChaveNFe ?? "");
 }
 

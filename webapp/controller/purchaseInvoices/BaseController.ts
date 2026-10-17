@@ -23,6 +23,12 @@ import TableSelectDialog, { TableSelectDialog$ConfirmEvent, TableSelectDialog$Se
 import JSONListBinding from "sap/ui/model/json/JSONListBinding";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { odataCollection, sendJson } from "siagrob1/helpers/FetchHelpers";
+import SapTable from "sap/m/Table";
+import { ListBase$UpdateFinishedEvent } from "sap/m/ListBase";
+import { Link$PressEvent } from "sap/m/Link";
+import { openTransportedDocumentKeyDialog } from "siagrob1/dialogs/TransportedDocumentKeyDialog";
+import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import { suspendCteFreights } from "siagrob1/helpers/CteFreightsBinding";
 import { PurchaseInvoiceComplementCandidate } from "siagrob1/types/PurchaseInvoiceComplementCandidate";
 
 /** Sequência compartilhada por Add/Edit/Detail: só a chamada mais recente de refreshNfeMode escreve no `ui`. */
@@ -107,6 +113,7 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/producerInvoice", { key: "", text: "" });
       uiModel.setProperty("/custody", { key: "", code: "" });
       uiModel.setProperty("/otherPurchaseDoc", false);
+      uiModel.setProperty("/isCte", false);
     }
 
     // Remessa para depósito (spec backend 2026-10-10 §5.3): só STANDALONE mostra a coluna "Remessa". Depois do reset
@@ -127,11 +134,15 @@ export abstract class BaseController extends CommonController {
       const paymentConditionCode = await oContext.requestProperty("PaymentConditionCode") as number;
       const producerInvoiceKey = await oContext.requestProperty("ProducerInvoiceKey") as string;
       const custodyKey = await oContext.requestProperty("CustodyStorageTransactionKey") as string;
+      const taxDocumentKind = await oContext.requestProperty("TaxDocumentKind") as string;
       const taxLocked = await this.isTaxCalculationActive(branchCode);
 
       if (!isCurrent()) {
         return;
       }
+
+      // CT-e (frete tomado): esconde pesos/volumes e mostra a prestação.
+      uiModel.setProperty("/isCte", taxDocumentKind === "Cte");
 
       void this.refreshCustodyCode(custodyKey, isCurrent);
       void this.refreshBranchTaxProfile(uiModel, branchCode, isCurrent);
@@ -180,7 +191,50 @@ export abstract class BaseController extends CommonController {
         uiModel.setProperty("/counterNote", { key: "", text: "" });
         uiModel.setProperty("/producerInvoice", { key: "", text: "" });
         uiModel.setProperty("/custody", { key: "", code: "" });
+        uiModel.setProperty("/isCte", false);
       }
+    }
+  }
+
+  /**
+   * Trocou o tipo de documento: liga/desliga a seção da prestação do CT-e. Ao sair de CT-e limpa a prestação (não
+   * se aplica a NF-e/Outro e o servidor a recusaria); no CT-e digitado sugere o CNPJ do tomador.
+   */
+  async onTaxDocumentKindChange(): Promise<void> {
+    const invoice = this.getView().getBindingContext() as Context;
+    const isCte = invoice?.getProperty("TaxDocumentKind") === "Cte";
+    (this.getModel("ui") as JSONModel).setProperty("/isCte", isCte);
+    if (!isCte) {
+      for (const property of ["FreightStartState", "FreightEndState", "FreightStartCity", "FreightEndCity", "FreightPayerTaxId"]) {
+        if (invoice?.getProperty(property)) void invoice.setProperty(property, null);
+      }
+      (this.getModel("ui") as JSONModel).setProperty("/payerPrefill", "");
+      return;
+    }
+    await this.prefillFreightPayer();
+  }
+
+  /**
+   * Sugere o CNPJ da filial do documento como tomador do CT-e. Só escreve se o campo está vazio ou ainda guarda o que
+   * esta própria rotina sugeriu antes (filial anterior); o que o operador digitou não é tocado.
+   */
+  private async prefillFreightPayer(): Promise<void> {
+    const invoice = this.getView().getBindingContext() as Context;
+    const ui = this.getModel("ui") as JSONModel;
+    try {
+      const branchCode = invoice.getProperty("BranchCode") as string;
+      const taxId = branchCode
+        ? await (this.getModel() as ODataModel).bindContext(`/Branchs('${branchCode}')`).requestObject("TaxId") as string
+        : (await this.getBranchInfo())?.taxId;
+      const digits = (taxId ?? "").replace(/\D/g, "");
+      const current = ((invoice.getProperty("FreightPayerTaxId") as string) ?? "").trim();
+      const previous = (ui.getProperty("/payerPrefill") as string) ?? "";
+      if (digits && invoice.getProperty("TaxDocumentKind") === "Cte" && (!current || current === previous)) {
+        ui.setProperty("/payerPrefill", digits);
+        void invoice.setProperty("FreightPayerTaxId", digits);
+      }
+    } catch {
+      // Sem o CNPJ da filial o operador digita.
     }
   }
 
@@ -413,6 +467,9 @@ export abstract class BaseController extends CommonController {
   /** Trocar a filial ou a emissão muda o modo NF-e (a natureza e os tributos passam a valer, ou deixam). */
   onBranchChange() {
     void this.refreshNfeMode(false);
+    if ((this.getModel("ui") as JSONModel).getProperty("/isCte") === true) {
+      void this.prefillFreightPayer();
+    }
   }
 
   onIssuerTypeChange() {
@@ -689,7 +746,8 @@ export abstract class BaseController extends CommonController {
   protected missingUnitOfMeasure(lines: Context[], invoiceType?: string): string {
     // Devolução com NF-e e contra-nota: a unidade vem da origem e a tela a trava; o servidor também não a exige aqui.
     const ui = this.getModel("ui") as JSONModel;
-    if (ui.getProperty("/nfeReturn") === true || ui.getProperty("/isCounterNote") === true) {
+    // CT-e: a linha é um serviço de frete, sem unidade de medida.
+    if (ui.getProperty("/nfeReturn") === true || ui.getProperty("/isCounterNote") === true || ui.getProperty("/isCte") === true) {
       return "";
     }
     return missingUnitOfMeasureMessage(
@@ -956,5 +1014,119 @@ export abstract class BaseController extends CommonController {
 
     oTable.attachRowsUpdated(() => this.refreshDocumentTotal());
     this.documentTotalAttached = true;
+  }
+
+  /**
+   * Seção "NF-e Referenciada(s)" do CT-e (Edit e Detail; no Add o vínculo nasce no servidor, ao salvar, a partir do XML).
+   * A lista nasce suspensa e só consulta quando o documento é CT-e. Chamar DEPOIS de refreshNfeMode, que decide `/isCte`.
+   */
+  protected refreshTransportedDocuments(): void {
+    const binding = (this.byId("transportedDocumentsTable") as SapTable | undefined)?.getBinding("items") as ODataListBinding;
+    const key = (this.getView().getBindingContext() as Context)?.getProperty("Key") as string;
+    const isCte = (this.getModel("ui") as JSONModel).getProperty("/isCte") === true;
+
+    if (!binding) {
+      return;
+    }
+
+    if (!isCte || !key) {
+      if (!binding.isSuspended()) binding.suspend();
+      return;
+    }
+
+    binding.changeParameters({ $filter: `PurchaseInvoiceKey eq ${key}` });
+
+    if (binding.isSuspended()) {
+      binding.resume();
+    } else {
+      binding.refresh();
+    }
+  }
+
+  /** Documento novo: esvazia as duas listas do anterior até a leitura deste. */
+  protected suspendTransportedLists(): void {
+    suspendCteFreights(this.byId("cteFreightsTable") as SapTable | undefined);
+    const binding = (this.byId("transportedDocumentsTable") as SapTable | undefined)?.getBinding("items") as ODataListBinding;
+    if (binding && !binding.isSuspended()) binding.suspend();
+  }
+
+  /** Roda uma action dos vínculos e recarrega a lista; o erro do servidor já é mostrado pelo handler global do Component. */
+  private async runTransportedDocumentAction(path: string, parameters: Record<string, string>, successText: string): Promise<void> {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) return;
+
+    this.setBusy(true);
+    try {
+      const action = (ctx.getModel() as ODataModel).bindContext(path);
+      for (const [name, value] of Object.entries(parameters)) {
+        action.setParameter(name, value);
+      }
+      await action.invoke();
+      MessageToast.show(successText);
+      this.refreshTransportedDocuments();
+    } catch {
+      // O handler global de mensagens do OData (Component) já mostrou o erro do servidor.
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  async onAddTransportedDocument(): Promise<void> {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) return;
+
+    const accessKey = await openTransportedDocumentKeyDialog(this.getView());
+    if (!accessKey) return;
+
+    await this.runTransportedDocumentAction(ServerRoutes.purchaseInvoicesTransportedDocumentAdd,
+      { Key: ctx.getProperty("Key") as string, AccessKey: accessKey }, "Chave incluída.");
+  }
+
+  async onRemoveTransportedDocument(): Promise<void> {
+    const table = this.byId("transportedDocumentsTable") as SapTable;
+    const linkKey = (table?.getSelectedItem()?.getBindingContext() as Context)?.getProperty("Key") as string;
+
+    if (!linkKey) {
+      MessageBox.warning("Selecione uma chave.");
+      return;
+    }
+
+    if (!(await confirmDialog("Remover o vínculo desta chave ?", "Remover chave ?"))) return;
+
+    // No Remove a Key é a do VÍNCULO, não a do CT-e.
+    await this.runTransportedDocumentAction(ServerRoutes.purchaseInvoicesTransportedDocumentRemove,
+      { Key: linkKey }, "Chave removida.");
+  }
+
+  async onRelinkTransportedDocuments(): Promise<void> {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) return;
+
+    await this.runTransportedDocumentAction(ServerRoutes.purchaseInvoicesTransportedDocumentsRelink,
+      { Key: ctx.getProperty("Key") as string }, "Vínculos refeitos.");
+  }
+
+  /** Abre a saída ou a entrada que a chave aponta. */
+  onOpenTransportedDocument(ev: Link$PressEvent): void {
+    const ctx = ev.getSource().getBindingContext() as Context;
+    const salesKey = ctx?.getProperty("SalesInvoiceKey") as string;
+    const purchaseKey = ctx?.getProperty("TransportedPurchaseInvoiceKey") as string;
+
+    if (salesKey) {
+      this.navTo("salesInvoicesDetail", { id: salesKey });
+    } else if (purchaseKey) {
+      this.navTo("purchaseInvoicesDetail", { id: purchaseKey });
+    }
+  }
+
+  /** Abre o CT-e de frete da linha da lista "CT-e de frete". */
+  onOpenCteFreight(ev: Link$PressEvent): void {
+    const key = (ev.getSource().getBindingContext() as Context)?.getProperty("PurchaseInvoice/Key") as string;
+    if (key) this.navTo("purchaseInvoicesDetail", { id: key });
+  }
+
+  /** A seção "CT-e de frete" só aparece quando há algum. */
+  onCteFreightsUpdated(ev: ListBase$UpdateFinishedEvent): void {
+    (this.getModel("ui") as JSONModel).setProperty("/cteFreightCount", ev.getParameter("total") ?? 0);
   }
 }

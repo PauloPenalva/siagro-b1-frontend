@@ -119,14 +119,19 @@
                própria é sempre NF-e, a devolução do cliente não tem chave e a filial sem a regra (SAPB1, MH Agro)
                fica como sempre foi. -->
           <Label text="Tipo de documento"
-            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }" />
+            visible="{= (${ui>/taxLocked} === true || ${ui>/storageDepositMode} === true) &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }" />
           <Select
-            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }"
+            visible="{= (${ui>/taxLocked} === true || ${ui>/storageDepositMode} === true) &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' }"
             selectedKey="{path: 'TaxDocumentKind', targetType: 'any'}"
             enabled="{= ${ui>/editable} === true }"
             forceSelection="false"
+            change=".onTaxDocumentKindChange"
             width="100%">
             <core:Item key="Nfe" text="NF-e (eletrônica)" />
+            <!-- Itens estáticos: reconstruir os itens com selectedKey em duas vias esvazia/zera o valor gravado. O CT-e só
+                 é oferecido no STANDALONE (ou se o documento já é CT-e). -->
+            <core:Item key="Cte" text="CT-e (frete)"
+              enabled="{= ${ui>/storageDepositMode} === true || ${path: 'TaxDocumentKind', targetType: 'any'} === 'Cte' }" />
             <core:Item key="Other" text="Outro (serviço, papel/talão…)" />
           </Select>
 
@@ -265,9 +270,9 @@
           </Select>
 
           <!-- `Double` e não `Decimal`: campo de ESCRITA (o leitor OData recusa Edm.Decimal em string). -->
-          <Label text="Peso Bruto" visible="{= ${ui>/taxMode} === true }" />
+          <Label text="Peso Bruto" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }" />
           <Input
-              visible="{= ${ui>/taxMode} === true }"
+              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }"
               editable="{ui>/editable}"
               value="{
                 path: 'GrossWeight',
@@ -284,9 +289,9 @@
             </layoutData>
           </Input>
 
-          <Label text="Peso Líquido" visible="{= ${ui>/taxMode} === true }" />
+          <Label text="Peso Líquido" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }" />
           <Input
-              visible="{= ${ui>/taxMode} === true }"
+              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }"
               editable="{ui>/editable}"
               value="{
                 path: 'NetWeight',
@@ -303,9 +308,9 @@
             </layoutData>
           </Input>
 
-          <Label text="Qtde. Volumes" visible="{= ${ui>/taxMode} === true }" />
+          <Label text="Qtde. Volumes" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }" />
           <Input
-              visible="{= ${ui>/taxMode} === true }"
+              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }"
               editable="{ui>/editable}"
               value="{VolumeQuantity}">
             <layoutData>
@@ -313,31 +318,31 @@
             </layoutData>
           </Input>
 
-          <Label text="Espécie" visible="{= ${ui>/taxMode} === true }" />
+          <Label text="Espécie" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }" />
           <Input
-              visible="{= ${ui>/taxMode} === true }"
+              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }"
               editable="{ui>/editable}"
               value="{VolumeSpecies}"
               maxLength="60"
               placeholder="GRANEL, SACO, BAG, CAIXA" />
 
-          <Label text="Marca" visible="{= ${ui>/taxMode} === true }" />
+          <Label text="Marca" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }" />
           <Input
-              visible="{= ${ui>/taxMode} === true }"
+              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }"
               editable="{ui>/editable}"
               value="{VolumeBrand}"
               maxLength="60" />
 
-          <Label text="Numeração" visible="{= ${ui>/taxMode} === true }" />
+          <Label text="Numeração" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }" />
           <Input
-              visible="{= ${ui>/taxMode} === true }"
+              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }"
               editable="{ui>/editable}"
               value="{VolumeNumbering}"
               maxLength="60" />
 
           <!-- Na entrada de terceiro são os dados da nota do fornecedor, digitados ou lidos do XML. No modo NF-e
                quem grava número, série e chave é a emissão. -->
-          <core:Title text="Dados da NF-e" />
+          <core:Title text="{= ${ui>/isCte} === true ? 'Dados do CT-e' : 'Dados da NF-e' }" />
 
           <Label text="Número" />
           <Input value="{TaxDocumentNumber}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="9" />
@@ -347,9 +352,28 @@
 
           <!-- A chave tem 44 dígitos, mas a colada do DANFE vem com espaços (54 caracteres): maxLength menor trunca
                em silêncio. O servidor tira os espaços antes de validar e grava os 44 dígitos. -->
-          <Label text="Chave de Acesso"
-            required="{= ${ui>/editable} === true &amp;&amp; ${ui>/taxLocked} === true &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'TaxDocumentKind', targetType: 'any'} === 'Nfe' }" />
+          <Label text="{= ${ui>/isCte} === true ? 'Chave de acesso do CT-e' : 'Chave de Acesso'}"
+            required="{= ${ui>/editable} === true &amp;&amp; ${ui>/taxLocked} === true &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'ThirdParty' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; (${path: 'TaxDocumentKind', targetType: 'any'} === 'Nfe' || ${ui>/isCte} === true) }" />
           <Input value="{ChaveNFe}" editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeMode} !== true }" maxLength="54" />
+
+          <!-- Prestação do CT-e (frete tomado, spec 2026-10-17): o CT-e é sempre de terceiro e tem uma linha só. O CNPJ
+               do tomador precisa ser o da filial; o servidor confere. UF por value help da tabela de estados. -->
+          <Label text="UF de início da prestação" required="{= ${ui>/editable} === true }" visible="{ui>/isCte}" />
+          <!-- ui5lint-disable no-deprecated-api -->
+          <Input value="{FreightStartState}" maxLength="2" visible="{ui>/isCte}"
+                 editable="{ui>/editable}" showValueHelp="{ui>/editable}" valueHelpOnly="true"
+                 valueHelpRequest=".openStatesAbbreviationValueHelp" />
+          <Label text="Município de início" visible="{ui>/isCte}" />
+          <Input value="{FreightStartCity}" maxLength="60" visible="{ui>/isCte}" editable="{ui>/editable}" />
+          <Label text="UF de fim da prestação" required="{= ${ui>/editable} === true }" visible="{ui>/isCte}" />
+          <Input value="{FreightEndState}" maxLength="2" visible="{ui>/isCte}"
+                 editable="{ui>/editable}" showValueHelp="{ui>/editable}" valueHelpOnly="true"
+                 valueHelpRequest=".openStatesAbbreviationValueHelp" />
+          <!-- ui5lint-enable no-deprecated-api -->
+          <Label text="Município de fim" visible="{ui>/isCte}" />
+          <Input value="{FreightEndCity}" maxLength="60" visible="{ui>/isCte}" editable="{ui>/editable}" />
+          <Label text="CNPJ do tomador" required="{= ${ui>/editable} === true }" visible="{ui>/isCte}" />
+          <Input value="{FreightPayerTaxId}" maxLength="14" visible="{ui>/isCte}" editable="{ui>/editable}" />
 
           <!-- Autorização da NF-e do fornecedor gravada pelo confirmar com a filial em Produção (spec terceiro-chave R4). -->
           <Label text="Autorização na SEFAZ" visible="{= !!${path: 'SupplierNfeProtocol', targetType: 'any'} }" />

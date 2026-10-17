@@ -1,0 +1,58 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+  <!-- NF-e Referenciada(s) pelo CT-e (vínculo pela chave do XML). A lista nasce SUSPENSA: o $filter depende da chave do
+       documento e é aplicado pelo controller (refreshTransportedDocuments). Os botões só aparecem com o CT-e Pendente:
+       o servidor recusa mexer nos vínculos de CT-e já confirmado. -->
+  <Table
+    id="transportedDocumentsTable"
+    class="sapUiSizeCompact"
+    mode="SingleSelectLeft"
+    noDataText="Nenhuma NF-e vinculada. Os vínculos nascem ao salvar o CT-e, a partir das chaves do XML."
+    items="{
+      path: '/PurchaseInvoiceTransportedDocuments',
+      suspended: true,
+      parameters: {
+        $select: 'Key,PurchaseInvoiceKey,AccessKey,SalesInvoiceKey,TransportedPurchaseInvoiceKey',
+        $expand: {
+          SalesInvoice: { $select: 'Key,TaxDocumentNumber,CardName' },
+          TransportedPurchaseInvoice: { $select: 'Key,TaxDocumentNumber,CardName' }
+        },
+        $orderby: 'AccessKey'
+      }
+    }"
+  >
+    <headerToolbar>
+      <OverflowToolbar>
+        <ToolbarSpacer />
+        <Button text="Incluir chave" icon="sap-icon://add" press=".onAddTransportedDocument"
+                visible="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' }" />
+        <Button text="Remover" icon="sap-icon://delete" press=".onRemoveTransportedDocument"
+                visible="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' }" />
+        <Button text="Refazer vínculos" icon="sap-icon://synchronize" press=".onRelinkTransportedDocuments"
+                visible="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' }" />
+      </OverflowToolbar>
+    </headerToolbar>
+    <columns>
+      <Column width="22rem"><Text text="Chave" /></Column>
+      <Column width="8rem"><Text text="Tipo" /></Column>
+      <Column width="8rem"><Text text="Número" /></Column>
+      <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Parceiro" /></Column>
+      <Column width="7rem" hAlign="Center"><Text text="Documento" /></Column>
+    </columns>
+    <items>
+      <ColumnListItem>
+        <cells>
+          <Text text="{AccessKey}" />
+          <Text text="{= ${SalesInvoiceKey} ? 'Saída' : ( ${TransportedPurchaseInvoiceKey} ? 'Entrada' : 'Não encontrada' ) }" />
+          <Text text="{= ${SalesInvoiceKey} ? ${SalesInvoice/TaxDocumentNumber} : ( ${TransportedPurchaseInvoiceKey} ? ${TransportedPurchaseInvoice/TaxDocumentNumber} : '' ) }" />
+          <Text text="{= ${SalesInvoiceKey} ? ${SalesInvoice/CardName} : ( ${TransportedPurchaseInvoiceKey} ? ${TransportedPurchaseInvoice/CardName} : '' ) }" />
+          <!-- targetType 'any': as chaves são Guid, e o Guid não se converte sozinho para o boolean do visible. -->
+          <Link text="Abrir" press=".onOpenTransportedDocument"
+                visible="{= !!${path: 'SalesInvoiceKey', targetType: 'any'} || !!${path: 'TransportedPurchaseInvoiceKey', targetType: 'any'} }" />
+        </cells>
+      </ColumnListItem>
+    </items>
+  </Table>
+</core:FragmentDefinition>

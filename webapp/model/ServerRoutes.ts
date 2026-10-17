@@ -261,6 +261,11 @@ export default {
   purchaseInvoicesCommentUpdate: '/PurchaseInvoicesCommentUpdate(...)',
   purchaseInvoicesCommentDelete: '/PurchaseInvoicesCommentDelete(...)',
 
+  // CT-e de frete: vínculos com as NF-e Referenciada(s). No Add e no Relink a Key é a do CT-e; no Remove é a do VÍNCULO.
+  purchaseInvoicesTransportedDocumentAdd: '/PurchaseInvoicesTransportedDocumentAdd(...)',
+  purchaseInvoicesTransportedDocumentRemove: '/PurchaseInvoicesTransportedDocumentRemove(...)',
+  purchaseInvoicesTransportedDocumentsRelink: '/PurchaseInvoicesTransportedDocumentsRelink(...)',
+
   // Minutas de contrato (assinatura eletrônica). As FUNCTIONS do EDM
   // (ContractDraftsListByContract, ContractDraftsGetBody, ContractDraftsDownloadPdf,
   // ContractDraftsRefreshState, ContractTemplatesListPlaceholders) não entram aqui: levam os

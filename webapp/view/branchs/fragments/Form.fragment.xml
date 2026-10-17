@@ -103,6 +103,16 @@
             valueHelpRequest=".openThirdPartyReturnUsageValueHelp"
             visible="{= ${ui>/standalone} === true &amp;&amp; ${path: 'IssuesNfe', targetType: 'any'} === true }" />
           <!-- ui5lint-enable no-deprecated-api -->
+          <!-- Produto que o CT-e de frete tomado usa na linha do documento de entrada (a importação do XML o sugere). -->
+          <Label text="Produto padrão do frete (CT-e)" visible="{ui>/standalone}" />
+          <!-- ui5lint-disable no-deprecated-api -->
+          <Input
+            value="{FreightServiceItemCode}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openItemValueHelp"
+            visible="{ui>/standalone}" />
+          <!-- ui5lint-enable no-deprecated-api -->
           <!-- Emitente da NF-e STANDALONE. Ocultos em SAPB1. Obrigatórios só na hora de emitir:
                a emissão lista o que faltar. -->
           <!-- O visible do Title não vale para o container do SimpleForm: sem texto, o cabeçalho some. -->

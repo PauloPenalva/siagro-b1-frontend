@@ -126,6 +126,13 @@
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="CT-e de frete" visible="{= ${ui>/cteFreightCount} &gt; 0 }">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <core:Fragment fragmentName="siagrob1.view.purchaseInvoices.fragments.CteFreights" type="XML" />
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
       <uxap:ObjectPageSection titleUppercase="false" title="Totais">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection title=" " titleUppercase="false">

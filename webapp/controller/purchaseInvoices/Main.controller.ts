@@ -70,7 +70,7 @@ export default class Main extends BaseController {
 
       if (!value) return;
 
-      if (key === "InvoiceType" || key === "IssuerType" || key === "InvoiceStatus" || key === "NfeStatus") {
+      if (key === "InvoiceType" || key === "TaxDocumentKind" || key === "IssuerType" || key === "InvoiceStatus" || key === "NfeStatus") {
         filters.push(`${key} eq '${value}'`);
       } else if (key === "DateFrom") {
         filters.push(`IssueDate ge ${value}`);
@@ -241,6 +241,17 @@ export default class Main extends BaseController {
         "Normal": "Normal",
         "Return": "Devolução",
         "ValueComplement": "Complemento de valor",
+      },
+    });
+
+    aCols.push({
+      label: "Tipo de documento",
+      property: "TaxDocumentKind",
+      type: EdmType.Enumeration,
+      valueMap: {
+        "Nfe": "NF-e",
+        "Cte": "CT-e",
+        "Other": "Outro",
       },
     });
 

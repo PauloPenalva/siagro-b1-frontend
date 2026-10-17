@@ -39,6 +39,13 @@
           </uxap:ObjectPageSubSection>
         </uxap:subSections>
       </uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="NF-e Referenciada(s)" visible="{= ${ui>/isCte} === true }">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <core:Fragment fragmentName="siagrob1.view.purchaseInvoices.fragments.TransportedDocuments" type="XML" />
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
       <uxap:ObjectPageSection titleUppercase="false" title="Itens">
         <uxap:subSections>
           <uxap:ObjectPageSubSection title=" " titleUppercase="false">

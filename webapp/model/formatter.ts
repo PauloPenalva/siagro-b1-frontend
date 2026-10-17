@@ -1210,6 +1210,16 @@ const formatter = {
     return m.get(value) ?? "";
   },
 
+  /** Tipo de documento do documento de entrada: NF-e, CT-e (frete) ou outro (serviço, papel/talão). */
+  formatTaxDocumentKind: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Nfe", "NF-e");
+    m.set("Cte", "CT-e");
+    m.set("Other", "Outro");
+
+    return m.get(value) ?? "";
+  },
+
   formatPurchaseInvoiceIssuerType: (value: string) => {
     const m = new Map<string, string>();
     m.set("ThirdParty", "De terceiro");
