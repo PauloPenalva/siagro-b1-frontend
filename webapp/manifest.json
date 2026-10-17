@@ -804,6 +804,11 @@
           "target": "paymentConditions"
         },
         {
+          "pattern": "icms-state-settings",
+          "name": "icmsStateSettings",
+          "target": "icmsStateSettings"
+        },
+        {
           "pattern": "withholding-tax-settings",
           "name": "withholdingTaxSettings",
           "target": "withholdingTaxSettings"
@@ -2034,6 +2039,12 @@
           "id": "paymentConditions",
           "level": 1,
           "name": "siagrob1.view.paymentConditions.Main",
+          "clearControlAggregation": true
+        },
+        "icmsStateSettings": {
+          "id": "icmsStateSettings",
+          "level": 1,
+          "name": "siagrob1.view.icmsStateSettings.Main",
           "clearControlAggregation": true
         },
         "withholdingTaxSettings": {

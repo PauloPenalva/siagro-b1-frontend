@@ -1,0 +1,68 @@
+<mvc:View
+	controllerName="siagrob1.controller.icmsStateSettings.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core">
+
+	<Page title="ICMS por UF">
+		<content>
+			<MessageStrip
+				text="Alíquota interna e FCP de cada UF de destino, usados no DIFAL da compra de uso e consumo e de ativo imobilizado. Base única: o ICMS e o FCP incidem sobre o mesmo valor. Base dupla: a base do ICMS é calculada por dentro, com a alíquota interna."
+				type="Information"
+				showIcon="true"
+				class="sapUiSmallMargin" />
+			<!-- Linha existente: UF somente leitura (é a chave). Linha nova (transitória): Select. -->
+			<Table
+				id="icmsStateSettingsTable"
+				mode="SingleSelectLeft"
+				busyIndicatorDelay="0"
+				class="sapUiSizeCondensed"
+				items="{ path: '/IcmsStateSettings', sorter: { path: 'StateCode' } }">
+				<columns>
+					<Column width="8rem"><Text text="UF" /></Column>
+					<Column width="10rem"><Text text="Alíquota interna %" /></Column>
+					<Column width="10rem"><Text text="FCP %" /></Column>
+					<Column width="14rem"><Text text="Regra da base" /></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<HBox>
+								<Text
+									text="{StateCode}"
+									visible="{= !%{@$ui5.context.isTransient} }" />
+								<Select
+									selectedKey="{StateCode}"
+									forceSelection="false"
+									items="{ path: 'stateCodes>/', templateShareable: true }"
+									visible="{= !!%{@$ui5.context.isTransient} }">
+									<core:Item key="{stateCodes>key}" text="{stateCodes>text}" />
+								</Select>
+							</HBox>
+							<Input
+								value="{ path: 'InternalRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+							<Input
+								value="{ path: 'FcpRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+							<Select
+								selectedKey="{ path: 'DifalBaseRule', targetType: 'any' }"
+								forceSelection="false">
+								<core:ListItem key="Single" text="Base única" />
+								<core:ListItem key="Double" text="Base dupla" />
+							</Select>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<Button text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
+				<ToolbarSpacer />
+				<Button text="Incluir" icon="sap-icon://add" press=".onCreate" />
+				<Button text="Excluir" icon="sap-icon://delete" press=".onDelete" />
+				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

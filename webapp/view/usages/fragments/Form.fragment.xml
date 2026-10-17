@@ -235,6 +235,20 @@
             editable="{ui>/identityEditable}"
           />
 
+          <!-- Destinação da compra (spec 2026-10-17, Efeito dos tributos e DIFAL): só natureza de entrada em STANDALONE;
+               decide crédito de ICMS/PIS/COFINS e o DIFAL. Title com texto em expressão: o visible não esconde o cabeçalho. -->
+          <core:Title emphasized="true"
+                      text="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' ? 'Destinação da compra' : '' }" />
+          <Label text="Destinação" visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
+          <Select
+            visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }"
+            selectedKey="{ path: 'PurchasePurpose', targetType: 'any' }"
+            forceSelection="false">
+            <core:ListItem key="ResaleOrInput" text="Revenda / insumo" />
+            <core:ListItem key="UseAndConsumption" text="Uso e consumo" />
+            <core:ListItem key="FixedAsset" text="Ativo imobilizado" />
+          </Select>
+
           <!-- Retenções sobre serviço (spec 2026-10-17, Outras compras): só natureza de entrada em STANDALONE.
                Percentuais editáveis usam Double, nunca Decimal (o Decimal grava string e o OData recusa). Vazio = não retém. -->
           <core:Title emphasized="true"
