@@ -354,7 +354,7 @@
 						<t:template>
               <ObjectNumber
                 textAlign="End"
-                state="{= ${AvaiableVolume} &lt; 0 ? 'Error' : 'Success' }"
+                state="{= Number(${path: 'AvaiableVolume', targetType: 'any'}) &lt; 0 ? 'Error' : 'Success' }"
                 number="{
                   path: 'AvaiableVolume',
                   type: 'sap.ui.model.type.Float',
