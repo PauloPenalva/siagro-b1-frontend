@@ -261,7 +261,7 @@ export default {
   purchaseInvoicesCommentUpdate: '/PurchaseInvoicesCommentUpdate(...)',
   purchaseInvoicesCommentDelete: '/PurchaseInvoicesCommentDelete(...)',
 
-  // CT-e de frete: vínculos com as NF-e Referenciadas. No Add e no Relink a Key é a do CT-e; no Remove é a do VÍNCULO.
+  // CT-e de frete: vínculos com as NF-e Referenciada(s). No Add e no Relink a Key é a do CT-e; no Remove é a do VÍNCULO.
   purchaseInvoicesTransportedDocumentAdd: '/PurchaseInvoicesTransportedDocumentAdd(...)',
   purchaseInvoicesTransportedDocumentRemove: '/PurchaseInvoicesTransportedDocumentRemove(...)',
   purchaseInvoicesTransportedDocumentsRelink: '/PurchaseInvoicesTransportedDocumentsRelink(...)',

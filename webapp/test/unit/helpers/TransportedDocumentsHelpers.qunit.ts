@@ -1,6 +1,6 @@
 import { cteIcmsWarning, normalizeAccessKey } from "siagrob1/helpers/TransportedDocumentsHelpers";
 
-QUnit.module("TransportedDocumentsHelpers - NF-e Referenciadas e ICMS do CT-e");
+QUnit.module("TransportedDocumentsHelpers - NF-e Referenciada(s) e ICMS do CT-e");
 
 const KEY = "35260112345678000190550010000001231000001236";
 

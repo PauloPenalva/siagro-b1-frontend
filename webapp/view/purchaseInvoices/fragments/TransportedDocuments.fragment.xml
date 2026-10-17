@@ -2,7 +2,7 @@
     xmlns="sap.m"
     xmlns:core="sap.ui.core"
 >
-  <!-- NF-e Referenciadas pelo CT-e (vínculo pela chave do XML). A lista nasce SUSPENSA: o $filter depende da chave do
+  <!-- NF-e Referenciada(s) pelo CT-e (vínculo pela chave do XML). A lista nasce SUSPENSA: o $filter depende da chave do
        documento e é aplicado pelo controller (refreshTransportedDocuments). Os botões só aparecem com o CT-e Pendente:
        o servidor recusa mexer nos vínculos de CT-e já confirmado. -->
   <Table
