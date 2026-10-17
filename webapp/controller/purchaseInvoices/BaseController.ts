@@ -902,7 +902,8 @@ export abstract class BaseController extends CommonController {
     const contexts = oBinding.getAllCurrentContexts();
     const funrural = contexts.reduce((total, ctx) => total + lineFunrural(ctx), 0);
     // Devolução de compra: o líquido é a receber e o Funrural é estornado. O contexto pai da grade é o cabeçalho.
-    const isReturn = (oBinding.getContext() as Context | undefined)?.getProperty("IsNfeReturn") === true;
+    const parent = oBinding.getContext() as Context | undefined;
+    const isReturn = parent?.getProperty("InvoiceType") === "Return" || parent?.getProperty("IsNfeReturn") === true;
     const charges = summarizeInvoiceCharges(contexts.map((ctx) => purchaseChargeLineOf(ctx)), funrural, isReturn);
     // Outra compra: o único "Líquido a pagar" é o da seção Retenções (desconta as retenções); a barra de Totais não o repete.
     this.updateOtherPurchaseDocument();
