@@ -48,8 +48,9 @@
           <Text text="{= ${SalesInvoiceKey} ? 'Saída' : ( ${TransportedPurchaseInvoiceKey} ? 'Entrada' : 'Não encontrada' ) }" />
           <Text text="{= ${SalesInvoiceKey} ? ${SalesInvoice/TaxDocumentNumber} : ( ${TransportedPurchaseInvoiceKey} ? ${TransportedPurchaseInvoice/TaxDocumentNumber} : '' ) }" />
           <Text text="{= ${SalesInvoiceKey} ? ${SalesInvoice/CardName} : ( ${TransportedPurchaseInvoiceKey} ? ${TransportedPurchaseInvoice/CardName} : '' ) }" />
+          <!-- targetType 'any': as chaves são Guid, e o Guid não se converte sozinho para o boolean do visible. -->
           <Link text="Abrir" press=".onOpenTransportedDocument"
-                visible="{= !!${SalesInvoiceKey} || !!${TransportedPurchaseInvoiceKey} }" />
+                visible="{= !!${path: 'SalesInvoiceKey', targetType: 'any'} || !!${path: 'TransportedPurchaseInvoiceKey', targetType: 'any'} }" />
         </cells>
       </ColumnListItem>
     </items>
