@@ -12,6 +12,7 @@ import { ValueState } from "sap/ui/core/library";
 import Table from "sap/ui/table/Table";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import { openNfeIssueDialog } from "siagrob1/dialogs/NfeIssueDialog";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { sendJson, odataValue, readErrorMessage } from "siagrob1/helpers/FetchHelpers";
 import { runNfeAction } from "siagrob1/helpers/NfeActionRunner";
@@ -114,11 +115,15 @@ export default class Detail extends BaseController {
     const ctx = this.getView().getBindingContext() as Context;
     // Documento Normal: já confirmado, a NF-e é transmitida. Devolução própria: emitir é o que confirma.
     const verb = ctx?.getProperty("IsNfeReturn") === true ? "Emitir" : "Transmitir";
-    if (!ctx || !(await confirmDialog(`${verb} a NF-e deste documento ?`, `${verb} NF-e ?`))) {
-      return;
-    }
+    if (!ctx) return;
+    const series = await openNfeIssueDialog(this.getView(), {
+      title: `${verb} NF-e`, message: `${verb} a NF-e deste documento ?`, confirmText: `${verb} NF-e`,
+      branchCode: ctx.getProperty("BranchCode") as string,
+      documentSeries: ctx.getProperty("TaxDocumentSeries") as string,
+    });
+    if (series === null) return;
 
-    await this.runNfeAction(ServerRoutes.salesInvoicesIssueNfe, ctx);
+    await this.runNfeAction(ServerRoutes.salesInvoicesIssueNfe, ctx, { Series: series });
   }
 
   async onConsultNfe() {

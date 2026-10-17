@@ -17,6 +17,7 @@ import Event from "sap/ui/base/Event";
 import Control from "sap/ui/core/Control";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import { openNfeIssueDialog } from "siagrob1/dialogs/NfeIssueDialog";
 import formatter from "siagrob1/model/formatter";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { sendJson, odataValue, readErrorMessage } from "siagrob1/helpers/FetchHelpers";
@@ -489,11 +490,15 @@ export default class Detail extends BaseController {
 
   async onIssueNfe() {
     const ctx = this.getView().getBindingContext() as Context;
-    if (!ctx || !(await confirmDialog("Emitir a NF-e deste documento ?", "Emitir NF-e ?"))) {
-      return;
-    }
+    if (!ctx) return;
+    const series = await openNfeIssueDialog(this.getView(), {
+      title: "Emitir NF-e", message: "Emitir a NF-e deste documento ?", confirmText: "Emitir NF-e",
+      branchCode: ctx.getProperty("BranchCode") as string,
+      documentSeries: ctx.getProperty("TaxDocumentSeries") as string,
+    });
+    if (series === null) return;
 
-    await this.runNfeAction(ServerRoutes.purchaseInvoicesIssueNfe, ctx);
+    await this.runNfeAction(ServerRoutes.purchaseInvoicesIssueNfe, ctx, { Series: series });
   }
 
   async onConsultNfe() {
