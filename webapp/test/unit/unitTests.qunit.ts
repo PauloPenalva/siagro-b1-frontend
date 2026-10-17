@@ -34,3 +34,4 @@ import "./helpers/FinancialDocumentFilterHelpers.qunit";
 import "./helpers/WashoutHelpers.qunit";
 import "./helpers/CompanySelectionHelpers.qunit";
 import "./helpers/NfeSeriesHelpers.qunit";
+import "./helpers/SessionRouteHelpers.qunit";

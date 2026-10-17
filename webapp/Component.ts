@@ -14,8 +14,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { Router$RouteMatchedEvent } from "sap/ui/core/routing/Router";
 
-/** Rotas alcançáveis sem sessão. */
-const PUBLIC_ROUTES = ["login", "forgotPassword", "resetPassword"];
+import { isPublicRoute } from "./helpers/SessionRouteHelpers";
 
 /**
  * @namespace siagrob1
@@ -143,7 +142,7 @@ export default class Component extends UIComponent {
     const sRouteName = ev.getParameter("name");
 
     // Rotas públicas: quem esqueceu a senha chega aqui exatamente por não conseguir autenticar.
-    if (PUBLIC_ROUTES.includes(sRouteName) || SessionService.isAuthenticated()) {
+    if (isPublicRoute(sRouteName) || SessionService.isAuthenticated()) {
       return false;
     }
 
@@ -190,7 +189,7 @@ export default class Component extends UIComponent {
       // Nas telas públicas o 401 é o estado normal - o OData responde assim justamente por não
       // haver sessão. Redirecionar aqui expulsaria da redefinição de senha quem chegou pelo link
       // do e-mail, que é exatamente quem não consegue autenticar.
-      if (PUBLIC_ROUTES.includes(this.currentRoute) || window.location.hash.startsWith("#/login")) {
+      if (isPublicRoute(this.currentRoute) || window.location.hash.startsWith("#/login")) {
         return;
       }
 

@@ -22,6 +22,7 @@ import SuggestionItem from "sap/m/SuggestionItem";
 import MessageToast from "sap/m/MessageToast";
 import { filterApps, flattenMenuApps, MenuData, resolveApp } from "siagrob1/helpers/AppSearchHelpers";
 import { keepShellBarSearchOpenOnEscape } from "siagrob1/helpers/ShellBarSearchHelpers";
+import { shouldOpenRequiredBranchDialog } from "siagrob1/helpers/SessionRouteHelpers";
 
 /** `suggest()` existe no runtime do SearchManager, mas a tipagem não o declara. */
 type SuggestingSearchManager = SearchManager & { suggest: (show?: boolean) => void };
@@ -109,12 +110,11 @@ export default class App extends BaseController {
     this.getRouter().attachRouteMatched(() => void this.ensureBranchSelected());
   }
 
-  /** Telas de cadastro de filial, onde o diálogo obrigatório não pode reabrir por cima. */
-  private isOnBranchRoutes(): boolean {
+  /** Rota corrente pelo hash: no aviso de sessão pronta do login, o routeMatched da home ainda não aconteceu. */
+  private currentRouteName(): string {
     const hash = this.getRouter().getHashChanger().getHash();
-    const routeName = this.getRouter().getRouteInfoByHash(hash)?.name ?? "";
 
-    return routeName.startsWith("branchs");
+    return this.getRouter().getRouteInfoByHash(hash)?.name ?? "";
   }
 
   /**
@@ -124,7 +124,12 @@ export default class App extends BaseController {
    * livremente cancelável.
    */
   private async ensureBranchSelected(): Promise<void> {
-    if (this._selectingBranch || !SessionService.isAuthenticated() || SessionService.getBranchInfo()?.code || this.isOnBranchRoutes()) {
+    if (!shouldOpenRequiredBranchDialog({
+      selecting: this._selectingBranch,
+      authenticated: SessionService.isAuthenticated(),
+      branchCode: SessionService.getBranchInfo()?.code,
+      routeName: this.currentRouteName(),
+    })) {
       return;
     }
 
