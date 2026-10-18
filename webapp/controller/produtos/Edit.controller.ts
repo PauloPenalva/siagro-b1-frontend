@@ -14,6 +14,7 @@ export default class Edit extends BaseController {
 	}
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
+		this.resetDocNumberMode();
 		this.clearStates("itemForm");
 		void this.refreshStandaloneFlag();
 

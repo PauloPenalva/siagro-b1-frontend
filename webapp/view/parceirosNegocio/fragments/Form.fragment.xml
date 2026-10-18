@@ -28,10 +28,36 @@
               text="Dados do Parceiro de Negócio"
               emphasized="true"
           />
+          <!-- STANDALONE: série Automático/Manual (só na inclusão; o código é imutável depois). A lista
+               depende do Tipo (Cliente C… / Fornecedor F…) e é refiltrada em onCardTypeChange. Em SAPB1 a tela
+               segue como era: código digitado, sem série. -->
+          <Label text="Série" visible="{= ${ui>/standalone} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }" />
+          <Select
+              id="businessPartnerSeriesSelect"
+              visible="{= ${ui>/standalone} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
+              editable="{= !!${CardType} }"
+              required="{= ${ui>/standalone} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
+              forceSelection="false"
+              change=".onDocNumberSeriesChange"
+              selectedKey="{DocNumberKey}"
+              items="{
+                path: '/DocNumbers',
+                parameters: {
+                  $filter: 'TransactionCode eq 'Customer' and Inactive eq false',
+                  $orderby: 'IsManual,Name'
+                }
+              }"
+          >
+            <customData>
+              <core:CustomData key="codeProperty" value="CardCode" />
+            </customData>
+            <core:ListItem key="{Key}" text="{Name}" />
+          </Select>
           <Label text="Codigo" />
           <Input
               value="{CardCode}"
-              required="true"
+              editable="{= ${ui>/standalone} !== true || (${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true) }"
+              required="{= ${ui>/standalone} !== true || (${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true) }"
               maxLength="15"
               liveChange=".validateField"
           />
@@ -56,6 +82,7 @@
               editable="true"
               required="true"
               liveChange=".validateField"
+              change=".onCardTypeChange"
           >
             <core:ListItem key="C" text="Cliente" />
             <core:ListItem key="S" text="Fornecedor" />

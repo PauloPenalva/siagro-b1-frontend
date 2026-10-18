@@ -2,6 +2,7 @@ import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Context from "sap/ui/model/odata/v4/Context";
 import MessageBox from "sap/m/MessageBox";
+import SessionService from "siagrob1/services/SessionService";
 import { BaseController } from "./BaseController";
 
 /**
@@ -12,12 +13,19 @@ export default class Add extends BaseController {
 	private _itemContext: Context;
 
 	onInit(): void {
-		this.getRouter().getRoute("produtosAdd").attachPatternMatched(() => this.newRouteMatched());
+		this.getRouter().getRoute("produtosAdd").attachPatternMatched(() => void this.newRouteMatched());
 	}
-	private newRouteMatched() {
+	private async newRouteMatched() {
+    this.startDocNumberCreate();
 
     this.clearStates("itemForm");
     void this.refreshStandaloneFlag();
+
+    // Série só em STANDALONE; em SAPB1 o código segue digitado, sem série.
+    const standalone = !SessionService.isSapMode();
+    const docNumberInfo = standalone
+      ? (await this.getDocNumberInfoByTransaction("Item")).find(x => x.Default)
+      : undefined;
 
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;
@@ -27,7 +35,10 @@ export default class Add extends BaseController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
+    // Em STANDALONE sempre enviar a série (sem DocNumberKey o servidor trata o código como legado) e o
+    // código vazio: a série Automática gera, a Manual recebe o digitado.
     const oContext = oBinding.create({
+      ...(standalone ? { "DocNumberKey": docNumberInfo?.Key ?? null, "ItemCode": "" } : {}),
       "ItmsGrpCod": 105,
       "Enabled": "SIM",
       "GoodsOrigin": null,

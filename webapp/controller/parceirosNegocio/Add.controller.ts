@@ -2,6 +2,7 @@ import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import SessionService from "siagrob1/services/SessionService";
 import { BaseController } from "./BaseController";
 
 /**
@@ -13,6 +14,7 @@ export default class Add extends BaseController {
 		this.getRouter().getRoute("parceirosNegocioAdd").attachPatternMatched(() => this.newRouteMatched());
 	}
 	private newRouteMatched() {
+		this.startDocNumberCreate();
 		void this.refreshStandaloneFlag();
 		(this.getModel("ui") as JSONModel).setProperty("/paymentConditionName", "");
 		// O grid de endereços liga em ui>/editable; sem isto herdava o false de um Detail aberto antes.
@@ -29,7 +31,10 @@ export default class Add extends BaseController {
 		}
 
     // QryGroup23 = 'Y' marca o parceiro como armazém (campo "Armazém" do formulário).
+		// Em STANDALONE a série depende do Tipo (Cliente/Fornecedor) e só é escolhida ao selecioná-lo
+		// (onCardTypeChange). Sempre enviar DocNumberKey e o código vazio; em SAPB1 o código segue digitado.
 		const oContext = oBinding.create({
+      ...(SessionService.isSapMode() ? {} : { "DocNumberKey": null, "CardCode": "" }),
       "QryGroup23": "N",
       "Addresses": [],
       // Toda propriedade que o formulário edita precisa existir no payload, nem que seja
