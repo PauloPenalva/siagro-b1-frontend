@@ -198,6 +198,18 @@ const formatter = {
    * Aceita o nome do enum (binding OData) e o índice numérico, mesmo cuidado de
    * `formatStorageOwnershipType`.
    */
+  /** Situação do lote de armazenagem; aceita o nome do enum (OData) e o índice numérico. */
+  formatStorageAddressStatus: (value: string | number) => {
+    const byIndex = ["Open", "Closed"];
+    const key = typeof value === "number" ? byIndex[value] : value;
+
+    return key === "Closed" ? "Encerrado" : key === "Open" ? "Aberto" : "";
+  },
+
+  /** Cor da situação do lote: encerrado em alerta, aberto em verde. */
+  formatStorageAddressStatusState: (value: string | number) =>
+    value === "Closed" || value === 1 ? "Warning" : "Success",
+
   formatStorageAddressNature: (value: string | number) => {
     const m = new Map<string, string>();
     m.set("Regular", "Comum");

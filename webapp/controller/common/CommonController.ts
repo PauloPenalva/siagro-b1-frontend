@@ -25,6 +25,12 @@ import CustomData from "sap/ui/core/CustomData";
  */
 export default abstract class CommonController extends BaseController {
 
+  /**
+   * `$filter` cru dos lotes que ainda recebem movimento: lote encerrado some dos value helps de
+   * lançamento. Texto e não `sap.ui.model.Filter` porque o UI5 não formata enum.
+   */
+  protected static readonly OPEN_STORAGE_ADDRESSES_FILTER = "Status eq 'Open'";
+
   api = { ...ServerRoutes }
 
   formatter = { ...formatter };
@@ -267,6 +273,9 @@ export default abstract class CommonController extends BaseController {
    *
    * `elementPath` liga o diálogo a um pai antes de abrir, para as listas que são
    * relativas a ele (ver `DialogHelper.openTableSelectDialog`).
+   *
+   * `staticFilter` é um `$filter` cru, para o que `sap.ui.model.Filter` não sabe
+   * formatar (enum).
    */
   protected async applyValueHelp(
     ev: Input$ValueHelpRequestEvent,
@@ -274,9 +283,11 @@ export default abstract class CommonController extends BaseController {
     filters: string[],
     property: string,
     defaultFilters: Filter[] = [],
-    elementPath?: string
+    elementPath?: string,
+    staticFilter?: string
   ) {
-    const oContext = await DialogHelper.openTableSelectDialog(this, name, filters, defaultFilters, elementPath);
+    const oContext = await DialogHelper.openTableSelectDialog(
+      this, name, filters, defaultFilters, elementPath, staticFilter);
 
     if (!oContext) {
       return;
@@ -512,8 +523,18 @@ export default abstract class CommonController extends BaseController {
     void this.applyValueHelp(ev, "ProcessingServicesSelectDialog", ["Code", "Description"], "Code");
   }
 
+  /** Todos os lotes, inclusive encerrados — para filtros de relatório, fatura e reprocessamento. */
   openStorageAddressesValueHelp(ev: Input$ValueHelpRequestEvent) {
     void this.applyValueHelp(ev, "StorageAddressesSelectDialog", ["Description"], "Code");
+  }
+
+  /**
+   * Só lotes abertos — para telas que lançam movimento no lote. O lote encerrado deixou de
+   * ser calculado e não recebe mais romaneio.
+   */
+  openOpenStorageAddressesValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(
+      ev, "StorageAddressesSelectDialog", ["Description"], "Code", [], undefined, CommonController.OPEN_STORAGE_ADDRESSES_FILTER);
   }
 
   openMenuItemsValueHelp(ev: Input$ValueHelpRequestEvent) {

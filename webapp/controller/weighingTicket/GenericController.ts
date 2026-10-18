@@ -10,7 +10,7 @@ import { Input$ValueHelpRequestEvent } from 'sap/m/Input';
 import Table from 'sap/ui/table/Table';
 import ODataModel from 'sap/ui/model/odata/v4/ODataModel';
 import MessageBox from 'sap/m/MessageBox';
-import DialogHelper from 'siagrob1/dialogs/DialogHelper';
+import DialogHelper, { applyStaticFilter } from 'siagrob1/dialogs/DialogHelper';
 import MessageToast from 'sap/m/MessageToast';
 import JSONModel from 'sap/ui/model/json/JSONModel';
 import SessionService from 'siagrob1/services/SessionService';
@@ -118,6 +118,12 @@ export default class GenericController extends CommonController {
     if (this.getView().indexOfDependent(this.storageAddressesSelectDialog) < 0){
       this.getView().addDependent(this.storageAddressesSelectDialog);
     }
+
+    // O ticket lança movimento no lote: lote encerrado não aparece. Só depois do addDependent:
+    // antes disso o diálogo não tem model e a lista ainda não tem binding.
+    applyStaticFilter(
+      this.storageAddressesSelectDialog.getBinding("items") as ODataListBinding,
+      CommonController.OPEN_STORAGE_ADDRESSES_FILTER);
 
     this.storageAddressesSelectDialog.attachConfirm(ev => {
         const oContext = ev

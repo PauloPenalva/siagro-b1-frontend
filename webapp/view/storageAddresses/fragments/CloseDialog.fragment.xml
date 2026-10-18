@@ -1,0 +1,47 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+<Dialog title="Encerrar lote de armazenagem">
+  <content>
+    <VBox class="sapUiSmallMargin" width="420px">
+      <f:Form editable="true">
+        <f:layout>
+          <f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+        </f:layout>
+        <f:formContainers>
+          <f:FormContainer>
+            <f:formElements>
+              <f:FormElement label="Lote">
+                <f:fields>
+                  <Text text="{closeLot>/code} - {closeLot>/description}"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Data de encerramento">
+                <f:fields>
+                  <DatePicker
+                    value="{closeLot>/closingDate}"
+                    maxDate="{closeLot>/today}"
+                    required="true"
+                    displayFormat="dd/MM/yyyy"
+                    valueFormat="yyyy-MM-dd"/>
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+        </f:formContainers>
+      </f:Form>
+      <Text class="sapUiTinyMarginTop"
+            text="A armazenagem e a quebra técnica são calculadas até esta data, inclusive. Cálculos não faturados posteriores a ela são desfeitos, e o lote deixa de aparecer na seleção de lotes dos lançamentos."/>
+    </VBox>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Encerrar" type="Emphasized" press=".onConfirmCloseLot"/>
+      <Button text="Cancelar" press=".onCancelCloseLot"/>
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>
