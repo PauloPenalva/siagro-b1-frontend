@@ -67,6 +67,11 @@ export default class Main extends BaseController {
 		this.navTo("ibsCbsRates");
 	}
 
+	/** Alíquotas da contribuição social do produtor rural por vigência (só STANDALONE). */
+	onOpenRuralContributionRates() {
+		this.navTo("ruralContributionRates");
+	}
+
 	onEdit(): void {
 		const oTable = this.byId("usagesTable") as Table;
     const i = oTable.getSelectedIndex();

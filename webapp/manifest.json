@@ -834,6 +834,11 @@
           "target": "ibsCbsRates"
         },
         {
+          "pattern": "usages/rural-contribution-rates",
+          "name": "ruralContributionRates",
+          "target": "ruralContributionRates"
+        },
+        {
           "pattern": "usages/{id}/edit",
           "name": "usagesEdit",
           "target": "usagesEdit"
@@ -2081,6 +2086,12 @@
 					"id": "ibsCbsRates",
           "level": 2,
 					"name": "siagrob1.view.ibsCbsRates.Main",
+          "clearControlAggregation": true
+				},
+        "ruralContributionRates": {
+					"id": "ruralContributionRates",
+          "level": 2,
+					"name": "siagrob1.view.ruralContributionRates.Main",
           "clearControlAggregation": true
 				},
          "costCenters": {

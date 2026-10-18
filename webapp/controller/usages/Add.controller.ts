@@ -80,9 +80,7 @@ export default class Add extends BaseController {
 			IbsCbsClassCode: null,
 			IbsRateReduction: null,
 			CbsRateReduction: null,
-			FunruralInssRate: null,
-			FunruralRatRate: null,
-			FunruralSenarRate: null,
+			RuralContributionMode: "None",
 			// Retenções de serviço (Form.fragment.xml) — só natureza de entrada.
 			WithholdingIssRate: null,
 			WithholdingIrrfRate: null,

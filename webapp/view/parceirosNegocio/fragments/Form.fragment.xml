@@ -99,6 +99,23 @@
               valueHelpRequest=".openPaymentConditionsValueHelp"
               value="{PaymentConditionCode}" />
           <Input value="{ui>/paymentConditionName}" editable="false" visible="{ui>/standalone}" />
+          <!-- Produtor rural (Funrural/SENAR na compra): tipo, CPF e opção pela folha só valem com o flag marcado. -->
+          <Label text="Produtor rural" visible="{ui>/standalone}" />
+          <CheckBox selected="{IsRuralProducer}" visible="{ui>/standalone}" />
+          <Label text="Tipo de produtor" visible="{ui>/standalone}" />
+          <Select
+              visible="{ui>/standalone}"
+              enabled="{= !!${IsRuralProducer} }"
+              selectedKey="{ path: 'RuralProducerType', targetType: 'any' }"
+              forceSelection="false">
+            <core:ListItem key="Individual" text="Pessoa física" />
+            <core:ListItem key="SpecialInsured" text="Segurado especial" />
+            <core:ListItem key="LegalEntity" text="Pessoa jurídica" />
+          </Select>
+          <Label text="CPF do produtor" visible="{ui>/standalone}" />
+          <Input value="{RuralProducerCpf}" maxLength="11" placeholder="Só dígitos" visible="{ui>/standalone}" editable="{= !!${IsRuralProducer} }" />
+          <Label text="Optante pela contribuição sobre a folha" visible="{ui>/standalone}" />
+          <CheckBox selected="{RuralPayrollOption}" visible="{ui>/standalone}" enabled="{= !!${IsRuralProducer} }" />
           <core:Title text="Observações"/>
           <Label text="Observações" />
           <TextArea
