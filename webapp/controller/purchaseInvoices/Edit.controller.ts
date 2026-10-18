@@ -26,6 +26,7 @@ export default class Edit extends BaseController {
   formatter = { ...formatter }
 
   onInit(): void {
+    this.bindTransportGroupVisibility();
     this.getRouter().getRoute("purchaseInvoicesEdit")
       .attachPatternMatched((ev) => this.editRouteMatched(ev));
   }

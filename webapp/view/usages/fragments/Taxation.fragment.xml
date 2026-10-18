@@ -138,8 +138,9 @@
           <Label text="Alíquotas" />
           <Text text="Vêm da tabela de Alíquotas IBS/CBS vigente na data de emissão." />
 
-          <core:Title text="Contribuição Social" emphasized="true"
-                    visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
+          <!-- core:Title não tem visible: o grupo inteiro some na natureza de saída pelo controller
+               (bindRuralContributionGroupVisibility), sem deixar coluna vazia. -->
+          <core:Title id="usagesRuralContributionTitle" text="Contribuição Social" emphasized="true" />
           <!-- Modo da retenção do produtor rural na compra; as alíquotas vêm da tabela de vigências. -->
           <Label text="Contribuição social" visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
           <Select

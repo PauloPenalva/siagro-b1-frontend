@@ -53,6 +53,7 @@ export default class Add extends BaseController {
   formatter = { ...formatter }
 
   onInit(): void {
+    this.bindTransportGroupVisibility();
     this.getRouter().getRoute("purchaseInvoicesAdd")
       .attachPatternMatched(() => void this.newRouteMatched());
   }

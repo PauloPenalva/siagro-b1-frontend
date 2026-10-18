@@ -19,6 +19,9 @@ import {
   missingUnitOfMeasureMessage, toNumber, unitSuggestionToApply, withEntry
 } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 import Fragment from "sap/ui/core/Fragment";
+import SimpleForm from "sap/ui/layout/form/SimpleForm";
+import Title from "sap/ui/core/Title";
+import { bindSimpleFormGroupVisible } from "siagrob1/helpers/SimpleFormGroupHelpers";
 import TableSelectDialog, { TableSelectDialog$ConfirmEvent, TableSelectDialog$SearchEvent } from "sap/m/TableSelectDialog";
 import JSONListBinding from "sap/ui/model/json/JSONListBinding";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
@@ -70,6 +73,21 @@ interface UsageFlagsRow {
 const lastSuggestedUnit = new WeakMap<Context, string>();
 
 export abstract class BaseController extends CommonController {
+
+  /**
+   * O grupo Transporte some inteiro quando nenhum campo dele aparece (fora do modo de tributação e no complemento de
+   * ICMS): esconder só os campos deixava a coluna vazia no meio do formulário, porque o core:Title não tem visible.
+   * Mesma regra dos campos do grupo. Chamado no onInit das três telas, que usam o mesmo fragmento.
+   */
+  protected bindTransportGroupVisibility(): void {
+    const form = this.byId("purchaseInvoicesForm") as SimpleForm | undefined;
+    const title = this.byId("purchaseInvoicesTransportTitle") as unknown as Title | undefined;
+    if (!form || !title) return;
+    bindSimpleFormGroupVisible(form, title, {
+      parts: [{ path: "ui>/taxMode" }, { path: "ui>/icmsComplement" }],
+      formatter: (taxMode: unknown, icmsComplement: unknown) => taxMode === true && icmsComplement !== true,
+    });
+  }
 
   private itemFiscalDialog: Dialog;
 
