@@ -34,7 +34,7 @@
           <Select
               editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
               forceSelection="false"
-              required="true"
+              required="{= ${ui>/docNumberSeriesEditable} === true }"
               change=".onDocNumberSeriesChange"
               selectedKey="{DocNumberKey}"
               items="{

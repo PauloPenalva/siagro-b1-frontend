@@ -59,32 +59,32 @@
             <Label text="Nome" />
             <Input
                 value="{Name}"
-                editable="{= !${IsManual} }"
+                editable="{= !${path: 'IsManual', targetType: 'any'} }"
                 required="true"
                 liveChange=".validateField"
             />
-            <Label text="Primeiro Numero" visible="{= !${IsManual} }" />
+            <Label text="Primeiro Numero" visible="{= !${path: 'IsManual', targetType: 'any'} }" />
             <Input 
-                visible="{= !${IsManual} }"
+                visible="{= !${path: 'IsManual', targetType: 'any'} }"
                 type="Number"
 								required="true"
                 value="{FirstNumber}" />
-            <Label text="Próximo Numero" visible="{= !${IsManual} }" />
+            <Label text="Próximo Numero" visible="{= !${path: 'IsManual', targetType: 'any'} }" />
             <Input 
-                visible="{= !${IsManual} }"
+                visible="{= !${path: 'IsManual', targetType: 'any'} }"
                 type="Number"
 								required="true"
                 value="{NextNumber}" />
 
             <core:Title  text=""/>
-            <Label text="Prefixo" visible="{= !${IsManual} }" />
-            <Input value="{Prefix}" visible="{= !${IsManual} }" />
-            <Label text="Sufixo" visible="{= !${IsManual} }" />
-            <Input value="{Suffix}" visible="{= !${IsManual} }" />
-            <Label text="Qtd. Digitos" visible="{= !${IsManual} }" />
-            <Input type="Number" value="{NumberSize}" visible="{= !${IsManual} }" />
+            <Label text="Prefixo" visible="{= !${path: 'IsManual', targetType: 'any'} }" />
+            <Input value="{Prefix}" visible="{= !${path: 'IsManual', targetType: 'any'} }" />
+            <Label text="Sufixo" visible="{= !${path: 'IsManual', targetType: 'any'} }" />
+            <Input value="{Suffix}" visible="{= !${path: 'IsManual', targetType: 'any'} }" />
+            <Label text="Qtd. Digitos" visible="{= !${path: 'IsManual', targetType: 'any'} }" />
+            <Input type="Number" value="{NumberSize}" visible="{= !${path: 'IsManual', targetType: 'any'} }" />
             <Label text="Padrão ?"/>
-            <CheckBox selected="{Default}" editable="{= !${IsManual} }" />
+            <CheckBox selected="{Default}" editable="{= !${path: 'IsManual', targetType: 'any'} }" />
             <Label text="Inativo ?"/>
             <CheckBox selected="{Inactive}" />
             <Label text="Manual ?"/>

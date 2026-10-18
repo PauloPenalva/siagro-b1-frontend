@@ -35,7 +35,7 @@
           <Select
               id="businessPartnerSeriesSelect"
               visible="{= ${ui>/standalone} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
-              editable="{= !!${CardType} }"
+              editable="{= !!${path: 'CardType', targetType: 'any'} }"
               required="{= ${ui>/standalone} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
               forceSelection="false"
               change=".onDocNumberSeriesChange"

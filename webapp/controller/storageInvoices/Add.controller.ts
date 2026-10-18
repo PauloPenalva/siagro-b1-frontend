@@ -54,6 +54,9 @@ export default class Add extends BaseController {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }
+    if (this.isManualNumberMissing("Code")) {
+      return;
+    }
     
     const oModel = this.getView().getModel() as ODataModel;
     const ctx = this.getView().getBindingContext() as Context;

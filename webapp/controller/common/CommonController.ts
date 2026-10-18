@@ -175,6 +175,27 @@ export default abstract class CommonController extends BaseController {
     }
   }
 
+  /**
+   * Guarda do número manual: com a série Manual escolhida (`ui>/docNumberManual`), o campo do código
+   * (`codeProperty` do Select de série) não pode ficar em branco. Avisa o usuário e retorna `true`
+   * para o chamador abortar o salvamento.
+   */
+  protected isManualNumberMissing(codeProperty: string): boolean {
+    const uiModel = this.getModel("ui") as JSONModel;
+    if (uiModel.getProperty("/docNumberManual") !== true) {
+      return false;
+    }
+
+    const viewContext = this.getView().getBindingContext() as Context | undefined;
+    const value = viewContext?.getProperty(codeProperty) as string;
+    if (value && value.trim() !== "") {
+      return false;
+    }
+
+    MessageBox.warning("Informe o número para a série Manual.");
+    return true;
+  }
+
   /** Volta ao modo automático; chamar no `onRouteMatched` das telas Add/Edit que usam o Select de série. */
   protected resetDocNumberMode(): void {
     const uiModel = this.getModel("ui") as JSONModel;

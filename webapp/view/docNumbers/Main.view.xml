@@ -126,7 +126,7 @@
 						width="6rem"
 						>
 						<t:template>
-							<Text text="{= ${IsManual} ? 'Sim' : 'Não' }"/>
+							<Text text="{= ${path: 'IsManual', targetType: 'any'} ? 'Sim' : 'Não' }"/>
 						</t:template>
 					</t:Column>
 				</t:columns>

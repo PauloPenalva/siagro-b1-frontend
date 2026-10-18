@@ -33,7 +33,7 @@
             <Select 
               editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
               forceSelection="false"
-              required="true"
+              required="{= ${ui>/docNumberSeriesEditable} === true }"
               change=".onDocNumberSeriesChange"
               selectedKey="{DocNumberKey}"
               items="{

@@ -204,6 +204,9 @@ export default class Add extends BaseController {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }
+    if (this.isManualNumberMissing("InvoiceNumber")) {
+      return;
+    }
 
     const oTable = this.byId("tableSalesInvoicesItems") as Table;
 
