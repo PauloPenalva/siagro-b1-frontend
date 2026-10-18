@@ -9,6 +9,7 @@ import Sorter from "sap/ui/model/Sorter";
 import Form from "sap/ui/layout/form/Form";
 import Table from "sap/ui/table/Table";
 import MessageBox from "sap/m/MessageBox";
+import Select from "sap/m/Select";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import { anyOfFilter } from "siagrob1/helpers/FilterHelpers";
@@ -76,6 +77,16 @@ export default class Edit extends BaseController {
 				const oContext = this.getView().getBindingContext() as Context;
 				const code = oContext ? await oContext.requestProperty("PaymentConditionCode") as number : undefined;
 				await this.refreshPaymentConditionName(code);
+			})();
+
+			// A série gravada depende do Tipo (Fornecedor/Cliente) e aparece travada, mesmo que tenha sido
+			// inativada depois; por isso o filtro daqui não tem Inactive (a criação mantém).
+			void (async () => {
+				const oContext = this.getView().getBindingContext() as Context;
+				const cardType = oContext ? await oContext.requestProperty("CardType") as string : undefined;
+				const transaction = cardType === "S" ? "Supplier" : "Customer";
+				((this.byId("businessPartnerSeriesSelect") as Select)?.getBinding("items") as ODataListBinding | undefined)
+					?.changeParameters({ $filter: `TransactionCode eq '${transaction}'` });
 			})();
 
 			this.cardCode = id;
