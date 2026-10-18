@@ -306,6 +306,7 @@ export abstract class BaseController extends CommonController {
     const missing: string[] = [];
     const empty = (p: string) => !String(ctx?.getProperty(p) ?? "").trim();
 
+    if ((this.getModel("ui") as JSONModel).getProperty("/docNumberManual") === true && empty("Code")) missing.push("Número");
     if (empty("BranchCode")) missing.push("Filial");
     if (empty("ReferenceDate")) missing.push("Data de referência");
     if (empty("WarehouseCode")) missing.push("Armazém");

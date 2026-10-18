@@ -52,6 +52,9 @@ interface ImportedInvoice {
 export default class Add extends BaseController {
   formatter = { ...formatter }
 
+  /** Série Automático padrão de PurchaseInvoice, pré-selecionada em todo rascunho novo. */
+  private defaultDocNumberKey: string;
+
   onInit(): void {
     this.bindTransportGroupVisibility();
     this.getRouter().getRoute("purchaseInvoicesAdd")
@@ -69,6 +72,7 @@ export default class Add extends BaseController {
     uiModel.setProperty("/documentTotal", "0,00");
     uiModel.setProperty("/paymentConditionName", "");
     uiModel.setProperty("/withholdingsRecalculable", false);
+    this.startDocNumberCreate();
 
     const oModel = this.getModel() as ODataModel;
 
@@ -79,6 +83,8 @@ export default class Add extends BaseController {
     // Documento nasce vazio, com uma linha em branco para a digitação manual. Importar XML
     // substitui tudo.
     const branchInfo = await this.getBranchInfo();
+    const docNumberInfo = (await this.getDocNumberInfoByTransaction("PurchaseInvoice")).find(x => x.Default);
+    this.defaultDocNumberKey = docNumberInfo?.Key;
     this.createDraft(undefined, undefined, branchInfo?.code);
     await this.refreshNfeMode();
   }
@@ -130,6 +136,7 @@ export default class Add extends BaseController {
 
       // O rascunho do XML também recebe a filial da sessão.
       const branchInfo = await this.getBranchInfo();
+      this.startDocNumberCreate();
       this.createDraft(draft, xmlContent, branchInfo?.code);
       await this.refreshNfeMode();
 
@@ -197,6 +204,8 @@ export default class Add extends BaseController {
       VolumeNumbering: null,
       CardCode: draft?.CardCode ?? "",
       CardName: draft?.CardName ?? "",
+      // Sempre enviar a série: sem DocNumberKey o servidor trata o número digitado como legado (sem série).
+      DocNumberKey: this.defaultDocNumberKey ?? null,
       InvoiceNumber: null,
       TaxDocumentNumber: draft?.TaxDocumentNumber ?? null,
       TaxDocumentSeries: draft?.TaxDocumentSeries ?? null,
@@ -275,6 +284,12 @@ export default class Add extends BaseController {
 
     if (!oContext.getProperty("CardCode")) {
       MessageBox.warning("Informe o emitente do documento.");
+      return;
+    }
+
+    if ((this.getModel("ui") as JSONModel).getProperty("/docNumberManual") === true
+      && !String(oContext.getProperty("InvoiceNumber") ?? "").trim()) {
+      MessageBox.warning("Informe o número interno do documento.");
       return;
     }
 

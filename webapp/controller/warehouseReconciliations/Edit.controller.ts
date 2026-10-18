@@ -21,6 +21,7 @@ export default class Edit extends BaseController {
     const { id } = ev.getParameter("arguments") as { id: string };
     if (id == null) return;
 
+    this.resetDocNumberMode();
     (this.getModel("ui") as JSONModel).setProperty("/editable", true);
     this.resetModelChanges();
     this.resetPreview();

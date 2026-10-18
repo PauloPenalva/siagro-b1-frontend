@@ -25,6 +25,7 @@ export default class Detail extends BaseController {
     (this.getModel("attachments") as JSONModel)?.setData([]);
     this.wr().setProperty("/attachmentsReadonly", true);
 
+    this.resetDocNumberMode();
     (this.getModel("ui") as JSONModel).setProperty("/editable", false);
     this.resetPreview();
     // Trava o botão de envio até a prévia e as linhas gravadas da conferência NOVA chegarem —

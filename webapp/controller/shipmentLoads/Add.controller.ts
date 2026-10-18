@@ -41,6 +41,10 @@ export default class Add extends FormController {
       await this.loadBranches();
     }
 
+    // As séries entram antes do selectedKey (JSONModel + itens carregados antes: senão o Select renderiza vazio).
+    await this.loadSeries();
+    await this.selectDefaultSeries();
+
     // Filial e unidade de medida vêm do sistema, como no contrato de compra: a filial é a do
     // usuário logado e a unidade é a padrão do setup. Os dois campos são somente-leitura na
     // tela, então esta é a única origem deles.

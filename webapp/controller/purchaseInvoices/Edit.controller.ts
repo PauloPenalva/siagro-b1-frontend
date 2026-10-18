@@ -40,6 +40,7 @@ export default class Edit extends BaseController {
 
     this.clearStates("purchaseInvoicesForm");
 
+    this.resetDocNumberMode();
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setProperty("/editable", true);
     uiModel.setProperty("/remittanceNumbers", {});
