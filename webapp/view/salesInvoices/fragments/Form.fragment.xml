@@ -155,8 +155,9 @@
                  O que for digitado aqui ou na linha é substituído ao salvar. O texto adicional do contrato
                  entra antes do texto de Inf.Contribuinte. -->
             <!-- O complemento de ICMS não tem mercadoria nem transporte (modFrete 9 na NF-e): o grupo some inteiro. O Title
-                 do SimpleForm não tem visible, então o texto fica vazio e os campos somem um a um. -->
-            <core:Title text="{= ${path: 'InvoiceType', targetType: 'any'} === 'IcmsComplement' ? '' : 'Transporte' }" />
+                 do SimpleForm não tem visible: o BaseController (bindTransportGroupVisibility) liga o visible do grupo pelo
+                 id do título, senão a coluna ficaria vazia no meio. O texto vazio e os visible dos campos ficam de reserva. -->
+            <core:Title id="titleSalesInvoiceTransport" text="{= ${path: 'InvoiceType', targetType: 'any'} === 'IcmsComplement' ? '' : 'Transporte' }" />
             <Label text="Endereço Entrega" visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }" />
             <Input
               visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"

@@ -38,6 +38,7 @@ import { showCteFreights, suspendCteFreights } from "siagrob1/helpers/CteFreight
 export default class Detail extends BaseController {
 
 	onInit(): void  {	
+		this.bindTransportGroupVisibility();
 		this.getRouter().getRoute("salesInvoicesDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
 	}
 

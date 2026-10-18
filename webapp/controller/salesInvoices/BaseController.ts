@@ -17,6 +17,9 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
 import { summarizeInvoiceTaxes, TaxLine } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 import { chargeLineOf, formatAmount, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
+import { bindSimpleFormGroupVisible } from "siagrob1/helpers/SimpleFormGroupHelpers";
+import SimpleForm from "sap/ui/layout/form/SimpleForm";
+import Title from "sap/ui/core/Title";
 
 export abstract class BaseController extends CommonController {
 
@@ -25,6 +28,22 @@ export abstract class BaseController extends CommonController {
     private itemChangeLogsDialog: Dialog;
 
     private documentTotalAttached = false;
+
+    /**
+     * O grupo Transporte do formulário some inteiro no complemento de ICMS (sem mercadoria nem transporte). O Title do
+     * SimpleForm não tem visible, então o visible vai no grupo que ele cria — sem isso a coluna ficava vazia no meio.
+     * Chamado no onInit das telas que mostram documento gravado (Detail e Edit); a Add só cria Normal.
+     */
+    protected bindTransportGroupVisibility(): void {
+        const form = this.byId("formSalesInvoice") as SimpleForm | undefined;
+        const title = this.byId("titleSalesInvoiceTransport") as unknown as Title | undefined;
+        if (!form || !title) return;
+        bindSimpleFormGroupVisible(form, title, {
+            path: "InvoiceType",
+            targetType: "any",
+            formatter: (type: unknown) => type !== "IcmsComplement",
+        });
+    }
 
     /**
      * Filtro server-side das duas telas de conferência de entrega (Conferência e Estorno).

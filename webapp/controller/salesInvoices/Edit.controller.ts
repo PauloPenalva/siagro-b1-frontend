@@ -12,6 +12,7 @@ import { BaseController } from "./BaseController";
 export default class Edit extends BaseController {
 
 	onInit(): void  {	
+		this.bindTransportGroupVisibility();
 		this.getRouter().getRoute("salesInvoicesEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 
