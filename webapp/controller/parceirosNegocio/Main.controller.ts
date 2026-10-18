@@ -34,6 +34,7 @@ export default class Main extends BaseController {
 		const oFilters = new Filter({
 			filters: [
 				new Filter("CardName", FilterOperator.Contains, query),
+				new Filter("CardCode", FilterOperator.Contains, query),
 			],
 			and: false,
 		});
