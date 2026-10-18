@@ -29,15 +29,16 @@
         <uxap:actions>
           <Button text="Editar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' ? true : false }" type="Emphasized" press=".onEdit"/>
           <!-- Na filial com a regra ativa (ui>/taxLocked), o documento Normal confirma e depois transmite a NF-e (spec
-               2026-10-06 D1); a devolução própria segue "emitir é o que confirma". -->
+               2026-10-06 D1); a devolução própria segue "emitir é o que confirma". O complemento de ICMS nunca
+               confirma à mão: o servidor só aceita depois da NF-e autorizada, e quem confirma é a emissão. -->
           <Button text="Confirmar" type="Success" press=".onConfirm"
-            visible="{= ${ui>/taxLocked} !== true || ${IsNfeReturn} !== true }"
+            visible="{= (${ui>/taxLocked} !== true || ${IsNfeReturn} !== true) &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
             enabled="{= ${path: 'InvoiceStatus', targetType: 'any'}==='Pending' ? true : false }" />
           <Button text="Transmitir NF-e" type="Success" icon="sap-icon://paper-plane" press=".onIssueNfe"
             visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; ${path: 'TaxDocumentKind', targetType: 'any'} === 'Nfe' }"
             enabled="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Confirmed' &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === 'None' || ${path: 'NfeStatus', targetType: 'any'} === 'Rejected') }" />
           <Button text="Emitir NF-e" type="Success" icon="sap-icon://paper-plane" press=".onIssueNfe"
-            visible="{= ${ui>/taxLocked} === true &amp;&amp; ${IsNfeReturn} === true }"
+            visible="{= ${ui>/taxLocked} === true &amp;&amp; (${IsNfeReturn} === true || ${path: 'InvoiceType', targetType: 'any'} === 'IcmsComplement') }"
             enabled="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === 'None' || ${path: 'NfeStatus', targetType: 'any'} === 'Rejected') }" />
           <Button text="Consultar situação" icon="sap-icon://synchronize" press=".onConsultNfe"
             visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Processing' || ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' }" />
@@ -61,6 +62,16 @@
                emitida pelo mesmo "Emitir NF-e". -->
           <Button text="Devolver" icon="sap-icon://undo" press=".onNfeReturn"
             visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} === 'Confirmed' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' &amp;&amp; !${path: 'ShipmentLoadKey', targetType: 'any'} }" />
+          <!-- Complemento de ICMS (spec 2026-10-18): a venda autorizada gera o documento de complemento, emitido
+               pelo mesmo "Emitir NF-e". A regra é a do servidor (canComplementIcms). -->
+          <Button text="Complementar ICMS" icon="sap-icon://add-document" press=".onIcmsComplement"
+            visible="{ parts: [
+              { path: 'InvoiceType', targetType: 'any' },
+              { path: 'InvoiceStatus', targetType: 'any' },
+              { path: 'NfeStatus', targetType: 'any' },
+              { path: 'TaxDocumentKind', targetType: 'any' },
+              { path: 'ui>/taxLocked' }
+            ], formatter: '.isIcmsComplementAvailable' }" />
           <Button text="Estornar" enabled="{= ${path: 'InvoiceStatus', targetType: 'any'} === 'Confirmed' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Cancelled' }" type="Critical" press=".onReverse"/>
           <Button text="Cancelar" enabled="{= (${path: 'InvoiceStatus', targetType: 'any'} === 'Pending' || ${path: 'InvoiceStatus', targetType: 'any'} === 'Confirmed') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Cancelled' }" type="Reject" press=".onCancel"/>
         </uxap:actions>

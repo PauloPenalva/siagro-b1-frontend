@@ -23,15 +23,16 @@
         <content>
           <Title text="Itens do Documento de Saída" />
           <ToolbarSpacer />
+          <!-- Complemento de ICMS: as linhas são as da venda complementada; o servidor recusa incluir e remover. -->
           <Button
-            visible="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
+            visible="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/icmsComplement} !== true }"
             text="Incluir"
             type="Transparent"
             icon="sap-icon://add"
             press=".onAddItem"
           />
           <Button
-            visible="{ui>/editable}"
+            visible="{= ${ui>/editable} === true &amp;&amp; ${ui>/icmsComplement} !== true }"
             text="Remover"
             type="Transparent"
             icon="sap-icon://delete"
@@ -73,7 +74,7 @@
       <t:Column label="Produto">
         <t:template>
           <Input
-            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/icmsComplement} !== true }"
             width="10rem"
             required="true"
             value="{ItemCode}" 
@@ -91,7 +92,7 @@
           <Text text="{ItemName}" />
         </t:template>
       </t:Column>
-      <t:Column label="Quantidade">
+      <t:Column label="Quantidade" visible="{= ${ui>/icmsComplement} !== true }">
         <t:template>
           <Input
               required="true"
@@ -112,7 +113,7 @@
       </t:Column>
       <!-- GAC-1171 (rateio): quanto da linha já voltou em devolução confirmada. Só no Detalhe: na
            inclusão e na edição o contexto é JSON e a coluna não existe. -->
-      <t:Column label="Qtd. Devolvida" hAlign="End" visible="{= !${ui>/editable} }">
+      <t:Column label="Qtd. Devolvida" hAlign="End" visible="{= !${ui>/editable} &amp;&amp; ${ui>/icmsComplement} !== true }">
         <t:template>
           <ObjectNumber
             textAlign="End"
@@ -122,7 +123,7 @@
        <t:Column label="Und.Med.">
         <t:template>
           <Input 
-            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/icmsComplement} !== true }"
             required="true"
             value="{UnitOfMeasureCode}" 
             showValueHelp="true" 
@@ -134,11 +135,11 @@
           </Input>
         </t:template>
       </t:Column>
-      <t:Column label="Valor Unitário">
+      <t:Column label="Valor Unitário" visible="{= ${ui>/icmsComplement} !== true }">
         <t:template>
           <Input
               required="true"
-              editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/icmsComplement} !== true }"
               change=".onItemAmountChange"
               value="{
                 path: 'UnitPrice',
@@ -156,7 +157,7 @@
       <!-- Frete, seguro, desconto e outras despesas da linha (spec 2026-10-05 §10). Campo de ESCRITA de decimal usa
            `Double`, nunca `Decimal` (o backend recusa Edm.Decimal em string). Editáveis também na devolução Pendente
            (vêm da venda na proporção do que volta). -->
-      <t:Column label="Frete" hAlign="End" width="8rem">
+      <t:Column label="Frete" hAlign="End" width="8rem" visible="{= ${ui>/icmsComplement} !== true }">
         <t:template>
           <Input
               editable="{ui>/editable}"
@@ -170,7 +171,7 @@
           />
         </t:template>
       </t:Column>
-      <t:Column label="Seguro" hAlign="End" width="8rem">
+      <t:Column label="Seguro" hAlign="End" width="8rem" visible="{= ${ui>/icmsComplement} !== true }">
         <t:template>
           <Input
               editable="{ui>/editable}"
@@ -184,7 +185,7 @@
           />
         </t:template>
       </t:Column>
-      <t:Column label="Desconto" hAlign="End" width="8rem">
+      <t:Column label="Desconto" hAlign="End" width="8rem" visible="{= ${ui>/icmsComplement} !== true }">
         <t:template>
           <Input
               editable="{ui>/editable}"
@@ -198,7 +199,7 @@
           />
         </t:template>
       </t:Column>
-      <t:Column label="Outras despesas" hAlign="End" width="9rem">
+      <t:Column label="Outras despesas" hAlign="End" width="9rem" visible="{= ${ui>/icmsComplement} !== true }">
         <t:template>
           <Input
               editable="{ui>/editable}"
@@ -212,7 +213,37 @@
           />
         </t:template>
       </t:Column>
-      <t:Column label="Total">
+      <!-- Complemento de ICMS (spec 2026-10-18): a linha não tem quantidade, preço nem encargos (zero); o que se informa
+           é a base e o valor do ICMS, editáveis só enquanto o documento está Pendente (a tela de edição). As colunas de
+           quantidade, preço, encargos e total somem e as duas abaixo aparecem. O Double do OData não tem mínimo: o
+           negativo é barrado no change (o servidor não o recusa). -->
+      <t:Column label="Base ICMS" width="11rem" hAlign="End" visible="{= ${ui>/icmsComplement} === true }">
+        <t:template>
+          <Input
+            editable="{= ${ui>/editable} === true }"
+            textAlign="End"
+            change=".onIcmsComplementAmountChange"
+            value="{
+              path: 'IcmsBase',
+              type: 'DoubleType',
+              formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }" />
+        </t:template>
+      </t:Column>
+      <t:Column label="ICMS" width="10rem" hAlign="End" visible="{= ${ui>/icmsComplement} === true }">
+        <t:template>
+          <Input
+            editable="{= ${ui>/editable} === true }"
+            textAlign="End"
+            change=".onIcmsComplementAmountChange"
+            value="{
+              path: 'IcmsValue',
+              type: 'DoubleType',
+              formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Total" visible="{= ${ui>/icmsComplement} !== true }">
         <t:template>
           <!-- Total geral da linha (itens + frete + seguro + outras despesas − desconto), calculado no cliente: `GrandTotal`
                é [NotMapped] e só existe depois que o servidor responde. `targetType: 'any'` em cada parte é obrigatório —
@@ -247,7 +278,7 @@
       <t:Column label="Contrato" visible="{ui>/canPickContract}">
         <t:template>
           <Input
-            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/icmsComplement} !== true }"
             showValueHelp="true"
             valueHelpOnly="true"
             valueHelpRequest=".openSalesContractValueHelp" />
@@ -259,7 +290,7 @@
       <t:Column label="Natureza de Operação" width="14rem">
         <t:template>
           <Input
-            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
+            editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/icmsComplement} !== true }"
             required="true"
             value="{UsageName}"
             showValueHelp="true"

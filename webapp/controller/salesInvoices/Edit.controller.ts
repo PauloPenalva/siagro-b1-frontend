@@ -38,6 +38,7 @@ export default class Edit extends BaseController {
 			void this.refreshTaxLockFromContext();
 			void this.refreshNfeHeaderFromContext();
 			void this.refreshNfeReturnFromContext();
+			void this.refreshIcmsComplementFromContext();
 			return;
 		}
 

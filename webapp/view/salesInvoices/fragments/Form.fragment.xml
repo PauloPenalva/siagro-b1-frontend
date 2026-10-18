@@ -31,7 +31,7 @@
             />
             <Label text="Codigo"/>
             <Select 
-              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true }"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
               forceSelection="false"
               required="true"
               selectedKey="{DocNumberKey}"
@@ -50,7 +50,7 @@
             <Input value="{InvoiceNumber}" editable="false" />
             <Label text="Filial"/>
             <Select 
-              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true }"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
               forceSelection="false"
               required="true"
               selectedKey="{BranchCode}"
@@ -65,7 +65,7 @@
             </Select>
             <Label text="Tipo"/>
             <Select 
-              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true }"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
               forceSelection="false"
               required="true"
               selectedKey="{
@@ -75,6 +75,8 @@
               >
               <core:ListItem key="Normal" text="Normal" />
               <core:ListItem key="Return" text="Retorno" />
+              <!-- Só nasce pelo "Complementar ICMS" da venda autorizada: aparece, mas não se escolhe. -->
+              <core:ListItem key="IcmsComplement" text="Complemento de ICMS" enabled="false" />
             </Select>
             <!-- Na filial que emite NF-e pelo Siagro (ui>/taxLocked), o documento Normal é NF-e (transmitida depois de
                  confirmado) ou Outro (papel/talão, termina no Confirmar). Fora dela o campo some. -->
@@ -118,7 +120,7 @@
             </Select>
             <Label text="Cliente" />
             <Input
-              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true }"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
               showValueHelp="true"
               valueHelpOnly="true"
               valueHelpRequest=".openBusinessPartnersValueHelp"
@@ -134,9 +136,9 @@
             </Input>
             <Input value="{CardName}" editable="false" />
             <!-- NF-e STANDALONE: vira cobr/dup e pag do XML. Padrão vem do cliente na criação. -->
-            <Label text="Condição de pagamento" visible="{ui>/standalone}" />
+            <Label text="Condição de pagamento" visible="{= ${ui>/standalone} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }" />
             <Input
-              visible="{ui>/standalone}"
+              visible="{= ${ui>/standalone} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
               editable="{ui>/editable}"
               showValueHelp="true"
               valueHelpOnly="true"
@@ -146,15 +148,18 @@
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
             </Input>
-            <Input value="{ui>/paymentConditionName}" editable="false" visible="{ui>/standalone}" />
+            <Input value="{ui>/paymentConditionName}" editable="false" visible="{= ${ui>/standalone} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }" />
             <!-- Complemento fiscal do contrato de venda (spec 2026-10-07, D6): na filial que emite a NF-e
                  pelo Siagro, o servidor SOBRESCREVE a condição de pagamento do documento e a natureza de
                  operação das linhas que têm contrato com o que está no complemento fiscal do contrato.
                  O que for digitado aqui ou na linha é substituído ao salvar. O texto adicional do contrato
                  entra antes do texto de Inf.Contribuinte. -->
-            <core:Title text="Transporte" />
-            <Label text="Endereço Entrega" />
+            <!-- O complemento de ICMS não tem mercadoria nem transporte (modFrete 9 na NF-e): o grupo some inteiro. O Title
+                 do SimpleForm não tem visible, então o texto fica vazio e os campos somem um a um. -->
+            <core:Title text="{= ${path: 'InvoiceType', targetType: 'any'} === 'IcmsComplement' ? '' : 'Transporte' }" />
+            <Label text="Endereço Entrega" visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }" />
             <Input
+              visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
               editable="{ui>/editable}"
               showValueHelp="true"
               valueHelpOnly="true"
@@ -168,9 +173,10 @@
                 <core:CustomData key="descriptionProperty" value="DeliveryCardName:CardName" />
               </customData>
             </Input>
-            <Input value="{DeliveryCardName}" editable="false" />
-            <Label text="Transportadora" />
+            <Input value="{DeliveryCardName}" editable="false" visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }" />
+            <Label text="Transportadora" visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }" />
             <Input
+              visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
               editable="{ui>/editable}"
               showValueHelp="true"
               valueHelpOnly="true"
@@ -184,9 +190,10 @@
                 <core:CustomData key="descriptionProperty" value="TruckingCompanyName:CardName" />
               </customData>
             </Input>
-            <Input value="{TruckingCompanyName}" editable="false" />
-            <Label text="Placa" />
+            <Input value="{TruckingCompanyName}" editable="false" visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }" />
+            <Label text="Placa" visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }" />
             <Input
+              visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
               editable="{ui>/editable}"
               showValueHelp="true"
               valueHelpOnly="true"
@@ -197,8 +204,9 @@
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
             </Input>
-            <Label text="Tipo do Frete"/>
+            <Label text="Tipo do Frete" visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }" />
             <Select
+              visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
               editable="{ui>/editable}"
               forceSelection="false"
               selectedKey="{
@@ -211,8 +219,9 @@
               <core:ListItem key="Ter" text="TER"/>
               <core:ListItem key="None" text="SEM FRETE"/>
             </Select>
-            <Label text="Valor do Frete"/>
+            <Label text="Valor do Frete" visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }" />
             <Input
+              visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
               editable="{ui>/editable}"
               value="{
                 path: 'FreightCostStandard',
@@ -241,8 +250,9 @@
                  uma devolução digitada como 20 estornava os 30 da origem, calada.
                  `targetType: 'any'` é obrigatório no enum: sem ele o binding entrega texto
                  formatado e a comparação nunca casa. -->
-            <Label text="Peso Bruto"/>
+            <Label text="Peso Bruto" visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }" />
             <Input
+              visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
               editable="{= ${ui>/editable} &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'Return' }"
               value="{
                 path: 'GrossWeight',
@@ -259,8 +269,9 @@
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
             </Input>
-            <Label text="Peso Liquido"/>
+            <Label text="Peso Liquido" visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }" />
             <Input
+              visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
               editable="{= ${ui>/editable} &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'Return' }"
               value="{
                 path: 'NetWeight',
@@ -289,50 +300,50 @@
             <!-- Volume da NF-e (grupo vol), só na filial que emite NF-e pelo Siagro. Os quatro
                  campos são opcionais: a unidade pode ser saco, bag ou caixa, e por isso o peso é
                  informado, não derivado da quantidade. -->
-            <Label text="Qtde. Volumes" visible="{= ${ui>/taxLocked} === true }" />
+            <Label text="Qtde. Volumes" visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }" />
             <Input
-              visible="{= ${ui>/taxLocked} === true }"
+              visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
               editable="{ui>/editable}"
               value="{VolumeQuantity}">
               <layoutData>
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
             </Input>
-            <Label text="Espécie" visible="{= ${ui>/taxLocked} === true }" />
+            <Label text="Espécie" visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }" />
             <Input
-              visible="{= ${ui>/taxLocked} === true }"
+              visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
               editable="{ui>/editable}"
               value="{VolumeSpecies}"
               maxLength="60"
               placeholder="GRANEL, SACO, BAG, CAIXA" />
-            <Label text="Marca" visible="{= ${ui>/taxLocked} === true }" />
+            <Label text="Marca" visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }" />
             <Input
-              visible="{= ${ui>/taxLocked} === true }"
+              visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
               editable="{ui>/editable}"
               value="{VolumeBrand}"
               maxLength="60" />
-            <Label text="Numeração" visible="{= ${ui>/taxLocked} === true }" />
+            <Label text="Numeração" visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }" />
             <Input
-              visible="{= ${ui>/taxLocked} === true }"
+              visible="{= ${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
               editable="{ui>/editable}"
               value="{VolumeNumbering}"
               maxLength="60" />
             <core:Title text="Dados da NF-e"/>
             <Label text="Numero" />
             <Input 
-              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'TaxDocumentKind', targetType: 'any'} !== 'Other') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'TaxDocumentKind', targetType: 'any'} !== 'Other') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
               value="{TaxDocumentNumber}"
               maxLength="9"
             />
             <Label text="Série" />
             <Input 
-              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'TaxDocumentKind', targetType: 'any'} !== 'Other') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'TaxDocumentKind', targetType: 'any'} !== 'Other') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
               value="{TaxDocumentSeries}"
               maxLength="3"
             />
             <Label text="Chave de Acesso" />
             <Input 
-              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'TaxDocumentKind', targetType: 'any'} !== 'Other') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' &amp;&amp; !(${ui>/taxLocked} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'TaxDocumentKind', targetType: 'any'} !== 'Other') &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Processing' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Authorized' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Rejected' &amp;&amp; ${path: 'NfeStatus', targetType: 'any'} !== 'Denied' }"
               value="{ChaveNFe}"
               maxLength="44"
             />

@@ -10,6 +10,8 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import { Input$ValueHelpRequestEvent } from "sap/m/Input";
+import { InputBase$ChangeEvent } from "sap/m/InputBase";
+import MessageToast from "sap/m/MessageToast";
 import Sorter from "sap/ui/model/Sorter";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
@@ -138,6 +140,34 @@ export abstract class BaseController extends CommonController {
       const oContext = this.getView().getBindingContext() as Context;
       const nfeReturn = oContext ? await oContext.requestProperty("IsNfeReturn") === true : false;
       uiModel.setProperty("/nfeReturn", nfeReturn);
+    }
+
+    /**
+     * Complemento de ICMS (criado pelo "Complementar ICMS" da venda autorizada): a grade troca quantidade, preço e
+     * encargos por Base ICMS / ICMS e não aceita incluir nem remover linha. Zera antes de esperar o tipo: um true
+     * velho não pode aparecer no documento seguinte.
+     */
+    protected async refreshIcmsComplementFromContext() {
+      const uiModel = this.getModel("ui") as JSONModel;
+      uiModel.setProperty("/icmsComplement", false);
+      const oContext = this.getView().getBindingContext() as Context;
+      const invoiceType = oContext ? await oContext.requestProperty("InvoiceType") as string : undefined;
+      uiModel.setProperty("/icmsComplement", invoiceType === "IcmsComplement");
+    }
+
+    /**
+     * Base ICMS / ICMS da linha do complemento: o tipo Double do OData não tem mínimo e o servidor grava o que vier,
+     * então o negativo volta a zero aqui, com aviso.
+     */
+    onIcmsComplementAmountChange(ev: InputBase$ChangeEvent) {
+      const oInput = ev.getSource();
+      const oContext = oInput.getBindingContext() as Context;
+      const path = oInput.getBinding("value")?.getPath();
+
+      if (oContext && path && Number(oContext.getProperty(path)) < 0) {
+        void oContext.setProperty(path, 0);
+        MessageToast.show("O valor do ICMS não pode ser negativo.");
+      }
     }
 
     async onOpenItemFiscal() {
@@ -374,6 +404,7 @@ export abstract class BaseController extends CommonController {
         valueMap: {
           "Normal": "Normal",
           "Return": "Retorno",
+          "IcmsComplement": "Complemento de ICMS",
         }
       });
       

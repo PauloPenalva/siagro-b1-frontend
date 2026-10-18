@@ -20,6 +20,7 @@ import { canCancelNfe, canSendNfeCorrection, pickNfeCorrectionPrefill, FailedNfe
 import { openNfeCancelDialog } from "siagrob1/dialogs/NfeCancelDialog";
 import { runNfeVoidNumber } from "siagrob1/dialogs/NfeVoidNumberAction";
 import { NfeReturnRow, prefillNfeReturnRows, hasReturnableBalance, buildNfeReturnPayload } from "siagrob1/helpers/NfeReturnHelpers";
+import { IcmsComplementRow, complementRowsFrom, buildIcmsComplementPayload, canComplementIcms } from "siagrob1/helpers/SalesIcmsComplementHelpers";
 import { TAX_TOTALS_SELECT } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 import { LINE_CHARGES_SELECT, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
 import { openDanfeViewer, openNfeCorrectionViewer } from "siagrob1/dialogs/DanfeViewer";
@@ -63,6 +64,7 @@ export default class Detail extends BaseController {
 			void this.refreshTaxLockFromContext();
 			void this.refreshNfeHeaderFromContext();
 			void this.refreshNfeReturnFromContext();
+			void this.refreshIcmsComplementFromContext();
 
 			return;
 		}
@@ -113,8 +115,10 @@ export default class Detail extends BaseController {
 
   async onIssueNfe() {
     const ctx = this.getView().getBindingContext() as Context;
-    // Documento Normal: já confirmado, a NF-e é transmitida. Devolução própria: emitir é o que confirma.
-    const verb = ctx?.getProperty("IsNfeReturn") === true ? "Emitir" : "Transmitir";
+    // Documento Normal: já confirmado, a NF-e é transmitida. Devolução própria e complemento de ICMS: emitir é o que
+    // confirma.
+    const verb = ctx?.getProperty("IsNfeReturn") === true || ctx?.getProperty("InvoiceType") === "IcmsComplement"
+      ? "Emitir" : "Transmitir";
     if (!ctx) return;
     const series = await openNfeIssueDialog(this.getView(), {
       title: `${verb} NF-e`, message: `${verb} a NF-e deste documento ?`, confirmText: `${verb} NF-e`,
@@ -364,6 +368,97 @@ export default class Detail extends BaseController {
       const key = action.getBoundContext().getProperty("value") as string;
       this._nfeReturnDialog.close();
       MessageToast.show("Devolução criada. Confira os dados e emita a NF-e.", { closeOnBrowserNavigation: false });
+      this.navTo("salesInvoicesDetail", { id: key });
+    } catch {
+      // O handler global de mensagens do OData (Component) já mostrou o erro do servidor.
+    } finally {
+      model.setProperty("/busy", false);
+    }
+  }
+
+  /**
+   * Formatter do botão "Complementar ICMS": a mesma regra do servidor (venda Normal, Confirmada, NF-e Autorizada,
+   * emitida pelo Siagro). Quem decide de fato é a action; isto só evita oferecer o que voltaria recusado.
+   */
+  isIcmsComplementAvailable(invoiceType: string, invoiceStatus: string, nfeStatus: string, taxDocumentKind: string,
+    taxLocked: boolean): boolean {
+    return canComplementIcms({
+      InvoiceType: invoiceType, InvoiceStatus: invoiceStatus, NfeStatus: nfeStatus,
+      TaxDocumentKind: taxDocumentKind, taxLocked: taxLocked === true,
+    });
+  }
+
+  private _icmsComplementDialog: Dialog;
+
+  /**
+   * "Complementar ICMS": abre o diálogo com os itens da venda, base e ICMS zerados. Os itens vêm das linhas já
+   * carregadas na grade (todas: a coleção expandida chega inteira com o documento). O valor da linha é calculado
+   * aqui como o servidor faz (quantidade × preço, 2 casas): `Total` é derivado e não entra no $select.
+   */
+  async onIcmsComplement() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) {
+      return;
+    }
+
+    const binding = (this.byId("tableSalesInvoicesItems") as Table)?.getBinding("rows") as ODataListBinding;
+    const items = (binding?.getAllCurrentContexts() ?? []).map((item) => ({
+      Key: item.getProperty("Key") as string,
+      ItemCode: item.getProperty("ItemCode") as string,
+      ItemName: item.getProperty("ItemName") as string,
+      Quantity: Number(item.getProperty("Quantity") ?? 0),
+      Total: Math.round(Number(item.getProperty("Quantity") ?? 0) * Number(item.getProperty("UnitPrice") ?? 0) * 100) / 100,
+    }));
+
+    if (items.length === 0) {
+      MessageBox.information("Esta venda não tem itens para complementar.");
+      return;
+    }
+
+    this.getView().setModel(new JSONModel({ rows: complementRowsFrom(items), busy: false }), "icmsComplement");
+
+    this._icmsComplementDialog ??= await DialogHelper.createDialog(
+      this, "siagrob1.view.salesInvoices.fragments.IcmsComplementDialog");
+    this._icmsComplementDialog.open();
+  }
+
+  onCloseIcmsComplement() {
+    this._icmsComplementDialog?.close();
+  }
+
+  /** Cria o complemento de ICMS e abre a tela dele, onde fica o "Emitir NF-e". */
+  async onConfirmIcmsComplement() {
+    // Valor que o tipo Float não aceitou (texto, negativo) deixa o número anterior no modelo: o Input fica em Error
+    // e o que seria enviado não é o que está na tela.
+    const invalidInput = this._icmsComplementDialog
+      ?.findAggregatedObjects(true, (c) => c.isA("sap.m.Input") && (c as Input).getValueState() === ValueState.Error);
+
+    if (invalidInput?.length) {
+      MessageBox.warning("Corrija os valores marcados em vermelho.");
+      return;
+    }
+
+    const ctx = this.getView().getBindingContext() as Context;
+    const model = this.getView().getModel("icmsComplement") as JSONModel;
+    const payload = buildIcmsComplementPayload(model.getProperty("/rows") as IcmsComplementRow[]);
+
+    if (payload.OriginItemKeys.length === 0) {
+      MessageBox.warning("Informe a base ou o valor do ICMS de pelo menos um item.");
+      return;
+    }
+
+    model.setProperty("/busy", true);
+    try {
+      const action = (ctx.getModel() as ODataModel).bindContext(ServerRoutes.salesInvoicesCreateIcmsComplement);
+      action.setParameter("Key", ctx.getProperty("Key"));
+      action.setParameter("OriginItemKeys", payload.OriginItemKeys);
+      action.setParameter("IcmsBases", payload.IcmsBases);
+      action.setParameter("IcmsValues", payload.IcmsValues);
+      await action.invoke();
+
+      const key = action.getBoundContext().getProperty("value") as string;
+      this._icmsComplementDialog.close();
+      MessageToast.show("Complemento de ICMS criado. Confira os valores e emita a NF-e.", { closeOnBrowserNavigation: false });
       this.navTo("salesInvoicesDetail", { id: key });
     } catch {
       // O handler global de mensagens do OData (Component) já mostrou o erro do servidor.
