@@ -443,7 +443,7 @@ export default class Detail extends BaseController {
     const payload = buildIcmsComplementPayload(model.getProperty("/rows") as IcmsComplementRow[]);
 
     if (payload.OriginItemKeys.length === 0) {
-      MessageBox.warning("Informe a base ou o valor do ICMS de pelo menos um item.");
+      MessageBox.warning("Informe a base e o valor do ICMS de ao menos um item.");
       return;
     }
 
