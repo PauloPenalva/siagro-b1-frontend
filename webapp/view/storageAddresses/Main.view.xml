@@ -133,6 +133,40 @@
 						</t:template>
 					</t:Column>
           <t:Column
+						label="Situação"
+            sortProperty="Status"
+            width="7rem"
+            >
+						<t:template>
+							<ObjectStatus
+                text="{
+                  path: 'Status',
+                  targetType: 'any',
+                  formatter: '.formatter.formatStorageAddressStatus'
+                }"
+                state="{
+                  path: 'Status',
+                  targetType: 'any',
+                  formatter: '.formatter.formatStorageAddressStatusState'
+                }"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Encerrado em"
+            sortProperty="ClosingDate"
+            width="8rem"
+            >
+						<t:template>
+							<Text
+                wrapping="false"
+                text="{
+                  path: 'ClosingDate',
+                  type: 'sap.ui.model.odata.type.Date',
+                  formatOptions: { pattern: 'dd/MM/yyyy' }
+                }"/>
+						</t:template>
+					</t:Column>
+          <t:Column
 						label="Saldo"
             width="10rem"
             >
@@ -162,6 +196,8 @@
 				<ToolbarSpacer />
 				<Button text="Incluir" icon="sap-icon://add" type="Emphasized" press=".onCreate"/>
 				<Button text="Editar" icon="sap-icon://edit" press=".onEdit"/>
+				<Button text="Encerrar" icon="sap-icon://locked" press=".onCloseLot"/>
+				<Button text="Reabrir" icon="sap-icon://unlocked" press=".onReopenLot"/>
 				<Button text="Deletar" icon="sap-icon://delete" press=".onDelete"/>
 			</OverflowToolbar>
 		</footer>
