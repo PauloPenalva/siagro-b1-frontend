@@ -24,8 +24,9 @@
                 items="{
                   path: '/DocNumbers',
                   parameters: {
-                    $filter: 'TransactionCode eq 'WarehouseReconciliation' and Inactive eq false',
-                    $orderby: 'IsManual,Name'
+                    $filter: 'TransactionCode eq \'WarehouseReconciliation\' and Inactive eq false',
+                    $orderby: 'IsManual,Name',
+                    $select: 'Key,Name,IsManual'
                   }
                 }">
                 <customData>

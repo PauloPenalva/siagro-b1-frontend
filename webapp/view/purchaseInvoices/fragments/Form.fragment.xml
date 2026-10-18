@@ -40,8 +40,9 @@
               items="{
                 path: '/DocNumbers',
                 parameters: {
-                  $filter: 'TransactionCode eq 'PurchaseInvoice' and Inactive eq false',
-                  $orderby: 'IsManual,Name'
+                  $filter: 'TransactionCode eq \'PurchaseInvoice\' and Inactive eq false',
+                  $orderby: 'IsManual,Name',
+                  $select: 'Key,Name,IsManual'
                 }
               }">
             <customData>

@@ -21,7 +21,10 @@
 				enableBusyIndicator="true"
 				alternateRowColors="true"
 				rows="{
-					path: '/DocNumbers'
+					path: '/DocNumbers',
+					parameters: {
+						$orderby: 'TransactionCode,IsManual,Name'
+					}
 				}"
 			>
 				<t:extension>

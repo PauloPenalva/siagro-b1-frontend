@@ -43,8 +43,9 @@
               items="{
                 path: '/DocNumbers',
                 parameters: {
-                  $filter: 'TransactionCode eq 'Customer' and Inactive eq false',
-                  $orderby: 'IsManual,Name'
+                  $filter: 'TransactionCode eq \'Customer\' and Inactive eq false',
+                  $orderby: 'IsManual,Name',
+                  $select: 'Key,Name,IsManual'
                 }
               }"
           >

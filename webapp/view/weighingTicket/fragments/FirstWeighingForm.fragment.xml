@@ -40,7 +40,8 @@
                 path: '/DocNumbers',
                 parameters:{
                   $filter: 'TransactionCode eq \'WeighingTicket\' and Inactive eq false',
-                  $orderby: 'IsManual,Name'
+                  $orderby: 'IsManual,Name',
+                  $select: 'Key,Name,IsManual'
                 }
               }"
               >

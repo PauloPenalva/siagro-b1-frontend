@@ -59,7 +59,7 @@
             <Label text="Nome" />
             <Input
                 value="{Name}"
-                editable="true"
+                editable="{= !${IsManual} }"
                 required="true"
                 liveChange=".validateField"
             />
