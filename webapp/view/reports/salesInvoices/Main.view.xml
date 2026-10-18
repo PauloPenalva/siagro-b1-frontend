@@ -45,6 +45,7 @@
 					<core:Item key="" text="Todos"/>
 					<core:Item key="0" text="Normal"/>
 					<core:Item key="1" text="Devolução"/>
+					<core:Item key="2" text="Complemento de ICMS"/>
 				</Select>
 			</f:content>
 		</f:SimpleForm>

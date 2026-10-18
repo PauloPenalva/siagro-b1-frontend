@@ -292,7 +292,9 @@ export default class Main extends BaseController {
       ? await this.refreshTaxLock(ctx.getProperty("BranchCode") as string)
       : false;
 
-    if (isManualTaxDocumentBlocked(nfeStatus, taxLocked, invoiceType, ctx.getProperty("IsNfeReturn") === true,
+    // O complemento de ICMS é emitido pelo Siagro como a devolução própria: número, série e chave vêm da emissão.
+    if (isManualTaxDocumentBlocked(nfeStatus, taxLocked, invoiceType,
+      ctx.getProperty("IsNfeReturn") === true || invoiceType === "IcmsComplement",
       ctx.getProperty("TaxDocumentKind") as string)) {
       MessageBox.information(isEmittedNfeStatus(nfeStatus)
         ? "Número, série e chave deste documento vêm da emissão da NF-e pelo Siagro."
@@ -446,6 +448,13 @@ export default class Main extends BaseController {
     }
 
     const ctx = table.getContextByIndex(selectedInvoice[0]) as Context;
+
+    // O complemento de ICMS não tem mercadoria: não há o que retornar (o servidor também recusa).
+    if (ctx.getProperty("InvoiceType") === "IcmsComplement") {
+      MessageBox.warning("O complemento de ICMS não pode ser retornado.");
+      return;
+    }
+
     this._returnInvoiceKey = ctx.getProperty("Key") as string;
 
     // A nota de CARGA não se devolve por aqui: a recusa dela tem tela própria, que sabe mexer no

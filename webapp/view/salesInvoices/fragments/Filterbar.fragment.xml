@@ -37,6 +37,7 @@
             <core:ListItem key="" text="Todos"/>
             <core:ListItem key="Normal" text="Normal"/>
             <core:ListItem key="Return" text="Retorno"/>
+            <core:ListItem key="IcmsComplement" text="Complemento de ICMS"/>
           </Select>
       </fb:control>
     </fb:FilterGroupItem>

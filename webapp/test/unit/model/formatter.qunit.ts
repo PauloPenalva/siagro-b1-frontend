@@ -123,3 +123,11 @@ QUnit.test("origem Transferência de adiantamento e campos do log", function (as
 	assert.strictEqual(formatter.formatFinancialChangeLogField("AdvanceApplication"), "Compensação de adiantamento");
 	assert.strictEqual(formatter.formatFinancialChangeLogField("AdvanceTransfer"), "Transferência de adiantamento");
 });
+
+QUnit.module("formatter - formatSalesInvoiceType");
+
+QUnit.test("traduz os tipos do documento de saída", function (assert) {
+	assert.strictEqual(formatter.formatSalesInvoiceType("Normal"), "Normal");
+	assert.strictEqual(formatter.formatSalesInvoiceType("Return"), "Retorno");
+	assert.strictEqual(formatter.formatSalesInvoiceType("IcmsComplement"), "Complemento de ICMS");
+});
