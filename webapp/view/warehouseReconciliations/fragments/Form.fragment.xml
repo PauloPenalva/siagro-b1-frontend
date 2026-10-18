@@ -33,11 +33,18 @@
                   <core:CustomData key="codeProperty" value="Code"/>
                 </customData>
                 <core:ListItem key="{Key}" text="{Name}"/>
+                <layoutData>
+                  <f:ColumnElementData cellsSmall="4" cellsLarge="3"/>
+                </layoutData>
               </Select>
               <Input
                 value="{Code}"
                 editable="{= ${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
-                required="{= ${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"/>
+                required="{= ${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }">
+                <layoutData>
+                  <f:ColumnElementData cellsSmall="8" cellsLarge="5"/>
+                </layoutData>
+              </Input>
             </f:fields>
           </f:FormElement>
           <f:FormElement label="Status">
