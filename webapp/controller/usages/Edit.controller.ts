@@ -12,6 +12,7 @@ import { applyFiscalCodeLists } from "siagrob1/model/fiscalCodes";
 export default class Edit extends BaseController {
 
 	onInit(): void {
+		this.bindRuralContributionGroupVisibility();
 		this.getRouter().getRoute("usagesEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 

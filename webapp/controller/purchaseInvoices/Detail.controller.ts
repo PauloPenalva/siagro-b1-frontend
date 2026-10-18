@@ -76,6 +76,7 @@ export default class Detail extends BaseController {
   private returnQuantity = 0;
 
   onInit(): void {
+    this.bindTransportGroupVisibility();
     this.getView().setModel(new JSONModel({
       visible: false, loadError: "", canReconcile: false, rows: [], candidates: [], reconciled: [],
       dialog: { selectedKeys: [], summaryText: "" },

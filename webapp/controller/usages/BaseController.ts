@@ -6,12 +6,31 @@ import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import RootBaseController from "../BaseController";
+import SimpleForm from "sap/ui/layout/form/SimpleForm";
+import Title from "sap/ui/core/Title";
+import { bindSimpleFormGroupVisible } from "siagrob1/helpers/SimpleFormGroupHelpers";
 
 /**
  * Base das telas de natureza (inclusão e edição): o value help da natureza de devolução.
  * @namespace siagrob1.controller.usages
  */
 export default class BaseController extends RootBaseController {
+
+	/**
+	 * O grupo "Contribuição Social" só existe na natureza de ENTRADA. O core:Title não tem visible (o UI5 avisava
+	 * FUTURE FATAL), então o visible vai no grupo que o SimpleForm cria para o título. Chamado no onInit da inclusão
+	 * e da edição, que usam o mesmo fragmento.
+	 */
+	protected bindRuralContributionGroupVisibility(): void {
+		const form = this.byId("usagesTaxationForm") as SimpleForm | undefined;
+		const title = this.byId("usagesRuralContributionTitle") as unknown as Title | undefined;
+		if (!form || !title) return;
+		bindSimpleFormGroupVisible(form, title, {
+			path: "Direction",
+			targetType: "any",
+			formatter: (direction: unknown) => direction === "Incoming",
+		});
+	}
 
 	/**
 	 * Só natureza ativa do sentido OPOSTO ao desta natureza: Saída → Entrada, Entrada → Saída. O enum vai

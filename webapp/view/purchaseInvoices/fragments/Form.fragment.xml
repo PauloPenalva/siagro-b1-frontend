@@ -227,7 +227,7 @@
                editáveis (spec 9.3). O texto do título some fora disso porque core:Title não tem visible. Ordem do grupo vol da NF-e/DANFE: peso bruto, peso
                líquido, quantidade, espécie, marca e numeração. O complemento de ICMS não tem transporte nem pesos (D8,
                modFrete 9). -->
-          <core:Title text="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true ? 'Transporte' : '' }" />
+          <core:Title id="purchaseInvoicesTransportTitle" text="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true ? 'Transporte' : '' }" />
 
           <!-- ui5lint-disable no-deprecated-api -->
           <Label text="Transportadora" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true }" />
