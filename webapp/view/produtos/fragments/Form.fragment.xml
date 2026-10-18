@@ -30,10 +30,12 @@
           />
           <!-- STANDALONE: série Automático/Manual (só na inclusão; o código é imutável depois). Em SAPB1 a
                tela segue como era: código digitado, sem série. -->
-          <Label text="Série" visible="{= ${ui>/standalone} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }" />
+          <Label text="Codigo" />
           <Select
-              visible="{= ${ui>/standalone} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
+              id="itemSeriesSelect"
+              visible="{= ${ui>/standalone} === true }"
               required="{= ${ui>/standalone} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
+              editable="{= ${ui>/docNumberSeriesEditable} === true }"
               forceSelection="false"
               change=".onDocNumberSeriesChange"
               selectedKey="{DocNumberKey}"
@@ -50,8 +52,10 @@
               <core:CustomData key="codeProperty" value="ItemCode" />
             </customData>
             <core:ListItem key="{Key}" text="{Name}" />
+            <layoutData>
+              <l:GridData span="XL3 L3 M3 S8" />
+            </layoutData>
           </Select>
-          <Label text="Codigo" />
           <Input
               value="{ItemCode}"
               editable="{= ${ui>/standalone} !== true || (${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true) }"

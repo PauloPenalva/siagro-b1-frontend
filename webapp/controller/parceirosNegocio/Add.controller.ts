@@ -73,6 +73,8 @@ export default class Add extends BaseController {
 				MessageToast.show("Dados salvos com sucesso.", {
 					closeOnBrowserNavigation: false
 				});
+				// Registro gravado: sai do modo de criação (série e número travados).
+				this.resetDocNumberMode();
 			}
 		} finally {
 			this.setBusy(false);

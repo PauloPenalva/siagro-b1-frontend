@@ -11,7 +11,7 @@
     <f:formContainers>
       <f:FormContainer title="Identificação">
         <f:formElements>
-          <f:FormElement label="Número">
+          <f:FormElement label="Codigo">
             <f:fields>
               <!-- Série Automático/Manual só na inclusão; depois de gravado o número é imutável. -->
               <Select
@@ -33,11 +33,18 @@
                   <core:CustomData key="codeProperty" value="Code"/>
                 </customData>
                 <core:ListItem key="{Key}" text="{Name}"/>
+                <layoutData>
+                  <f:ColumnElementData cellsSmall="4" cellsLarge="3"/>
+                </layoutData>
               </Select>
               <Input
                 value="{Code}"
                 editable="{= ${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
-                required="{= ${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"/>
+                required="{= ${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }">
+                <layoutData>
+                  <f:ColumnElementData cellsSmall="8" cellsLarge="5"/>
+                </layoutData>
+              </Input>
             </f:fields>
           </f:FormElement>
           <f:FormElement label="Status">

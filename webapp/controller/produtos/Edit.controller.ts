@@ -2,6 +2,8 @@ import MessageToast from "sap/m/MessageToast";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
+import Select from "sap/m/Select";
+import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import { BaseController } from "./BaseController";
 
 /**
@@ -34,7 +36,10 @@ export default class Edit extends BaseController {
 					dataRequested: () => this.setBusy(true),
 					dataReceived: () => this.setBusy(false),
 				}
-			})
+			});
+			// Na edição a série gravada aparece travada, mesmo que tenha sido inativada depois.
+			((this.byId("itemSeriesSelect") as Select)?.getBinding("items") as ODataListBinding | undefined)
+				?.changeParameters({ $filter: "TransactionCode eq 'Item'" });
 			return;
 		}
 
