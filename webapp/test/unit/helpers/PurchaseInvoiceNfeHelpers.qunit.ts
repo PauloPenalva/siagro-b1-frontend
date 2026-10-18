@@ -1,6 +1,6 @@
 import {
 	allUsagesAllowCounterNote, buildPurchaseItemNumbers, canCreateCounterNote, canIssuePurchaseNfe, canReturnPurchase, canReturnThirdPartyPurchase,
-	complementCandidatesPath, counterNoteText, isOwnComplement, isPurchaseNfeMode, isPurchaseTaxMode, isValidCounterNote, missingUsageMessage, mustFallBackToNormal,
+	complementCandidatesPath, counterNoteText, isComplementType, isOwnComplement, isPurchaseNfeMode, isPurchaseTaxMode, isValidCounterNote, missingUsageMessage, mustFallBackToNormal,
 	PURCHASE_ITEM_SELECT, PurchaseNfeState, requiresSupplierKey, supplierNfeAuthorizationText
 } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 
@@ -49,7 +49,7 @@ QUnit.test("Normal, devolução do Devolver, fora do modo NF-e e tipo já gravad
 });
 
 const thirdParty: PurchaseNfeState = {
-	InvoiceStatus: "Confirmed", InvoiceType: "Normal", IssuerType: "ThirdParty", IsNfeReturn: false, NfeStatus: "None",
+	InvoiceStatus: "Confirmed", InvoiceType: "Normal", IssuerType: "ThirdParty", IsNfeReturn: false, NfeStatus: "None", TaxDocumentKind: "Nfe",
 	ChaveNFe: "35261000052998224725550010000004561123456780",
 };
 
@@ -260,4 +260,30 @@ QUnit.test("caminho da function de candidatos com aspas e códigos codificados",
 
 QUnit.test("as linhas do Detail/Edit trazem o item da nota original", function (assert) {
 	assert.ok(PURCHASE_ITEM_SELECT.split(",").includes("ComplementedItemKey"));
+});
+
+QUnit.module("PurchaseInvoiceNfeHelpers - complemento de ICMS");
+
+QUnit.test("emite o complemento de ICMS próprio pendente, sem NF-e ou rejeitada", function (assert) {
+	const complement = { ...pending, InvoiceType: "IcmsComplement" };
+	assert.strictEqual(canIssuePurchaseNfe(complement, true), true);
+	assert.strictEqual(canIssuePurchaseNfe({ ...complement, NfeStatus: "Rejected" }, true), true);
+	assert.strictEqual(canIssuePurchaseNfe({ ...complement, NfeStatus: "Authorized" }, true), false);
+	assert.strictEqual(canIssuePurchaseNfe(complement, false), false);
+});
+
+QUnit.test("o complemento de ICMS calcula tributos nos dois emissores", function (assert) {
+	assert.strictEqual(isPurchaseTaxMode(true, "Own", "IcmsComplement"), true);
+	assert.strictEqual(isPurchaseTaxMode(true, "ThirdParty", "IcmsComplement"), true);
+	assert.strictEqual(isPurchaseTaxMode(false, "ThirdParty", "IcmsComplement"), false);
+	assert.strictEqual(isPurchaseTaxMode(true, "ThirdParty", "ValueComplement"), false, "complemento de valor de terceiro segue sem natureza");
+});
+
+QUnit.test("isComplementType e complemento próprio cobrem valor e ICMS", function (assert) {
+	assert.strictEqual(isComplementType("ValueComplement"), true);
+	assert.strictEqual(isComplementType("IcmsComplement"), true);
+	assert.strictEqual(isComplementType("Normal"), false);
+	assert.strictEqual(isComplementType("Return"), false);
+	assert.strictEqual(isOwnComplement(true, "IcmsComplement"), true);
+	assert.strictEqual(isOwnComplement(false, "IcmsComplement"), false);
 });

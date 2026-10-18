@@ -833,7 +833,7 @@ export abstract class BaseController extends CommonController {
       ui.getProperty("/complementedItemLabels") as Record<string, string>, candidate.ItemKey,
       complementedItemLabel(candidate.InvoiceNumber, candidate.LineNumber)));
 
-    const created = binding.create(complementLineFrom(candidate), false, false, false);
+    const created = binding.create(complementLineFrom(candidate, invoice.getProperty("InvoiceType") as string), false, false, false);
     this.refreshDocumentTotal();
     this.focusComplementAmount(created);
   }

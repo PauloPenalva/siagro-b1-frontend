@@ -16,7 +16,7 @@ QUnit.test("a linha em branco já traz as chaves que a tela edita, nulas", funct
 		ItemCode: "", ItemName: "", UnitOfMeasureCode: "", Quantity: 0, UnitPrice: 0,
 		SalesInvoiceItemKey: null, PurchaseContractKey: null, UsageCode: null, UsageName: null,
 		NfeItemNumber: null, FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0,
-		ComplementAmount: 0, ComplementedItemKey: null,
+		ComplementAmount: 0, ComplementedItemKey: null, IcmsBase: 0, IcmsValue: 0,
 	});
 });
 
@@ -81,6 +81,16 @@ QUnit.test("NF-e de complemento importada leva o valor do complemento em número
 	assert.deepEqual(rows.map((row) => [row.Quantity, row.UnitPrice, row.ComplementAmount]), [[0, 0, 271.67]]);
 });
 
+QUnit.test("XML do complemento de ICMS leva base e valor do ICMS em número, sem quantidade", function (assert) {
+	const rows = draftItemRows([
+		{ ItemCode: "TRIGO", ItemName: "TRIGO", UnitOfMeasureCode: "KG", Quantity: "0", UnitPrice: "0", IcmsBase: "1000.5", IcmsValue: "120.06" },
+		{ ItemCode: "MILHO", ItemName: "MILHO", UnitOfMeasureCode: "KG", Quantity: "0", UnitPrice: "0" },
+	]);
+
+	assert.deepEqual(rows.map((row) => [row.Quantity, row.UnitPrice, row.ComplementAmount, row.IcmsBase, row.IcmsValue]),
+		[[0, 0, 0, 1000.5, 120.06], [0, 0, 0, 0, 0]]);
+});
+
 QUnit.module("PurchaseInvoiceDraftHelpers - unidade de medida da linha (B7)");
 
 QUnit.test("a unidade já escolhida nunca é trocada", function (assert) {
@@ -102,6 +112,7 @@ QUnit.test("o Save nomeia a primeira linha sem unidade pela posição na grade",
 
 QUnit.test("complemento de valor não exige unidade", function (assert) {
 	assert.strictEqual(missingUnitOfMeasureMessage([{ ItemCode: "SOJA" }], "ValueComplement"), "");
+	assert.strictEqual(missingUnitOfMeasureMessage([{ ItemCode: "SOJA" }], "IcmsComplement"), "");
 });
 
 QUnit.test("sugestão de produto que já foi trocado é descartada", function (assert) {
@@ -125,17 +136,27 @@ const candidate: PurchaseInvoiceComplementCandidate = {
 };
 
 QUnit.test("a linha nasce do item escolhido: herda produto, unidade, natureza e o contrato do original, sem quantidade nem preço", function (assert) {
-	assert.deepEqual(complementLineFrom(candidate), {
+	assert.deepEqual(complementLineFrom(candidate, "ValueComplement"), {
 		...blankItemRow(),
 		ItemCode: "TRIGO", ItemName: "TRIGO EM GRAOS", UnitOfMeasureCode: "KG", PurchaseContractKey: "contrato-1",
 		UsageCode: 4, UsageName: "COMPRA DE MERCADORIA", ComplementedItemKey: "item-1",
 	});
-	assert.strictEqual(complementLineFrom(candidate).Quantity, 0);
-	assert.strictEqual(complementLineFrom(candidate).UnitPrice, 0);
+	assert.strictEqual(complementLineFrom(candidate, "ValueComplement").Quantity, 0);
+	assert.strictEqual(complementLineFrom(candidate, "ValueComplement").UnitPrice, 0);
+});
+
+QUnit.test("complemento de ICMS: a linha herda do original e nasce com base, valor e complemento zerados", function (assert) {
+	const line = complementLineFrom(candidate, "IcmsComplement");
+	assert.deepEqual(line, {
+		...blankItemRow(),
+		ItemCode: "TRIGO", ItemName: "TRIGO EM GRAOS", UnitOfMeasureCode: "KG", PurchaseContractKey: "contrato-1",
+		UsageCode: 4, UsageName: "COMPRA DE MERCADORIA", ComplementedItemKey: "item-1",
+		IcmsBase: 0, IcmsValue: 0, ComplementAmount: 0,
+	});
 });
 
 QUnit.test("original sem contrato (D5): a linha nasce sem contrato, para o operador escolher", function (assert) {
-	const line = complementLineFrom({ ...candidate, PurchaseContractKey: null, PurchaseContractCode: null });
+	const line = complementLineFrom({ ...candidate, PurchaseContractKey: null, PurchaseContractCode: null }, "ValueComplement");
 	assert.strictEqual(line.PurchaseContractKey, null);
 	assert.strictEqual(line.ComplementedItemKey, "item-1");
 	assert.strictEqual(line.ItemCode, "TRIGO");
