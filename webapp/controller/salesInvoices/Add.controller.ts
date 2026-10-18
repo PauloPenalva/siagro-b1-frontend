@@ -35,6 +35,7 @@ export default class Add extends BaseController {
 
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setData({});
+    this.resetDocNumberMode();
     uiModel.setProperty("/editable", true);
     uiModel.setProperty("/editableGrid", true);
 

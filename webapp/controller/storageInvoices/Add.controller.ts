@@ -19,6 +19,7 @@ export default class Add extends BaseController {
     
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setData({});
+    this.resetDocNumberMode();
     uiModel.setProperty("/visible", false);
     uiModel.setProperty("/required", false);
     uiModel.setProperty("/editable", true);
@@ -69,6 +70,11 @@ export default class Add extends BaseController {
       action.setParameter("Notes", ctx.getProperty("Notes"));
       action.setParameter("IncludeUnpricedItems", false);
       action.setParameter("ClosingDate", ctx.getProperty("ClosingDate"));
+
+      // Série manual: o número digitado segue na ação; na automática o servidor o gera.
+      if ((this.getModel("ui") as JSONModel).getProperty("/docNumberManual") === true) {
+        action.setParameter("Code", ctx.getProperty("Code"));
+      }
 
       void action.invoke()
         .then(() => {

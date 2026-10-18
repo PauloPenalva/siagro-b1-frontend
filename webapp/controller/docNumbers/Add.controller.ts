@@ -2,6 +2,7 @@ import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import { BaseController } from "./BaseController";
+import JSONModel from "sap/ui/model/json/JSONModel";
 
 /**
  * @namespace siagrob1.controller.docNumbers
@@ -15,6 +16,7 @@ export default class Add extends BaseController {
 	private newRouteMatched() {
 		
     this.clearStates("docNumbersForm");
+    (this.getModel("ui") as JSONModel).setProperty("/docNumberTransactionLocked", false);
     
     const oView = this.getView();
 		const oModel = this.getModel() as ODataModel;

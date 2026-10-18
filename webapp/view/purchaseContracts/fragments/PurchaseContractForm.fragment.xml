@@ -34,20 +34,25 @@
               editable="{ui>/editable}"
               forceSelection="false"
               required="true"
+              change=".onDocNumberSeriesChange"
               selectedKey="{DocNumberKey}"
               items="{
                 path: '/DocNumbers',
                 parameters:{
-                  $filter: 'TransactionCode eq \'PurchaseContract\''
+                  $filter: 'TransactionCode eq \'PurchaseContract\' and Inactive eq false',
+                  $orderby: 'IsManual,Name'
                 }
               }"
               >
+              <customData>
+                <core:CustomData key="codeProperty" value="Code"/>
+              </customData>
               <core:ListItem key="{Key}" text="{Name}"/>
               <layoutData>
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
             </Select>
-            <Input value="{Code}" editable="false" />
+            <Input value="{Code}" editable="{= ${ui>/docNumberManual} === true }" required="{= ${ui>/docNumberManual} === true }" />
             <Label text="Filial"/>
             <Select 
               editable="{ui>/editable}"

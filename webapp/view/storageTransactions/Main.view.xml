@@ -56,7 +56,6 @@
 						<Button type="Transparent" text="Copiar" press=".onCopy"/>
 						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
 						<Button type="Transparent" text="Criar" press=".onCreate"/>
-						<!-- <Button type="Transparent" text="Deletar" press=".onDelete"/> -->
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>

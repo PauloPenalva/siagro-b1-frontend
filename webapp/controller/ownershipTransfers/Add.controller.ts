@@ -32,6 +32,7 @@ export default class Add extends BaseController {
 	}
 
   private newRouteMatched(ev: Route$PatternMatchedEvent) {
+    this.resetDocNumberMode();
     const navCon = this.byId("navCon") as NavContainer;
     navCon.to(this.byId("ownershipTransferOriginPage") as ObjectPageLayout);
 

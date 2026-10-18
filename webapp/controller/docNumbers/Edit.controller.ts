@@ -3,6 +3,7 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import { BaseController } from "./BaseController";
+import JSONModel from "sap/ui/model/json/JSONModel";
 
 /**
  * @namespace siagrob1.controller.docNumbers
@@ -16,6 +17,8 @@ export default class Edit extends BaseController {
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
 		this.clearStates("docNumbersForm");
+    // O tipo de documento da série não muda depois de criada.
+    (this.getModel("ui") as JSONModel).setProperty("/docNumberTransactionLocked", true);
     
     const oModel = this.getView().getModel() as ODataModel;
 		const oView = this.getView();

@@ -106,36 +106,6 @@ export default class Main extends CommonController {
 		this.navTo("storageTransactionsDetail", {id: sId});
 	}
 
-	async onDelete() {
-		const oModel = this.getView().getModel() as ODataModel;
-		const oTable = this.byId("storageTransactionsTable") as Table;
-		
-    const i = oTable.getSelectedIndex()
-
-    if (i < 0) {
-      MessageBox.warning("Selecione um registro.")
-      return;
-    }
-    const oBindingContext = oTable.getContextByIndex(i) as Context;
- 
-		if (await confirmDialog("Deseja realmente deletar este registro ?", "Deletar registro ?")) {
-			try{
-				this.setBusy(true)
-	
-				await oBindingContext.delete("$auto");
-	
-				await oModel.submitBatch(oModel.getUpdateGroupId())
-					
-				if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
-					//MessageBox.information("Registro deletado.")
-				}
-			} finally {
-				this.setBusy(false)
-			}
-		}
-
-	}
-
   async onCopy() {
     const oTable = this.byId("storageTransactionsTable") as Table;
     const i = oTable.getSelectedIndex()

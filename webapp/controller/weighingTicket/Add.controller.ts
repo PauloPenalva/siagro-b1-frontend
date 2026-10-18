@@ -22,6 +22,7 @@ export default class Add extends GenericController {
     const systemSetup = this.getSystemSetup();
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setData({});
+    this.resetDocNumberMode();
     uiModel.setProperty("/visible", false);
     uiModel.setProperty("/required", false);
     uiModel.setProperty("/editable", true);
