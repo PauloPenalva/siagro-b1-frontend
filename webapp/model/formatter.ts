@@ -1044,6 +1044,7 @@ const formatter = {
     const m = new Map<string, string>();
     m.set("Normal", "Normal");
     m.set("Return", "Retorno");
+    m.set("IcmsComplement", "Complemento de ICMS");
     
     return m.get(value);
   },

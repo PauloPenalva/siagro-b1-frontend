@@ -209,6 +209,8 @@ export default {
   // NF-e de devolução: "Devolver" cria a devolução própria (bindContext); os itens devolvíveis vêm por fetch.
   salesInvoicesCreateNfeReturn: '/SalesInvoicesCreateNfeReturn(...)',
   salesInvoicesNfeReturnableItems: '/odata/SalesInvoicesNfeReturnableItems',
+  // Complemento de ICMS: cria o documento complementar de uma venda autorizada (bindContext).
+  salesInvoicesCreateIcmsComplement: '/SalesInvoicesCreateIcmsComplement(...)',
   // NF-e do Documento de Entrada (entrada própria e devolução de compra).
   purchaseInvoicesIssueNfe: '/odata/PurchaseInvoicesIssueNfe',
   purchaseInvoicesConsultNfe: '/odata/PurchaseInvoicesConsultNfe',
