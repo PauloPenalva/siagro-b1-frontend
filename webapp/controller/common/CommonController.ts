@@ -171,7 +171,7 @@ export default abstract class CommonController extends BaseController {
     const viewContext = this.getView().getBindingContext() as Context | undefined;
 
     if (codeProperty && viewContext) {
-      void viewContext.setProperty(codeProperty, null);
+      void viewContext.setProperty(codeProperty, "");
     }
   }
 

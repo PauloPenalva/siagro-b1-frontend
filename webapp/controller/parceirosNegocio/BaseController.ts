@@ -39,7 +39,7 @@ export abstract class BaseController extends CommonController {
     });
 
     const info = (await this.getDocNumberInfoByTransaction(transaction)).find(x => x.Default);
-    void viewContext.setProperty("CardCode", null);
+    void viewContext.setProperty("CardCode", "");
     void viewContext.setProperty("DocNumberKey", info?.Key ?? null);
   }
 
