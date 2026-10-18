@@ -241,6 +241,7 @@ export default class Main extends BaseController {
         "Normal": "Normal",
         "Return": "Devolução",
         "ValueComplement": "Complemento de valor",
+        "IcmsComplement": "Complemento de ICMS",
       },
     });
 

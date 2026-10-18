@@ -61,7 +61,7 @@
       </t:Column>
       <!-- Natureza da linha (própria e terceiro Normal na filial que calcula tributos): só naturezas de Entrada. Na devolução de compra vem da natureza de
            devolução da linha comprada e não muda. -->
-      <t:Column label="Natureza" width="14rem" visible="{= ${ui>/taxMode} === true || ${path: 'InvoiceType', targetType: 'any'} === 'ValueComplement' || (${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${ui>/hasOtherPurchaseUsages} === true) }">
+      <t:Column label="Natureza" width="14rem" visible="{= ${ui>/taxMode} === true || ${path: 'InvoiceType', targetType: 'any'} === 'ValueComplement' || ${path: 'InvoiceType', targetType: 'any'} === 'IcmsComplement' || (${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${ui>/hasOtherPurchaseUsages} === true) }">
         <t:template>
           <!-- ui5lint-disable no-deprecated-api -->
           <Input
@@ -82,7 +82,7 @@
         <t:template>
           <Input
             value="{UnitOfMeasureCode}"
-            required="{= ${ui>/valueComplement} !== true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
+            required="{= ${ui>/valueComplement} !== true &amp;&amp; ${ui>/icmsComplement} !== true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
             editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true &amp;&amp; !${path: 'ComplementedItemKey', targetType: 'any'} }"
             showValueHelp="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true &amp;&amp; !${path: 'ComplementedItemKey', targetType: 'any'} }"
             valueHelpOnly="true"
@@ -95,7 +95,7 @@
            sem dizer qual campo. `Double` faz parse para número e passa.
            Só vale para binding que GRAVA; os de exibição abaixo podem continuar com `Decimal`. -->
       <t:Column label="Quantidade" width="10rem" hAlign="End"
-                visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'ValueComplement' }">
+                visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'ValueComplement' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }">
         <t:template>
           <Input
             editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/isCounterNote} !== true }"
@@ -113,7 +113,7 @@
         </t:template>
       </t:Column>
       <t:Column label="Preço Unitário" width="11rem" hAlign="End"
-                visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'ValueComplement' }">
+                visible="{= ${path: 'InvoiceType', targetType: 'any'} !== 'ValueComplement' &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }">
         <t:template>
           <Input
             editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/isCounterNote} !== true }"
@@ -147,6 +147,34 @@
                 groupingEnabled: true,
                 groupingSeparator: '.'
               }
+            }" />
+        </t:template>
+      </t:Column>
+      <!-- Complemento de ICMS (spec 2026-10-17 D4): o operador informa a base e o valor do ICMS da linha; o motor não
+           calcula. Escrita de decimal em Double. Fora do complemento de ICMS as colunas somem. -->
+      <t:Column label="Base ICMS" width="11rem" hAlign="End"
+                visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'IcmsComplement' }">
+        <t:template>
+          <Input
+            editable="{= ${ui>/editable} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'IcmsComplement' }"
+            textAlign="End"
+            value="{
+              path: 'IcmsBase',
+              type: 'DoubleType',
+              formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }" />
+        </t:template>
+      </t:Column>
+      <t:Column label="ICMS" width="10rem" hAlign="End"
+                visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'IcmsComplement' }">
+        <t:template>
+          <Input
+            editable="{= ${ui>/editable} === true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} === 'IcmsComplement' }"
+            textAlign="End"
+            value="{
+              path: 'IcmsValue',
+              type: 'DoubleType',
+              formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
             }" />
         </t:template>
       </t:Column>
@@ -236,7 +264,7 @@
            linha ainda não amarrada `PurchaseContract` é null, e no modo TwoWay o setValue tentaria
            escrever dentro do null. Mesmo desenho da coluna "NF de Origem" abaixo. -->
       <t:Column label="{= ${path: 'InvoiceType', targetType: 'any'} === 'ValueComplement' ? 'Contrato (obrigatório)' : 'Contrato' }" width="12rem"
-                visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Normal' || ${path: 'InvoiceType', targetType: 'any'} === 'ValueComplement' || ${path: 'InvoiceType', targetType: 'any'} === 'Return' }">
+                visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Normal' || ${path: 'InvoiceType', targetType: 'any'} === 'ValueComplement' || ${path: 'InvoiceType', targetType: 'any'} === 'IcmsComplement' || ${path: 'InvoiceType', targetType: 'any'} === 'Return' }">
         <t:template>
           <!-- O código escolhido na tela (ui>/contractCodes) vale mais que a NAVEGAÇÃO: a linha nova do complemento
                próprio não tem a navegação, e ela fica velha quando o contrato é trocado (draft.formatContractCode).

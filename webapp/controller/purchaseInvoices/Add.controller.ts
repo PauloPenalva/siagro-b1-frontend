@@ -7,13 +7,13 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import formatter from "siagrob1/model/formatter";
-import { missingUsageMessage } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
+import { isComplementType, missingUsageMessage } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { blankItemRow, draftItemRows, ImportedInvoiceItem, remittanceNumbersByItem, toNumber } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 import { BaseController } from "./BaseController";
 
 /** Rascunho devolvido pela leitura do XML — não é gravado ainda. */
 interface ImportedInvoice {
-  /** "Normal" ou, na NF-e de complemento (finNFe=2), "ValueComplement" (spec D11). */
+  /** "Normal" ou, na NF-e de complemento (finNFe=2), "ValueComplement" (spec D11) ou "IcmsComplement" (spec 2026-10-17). */
   InvoiceType?: string;
   CardCode: string;
   CardName: string;
@@ -165,8 +165,9 @@ export default class Add extends BaseController {
     const today = new Date().toISOString();
 
     const oContext = oBinding.create({
-      // NF-e de complemento (finNFe=2) importada nasce como Complemento de valor, com linhas só de valor (D11).
-      InvoiceType: draft?.InvoiceType === "ValueComplement" ? "ValueComplement" : "Normal",
+      // NF-e de complemento (finNFe=2) importada nasce com o tipo que o servidor leu do XML: Complemento de valor (D11)
+      // ou de ICMS (spec 2026-10-17), com linhas só de valor ou só de Base ICMS/ICMS.
+      InvoiceType: isComplementType(draft?.InvoiceType) ? draft.InvoiceType : "Normal",
       IssuerType: "ThirdParty",
       TaxDocumentKind: draft?.TaxDocumentKind === "Cte" ? "Cte" : "Nfe",
       // A filial do CT-e é a do tomador lida do XML; vale mais que a da sessão.

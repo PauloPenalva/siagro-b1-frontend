@@ -64,6 +64,8 @@
                recusa a manual), por isso o item Devolução fica desabilitado nesse modo, e uma Devolução escolhida antes
                volta para Normal (mustFallBackToNormal). A devolução do cliente (De terceiro) e a filial sem NF-e seguem
                escolhendo os três. -->
+          <!-- Complemento de ICMS (spec 2026-10-17 D10): só STANDALONE. Item desabilitado some da lista do sap.m.Select
+               (hideDisabledItems), então o enabled em ui>/standalone esconde o tipo em SAPB1. -->
           <Label text="Tipo" />
           <Select
             selectedKey="{path: 'InvoiceType', targetType: 'any'}"
@@ -74,6 +76,7 @@
             <core:Item key="Normal" text="Normal" />
             <core:Item key="Return" text="Devolução" enabled="{= ${ui>/nfeMode} !== true }" />
             <core:Item key="ValueComplement" text="Complemento de valor" />
+            <core:Item key="IcmsComplement" text="Complemento de ICMS" enabled="{= ${ui>/standalone} === true }" />
           </Select>
 
           <Label text="Emissão" />
