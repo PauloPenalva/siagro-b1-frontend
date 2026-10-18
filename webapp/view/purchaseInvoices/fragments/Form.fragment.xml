@@ -49,6 +49,9 @@
               <core:CustomData key="codeProperty" value="InvoiceNumber" />
             </customData>
             <core:ListItem key="{Key}" text="{Name}" />
+            <layoutData>
+              <l:GridData span="XL3 L3 M3 S8" />
+            </layoutData>
           </Select>
           <Input
               value="{InvoiceNumber}"

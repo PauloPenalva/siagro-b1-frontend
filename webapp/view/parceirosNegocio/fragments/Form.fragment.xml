@@ -31,11 +31,11 @@
           <!-- STANDALONE: série Automático/Manual (só na inclusão; o código é imutável depois). A lista
                depende do Tipo (Cliente C… / Fornecedor F…) e é refiltrada em onCardTypeChange. Em SAPB1 a tela
                segue como era: código digitado, sem série. -->
-          <Label text="Série" visible="{= ${ui>/standalone} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }" />
+          <Label text="Codigo" />
           <Select
               id="businessPartnerSeriesSelect"
-              visible="{= ${ui>/standalone} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
-              editable="{= !!${path: 'CardType', targetType: 'any'} }"
+              visible="{= ${ui>/standalone} === true }"
+              editable="{= ${ui>/docNumberSeriesEditable} === true &amp;&amp; !!${path: 'CardType', targetType: 'any'} }"
               required="{= ${ui>/standalone} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
               forceSelection="false"
               change=".onDocNumberSeriesChange"
@@ -53,8 +53,10 @@
               <core:CustomData key="codeProperty" value="CardCode" />
             </customData>
             <core:ListItem key="{Key}" text="{Name}" />
+            <layoutData>
+              <l:GridData span="XL3 L3 M3 S8" />
+            </layoutData>
           </Select>
-          <Label text="Codigo" />
           <Input
               value="{CardCode}"
               editable="{= ${ui>/standalone} !== true || (${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true) }"

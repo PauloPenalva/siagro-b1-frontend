@@ -19,9 +19,10 @@
 			<f:FormContainer title="Carregamento">
 				<f:formElements>
 					<!-- Série/número só na criação (Automático ou Manual); na edição o número aparece travado. -->
-					<f:FormElement label="Série" visible="{= !${form>/isEdit} }">
+					<f:FormElement label="Codigo">
 						<f:fields>
 							<Select
+								visible="{= !${form>/isEdit} }"
 								required="true"
 								forceSelection="false"
 								selectedKey="{form>/DocNumberKey}"
@@ -30,10 +31,6 @@
 								items="{ path: 'series>/', templateShareable: false }">
 								<core:Item key="{series>Key}" text="{series>Name}"/>
 							</Select>
-						</f:fields>
-					</f:FormElement>
-					<f:FormElement label="Número">
-						<f:fields>
 							<Input
 								value="{form>/Code}"
 								editable="{= ${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
