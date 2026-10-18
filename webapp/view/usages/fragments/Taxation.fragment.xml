@@ -138,15 +138,18 @@
           <Label text="Alíquotas" />
           <Text text="Vêm da tabela de Alíquotas IBS/CBS vigente na data de emissão." />
 
-          <core:Title text="Funrural (retenção do produtor rural)" emphasized="true" />
-          <!-- Spec 2026-10-09 §2: alíquotas da retenção na compra. PF, PJ (INSS e RAT combinados no INSS) e decisão
-               judicial (só SENAR) são naturezas diferentes. Vazio = parcela não retida. -->
-          <Label text="INSS %" visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
-          <Input visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" value="{ path: 'FunruralInssRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
-          <Label text="RAT/GILRAT %" visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
-          <Input visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" value="{ path: 'FunruralRatRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
-          <Label text="SENAR %" visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
-          <Input visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" value="{ path: 'FunruralSenarRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+          <core:Title text="Contribuição Social" emphasized="true"
+                    visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
+          <!-- Modo da retenção do produtor rural na compra; as alíquotas vêm da tabela de vigências. -->
+          <Label text="Contribuição social" visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
+          <Select
+              visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }"
+              selectedKey="{ path: 'RuralContributionMode', targetType: 'any' }"
+              forceSelection="false">
+            <core:ListItem key="None" text="Não incide" />
+            <core:ListItem key="Full" text="Contribuição completa (INSS + RAT + SENAR)" />
+            <core:ListItem key="SenarOnly" text="Somente SENAR" />
+          </Select>
           <core:Title text="Informações complementares" emphasized="true" />
           <Label text="Texto padrão na NF-e" />
           <TextArea value="{DefaultAdditionalInfo}" rows="4" maxLength="2000" growing="true" />

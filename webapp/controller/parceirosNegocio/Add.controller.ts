@@ -40,6 +40,10 @@ export default class Add extends BaseController {
       "NfeEmail": null,
       "Phone": null,
       "PaymentConditionCode": null,
+      "IsRuralProducer": false,
+      "RuralProducerType": null,
+      "RuralProducerCpf": null,
+      "RuralPayrollOption": false,
     }, false, false, false);
 
 		oView.setBindingContext(oContext);
