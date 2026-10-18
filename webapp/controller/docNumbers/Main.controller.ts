@@ -71,6 +71,11 @@ export default class Main extends BaseController {
       return;
     }
     const oBindingContext = oTable.getContextByIndex(i) as Context;
+
+    if (oBindingContext.getProperty("IsManual") === true) {
+      MessageBox.warning("A série Manual não pode ser excluída.")
+      return;
+    }
  
 		if (await confirmDialog("Deseja realmente deletar este registro ?", "Deletar registro ?")) {
 			try{

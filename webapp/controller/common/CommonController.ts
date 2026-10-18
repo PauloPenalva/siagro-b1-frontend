@@ -17,6 +17,8 @@ import Dialog from "sap/m/Dialog";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { DocNumberInfo } from "siagrob1/types/DocNumberInfo";
 import { Column as ExportColumn } from "sap/ui/export/library";
+import { Select$ChangeEvent } from "sap/m/Select";
+import CustomData from "sap/ui/core/CustomData";
 
 /**
  * @namespace siagrob1.controller
@@ -140,6 +142,42 @@ export default abstract class CommonController extends BaseController {
     const resultContext = func.getBoundContext();
     
     return resultContext.getObject() as DocNumberInfo[];
+  }
+
+  /**
+   * Handler padrão do Select de série de numeração (`/DocNumbers`) nos formulários de criação.
+   *
+   * Série Manual: `ui>/docNumberManual` vira `true` e o Input do número passa a ser editável e
+   * obrigatório. Ao voltar para uma série Automática, o código digitado é descartado — o backend
+   * gera o número. O nome da propriedade do código vem do `customData` `codeProperty` do Select
+   * (ex.: "Code", "CardCode").
+   */
+  public onDocNumberSeriesChange(event: Select$ChangeEvent): void {
+    const item = event.getParameter("selectedItem");
+    const isManual = (item?.getBindingContext() as Context | undefined)?.getProperty("IsManual") === true;
+    const uiModel = this.getModel("ui") as JSONModel;
+    const wasManual = uiModel.getProperty("/docNumberManual") === true;
+
+    uiModel.setProperty("/docNumberManual", isManual);
+
+    if (isManual || !wasManual) {
+      return;
+    }
+
+    const select = event.getSource();
+    const codeProperty = (select.getCustomData().find(
+      (data: CustomData) => data.getKey() === "codeProperty"
+    ))?.getValue() as string;
+    const viewContext = this.getView().getBindingContext() as Context | undefined;
+
+    if (codeProperty && viewContext) {
+      void viewContext.setProperty(codeProperty, null);
+    }
+  }
+
+  /** Volta ao modo automático; chamar no `onRouteMatched` das telas Add/Edit que usam o Select de série. */
+  protected resetDocNumberMode(): void {
+    (this.getModel("ui") as JSONModel).setProperty("/docNumberManual", false);
   }
 
   async getResource<T>(resourceUrl: string) {

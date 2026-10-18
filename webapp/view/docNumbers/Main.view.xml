@@ -117,6 +117,15 @@
 							<Text text="{NumberSize}"/>
 						</t:template>
 					</t:Column>
+					<t:Column
+						label="Manual"
+						visible="true"
+						width="6rem"
+						>
+						<t:template>
+							<Text text="{= ${IsManual} ? 'Sim' : 'Não' }"/>
+						</t:template>
+					</t:Column>
 				</t:columns>
 
 			</t:Table>

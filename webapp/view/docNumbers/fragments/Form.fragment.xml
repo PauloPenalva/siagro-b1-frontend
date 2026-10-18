@@ -31,6 +31,7 @@
             />
             <Label text="Documento" />
             <Select
+                id="docNumberTransactionCode"
                 selectedKey="{
                   path: 'TransactionCode',
                   targetType: 'any'
@@ -51,6 +52,9 @@
               <core:ListItem key="FinancialDocument" text="Financeiro"/>
               <core:ListItem key="WarehouseReconciliation" text="Conferência de Saldo"/>
               <core:ListItem key="PurchaseInvoice" text="Documento de Entrada"/>
+              <core:ListItem key="Customer" text="Cliente"/>
+              <core:ListItem key="Supplier" text="Fornecedor"/>
+              <core:ListItem key="Item" text="Produto"/>
             </Select>
             <Label text="Nome" />
             <Input
@@ -59,31 +63,32 @@
                 required="true"
                 liveChange=".validateField"
             />
-            <Label text="Primeiro Numero" />
+            <Label text="Primeiro Numero" visible="{= !${IsManual} }" />
             <Input 
+                visible="{= !${IsManual} }"
                 type="Number"
 								required="true"
                 value="{FirstNumber}" />
-            <Label text="Próximo Numero" />
+            <Label text="Próximo Numero" visible="{= !${IsManual} }" />
             <Input 
+                visible="{= !${IsManual} }"
                 type="Number"
 								required="true"
                 value="{NextNumber}" />
 
             <core:Title  text=""/>
-            <Label text="Prefixo" />
-            <Input value="{Prefix}" />
-            <Label text="Sufixo" />
-            <Input value="{Suffix}" />
-            <Label text="Padrão"/>
-            <Label text="Qtd. Digitos" />
-            <Input type="Number" value="{NumberSize}" />
+            <Label text="Prefixo" visible="{= !${IsManual} }" />
+            <Input value="{Prefix}" visible="{= !${IsManual} }" />
+            <Label text="Sufixo" visible="{= !${IsManual} }" />
+            <Input value="{Suffix}" visible="{= !${IsManual} }" />
+            <Label text="Qtd. Digitos" visible="{= !${IsManual} }" />
+            <Input type="Number" value="{NumberSize}" visible="{= !${IsManual} }" />
             <Label text="Padrão ?"/>
-            <CheckBox selected="{Default}" />
+            <CheckBox selected="{Default}" editable="{= !${IsManual} }" />
             <Label text="Inativo ?"/>
             <CheckBox selected="{Inactive}" />
-            <!-- <Label text="Manual ?"/>
-            <CheckBox selected="{IsManual}" /> -->
+            <Label text="Manual ?"/>
+            <CheckBox selected="{IsManual}" editable="false" />
 
         </f:content>
     </f:SimpleForm>

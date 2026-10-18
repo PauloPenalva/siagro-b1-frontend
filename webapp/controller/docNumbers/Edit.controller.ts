@@ -9,7 +9,8 @@ import { BaseController } from "./BaseController";
  */
 export default class Edit extends BaseController {
 
-	onInit(): void {	
+	onInit(): void {
+		this.hideStandaloneOnlyDocuments();
 		this.getRouter().getRoute("docNumbersEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 

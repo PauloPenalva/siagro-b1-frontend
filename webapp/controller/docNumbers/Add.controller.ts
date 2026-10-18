@@ -9,6 +9,7 @@ import { BaseController } from "./BaseController";
 export default class Add extends BaseController {
 
 	onInit(): void {
+		this.hideStandaloneOnlyDocuments();
 		this.getRouter().getRoute("docNumbersNew").attachPatternMatched(() => this.newRouteMatched());
 	}
 	private newRouteMatched() {
