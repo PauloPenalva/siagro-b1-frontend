@@ -250,13 +250,16 @@ export function isOtherPurchaseUsage(usageCode: unknown, otherPurchaseUsages?: R
   return (typeof usageCode === "number" || typeof usageCode === "string") && otherPurchaseUsages?.[String(usageCode)] === true;
 }
 
-/** Só o documento Normal que não é devolução pode ser de outra compra (espelha o servidor). */
+/**
+ * Só o documento Normal ou o complemento de valor (spec 2026-10-17 D3/D6) que não é devolução pode ser de outra compra
+ * (espelha o servidor). O complemento de ICMS nunca é: não gera título (D5).
+ */
 export function isOtherPurchaseEligible(invoiceType: unknown, isNfeReturn: unknown): boolean {
-  return invoiceType === "Normal" && isNfeReturn !== true;
+  return (invoiceType === "Normal" || invoiceType === "ValueComplement") && isNfeReturn !== true;
 }
 
 /**
- * Espelha o servidor: o documento é de outra compra quando é Normal e não é devolução, alguma linha tem natureza de
+ * Espelha o servidor: o documento é de outra compra quando é Normal ou complemento de valor e não é devolução, alguma linha tem natureza de
  * outra compra e TODAS as linhas COM natureza são de outra compra (linha sem natureza é ignorada).
  */
 export function isOtherPurchaseDocument(

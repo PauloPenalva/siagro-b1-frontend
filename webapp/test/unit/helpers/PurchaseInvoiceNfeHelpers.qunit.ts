@@ -140,6 +140,15 @@ QUnit.test("chave obrigatória só no terceiro Normal do tipo NF-e na filial ati
 	assert.strictEqual(requiresSupplierKey(doc, false), false);
 });
 
+QUnit.test("chave obrigatória também nos complementos de valor e de ICMS do terceiro (espelha o SupplierNfeKeyGuard)", function (assert) {
+	const doc = { IssuerType: "ThirdParty", InvoiceType: "ValueComplement", TaxDocumentKind: "Nfe" };
+	assert.strictEqual(requiresSupplierKey(doc, true), true, "complemento de valor");
+	assert.strictEqual(requiresSupplierKey({ ...doc, InvoiceType: "IcmsComplement" }, true), true, "complemento de ICMS");
+	assert.strictEqual(requiresSupplierKey({ ...doc, TaxDocumentKind: "Cte" }, true), true, "CT-e");
+	assert.strictEqual(requiresSupplierKey({ ...doc, IssuerType: "Own" }, true), false, "emissão própria");
+	assert.strictEqual(requiresSupplierKey(doc, false), false, "filial sem a regra");
+});
+
 QUnit.test("texto da autorização na SEFAZ com protocolo e data", function (assert) {
 	const text = supplierNfeAuthorizationText("135260000000001", "2026-10-05T12:30:00-03:00");
 	assert.ok(text.startsWith("Autorizada na SEFAZ — protocolo 135260000000001 em 05/10/2026"), text);

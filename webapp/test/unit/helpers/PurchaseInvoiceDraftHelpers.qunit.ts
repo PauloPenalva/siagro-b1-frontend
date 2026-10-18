@@ -1,6 +1,7 @@
 import {
 	blankItemRow, complementedItemLabel, complementedItemLabels, complementLineFrom, draftItemRows, formatComplementedItem,
-	formatContractCode, inheritedContracts, isLineContractEditable, missingUnitOfMeasureMessage, suggestedUnitOfMeasure, toNumber,
+	formatContractCode, inheritedContracts, isLineContractEditable, isOtherPurchaseDocument, isOtherPurchaseEligible,
+	missingUnitOfMeasureMessage, suggestedUnitOfMeasure, toNumber,
 	unitSuggestionToApply, withEntry
 } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 import { PurchaseInvoiceComplementCandidate } from "siagrob1/types/PurchaseInvoiceComplementCandidate";
@@ -196,4 +197,28 @@ QUnit.test("withEntry devolve um mapa NOVO (o JSONModel só notifica quando o ob
 	assert.notStrictEqual(after, before);
 	assert.deepEqual(after, { a: "1", b: "2" });
 	assert.deepEqual(withEntry(undefined, "", "x"), {});
+});
+
+QUnit.module("PurchaseInvoiceDraftHelpers - outra compra no complemento de valor (spec 2026-10-17 D3/D6)");
+
+const otherUsages = { "7": true };
+
+QUnit.test("Normal e complemento de valor podem ser de outra compra; ICMS, Devolução e devolução por NF-e não", function (assert) {
+	assert.strictEqual(isOtherPurchaseEligible("Normal", false), true);
+	assert.strictEqual(isOtherPurchaseEligible("ValueComplement", false), true);
+	assert.strictEqual(isOtherPurchaseEligible("IcmsComplement", false), false, "ICMS não gera título (D5)");
+	assert.strictEqual(isOtherPurchaseEligible("Return", false), false);
+	assert.strictEqual(isOtherPurchaseEligible("ValueComplement", true), false, "devolução");
+});
+
+QUnit.test("complemento de valor com toda natureza de outra compra é documento de outra compra", function (assert) {
+	assert.strictEqual(isOtherPurchaseDocument("ValueComplement", false, [7, null], otherUsages), true);
+	assert.strictEqual(isOtherPurchaseDocument("ValueComplement", false, [7, 3], otherUsages), false, "mistura com natureza de contrato");
+	assert.strictEqual(isOtherPurchaseDocument("IcmsComplement", false, [7], otherUsages), false, "ICMS");
+});
+
+QUnit.test("contrato da linha do complemento de valor trava na natureza de outra compra", function (assert) {
+	const eligible = isOtherPurchaseEligible("ValueComplement", false);
+	assert.strictEqual(isLineContractEditable(true, false, null, {}, 7, otherUsages, eligible), false, "outra compra");
+	assert.strictEqual(isLineContractEditable(true, false, null, {}, 3, otherUsages, eligible), true, "natureza de contrato");
 });

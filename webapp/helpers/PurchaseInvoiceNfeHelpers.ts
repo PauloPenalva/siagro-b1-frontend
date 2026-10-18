@@ -31,11 +31,15 @@ export function isPurchaseTaxMode(taxLocked: boolean, issuerType: string, invoic
 		(issuerType === "ThirdParty" && (invoiceType === "Normal" || invoiceType === "IcmsComplement")));
 }
 
-/** Chave da NF-e/CT-e do fornecedor obrigatória: terceiro Normal do tipo NF-e ou CT-e na filial que emite pelo Siagro (spec terceiro-chave D3). */
+/**
+ * Chave da NF-e/CT-e do fornecedor obrigatória: terceiro Normal ou complemento (valor ou ICMS) do tipo NF-e ou CT-e na
+ * filial que emite pelo Siagro (spec terceiro-chave D3; complementos, spec 2026-10-17 — espelha o SupplierNfeKeyGuard).
+ */
 export function requiresSupplierKey(
 	doc: { IssuerType: string; InvoiceType: string; TaxDocumentKind: string }, taxLocked: boolean
 ): boolean {
-	return taxLocked === true && doc.IssuerType === "ThirdParty" && doc.InvoiceType === "Normal" &&
+	return taxLocked === true && doc.IssuerType === "ThirdParty" &&
+		(doc.InvoiceType === "Normal" || isComplementType(doc.InvoiceType)) &&
 		(doc.TaxDocumentKind === "Nfe" || doc.TaxDocumentKind === "Cte");
 }
 

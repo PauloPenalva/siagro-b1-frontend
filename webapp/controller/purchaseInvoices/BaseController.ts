@@ -180,9 +180,9 @@ export abstract class BaseController extends CommonController {
         MessageToast.show("Na filial que emite NF-e pelo Siagro, a devolução de compra é feita pelo botão Devolver, no detalhe do documento de entrada.");
       }
 
-      // O nome da condição aparece com a condição (própria e terceiro Normal) e fora da devolução de compra (que não
-      // tem pagamento).
-      if (taxMode && !isNfeReturn) {
+      // O nome da condição aparece com a condição (própria, terceiro Normal e complemento de valor, que pode ser de
+      // outra compra) e fora da devolução de compra e do complemento de ICMS (que não têm pagamento).
+      if ((taxMode || invoiceType === "ValueComplement") && !isNfeReturn && invoiceType !== "IcmsComplement") {
         await this.refreshPaymentConditionName(paymentConditionCode);
       } else {
         uiModel.setProperty("/paymentConditionName", "");

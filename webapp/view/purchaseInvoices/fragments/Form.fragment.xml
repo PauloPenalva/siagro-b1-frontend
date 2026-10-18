@@ -201,12 +201,13 @@
 
           <!-- Filial que emite pelo Siagro, emissão própria ou de terceiro Normal (a tela do terceiro é igual à da
                própria). Na própria a condição vira cobr/dup e pag; padrão do fornecedor. A devolução de compra não tem
-               pagamento (tPag 90). -->
+               pagamento (tPag 90), nem o complemento de ICMS (D8). O complemento de valor de terceiro sem contrato (outra
+               compra, spec 2026-10-17 D3/D6) também mostra: as parcelas saem dela. -->
           <Label text="Condição de pagamento"
-                 visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }" />
+                 visible="{= (${ui>/taxMode} === true || ${ui>/otherPurchaseDoc} === true) &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/icmsComplement} !== true }" />
           <!-- ui5lint-disable no-deprecated-api -->
           <Input
-            visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }"
+            visible="{= (${ui>/taxMode} === true || ${ui>/otherPurchaseDoc} === true) &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/icmsComplement} !== true }"
             editable="{= ${ui>/editable} === true &amp;&amp; !${path: 'ProducerInvoiceKey', targetType: 'any'} }"
             showValueHelp="true"
             valueHelpOnly="true"
@@ -218,19 +219,20 @@
           </Input>
           <!-- ui5lint-enable no-deprecated-api -->
           <Input value="{ui>/paymentConditionName}" editable="false"
-                 visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/nfeReturn} !== true }" />
+                 visible="{= (${ui>/taxMode} === true || ${ui>/otherPurchaseDoc} === true) &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/icmsComplement} !== true }" />
 
           <!-- Transporte, pesos e volume (grupos transp e vol da NF-e): emissão própria e terceiro Normal na filial
                que emite pelo Siagro, com a mesma tela. Peso bruto e líquido são exigidos na emissão própria
                (NfeReadinessValidator); no terceiro são os dados da nota do fornecedor. Na devolução de compra seguem
                editáveis (spec 9.3). O texto do título some fora disso porque core:Title não tem visible. Ordem do grupo vol da NF-e/DANFE: peso bruto, peso
-               líquido, quantidade, espécie, marca e numeração. -->
-          <core:Title text="{= ${ui>/taxMode} === true ? 'Transporte' : '' }" />
+               líquido, quantidade, espécie, marca e numeração. O complemento de ICMS não tem transporte nem pesos (D8,
+               modFrete 9). -->
+          <core:Title text="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true ? 'Transporte' : '' }" />
 
           <!-- ui5lint-disable no-deprecated-api -->
-          <Label text="Transportadora" visible="{= ${ui>/taxMode} === true }" />
+          <Label text="Transportadora" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true }" />
           <Input
-              visible="{= ${ui>/taxMode} === true }"
+              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true }"
               editable="{ui>/editable}"
               showValueHelp="true"
               valueHelpOnly="true"
@@ -243,11 +245,11 @@
               <core:CustomData key="descriptionProperty" value="TruckingCompanyName:CardName" />
             </customData>
           </Input>
-          <Input value="{TruckingCompanyName}" editable="false" visible="{= ${ui>/taxMode} === true }" />
+          <Input value="{TruckingCompanyName}" editable="false" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true }" />
 
-          <Label text="Placa" visible="{= ${ui>/taxMode} === true }" />
+          <Label text="Placa" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true }" />
           <Input
-              visible="{= ${ui>/taxMode} === true }"
+              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true }"
               editable="{ui>/editable}"
               showValueHelp="true"
               valueHelpOnly="true"
@@ -259,9 +261,9 @@
           </Input>
           <!-- ui5lint-enable no-deprecated-api -->
 
-          <Label text="Tipo do Frete" visible="{= ${ui>/taxMode} === true }" />
+          <Label text="Tipo do Frete" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true }" />
           <Select
-              visible="{= ${ui>/taxMode} === true }"
+              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true }"
               editable="{ui>/editable}"
               forceSelection="false"
               width="100%"
@@ -273,9 +275,9 @@
           </Select>
 
           <!-- `Double` e não `Decimal`: campo de ESCRITA (o leitor OData recusa Edm.Decimal em string). -->
-          <Label text="Peso Bruto" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }" />
+          <Label text="Peso Bruto" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true &amp;&amp; ${ui>/isCte} !== true }" />
           <Input
-              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }"
+              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true &amp;&amp; ${ui>/isCte} !== true }"
               editable="{ui>/editable}"
               value="{
                 path: 'GrossWeight',
@@ -292,9 +294,9 @@
             </layoutData>
           </Input>
 
-          <Label text="Peso Líquido" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }" />
+          <Label text="Peso Líquido" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true &amp;&amp; ${ui>/isCte} !== true }" />
           <Input
-              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }"
+              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true &amp;&amp; ${ui>/isCte} !== true }"
               editable="{ui>/editable}"
               value="{
                 path: 'NetWeight',
@@ -311,9 +313,9 @@
             </layoutData>
           </Input>
 
-          <Label text="Qtde. Volumes" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }" />
+          <Label text="Qtde. Volumes" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true &amp;&amp; ${ui>/isCte} !== true }" />
           <Input
-              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }"
+              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true &amp;&amp; ${ui>/isCte} !== true }"
               editable="{ui>/editable}"
               value="{VolumeQuantity}">
             <layoutData>
@@ -321,24 +323,24 @@
             </layoutData>
           </Input>
 
-          <Label text="Espécie" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }" />
+          <Label text="Espécie" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true &amp;&amp; ${ui>/isCte} !== true }" />
           <Input
-              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }"
+              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true &amp;&amp; ${ui>/isCte} !== true }"
               editable="{ui>/editable}"
               value="{VolumeSpecies}"
               maxLength="60"
               placeholder="GRANEL, SACO, BAG, CAIXA" />
 
-          <Label text="Marca" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }" />
+          <Label text="Marca" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true &amp;&amp; ${ui>/isCte} !== true }" />
           <Input
-              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }"
+              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true &amp;&amp; ${ui>/isCte} !== true }"
               editable="{ui>/editable}"
               value="{VolumeBrand}"
               maxLength="60" />
 
-          <Label text="Numeração" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }" />
+          <Label text="Numeração" visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true &amp;&amp; ${ui>/isCte} !== true }" />
           <Input
-              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/isCte} !== true }"
+              visible="{= ${ui>/taxMode} === true &amp;&amp; ${ui>/icmsComplement} !== true &amp;&amp; ${ui>/isCte} !== true }"
               editable="{ui>/editable}"
               value="{VolumeNumbering}"
               maxLength="60" />
