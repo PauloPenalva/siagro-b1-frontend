@@ -40,7 +40,7 @@
               items="{
                 path: '/DocNumbers',
                 parameters:{
-                  $filter: 'TransactionCode eq \'StorageTransaction\''
+                  $filter: 'TransactionCode eq \'StorageTransaction\' and Inactive eq false and IsManual eq false'
                 }
               }"
               >

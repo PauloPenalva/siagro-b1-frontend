@@ -20,6 +20,7 @@ export default class Add extends BaseController {
     const uiModel = this.getModel("ui") as JSONModel;
    
     uiModel.setProperty("/editable", true);
+    this.startDocNumberCreate();
     // O tipo do contrato só pode ser escolhido aqui, na criação.
     uiModel.setProperty("/typeEditable", true);
 
@@ -60,6 +61,9 @@ export default class Add extends BaseController {
 		
     if (!this.validateForm("formPurchaseContracts")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
+      return;
+    }
+    if (this.isManualNumberMissing("Code")) {
       return;
     }
     

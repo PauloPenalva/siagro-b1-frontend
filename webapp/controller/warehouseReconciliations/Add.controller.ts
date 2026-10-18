@@ -19,6 +19,7 @@ export default class Add extends BaseController {
 
   private async prepare(): Promise<void> {
     (this.getModel("ui") as JSONModel).setProperty("/editable", true);
+    this.startDocNumberCreate();
     this.resetModelChanges();
     this.resetPreview();
     this.wr().setProperty("/savedLines", []);
@@ -27,11 +28,15 @@ export default class Add extends BaseController {
     try {
       const branchInfo = await this.getBranchInfo();
       const systemSetup = this.getSystemSetup();
+      const docNumberInfo = (await this.getDocNumberInfoByTransaction("WarehouseReconciliation")).find(x => x.Default);
       const oBinding = (this.getModel() as ODataModel).bindList("/WarehouseReconciliations");
 
       // Toda propriedade editável precisa existir no create inicial, nem que seja null.
       const oContext = oBinding.create({
         Status: "Draft",
+        // Sempre enviar a série; Code só é preenchido na série Manual.
+        DocNumberKey: docNumberInfo?.Key ?? null,
+        Code: null,
         BranchCode: branchInfo?.code ?? null,
         WarehouseCode: "",
         WarehouseName: null,

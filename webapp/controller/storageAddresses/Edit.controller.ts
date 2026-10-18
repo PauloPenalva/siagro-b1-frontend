@@ -16,6 +16,7 @@ export default class Edit extends LoteArmazenagemBaseController {
 	}
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
+    this.resetDocNumberMode();
 		this.clearStates("formLoteArmazenagem");
     void this.refreshStandaloneFlag();
 

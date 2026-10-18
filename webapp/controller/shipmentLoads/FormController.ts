@@ -4,6 +4,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Sorter from "sap/ui/model/Sorter";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import formatter from "siagrob1/model/formatter";
+import { Select$ChangeEvent } from "sap/m/Select";
 import { BaseController } from "./BaseController";
 
 /** Estado do formulário da Logística, usado tanto na criação quanto na edição. */
@@ -29,6 +30,10 @@ export type LoadForm = {
    */
   typeEditable: boolean,
   Key?: string,
+  /** Série de numeração (Automático/Manual); sempre enviada na criação. */
+  DocNumberKey?: string,
+  /** Número da carga: digitado só na série Manual; vazio na Automática (o servidor gera). */
+  Code?: string,
   LoadType?: string,
   BranchCode?: string,
   LoadDate?: string,
@@ -72,6 +77,45 @@ export abstract class FormController extends BaseController {
   protected initFormModels(): void {
     this.getView().setModel(new JSONModel([]), "branches");
     this.getView().setModel(new JSONModel({}), "form");
+    this.getView().setModel(new JSONModel([]), "series");
+  }
+
+  /**
+   * Séries de numeração ativas da carga, num JSONModel estático (mesmo motivo das filiais: o
+   * `selectedKey` vem do modelo `form`, e itens OData chegando depois deixam o Select vazio).
+   * `$filter` estático porque o filtro de enum precisa dele.
+   */
+  protected async loadSeries(): Promise<void> {
+    const oModel = this.getModel() as ODataModel;
+    const contexts = await oModel.bindList("/DocNumbers", undefined,
+      [new Sorter("IsManual"), new Sorter("Name")], undefined,
+      { $filter: "TransactionCode eq 'ShipmentLoad' and Inactive eq false" })
+      .requestContexts(0, 50);
+    (this.getModel("series") as JSONModel).setData(
+      contexts.map(ctx => ctx.getObject() as { Key: string; Name: string; IsManual: boolean }));
+  }
+
+  /** Escolhe a série padrão (Automático) na criação e volta ao modo automático. */
+  protected async selectDefaultSeries(): Promise<void> {
+    this.startDocNumberCreate();
+    const info = (await this.getDocNumberInfoByTransaction("ShipmentLoad")).find(x => x.Default);
+    this.formModel().setProperty("/DocNumberKey", info?.Key ?? null);
+  }
+
+  /**
+   * Série mudou: Manual libera o número; ao voltar para Automático o número digitado é descartado.
+   * Versão do `onDocNumberSeriesChange` para o modelo `form` (JSON), em que não há contexto OData.
+   */
+  onLoadSeriesChange(event: Select$ChangeEvent): void {
+    const key = event.getParameter("selectedItem")?.getKey();
+    const series = (this.getModel("series") as JSONModel).getData() as { Key: string; IsManual: boolean }[];
+    const isManual = series.find(x => x.Key === key)?.IsManual === true;
+
+    (this.getModel("ui") as JSONModel).setProperty("/docNumberManual", isManual);
+
+    if (!isManual) {
+      this.formModel().setProperty("/Code", "");
+    }
   }
 
   protected formModel(): JSONModel {
@@ -137,6 +181,9 @@ export abstract class FormController extends BaseController {
       // OData rejeitar o corpo inteiro.
       if (!form.isEdit) {
         action.setParameter("LoadType", form.LoadType ?? "Normal");
+        // Sempre a série; Code vazio na Automática (sem DocNumberKey o servidor trata o código como legado).
+        action.setParameter("DocNumberKey", form.DocNumberKey ?? null);
+        action.setParameter("Code", (form.Code ?? "").trim());
       }
 
       this.setBusy(true);
@@ -179,6 +226,10 @@ export abstract class FormController extends BaseController {
    * O `required` do fragmento é só o asterisco — a validação de verdade é esta.
    */
   private missingRequiredField(form: LoadForm): string {
+    if (!form.isEdit && !form.DocNumberKey) return "Informe a série de numeração da carga.";
+    if (!form.isEdit && (this.getModel("ui") as JSONModel).getProperty("/docNumberManual") === true && !(form.Code ?? "").trim()) {
+      return "Informe o número da carga.";
+    }
     if (!form.BranchCode) return "Informe a filial da carga.";
     if (!form.TruckCode) return "Informe a placa do veículo.";
     if (!form.CarrierCardCode) return "Informe a transportadora da carga.";

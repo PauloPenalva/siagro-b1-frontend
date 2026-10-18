@@ -1072,6 +1072,9 @@ const formatter = {
     m.set("FinancialDocument", "Financeiro");
     m.set("WarehouseReconciliation", "Conferência de Saldo");
     m.set("PurchaseInvoice", "Documento de Entrada");
+    m.set("Customer", "Cliente");
+    m.set("Supplier", "Fornecedor");
+    m.set("Item", "Produto");
     
     return m.get(value);
   },

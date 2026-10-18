@@ -32,6 +32,7 @@ export default class Add extends BaseController {
 	}
 
   private newRouteMatched(ev: Route$PatternMatchedEvent) {
+    this.startDocNumberCreate();
     const navCon = this.byId("navCon") as NavContainer;
     navCon.to(this.byId("ownershipTransferOriginPage") as ObjectPageLayout);
 
@@ -202,6 +203,9 @@ export default class Add extends BaseController {
   async onSave() {
     if (!this.validateForm("ownershipTransferForm")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
+      return;
+    }
+    if (this.isManualNumberMissing("TransferCode")) {
       return;
     }
     

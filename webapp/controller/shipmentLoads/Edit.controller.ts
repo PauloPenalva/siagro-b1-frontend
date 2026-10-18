@@ -26,6 +26,7 @@ export default class Edit extends FormController {
     const { id } = ev.getParameter("arguments") as { id: string };
     if (id == null) return;
 
+    this.resetDocNumberMode();
     this.formModel().setData({});
 
     if (!this._branchesLoaded) {
@@ -65,6 +66,8 @@ export default class Edit extends FormController {
         typeEditable: false,
         LoadType: load.LoadType as string,
         Key: id,
+        // Número e série são imutáveis depois de criada: o fragmento só exibe o número, sem editar.
+        Code: load.Code as string,
         BranchCode: load.BranchCode as string,
         LoadDate: (load.LoadDate as string)?.slice(0, 10),
         TruckCode: load.TruckCode as string,

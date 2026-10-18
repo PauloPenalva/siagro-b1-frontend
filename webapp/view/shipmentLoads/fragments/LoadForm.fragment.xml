@@ -18,6 +18,28 @@
 		<f:formContainers>
 			<f:FormContainer title="Carregamento">
 				<f:formElements>
+					<!-- Série/número só na criação (Automático ou Manual); na edição o número aparece travado. -->
+					<f:FormElement label="Série" visible="{= !${form>/isEdit} }">
+						<f:fields>
+							<Select
+								required="true"
+								forceSelection="false"
+								selectedKey="{form>/DocNumberKey}"
+								change=".onLoadSeriesChange"
+								editable="{= ${ui>/docNumberSeriesEditable} === true }"
+								items="{ path: 'series>/', templateShareable: false }">
+								<core:Item key="{series>Key}" text="{series>Name}"/>
+							</Select>
+						</f:fields>
+					</f:FormElement>
+					<f:FormElement label="Número">
+						<f:fields>
+							<Input
+								value="{form>/Code}"
+								editable="{= ${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
+								required="{= ${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"/>
+						</f:fields>
+					</f:FormElement>
 					<f:FormElement label="Tipo de Carga">
 						<f:fields>
 							<!-- GAC-1175: o tipo decide que documento a carga aceita (romaneio de embarque na

@@ -92,6 +92,7 @@ export default class Detail extends BaseController {
       return;
     }
 
+    this.resetDocNumberMode();
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setProperty("/editable", false);
     uiModel.setProperty("/remittanceNumbers", {});

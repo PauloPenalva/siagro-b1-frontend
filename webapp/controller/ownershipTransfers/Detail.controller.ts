@@ -16,6 +16,7 @@ export default class Detail extends BaseController {
 	}
 
 	private detailRouteMatched(ev: Route$MatchedEvent) {
+    this.resetDocNumberMode();
 		const {id} = ev.getParameter("arguments") as {id: string };
     const uiModel = this.getModel("ui") as JSONModel;
 

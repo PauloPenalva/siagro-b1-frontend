@@ -17,6 +17,7 @@ export default class Add extends LoteArmazenagemBaseController {
 	private async newRouteMatched() {
 		
     this.clearStates("formLoteArmazenagem");
+    this.startDocNumberCreate();
     void this.refreshStandaloneFlag();
     
     const oView = this.getView();
@@ -100,6 +101,9 @@ export default class Add extends LoteArmazenagemBaseController {
 		
     if (!this.validateForm("formLoteArmazenagem")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
+      return;
+    }
+    if (this.isManualNumberMissing("Code")) {
       return;
     }
     

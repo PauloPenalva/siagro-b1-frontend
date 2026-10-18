@@ -26,6 +26,7 @@ export default class Detail extends BaseController {
     // ficam visíveis até `loadAttachments` resolver para a nova.
     (this.getModel("attachments") as JSONModel)?.setData([]);
 
+    this.resetDocNumberMode();
     (this.getModel("ui") as JSONModel).setProperty("/editable", false);
     this.resetPreview();
 

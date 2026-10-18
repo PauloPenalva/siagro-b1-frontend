@@ -22,6 +22,7 @@ export default class Add extends GenericController {
     const systemSetup = this.getSystemSetup();
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setData({});
+    this.startDocNumberCreate();
     uiModel.setProperty("/visible", false);
     uiModel.setProperty("/required", false);
     uiModel.setProperty("/editable", true);
@@ -72,6 +73,9 @@ export default class Add extends GenericController {
 		
     if (!this.validateForm("formCreateWeighingTicket")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
+      return;
+    }
+    if (this.isManualNumberMissing("Code")) {
       return;
     }
     

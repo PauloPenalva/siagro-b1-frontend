@@ -35,6 +35,7 @@ export default class Add extends BaseController {
 
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setData({});
+    this.startDocNumberCreate();
     uiModel.setProperty("/editable", true);
     uiModel.setProperty("/editableGrid", true);
 
@@ -201,6 +202,9 @@ export default class Add extends BaseController {
   async onSave() {
     if (!this.validateForm("formSalesInvoice")) {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
+      return;
+    }
+    if (this.isManualNumberMissing("InvoiceNumber")) {
       return;
     }
 

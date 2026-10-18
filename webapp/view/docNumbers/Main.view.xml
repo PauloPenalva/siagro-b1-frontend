@@ -21,7 +21,10 @@
 				enableBusyIndicator="true"
 				alternateRowColors="true"
 				rows="{
-					path: '/DocNumbers'
+					path: '/DocNumbers',
+					parameters: {
+						$orderby: 'TransactionCode,IsManual,Name'
+					}
 				}"
 			>
 				<t:extension>
@@ -115,6 +118,15 @@
 						>
 						<t:template>
 							<Text text="{NumberSize}"/>
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Manual"
+						visible="true"
+						width="6rem"
+						>
+						<t:template>
+							<Text text="{= ${path: 'IsManual', targetType: 'any'} ? 'Sim' : 'Não' }"/>
 						</t:template>
 					</t:Column>
 				</t:columns>

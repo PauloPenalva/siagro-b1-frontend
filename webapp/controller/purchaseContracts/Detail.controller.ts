@@ -27,6 +27,7 @@ export default class Detail extends PurchaseContractsBaseController {
 	}
 
 	private detailRouteMatched(ev: Route$MatchedEvent) {
+    this.resetDocNumberMode();
 		const args = ev.getParameter("arguments") as { id: string; "?query"?: { readonly?: string } };
 		const id = args.id;
     const uiModel = this.getModel("ui") as JSONModel;

@@ -22,6 +22,7 @@ export default class FirstWeighing extends GenericController {
     const oModel = this.getView().getModel() as ODataModel;
    	const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setData({});
+    this.resetDocNumberMode();
     uiModel.setProperty("/editableGrid", true);
     uiModel.setProperty("/editableFirstWeighing", true);
     uiModel.setProperty("/editableSecondWeighing", false);

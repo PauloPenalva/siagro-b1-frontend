@@ -13,7 +13,31 @@
         <f:formElements>
           <f:FormElement label="Número">
             <f:fields>
-              <Input value="{Code}" editable="false"/>
+              <!-- Série Automático/Manual só na inclusão; depois de gravado o número é imutável. -->
+              <Select
+                width="100%"
+                editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
+                forceSelection="false"
+                required="true"
+                change=".onDocNumberSeriesChange"
+                selectedKey="{DocNumberKey}"
+                items="{
+                  path: '/DocNumbers',
+                  parameters: {
+                    $filter: 'TransactionCode eq \'WarehouseReconciliation\' and Inactive eq false',
+                    $orderby: 'IsManual,Name',
+                    $select: 'Key,Name,IsManual'
+                  }
+                }">
+                <customData>
+                  <core:CustomData key="codeProperty" value="Code"/>
+                </customData>
+                <core:ListItem key="{Key}" text="{Name}"/>
+              </Select>
+              <Input
+                value="{Code}"
+                editable="{= ${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
+                required="{= ${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"/>
             </f:fields>
           </f:FormElement>
           <f:FormElement label="Status">

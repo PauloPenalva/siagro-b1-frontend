@@ -22,6 +22,7 @@ export default class Detail extends GenericController {
     const oModel = this.getView().getModel() as ODataModel;
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setData({});
+    this.resetDocNumberMode();
     uiModel.setProperty("/visible", true);
     uiModel.setProperty("/required", true);
     uiModel.setProperty("/editable", false);
