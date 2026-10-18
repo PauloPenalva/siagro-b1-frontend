@@ -1,6 +1,7 @@
 <core:FragmentDefinition
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout"
     xmlns:core="sap.ui.core"
 >
     <!-- Tributação da NF-e STANDALONE. Oculta em SAPB1 (ui>/identityEditable = erp !== 'SAPB1'):
@@ -90,30 +91,35 @@
           <Input value="{IcmsOutStateBenefitCode}" maxLength="10" />
 
           <core:Title text="PIS/COFINS" emphasized="true" />
-          <!-- A lista de CST muda com o tipo: 01-49 na saída, 50-99 na entrada. -->
+          <!-- A lista de CST muda com o tipo: 01-49 na saída, 50-99 na entrada. Cada Select leva o span
+               da linha toda: com dois controles no campo, a grade daria metade a cada um. -->
           <Label text="CST PIS" />
-          <Select selectedKey="{PisCst}" forceSelection="false"
+          <Select selectedKey="{PisCst}" forceSelection="false" width="100%"
                   visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
                   items="{ui>/pisCofinsOutgoingCsts}">
             <core:ListItem key="{ui>key}" text="{ui>text}" />
+            <layoutData><l:GridData span="XL8 L8 M8 S12" /></layoutData>
           </Select>
-          <Select selectedKey="{PisCst}" forceSelection="false"
+          <Select selectedKey="{PisCst}" forceSelection="false" width="100%"
                   visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }"
                   items="{ui>/pisCofinsIncomingCsts}">
             <core:ListItem key="{ui>key}" text="{ui>text}" />
+            <layoutData><l:GridData span="XL8 L8 M8 S12" /></layoutData>
           </Select>
           <Label text="Alíquota PIS %" />
           <Input value="{ path: 'PisRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
           <Label text="CST COFINS" />
-          <Select selectedKey="{CofinsCst}" forceSelection="false"
+          <Select selectedKey="{CofinsCst}" forceSelection="false" width="100%"
                   visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
                   items="{ui>/pisCofinsOutgoingCsts}">
             <core:ListItem key="{ui>key}" text="{ui>text}" />
+            <layoutData><l:GridData span="XL8 L8 M8 S12" /></layoutData>
           </Select>
-          <Select selectedKey="{CofinsCst}" forceSelection="false"
+          <Select selectedKey="{CofinsCst}" forceSelection="false" width="100%"
                   visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }"
                   items="{ui>/pisCofinsIncomingCsts}">
             <core:ListItem key="{ui>key}" text="{ui>text}" />
+            <layoutData><l:GridData span="XL8 L8 M8 S12" /></layoutData>
           </Select>
           <Label text="Alíquota COFINS %" />
           <Input value="{ path: 'CofinsRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
@@ -148,12 +154,16 @@
               selectedKey="{ path: 'RuralContributionMode', targetType: 'any' }"
               forceSelection="false">
             <core:ListItem key="None" text="Não incide" />
-            <core:ListItem key="Full" text="Contribuição completa (INSS + RAT + SENAR)" />
+            <core:ListItem key="Full" text="FUNRURAL (INSS + RAT + SENAR)" />
             <core:ListItem key="SenarOnly" text="Somente SENAR" />
           </Select>
+          <!-- A tributação muda dentro e fora do estado (ex.: ICMS diferido x tributado), então o texto
+               também: a emissão escolhe pelo CFOP da linha (1xxx/5xxx = dentro; os demais = fora). -->
           <core:Title text="Informações complementares" emphasized="true" />
-          <Label text="Texto padrão na NF-e" />
+          <Label text="Dentro do estado" />
           <TextArea value="{DefaultAdditionalInfo}" rows="4" maxLength="2000" growing="true" />
+          <Label text="Fora do estado" />
+          <TextArea value="{DefaultAdditionalInfoOutState}" rows="4" maxLength="2000" growing="true" />
         </f:content>
     </f:SimpleForm>
 </core:FragmentDefinition>

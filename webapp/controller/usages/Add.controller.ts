@@ -59,6 +59,7 @@ export default class Add extends BaseController {
 			StorageCustodyRole: "None",
 			InvoiceOperationText: null,
 			DefaultAdditionalInfo: null,
+			DefaultAdditionalInfoOutState: null,
 			MovesFiscalInventory: false,
 			CreatesFinancialDocument: false,
 			IcmsInStateCst: null,
