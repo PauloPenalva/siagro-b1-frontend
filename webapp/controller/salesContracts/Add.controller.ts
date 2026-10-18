@@ -18,7 +18,7 @@ export default class Add extends BaseController {
 		
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setProperty("/editable", true);
-    this.resetDocNumberMode();
+    this.startDocNumberCreate();
     // O tipo do contrato só pode ser escolhido aqui, na criação.
     uiModel.setProperty("/typeEditable", true);
     // O fragmento de locais de entrega é compartilhado com o Detail, onde a edição

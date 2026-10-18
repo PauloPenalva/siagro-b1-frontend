@@ -177,7 +177,19 @@ export default abstract class CommonController extends BaseController {
 
   /** Volta ao modo automático; chamar no `onRouteMatched` das telas Add/Edit que usam o Select de série. */
   protected resetDocNumberMode(): void {
-    (this.getModel("ui") as JSONModel).setProperty("/docNumberManual", false);
+    const uiModel = this.getModel("ui") as JSONModel;
+    uiModel.setProperty("/docNumberManual", false);
+    uiModel.setProperty("/docNumberSeriesEditable", false);
+  }
+
+  /**
+   * Entrada nas telas de criação (Add): volta ao modo automático e libera a troca de série.
+   * Só na criação a série pode ser escolhida; o número de um registro existente é imutável.
+   */
+  protected startDocNumberCreate(): void {
+    const uiModel = this.getModel("ui") as JSONModel;
+    uiModel.setProperty("/docNumberManual", false);
+    uiModel.setProperty("/docNumberSeriesEditable", true);
   }
 
   async getResource<T>(resourceUrl: string) {

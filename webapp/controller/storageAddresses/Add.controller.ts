@@ -17,7 +17,7 @@ export default class Add extends LoteArmazenagemBaseController {
 	private async newRouteMatched() {
 		
     this.clearStates("formLoteArmazenagem");
-    this.resetDocNumberMode();
+    this.startDocNumberCreate();
     void this.refreshStandaloneFlag();
     
     const oView = this.getView();

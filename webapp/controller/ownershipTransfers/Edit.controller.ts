@@ -15,6 +15,7 @@ export default class Edit extends BaseController {
 	}
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
+    this.resetDocNumberMode();
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setProperty("/editable", true);
         

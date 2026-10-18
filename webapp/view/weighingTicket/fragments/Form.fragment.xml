@@ -34,7 +34,7 @@
           />
           <Label text="Codigo"/>
           <Select 
-              editable="{ui>/editable}"
+              editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
               forceSelection="false"
               required="true"
               change=".onDocNumberSeriesChange"
