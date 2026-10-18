@@ -23,18 +23,23 @@ export function isPurchaseNfeMode(taxLocked: boolean, issuerType: string): boole
 
 /**
  * Filial que calcula tributos (regra ativa) e documento que o motor calcula: emissão própria ou terceiro Normal (spec
- * terceiro-chave D1). A devolução do cliente (terceiro + Devolução) fica sem natureza. Diferente de `isPurchaseNfeMode`,
+ * terceiro-chave D1) ou complemento de ICMS (dos dois emissores). A devolução do cliente (terceiro + Devolução) fica sem natureza. Diferente de `isPurchaseNfeMode`,
  * que é só a emissão própria (travas de número/série/chave, emissão).
  */
 export function isPurchaseTaxMode(taxLocked: boolean, issuerType: string, invoiceType: string): boolean {
-	return taxLocked === true && (issuerType === "Own" || (issuerType === "ThirdParty" && invoiceType === "Normal"));
+	return taxLocked === true && (issuerType === "Own" ||
+		(issuerType === "ThirdParty" && (invoiceType === "Normal" || invoiceType === "IcmsComplement")));
 }
 
-/** Chave da NF-e/CT-e do fornecedor obrigatória: terceiro Normal do tipo NF-e ou CT-e na filial que emite pelo Siagro (spec terceiro-chave D3). */
+/**
+ * Chave da NF-e/CT-e do fornecedor obrigatória: terceiro Normal ou complemento (valor ou ICMS) do tipo NF-e ou CT-e na
+ * filial que emite pelo Siagro (spec terceiro-chave D3; complementos, spec 2026-10-17 — espelha o SupplierNfeKeyGuard).
+ */
 export function requiresSupplierKey(
 	doc: { IssuerType: string; InvoiceType: string; TaxDocumentKind: string }, taxLocked: boolean
 ): boolean {
-	return taxLocked === true && doc.IssuerType === "ThirdParty" && doc.InvoiceType === "Normal" &&
+	return taxLocked === true && doc.IssuerType === "ThirdParty" &&
+		(doc.InvoiceType === "Normal" || isComplementType(doc.InvoiceType)) &&
 		(doc.TaxDocumentKind === "Nfe" || doc.TaxDocumentKind === "Cte");
 }
 
@@ -64,11 +69,11 @@ export function supplierNfeAuthorizationText(protocol: string, checkedAt: string
 }
 
 /**
- * Entrada própria Normal, complemento de valor próprio (NF-e complementar, spec 2026-10-14) ou devolução de compra,
+ * Entrada própria Normal, complemento próprio de valor ou de ICMS (NF-e complementar, spec 2026-10-14) ou devolução de compra,
  * Pendente, sem NF-e ou com a anterior rejeitada.
  */
 export function canIssuePurchaseNfe(doc: PurchaseNfeState, nfeMode: boolean): boolean {
-	const issuable = doc.InvoiceType === "Normal" || doc.InvoiceType === "ValueComplement" ||
+	const issuable = doc.InvoiceType === "Normal" || isComplementType(doc.InvoiceType) ||
 		(doc.InvoiceType === "Return" && doc.IsNfeReturn === true);
 	return nfeMode === true && issuable && doc.InvoiceStatus === "Pending" &&
 		(doc.NfeStatus === "None" || doc.NfeStatus === "Rejected" || !doc.NfeStatus);
@@ -199,7 +204,12 @@ export function mustFallBackToNormal(invoiceType: string, isNfeReturn: boolean, 
  * também, quando o original tem: D5).
  */
 export function isOwnComplement(nfeMode: boolean, invoiceType: string): boolean {
-	return nfeMode === true && invoiceType === "ValueComplement";
+	return nfeMode === true && isComplementType(invoiceType);
+}
+
+/** Tipos de complemento (NF-e finNFe=2): de valor ou de ICMS. */
+export function isComplementType(invoiceType: string): boolean {
+	return invoiceType === "ValueComplement" || invoiceType === "IcmsComplement";
 }
 
 /**

@@ -11,7 +11,7 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import CommonController from "siagrob1/controller/common/CommonController";
-import { complementCandidatesPath, isOwnComplement, isPurchaseNfeMode, isPurchaseTaxMode, mustFallBackToNormal, requiresSupplierKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
+import { complementCandidatesPath, isComplementType, isOwnComplement, isPurchaseNfeMode, isPurchaseTaxMode, mustFallBackToNormal, requiresSupplierKey } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { PurchasePurpose, summarizeInvoiceTaxes, TaxLine, Withholdings } from "siagrob1/helpers/InvoiceTaxTotalsHelpers";
 import { formatAmount, lineFunrural, purchaseChargeLineOf, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
 import {
@@ -75,6 +75,9 @@ export abstract class BaseController extends CommonController {
 
   private documentTotalAttached = false;
 
+  /** Tipo do documento na última leitura de refreshNfeMode: a troca de tipo sabe de onde saiu (Base ICMS/ICMS). */
+  private lastInvoiceType: string;
+
   /**
    * Modo NF-e do documento ligado à view: filial que emite pelo Siagro (`/taxLocked`), emissão própria
    * (`/nfeMode`), cálculo de tributos e natureza (`/taxMode`: própria e terceiro Normal); devolução de compra
@@ -100,6 +103,7 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/taxMode", false);
       uiModel.setProperty("/isCounterNote", false);
       uiModel.setProperty("/valueComplement", false);
+      uiModel.setProperty("/icmsComplement", false);
       // Complemento de valor próprio (spec 2026-10-14): a flag e os mapas que a grade lê ("Nota original", contrato
       // herdado e travado (D5) e o código do contrato da linha nova, que não tem a navegação). Do componente: zerados
       // a cada documento.
@@ -155,6 +159,9 @@ export abstract class BaseController extends CommonController {
       uiModel.setProperty("/isCounterNote", !!producerInvoiceKey);
       // Complemento de valor não tem unidade de medida (linha só com valor): a coluna UM deixa de ser obrigatória.
       uiModel.setProperty("/valueComplement", invoiceType === "ValueComplement");
+      // Complemento de ICMS (spec 2026-10-17 D4): também sem unidade; a linha só tem Base ICMS e ICMS.
+      uiModel.setProperty("/icmsComplement", invoiceType === "IcmsComplement");
+      this.lastInvoiceType = invoiceType;
       // Complemento de valor próprio (spec 2026-10-14): "Incluir Item" abre a lista de itens das notas originais.
       const ownComplement = isOwnComplement(nfeMode, invoiceType);
       uiModel.setProperty("/ownComplement", ownComplement);
@@ -173,9 +180,9 @@ export abstract class BaseController extends CommonController {
         MessageToast.show("Na filial que emite NF-e pelo Siagro, a devolução de compra é feita pelo botão Devolver, no detalhe do documento de entrada.");
       }
 
-      // O nome da condição aparece com a condição (própria e terceiro Normal) e fora da devolução de compra (que não
-      // tem pagamento).
-      if (taxMode && !isNfeReturn) {
+      // O nome da condição aparece com a condição (própria, terceiro Normal e complemento de valor, que pode ser de
+      // outra compra) e fora da devolução de compra e do complemento de ICMS (que não têm pagamento).
+      if ((taxMode || invoiceType === "ValueComplement") && !isNfeReturn && invoiceType !== "IcmsComplement") {
         await this.refreshPaymentConditionName(paymentConditionCode);
       } else {
         uiModel.setProperty("/paymentConditionName", "");
@@ -440,12 +447,17 @@ export abstract class BaseController extends CommonController {
         isStandaloneErp = (await this.getSystemInfo())?.erp?.trim().toUpperCase() === "STANDALONE";
       } catch {
         // Sem resposta: sem a coluna; a próxima chamada tenta de novo.
-        if (isCurrent()) uiModel.setProperty("/storageDepositMode", false);
+        if (isCurrent()) {
+          uiModel.setProperty("/storageDepositMode", false);
+          uiModel.setProperty("/standalone", false);
+        }
         return;
       }
     }
     if (isCurrent()) {
       uiModel.setProperty("/storageDepositMode", isStandaloneErp);
+      // O tipo "Complemento de ICMS" só é oferecido em STANDALONE (spec 2026-10-17 D10; o servidor recusa em SAPB1).
+      uiModel.setProperty("/standalone", isStandaloneErp);
     }
   }
 
@@ -502,26 +514,42 @@ export abstract class BaseController extends CommonController {
   }
 
   /**
-   * Complemento de valor (D11): a troca de tipo esconde Quantidade/Preço (ou o Valor do complemento). O valor escondido
-   * seria somado no total e o servidor o recusaria (P11), então zera o que deixou de valer em cada linha.
+   * Complementos (D11 e spec 2026-10-17 D4): a troca de tipo esconde Quantidade/Preço, o Valor do complemento ou a
+   * Base ICMS/ICMS. O valor escondido seria somado no total e o servidor o recusaria (P11), então zera o que deixou de
+   * valer em cada linha: Valor zera Qtd/Preço; ICMS zera Qtd/Preço/Valor; os demais zeram o Valor e o vínculo.
+   *
+   * Base ICMS/ICMS só são zeradas quando o tipo ENTRA ou SAI do complemento de ICMS: fora dele são as do cálculo ou as
+   * lidas do XML, e não podem virar o valor informado do complemento (nem o informado sobreviver fora dele).
    */
   private clearHiddenAmountColumns() {
     const invoiceType = this.getView().getBindingContext()?.getProperty("InvoiceType") as string;
+    const crossesIcms = (invoiceType === "IcmsComplement") !== (this.lastInvoiceType === "IcmsComplement");
     const binding = (this.byId("tablePurchaseInvoiceItems") as Table | undefined)?.getBinding("rows") as ODataListBinding;
+    const zero = (ctx: Context, property: string) => {
+      if (toNumber(ctx.getProperty(property)) !== 0) {
+        void ctx.setProperty(property, 0);
+      }
+    };
     for (const ctx of binding?.getAllCurrentContexts?.() ?? []) {
-      if (invoiceType === "ValueComplement") {
-        void ctx.setProperty("Quantity", 0);
-        void ctx.setProperty("UnitPrice", 0);
-      } else {
-        if (toNumber(ctx.getProperty("ComplementAmount")) !== 0) {
-          void ctx.setProperty("ComplementAmount", 0);
+      if (isComplementType(invoiceType)) {
+        zero(ctx, "Quantity");
+        zero(ctx, "UnitPrice");
+        if (invoiceType === "IcmsComplement") {
+          zero(ctx, "ComplementAmount");
         }
+      } else {
+        zero(ctx, "ComplementAmount");
         // Fora do complemento o vínculo com a nota original é recusado (C7): sai junto com o valor.
         if (ctx.getProperty("ComplementedItemKey")) {
           void ctx.setProperty("ComplementedItemKey", null);
         }
       }
+      if (crossesIcms) {
+        zero(ctx, "IcmsBase");
+        zero(ctx, "IcmsValue");
+      }
     }
+    this.lastInvoiceType = invoiceType;
     this.refreshDocumentTotal();
   }
 
@@ -833,9 +861,10 @@ export abstract class BaseController extends CommonController {
       ui.getProperty("/complementedItemLabels") as Record<string, string>, candidate.ItemKey,
       complementedItemLabel(candidate.InvoiceNumber, candidate.LineNumber)));
 
-    const created = binding.create(complementLineFrom(candidate), false, false, false);
+    const created = binding.create(complementLineFrom(candidate, invoice.getProperty("InvoiceType") as string), false, false, false);
     this.refreshDocumentTotal();
-    this.focusComplementAmount(created);
+    // Complemento de ICMS: a linha só tem Base ICMS e ICMS, e o foco vai para a base.
+    this.focusComplementAmount(created, invoice.getProperty("InvoiceType") === "IcmsComplement" ? "IcmsBase" : "ComplementAmount");
   }
 
   /**
@@ -920,13 +949,16 @@ export abstract class BaseController extends CommonController {
     ui.setProperty("/inheritedContracts", inheritedContracts(rows));
   }
 
-  /** Foco no "Valor do complemento" da linha criada. getCells() pula coluna invisível: a célula é achada pelo binding. */
-  private focusComplementAmount(line: Context): void {
+  /**
+   * Foco no "Valor do complemento" (ou na "Base ICMS") da linha criada. getCells() pula coluna invisível: a célula é
+   * achada pelo binding.
+   */
+  private focusComplementAmount(line: Context, property = "ComplementAmount"): void {
     const table = this.byId("tablePurchaseInvoiceItems") as Table;
 
     table?.attachEventOnce("rowsUpdated", () => {
       const row = table.getRows().find((r) => r.getBindingContext() === line);
-      row?.getCells().find((cell) => cell.getBinding("value")?.getPath() === "ComplementAmount")?.focus();
+      row?.getCells().find((cell) => cell.getBinding("value")?.getPath() === property)?.focus();
     });
   }
 

@@ -111,6 +111,7 @@ QUnit.test("formatDecimal2 aceita string do Edm.Decimal e não lança em vazio",
 
 QUnit.test("tipo Complemento de valor do documento de entrada (spec D11)", function (assert) {
 	assert.strictEqual(formatter.formatPurchaseInvoiceType("ValueComplement"), "Complemento de valor");
+	assert.strictEqual(formatter.formatPurchaseInvoiceType("IcmsComplement"), "Complemento de ICMS");
 	assert.strictEqual(formatter.formatPurchaseInvoiceType("Return"), "Devolução");
 });
 

@@ -1206,6 +1206,7 @@ const formatter = {
     m.set("Normal", "Normal");
     m.set("Return", "Devolução");
     m.set("ValueComplement", "Complemento de valor");
+    m.set("IcmsComplement", "Complemento de ICMS");
 
     return m.get(value) ?? "";
   },

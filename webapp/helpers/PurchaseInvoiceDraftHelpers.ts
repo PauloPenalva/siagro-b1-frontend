@@ -1,4 +1,5 @@
 import { PurchaseInvoiceComplementCandidate } from "siagrob1/types/PurchaseInvoiceComplementCandidate";
+import { isComplementType } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 
 /**
  * Linha enviada no deep-insert do documento de entrada.
@@ -34,6 +35,9 @@ export interface InvoiceItemPayload {
   ComplementAmount: number;
   /** Complemento de valor próprio (spec 2026-10-14): o item da nota original. Nulo nos demais. (strictNullChecks off.) */
   ComplementedItemKey: string;
+  /** Complemento de ICMS: base e valor do ICMS da linha (0 nos demais tipos). */
+  IcmsBase: number;
+  IcmsValue: number;
 }
 
 /**
@@ -71,6 +75,9 @@ export interface ImportedInvoiceItem {
   OtherExpensesValue?: number | string;
   /** Complemento de valor (finNFe=2): valor da linha, sem quantidade nem preço (Edm.Decimal da action, em string). */
   ComplementAmount?: number | string;
+  /** Complemento de ICMS (finNFe=2 com só o ICMS): base e valor do ICMS da linha (Edm.Decimal da action, em string); ausentes = 0. */
+  IcmsBase?: number | string;
+  IcmsValue?: number | string;
 }
 
 /**
@@ -129,7 +136,7 @@ export function unitSuggestionToApply(
  * quantidade, então fica fora.
  */
 export function missingUnitOfMeasureMessage(lines: { ItemCode?: string, UnitOfMeasureCode?: string }[], invoiceType?: string): string {
-  if (invoiceType === "ValueComplement") {
+  if (isComplementType(invoiceType)) {
     return "";
   }
   const index = lines.findIndex((line) => !(line.UnitOfMeasureCode ?? "").trim());
@@ -142,7 +149,7 @@ export function blankItemRow(): InvoiceItemPayload {
     ItemCode: "", ItemName: "", UnitOfMeasureCode: "", Quantity: 0, UnitPrice: 0,
     SalesInvoiceItemKey: null, PurchaseContractKey: null, UsageCode: null, UsageName: null,
     NfeItemNumber: null, FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0,
-    ComplementAmount: 0, ComplementedItemKey: null,
+    ComplementAmount: 0, ComplementedItemKey: null, IcmsBase: 0, IcmsValue: 0,
   };
 }
 
@@ -172,6 +179,8 @@ export function draftItemRows(items?: ImportedInvoiceItem[]): InvoiceItemPayload
     DiscountValue: toNumber(item.DiscountValue),
     OtherExpensesValue: toNumber(item.OtherExpensesValue),
     ComplementAmount: toNumber(item.ComplementAmount),
+    IcmsBase: toNumber(item.IcmsBase),
+    IcmsValue: toNumber(item.IcmsValue),
   }));
 }
 
@@ -180,7 +189,11 @@ export function draftItemRows(items?: ImportedInvoiceItem[]): InvoiceItemPayload
  * contrato quando o original tem (o servidor herda de novo e recusa divergência); original sem contrato (D5) = contrato
  * nulo, o operador escolhe pelo value help. Sem quantidade nem preço; o operador digita o valor.
  */
-export function complementLineFrom(candidate: PurchaseInvoiceComplementCandidate): InvoiceItemPayload {
+export function complementLineFrom(candidate: PurchaseInvoiceComplementCandidate, invoiceType: string): InvoiceItemPayload {
+  // No complemento de ICMS o operador digita base e valor do ICMS; no de valor, o valor do complemento. O outro fica 0.
+  const amounts = invoiceType === "IcmsComplement"
+    ? { IcmsBase: 0, IcmsValue: 0, ComplementAmount: 0 }
+    : { ComplementAmount: 0 };
   return {
     ...blankItemRow(),
     ItemCode: candidate.ItemCode,
@@ -190,6 +203,7 @@ export function complementLineFrom(candidate: PurchaseInvoiceComplementCandidate
     UsageCode: candidate.UsageCode,
     UsageName: candidate.UsageName,
     ComplementedItemKey: candidate.ItemKey,
+    ...amounts,
   };
 }
 
@@ -236,13 +250,16 @@ export function isOtherPurchaseUsage(usageCode: unknown, otherPurchaseUsages?: R
   return (typeof usageCode === "number" || typeof usageCode === "string") && otherPurchaseUsages?.[String(usageCode)] === true;
 }
 
-/** Só o documento Normal que não é devolução pode ser de outra compra (espelha o servidor). */
+/**
+ * Só o documento Normal ou o complemento de valor (spec 2026-10-17 D3/D6) que não é devolução pode ser de outra compra
+ * (espelha o servidor). O complemento de ICMS nunca é: não gera título (D5).
+ */
 export function isOtherPurchaseEligible(invoiceType: unknown, isNfeReturn: unknown): boolean {
-  return invoiceType === "Normal" && isNfeReturn !== true;
+  return (invoiceType === "Normal" || invoiceType === "ValueComplement") && isNfeReturn !== true;
 }
 
 /**
- * Espelha o servidor: o documento é de outra compra quando é Normal e não é devolução, alguma linha tem natureza de
+ * Espelha o servidor: o documento é de outra compra quando é Normal ou complemento de valor e não é devolução, alguma linha tem natureza de
  * outra compra e TODAS as linhas COM natureza são de outra compra (linha sem natureza é ignorada).
  */
 export function isOtherPurchaseDocument(

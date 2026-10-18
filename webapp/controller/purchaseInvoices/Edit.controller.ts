@@ -8,6 +8,7 @@ import MessageBox from "sap/m/MessageBox";
 import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import { missingUsageMessage, PURCHASE_ITEM_SELECT } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
+import { blankItemRow } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 
@@ -84,15 +85,9 @@ export default class Edit extends BaseController {
     }
 
     // Toda propriedade editável entra no create() inicial, nem que seja como null: sem isso a
-    // primeira alteração abre "Must not change a property before it has been read".
-    // Decimais vão como NÚMERO — em string o POST volta 400 no vínculo do corpo.
-    oBinding.create({
-      ItemCode: "", ItemName: "", UnitOfMeasureCode: "",
-      Quantity: 0, UnitPrice: 0, SalesInvoiceItemKey: null, PurchaseContractKey: null,
-      UsageCode: null, UsageName: null,
-      FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0,
-      ComplementedItemKey: null,
-    }, false, false, false);
+    // primeira alteração abre "Must not change a property before it has been read". A mesma linha
+    // em branco do Incluir (blankItemRow), para Valor do complemento, Base ICMS e ICMS não ficarem de fora.
+    oBinding.create(blankItemRow(), false, false, false);
 
     this.refreshDocumentTotal();
   }
