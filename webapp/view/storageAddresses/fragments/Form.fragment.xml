@@ -52,7 +52,7 @@
                 <l:GridData span="XL3 L3 M3 S8" />
               </layoutData>
             </Select>
-            <Input value="{Code}" editable="{= ${ui>/docNumberManual} === true }" required="{= ${ui>/docNumberManual} === true }" />
+            <Input value="{Code}" editable="{= ${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }" required="{= ${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }" />
              <Label text="Filial"/>
             <Select 
               editable="{ui>/editable}"
