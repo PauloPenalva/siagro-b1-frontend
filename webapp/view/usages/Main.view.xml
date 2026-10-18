@@ -199,6 +199,7 @@
 				<!-- Em SAPB1 o cadastro da natureza é do SAP: só o efeito é configurável aqui.
 				     Incluir/Deletar sumem em vez de estourar NotImplemented no servidor. -->
 				<Button text="Alíquotas IBS/CBS" icon="sap-icon://simulate" press=".onOpenIbsCbsRates" visible="{ui>/identityEditable}"/>
+				<Button text="Alíquotas de contribuição social" icon="sap-icon://simulate" press=".onOpenRuralContributionRates" visible="{ui>/identityEditable}"/>
 				<Button text="Incluir" icon="sap-icon://add" type="Emphasized" press=".onCreate" visible="{ui>/identityEditable}"/>
 				<Button text="Editar" icon="sap-icon://edit" press=".onEdit"/>
 				<Button text="Deletar" icon="sap-icon://delete" press=".onDelete" visible="{ui>/identityEditable}"/>

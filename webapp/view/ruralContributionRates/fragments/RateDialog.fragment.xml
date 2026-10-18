@@ -1,0 +1,36 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+  <Dialog title="Vigência da contribuição social" contentWidth="28rem" draggable="true">
+    <content>
+      <f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanM="5" labelSpanS="12">
+        <f:content>
+          <Label text="Início da vigência" required="true" />
+          <DatePicker
+            value="{rate>/startDate}"
+            valueFormat="yyyy-MM-dd"
+            displayFormat="dd/MM/yyyy" />
+          <Label text="Regime" required="true" />
+          <Select selectedKey="{rate>/scheme}" forceSelection="true">
+            <core:ListItem key="Standard" text="Comercialização" />
+            <core:ListItem key="PayrollOption" text="Optante pela folha" />
+          </Select>
+          <Label text="INSS %" />
+          <Input value="{rate>/inssRate}" type="Number" />
+          <Label text="RAT %" />
+          <Input value="{rate>/ratRate}" type="Number" />
+          <Label text="SENAR %" />
+          <Input value="{rate>/senarRate}" type="Number" />
+        </f:content>
+      </f:SimpleForm>
+    </content>
+    <beginButton>
+      <Button text="Confirmar" type="Emphasized" press=".onConfirmRate" />
+    </beginButton>
+    <endButton>
+      <Button text="Cancelar" press=".onCancelRate" />
+    </endButton>
+  </Dialog>
+</core:FragmentDefinition>
