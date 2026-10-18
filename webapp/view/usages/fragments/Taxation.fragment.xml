@@ -138,7 +138,8 @@
           <Label text="Alíquotas" />
           <Text text="Vêm da tabela de Alíquotas IBS/CBS vigente na data de emissão." />
 
-          <core:Title text="Contribuição Social" emphasized="true" />
+          <core:Title text="Contribuição Social" emphasized="true"
+                    visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
           <!-- Modo da retenção do produtor rural na compra; as alíquotas vêm da tabela de vigências. -->
           <Label text="Contribuição social" visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
           <Select
