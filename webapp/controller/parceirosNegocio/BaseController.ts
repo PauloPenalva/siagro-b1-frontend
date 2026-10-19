@@ -9,6 +9,7 @@ import Select, { Select$ChangeEvent } from "sap/m/Select";
 import { Button$PressEvent } from "sap/m/Button";
 import Input from "sap/m/Input";
 import Event from "sap/ui/base/Event";
+import { sendJson } from "siagrob1/helpers/FetchHelpers";
 import SessionService from "siagrob1/services/SessionService";
 
 type NfeEmailRow = { Address: string };
@@ -23,10 +24,11 @@ export abstract class BaseController extends CommonController {
    * JSONModel (`nfeEmails`) e a coleção inteira vai num PATCH próprio logo depois do save do
    * parceiro (`saveNfeEmails`). `saved` guarda o que o servidor já tem, para só enviar mudança.
    */
-  protected resetNfeEmails(addresses: string[]): void {
+  protected resetNfeEmails(addresses?: string[]): void {
     const model = (this.getView().getModel("nfeEmails") as JSONModel) ?? new JSONModel();
     const list = addresses ?? [];
-    model.setData({ rows: list.map((Address) => ({ Address })), saved: [...list] });
+    // `undefined` = lista do servidor ainda não lida (ou leitura falhou): tabela travada e sem PATCH.
+    model.setData({ rows: list.map((Address) => ({ Address })), saved: [...list], loaded: addresses !== undefined });
     this.getView().setModel(model, "nfeEmails");
   }
 
@@ -49,6 +51,14 @@ export abstract class BaseController extends CommonController {
     return true;
   }
 
+  protected nfeEmailsLoaded(): boolean {
+    const loaded = (this.getView().getModel("nfeEmails") as JSONModel)?.getProperty("/loaded") === true;
+    if (!loaded) {
+      MessageBox.warning("Os e-mails de NF-e do parceiro ainda não foram carregados. Aguarde ou reabra o cadastro.");
+    }
+    return loaded;
+  }
+
   /** PATCH da coleção inteira; devolve false (e avisa) se o servidor recusar. */
   protected async saveNfeEmails(cardCode: string): Promise<boolean> {
     const model = this.getView().getModel("nfeEmails") as JSONModel;
@@ -57,13 +67,11 @@ export abstract class BaseController extends CommonController {
     if (list.length === saved.length && list.every((a, i) => a === saved[i])) {
       return true;
     }
-    const response = await fetch(`/odata/BusinessPartners('${encodeURIComponent(cardCode)}')`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ NfeEmails: list }),
-    });
-    if (!response.ok) {
-      MessageBox.error((await response.text()) || `Erro ${response.status} ao gravar os e-mails da NF-e.`);
+    const result = await sendJson("PATCH", `/odata/BusinessPartners('${encodeURIComponent(cardCode)}')`, { NfeEmails: list });
+    if (!result.ok) {
+      MessageBox.error(`O parceiro foi salvo, mas os e-mails de NF-e não. Salve novamente.
+
+${result.message}`);
       return false;
     }
     model.setProperty("/saved", list);

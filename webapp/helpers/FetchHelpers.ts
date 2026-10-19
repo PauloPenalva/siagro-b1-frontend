@@ -26,7 +26,7 @@ export async function readErrorMessage(response: Response): Promise<string> {
 }
 
 export async function sendJson(
-  method: "GET" | "POST" | "DELETE",
+  method: "GET" | "POST" | "PATCH" | "DELETE",
   url: string,
   payload?: object
 ): Promise<FetchResult> {

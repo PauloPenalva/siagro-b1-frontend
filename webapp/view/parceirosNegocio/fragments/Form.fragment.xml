@@ -122,7 +122,7 @@
             <headerToolbar>
               <OverflowToolbar>
                 <ToolbarSpacer />
-                <Button text="Adicionar e-mail" icon="sap-icon://add" press=".onAddNfeEmail" />
+                <Button text="Adicionar e-mail" icon="sap-icon://add" press=".onAddNfeEmail" enabled="{nfeEmails>/loaded}" />
               </OverflowToolbar>
             </headerToolbar>
             <columns>
@@ -132,8 +132,8 @@
             <items>
               <ColumnListItem>
                 <cells>
-                  <Input value="{nfeEmails>Address}" maxLength="250" type="Email" change=".onNfeEmailChange" />
-                  <Button icon="sap-icon://delete" type="Transparent" press=".onRemoveNfeEmail" />
+                  <Input value="{nfeEmails>Address}" maxLength="250" type="Email" change=".onNfeEmailChange" enabled="{nfeEmails>/loaded}" />
+                  <Button icon="sap-icon://delete" type="Transparent" press=".onRemoveNfeEmail" enabled="{nfeEmails>/loaded}" />
                 </cells>
               </ColumnListItem>
             </items>

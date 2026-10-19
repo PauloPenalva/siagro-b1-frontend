@@ -63,8 +63,9 @@ export default class Edit extends BaseController {
 			oModel.resetChanges(SIGNATORIES_GROUP);
 		}
 
-		this.resetNfeEmails([]);
+		this.resetNfeEmails();
 		const {id} = ev.getParameter("arguments") as {id: string};
+		this.cardCode = id;
 		if (id != null) {
 			const sPath = `/BusinessPartners('${id}')`;
 			oView.bindElement({
@@ -84,7 +85,15 @@ export default class Edit extends BaseController {
 			// Coleção primitiva não passa pelo binding do V4 (ver BaseController.resetNfeEmails): lê à parte.
 			void (async () => {
 				const result = await sendJson("GET", `/odata/BusinessPartners('${encodeURIComponent(id)}')?$select=NfeEmails`);
-				this.resetNfeEmails(result.ok ? odataValue<{ NfeEmails?: string[] }>(result.data)?.NfeEmails ?? [] : []);
+				// Resposta tardia de outro parceiro (rota trocada) não pode sobrescrever a lista atual.
+				if (this.cardCode !== id) {
+					return;
+				}
+				if (!result.ok) {
+					MessageBox.error(`Não foi possível carregar os e-mails de NF-e: ${result.message}`);
+					return;
+				}
+				this.resetNfeEmails(odataValue<{ NfeEmails?: string[] }>(result.data)?.NfeEmails ?? []);
 			})();
 
 			// A série gravada depende do Tipo (Fornecedor/Cliente) e aparece travada, mesmo que tenha sido
@@ -272,7 +281,7 @@ export default class Edit extends BaseController {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }
-    if (!this.validateNfeEmails()) {
+    if (!this.nfeEmailsLoaded() || !this.validateNfeEmails()) {
       return;
     }
 
