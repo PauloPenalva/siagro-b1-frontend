@@ -1,0 +1,63 @@
+<mvc:View
+	controllerName="siagrob1.controller.emailSettings.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+
+	<Page title="Configuração de e-mail" busy="{ui>/busy}" busyIndicatorDelay="0">
+		<content>
+			<MessageStrip
+				text="Servidor SMTP usado para enviar o DANFE e o XML da NF-e aos parceiros. A senha é guardada cifrada e nunca é exibida."
+				type="Information" showIcon="true" class="sapUiSmallMargin" />
+			<f:Form id="emailSettingsForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2" />
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer title="Servidor">
+						<f:formElements>
+							<f:FormElement label="Servidor">
+								<Input value="{mail>/Host}" maxLength="200" required="true" />
+							</f:FormElement>
+							<f:FormElement label="Porta">
+								<Input value="{mail>/Port}" type="Number" required="true" />
+							</f:FormElement>
+							<f:FormElement label="Usar STARTTLS">
+								<Switch state="{mail>/UseStartTls}" />
+							</f:FormElement>
+							<f:FormElement label="Usuário">
+								<Input value="{mail>/UserName}" maxLength="200" autocomplete="off" />
+							</f:FormElement>
+							<f:FormElement label="Senha">
+								<Input value="{mail>/Password}" type="Password" maxLength="200" autocomplete="new-password"
+									placeholder="{= ${mail>/HasPassword} ? '•••• (mantida)' : '' }" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="Remetente">
+						<f:formElements>
+							<f:FormElement label="E-mail do remetente">
+								<Input value="{mail>/FromAddress}" type="Email" maxLength="250" required="true" />
+							</f:FormElement>
+							<f:FormElement label="Nome do remetente">
+								<Input value="{mail>/FromName}" maxLength="200" />
+							</f:FormElement>
+							<f:FormElement label="Envio automático">
+								<Switch state="{mail>/AutoSendEnabled}" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<Button text="Enviar e-mail de teste" icon="sap-icon://email" press=".onSendTest" />
+				<ToolbarSpacer />
+				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

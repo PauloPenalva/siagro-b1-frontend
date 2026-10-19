@@ -1,0 +1,33 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+  <!-- Destinatários do e-mail da NF-e: pré-preenchidos com os do parceiro, editáveis só para este envio. -->
+  <Dialog title="Enviar e-mail da NF-e" contentWidth="34rem">
+    <content>
+      <VBox class="sapUiSmallMargin">
+        <MessageStrip type="Information" showIcon="true" class="sapUiSmallMarginBottom"
+          text="Serão enviados o DANFE e o XML da nota. A alteração da lista vale só para este envio." />
+        <Table items="{nfeEmailDialog>/rows}" width="100%">
+          <headerToolbar>
+            <OverflowToolbar>
+              <ToolbarSpacer />
+              <Button text="Adicionar e-mail" icon="sap-icon://add" press=".onAddNfeEmail" />
+            </OverflowToolbar>
+          </headerToolbar>
+          <columns>
+            <Column><Text text="E-mail" /></Column>
+            <Column width="4rem" hAlign="Center"><Text text="" /></Column>
+          </columns>
+          <items>
+            <ColumnListItem>
+              <cells>
+                <Input value="{nfeEmailDialog>Address}" maxLength="250" type="Email" change=".onNfeEmailChange" />
+                <Button icon="sap-icon://delete" type="Transparent" press=".onRemoveNfeEmail" />
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table>
+      </VBox>
+    </content>
+    <beginButton><Button text="Enviar" type="Emphasized" press=".onConfirmNfeEmail" /></beginButton>
+    <endButton><Button text="Voltar" press=".onCancelNfeEmail" /></endButton>
+  </Dialog>
+</core:FragmentDefinition>

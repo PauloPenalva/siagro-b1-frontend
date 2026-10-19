@@ -1,0 +1,36 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+  <!-- Histórico de e-mails da NF-e (saída e entrada). Lido por fetch para o JSONModel `nfeEmail`: o entity set é
+       global (filtrado por DocumentKey) e o "Atualizar" precisa reler sem depender do contexto do documento. -->
+  <Table items="{nfeEmail>/rows}" growing="true" growingThreshold="10" noDataText="Nenhum e-mail enviado para esta nota."
+    busy="{nfeEmail>/busy}">
+    <headerToolbar>
+      <OverflowToolbar>
+        <Title text="E-mails enviados" />
+        <ToolbarSpacer />
+        <Button text="Atualizar" icon="sap-icon://refresh" press=".onRefreshNfeEmails" />
+      </OverflowToolbar>
+    </headerToolbar>
+    <columns>
+      <Column width="10rem"><Text text="Data" /></Column>
+      <Column width="8rem"><Text text="Evento" /></Column>
+      <Column width="7rem"><Text text="Envio" /></Column>
+      <Column><Text text="Destinatários" /></Column>
+      <Column width="7rem"><Text text="Situação" /></Column>
+      <Column><Text text="Erro" /></Column>
+      <Column width="9rem"><Text text="Usuário" /></Column>
+    </columns>
+    <items>
+      <ColumnListItem>
+        <cells>
+          <Text text="{nfeEmail>createdAt}" />
+          <Text text="{nfeEmail>event}" />
+          <Text text="{nfeEmail>trigger}" />
+          <Text text="{nfeEmail>recipients}" />
+          <ObjectStatus text="{nfeEmail>status}" state="{nfeEmail>state}" />
+          <Text text="{nfeEmail>error}" />
+          <Text text="{nfeEmail>user}" />
+        </cells>
+      </ColumnListItem>
+    </items>
+  </Table>
+</core:FragmentDefinition>

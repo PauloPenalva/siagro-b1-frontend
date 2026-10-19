@@ -819,6 +819,11 @@
           "target": "nfeSettings"
         },
         {
+          "pattern": "email-settings",
+          "name": "emailSettings",
+          "target": "emailSettings"
+        },
+        {
           "pattern": "usages",
           "name": "usages",
           "target": "usages"
@@ -2067,6 +2072,12 @@
           "id": "nfeSettings",
           "level": 1,
           "name": "siagrob1.view.nfeSettings.Main",
+          "clearControlAggregation": true
+        },
+        "emailSettings": {
+          "id": "emailSettings",
+          "level": 1,
+          "name": "siagrob1.view.emailSettings.Main",
           "clearControlAggregation": true
         },
         "usages": {
