@@ -31,6 +31,7 @@ import {
   allUsagesAllowCounterNote, canReturnPurchase, canReturnThirdPartyPurchase, counterNoteText, isValidCounterNote, PurchaseReturnItemRow,
 } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { cteIcmsWarning } from "siagrob1/helpers/TransportedDocumentsHelpers";
+import NfeEmailHelper from "siagrob1/controller/common/NfeEmailHelper";
 import { showCteFreights } from "siagrob1/helpers/CteFreightsBinding";
 import { reconciliationDifference } from "siagrob1/helpers/StorageDepositHelpers";
 import { openDanfeViewer, openNfeCorrectionViewer } from "siagrob1/dialogs/DanfeViewer";
@@ -69,6 +70,8 @@ export default class Detail extends BaseController {
 
   private reconcileDialog?: Dialog;
 
+  private nfeEmail: NfeEmailHelper;
+
   /** Chave do documento aberto: o filtro da seção "Títulos gerados" (a lista nasce suspensa). */
   private generatedTitlesInvoiceKey = "";
 
@@ -76,6 +79,7 @@ export default class Detail extends BaseController {
   private returnQuantity = 0;
 
   onInit(): void {
+    this.nfeEmail = new NfeEmailHelper(this.getView(), 2, ServerRoutes.purchaseInvoicesSendNfeEmail);
     this.bindTransportGroupVisibility();
     this.getView().setModel(new JSONModel({
       visible: false, loadError: "", canReconcile: false, rows: [], candidates: [], reconciled: [],
@@ -131,6 +135,8 @@ export default class Detail extends BaseController {
     // percorreria uma lista ainda vazia, deixando "Total dos itens" parado em 0,00 para sempre.
     this.attachDocumentTotalRefresh();
 
+    this.nfeEmail.reset();
+    void this.nfeEmail.loadHistory(id);
     void this.refreshDetailNfe();
   }
 
@@ -555,6 +561,21 @@ export default class Detail extends BaseController {
   /** DANFE num diálogo, com Baixar no rodapé (DanfeViewer). */
   async onDanfe() {
     await openDanfeViewer(ServerRoutes.purchaseInvoicesDanfeReport, this.getView().getBindingContext() as Context);
+  }
+
+  /** E-mail da NF-e: destinatários do parceiro, edição e envio; o histórico recarrega ao final. */
+  async onSendNfeEmail() {
+    const key = this.getView().getBindingContext()?.getProperty("Key") as string;
+    if (key) {
+      await this.nfeEmail.send(key, (busy) => this.setBusy(busy));
+    }
+  }
+
+  onRefreshNfeEmails() {
+    const key = this.getView().getBindingContext()?.getProperty("Key") as string;
+    if (key) {
+      void this.nfeEmail.loadHistory(key);
+    }
   }
 
   async onNfeXml() {

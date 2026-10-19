@@ -6,30 +6,31 @@ import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import RootBaseController from "../BaseController";
-import SimpleForm from "sap/ui/layout/form/SimpleForm";
-import Title from "sap/ui/core/Title";
-import { bindSimpleFormGroupVisible } from "siagrob1/helpers/SimpleFormGroupHelpers";
+import JSONModel from "sap/ui/model/json/JSONModel";
 
 /**
- * Base das telas de natureza (inclusão e edição): o value help da natureza de devolução.
+ * Base das telas de natureza (inclusão, edição e detalhe): modo ERP, edição e o value help da natureza de devolução.
  * @namespace siagrob1.controller.usages
  */
 export default class BaseController extends RootBaseController {
 
 	/**
-	 * O grupo "Contribuição Social" só existe na natureza de ENTRADA. O core:Title não tem visible (o UI5 avisava
-	 * FUTURE FATAL), então o visible vai no grupo que o SimpleForm cria para o título. Chamado no onInit da inclusão
-	 * e da edição, que usam o mesmo fragmento.
+	 * ui>/editable liga os campos dos fragmentos: true na inclusão e na edição, false no detalhe (só leitura).
 	 */
-	protected bindRuralContributionGroupVisibility(): void {
-		const form = this.byId("usagesTaxationForm") as SimpleForm | undefined;
-		const title = this.byId("usagesRuralContributionTitle") as unknown as Title | undefined;
-		if (!form || !title) return;
-		bindSimpleFormGroupVisible(form, title, {
-			path: "Direction",
-			targetType: "any",
-			formatter: (direction: unknown) => direction === "Incoming",
-		});
+	protected setEditable(editable: boolean): void {
+		(this.getModel("ui") as JSONModel).setProperty("/editable", editable);
+	}
+
+	/**
+	 * Em SAPB1 a identidade fiscal (nome, descrição, CFOP) vem do OUSG e é somente-leitura;
+	 * o efeito no contrato continua editável, porque é do Siagro. Inicializar como `true`
+	 * antes da resposta manteria o comportamento do STANDALONE, que é o caso permissivo.
+	 */
+	protected async applyErpMode(): Promise<void> {
+		const uiModel = this.getModel("ui") as JSONModel;
+		const systemInfo = await this.getSystemInfo();
+
+		uiModel.setProperty("/identityEditable", systemInfo?.erp !== "SAPB1");
 	}
 
 	/**

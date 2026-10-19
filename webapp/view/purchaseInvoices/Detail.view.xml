@@ -64,6 +64,10 @@
             visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' || ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }">
             <core:Fragment fragmentName="siagrob1.fragments.NfeCorrections" type="XML" />
           </uxap:ObjectPageSubSection>
+            <uxap:ObjectPageSubSection title=" " titleUppercase="false"
+              visible="{= ${ui>/standalone} === true &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === 'Authorized' || ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled') &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'Own' }">
+              <core:Fragment fragmentName="siagrob1.fragments.NfeEmails" type="XML" />
+            </uxap:ObjectPageSubSection>
         </uxap:subSections>
       </uxap:ObjectPageSection>
       <uxap:ObjectPageSection titleUppercase="false" title="Itens">
@@ -154,6 +158,8 @@
                 visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' || ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" press=".onDanfe" />
         <Button text="XML" icon="sap-icon://download"
                 visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Authorized' || ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" press=".onNfeXml" />
+        <Button text="Enviar e-mail" icon="sap-icon://email" press=".onSendNfeEmail"
+            visible="{= ${ui>/standalone} === true &amp;&amp; (${path: 'NfeStatus', targetType: 'any'} === 'Authorized' || ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled') &amp;&amp; ${path: 'IssuerType', targetType: 'any'} === 'Own' }" />
         <Button text="XML do cancelamento" icon="sap-icon://download"
                 visible="{= ${path: 'NfeStatus', targetType: 'any'} === 'Cancelled' }" press=".onNfeCancellationXml" />
         <Button text="Inutilizar numeração" icon="sap-icon://locked"

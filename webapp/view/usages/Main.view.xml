@@ -5,12 +5,25 @@
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:core="sap.ui.core"
 	xmlns:t="sap.ui.table"
+	xmlns:f="sap.f"
 	core:require="{
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-	<Page title="Naturezas de Operação">
-		<content>
+	<f:DynamicPage showFooter="true" busyIndicatorDelay="0" busy="{ui>/busy}">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading><Title text="Naturezas de Operação" /></f:heading>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:header>
+			<f:DynamicPageHeader>
+				<f:content>
+					<core:Fragment fragmentName="siagrob1.view.usages.fragments.Filterbar" type="XML" />
+				</f:content>
+			</f:DynamicPageHeader>
+		</f:header>
+		<f:content>
       <t:Table
 				id="usagesTable"
 				busyIndicatorDelay="0"
@@ -21,15 +34,10 @@
 				enableBusyIndicator="true"
 				alternateRowColors="true"
 				rows="{
-					path: '/Usages'
+					path: '/Usages',
+					parameters: { $filter: 'Inactive eq false' }
 				}"
 			>
-				<t:extension>
-					<OverflowToolbar >
-            <ToolbarSpacer />
-						<SearchField placeholder="Pesquisar..." width="30%" search=".onSearch"/>
-					</OverflowToolbar>
-				</t:extension>
 				<t:columns>
 					<t:Column
 						label="Codigo"
@@ -191,8 +199,8 @@
 				</t:columns>
 
 			</t:Table>
-		</content>
-    <footer>
+		</f:content>
+    <f:footer>
 			<OverflowToolbar>
 				<Button text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
 				<ToolbarSpacer />
@@ -201,10 +209,11 @@
 				<Button text="Alíquotas IBS/CBS" icon="sap-icon://simulate" press=".onOpenIbsCbsRates" visible="{ui>/identityEditable}"/>
 				<Button text="Alíquotas de contribuição social" icon="sap-icon://simulate" press=".onOpenRuralContributionRates" visible="{ui>/identityEditable}"/>
 				<Button text="Incluir" icon="sap-icon://add" type="Emphasized" press=".onCreate" visible="{ui>/identityEditable}"/>
+				<Button text="Visualizar" icon="sap-icon://display" press=".onDetail"/>
 				<Button text="Editar" icon="sap-icon://edit" press=".onEdit"/>
 				<Button text="Deletar" icon="sap-icon://delete" press=".onDelete" visible="{ui>/identityEditable}"/>
 			</OverflowToolbar>
-		</footer>
-	</Page>
+		</f:footer>
+	</f:DynamicPage>
 
 </mvc:View>

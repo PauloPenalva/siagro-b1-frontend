@@ -1,272 +1,338 @@
 <core:FragmentDefinition
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
-    xmlns:l="sap.ui.layout"
-    xmlns:t="sap.ui.table"
     xmlns:core="sap.ui.core"
+    xmlns:uxap="sap.uxap"
 >
-    <f:SimpleForm
-      id="usagesForm"
-      editable="true"
-      layout="ResponsiveGridLayout"
-      labelSpanXL="4"
-      labelSpanL="4"
-      labelSpanM="4"
-      labelSpanS="12"
-      adjustLabelSpan="false"
-      emptySpanXL="0"
-      emptySpanL="0"
-      emptySpanM="0"
-      emptySpanS="0"
-      columnsXL="3"
-      columnsL="2"
-      columnsM="2"
-      singleContainerFullSize="true"
-		  busyIndicatorDelay="0">
-        <f:content>
-          <!-- IDENTIDADE fiscal. Em modo SAPB1 vem do OUSG e o Siagro não a escreve: os
-               campos ficam somente-leitura. O EFEITO, abaixo, é sempre editável — ele é do
-               Siagro nos dois modos. -->
-          <core:Title
-              text="Dados da Natureza de Operação"
-              emphasized="true"
-          />
-          <MessageStrip
-              visible="{= !${ui>/identityEditable} }"
-              text="Nome, descrição e CFOP são mantidos no SAP (OUSG). Aqui você configura apenas o efeito no contrato."
-              type="Information"
-              showIcon="true"
-              class="sapUiSmallMarginBottom"
-          />
-          <Label text="Nome" />
-          <Input
-              value="{Name}"
-              editable="{ui>/identityEditable}"
-              required="true"
-              liveChange=".validateField"
-              maxLength="200"
-          />
-          <Label text="Descrição" />
-          <Input
-              value="{Description}"
-              editable="{ui>/identityEditable}"
-              maxLength="200"
-          />
-          <!-- Tipo da natureza (só STANDALONE: o OUSG não tem tipo, e ali o campo vem nulo).
-               Decide quais CFOPs aparecem e se há efeito em contrato de venda. -->
-          <Label text="Tipo" visible="{ui>/identityEditable}" />
-          <Select
-            visible="{ui>/identityEditable}"
-            selectedKey="{ path: 'Direction', targetType: 'any' }"
-            change=".onDirectionChange"
-            forceSelection="false">
-            <core:ListItem key="Outgoing" text="Saída" />
-            <core:ListItem key="Incoming" text="Entrada" />
-          </Select>
-          <Label text="CFOP dentro do estado"
-                 visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
-          <Input
-              value="{CfopOutgoingInState}"
-              editable="{ui>/identityEditable}"
-              maxLength="4"
-              visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
-          />
-          <Label text="CFOP fora do estado"
-                 visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
-          <Input
-              value="{CfopOutgoingOutState}"
-              editable="{ui>/identityEditable}"
-              maxLength="4"
-              visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
-          />
-          <Label text="CFOP de entrada dentro do estado"
-                 visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
-          <Input
-              value="{CfopIncomingInState}"
-              editable="{ui>/identityEditable}"
-              maxLength="4"
-              visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }"
-          />
-          <Label text="CFOP de entrada fora do estado"
-                 visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
-          <Input
-              value="{CfopIncomingOutState}"
-              editable="{ui>/identityEditable}"
-              maxLength="4"
-              visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }"
-          />
-          <Label text="Texto na nota (natOp)" visible="{ui>/identityEditable}" />
-          <Input
-              value="{InvoiceOperationText}"
-              maxLength="60"
-              placeholder="Vazio = usa o Nome"
-              visible="{ui>/identityEditable}"
-          />
-          <!-- Natureza de devolução, só STANDALONE: a de venda (Saída) aponta a de devolução de venda (Entrada)
-               e a de compra (Entrada) aponta a de devolução de compra (Saída). O "Devolver" herda esta
-               natureza em cada linha da devolução. -->
-          <Label text="Natureza de devolução"
-                 visible="{ui>/identityEditable}" />
-          <!-- ui5lint-disable no-deprecated-api -->
-          <Input
-              value="{ReturnUsageCode}"
-              showValueHelp="true"
-              valueHelpOnly="true"
-              showClearIcon="true"
-              valueHelpRequest=".onReturnUsageValueHelp"
-              change=".onReturnUsageChange"
-              visible="{ui>/identityEditable}">
-            <layoutData>
-              <l:GridData span="XL2 L2 M3 S4" />
-            </layoutData>
-          </Input>
-          <!-- ui5lint-enable no-deprecated-api -->
-          <Input
-              value="{ReturnUsageName}"
-              editable="false"
-              visible="{ui>/identityEditable}" />
-          <!-- Contra-nota a partir da escrituração da NF-e do produtor (spec 2026-10-10 D4): só natureza de entrada, só
-               STANDALONE. A contra-nota usa esta mesma natureza e os mesmos tributos da escrituração. -->
-          <Label text="Permite contra-nota"
-                 visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
-          <CheckBox selected="{AllowsCounterNote}"
-                    visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
-          <!-- Remessa para depósito em armazém de terceiro (spec backend 2026-10-10 §2.1): só STANDALONE. Remessa é
-               natureza de saída e Retorno de entrada; o servidor recusa a combinação errada. -->
-          <Label text="Papel no depósito" visible="{ui>/identityEditable}" />
-          <Select
-            visible="{ui>/identityEditable}"
-            selectedKey="{ path: 'StorageDepositRole', targetType: 'any' }"
-            forceSelection="false">
-            <core:ListItem key="None" text="Nenhum" />
-            <core:ListItem key="Remittance" text="Remessa para depósito" />
-            <core:ListItem key="Return" text="Retorno de depósito" />
-          </Select>
-          <!-- Notas de custódia em armazém próprio (spec backend 2026-10-12 §3.1): só STANDALONE. Entradas são
-               naturezas de entrada; devolução e retornos, de saída — o servidor recusa a combinação errada. -->
-          <Label text="Papel na custódia (armazenagem)" visible="{ui>/identityEditable}" />
-          <Select
-            visible="{ui>/identityEditable}"
-            selectedKey="{ path: 'StorageCustodyRole', targetType: 'any' }"
-            forceSelection="false">
-            <core:ListItem key="None" text="Nenhum" />
-            <core:ListItem key="ProcessingEntry" text="Entrada para beneficiamento" />
-            <core:ListItem key="ProcessingSymbolicReturn" text="Devolução simbólica do beneficiamento" />
-            <core:ListItem key="StorageEntry" text="Entrada para armazenagem" />
-            <core:ListItem key="StorageReturn" text="Retorno de armazenagem" />
-            <core:ListItem key="StorageSymbolicReturn" text="Retorno simbólico de armazenagem" />
-          </Select>
-          <!-- Flags da natureza (equivalem a "Atualiza Estoque" e "Gera Duplicata" da TES do
-               Protheus). Só cadastro por enquanto: o estoque FISCAL e o financeiro a partir
-               do documento fiscal ainda não existem. -->
-          <Label text="Movimenta estoque ?" visible="{ui>/identityEditable}" />
-          <CheckBox selected="{MovesFiscalInventory}" visible="{ui>/identityEditable}" />
-          <Label text="Gera financeiro ?" visible="{ui>/identityEditable}" />
-          <CheckBox selected="{CreatesFinancialDocument}" visible="{ui>/identityEditable}" />
+  <!-- Seções do ObjectPageLayout da natureza (inclusão, edição e detalhe usam este mesmo fragmento).
+       ui>/editable: true na inclusão/edição, false no detalhe (só leitura).
+       ui>/identityEditable: false em SAPB1 — a IDENTIDADE fiscal vem do OUSG e o Siagro não a escreve; o EFEITO
+       no contrato é do Siagro nos dois modos e continua editável. -->
 
-          <!-- Efeito em contrato de VENDA: não se aplica à natureza de entrada (o efeito em
-               contrato de compra vem com a NF-e de entrada). -->
-          <core:Title
-              text="Efeito no Contrato"
-              emphasized="true"
-          />
-          <Text
-              text="Não se aplica à natureza de entrada."
-              visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }"
-          />
-          <Label text="Saldo do contrato"
-                 visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
-          <Select
-            visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
-            selectedKey="{
-              path: 'ContractBalanceEffect',
-              targetType: 'any'
-            }"
-            forceSelection="false"
-          >
-            <core:ListItem key="None" text="Não altera" />
-            <core:ListItem key="Consume" text="Consome saldo" />
-            <core:ListItem key="Restore" text="Devolve saldo" />
-          </Select>
-          <Label text="Valor do contrato"
-                 visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
-          <Select
-            visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
-            selectedKey="{
-              path: 'ContractValueEffect',
-              targetType: 'any'
-            }"
-            forceSelection="false"
-          >
-            <core:ListItem key="None" text="Não altera" />
-            <core:ListItem key="Add" text="Soma ao apurado" />
-            <core:ListItem key="Subtract" text="Subtrai do apurado" />
-          </Select>
+  <uxap:ObjectPageSection id="usagesGeneralSection" titleUppercase="false" title="Geral">
+    <uxap:subSections>
+      <uxap:ObjectPageSubSection title="Identificação" titleUppercase="false">
+        <uxap:blocks>
+          <VBox>
+            <MessageStrip
+                visible="{= !${ui>/identityEditable} }"
+                text="Nome, descrição e CFOP são mantidos no SAP (OUSG). Aqui você configura apenas o efeito no contrato."
+                type="Information"
+                showIcon="true"
+                class="sapUiSmallMarginBottom"
+            />
+            <!-- O id é o que validateForm/clearStates percorrem: o Nome (único obrigatório) mora aqui. -->
+            <f:SimpleForm
+                id="usagesForm"
+                editable="true"
+                layout="ColumnLayout"
+                columnsM="2"
+                columnsL="2"
+                columnsXL="2">
+              <f:content>
+                <Label text="Nome" />
+                <Input
+                    value="{Name}"
+                    editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/identityEditable} === true }"
+                    required="true"
+                    liveChange=".validateField"
+                    maxLength="200"
+                />
+                <Label text="Descrição" />
+                <Input
+                    value="{Description}"
+                    editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/identityEditable} === true }"
+                    maxLength="200"
+                />
+                <!-- Tipo da natureza (só STANDALONE: o OUSG não tem tipo, e ali o campo vem nulo).
+                     Decide quais CFOPs aparecem e se há efeito em contrato de venda. -->
+                <Label text="Tipo" visible="{ui>/identityEditable}" />
+                <Select
+                  visible="{ui>/identityEditable}"
+                  editable="{ui>/editable}"
+                  selectedKey="{ path: 'Direction', targetType: 'any' }"
+                  change=".onDirectionChange"
+                  forceSelection="false">
+                  <core:ListItem key="Outgoing" text="Saída" />
+                  <core:ListItem key="Incoming" text="Entrada" />
+                </Select>
+                <Label text="CFOP dentro do estado"
+                       visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
+                <Input
+                    value="{CfopOutgoingInState}"
+                    editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/identityEditable} === true }"
+                    maxLength="4"
+                    visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
+                />
+                <Label text="CFOP fora do estado"
+                       visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
+                <Input
+                    value="{CfopOutgoingOutState}"
+                    editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/identityEditable} === true }"
+                    maxLength="4"
+                    visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
+                />
+                <Label text="CFOP de entrada dentro do estado"
+                       visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
+                <Input
+                    value="{CfopIncomingInState}"
+                    editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/identityEditable} === true }"
+                    maxLength="4"
+                    visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }"
+                />
+                <Label text="CFOP de entrada fora do estado"
+                       visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
+                <Input
+                    value="{CfopIncomingOutState}"
+                    editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/identityEditable} === true }"
+                    maxLength="4"
+                    visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }"
+                />
+                <Label text="Texto na nota (natOp)" visible="{ui>/identityEditable}" />
+                <Input
+                    value="{InvoiceOperationText}"
+                    editable="{ui>/editable}"
+                    maxLength="60"
+                    placeholder="Vazio = usa o Nome"
+                    visible="{ui>/identityEditable}"
+                />
+                <!-- Natureza de devolução, só STANDALONE: a de venda (Saída) aponta a de devolução de venda (Entrada)
+                     e a de compra (Entrada) aponta a de devolução de compra (Saída). O "Devolver" herda esta
+                     natureza em cada linha da devolução. -->
+                <Label text="Natureza de devolução" visible="{ui>/identityEditable}" />
+                <!-- ui5lint-disable no-deprecated-api -->
+                <Input
+                    value="{ReturnUsageCode}"
+                    editable="{ui>/editable}"
+                    showValueHelp="true"
+                    valueHelpOnly="true"
+                    showClearIcon="true"
+                    valueHelpRequest=".onReturnUsageValueHelp"
+                    change=".onReturnUsageChange"
+                    visible="{ui>/identityEditable}">
+                  <layoutData>
+                    <f:ColumnElementData cellsSmall="4" cellsLarge="3" />
+                  </layoutData>
+                </Input>
+                <!-- ui5lint-enable no-deprecated-api -->
+                <Input
+                    value="{ReturnUsageName}"
+                    editable="false"
+                    visible="{ui>/identityEditable}">
+                  <layoutData>
+                    <f:ColumnElementData cellsSmall="8" cellsLarge="5" />
+                  </layoutData>
+                </Input>
+              </f:content>
+            </f:SimpleForm>
+          </VBox>
+        </uxap:blocks>
+      </uxap:ObjectPageSubSection>
 
-          <core:Title
-              text="Obrigatoriedades"
-              emphasized="true"
-          />
-          <!-- Na entrada, "Exige contrato" decide se o item de uma compra comum (não grão) deve citar
-               contrato; vale para os dois tipos de natureza. -->
-          <Label text="Exige contrato ?" />
-          <CheckBox selected="{RequiresContract}" />
-          <Label text="Exige quantidade ?"
-                 visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
-          <CheckBox
-            selected="{RequiresQuantity}"
-            visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
-          />
-          <Label text="Exige peso ?"
-                 visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
-          <CheckBox
-            selected="{RequiresWeight}"
-            visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
-          />
-          <Label text="Padrão do faturamento de romaneio ?"
-                 visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
-          <CheckBox
-            selected="{IsDefault}"
-            visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
-          />
-          <Label text="Inativo ?" />
-          <CheckBox
-            selected="{Inactive}"
-            editable="{ui>/identityEditable}"
-          />
+      <!-- Comportamento da natureza no documento fiscal: só STANDALONE (em SAPB1 é o SAP quem decide). -->
+      <uxap:ObjectPageSubSection title="Comportamento no documento" titleUppercase="false" visible="{ui>/identityEditable}">
+        <uxap:blocks>
+          <f:SimpleForm
+              editable="true"
+              layout="ColumnLayout"
+              columnsM="2"
+              columnsL="2"
+              columnsXL="2">
+            <f:content>
+              <!-- Contra-nota a partir da escrituração da NF-e do produtor (spec 2026-10-10 D4): só natureza de entrada.
+                   A contra-nota usa esta mesma natureza e os mesmos tributos da escrituração. -->
+              <Label text="Permite contra-nota"
+                     visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
+              <CheckBox selected="{AllowsCounterNote}"
+                        editable="{ui>/editable}"
+                        visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
+              <!-- Remessa para depósito em armazém de terceiro (spec backend 2026-10-10 §2.1). Remessa é natureza de
+                   saída e Retorno de entrada; o servidor recusa a combinação errada. -->
+              <Label text="Papel no depósito" />
+              <Select
+                editable="{ui>/editable}"
+                selectedKey="{ path: 'StorageDepositRole', targetType: 'any' }"
+                forceSelection="false">
+                <core:ListItem key="None" text="Nenhum" />
+                <core:ListItem key="Remittance" text="Remessa para depósito" />
+                <core:ListItem key="Return" text="Retorno de depósito" />
+              </Select>
+              <!-- Notas de custódia em armazém próprio (spec backend 2026-10-12 §3.1). Entradas são naturezas de
+                   entrada; devolução e retornos, de saída — o servidor recusa a combinação errada. -->
+              <Label text="Papel na custódia (armazenagem)" />
+              <Select
+                editable="{ui>/editable}"
+                selectedKey="{ path: 'StorageCustodyRole', targetType: 'any' }"
+                forceSelection="false">
+                <core:ListItem key="None" text="Nenhum" />
+                <core:ListItem key="ProcessingEntry" text="Entrada para beneficiamento" />
+                <core:ListItem key="ProcessingSymbolicReturn" text="Devolução simbólica do beneficiamento" />
+                <core:ListItem key="StorageEntry" text="Entrada para armazenagem" />
+                <core:ListItem key="StorageReturn" text="Retorno de armazenagem" />
+                <core:ListItem key="StorageSymbolicReturn" text="Retorno simbólico de armazenagem" />
+              </Select>
+              <!-- Flags da natureza (equivalem a "Atualiza Estoque" e "Gera Duplicata" da TES do Protheus). -->
+              <Label text="Movimenta estoque ?" />
+              <CheckBox selected="{MovesFiscalInventory}" editable="{ui>/editable}" />
+              <Label text="Gera financeiro ?" />
+              <CheckBox selected="{CreatesFinancialDocument}" editable="{ui>/editable}" />
+            </f:content>
+          </f:SimpleForm>
+        </uxap:blocks>
+      </uxap:ObjectPageSubSection>
+    </uxap:subSections>
+  </uxap:ObjectPageSection>
 
-          <!-- Destinação da compra (spec 2026-10-17, Efeito dos tributos e DIFAL): só natureza de entrada em STANDALONE;
-               decide crédito de ICMS/PIS/COFINS e o DIFAL. Title com texto em expressão: o visible não esconde o cabeçalho. -->
-          <core:Title emphasized="true"
-                      text="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' ? 'Destinação da compra' : '' }" />
-          <Label text="Destinação" visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
-          <Select
-            visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }"
-            selectedKey="{ path: 'PurchasePurpose', targetType: 'any' }"
-            forceSelection="false">
-            <core:ListItem key="ResaleOrInput" text="Revenda / insumo" />
-            <core:ListItem key="UseAndConsumption" text="Uso e consumo" />
-            <core:ListItem key="FixedAsset" text="Ativo imobilizado" />
-          </Select>
+  <!-- Efeito em contrato de VENDA: não se aplica à natureza de entrada (o efeito em contrato de compra vem com a
+       NF-e de entrada). -->
+  <uxap:ObjectPageSection titleUppercase="false" title="Efeito no Contrato">
+    <uxap:subSections>
+      <uxap:ObjectPageSubSection title="Efeito no Contrato" titleUppercase="false">
+        <uxap:blocks>
+          <f:SimpleForm
+              editable="true"
+              layout="ColumnLayout"
+              columnsM="2"
+              columnsL="2"
+              columnsXL="2">
+            <f:content>
+              <Label text="Efeito" visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
+              <Text
+                  text="Não se aplica à natureza de entrada."
+                  visible="{= ${path: 'Direction', targetType: 'any'} === 'Incoming' }"
+              />
+              <Label text="Saldo do contrato"
+                     visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
+              <Select
+                visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
+                editable="{ui>/editable}"
+                selectedKey="{ path: 'ContractBalanceEffect', targetType: 'any' }"
+                forceSelection="false">
+                <core:ListItem key="None" text="Não altera" />
+                <core:ListItem key="Consume" text="Consome saldo" />
+                <core:ListItem key="Restore" text="Devolve saldo" />
+              </Select>
+              <Label text="Valor do contrato"
+                     visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
+              <Select
+                visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
+                editable="{ui>/editable}"
+                selectedKey="{ path: 'ContractValueEffect', targetType: 'any' }"
+                forceSelection="false">
+                <core:ListItem key="None" text="Não altera" />
+                <core:ListItem key="Add" text="Soma ao apurado" />
+                <core:ListItem key="Subtract" text="Subtrai do apurado" />
+              </Select>
+            </f:content>
+          </f:SimpleForm>
+        </uxap:blocks>
+      </uxap:ObjectPageSubSection>
+    </uxap:subSections>
+  </uxap:ObjectPageSection>
 
-          <!-- Retenções sobre serviço (spec 2026-10-17, Outras compras): só natureza de entrada em STANDALONE.
-               Percentuais editáveis usam Double, nunca Decimal (o Decimal grava string e o OData recusa). Vazio = não retém. -->
-          <core:Title emphasized="true"
-                      text="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' ? 'Retenções de serviço' : '' }" />
-          <Label text="ISS %" visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
-          <Input visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" value="{ path: 'WithholdingIssRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
-          <Label text="IRRF %" visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
-          <Input visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" value="{ path: 'WithholdingIrrfRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
-          <Label text="INSS %" visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
-          <Input visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" value="{ path: 'WithholdingInssRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
-          <Label text="PIS %" visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
-          <Input visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" value="{ path: 'WithholdingPisRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
-          <Label text="COFINS %" visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
-          <Input visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" value="{ path: 'WithholdingCofinsRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
-          <Label text="CSLL %" visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" />
-          <Input visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }" value="{ path: 'WithholdingCsllRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
-        </f:content>
-        <core:Title />
-        <core:Title />
-    </f:SimpleForm>
+  <uxap:ObjectPageSection titleUppercase="false" title="Obrigatoriedades">
+    <uxap:subSections>
+      <uxap:ObjectPageSubSection title="Obrigatoriedades" titleUppercase="false">
+        <uxap:blocks>
+          <f:SimpleForm
+              editable="true"
+              layout="ColumnLayout"
+              columnsM="2"
+              columnsL="2"
+              columnsXL="2">
+            <f:content>
+              <!-- Na entrada, "Exige contrato" decide se o item de uma compra comum (não grão) deve citar contrato;
+                   vale para os dois tipos de natureza. -->
+              <Label text="Exige contrato ?" />
+              <CheckBox selected="{RequiresContract}" editable="{ui>/editable}" />
+              <Label text="Exige quantidade ?"
+                     visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
+              <CheckBox
+                selected="{RequiresQuantity}"
+                editable="{ui>/editable}"
+                visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
+              />
+              <Label text="Exige peso ?"
+                     visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
+              <CheckBox
+                selected="{RequiresWeight}"
+                editable="{ui>/editable}"
+                visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
+              />
+              <Label text="Padrão do faturamento de romaneio ?"
+                     visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }" />
+              <CheckBox
+                selected="{IsDefault}"
+                editable="{ui>/editable}"
+                visible="{= ${path: 'Direction', targetType: 'any'} !== 'Incoming' }"
+              />
+              <Label text="Inativo ?" />
+              <CheckBox
+                selected="{Inactive}"
+                editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/identityEditable} === true }"
+              />
+            </f:content>
+          </f:SimpleForm>
+        </uxap:blocks>
+      </uxap:ObjectPageSubSection>
+    </uxap:subSections>
+  </uxap:ObjectPageSection>
+
+  <!-- Compra: só natureza de ENTRADA em STANDALONE. -->
+  <uxap:ObjectPageSection titleUppercase="false" title="Compra"
+      visible="{= ${ui>/identityEditable} === true &amp;&amp; ${path: 'Direction', targetType: 'any'} === 'Incoming' }">
+    <uxap:subSections>
+      <!-- Destinação da compra (spec 2026-10-17, Efeito dos tributos e DIFAL): decide crédito de ICMS/PIS/COFINS e
+           o DIFAL. -->
+      <uxap:ObjectPageSubSection title="Destinação da compra" titleUppercase="false">
+        <uxap:blocks>
+          <f:SimpleForm
+              editable="true"
+              layout="ColumnLayout"
+              columnsM="2"
+              columnsL="2"
+              columnsXL="2">
+            <f:content>
+              <Label text="Destinação" />
+              <Select
+                editable="{ui>/editable}"
+                selectedKey="{ path: 'PurchasePurpose', targetType: 'any' }"
+                forceSelection="false">
+                <core:ListItem key="ResaleOrInput" text="Revenda / insumo" />
+                <core:ListItem key="UseAndConsumption" text="Uso e consumo" />
+                <core:ListItem key="FixedAsset" text="Ativo imobilizado" />
+              </Select>
+            </f:content>
+          </f:SimpleForm>
+        </uxap:blocks>
+      </uxap:ObjectPageSubSection>
+      <!-- Retenções sobre serviço (spec 2026-10-17, Outras compras). Percentuais editáveis usam Double, nunca Decimal
+           (o Decimal grava string e o OData recusa). Vazio = não retém. -->
+      <uxap:ObjectPageSubSection title="Retenções de serviço" titleUppercase="false">
+        <uxap:blocks>
+          <f:SimpleForm
+              editable="true"
+              layout="ColumnLayout"
+              columnsM="2"
+              columnsL="3"
+              columnsXL="3">
+            <f:content>
+              <Label text="ISS %" />
+              <Input editable="{ui>/editable}" value="{ path: 'WithholdingIssRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+              <Label text="IRRF %" />
+              <Input editable="{ui>/editable}" value="{ path: 'WithholdingIrrfRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+              <Label text="INSS %" />
+              <Input editable="{ui>/editable}" value="{ path: 'WithholdingInssRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+              <Label text="PIS %" />
+              <Input editable="{ui>/editable}" value="{ path: 'WithholdingPisRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+              <Label text="COFINS %" />
+              <Input editable="{ui>/editable}" value="{ path: 'WithholdingCofinsRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+              <Label text="CSLL %" />
+              <Input editable="{ui>/editable}" value="{ path: 'WithholdingCsllRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
+            </f:content>
+          </f:SimpleForm>
+        </uxap:blocks>
+      </uxap:ObjectPageSubSection>
+    </uxap:subSections>
+  </uxap:ObjectPageSection>
 </core:FragmentDefinition>

@@ -12,7 +12,6 @@ import { applyFiscalCodeLists } from "siagrob1/model/fiscalCodes";
 export default class Edit extends BaseController {
 
 	onInit(): void {
-		this.bindRuralContributionGroupVisibility();
 		this.getRouter().getRoute("usagesEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 
@@ -20,6 +19,7 @@ export default class Edit extends BaseController {
 		this.clearStates("usagesForm");
 
     applyFiscalCodeLists(this.getModel("ui") as JSONModel);
+    this.setEditable(true);
     void this.applyErpMode();
 
     const oModel = this.getView().getModel() as ODataModel;
@@ -75,17 +75,5 @@ export default class Edit extends BaseController {
 		}
 
 		this.onNavBack();
-	}
-
-	/**
-	 * Em SAPB1 a identidade fiscal (nome, descrição, CFOP) vem do OUSG e é somente-leitura;
-	 * o efeito no contrato continua editável, porque é do Siagro. Inicializar como `true`
-	 * antes da resposta manteria o comportamento do STANDALONE, que é o caso permissivo.
-	 */
-	private async applyErpMode() {
-		const uiModel = this.getModel("ui") as JSONModel;
-		const systemInfo = await this.getSystemInfo();
-
-		uiModel.setProperty("/identityEditable", systemInfo?.erp !== "SAPB1");
 	}
 }

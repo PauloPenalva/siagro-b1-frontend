@@ -819,6 +819,11 @@
           "target": "nfeSettings"
         },
         {
+          "pattern": "email-settings",
+          "name": "emailSettings",
+          "target": "emailSettings"
+        },
+        {
           "pattern": "usages",
           "name": "usages",
           "target": "usages"
@@ -842,6 +847,11 @@
           "pattern": "usages/{id}/edit",
           "name": "usagesEdit",
           "target": "usagesEdit"
+        },
+        {
+          "pattern": "usages/{id}",
+          "name": "usagesDetail",
+          "target": "usagesDetail"
         },
         {
           "pattern": "cost-centers",
@@ -2064,6 +2074,12 @@
           "name": "siagrob1.view.nfeSettings.Main",
           "clearControlAggregation": true
         },
+        "emailSettings": {
+          "id": "emailSettings",
+          "level": 1,
+          "name": "siagrob1.view.emailSettings.Main",
+          "clearControlAggregation": true
+        },
         "usages": {
 					"id": "usages",
           "level": 1,
@@ -2080,6 +2096,12 @@
 					"id": "usagesEdit",
           "level": 2,
 					"name": "siagrob1.view.usages.Edit",
+          "clearControlAggregation": true
+				},
+        "usagesDetail": {
+					"id": "usagesDetail",
+          "level": 2,
+					"name": "siagrob1.view.usages.Detail",
           "clearControlAggregation": true
 				},
         "ibsCbsRates": {
