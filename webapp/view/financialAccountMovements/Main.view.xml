@@ -71,7 +71,7 @@
 				class="sapUiSizeCondensed"
 				visibleRowCountMode="Auto"
 				alternateRowColors="true"
-				noData="Escolha a conta e o período e clique em Ir."
+				noData="Escolha a conta e o período e clique em Iniciar."
 				rows="{movements>/Rows}">
 				<t:extension>
 					<OverflowToolbar>
