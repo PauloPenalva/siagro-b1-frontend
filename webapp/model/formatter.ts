@@ -635,7 +635,8 @@ const formatter = {
   formatFinancialDocumentCancelable: (
     status: string, settledAmount: number | string, nature?: string, originType?: string, composedAmount?: number | string,
   ) =>
-    !!status && status !== "Canceled" && !Number(settledAmount)
+    // Só título lançado à mão (OriginType Manual) e sem baixa: o gerado pelo sistema morre com a sua origem.
+    !!status && status !== "Canceled" && !Number(settledAmount) && originType === "Manual"
     && !formatter.isPurchaseFirmPayable(nature, originType) && !formatter.isSalesFirmReceivable(nature, originType) && !Number(composedAmount ?? 0),
 
   /**

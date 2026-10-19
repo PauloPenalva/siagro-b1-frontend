@@ -92,10 +92,14 @@ QUnit.test("Cancelar título some no firme da conciliação e no provisório com
 	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Firm", "PurchaseFiscalReconciliation", "0"), false);
 	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "PurchaseReturn", "PurchaseFiscalReconciliation", "0"), false);
 	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Provisional", "PurchaseContractPriceFixation", "500.00"), false);
-	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Provisional", "PurchaseContractPriceFixation", "0"), true);
+	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Provisional", "PurchaseContractPriceFixation", "0"), false);
 	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Firm", "PurchaseInvoice", "0"), false);
-	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Firm", "PurchaseContractWashout", "0"), true);
-	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0"), true);
+	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Firm", "PurchaseContractWashout", "0"), false);
+	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0"), false);
+	// Só o título lançado à mão, sem baixa, pode ser cancelado pela tela.
+	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Provisional", "Manual", "0"), true);
+	assert.strictEqual(formatter.formatFinancialDocumentCancelable("PartiallySettled", "10.00", "Provisional", "Manual", "0"), false);
+	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Advance", "FinancialDocument", "0"), false);
 	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "Firm", "SalesInvoice", "0"), false);
 	assert.strictEqual(formatter.formatFinancialDocumentCancelable("Open", "0", "SalesReturn", "SalesInvoice", "0"), false);
 	assert.strictEqual(formatter.isSalesFirmReceivable("Firm", "SalesInvoice"), true);
