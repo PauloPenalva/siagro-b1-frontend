@@ -639,6 +639,14 @@ const formatter = {
     !!status && status !== "Canceled" && !Number(settledAmount) && originType === "Manual"
     && !formatter.isPurchaseFirmPayable(nature, originType) && !formatter.isSalesFirmReceivable(nature, originType) && !Number(composedAmount ?? 0),
 
+  /** Título lançado à mão em Contas a Pagar/Receber (origem Manual, natureza Firme): o único editável e excluível. */
+  isManualFinancialTitle: (nature?: string, originType?: string) =>
+    nature === "Firm" && originType === "Manual",
+
+  /** Botão Editar do título manual: não cancelado. */
+  formatManualFinancialTitleEditable: (status?: string, nature?: string, originType?: string) =>
+    !!status && status !== "Canceled" && nature === "Firm" && originType === "Manual",
+
   /**
    * Firme ou devolução da Conciliação Fiscal de Compras, ou firme do documento "Complemento de valor" (origem
    * PurchaseInvoice, spec D11): sai só por composição, dação ou encontro de contas.
@@ -1530,6 +1538,13 @@ const formatter = {
     m.set("Composition", "Composição");
     m.set("AdvanceApplication", "Compensação de adiantamento");
     m.set("AdvanceTransfer", "Transferência de adiantamento");
+    // Título lançado à mão.
+    m.set("Partner", "Parceiro");
+    m.set("DocumentDate", "Emissão");
+    m.set("Branch", "Filial");
+    m.set("Currency", "Moeda");
+    m.set("PaymentTerms", "Condição de pagamento");
+    m.set("TaxDocumentNumber", "Documento");
 
     return m.get(value) ?? value;
   },

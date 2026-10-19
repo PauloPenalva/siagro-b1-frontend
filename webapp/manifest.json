@@ -1283,6 +1283,21 @@
           "pattern": "financial-documents/{id}/detail",
           "name": "financialDocumentsDetail",
           "target": "financialDocumentsDetail"
+        },
+        {
+          "pattern": "accounts-payable/new",
+          "name": "accountsPayableNew",
+          "target": "financialDocumentsManual"
+        },
+        {
+          "pattern": "accounts-receivable/new",
+          "name": "accountsReceivableNew",
+          "target": "financialDocumentsManual"
+        },
+        {
+          "pattern": "financial-documents/{id}/edit",
+          "name": "financialDocumentsEdit",
+          "target": "financialDocumentsManual"
         }
 			],
 			"targets": {
@@ -2680,6 +2695,12 @@
           "id": "financialDocumentsDetail",
           "level": 2,
           "name": "siagrob1.view.financialDocuments.Detail",
+          "clearControlAggregation": true
+        },
+        "financialDocumentsManual": {
+          "id": "financialDocumentsManual",
+          "level": 3,
+          "name": "siagrob1.view.financialDocuments.Manual",
           "clearControlAggregation": true
         }
 			}
