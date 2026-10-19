@@ -17,9 +17,12 @@ export function pickInitialCompany(companies: CompanyOption[], lastCode: string)
   return (last ?? companies[0]).code;
 }
 
-/** O seletor só aparece quando há escolha a fazer; com uma empresa o servidor a escolhe sozinho. */
+/**
+ * O seletor aparece sempre que a lista chegou, mesmo com uma empresa só: o usuário vê em qual empresa
+ * vai entrar. Sem lista (falha ao carregar) ele some e o servidor escolhe a empresa padrão.
+ */
 export function shouldShowCompanySelect(companies: CompanyOption[]): boolean {
-  return (companies?.length ?? 0) > 1;
+  return (companies?.length ?? 0) > 0;
 }
 
 export function rememberCompany(code: string): void {
