@@ -130,6 +130,7 @@ export default {
   contractPositionReport: '/reports/ContractPosition',
   contractMonthlyPositionReport: '/reports/ContractMonthlyPosition',
   funruralWithholdingReport: '/reports/FunruralWithholding',
+  financialAccountStatementReport: '/reports/FinancialAccountStatement',
   royaltyPendingReport: '/reports/RoyaltyPending',
 
   purchaseContractsPriceFixations: '/odata/PurchaseContractsPriceFixations',
@@ -314,6 +315,17 @@ export default {
   financialAdvancesCreate: '/FinancialAdvancesCreate(...)',
   financialAdvancesRefund: '/FinancialAdvancesRefund(...)',
   financialAdvancesRelinkContract: '/FinancialAdvancesRelinkContract(...)',
+  // Lançamentos, reconciliação e extrato da conta (spec 2026-10-19): chamados por sendJson.
+  financialAccountEntries: '/odata/FinancialAccountEntries',
+  financialAccountEntriesCreate: '/odata/FinancialAccountEntriesCreate',
+  financialAccountsGetMovements: '/odata/FinancialAccountsGetMovements',
+  financialAccountReconciliations: '/odata/FinancialAccountReconciliations',
+  financialAccountReconciliationsOpen: '/odata/FinancialAccountReconciliationsOpen',
+  financialAccountReconciliationsSetLines: '/odata/FinancialAccountReconciliationsSetLines',
+  financialAccountReconciliationsClose: '/odata/FinancialAccountReconciliationsClose',
+  financialAccountReconciliationsReopen: '/odata/FinancialAccountReconciliationsReopen',
+  financialAccountReconciliationsDelete: '/odata/FinancialAccountReconciliationsDelete',
+  financialAccountReconciliationsGetLines: '/odata/FinancialAccountReconciliationsGetLines',
   // Títulos firmes de compra (spec 2026-10-13): chamados por sendJson (erro de negócio nas três formas).
   financialDocumentsCompose: '/odata/FinancialDocumentsCompose',
   financialDocumentsUncompose: '/odata/FinancialDocumentsUncompose',

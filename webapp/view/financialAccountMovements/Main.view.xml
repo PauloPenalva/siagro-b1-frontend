@@ -1,0 +1,127 @@
+<mvc:View
+	controllerName="siagrob1.controller.financialAccountMovements.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.f"
+	xmlns:fb="sap.ui.comp.filterbar"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="Lançamentos da Conta"/>
+				</f:heading>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:header>
+			<f:DynamicPageHeader>
+				<f:content>
+					<fb:FilterBar id="movementsFilterBar" search=".onSearch" showClearOnFB="false" useToolbar="false" showGoOnFB="true">
+						<fb:filterGroupItems>
+							<fb:FilterGroupItem name="account" label="Conta financeira" groupName="main" visibleInFilterBar="true" mandatory="true">
+								<fb:control>
+									<Input
+										value="{filter>/AccountCode}"
+										description="{filter>/AccountName}"
+										showValueHelp="true"
+										valueHelpOnly="true"
+										valueHelpRequest=".openAccountValueHelp">
+										<customData>
+											<core:CustomData key="descriptionProperty" value="AccountName:Name"/>
+										</customData>
+									</Input>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="from" label="De" groupName="main" visibleInFilterBar="true" mandatory="true">
+								<fb:control>
+									<DatePicker value="{filter>/DateFrom}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy"/>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="to" label="Até" groupName="main" visibleInFilterBar="true" mandatory="true">
+								<fb:control>
+									<DatePicker value="{filter>/DateTo}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy"/>
+								</fb:control>
+							</fb:FilterGroupItem>
+						</fb:filterGroupItems>
+					</fb:FilterBar>
+					<HBox class="sapUiSmallMarginTop" wrap="Wrap">
+						<ObjectNumber class="sapUiMediumMarginEnd" emphasized="true" unit="Saldo anterior"
+							number="{ path: 'movements>/OpeningBalance', formatter: 'formatter.formatDecimal2' }"/>
+						<ObjectNumber class="sapUiMediumMarginEnd" state="Success" unit="Entradas"
+							number="{ path: 'movements>/TotalIn', formatter: 'formatter.formatDecimal2' }"/>
+						<ObjectNumber class="sapUiMediumMarginEnd" state="Error" unit="Saídas"
+							number="{ path: 'movements>/TotalOut', formatter: 'formatter.formatDecimal2' }"/>
+						<ObjectNumber emphasized="true" unit="Saldo final"
+							number="{ path: 'movements>/ClosingBalance', formatter: 'formatter.formatDecimal2' }"/>
+					</HBox>
+				</f:content>
+			</f:DynamicPageHeader>
+		</f:header>
+		<f:content>
+			<t:Table
+				id="movementsTable"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				alternateRowColors="true"
+				noData="Escolha a conta e o período e clique em Ir."
+				rows="{movements>/Rows}">
+				<t:extension>
+					<OverflowToolbar>
+						<Title text="Lançamentos ({= ${movements>/Rows}.length })"/>
+						<ToolbarSpacer/>
+						<Button type="Emphasized" icon="sap-icon://add" text="Novo lançamento" press=".onCreateEntry"/>
+						<Button type="Transparent" text="Excluir" press=".onDeleteEntry"/>
+						<Button type="Transparent" text="Ver título" press=".onOpenDocument"/>
+						<Button type="Transparent" icon="sap-icon://print" text="Imprimir extrato" press=".onPrint"/>
+						<Button type="Transparent" text="Exportar Excel" press=".onExcel"/>
+						<Button type="Transparent" text="Atualizar" press=".onSearch"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="Data" width="7rem" hAlign="Center">
+						<t:template><Text text="{ path: 'movements>Date', formatter: 'formatter.formatDate' }" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Origem" width="7rem" hAlign="Center">
+						<t:template>
+							<Text text="{= ${movements>Source} === 'Manual' || ${movements>Source} === 1 ? 'Manual' : 'Baixa' }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Histórico" width="26rem">
+						<t:template><Text text="{movements>Description}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Documento" width="9rem">
+						<t:template><Text text="{movements>DocumentReference}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Entrada" width="9rem" hAlign="End">
+						<t:template>
+							<Text text="{= Number(${movements>Amount}) &gt; 0 ? formatter.formatDecimal2(${movements>Amount}) : '' }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Saída" width="9rem" hAlign="End">
+						<t:template>
+							<Text text="{= Number(${movements>Amount}) &lt; 0 ? formatter.formatDecimal2(-Number(${movements>Amount})) : '' }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Saldo" width="10rem" hAlign="End">
+						<t:template><Text text="{ path: 'movements>RunningBalance', formatter: 'formatter.formatDecimal2' }" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Conciliado" width="7rem" hAlign="Center">
+						<t:template>
+							<core:Icon src="{= ${movements>Reconciled} ? 'sap-icon://accept' : '' }" color="Positive"
+								tooltip="{= ${movements>Reconciled} ? 'Conciliado' : '' }"/>
+						</t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</f:content>
+	</f:DynamicPage>
+
+</mvc:View>
