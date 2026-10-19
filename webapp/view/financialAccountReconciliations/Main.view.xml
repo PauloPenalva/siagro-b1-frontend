@@ -53,20 +53,20 @@
 						<t:template><Text text="{FinancialAccountCode} - {FinancialAccount/Name}" wrapping="false"/></t:template>
 					</t:Column>
 					<t:Column label="Data do extrato" width="9rem" hAlign="Center" sortProperty="StatementDate">
-						<t:template><Text text="{ path: 'StatementDate', formatter: 'formatter.formatDate' }" wrapping="false"/></t:template>
+						<t:template><Text text="{ path: 'StatementDate', targetType: 'any', formatter: 'formatter.formatDate' }" wrapping="false"/></t:template>
 					</t:Column>
 					<t:Column label="Saldo do extrato" width="11rem" hAlign="End">
-						<t:template><Text text="{ path: 'StatementBalance', formatter: 'formatter.formatDecimal2' }" wrapping="false"/></t:template>
+						<t:template><Text text="{ path: 'StatementBalance', targetType: 'any', formatter: 'formatter.formatDecimal2' }" wrapping="false"/></t:template>
 					</t:Column>
 					<t:Column label="Situação" width="9rem" hAlign="Center" sortProperty="Status">
 						<t:template>
 							<ObjectStatus inverted="true"
-								text="{= ${Status} === 'Closed' ? 'Fechada' : 'Aberta' }"
-								state="{= ${Status} === 'Closed' ? 'Success' : 'Warning' }"/>
+								text="{= ${path: 'Status', targetType: 'any'} === 'Closed' ? 'Fechada' : 'Aberta' }"
+								state="{= ${path: 'Status', targetType: 'any'} === 'Closed' ? 'Success' : 'Warning' }"/>
 						</t:template>
 					</t:Column>
 					<t:Column label="Fechada em" width="11rem" hAlign="Center">
-						<t:template><Text text="{ path: 'ClosedAt', formatter: 'formatter.formatDateTime' }" wrapping="false"/></t:template>
+						<t:template><Text text="{ path: 'ClosedAt', targetType: 'any', formatter: 'formatter.formatDateTime' }" wrapping="false"/></t:template>
 					</t:Column>
 					<t:Column label="Observação" width="20rem">
 						<t:template><Text text="{Notes}" wrapping="false"/></t:template>
