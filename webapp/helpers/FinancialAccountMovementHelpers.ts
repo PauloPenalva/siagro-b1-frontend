@@ -67,3 +67,16 @@ export function reconciliationChanges(rows: MovementRow[], selectedKeys: Set<str
 
 	return changes;
 }
+
+/**
+ * Quadro da reconciliação recalculado na tela conforme as linhas são marcadas: soma marcada e
+ * diferença = (abertura + marcado) − saldo do extrato. Arredonda em centavos para o zero ser zero.
+ */
+export function reconciliationSummary(rows: MovementRow[], selectedKeys: Set<string>, openingBalance: number,
+	statementBalance: number): { reconciledAmount: number; difference: number } {
+	const cents = rows.filter((r) => selectedKeys.has(r.Key))
+		.reduce((sum, r) => sum + Math.round(Number(r.Amount) * 100), 0);
+	const reconciledAmount = cents / 100;
+	const difference = (Math.round(Number(openingBalance) * 100) + cents - Math.round(Number(statementBalance) * 100)) / 100;
+	return { reconciledAmount, difference: difference === 0 ? 0 : difference };
+}

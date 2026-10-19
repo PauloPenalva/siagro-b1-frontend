@@ -4,6 +4,7 @@ import {
 	isManual,
 	canDeleteEntry,
 	reconciliationChanges,
+	reconciliationSummary,
 	MovementRow,
 } from "siagrob1/helpers/FinancialAccountMovementHelpers";
 
@@ -51,4 +52,18 @@ QUnit.test("reconciliationChanges envia só o que mudou, separado por fonte", fu
 		UnmarkSettlements: ["s2"],
 		UnmarkEntries: ["e2"],
 	});
+});
+
+QUnit.test("reconciliationSummary soma o selecionado e calcula a diferença contra o extrato", function (assert) {
+	const rows = [
+		{ Key: "a", Amount: "-10.50" },
+		{ Key: "b", Amount: 300 },
+		{ Key: "c", Amount: -5 },
+	] as MovementRow[];
+
+	const summary = reconciliationSummary(rows, new Set(["a", "b"]), 100, 389.5);
+
+	assert.strictEqual(summary.reconciledAmount, 289.5);
+	assert.strictEqual(summary.difference, 0);
+	assert.strictEqual(reconciliationSummary(rows, new Set(["a"]), 100, 389.5).difference, -300);
 });

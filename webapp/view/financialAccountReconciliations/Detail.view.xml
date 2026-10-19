@@ -1,0 +1,104 @@
+<mvc:View
+	controllerName="siagrob1.controller.financialAccountReconciliations.Detail"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.f"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}" showFooter="true">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="Reconciliação {rec>/FinancialAccountCode} - {rec>/AccountName}"/>
+				</f:heading>
+				<f:expandedContent>
+					<Label text="Extrato de { path: 'rec>/StatementDate', formatter: 'formatter.formatDate' }"/>
+				</f:expandedContent>
+				<f:navigationActions>
+					<Button icon="sap-icon://decline" type="Transparent" tooltip="Voltar" press=".onBack"/>
+				</f:navigationActions>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:header>
+			<f:DynamicPageHeader>
+				<f:content>
+					<HBox wrap="Wrap" alignItems="Center">
+						<ObjectStatus class="sapUiMediumMarginEnd" inverted="true"
+							text="{= ${rec>/Status} === 'Closed' ? 'Fechada' : 'Aberta' }"
+							state="{= ${rec>/Status} === 'Closed' ? 'Success' : 'Warning' }"/>
+						<ObjectNumber class="sapUiMediumMarginEnd" unit="Saldo anterior conciliado"
+							number="{ path: 'rec>/OpeningBalance', formatter: 'formatter.formatDecimal2' }"/>
+						<ObjectNumber class="sapUiMediumMarginEnd" unit="Conciliado"
+							number="{ path: 'rec>/ReconciledAmount', formatter: 'formatter.formatDecimal2' }"/>
+						<ObjectNumber class="sapUiMediumMarginEnd" emphasized="true" unit="Saldo do extrato"
+							number="{ path: 'rec>/StatementBalance', formatter: 'formatter.formatDecimal2' }"/>
+						<ObjectNumber emphasized="true" unit="Diferença"
+							state="{= Number(${rec>/Difference}) === 0 ? 'Success' : 'Error' }"
+							number="{ path: 'rec>/Difference', formatter: 'formatter.formatDecimal2' }"/>
+					</HBox>
+				</f:content>
+			</f:DynamicPageHeader>
+		</f:header>
+		<f:content>
+			<t:Table
+				id="linesTable"
+				selectionMode="{= ${rec>/Status} === 'Closed' ? 'None' : 'MultiToggle' }"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				alternateRowColors="true"
+				noData="Nenhum lançamento pendente até a data do extrato."
+				rowSelectionChange=".onSelectionChange"
+				rows="{rec>/Rows}">
+				<t:extension>
+					<OverflowToolbar>
+						<Title text="Lançamentos até a data do extrato ({= ${rec>/Rows}.length })"/>
+						<ToolbarSpacer/>
+						<Button type="Transparent" icon="sap-icon://print" text="Imprimir extrato" press=".onPrint"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="Data" width="7rem" hAlign="Center">
+						<t:template><Text text="{ path: 'rec>Date', formatter: 'formatter.formatDate' }" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Origem" width="7rem" hAlign="Center">
+						<t:template>
+							<Text text="{= ${rec>Source} === 'Manual' || ${rec>Source} === 1 ? 'Manual' : 'Baixa' }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Histórico" width="28rem">
+						<t:template><Text text="{rec>Description}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Documento" width="9rem">
+						<t:template><Text text="{rec>DocumentReference}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Entrada" width="9rem" hAlign="End">
+						<t:template>
+							<Text text="{= Number(${rec>Amount}) &gt; 0 ? formatter.formatDecimal2(${rec>Amount}) : '' }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Saída" width="9rem" hAlign="End">
+						<t:template>
+							<Text text="{= Number(${rec>Amount}) &lt; 0 ? formatter.formatDecimal2(-Number(${rec>Amount})) : '' }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</f:content>
+		<f:footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Salvar marcações" type="Emphasized" visible="{= ${rec>/Status} !== 'Closed' }" press=".onSave"/>
+				<Button text="Fechar reconciliação" type="Accept" visible="{= ${rec>/Status} !== 'Closed' }"
+					enabled="{= Number(${rec>/Difference}) === 0 }" press=".onClose"/>
+				<Button text="Excluir" type="Reject" visible="{= ${rec>/Status} !== 'Closed' }" press=".onDelete"/>
+				<Button text="Reabrir" visible="{= ${rec>/Status} === 'Closed' }" press=".onReopen"/>
+			</OverflowToolbar>
+		</f:footer>
+	</f:DynamicPage>
+
+</mvc:View>
