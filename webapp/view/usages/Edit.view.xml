@@ -4,24 +4,34 @@
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:core="sap.ui.core"
-	xmlns:t="sap.ui.table"
-	xmlns:f="sap.ui.layout.form"
-	core:require="{
-		formatter: 'siagrob1/model/formatter'
-	}">
+	xmlns:uxap="sap.uxap">
 
-	<Page title="Natureza de Operação">
-		<content>
+  <uxap:ObjectPageLayout
+    showFooter="true"
+    upperCaseAnchorBar="false"
+    busy="{ui>/busy}"
+    busyIndicatorDelay="0">
+    <uxap:headerTitle>
+      <uxap:ObjectPageDynamicHeaderTitle>
+        <uxap:expandedHeading>
+          <Title text="Natureza de Operação {Code} - {Name}" wrapping="true"/>
+        </uxap:expandedHeading>
+        <uxap:snappedHeading>
+          <Title text="Natureza de Operação {Code} - {Name}" wrapping="true"/>
+        </uxap:snappedHeading>
+      </uxap:ObjectPageDynamicHeaderTitle>
+    </uxap:headerTitle>
+    <uxap:sections>
       <core:Fragment fragmentName="siagrob1.view.usages.fragments.Form" type="XML" />
       <core:Fragment fragmentName="siagrob1.view.usages.fragments.Taxation" type="XML" />
-		</content>
-		<footer>
-			<Toolbar>
-				<ToolbarSpacer />
-				<Button text="Cancelar" press=".onCancel"  />
-				<Button text="Salvar" type="Emphasized" press=".onSave"/>
-			</Toolbar>
-		</footer>
-	</Page>
+    </uxap:sections>
+    <uxap:footer>
+      <OverflowToolbar>
+        <ToolbarSpacer />
+        <Button text="Salvar" type="Emphasized" press=".onSave"/>
+        <Button text="Cancelar" press=".onCancel"/>
+      </OverflowToolbar>
+    </uxap:footer>
+  </uxap:ObjectPageLayout>
 
 </mvc:View>

@@ -1,8 +1,5 @@
-import { SearchField$SearchEvent } from "sap/m/SearchField";
 import BaseController from "../BaseController";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
-import Filter from "sap/ui/model/Filter";
-import FilterOperator from "sap/ui/model/FilterOperator";
 import Table from "sap/ui/table/Table";
 import MessageBox from "sap/m/MessageBox";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
@@ -12,6 +9,11 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import formatter from "siagrob1/model/formatter";
 import { attachOverflowTooltips } from "siagrob1/helpers/OverflowTooltipHelpers";
 
+type UsageFilter = {
+	Text: string, Code: string, Cfop: string, Direction: string,
+	ContractBalanceEffects: string[], ConfiguredEffects: string, Situation: string,
+};
+
 /**
  * @namespace siagrob1.controller.usages
  */
@@ -19,13 +21,80 @@ export default class Main extends BaseController {
   formatter = { ...formatter }
 
 	onInit(): void {
+		this.getView().setModel(new JSONModel(Main.defaultFilter()), "filter");
 		this.getRouter().getRoute("usages").attachPatternMatched(() => this.routeMatched())
 		attachOverflowTooltips(this.byId("usagesTable") as Table);
 	}
 
 	private routeMatched() {
-		void this.applyErpMode();
-		this.onRefresh();
+		void this.applyErpMode().then(() => this.applyFilters());
+	}
+
+	/** Começa só nas ativas; o rows do Main.view.xml traz o mesmo $filter para a 1ª carga já vir certa. */
+	private static defaultFilter(): UsageFilter {
+		return {
+			Text: "", Code: "", Cfop: "", Direction: "",
+			ContractBalanceEffects: [], ConfiguredEffects: "", Situation: "Active",
+		};
+	}
+
+	private static literal(value: string): string {
+		return `'${value.replace(/'/g, "''")}'`;
+	}
+
+	private rowsBinding(): ODataListBinding {
+		return this.byId("usagesTable").getBinding("rows") as ODataListBinding;
+	}
+
+	/**
+	 * $filter cru: Direction e ContractBalanceEffect são enum, e sap.ui.model.Filter não formata enum OData
+	 * ("Unsupported type"). O CFOP mora em colunas diferentes conforme o tipo, então procura nas quatro.
+	 */
+	private applyFilters(): void {
+		const f = (this.getModel("filter") as JSONModel).getData() as UsageFilter;
+		const identityEditable = (this.getModel("ui") as JSONModel).getProperty("/identityEditable") === true;
+		const parts: string[] = [];
+
+		const text = f.Text?.trim();
+		if (text) {
+			const v = Main.literal(text);
+			parts.push(`(contains(Name,${v}) or contains(Description,${v}))`);
+		}
+		const code = f.Code?.trim();
+		if (code && /^\d+$/.test(code)) {
+			parts.push(`Code eq ${code}`);
+		}
+		const cfop = f.Cfop?.trim();
+		if (cfop) {
+			const v = Main.literal(cfop);
+			const columns = ["CfopOutgoingInState", "CfopOutgoingOutState", "CfopIncomingInState", "CfopIncomingOutState"];
+			parts.push(`(${columns.map((c) => `contains(${c},${v})`).join(" or ")})`);
+		}
+		// O tipo não existe em SAPB1 (o OUSG não tem): o filtro some com o campo.
+		if (identityEditable && f.Direction) {
+			parts.push(`Direction eq ${Main.literal(f.Direction)}`);
+		}
+		if (f.ContractBalanceEffects?.length) {
+			parts.push(`(${f.ContractBalanceEffects.map((e) => `ContractBalanceEffect eq ${Main.literal(e)}`).join(" or ")})`);
+		}
+		if (f.ConfiguredEffects) {
+			parts.push(`HasConfiguredEffects eq ${f.ConfiguredEffects === "Yes"}`);
+		}
+		if (f.Situation) {
+			parts.push(`Inactive eq ${f.Situation === "Inactive"}`);
+		}
+
+		this.rowsBinding()?.changeParameters({ $filter: parts.length ? parts.join(" and ") : undefined });
+		(this.byId("usagesTable") as Table)?.clearSelection();
+	}
+
+	onSearch(): void {
+		this.applyFilters();
+	}
+
+	onClearFilters(): void {
+		(this.getModel("filter") as JSONModel).setData(Main.defaultFilter());
+		this.applyFilters();
 	}
 
 	/**
@@ -42,20 +111,7 @@ export default class Main extends BaseController {
 	}
 
 	onRefresh(): void {
-		(this.getView().byId("usagesTable").getBinding("rows") as ODataListBinding).refresh();
-	}
-
-	onSearch(ev: SearchField$SearchEvent): void {
-		const query = ev.getParameter("query");
-		const oFilters = new Filter({
-			filters: [
-				new Filter("Name", FilterOperator.Contains, query),
-				new Filter("Description", FilterOperator.Contains, query),
-			],
-			and: false,
-		});
-
-		(this.getView().byId("usagesTable").getBinding("rows") as ODataListBinding).filter([oFilters]);
+		this.rowsBinding().refresh();
 	}
 
 	onCreate() {
@@ -70,6 +126,16 @@ export default class Main extends BaseController {
 	/** Alíquotas da contribuição social do produtor rural por vigência (só STANDALONE). */
 	onOpenRuralContributionRates() {
 		this.navTo("ruralContributionRates");
+	}
+
+	onDetail(): void {
+		const oContext = this.getSelectRowContext(this.byId("usagesTable") as Table);
+		if (!oContext) {
+			MessageBox.alert("Selecione um item para visualizar.");
+			return;
+		}
+
+		this.navTo("usagesDetail", { id: String(oContext.getProperty("Code")) });
 	}
 
 	onEdit(): void {

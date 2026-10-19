@@ -844,6 +844,11 @@
           "target": "usagesEdit"
         },
         {
+          "pattern": "usages/{id}",
+          "name": "usagesDetail",
+          "target": "usagesDetail"
+        },
+        {
           "pattern": "cost-centers",
           "name": "costCenters",
           "target": "costCenters"
@@ -2080,6 +2085,12 @@
 					"id": "usagesEdit",
           "level": 2,
 					"name": "siagrob1.view.usages.Edit",
+          "clearControlAggregation": true
+				},
+        "usagesDetail": {
+					"id": "usagesDetail",
+          "level": 2,
+					"name": "siagrob1.view.usages.Detail",
           "clearControlAggregation": true
 				},
         "ibsCbsRates": {

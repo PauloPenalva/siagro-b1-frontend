@@ -1,0 +1,66 @@
+<mvc:View
+	controllerName="siagrob1.controller.usages.Detail"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:uxap="sap.uxap"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+  <!-- Detalhe só leitura: os mesmos fragmentos da inclusão/edição com ui>/editable = false. -->
+  <uxap:ObjectPageLayout
+    showFooter="false"
+    upperCaseAnchorBar="false"
+    toggleHeaderOnTitleClick="true"
+    preserveHeaderStateOnScroll="false"
+    busy="{ui>/busy}"
+    busyIndicatorDelay="0">
+    <uxap:headerTitle>
+      <uxap:ObjectPageDynamicHeaderTitle>
+        <uxap:expandedHeading>
+          <Title text="Natureza de Operação {Code} - {Name}" wrapping="true"/>
+        </uxap:expandedHeading>
+        <uxap:snappedHeading>
+          <Title text="Natureza de Operação {Code} - {Name}" wrapping="true"/>
+        </uxap:snappedHeading>
+        <uxap:actions>
+          <Button text="Voltar para a lista" type="Transparent" press=".navToList"/>
+          <!-- Também em SAPB1: lá o efeito no contrato continua configurável no Siagro. -->
+          <Button text="Editar" icon="sap-icon://edit" type="Emphasized" press=".onEdit"/>
+        </uxap:actions>
+      </uxap:ObjectPageDynamicHeaderTitle>
+    </uxap:headerTitle>
+
+    <uxap:headerContent>
+      <HBox wrap="Wrap" class="sapUiTinyMarginBottom">
+        <VBox class="sapUiMediumMarginEnd sapUiTinyMarginBottom">
+          <Label text="Descrição"/>
+          <Text text="{= ${Description} || '-' }"/>
+        </VBox>
+        <VBox class="sapUiMediumMarginEnd sapUiTinyMarginBottom" visible="{ui>/identityEditable}">
+          <Label text="Tipo"/>
+          <ObjectStatus text="{
+            path: 'Direction',
+            targetType: 'any',
+            formatter: 'formatter.formatUsageDirection'
+          }"/>
+        </VBox>
+        <VBox class="sapUiMediumMarginEnd sapUiTinyMarginBottom">
+          <Label text="Situação"/>
+          <ObjectStatus
+            inverted="true"
+            text="{= ${Inactive} === true ? 'Inativa' : 'Ativa' }"
+            state="{= ${Inactive} === true ? 'Error' : 'Success' }"/>
+        </VBox>
+      </HBox>
+    </uxap:headerContent>
+
+    <uxap:sections>
+      <core:Fragment fragmentName="siagrob1.view.usages.fragments.Form" type="XML" />
+      <core:Fragment fragmentName="siagrob1.view.usages.fragments.Taxation" type="XML" />
+    </uxap:sections>
+  </uxap:ObjectPageLayout>
+
+</mvc:View>

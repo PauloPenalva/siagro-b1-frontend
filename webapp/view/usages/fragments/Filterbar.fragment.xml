@@ -1,0 +1,63 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:fb="sap.ui.comp.filterbar"
+>
+  <!-- Filtros da lista de naturezas. O controller monta um $filter cru (enum não passa por sap.ui.model.Filter). -->
+  <fb:FilterBar id="usagesFilterBar" search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+    <fb:filterGroupItems>
+      <fb:FilterGroupItem name="text" label="Nome / descrição" groupName="G" visibleInFilterBar="true">
+        <fb:control>
+          <Input showClearIcon="true" value="{filter>/Text}" submit=".onSearch" />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="code" label="Código" groupName="G" visibleInFilterBar="true">
+        <fb:control>
+          <Input showClearIcon="true" type="Number" value="{filter>/Code}" submit=".onSearch" />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="cfop" label="CFOP" groupName="G" visibleInFilterBar="true">
+        <fb:control>
+          <Input showClearIcon="true" maxLength="4" value="{filter>/Cfop}" submit=".onSearch" />
+        </fb:control>
+      </fb:FilterGroupItem>
+      <!-- Só STANDALONE: a natureza do OUSG não tem tipo. -->
+      <fb:FilterGroupItem name="direction" label="Tipo" groupName="G" visibleInFilterBar="true" visible="{ui>/identityEditable}">
+        <fb:control>
+          <Select forceSelection="true" selectedKey="{filter>/Direction}">
+            <core:ListItem key="" text="Todos" />
+            <core:ListItem key="Outgoing" text="Saída" />
+            <core:ListItem key="Incoming" text="Entrada" />
+          </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="balanceEffect" label="Efeito no saldo" groupName="G" visibleInFilterBar="true">
+        <fb:control>
+          <MultiComboBox width="100%" selectedKeys="{filter>/ContractBalanceEffects}">
+            <core:Item key="None" text="Não altera" />
+            <core:Item key="Consume" text="Consome saldo" />
+            <core:Item key="Restore" text="Devolve saldo" />
+          </MultiComboBox>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="configuredEffects" label="Efeito configurado" groupName="G" visibleInFilterBar="true">
+        <fb:control>
+          <Select forceSelection="true" selectedKey="{filter>/ConfiguredEffects}">
+            <core:ListItem key="" text="Todos" />
+            <core:ListItem key="Yes" text="Sim" />
+            <core:ListItem key="No" text="Não" />
+          </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="situation" label="Situação" groupName="G" visibleInFilterBar="true">
+        <fb:control>
+          <Select forceSelection="true" selectedKey="{filter>/Situation}">
+            <core:ListItem key="" text="Todas" />
+            <core:ListItem key="Active" text="Ativas" />
+            <core:ListItem key="Inactive" text="Inativas" />
+          </Select>
+        </fb:control>
+      </fb:FilterGroupItem>
+    </fb:filterGroupItems>
+  </fb:FilterBar>
+</core:FragmentDefinition>
