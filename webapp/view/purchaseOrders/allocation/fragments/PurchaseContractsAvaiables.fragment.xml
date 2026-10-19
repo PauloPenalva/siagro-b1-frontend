@@ -5,12 +5,14 @@
     xmlns:t="sap.ui.table"
     xmlns:core="sap.ui.core"
 >
-<Dialog id="purchaseContractsAvaiableDlg" title="Selecionar Contrato de Compra" contentHeight="480px" contentWidth="800px" >
+<Dialog id="purchaseContractsAvaiableDlg" title="Selecionar Contrato de Compra" contentHeight="480px" contentWidth="1150px" >
   <content>
     <VBox class="sapUiSmallMargin">
      <HBox>
        <Label text="Fornecedor:" class="sapUiTinyMarginEnd" />
        <Text text="{CardName} ({CardCode})" class="sapUiLargeMarginEnd"/>
+       <Label text="Armazém:" class="sapUiTinyMarginEnd" />
+       <Text text="{WarehouseCode}" class="sapUiLargeMarginEnd"/>
        <Label text="Produto:" class="sapUiTinyMarginEnd" />
        <Text text="{ItemName} ({ItemCode})" class="sapUiLargeMarginEnd"/>
      </HBox>
@@ -75,6 +77,24 @@
           >
           <t:template>
             <Text text="{viewModel>Code}" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column
+          label="Fornecedor"
+          sortProperty="CardName"
+          width="16rem"
+          >
+          <t:template>
+            <Text text="{viewModel>CardName} ({viewModel>CardCode})" wrapping="false"/>
+          </t:template>
+        </t:Column>
+        <t:Column
+          label="Local de Entrega"
+          sortProperty="DeliveryLocationName"
+          width="14rem"
+          >
+          <t:template>
+            <Text text="{viewModel>DeliveryLocationName} ({viewModel>DeliveryLocationCode})" wrapping="false"/>
           </t:template>
         </t:Column>
         <t:Column

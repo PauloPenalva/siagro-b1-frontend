@@ -4,6 +4,7 @@ import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Context from "sap/ui/model/odata/v4/Context";
+import UI5Context from "sap/ui/model/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Table from "sap/ui/table/Table";
@@ -111,7 +112,7 @@ export default class Main extends BaseController {
         return;
       }
 
-      const confirmed = await DialogHelper.confirmDialog("Confirma alocação do romaneio ?");
+      const confirmed = await this.confirmAllocation(context, tableCtx);
       if (confirmed) {
         this.purchaseContractsAvaiableDialog?.close();
 
@@ -133,6 +134,47 @@ export default class Main extends BaseController {
 
       return;
     }
+  }
+
+  /**
+   * Romaneio pode ir para contrato de outro fornecedor ou armazém (correção de erro de
+   * lançamento); nesse caso o usuário confirma vendo exatamente o que diverge.
+   */
+  private confirmAllocation(storageCtx: Context, contractCtx: UI5Context): Promise<boolean> {
+    const differences: string[] = [];
+
+    const storageCard = storageCtx.getProperty("CardCode") as string;
+    const contractCard = contractCtx.getProperty("CardCode") as string;
+    if (contractCard && storageCard !== contractCard) {
+      differences.push(
+        `Fornecedor: romaneio ${storageCtx.getProperty("CardName") as string} (${storageCard}), ` +
+        `contrato ${contractCtx.getProperty("CardName") as string} (${contractCard})`);
+    }
+
+    const storageWhs = storageCtx.getProperty("WarehouseCode") as string;
+    const contractWhs = contractCtx.getProperty("DeliveryLocationCode") as string;
+    if (contractWhs && storageWhs !== contractWhs) {
+      differences.push(
+        `Armazém: romaneio ${storageWhs}, ` +
+        `contrato ${contractCtx.getProperty("DeliveryLocationName") as string} (${contractWhs})`);
+    }
+
+    if (differences.length === 0) {
+      return DialogHelper.confirmDialog("Confirma alocação do romaneio ?") as Promise<boolean>;
+    }
+
+    return new Promise<boolean>(resolve => {
+      MessageBox.warning(
+        "O contrato selecionado é diferente do romaneio:\n\n" +
+        differences.map(d => `• ${d}`).join("\n") +
+        "\n\nConfirma a alocação mesmo assim?",
+        {
+          title: "Fornecedor/armazém divergente",
+          actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
+          emphasizedAction: MessageBox.Action.CANCEL,
+          onClose: (action: string) => resolve(action === MessageBox.Action.OK.toString()),
+        });
+    });
   }
 
   private applyFilters() {
