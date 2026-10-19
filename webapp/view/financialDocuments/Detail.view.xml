@@ -69,6 +69,26 @@
       <OverflowToolbar>
         <ToolbarSpacer />
         <Button
+          text="Editar"
+          icon="sap-icon://edit"
+          type="Emphasized"
+          visible="{
+            parts: [
+              { path: 'Status', targetType: 'any' },
+              { path: 'Nature', targetType: 'any' },
+              { path: 'OriginType', targetType: 'any' }
+            ],
+            formatter: '.formatter.formatManualFinancialTitleEditable'
+          }"
+          press=".onEditManual" />
+        <Button
+          text="Excluir"
+          icon="sap-icon://delete"
+          visible="{= ${path: 'Nature', targetType: 'any'} === 'Firm'
+                    &amp;&amp; ${path: 'OriginType', targetType: 'any'} === 'Manual'
+                    &amp;&amp; !(Number(${path: 'SettledAmount', targetType: 'any'}) !== 0) }"
+          press=".onDeleteManual" />
+        <Button
           text="Corrigir vencimento"
           icon="sap-icon://appointment-2"
           visible="{= ${path: 'Status', targetType: 'any'} !== 'Canceled' }"

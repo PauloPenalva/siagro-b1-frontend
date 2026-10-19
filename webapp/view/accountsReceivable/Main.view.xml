@@ -37,6 +37,9 @@
 				alternateRowColors="true"
 				rows="{
 					path: '/FinancialDocuments',
+					parameters: {
+						$select: 'OriginType'
+					},
 					sorter: {
 						path: 'DueDate'
 					}
@@ -47,6 +50,9 @@
 						<Title text="Contas a Receber" />
 						<ToolbarSpacer />
 						<Button type="Transparent" text="Exportar Excel" press=".onExcel"/>
+						<Button type="Transparent" text="Incluir" icon="sap-icon://add" press=".onCreateManual"/>
+						<Button type="Transparent" text="Editar" icon="sap-icon://edit" press=".onEdit"/>
+						<Button type="Transparent" text="Excluir" icon="sap-icon://delete" press=".onDelete"/>
 						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
 						<Button type="Transparent" text="Atualizar" press=".onRefresh"/>
 					</OverflowToolbar>

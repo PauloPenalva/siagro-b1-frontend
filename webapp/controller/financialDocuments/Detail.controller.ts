@@ -373,6 +373,36 @@ export default class Detail extends CommonController {
   }
 
   /** A lista de origem foi guardada pelo FinancialDocumentsBaseController ao navegar para ca. */
+  /** Título lançado à mão: edição em página própria (financialDocuments/Manual). */
+  onEditManual(): void {
+    const key = this.documentContext()?.getProperty("Key") as string;
+    if (key) {
+      this.navTo("financialDocumentsEdit", { id: key });
+    }
+  }
+
+  /** Exclusão do título manual sem baixa; recusa do backend aparece pelo handler global de mensagens. */
+  onDeleteManual(): void {
+    const context = this.documentContext();
+    if (!context) return;
+
+    const code = context.getProperty("Code") as string;
+    MessageBox.confirm(`Excluir o título ${code}? Esta ação não pode ser desfeita.`, {
+      emphasizedAction: MessageBox.Action.OK,
+      onClose: (action: string) => {
+        if (action !== MessageBox.Action.OK.toString()) return;
+        this.setBusy(true);
+        context.delete("$auto")
+          .then(() => {
+            MessageToast.show(`Título ${code} excluído.`);
+            this.onBack();
+          })
+          .catch(() => this.refreshDocument())
+          .finally(() => this.setBusy(false));
+      },
+    });
+  }
+
   onBack(): void {
     const origin = (this.getModel("viewModel") as JSONModel)
       .getProperty("/financialDocumentOriginRoute") as string;

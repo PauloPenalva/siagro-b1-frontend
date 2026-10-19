@@ -1,0 +1,177 @@
+<mvc:View
+	controllerName="siagrob1.controller.financialDocuments.Manual"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:l="sap.ui.layout"
+	xmlns:uxap="sap.uxap">
+
+  <uxap:ObjectPageLayout
+    showFooter="true"
+    busy="{ui>/busy}"
+    busyIndicatorDelay="0"
+  >
+    <uxap:headerTitle>
+      <uxap:ObjectPageDynamicHeaderTitle>
+        <uxap:expandedHeading>
+          <Title text="{manual>/title}"/>
+        </uxap:expandedHeading>
+        <uxap:snappedHeading>
+          <Title text="{manual>/title}"/>
+        </uxap:snappedHeading>
+      </uxap:ObjectPageDynamicHeaderTitle>
+    </uxap:headerTitle>
+
+    <uxap:sections>
+      <uxap:ObjectPageSection titleUppercase="false" title="Dados do Título">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <f:SimpleForm
+              id="financialDocumentManualForm"
+              editable="true"
+              layout="ResponsiveGridLayout"
+              labelSpanXL="4"
+              labelSpanL="4"
+              labelSpanM="4"
+              labelSpanS="12"
+              adjustLabelSpan="false"
+              emptySpanXL="0"
+              emptySpanL="0"
+              emptySpanM="0"
+              emptySpanS="0"
+              columnsXL="2"
+              columnsL="2"
+              columnsM="1"
+              singleContainerFullSize="false"
+            >
+              <f:content>
+                <core:Title text="Identificação"/>
+
+                <Label text="Número" required="true"/>
+                <Select
+                  editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
+                  forceSelection="false"
+                  required="true"
+                  change=".onDocNumberSeriesChange"
+                  selectedKey="{DocNumberKey}"
+                  items="{
+                    path: '/DocNumbers',
+                    parameters:{
+                      $filter: 'TransactionCode eq \'FinancialDocument\' and Inactive eq false',
+                      $orderby: 'IsManual,Name',
+                      $select: 'Key,Name,IsManual'
+                    }
+                  }"
+                >
+                  <customData>
+                    <core:CustomData key="codeProperty" value="Code"/>
+                  </customData>
+                  <core:ListItem key="{Key}" text="{Name}"/>
+                  <layoutData>
+                    <l:GridData span="XL3 L3 M3 S8" />
+                  </layoutData>
+                </Select>
+                <Input
+                  value="{Code}"
+                  maxLength="50"
+                  editable="{= ${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }"
+                  required="{= ${ui>/docNumberManual} === true &amp;&amp; ${ui>/docNumberSeriesEditable} === true }" />
+
+                <Label text="Filial" required="true"/>
+                <Select
+                  editable="{= !${manual>/locked} }"
+                  forceSelection="false"
+                  required="true"
+                  selectedKey="{BranchCode}"
+                  items="{
+                    path: '/Branchs',
+                    sorter: { path: 'Code' }
+                  }"
+                >
+                  <core:ListItem key="{Code}" text="{ShortName}" additionalText="{Code}"/>
+                </Select>
+
+                <Label text="{manual>/partnerLabel}" required="true"/>
+                <Input
+                  value="{CardCode}"
+                  required="true"
+                  editable="{= !${manual>/locked} }"
+                  showValueHelp="{= !${manual>/locked} }"
+                  valueHelpOnly="true"
+                  valueHelpRequest=".openBusinessPartnersValueHelp">
+                  <customData>
+                    <core:CustomData key="descriptionProperty" value="CardName" />
+                  </customData>
+                  <layoutData>
+                    <l:GridData span="XL3 L3 M3 S8" />
+                  </layoutData>
+                </Input>
+                <Input value="{CardName}" editable="false" />
+
+                <Label text="Documento"/>
+                <Input value="{TaxDocumentNumber}" maxLength="50" placeholder="Nº da nota, boleto, contrato..." />
+
+                <core:Title text="Valores e datas"/>
+
+                <Label text="Emissão" required="true"/>
+                <DatePicker
+                  required="true"
+                  editable="{= !${manual>/locked} }"
+                  value="{
+                    path: 'DocumentDate',
+                    type: 'sap.ui.model.odata.type.DateTimeOffset',
+                    constraints: { precision: 7 },
+                    formatOptions: { pattern: 'dd/MM/yyyy' }
+                  }" />
+
+                <Label text="Vencimento" required="true"/>
+                <DatePicker
+                  required="true"
+                  value="{
+                    path: 'DueDate',
+                    type: 'sap.ui.model.odata.type.DateTimeOffset',
+                    constraints: { precision: 7 },
+                    formatOptions: { pattern: 'dd/MM/yyyy' }
+                  }" />
+
+                <Label text="Valor" required="true"/>
+                <Input
+                  required="true"
+                  textAlign="End"
+                  editable="{= !${manual>/locked} }"
+                  value="{
+                    path: 'NetAmount',
+                    type: 'sap.ui.model.odata.type.Double',
+                    formatOptions: { decimals: 2, groupingEnabled: true }
+                  }" />
+
+                <Label text="Condição de pagamento"/>
+                <TextArea value="{PaymentTermsText}" rows="2" maxLength="1000" growing="true" />
+
+                <Label text="Observações"/>
+                <TextArea value="{Comments}" rows="3" maxLength="500" growing="true" />
+              </f:content>
+            </f:SimpleForm>
+            <MessageStrip
+              visible="{= ${manual>/locked} === true }"
+              type="Information"
+              showIcon="true"
+              class="sapUiSmallMarginTop"
+              text="Este título possui movimento de baixa: só vencimento, documento, condição de pagamento e observações podem ser alterados." />
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
+    </uxap:sections>
+
+    <uxap:footer>
+      <OverflowToolbar>
+        <ToolbarSpacer />
+        <Button type="Emphasized" text="Salvar" press=".onSave" />
+        <Button text="Cancelar" press=".onCancel" />
+      </OverflowToolbar>
+    </uxap:footer>
+  </uxap:ObjectPageLayout>
+
+</mvc:View>

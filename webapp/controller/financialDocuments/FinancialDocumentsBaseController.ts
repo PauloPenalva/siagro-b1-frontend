@@ -3,6 +3,8 @@ import Context from "sap/ui/model/odata/v4/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageBox from "sap/m/MessageBox";
+import MessageToast from "sap/m/MessageToast";
+import formatter from "siagrob1/model/formatter";
 import Table from "sap/ui/table/Table";
 import CommonController from "siagrob1/controller/common/CommonController";
 import { pendingResolutionFilter } from "siagrob1/helpers/FinancialDocumentFilterHelpers";
@@ -163,6 +165,57 @@ export abstract class FinancialDocumentsBaseController extends CommonController 
       .setProperty("/financialDocumentOriginRoute", this.originRoute);
 
     this.navTo("financialDocumentsDetail", { id: oContext.getProperty("Key") as string });
+  }
+
+  /** Inclusão de título manual: a rota `<lista>New` existe só em Contas a Pagar e a Receber. */
+  onCreateManual(): void {
+    this.navTo(`${this.originRoute}New`);
+  }
+
+  /** Título manual selecionado e ativo, ou null com aviso. Os gerados pelo sistema mudam só pela sua origem. */
+  private selectedManualContext(action: string): Context | null {
+    const oContext = this.selectedContext();
+    if (!oContext) return null;
+
+    if (!formatter.isManualFinancialTitle(
+      oContext.getProperty("Nature") as string, oContext.getProperty("OriginType") as string)) {
+      MessageBox.warning(`Só título lançado manualmente pode ser ${action}. Os gerados pelo sistema seguem a sua origem.`);
+      return null;
+    }
+    return oContext;
+  }
+
+  onEdit(): void {
+    const oContext = this.selectedManualContext("editado");
+    if (!oContext) return;
+
+    if (oContext.getProperty("Status") === "Canceled") {
+      MessageBox.warning("Título cancelado não pode ser editado.");
+      return;
+    }
+
+    (this.getModel("viewModel") as JSONModel)
+      .setProperty("/financialDocumentOriginRoute", this.originRoute);
+    this.navTo("financialDocumentsEdit", { id: oContext.getProperty("Key") as string });
+  }
+
+  onDelete(): void {
+    const oContext = this.selectedManualContext("excluído");
+    if (!oContext) return;
+
+    const code = oContext.getProperty("Code") as string;
+    MessageBox.confirm(`Excluir o título ${code}? Esta ação não pode ser desfeita.`, {
+      emphasizedAction: MessageBox.Action.OK,
+      onClose: (action: string) => {
+        if (action !== MessageBox.Action.OK.toString()) return;
+        this.setBusy(true);
+        oContext.delete("$auto")
+          .then(() => MessageToast.show(`Título ${code} excluído.`))
+          // Recusa do backend (baixa, por exemplo) já aparece pelo handler global de mensagens.
+          .catch(() => this.binding()?.refresh())
+          .finally(() => this.setBusy(false));
+      },
+    });
   }
 
   protected createColumnConfig(): Column[] {
