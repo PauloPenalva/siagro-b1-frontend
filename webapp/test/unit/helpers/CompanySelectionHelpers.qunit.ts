@@ -27,9 +27,9 @@ QUnit.test("pickInitialCompany devolve vazio sem empresas (lista indisponível a
 	assert.strictEqual(pickInitialCompany(undefined, "0001"), "");
 });
 
-QUnit.test("shouldShowCompanySelect só com mais de uma empresa", function (assert) {
+QUnit.test("shouldShowCompanySelect sempre que houver empresa, mesmo uma só", function (assert) {
 	assert.strictEqual(shouldShowCompanySelect([CEAGUI, LM]), true);
-	assert.strictEqual(shouldShowCompanySelect([CEAGUI]), false);
+	assert.strictEqual(shouldShowCompanySelect([CEAGUI]), true, "uma empresa: o usuário vê em qual vai entrar");
 	assert.strictEqual(shouldShowCompanySelect([]), false);
 	assert.strictEqual(shouldShowCompanySelect(undefined), false);
 });
