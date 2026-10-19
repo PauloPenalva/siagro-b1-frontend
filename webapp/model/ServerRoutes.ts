@@ -161,6 +161,7 @@ export default {
   priceFixationReport: '/reports/PriceFixation',
 
   purchaseContractsAllocationsCreate: '/PurchaseContractsCreateAllocation(...)',
+  purchaseTransactionsChangeSupplier: '/PurchaseTransactionsChangeSupplier(...)',
   purchaseContractsAllocationsDelete: '/PurchaseContractsDeleteAllocation(...)',
 
   salesContractsReallocationCreate: '/SalesContractsCreateReallocation(...)',

@@ -112,7 +112,14 @@ export default class Main extends BaseController {
         return;
       }
 
-      const confirmed = await this.confirmAllocation(context, tableCtx);
+      const differences = this.getDifferences(context, tableCtx);
+
+      if (differences.length > 0) {
+        await this.changeSupplier(context, tableCtx, differences, volume);
+        return;
+      }
+
+      const confirmed = await DialogHelper.confirmDialog("Confirma alocação do romaneio ?") as boolean;
       if (confirmed) {
         this.purchaseContractsAvaiableDialog?.close();
 
@@ -137,10 +144,9 @@ export default class Main extends BaseController {
   }
 
   /**
-   * Romaneio pode ir para contrato de outro fornecedor ou armazém (correção de erro de
-   * lançamento); nesse caso o usuário confirma vendo exatamente o que diverge.
+   * Lista o que diverge entre o romaneio e o contrato escolhido (fornecedor e/ou armazém).
    */
-  private confirmAllocation(storageCtx: Context, contractCtx: UI5Context): Promise<boolean> {
+  private getDifferences(storageCtx: Context, contractCtx: UI5Context): string[] {
     const differences: string[] = [];
 
     const storageCard = storageCtx.getProperty("CardCode") as string;
@@ -159,15 +165,21 @@ export default class Main extends BaseController {
         `contrato ${contractCtx.getProperty("DeliveryLocationName") as string} (${contractWhs})`);
     }
 
-    if (differences.length === 0) {
-      return DialogHelper.confirmDialog("Confirma alocação do romaneio ?") as Promise<boolean>;
-    }
+    return differences;
+  }
 
-    return new Promise<boolean>(resolve => {
+  /**
+   * Contrato de outro fornecedor/armazém: o backend estorna o romaneio original e gera um
+   * novo no fornecedor/armazém do contrato. Exige confirmação e motivo. O diálogo de contratos
+   * só fecha em caso de sucesso, para o usuário poder tentar de novo se o backend recusar.
+   */
+  private async changeSupplier(storageCtx: Context, contractCtx: UI5Context, differences: string[], volume: number): Promise<void> {
+    const confirmed = await new Promise<boolean>(resolve => {
       MessageBox.warning(
         "O contrato selecionado é diferente do romaneio:\n\n" +
         differences.map(d => `• ${d}`).join("\n") +
-        "\n\nConfirma a alocação mesmo assim?",
+        "\n\nSerá gerado um estorno no fornecedor/armazém do romaneio e um romaneio novo no " +
+        "fornecedor/armazém do contrato, com a data do romaneio original. Continuar?",
         {
           title: "Fornecedor/armazém divergente",
           actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
@@ -175,6 +187,29 @@ export default class Main extends BaseController {
           onClose: (action: string) => resolve(action === MessageBox.Action.OK.toString()),
         });
     });
+    if (!confirmed) return;
+
+    const reason = await DialogHelper.promptDialog("Troca de fornecedor/armazém", "Motivo", "");
+    if (!reason) return;
+
+    const action = (this.getModel() as ODataModel).bindContext(this.api.purchaseTransactionsChangeSupplier);
+    action.setParameter("StorageTransactionKey", storageCtx.getProperty("Key") as string);
+    action.setParameter("PurchaseContractKey", contractCtx.getProperty("Key") as string);
+    action.setParameter("Volume", volume);
+    action.setParameter("Reason", reason);
+
+    this.setBusy(true);
+    try {
+      await action.invoke();
+      const result = action.getBoundContext().getObject() as { ReturnCode: string; NewCode: string };
+      this.purchaseContractsAvaiableDialog?.close();
+      this.refreshData();
+      MessageToast.show(
+        `Romaneio ${storageCtx.getProperty("Code") as string} trocado: estorno ${result.ReturnCode}, ` +
+        `romaneio novo ${result.NewCode} alocado no contrato ${contractCtx.getProperty("Code") as string}.`);
+    } finally {
+      this.setBusy(false);
+    }
   }
 
   private applyFilters() {
