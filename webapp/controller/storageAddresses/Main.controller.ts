@@ -1,8 +1,6 @@
-import { SearchField$SearchEvent } from "sap/m/SearchField";
-import BaseController from "../BaseController";
+import CommonController from "../common/CommonController";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
-import Filter from "sap/ui/model/Filter";
-import FilterOperator from "sap/ui/model/FilterOperator";
+import { anyOfFilter } from "siagrob1/helpers/FilterHelpers";
 import Table from "sap/ui/table/Table";
 import MessageBox from "sap/m/MessageBox";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
@@ -14,41 +12,76 @@ import MessageToast from "sap/m/MessageToast";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 
+type FilterData = {
+  BranchCode?: string,
+  Status?: string[],
+  Code?: string,
+  Description?: string,
+  CardCode?: string,
+  ItemCode?: string,
+  WarehouseCode?: string,
+  OwnershipType?: string,
+  Nature?: string,
+  CreationDateFrom?: string,
+  CreationDateTo?: string,
+}
+
+/** Texto do usuário dentro de literal OData: aspa simples se escreve dobrada. */
+const quote = (value: string) => value.trim().replace(/'/g, "''");
+
 /**
  * @namespace siagrob1.controller.storageAddresses
  */
-export default class Main extends BaseController {
+export default class Main extends CommonController {
 
   formatter = { ...formatter }
 
   private closeLotDialog?: Dialog;
 
 	onInit(): void {
-		this.getRouter().getRoute("storageAddresses").attachPatternMatched(() => this.routeMatched())
-	}
+    // Abre só com os lotes abertos: encerrado não recebe mais movimento nem cobrança.
+    this.createFilterModel({ Status: ["Open"] });
 
-	private routeMatched() {
-		this.onRefresh();
+		this.getRouter().getRoute("storageAddresses").attachPatternMatched(() => this.applyFilters())
 	}
 
 	onRefresh(): void {
 		(this.getView().byId("tableLoteArmazenagem").getBinding("rows") as ODataListBinding).refresh();
 	}
 
-	onSearch(ev: SearchField$SearchEvent): void {
-		const query = ev.getParameter("query");
-		const oFilters = new Filter({
-			filters: [
-				new Filter("Description", FilterOperator.Contains, query),
-        new Filter("ItemCode", FilterOperator.Contains, query),
-        new Filter("CardCode", FilterOperator.Contains, query),
-        new Filter("Code", FilterOperator.Contains, query),
- 			],
-			and: false,
-		});
+  onSearch(): void {
+    this.applyFilters();
+  }
 
-		(this.getView().byId("tableLoteArmazenagem").getBinding("rows") as ODataListBinding).filter([oFilters]);
-	}
+  onClearFilters(): void {
+    this.clearFilters();
+    this.applyFilters();
+  }
+
+  /**
+   * `$filter` inteiro em texto, como em Contratos de Compra: Situação, Tipo Propriedade e Natureza são
+   * enum, e `sap.ui.model.Filter` não formata enum.
+   */
+  private applyFilters() {
+    const data = (this.getModel("filter") as JSONModel).getData() as FilterData;
+    const text = (key: keyof FilterData) => (data[key] as string)?.trim();
+
+    const filters: string[] = [anyOfFilter("Status", data.Status)];
+
+    if (text("BranchCode")) filters.push(`BranchCode eq '${quote(data.BranchCode)}'`);
+    for (const key of ["Code", "Description", "CardCode", "ItemCode", "WarehouseCode"] as const) {
+      if (text(key)) filters.push(`contains(${key},'${quote(data[key])}')`);
+    }
+    if (text("OwnershipType")) filters.push(`OwnershipType eq '${quote(data.OwnershipType)}'`);
+    if (text("Nature")) filters.push(`Nature eq '${quote(data.Nature)}'`);
+    if (text("CreationDateFrom")) filters.push(`CreationDate ge ${data.CreationDateFrom}`);
+    if (text("CreationDateTo")) filters.push(`CreationDate le ${data.CreationDateTo}`);
+
+    const filter = filters.filter(Boolean).join(" and ");
+
+    (this.byId("tableLoteArmazenagem").getBinding("rows") as ODataListBinding)
+      .changeParameters({ $filter: filter || undefined });
+  }
 
 	onCreate() {
 			this.navTo("storageAddressesNew");

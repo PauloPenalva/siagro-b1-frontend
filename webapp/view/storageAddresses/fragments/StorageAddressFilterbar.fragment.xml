@@ -1,0 +1,108 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:fb="sap.ui.comp.filterbar"
+>
+<fb:FilterBar id="storageAddressFb" search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+  <fb:filterGroupItems>
+    <fb:FilterGroupItem name="branch" label="Filial" groupName="GroupBranch" visibleInFilterBar="true">
+      <fb:control>
+        <Select
+          forceSelection="false"
+          selectedKey="{filter>/BranchCode}"
+          items="{
+            path: '/Branchs',
+            suspended: true,
+            sorter: { path: 'Code' }
+          }">
+          <core:ListItem key="{Code}" text="{ShortName}"/>
+        </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="status" label="Situação" groupName="GroupStatus" visibleInFilterBar="true">
+      <fb:control>
+        <MultiComboBox width="100%" selectedKeys="{filter>/Status}">
+          <core:Item key="Open" text="Aberto"/>
+          <core:Item key="Closed" text="Encerrado"/>
+        </MultiComboBox>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="code" label="Código" groupName="GroupCode" visibleInFilterBar="true">
+      <fb:control>
+        <Input showClearIcon="true" value="{filter>/Code}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="description" label="Descrição" groupName="GroupDescription" visibleInFilterBar="true">
+      <fb:control>
+        <Input showClearIcon="true" value="{filter>/Description}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="card" label="Cliente" groupName="GroupCard" visibleInFilterBar="true">
+      <fb:control>
+        <Input
+          showClearIcon="true"
+          showValueHelp="true"
+          valueHelpRequest=".openBusinessPartnersValueHelp"
+          value="{filter>/CardCode}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="item" label="Produto" groupName="GroupItem" visibleInFilterBar="true">
+      <fb:control>
+        <Input
+          showClearIcon="true"
+          showValueHelp="true"
+          valueHelpRequest=".openItemValueHelp"
+          value="{filter>/ItemCode}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="warehouse" label="Armazém" groupName="GroupWarehouse" visibleInFilterBar="true">
+      <fb:control>
+        <Input
+          showClearIcon="true"
+          showValueHelp="true"
+          valueHelpRequest=".openWarehouseValueHelp"
+          value="{filter>/WarehouseCode}"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="ownershipType" label="Tipo Propriedade" groupName="GroupOwnershipType" visibleInFilterBar="true">
+      <fb:control>
+        <Select
+          forceSelection="false"
+          selectedKey="{ path: 'filter>/OwnershipType', type: 'sap.ui.model.type.String' }">
+          <core:ListItem key="" text=""/>
+          <core:ListItem key="OwnedInOurCustody" text="Próprio - em nosso poder"/>
+          <core:ListItem key="OwnedInThirdPartyCustody" text="Próprio - em poder de terceiros"/>
+          <core:ListItem key="ThirdParty" text="Terceiros - armazenagem"/>
+        </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="nature" label="Natureza" groupName="GroupNature" visibleInFilterBar="true">
+      <fb:control>
+        <Select
+          forceSelection="false"
+          selectedKey="{ path: 'filter>/Nature', type: 'sap.ui.model.type.String' }">
+          <core:ListItem key="" text=""/>
+          <core:ListItem key="Regular" text="Comum"/>
+          <core:ListItem key="Transshipment" text="Transbordo"/>
+        </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="creationDateFrom" label="Data de" groupName="GroupCreationDateFrom" visibleInFilterBar="true">
+      <fb:control>
+        <DatePicker
+          value="{ path: 'filter>/CreationDateFrom', type: 'sap.ui.model.type.String' }"
+          displayFormat="dd/MM/yyyy"
+          valueFormat="yyyy-MM-dd"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="creationDateTo" label="Data até" groupName="GroupCreationDateTo" visibleInFilterBar="true">
+      <fb:control>
+        <DatePicker
+          value="{ path: 'filter>/CreationDateTo', type: 'sap.ui.model.type.String' }"
+          displayFormat="dd/MM/yyyy"
+          valueFormat="yyyy-MM-dd"/>
+      </fb:control>
+    </fb:FilterGroupItem>
+  </fb:filterGroupItems>
+</fb:FilterBar>
+</core:FragmentDefinition>

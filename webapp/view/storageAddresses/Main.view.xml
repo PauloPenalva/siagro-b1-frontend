@@ -5,15 +5,27 @@
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:core="sap.ui.core"
 	xmlns:t="sap.ui.table"
+	xmlns:f="sap.f"
 	core:require="{
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-	<Page
-		showHeader="true"
-		title="Lotes de Armazengem"
-		id="pageLotesArmazenagem">
-		<content>
+	<f:DynamicPage id="pageLotesArmazenagem" busyIndicatorDelay="0">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="Lotes de Armazenagem"/>
+				</f:heading>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:header>
+			<f:DynamicPageHeader>
+				<f:content>
+					<core:Fragment fragmentName="siagrob1.view.storageAddresses.fragments.StorageAddressFilterbar" type="XML" />
+				</f:content>
+			</f:DynamicPageHeader>
+		</f:header>
+		<f:content>
 			<t:Table
 				id="tableLoteArmazenagem"
 				busyIndicatorDelay="0"
@@ -29,8 +41,14 @@
 			>
 				<t:extension>
 					<OverflowToolbar >
+						<Title text="Lotes de Armazenagem" />
 						<ToolbarSpacer />
-						<SearchField placeholder="Pesquisar..." width="30%" search=".onSearch"/>
+						<Button type="Transparent" text="Atualizar" icon="sap-icon://refresh" press=".onRefresh"/>
+						<Button type="Transparent" text="Incluir" icon="sap-icon://add" press=".onCreate"/>
+						<Button type="Transparent" text="Editar" icon="sap-icon://edit" press=".onEdit"/>
+						<Button type="Transparent" text="Encerrar" icon="sap-icon://locked" press=".onCloseLot"/>
+						<Button type="Transparent" text="Reabrir" icon="sap-icon://unlocked" press=".onReopenLot"/>
+						<Button type="Transparent" text="Deletar" icon="sap-icon://delete" press=".onDelete"/>
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>
@@ -189,18 +207,7 @@
        	</t:columns>
 
 			</t:Table>
-		</content>
-    <footer>
-			<OverflowToolbar>
-				<Button text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
-				<ToolbarSpacer />
-				<Button text="Incluir" icon="sap-icon://add" type="Emphasized" press=".onCreate"/>
-				<Button text="Editar" icon="sap-icon://edit" press=".onEdit"/>
-				<Button text="Encerrar" icon="sap-icon://locked" press=".onCloseLot"/>
-				<Button text="Reabrir" icon="sap-icon://unlocked" press=".onReopenLot"/>
-				<Button text="Deletar" icon="sap-icon://delete" press=".onDelete"/>
-			</OverflowToolbar>
-		</footer>
-	</Page>
+		</f:content>
+	</f:DynamicPage>
 
 </mvc:View>
