@@ -11,7 +11,6 @@ import { applyFiscalCodeLists } from "siagrob1/model/fiscalCodes";
 export default class Add extends BaseController {
 
 	onInit(): void {
-		this.bindRuralContributionGroupVisibility();
 		this.getRouter().getRoute("usagesNew").attachPatternMatched(() => this.newRouteMatched());
 	}
 
@@ -22,6 +21,7 @@ export default class Add extends BaseController {
     // Só se chega aqui em STANDALONE (em SAPB1 o botão Incluir some): a identidade é
     // editável por definição.
     (this.getModel("ui") as JSONModel).setProperty("/identityEditable", true);
+    this.setEditable(true);
     applyFiscalCodeLists(this.getModel("ui") as JSONModel);
 
     const oView = this.getView();
