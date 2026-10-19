@@ -349,6 +349,9 @@ export default {
   branchNfeSettingsSave: '/odata/BranchNfeSettingsSave',
   branchNfeSettingsUploadCertificate: '/odata/BranchNfeSettingsUploadCertificate',
   branchNfeSettingsTestConnection: '/odata/BranchNfeSettingsTestConnection',
+  emailSettingsGet: '/odata/EmailSettingsGet',
+  emailSettingsSave: '/odata/EmailSettingsSave',
+  emailSettingsSendTest: '/odata/EmailSettingsSendTest',
 
   // Troca nota: romaneios de quebra/sobra de descarga (tela "Ajustes de Descarga").
   purchaseDischargesList: '/odata/PurchaseDischargesList',

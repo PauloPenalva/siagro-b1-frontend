@@ -12,6 +12,7 @@ import MessageBox from "sap/m/MessageBox";
 import Select from "sap/m/Select";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import { anyOfFilter } from "siagrob1/helpers/FilterHelpers";
 import { clearFieldStates, validateRequiredFields } from "siagrob1/helpers/FormValidation";
 import { SIGNATORY_ROLE_OPTIONS } from "siagrob1/model/contractDrafts";
@@ -62,6 +63,7 @@ export default class Edit extends BaseController {
 			oModel.resetChanges(SIGNATORIES_GROUP);
 		}
 
+		this.resetNfeEmails([]);
 		const {id} = ev.getParameter("arguments") as {id: string};
 		if (id != null) {
 			const sPath = `/BusinessPartners('${id}')`;
@@ -77,6 +79,12 @@ export default class Edit extends BaseController {
 				const oContext = this.getView().getBindingContext() as Context;
 				const code = oContext ? await oContext.requestProperty("PaymentConditionCode") as number : undefined;
 				await this.refreshPaymentConditionName(code);
+			})();
+
+			// Coleção primitiva não passa pelo binding do V4 (ver BaseController.resetNfeEmails): lê à parte.
+			void (async () => {
+				const result = await sendJson("GET", `/odata/BusinessPartners('${encodeURIComponent(id)}')?$select=NfeEmails`);
+				this.resetNfeEmails(result.ok ? odataValue<{ NfeEmails?: string[] }>(result.data)?.NfeEmails ?? [] : []);
 			})();
 
 			// A série gravada depende do Tipo (Fornecedor/Cliente) e aparece travada, mesmo que tenha sido
@@ -264,6 +272,9 @@ export default class Edit extends BaseController {
       MessageBox.warning("Por favor, preencha corretamente todos os campos obrigatórios.");
       return;
     }
+    if (!this.validateNfeEmails()) {
+      return;
+    }
 
     const oModel = this.getView().getModel() as ODataModel;
 		try {
@@ -271,6 +282,9 @@ export default class Edit extends BaseController {
 			await oModel.submitBatch(oModel.getUpdateGroupId());
 			if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 				oModel.resetChanges(oModel.getUpdateGroupId())
+				if (!await this.saveNfeEmails(this.cardCode)) {
+					return;
+				}
 				MessageToast.show("Dados atualizados com sucesso.", {
 					closeOnBrowserNavigation: false
 				});

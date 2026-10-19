@@ -1,3 +1,4 @@
+import Context from "sap/ui/model/odata/v4/Context";
 import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
@@ -42,7 +43,7 @@ export default class Add extends BaseController {
       // change a property before it has been read".
       "StateRegistrationIndicator": null,
       "StateRegistration": null,
-      "NfeEmail": null,
+      "NfeEmails": [],
       "Phone": null,
       "PaymentConditionCode": null,
       "IsRuralProducer": false,
@@ -51,6 +52,7 @@ export default class Add extends BaseController {
       "RuralPayrollOption": false,
     }, false, false, false);
 
+		this.resetNfeEmails([]);
 		oView.setBindingContext(oContext);
 	}
 
@@ -63,6 +65,9 @@ export default class Add extends BaseController {
     if (this.isManualNumberMissing("CardCode")) {
       return;
     }
+    if (!this.validateNfeEmails()) {
+      return;
+    }
     
     const oModel = this.getView().getModel() as ODataModel;
 
@@ -70,6 +75,11 @@ export default class Add extends BaseController {
 			this.setBusy(true);
 			await oModel.submitBatch(oModel.getUpdateGroupId());
 			if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
+				const oContext = this.getView().getBindingContext() as Context;
+				await oContext.created();
+				if (!await this.saveNfeEmails(oContext.getProperty("CardCode") as string)) {
+					return;
+				}
 				MessageToast.show("Dados salvos com sucesso.", {
 					closeOnBrowserNavigation: false
 				});
