@@ -45,16 +45,19 @@ export default class NfeEmailHelper {
   async loadHistory(key: string): Promise<void> {
     this.currentKey = key;
     this.historyModel.setProperty("/busy", true);
-    // Só DocumentKey no $filter: filtro por enum (DocumentType) falha neste backend.
-    const result = await sendJson("GET", `/odata/NfeEmailMessages?$filter=DocumentKey eq ${key}&$orderby=CreatedAt desc`);
-    if (key !== this.currentKey) {
-      return;
-    }
-    this.historyModel.setProperty("/rows", result.ok
-      ? odataCollection<NfeEmailMessageRow>(result.data).map(toNfeEmailHistoryRow) : []);
-    this.historyModel.setProperty("/busy", false);
-    if (!result.ok) {
-      MessageToast.show(result.message);
+    try {
+      // Só DocumentKey no $filter: filtro por enum (DocumentType) falha neste backend.
+      const result = await sendJson("GET", `/odata/NfeEmailMessages?$filter=DocumentKey eq ${key}&$orderby=CreatedAt desc`);
+      if (key !== this.currentKey) {
+        return;
+      }
+      this.historyModel.setProperty("/rows", result.ok
+        ? odataCollection<NfeEmailMessageRow>(result.data).map(toNfeEmailHistoryRow) : []);
+      if (!result.ok) {
+        MessageToast.show(result.message);
+      }
+    } finally {
+      this.historyModel.setProperty("/busy", false);
     }
   }
 
@@ -92,6 +95,8 @@ export default class NfeEmailHelper {
         name: "siagrob1.view.common.fragments.NfeEmailDialog", controller: this,
       }) as Dialog;
       this.dialog.setModel(this.dialogModel, "nfeEmailDialog");
+      // Escape (e qualquer outro fechamento) também precisa resolver a promessa, senão a tela fica ocupada.
+      this.dialog.attachAfterClose(() => this.settle([]));
       this.view.addDependent(this.dialog);
     }
     return new Promise((resolve) => {
@@ -104,10 +109,16 @@ export default class NfeEmailHelper {
     return this.dialogModel.getProperty("/rows") as Row[];
   }
 
-  private finish(list: string[]): void {
-    this.dialog.close();
-    this.resolveDialog?.(list);
+  /** Resolve uma única vez; depois do primeiro desfecho as demais chamadas são ignoradas. */
+  private settle(list: string[]): void {
+    const resolve = this.resolveDialog;
     this.resolveDialog = undefined;
+    resolve?.(list);
+  }
+
+  private finish(list: string[]): void {
+    this.settle(list);
+    this.dialog.close();
   }
 
   onAddNfeEmail(): void {
