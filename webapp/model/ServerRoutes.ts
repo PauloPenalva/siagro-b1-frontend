@@ -160,6 +160,8 @@ export default {
   purchaseContractsCommentDelete: '/PurchaseContractsCommentDelete(...)',
   priceFixationReport: '/reports/PriceFixation',
 
+  // Contratos para alocar o romaneio; perna de Expedição recebe só o contrato da liberação.
+  purchaseContractsGetAvaiablesListForTransaction: '/PurchaseContractsGetAvaiablesListForTransaction(...)',
   purchaseContractsAllocationsCreate: '/PurchaseContractsCreateAllocation(...)',
   purchaseTransactionsChangeSupplier: '/PurchaseTransactionsChangeSupplier(...)',
   purchaseContractsAllocationsDelete: '/PurchaseContractsDeleteAllocation(...)',
