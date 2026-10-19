@@ -47,6 +47,8 @@ export default class Detail extends BaseController {
 	}
 
 	private detailRouteMatched(ev: Route$MatchedEvent) {
+		// O saldo da fatura de armazenagem é só da inclusão (Faturar); aqui vale o vínculo gravado.
+		(this.getModel("ui") as JSONModel).setProperty("/storageInvoice", null);
     this.resetDocNumberMode();
 		const {id} = ev.getParameter("arguments") as {id: string };
     const uiModel = this.getModel("ui") as JSONModel;

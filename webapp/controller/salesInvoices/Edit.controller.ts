@@ -17,6 +17,8 @@ export default class Edit extends BaseController {
 	}
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
+		// O saldo da fatura de armazenagem é só da inclusão (Faturar); aqui vale o vínculo gravado.
+		(this.getModel("ui") as JSONModel).setProperty("/storageInvoice", null);
     this.resetDocNumberMode();
     const uiModel = this.getModel("ui") as JSONModel;
     uiModel.setProperty("/editable", true);

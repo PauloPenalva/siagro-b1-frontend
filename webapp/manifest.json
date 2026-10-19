@@ -679,7 +679,7 @@
           "target": "purchaseInvoicesEdit"
         },
         {
-          "pattern": "sales-invoices/add",
+          "pattern": "sales-invoices/add:?query:",
           "name": "salesInvoicesAdd",
           "target": "salesInvoicesAdd"
         },

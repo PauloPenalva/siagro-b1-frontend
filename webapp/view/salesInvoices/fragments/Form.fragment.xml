@@ -126,9 +126,13 @@
               <core:ListItem key="Confirmed" text="Confirmado" />
               <core:ListItem key="Cancelled" text="Cancelado" />
             </Select>
+            <!-- Spec 2026-10-19: documento que fatura a fatura de armazenagem — cliente é o da fatura. -->
+            <Label text="Fatura de armazenagem" visible="{= !!${ui>/storageInvoice} || !!${StorageInvoiceKey} }" />
+            <Text text="{ui>/storageInvoice/Code} — saldo a faturar R$ {ui>/storageInvoice/Balance}" visible="{= !!${ui>/storageInvoice} }" />
+            <Text text="{StorageInvoice/Code}" visible="{= !${ui>/storageInvoice} &amp;&amp; !!${StorageInvoiceKey} }" />
             <Label text="Cliente" />
             <Input
-              editable="{= ${ui>/editable} === true &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
+              editable="{= ${ui>/editable} === true &amp;&amp; !${StorageInvoiceKey} &amp;&amp; ${IsNfeReturn} !== true &amp;&amp; ${path: 'InvoiceType', targetType: 'any'} !== 'IcmsComplement' }"
               showValueHelp="true"
               valueHelpOnly="true"
               valueHelpRequest=".openBusinessPartnersValueHelp"

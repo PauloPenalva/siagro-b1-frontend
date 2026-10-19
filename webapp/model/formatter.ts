@@ -1093,21 +1093,44 @@ const formatter = {
 
    formatStorageInvoiceStatus: (value: string) => {
     const m = new Map<string, string>();
-    m.set("Open", "Em Aberto");
-    m.set("Closed", "Encerrado");
-    m.set("Cancelled", "Cancelado");
+    m.set("Open", "Aberta");
+    m.set("PartiallyInvoiced", "Faturada parcial");
+    m.set("Invoiced", "Faturada");
+    m.set("Paid", "Paga");
+    m.set("Cancelled", "Cancelada");
     
     return m.get(value);
   },
 
   stateStorageInvoiceStatus: (value: string) => {
     const m = new Map<string, string>();
-    m.set("Closed", "Error");
-    m.set("Open", "Success");
+    m.set("Open", "Information");
+    m.set("PartiallyInvoiced", "Warning");
+    m.set("Invoiced", "Indication05");
+    m.set("Paid", "Success");
     m.set("Cancelled", "None");
     
     return m.get(value);
   },
+
+  /** Faturamento da fatura de armazenagem: valor em pt-BR com 2 casas. */
+  formatAmount2: (value: number | string) =>
+    value === null || value === undefined || value === ""
+      ? ""
+      : Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+
+  /** Data ISO (yyyy-MM-ddTHH:mm...) para dd/MM/yyyy, sem conversão de fuso. */
+  formatIsoDate: (value: string) => {
+    if (!value) return "";
+    const [y, m, d] = String(value).substring(0, 10).split("-");
+    return d + "/" + m + "/" + y;
+  },
+
+  formatBillingInvoiceStatus: (value: string) =>
+    ({ Pending: "Pendente", Confirmed: "Confirmado", Cancelled: "Cancelado", Returned: "Retornado" } as Record<string, string>)[value] ?? value,
+
+  formatBillingReceivableStatus: (value: string) =>
+    ({ Open: "Em aberto", PartiallySettled: "Baixado parcial", Settled: "Baixado", Canceled: "Cancelado" } as Record<string, string>)[value] ?? value,
 
   formatWeighTicketStatus: (value: string) => {
     const m = new Map<string, string>();
