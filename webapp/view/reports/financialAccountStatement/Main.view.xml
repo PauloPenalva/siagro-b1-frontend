@@ -1,0 +1,55 @@
+<mvc:View
+	controllerName="siagrob1.controller.reports.financialAccountStatement.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:form="sap.ui.layout.form">
+	<Page title="Extrato da Conta Financeira" busyIndicatorDelay="0" busy="{ui>/busy}">
+		<form:Form editable="true">
+			<form:layout>
+				<form:ColumnLayout columnsM="1" columnsL="2" columnsXL="2"/>
+			</form:layout>
+			<form:formContainers>
+				<form:FormContainer title="Conta e período">
+					<form:formElements>
+						<form:FormElement label="Conta financeira">
+							<form:fields>
+								<Input
+									value="{params>/AccountCode}"
+									description="{params>/AccountName}"
+									showValueHelp="true"
+									valueHelpOnly="true"
+									required="true"
+									valueHelpRequest=".openAccountValueHelp">
+									<customData>
+										<core:CustomData key="descriptionProperty" value="AccountName:Name"/>
+									</customData>
+								</Input>
+							</form:fields>
+						</form:FormElement>
+						<form:FormElement label="De">
+							<form:fields>
+								<DatePicker value="{params>/DateFrom}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" required="true"/>
+							</form:fields>
+						</form:FormElement>
+						<form:FormElement label="Até">
+							<form:fields>
+								<DatePicker value="{params>/DateTo}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" required="true"/>
+							</form:fields>
+						</form:FormElement>
+						<form:FormElement label="Somente conciliados">
+							<form:fields><CheckBox selected="{params>/OnlyReconciled}"/></form:fields>
+						</form:FormElement>
+					</form:formElements>
+				</form:FormContainer>
+			</form:formContainers>
+		</form:Form>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Imprimir" type="Emphasized" press=".onPrintReport"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>
