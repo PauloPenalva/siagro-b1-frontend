@@ -1260,6 +1260,26 @@
           "target": "financialAdvances"
         },
         {
+          "pattern": "financial-account-movements",
+          "name": "financialAccountMovements",
+          "target": "financialAccountMovements"
+        },
+        {
+          "pattern": "financial-account-reconciliations",
+          "name": "financialAccountReconciliations",
+          "target": "financialAccountReconciliations"
+        },
+        {
+          "pattern": "financial-account-reconciliations/{key}",
+          "name": "financialAccountReconciliationsDetail",
+          "target": "financialAccountReconciliationsDetail"
+        },
+        {
+          "pattern": "financial-account-statement/report",
+          "name": "financialAccountStatementReport",
+          "target": "financialAccountStatementReport"
+        },
+        {
           "pattern": "financial-documents/{id}/detail",
           "name": "financialDocumentsDetail",
           "target": "financialDocumentsDetail"
@@ -2630,6 +2650,30 @@
           "id": "financialAdvances",
           "level": 1,
           "name": "siagrob1.view.financialAdvances.Main",
+          "clearControlAggregation": true
+        },
+        "financialAccountMovements": {
+          "id": "financialAccountMovements",
+          "level": 1,
+          "name": "siagrob1.view.financialAccountMovements.Main",
+          "clearControlAggregation": true
+        },
+        "financialAccountReconciliations": {
+          "id": "financialAccountReconciliations",
+          "level": 1,
+          "name": "siagrob1.view.financialAccountReconciliations.Main",
+          "clearControlAggregation": true
+        },
+        "financialAccountReconciliationsDetail": {
+          "id": "financialAccountReconciliationsDetail",
+          "level": 2,
+          "name": "siagrob1.view.financialAccountReconciliations.Detail",
+          "clearControlAggregation": true
+        },
+        "financialAccountStatementReport": {
+          "id": "financialAccountStatementReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.financialAccountStatement.Main",
           "clearControlAggregation": true
         },
         "financialDocumentsDetail": {

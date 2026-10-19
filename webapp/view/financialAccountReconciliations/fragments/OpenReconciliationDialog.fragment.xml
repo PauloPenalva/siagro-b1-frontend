@@ -1,0 +1,52 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:form="sap.ui.layout.form">
+	<Dialog id="openReconciliationDialog" title="Nova reconciliação" contentWidth="32rem" class="sapUiContentPadding">
+		<form:Form editable="true">
+			<form:layout>
+				<form:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+			</form:layout>
+			<form:formContainers>
+				<form:FormContainer>
+					<form:formElements>
+						<form:FormElement label="Conta financeira">
+							<form:fields>
+								<Input
+									value="{viewModel>/reconciliation/AccountCode}"
+									description="{viewModel>/reconciliation/AccountName}"
+									showValueHelp="true"
+									valueHelpOnly="true"
+									required="true"
+									valueHelpRequest=".openAccountValueHelp">
+									<customData>
+										<core:CustomData key="descriptionProperty" value="AccountName:Name"/>
+									</customData>
+								</Input>
+							</form:fields>
+						</form:FormElement>
+						<form:FormElement label="Data do extrato">
+							<form:fields>
+								<DatePicker value="{viewModel>/reconciliation/StatementDate}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" required="true"/>
+							</form:fields>
+						</form:FormElement>
+						<form:FormElement label="Saldo final do extrato">
+							<form:fields>
+								<StepInput value="{viewModel>/reconciliation/StatementBalance}" displayValuePrecision="2" step="1" required="true"/>
+							</form:fields>
+						</form:FormElement>
+						<form:FormElement label="Observação">
+							<form:fields><TextArea value="{viewModel>/reconciliation/Notes}" maxLength="500" rows="2" width="100%"/></form:fields>
+						</form:FormElement>
+					</form:formElements>
+				</form:FormContainer>
+			</form:formContainers>
+		</form:Form>
+		<beginButton>
+			<Button type="Emphasized" text="Abrir reconciliação" press=".onConfirmCreate"/>
+		</beginButton>
+		<endButton>
+			<Button text="Cancelar" press=".onCloseCreateDialog"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

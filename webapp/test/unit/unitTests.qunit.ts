@@ -31,6 +31,7 @@ import "./helpers/ShellBarSearchHelpers.qunit";
 import "./helpers/StorageDepositHelpers.qunit";
 import "./helpers/StorageCustodyHelpers.qunit";
 import "./helpers/FinancialDocumentFilterHelpers.qunit";
+import "./helpers/FinancialAccountMovementHelpers.qunit";
 import "./helpers/WashoutHelpers.qunit";
 import "./helpers/CompanySelectionHelpers.qunit";
 import "./helpers/NfeSeriesHelpers.qunit";

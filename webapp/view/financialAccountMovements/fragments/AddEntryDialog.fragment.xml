@@ -1,0 +1,58 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:form="sap.ui.layout.form">
+	<Dialog id="addEntryDialog" title="Novo lançamento" contentWidth="32rem" class="sapUiContentPadding">
+		<form:Form editable="true">
+			<form:layout>
+				<form:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+			</form:layout>
+			<form:formContainers>
+				<form:FormContainer>
+					<form:formElements>
+						<form:FormElement label="Conta">
+							<form:fields><Text text="{filter>/AccountCode} - {filter>/AccountName}"/></form:fields>
+						</form:FormElement>
+						<form:FormElement label="Data">
+							<form:fields>
+								<DatePicker value="{viewModel>/entry/date}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" required="true"/>
+							</form:fields>
+						</form:FormElement>
+						<form:FormElement label="Tipo">
+							<form:fields>
+								<SegmentedButton selectedKey="{viewModel>/entry/type}">
+									<items>
+										<SegmentedButtonItem key="In" text="Entrada"/>
+										<SegmentedButtonItem key="Out" text="Saída"/>
+									</items>
+								</SegmentedButton>
+							</form:fields>
+						</form:FormElement>
+						<form:FormElement label="Valor">
+							<form:fields>
+								<StepInput value="{viewModel>/entry/amount}" min="0" displayValuePrecision="2" step="1" required="true"/>
+							</form:fields>
+						</form:FormElement>
+						<form:FormElement label="Histórico">
+							<form:fields>
+								<Input value="{viewModel>/entry/description}" maxLength="200" required="true" placeholder="Ex.: Tarifa bancária"/>
+							</form:fields>
+						</form:FormElement>
+						<form:FormElement label="Documento">
+							<form:fields><Input value="{viewModel>/entry/documentReference}" maxLength="50"/></form:fields>
+						</form:FormElement>
+						<form:FormElement label="Observação">
+							<form:fields><TextArea value="{viewModel>/entry/notes}" maxLength="500" rows="2" width="100%"/></form:fields>
+						</form:FormElement>
+					</form:formElements>
+				</form:FormContainer>
+			</form:formContainers>
+		</form:Form>
+		<beginButton>
+			<Button type="Emphasized" text="Lançar" press=".onConfirmEntry"/>
+		</beginButton>
+		<endButton>
+			<Button text="Cancelar" press=".onCloseEntryDialog"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,79 @@
+<mvc:View
+	controllerName="siagrob1.controller.financialAccountReconciliations.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.f"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="Reconciliação de Conta"/>
+				</f:heading>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:content>
+			<t:Table
+				id="reconciliationsTable"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				alternateRowColors="true"
+				rowActionCount="1"
+				rows="{
+					path: '/FinancialAccountReconciliations',
+					parameters: { $expand: 'FinancialAccount($select=Code,Name)' },
+					sorter: [{ path: 'StatementDate', descending: true }]
+				}">
+				<t:extension>
+					<OverflowToolbar>
+						<Title text="Reconciliações"/>
+						<ToolbarSpacer/>
+						<Button type="Emphasized" icon="sap-icon://add" text="Nova reconciliação" press=".onCreate"/>
+						<Button type="Transparent" text="Abrir" press=".onOpen"/>
+						<Button type="Transparent" text="Atualizar" press=".onRefresh"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:rowActionTemplate>
+					<t:RowAction>
+						<t:items>
+							<t:RowActionItem type="Navigation" press=".onRowNavigate"/>
+						</t:items>
+					</t:RowAction>
+				</t:rowActionTemplate>
+				<t:columns>
+					<t:Column label="Conta" width="22rem" sortProperty="FinancialAccountCode">
+						<t:template><Text text="{FinancialAccountCode} - {FinancialAccount/Name}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Data do extrato" width="9rem" hAlign="Center" sortProperty="StatementDate">
+						<t:template><Text text="{ path: 'StatementDate', formatter: 'formatter.formatDate' }" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Saldo do extrato" width="11rem" hAlign="End">
+						<t:template><Text text="{ path: 'StatementBalance', formatter: 'formatter.formatDecimal2' }" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Situação" width="9rem" hAlign="Center" sortProperty="Status">
+						<t:template>
+							<ObjectStatus inverted="true"
+								text="{= ${Status} === 'Closed' ? 'Fechada' : 'Aberta' }"
+								state="{= ${Status} === 'Closed' ? 'Success' : 'Warning' }"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Fechada em" width="11rem" hAlign="Center">
+						<t:template><Text text="{ path: 'ClosedAt', formatter: 'formatter.formatDateTime' }" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Observação" width="20rem">
+						<t:template><Text text="{Notes}" wrapping="false"/></t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</f:content>
+	</f:DynamicPage>
+
+</mvc:View>
