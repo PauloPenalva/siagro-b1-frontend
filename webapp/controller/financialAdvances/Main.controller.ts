@@ -7,6 +7,10 @@ import Dialog from "sap/m/Dialog";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import Table from "sap/ui/table/Table";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import { Input$ValueHelpRequestEvent } from "sap/m/Input";
+import { localIsoDate } from "siagrob1/helpers/DateHelpers";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import formatter from "siagrob1/model/formatter";
 import { FinancialDocumentsBaseController } from "siagrob1/controller/financialDocuments/FinancialDocumentsBaseController";
@@ -46,6 +50,8 @@ export default class Main extends FinancialDocumentsBaseController {
       contractKey: null,
       amount: 0,
       dueDate: "",
+      financialAccountCode: "",
+      paymentDate: localIsoDate(new Date()),
       comments: "",
     });
 
@@ -103,7 +109,7 @@ export default class Main extends FinancialDocumentsBaseController {
     const viewModel = this.getModel("viewModel") as JSONModel;
     const form = viewModel.getProperty("/advanceDialog") as {
       contractType: string; contractKey: string; amount: number;
-      dueDate: string; comments: string;
+      dueDate: string; financialAccountCode: string; paymentDate: string; comments: string;
     };
 
     if (!form.contractKey) {
@@ -121,6 +127,17 @@ export default class Main extends FinancialDocumentsBaseController {
       return;
     }
 
+    // Nasce pago (spec 2026-10-19): sem conta e data a baixa não é gravada.
+    if (!form.financialAccountCode) {
+      MessageBox.alert("Informe a conta financeira do pagamento.");
+      return;
+    }
+
+    if (!form.paymentDate) {
+      MessageBox.alert("Informe a data do pagamento.");
+      return;
+    }
+
     this.onCloseAdvanceDialog();
 
     try {
@@ -130,16 +147,23 @@ export default class Main extends FinancialDocumentsBaseController {
       action.setParameter("ContractKey", form.contractKey);
       action.setParameter("Amount", Number(form.amount));
       action.setParameter("DueDate", form.dueDate);
+      action.setParameter("FinancialAccountCode", form.financialAccountCode);
+      action.setParameter("PaymentDate", form.paymentDate);
       action.setParameter("Comments", form.comments ?? "");
       await action.invoke();
 
-      MessageToast.show("Adiantamento incluído.");
+      MessageToast.show("Adiantamento incluído e pago.");
       this.onRefresh();
     } catch (err) {
       MessageBox.error((err as Error).message || "Erro ao incluir o adiantamento.");
     } finally {
       this.setBusy(false);
     }
+  }
+
+  async openFinancialAccountsValueHelp(ev: Input$ValueHelpRequestEvent): Promise<void> {
+    await this.applyValueHelp(ev, "FinancialAccountsSelectDialog", ["Code", "Name"], "Code",
+      [ new Filter("Inactive", FilterOperator.EQ, false) ]);
   }
 
   onExcel(): void {

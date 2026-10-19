@@ -6,6 +6,8 @@
 <Dialog id="createAdvanceDialog" title="Novo adiantamento">
   <content>
     <VBox class="sapUiSmallMargin" width="520px">
+      <MessageStrip type="Information" showIcon="true" class="sapUiSmallMarginBottom"
+        text="O adiantamento é incluído já pago: a baixa é gravada na conta e na data do pagamento, e o valor fica disponível para compensar o provisório."/>
       <f:Form editable="true">
         <f:layout>
           <f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
@@ -42,6 +44,25 @@
                 <f:fields>
                   <DatePicker
                     value="{viewModel>/advanceDialog/dueDate}"
+                    required="true"
+                    displayFormat="dd/MM/yyyy"
+                    valueFormat="yyyy-MM-dd"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Conta do pagamento">
+                <f:fields>
+                  <Input
+                    value="{viewModel>/advanceDialog/financialAccountCode}"
+                    required="true"
+                    showValueHelp="true"
+                    valueHelpOnly="true"
+                    valueHelpRequest=".openFinancialAccountsValueHelp"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Data do pagamento">
+                <f:fields>
+                  <DatePicker
+                    value="{viewModel>/advanceDialog/paymentDate}"
                     required="true"
                     displayFormat="dd/MM/yyyy"
                     valueFormat="yyyy-MM-dd"/>
