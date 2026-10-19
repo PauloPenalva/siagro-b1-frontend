@@ -251,6 +251,9 @@ export default {
   purchaseInvoicesSendNfeCorrection: '/odata/PurchaseInvoicesSendNfeCorrection',
   purchaseInvoicesNfeCorrectionXml: '/odata/PurchaseInvoicesNfeCorrectionXml',
   purchaseInvoicesNfeCorrections: '/odata/PurchaseInvoicesNfeCorrections',
+  // Envio manual do e-mail da NF-e (DANFE + XML); destinatários padrão e histórico são lidos por NfeEmailHelper.
+  salesInvoicesSendNfeEmail: '/odata/SalesInvoicesSendNfeEmail',
+  purchaseInvoicesSendNfeEmail: '/odata/PurchaseInvoicesSendNfeEmail',
   // Comentários do documento de saída: no Update/Delete a chave é a do COMENTÁRIO, não a do
   // documento.
   salesInvoicesCommentCreate: '/SalesInvoicesCommentCreate(...)',

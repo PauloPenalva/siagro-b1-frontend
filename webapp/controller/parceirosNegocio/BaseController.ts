@@ -11,10 +11,9 @@ import Input from "sap/m/Input";
 import Event from "sap/ui/base/Event";
 import { sendJson } from "siagrob1/helpers/FetchHelpers";
 import SessionService from "siagrob1/services/SessionService";
+import { EMAIL_PATTERN, NFE_EMAIL_MAX, nfeEmailListError } from "siagrob1/helpers/NfeEmailHelpers";
 
 type NfeEmailRow = { Address: string };
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export abstract class BaseController extends CommonController {
 
@@ -39,13 +38,9 @@ export abstract class BaseController extends CommonController {
 
   /** Formato e repetição conferidos no cliente; o servidor revalida (máx. 10, único, formato). */
   protected validateNfeEmails(): boolean {
-    const list = this.currentNfeEmails();
-    const lower = list.map((a) => a.toLowerCase());
-    const invalid = list.some((a) => !EMAIL_PATTERN.test(a));
-    const duplicated = lower.some((a, i) => lower.indexOf(a) !== i);
-    if (invalid || duplicated || list.length > 10) {
-      MessageBox.warning(invalid ? "Há e-mail da NF-e com formato inválido."
-        : duplicated ? "Há e-mail da NF-e repetido." : "Máximo de 10 e-mails por parceiro.");
+    const error = nfeEmailListError(this.currentNfeEmails());
+    if (error) {
+      MessageBox.warning(error);
       return false;
     }
     return true;
@@ -83,7 +78,7 @@ ${result.message}`);
   onAddNfeEmail(): void {
     const model = this.getView().getModel("nfeEmails") as JSONModel;
     const rows = model.getProperty("/rows") as NfeEmailRow[];
-    if (rows.length >= 10) {
+    if (rows.length >= NFE_EMAIL_MAX) {
       MessageBox.warning("Máximo de 10 e-mails por parceiro.");
       return;
     }

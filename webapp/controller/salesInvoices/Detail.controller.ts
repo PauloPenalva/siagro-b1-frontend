@@ -30,6 +30,7 @@ import Control from "sap/ui/core/Control";
 import SapTable from "sap/m/Table";
 import { ListBase$UpdateFinishedEvent } from "sap/m/ListBase";
 import { Link$PressEvent } from "sap/m/Link";
+import NfeEmailHelper from "siagrob1/controller/common/NfeEmailHelper";
 import { showCteFreights, suspendCteFreights } from "siagrob1/helpers/CteFreightsBinding";
 
 /**
@@ -37,7 +38,10 @@ import { showCteFreights, suspendCteFreights } from "siagrob1/helpers/CteFreight
  */
 export default class Detail extends BaseController {
 
+	private nfeEmail: NfeEmailHelper;
+
 	onInit(): void  {	
+		this.nfeEmail = new NfeEmailHelper(this.getView(), 1, ServerRoutes.salesInvoicesSendNfeEmail);
 		this.bindTransportGroupVisibility();
 		this.getRouter().getRoute("salesInvoicesDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
 	}
@@ -63,6 +67,8 @@ export default class Detail extends BaseController {
 			this.bindElement(sPath, { $expand: `Items($select=${TAX_TOTALS_SELECT},${LINE_CHARGES_SELECT})` });
 			this.attachDocumentTotalRefresh();
 			showCteFreights(this.byId("cteFreightsTable") as SapTable, "SalesInvoiceKey", id);
+			this.nfeEmail.reset();
+			void this.nfeEmail.loadHistory(id);
 			void this.refreshTaxLockFromContext();
 			void this.refreshNfeHeaderFromContext();
 			void this.refreshNfeReturnFromContext();
@@ -163,6 +169,21 @@ export default class Detail extends BaseController {
         // a releitura falhar não pode deixar a tela ocupada
       }
       this.setBusy(false);
+    }
+  }
+
+  /** E-mail da NF-e: destinatários do parceiro, edição e envio; o histórico recarrega ao final. */
+  async onSendNfeEmail() {
+    const key = this.getView().getBindingContext()?.getProperty("Key") as string;
+    if (key) {
+      await this.nfeEmail.send(key, (busy) => this.setBusy(busy));
+    }
+  }
+
+  onRefreshNfeEmails() {
+    const key = this.getView().getBindingContext()?.getProperty("Key") as string;
+    if (key) {
+      void this.nfeEmail.loadHistory(key);
     }
   }
 
