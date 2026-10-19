@@ -1,0 +1,27 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+  <!-- E-mails que recebem o DANFE e o XML da NF-e (STANDALONE). -->
+  <Table items="{nfeEmails>/rows}" width="100%" noDataText="Nenhum e-mail cadastrado">
+    <headerToolbar>
+      <OverflowToolbar>
+        <Title text="E-mails que recebem o DANFE e o XML" level="H3" />
+        <ToolbarSpacer />
+        <Button text="Adicionar e-mail" icon="sap-icon://add" press=".onAddNfeEmail" enabled="{nfeEmails>/loaded}" />
+      </OverflowToolbar>
+    </headerToolbar>
+    <columns>
+      <Column><Text text="E-mail" /></Column>
+      <Column width="4rem" hAlign="Center"><Text text="" /></Column>
+    </columns>
+    <items>
+      <ColumnListItem>
+        <cells>
+          <Input value="{nfeEmails>Address}" maxLength="250" type="Email" change=".onNfeEmailChange" enabled="{nfeEmails>/loaded}" />
+          <Button icon="sap-icon://delete" type="Transparent" tooltip="Remover e-mail" press=".onRemoveNfeEmail" enabled="{nfeEmails>/loaded}" />
+        </cells>
+      </ColumnListItem>
+    </items>
+  </Table>
+</core:FragmentDefinition>

@@ -117,27 +117,6 @@
           </Select>
           <Label text="Inscrição estadual" visible="{ui>/standalone}" />
           <Input value="{StateRegistration}" maxLength="14" placeholder="Só dígitos" visible="{ui>/standalone}" />
-          <Label text="E-mails da NF-e" visible="{ui>/standalone}" />
-          <Table items="{nfeEmails>/rows}" visible="{ui>/standalone}" width="100%">
-            <headerToolbar>
-              <OverflowToolbar>
-                <ToolbarSpacer />
-                <Button text="Adicionar e-mail" icon="sap-icon://add" press=".onAddNfeEmail" enabled="{nfeEmails>/loaded}" />
-              </OverflowToolbar>
-            </headerToolbar>
-            <columns>
-              <Column><Text text="E-mail" /></Column>
-              <Column width="4rem" hAlign="Center"><Text text="" /></Column>
-            </columns>
-            <items>
-              <ColumnListItem>
-                <cells>
-                  <Input value="{nfeEmails>Address}" maxLength="250" type="Email" change=".onNfeEmailChange" enabled="{nfeEmails>/loaded}" />
-                  <Button icon="sap-icon://delete" type="Transparent" press=".onRemoveNfeEmail" enabled="{nfeEmails>/loaded}" />
-                </cells>
-              </ColumnListItem>
-            </items>
-          </Table>
           <Label text="Telefone" visible="{ui>/standalone}" />
           <Input value="{Phone}" maxLength="14" placeholder="Só dígitos" visible="{ui>/standalone}" />
           <Label text="Condição de pagamento padrão" visible="{ui>/standalone}" />
