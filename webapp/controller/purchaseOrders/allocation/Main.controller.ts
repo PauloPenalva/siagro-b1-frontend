@@ -4,6 +4,7 @@ import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Context from "sap/ui/model/odata/v4/Context";
+import UI5Context from "sap/ui/model/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Table from "sap/ui/table/Table";
@@ -47,10 +48,11 @@ export default class Main extends BaseController {
       this.purchaseContractsAvaiableDialog.setBindingContext(context);
       this.purchaseContractsAvaiableDialog.open();
       
+      // A lista vem a partir do romaneio: perna de compra de Expedição recebe só o contrato da
+      // liberação (IsShippingReleaseContract), que se aloca direto, sem aviso de divergência.
       const model = this.getModel() as ODataModel;
-      const func = model.bindContext("/PurchaseContractsGetAvaiablesList(...)");
-      func.setParameter("CardCode", context.getProperty("CardCode"));
-      func.setParameter("ItemCode", context.getProperty("ItemCode"));
+      const func = model.bindContext(this.api.purchaseContractsGetAvaiablesListForTransaction);
+      func.setParameter("StorageTransactionKey", context.getProperty("Key"));
 
       this.setBusy(true);
       void func.invoke()
@@ -111,7 +113,29 @@ export default class Main extends BaseController {
         return;
       }
 
-      const confirmed = await DialogHelper.confirmDialog("Confirma alocação do romaneio ?");
+      // Perna de Expedição: só o contrato da liberação, alocação normal (o armazém dela é o da
+      // liberação e pode diferir do Local de Entrega). Devolução e complementos (9/10/11) não têm
+      // troca: exigem o mesmo fornecedor e não comparam armazém. Só o romaneio de compra (8) vira troca.
+      if (!tableCtx.getProperty("IsShippingReleaseContract")) {
+        if (context.getProperty("TransactionType") !== "Purchase") {
+          if (!this.sameCode(context.getProperty("CardCode") as string, tableCtx.getProperty("CardCode") as string)) {
+            MessageBox.warning("O contrato é de outro fornecedor.");
+            return;
+          }
+        } else {
+          const differences = this.getDifferences(context, tableCtx);
+          if (differences.length > 0) {
+            await this.changeSupplier(context, tableCtx, differences, volume);
+            return;
+          }
+        }
+      }
+
+      // Códigos capturados antes de fechar o diálogo e de atualizar a grade, que trocam os contextos.
+      const storageCode = context.getProperty("Code") as string;
+      const contractCode = tableCtx.getProperty("Code") as string;
+
+      const confirmed = await DialogHelper.confirmDialog("Confirma alocação do romaneio ?") as boolean;
       if (confirmed) {
         this.purchaseContractsAvaiableDialog?.close();
 
@@ -124,7 +148,7 @@ export default class Main extends BaseController {
         void action.invoke()
           .then(() => {
             this.refreshData();
-            MessageToast.show(`Romaneio ${context.getProperty("Code")} aplicado com sucesso ao contrato ${tableCtx.getProperty("Code")}.`)
+            MessageToast.show(`Romaneio ${storageCode} aplicado com sucesso ao contrato ${contractCode}.`)
           })
           .finally(() => { 
             this.setBusy(false);
@@ -132,6 +156,85 @@ export default class Main extends BaseController {
       }
 
       return;
+    }
+  }
+
+  /** Compara códigos sem diferenciar maiúsculas, como o backend. Código vazio no contrato não diverge. */
+  private sameCode(storageCode: string, contractCode: string): boolean {
+    if (!contractCode) return true;
+    return (storageCode ?? "").toUpperCase() === contractCode.toUpperCase();
+  }
+
+  /**
+   * Lista o que diverge entre o romaneio e o contrato escolhido (fornecedor e/ou armazém).
+   */
+  private getDifferences(storageCtx: Context, contractCtx: UI5Context): string[] {
+    const differences: string[] = [];
+
+    const storageCard = storageCtx.getProperty("CardCode") as string;
+    const contractCard = contractCtx.getProperty("CardCode") as string;
+    if (!this.sameCode(storageCard, contractCard)) {
+      differences.push(
+        `Fornecedor: romaneio ${storageCtx.getProperty("CardName") as string} (${storageCard}), ` +
+        `contrato ${contractCtx.getProperty("CardName") as string} (${contractCard})`);
+    }
+
+    const storageWhs = storageCtx.getProperty("WarehouseCode") as string;
+    const contractWhs = contractCtx.getProperty("DeliveryLocationCode") as string;
+    if (!this.sameCode(storageWhs, contractWhs)) {
+      differences.push(
+        `Armazém: romaneio ${storageWhs}, ` +
+        `contrato ${contractCtx.getProperty("DeliveryLocationName") as string} (${contractWhs})`);
+    }
+
+    return differences;
+  }
+
+  /**
+   * Contrato de outro fornecedor/armazém: o backend estorna o romaneio original e gera um
+   * novo no fornecedor/armazém do contrato. Exige confirmação e motivo. O diálogo de contratos
+   * só fecha em caso de sucesso, para o usuário poder tentar de novo se o backend recusar.
+   */
+  private async changeSupplier(storageCtx: Context, contractCtx: UI5Context, differences: string[], volume: number): Promise<void> {
+    const confirmed = await new Promise<boolean>(resolve => {
+      MessageBox.warning(
+        "O contrato selecionado é diferente do romaneio:\n\n" +
+        differences.map(d => `• ${d}`).join("\n") +
+        "\n\nSerá gerado um estorno no fornecedor/armazém do romaneio e um romaneio novo no " +
+        "fornecedor/armazém do contrato, com a data do romaneio original. Continuar?",
+        {
+          title: "Fornecedor/armazém divergente",
+          actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
+          emphasizedAction: MessageBox.Action.CANCEL,
+          onClose: (action: string) => resolve(action === MessageBox.Action.OK.toString()),
+        });
+    });
+    if (!confirmed) return;
+
+    const reason = await DialogHelper.promptDialog("Troca de fornecedor/armazém", "Motivo", "");
+    if (!reason) return;
+
+    // Capturados antes do invoke: fechar o diálogo e atualizar a grade trocam os contextos.
+    const storageCode = storageCtx.getProperty("Code") as string;
+    const contractCode = contractCtx.getProperty("Code") as string;
+
+    const action = (this.getModel() as ODataModel).bindContext(this.api.purchaseTransactionsChangeSupplier);
+    action.setParameter("StorageTransactionKey", storageCtx.getProperty("Key") as string);
+    action.setParameter("PurchaseContractKey", contractCtx.getProperty("Key") as string);
+    action.setParameter("Volume", volume);
+    action.setParameter("Reason", reason);
+
+    this.setBusy(true);
+    try {
+      await action.invoke();
+      const result = action.getBoundContext().getObject() as { ReturnCode: string; NewCode: string };
+      this.purchaseContractsAvaiableDialog?.close();
+      this.refreshData();
+      MessageToast.show(
+        `Romaneio ${storageCode} trocado: estorno ${result.ReturnCode}, ` +
+        `romaneio novo ${result.NewCode} alocado no contrato ${contractCode}.`);
+    } finally {
+      this.setBusy(false);
     }
   }
 
