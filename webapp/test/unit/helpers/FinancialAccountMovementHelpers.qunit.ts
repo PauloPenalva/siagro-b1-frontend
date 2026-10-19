@@ -5,6 +5,9 @@ import {
 	canDeleteEntry,
 	reconciliationChanges,
 	reconciliationSummary,
+	markedKeys,
+	statementDay,
+	monthStart,
 	MovementRow,
 } from "siagrob1/helpers/FinancialAccountMovementHelpers";
 
@@ -66,4 +69,16 @@ QUnit.test("reconciliationSummary soma o selecionado e calcula a diferença cont
 	assert.strictEqual(summary.reconciledAmount, 289.5);
 	assert.strictEqual(summary.difference, 0);
 	assert.strictEqual(reconciliationSummary(rows, new Set(["a"]), 100, 389.5).difference, -300);
+});
+
+QUnit.test("markedKeys devolve as linhas já marcadas no servidor", function (assert) {
+	const rows = [{ Key: "a", Marked: true }, { Key: "b", Marked: false }] as MovementRow[];
+	assert.deepEqual([...markedKeys(rows)], ["a"]);
+});
+
+QUnit.test("statementDay lê o dia da data do servidor sem passar pelo fuso do navegador", function (assert) {
+	// Servidor em UTC (VPS Linux): meia-noite UTC é 21:00 do dia anterior em Brasília.
+	assert.strictEqual(statementDay("2026-10-31T00:00:00Z"), "2026-10-31");
+	assert.strictEqual(statementDay("2026-10-01T00:00:00-03:00"), "2026-10-01");
+	assert.strictEqual(monthStart("2026-10-31T00:00:00Z"), "2026-10-01");
 });

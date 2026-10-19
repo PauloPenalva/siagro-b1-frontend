@@ -80,3 +80,21 @@ export function reconciliationSummary(rows: MovementRow[], selectedKeys: Set<str
 	const difference = (Math.round(Number(openingBalance) * 100) + cents - Math.round(Number(statementBalance) * 100)) / 100;
 	return { reconciledAmount, difference: difference === 0 ? 0 : difference };
 }
+
+/** Chaves das linhas já marcadas no servidor — o quadro de reconciliação fechada vem daqui, não da seleção. */
+export function markedKeys(rows: MovementRow[]): Set<string> {
+	return new Set((rows ?? []).filter((r) => r.Marked).map((r) => r.Key));
+}
+
+/**
+ * Dia (`yyyy-MM-dd`) de uma data do servidor, lido do texto. `new Date()` converteria para o fuso do navegador e, com
+ * o servidor em UTC, meia-noite viraria 21:00 do dia anterior em Brasília.
+ */
+export function statementDay(value: string): string {
+	return (value ?? "").substring(0, 10);
+}
+
+/** Primeiro dia do mês da data do servidor, sem passar pelo fuso do navegador. */
+export function monthStart(value: string): string {
+	return `${statementDay(value).substring(0, 7)}-01`;
+}

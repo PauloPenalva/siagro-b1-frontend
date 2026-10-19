@@ -5,12 +5,14 @@ import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import Table from "sap/ui/table/Table";
 import CommonController from "siagrob1/controller/common/CommonController";
 import { sendJson, odataValue } from "siagrob1/helpers/FetchHelpers";
-import { localIsoDate } from "siagrob1/helpers/DateHelpers";
 import { openPdfReport } from "siagrob1/helpers/PdfReportHelpers";
 import {
 	MovementRow,
+	markedKeys,
+	monthStart,
 	reconciliationChanges,
 	reconciliationSummary,
+	statementDay,
 } from "siagrob1/helpers/FinancialAccountMovementHelpers";
 
 type ReconciliationView = {
@@ -100,7 +102,9 @@ export default class Detail extends CommonController {
 	onSelectionChange(): void {
 		if (this._applyingSelection) return;
 		const data = this.model().getData() as ReconciliationView;
-		const summary = reconciliationSummary(data.Rows ?? [], this.selectedKeys(), data.OpeningBalance, data.StatementBalance);
+		// Fechada: a tabela fica sem seleção (selectionMode None); o quadro vem das marcações do servidor.
+		const keys = data.Status === "Closed" ? markedKeys(data.Rows) : this.selectedKeys();
+		const summary = reconciliationSummary(data.Rows ?? [], keys, data.OpeningBalance, data.StatementBalance);
 		this.model().setProperty("/ReconciledAmount", summary.reconciledAmount);
 		this.model().setProperty("/Difference", summary.difference);
 	}
@@ -169,13 +173,12 @@ export default class Detail extends CommonController {
 	/** Extrato só dos conciliados, do primeiro dia do mês do extrato até a data dele. */
 	async onPrint(): Promise<void> {
 		const data = this.model().getData() as ReconciliationView;
-		const statementDate = new Date(data.StatementDate);
 		try {
 			this.setBusy(true);
 			await openPdfReport(this.api.financialAccountStatementReport, {
 				AccountCode: data.FinancialAccountCode,
-				DateFrom: localIsoDate(new Date(statementDate.getFullYear(), statementDate.getMonth(), 1)),
-				DateTo: localIsoDate(statementDate),
+				DateFrom: monthStart(data.StatementDate),
+				DateTo: statementDay(data.StatementDate),
 				OnlyReconciled: true,
 			});
 		} catch (error) {
