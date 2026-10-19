@@ -28,9 +28,10 @@
          </uxap:snappedHeading>
         <uxap:actions>
           <Button text="Voltar para Lista de Faturas" type="Transparent" press=".navToStorageInvoicesList"/>
-          <Button enabled="{= ${path: 'Status', targetType: 'any'}==='Open' ? true : false }" text="Encerrar" type="Transparent" press=".onClose"/>
-          <Button enabled="{= ${path: 'Status', targetType: 'any'}==='Closed' ? true : false }" text="Reabrir" type="Transparent" press=".onReopen"/>
-          <Button enabled="{= ${path: 'Status', targetType: 'any'}==='Open' ? true : ${path: 'Status', targetType: 'any'}==='Closed' ? true : false }" text="Cancelar" type="Transparent" press=".onReject"/>
+          <!-- Spec 2026-10-19: a fatura é faturada por documentos de saída (NF-e/NFS); a situação segue documentos e títulos. -->
+          <Button text="Faturar" type="Emphasized" icon="sap-icon://create-form" press=".onBill"
+            enabled="{= (${path: 'Status', targetType: 'any'} === 'Open' || ${path: 'Status', targetType: 'any'} === 'PartiallyInvoiced') &amp;&amp; ${billing>/Balance} > 0 }"/>
+          <Button enabled="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Paid' }" text="Cancelar" type="Transparent" press=".onReject"/>
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>
@@ -70,6 +71,14 @@
               unit="R$"
             />  
         </HBox>
+        <HBox class="sapUiTinyMarginBottom">
+          <Title level="H5" text="Faturado:" class="sapUiMediumMarginEnd sapUiTinyMarginBottom" />
+          <ObjectNumber class="sapUiMediumMarginEnd sapUiTinyMarginBottom" number="{ path: 'billing>/BilledAmount', formatter: '.formatter.formatAmount2' }" unit="R$" />
+        </HBox>
+        <HBox class="sapUiTinyMarginBottom">
+          <Title level="H5" text="Saldo a faturar:" class="sapUiMediumMarginEnd sapUiTinyMarginBottom" />
+          <ObjectNumber class="sapUiMediumMarginEnd sapUiTinyMarginBottom" number="{ path: 'billing>/Balance', formatter: '.formatter.formatAmount2' }" unit="R$" />
+        </HBox>
       </HBox>
    	</uxap:headerContent> 
     
@@ -88,6 +97,56 @@
 					<uxap:ObjectPageSubSection>
             <uxap:blocks>
               <core:Fragment fragmentName="siagrob1.view.storageInvoices.fragments.Items" type="XML" />
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Faturamento">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection title="Documentos de saída">
+            <uxap:blocks>
+              <Table items="{billing>/Documents}" noDataText="Nenhum documento de saída para esta fatura.">
+                <columns>
+                  <Column><Text text="Documento" /></Column>
+                  <Column><Text text="Doc. fiscal" /></Column>
+                  <Column><Text text="Número / Série" /></Column>
+                  <Column><Text text="Emissão" /></Column>
+                  <Column hAlign="End"><Text text="Valor" /></Column>
+                  <Column><Text text="Situação" /></Column>
+                </columns>
+                <ColumnListItem type="Navigation" press=".onOpenDocument">
+                  <Text text="{billing>InvoiceNumber}" />
+                  <Text text="{ path: 'billing>TaxDocumentKind', formatter: '.formatter.formatTaxDocumentKind' }" />
+                  <Text text="{billing>TaxDocumentNumber} / {billing>TaxDocumentSeries}" />
+                  <Text text="{ path: 'billing>InvoiceDate', formatter: '.formatter.formatIsoDate' }" />
+                  <ObjectNumber number="{ path: 'billing>Total', formatter: '.formatter.formatAmount2' }" unit="R$" />
+                  <Text text="{ path: 'billing>InvoiceStatus', formatter: '.formatter.formatBillingInvoiceStatus' }" />
+                </ColumnListItem>
+              </Table>
+            </uxap:blocks>
+					</uxap:ObjectPageSubSection>
+					<uxap:ObjectPageSubSection title="Títulos a receber">
+            <uxap:blocks>
+              <Table items="{billing>/Receivables}" noDataText="Nenhum título a receber.">
+                <columns>
+                  <Column><Text text="Título" /></Column>
+                  <Column><Text text="Documento" /></Column>
+                  <Column hAlign="Center"><Text text="Parcela" /></Column>
+                  <Column><Text text="Vencimento" /></Column>
+                  <Column hAlign="End"><Text text="Valor" /></Column>
+                  <Column hAlign="End"><Text text="Saldo" /></Column>
+                  <Column><Text text="Situação" /></Column>
+                </columns>
+                <ColumnListItem>
+                  <Text text="{billing>Code}" />
+                  <Text text="{billing>InvoiceNumber}" />
+                  <Text text="{billing>InstallmentNumber}" />
+                  <Text text="{ path: 'billing>DueDate', formatter: '.formatter.formatIsoDate' }" />
+                  <ObjectNumber number="{ path: 'billing>NetAmount', formatter: '.formatter.formatAmount2' }" unit="R$" />
+                  <ObjectNumber number="{ path: 'billing>OpenAmount', formatter: '.formatter.formatAmount2' }" unit="R$" />
+                  <Text text="{ path: 'billing>Status', formatter: '.formatter.formatBillingReceivableStatus' }" />
+                </ColumnListItem>
+              </Table>
             </uxap:blocks>
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>

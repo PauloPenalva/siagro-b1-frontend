@@ -31,7 +31,9 @@
               }"
             >
               <core:ListItem key="Open" text="Em Aberto"/>
-              <core:ListItem key="Closed" text="Encerrado"/>
+              <core:ListItem key="PartiallyInvoiced" text="Faturada parcial"/>
+              <core:ListItem key="Invoiced" text="Faturada"/>
+              <core:ListItem key="Paid" text="Paga"/>
               <core:ListItem key="Cancelled" text="Cancelado"/>
            </Select>
         </fb:control>

@@ -10,6 +10,10 @@ import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { BaseController } from "./BaseController";
+import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
+import { sendJson } from "siagrob1/helpers/FetchHelpers";
+
+type StorageInvoiceToBill = { CardCode: string; CardName: string; Code: string; Balance: number };
 
 /**
  * Inclusão de documento de saída AVULSO — sem romaneio.
@@ -23,14 +27,34 @@ import { BaseController } from "./BaseController";
 export default class Add extends BaseController {
 
   onInit(): void {
-    this.getRouter().getRoute("salesInvoicesAdd").attachPatternMatched(() => this.newRouteMatched());
+    this.getRouter().getRoute("salesInvoicesAdd").attachPatternMatched((ev) => this.newRouteMatched(ev));
   }
 
-  private newRouteMatched() {
-    void this.prepareNewInvoice();
+  private newRouteMatched(ev: Route$PatternMatchedEvent) {
+    const args = ev.getParameter("arguments") as { "?query"?: { storageInvoice?: string } };
+    void this.prepareNewInvoice(args?.["?query"]?.storageInvoice);
   }
 
-  private async prepareNewInvoice() {
+  /**
+   * "Faturar" da fatura de armazenagem (spec 2026-10-19 parte 3): o documento nasce do parceiro da fatura e com o
+   * vínculo; a condição de pagamento vem do cadastro do parceiro no servidor. O usuário escolhe NF-e ou NFS, a
+   * natureza, o serviço e o valor — o servidor recusa o que passar do saldo.
+   */
+  private async loadStorageInvoice(key: string): Promise<StorageInvoiceToBill> {
+    const [header, billing] = await Promise.all([
+      sendJson("GET", `/odata/StorageInvoices(${key})?$select=Code,CardCode,CardName`),
+      sendJson("GET", `/odata/StorageInvoiceBilling(Key=${key})`),
+    ]);
+    if (!header.ok || !billing.ok) {
+      MessageBox.error(header.message ?? billing.message ?? "Fatura de armazenagem não encontrada.");
+      return null;
+    }
+    const h = header.data as { Code: string; CardCode: string; CardName: string };
+    const b = billing.data as { Balance: number };
+    return { ...h, Balance: Number(b.Balance) };
+  }
+
+  private async prepareNewInvoice(storageInvoiceKey?: string) {
     this.clearStates("formSalesInvoice");
 
     const uiModel = this.getModel("ui") as JSONModel;
@@ -57,6 +81,12 @@ export default class Add extends BaseController {
     try {
       this.setBusy(true);
 
+      const storage = storageInvoiceKey ? await this.loadStorageInvoice(storageInvoiceKey) : null;
+      uiModel.setProperty("/storageInvoice", storage ? {
+        Code: storage.Code,
+        Balance: storage.Balance.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      } : null);
+
       const branchInfo = await this.getBranchInfo();
       void this.refreshTaxLock(branchInfo?.code);
       const results = await this.getDocNumberInfoByTransaction("SalesInvoice");
@@ -69,11 +99,12 @@ export default class Add extends BaseController {
         DocNumberKey: docNumberInfo?.Key ?? null,
         BranchCode: branchInfo?.code ?? null,
         InvoiceType: "Normal",
-        TaxDocumentKind: "Nfe",
+        TaxDocumentKind: storage ? "Nfse" : "Nfe",
         InvoiceStatus: "Pending",
         InvoiceDate: new Date().toISOString(),
-        CardCode: null,
-        CardName: null,
+        CardCode: storage?.CardCode ?? null,
+        CardName: storage?.CardName ?? null,
+        StorageInvoiceKey: storage ? storageInvoiceKey : null,
         DeliveryCardCode: null,
         DeliveryCardName: null,
         TruckingCompanyCode: null,

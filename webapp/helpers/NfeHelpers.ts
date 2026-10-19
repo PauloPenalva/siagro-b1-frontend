@@ -161,7 +161,7 @@ export function isManualTaxDocumentBlocked(
   nfeStatus: string, taxLocked: boolean, invoiceType: string, isNfeReturn = false, taxDocumentKind = "Nfe"
 ): boolean {
   return isEmittedNfeStatus(nfeStatus) || isNfeReturn === true
-    || (taxLocked === true && invoiceType === "Normal" && taxDocumentKind !== "Other");
+    || (taxLocked === true && invoiceType === "Normal" && taxDocumentKind === "Nfe");
 }
 
 /** Campos do cabeçalho (entrada ou saída) que nomeiam o DANFE. */

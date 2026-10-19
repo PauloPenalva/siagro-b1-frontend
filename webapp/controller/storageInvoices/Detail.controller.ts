@@ -5,6 +5,10 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import MessageToast from "sap/m/MessageToast";
 import { BaseController } from "./BaseController";
+import { sendJson } from "siagrob1/helpers/FetchHelpers";
+import ColumnListItem from "sap/m/ColumnListItem";
+import Event from "sap/ui/base/Event";
+import ODataContextBinding from "sap/ui/model/odata/v4/ODataContextBinding";
 
 /**
  * @namespace siagrob1.controller.storageInvoices
@@ -34,6 +38,9 @@ export default class Detail extends BaseController {
       
 		const sPath = `/StorageInvoices(${id})`;
 		this.bindElement(sPath);
+    // A situação muda por documentos e títulos: relê o cabeçalho ao voltar para a tela.
+    (this.getView().getElementBinding() as ODataContextBinding)?.refresh();
+    void this.loadBilling(id);
   }
 
   navToStorageInvoicesList() {
@@ -65,50 +72,25 @@ export default class Detail extends BaseController {
 
   }
 
-   async onClose() {
-    const oContext = this.getView().getBindingContext() as Context;
-    if (!oContext) {
-      throw new Error("");
-    }
-
-    if (await DialogHelper.confirmDialog("Encerrar fatura de serviços ?")) {
-
-      const model = this.getModel() as ODataModel;
-      const action = model.bindContext("/StorageInvoiceClose(...)");
-      action.setParameter("Key", oContext.getProperty("Key"));
-      
-      this.setBusy(true);
-      void action.invoke()
-        .then(() => {
-          MessageToast.show("Fatura encerrada com sucesso.");
-          this.navToStorageInvoicesList()
-        })
-        .finally(()=> this.setBusy(false))
-    }
+  /** Documentos, títulos e saldo da fatura (função StorageInvoiceBilling). */
+  private async loadBilling(id: string) {
+    const model = new JSONModel({ Balance: 0, BilledAmount: 0, Documents: [], Receivables: [] });
+    this.getView().setModel(model, "billing");
+    const result = await sendJson("GET", `/odata/StorageInvoiceBilling(Key=${id})`);
+    if (result.ok) model.setData(result.data as object);
   }
-    
-  
-  async onReopen() {
-    const oContext = this.getView().getBindingContext() as Context;
-    if (!oContext) {
-      throw new Error("");
-    }
 
-    if (await DialogHelper.confirmDialog("Reabrir fatura de serviços ?")) {
+  /** Spec 2026-10-19: abre o documento de saída já com o parceiro e o vínculo da fatura. */
+  onBill() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) return;
+    this.navTo("salesInvoicesAdd", { "?query": { storageInvoice: ctx.getProperty("Key") as string } });
+  }
 
-      const model = this.getModel() as ODataModel;
-      const action = model.bindContext("/StorageInvoiceOpen(...)");
-      action.setParameter("Key", oContext.getProperty("Key"));
-      
-      this.setBusy(true);
-      void action.invoke()
-        .then(() => {
-          MessageToast.show("Fatura reaberta com sucesso.");
-          this.navToStorageInvoicesList()
-        })
-        .finally(()=> this.setBusy(false))
-    }
-
+  onOpenDocument(ev: Event) {
+    const item = ev.getSource<ColumnListItem>();
+    const key = item.getBindingContext("billing").getProperty("Key") as string;
+    this.navTo("salesInvoicesDetail", { id: key });
   }
 
 }
