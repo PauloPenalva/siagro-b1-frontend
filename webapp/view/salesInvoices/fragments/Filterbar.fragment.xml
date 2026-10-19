@@ -41,6 +41,17 @@
           </Select>
       </fb:control>
     </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="taxDocumentKind" label="Doc. fiscal" groupName="GroupTaxDocumentKind" visibleInFilterBar="true">
+      <fb:control>
+          <!-- Enum: mesmo tratamento do Tipo (eq 'valor' cru no $filter estático). -->
+          <Select forceSelection="false" selectedKey="{filter>/TaxDocumentKind}">
+            <core:ListItem key="" text="Todos"/>
+            <core:ListItem key="Nfe" text="NF-e"/>
+            <core:ListItem key="Nfse" text="NFS"/>
+            <core:ListItem key="Other" text="Outro"/>
+          </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
     <fb:FilterGroupItem name="dateFrom" label="Emissão de" groupName="GroupDateFrom" visibleInFilterBar="true">
         <fb:control>
            <DatePicker 

@@ -1233,6 +1233,7 @@ const formatter = {
     m.set("Nfe", "NF-e");
     m.set("Cte", "CT-e");
     m.set("Other", "Outro");
+    m.set("Nfse", "NFS");
 
     return m.get(value) ?? "";
   },

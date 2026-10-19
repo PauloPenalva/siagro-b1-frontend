@@ -139,7 +139,8 @@ export default class Main extends BaseController {
       // formatar enum: estoura "Unsupported type: SIAGROB1.SalesInvoiceType" num diálogo, com a
       // lista sem filtrar nada. Cair no `else` seria pior ainda — `contains(InvoiceType,'Return')`
       // é recusado pelo backend.
-      if (filterKey == "InvoiceStatus" || filterKey == "InvoiceType" || filterKey == "NfeStatus") {
+      if (filterKey == "InvoiceStatus" || filterKey == "InvoiceType" || filterKey == "NfeStatus"
+        || filterKey == "TaxDocumentKind") {
         filters.push(`${filterKey} eq '${esc(value)}'`)
       } else if (filterKey == "DateFrom") {
         filters.push(`InvoiceDate ge ${value}`)
@@ -316,7 +317,7 @@ export default class Main extends BaseController {
       // chave de 44 dígitos de onde tirar número e série, então os dois são digitados. Fora desse
       // caso continuam vindo só da chave.
       ManualNumber: taxLocked === true && invoiceType === "Normal"
-        && ctx.getProperty("TaxDocumentKind") === "Other",
+        && ctx.getProperty("TaxDocumentKind") !== "Nfe",
     });
 
     void this.openNotaFiscalDialog();

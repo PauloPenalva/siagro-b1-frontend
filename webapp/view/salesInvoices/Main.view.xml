@@ -115,6 +115,11 @@
               }" wrapping="false" />
 						</t:template>
 					</t:Column>
+          <t:Column label="Doc. fiscal" sortProperty="TaxDocumentKind" hAlign="Center" width="6rem">
+						<t:template>
+							<Text text="{ path: 'TaxDocumentKind', targetType: 'any', formatter: '.formatter.formatTaxDocumentKind' }" wrapping="false" />
+						</t:template>
+					</t:Column>
           <t:Column
 						label="Emissão"
 						sortProperty="InvoiceDate"
