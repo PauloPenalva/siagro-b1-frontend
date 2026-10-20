@@ -1260,6 +1260,11 @@
           "target": "financialAdvances"
         },
         {
+          "pattern": "fiscal-conference",
+          "name": "fiscalConference",
+          "target": "fiscalConference"
+        },
+        {
           "pattern": "financial-account-movements",
           "name": "financialAccountMovements",
           "target": "financialAccountMovements"
@@ -2670,6 +2675,12 @@
           "id": "financialAdvances",
           "level": 1,
           "name": "siagrob1.view.financialAdvances.Main",
+          "clearControlAggregation": true
+        },
+        "fiscalConference": {
+          "id": "fiscalConference",
+          "level": 1,
+          "name": "siagrob1.view.fiscalConference.Main",
           "clearControlAggregation": true
         },
         "financialAccountMovements": {
