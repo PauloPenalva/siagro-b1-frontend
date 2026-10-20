@@ -1,4 +1,4 @@
-import Input from "sap/m/Input";
+import Input, { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import Event from "sap/ui/base/Event";
 import Context from "sap/ui/model/odata/v4/Context";
 import Select from "sap/m/Select";
@@ -29,8 +29,20 @@ export abstract class BaseController extends CommonController {
     if (!ctx) return;
 
     if (!(input.getValue() ?? "").trim()) {
+      this._branchClearedAt = Date.now();
       void ctx.setProperty("BranchCode", null);
     }
+  }
+
+  private _branchClearedAt = 0;
+
+  /**
+   * Com `valueHelpOnly`, o toque no X de limpar também chega ao Input e dispara o value help. O X limpa o campo
+   * antes (evento do ícone, filho do Input), então um pedido logo depois de limpar é o mesmo clique: ignora.
+   */
+  onBranchValueHelp(ev: Input$ValueHelpRequestEvent): void {
+    if (Date.now() - this._branchClearedAt < 500) return;
+    this.openBranchsValueHelp(ev);
   }
 
   /** Valida os campos `required` de um `sap.ui.layout.form.Form`. */

@@ -61,7 +61,7 @@
                 editable="{ui>/editable}"
                 liveChange=".onBranchChange"
                 change=".onBranchChange"
-                valueHelpRequest=".openBranchsValueHelp"/>
+                valueHelpRequest=".onBranchValueHelp"/>
             </f:fields>
           </f:FormElement>
           <f:FormElement label="Inativa">
