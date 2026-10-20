@@ -157,6 +157,8 @@ export default {
     staticFilter?: string
   ): Promise<Context | undefined> => {
     const oDlg = await getSelectDialog(oController, name, filters, defaultFilters);
+    // o mesmo fragmento pode ter sido aberto em múltipla seleção nesta view
+    oDlg.setMultiSelect(false);
 
     applyStaticFilter(oDlg.getBinding("items") as ODataListBinding, staticFilter);
 
@@ -192,6 +194,38 @@ export default {
       };
 
       const onCancel = () => finish(undefined);
+
+      oDlg.attachConfirm(onConfirm);
+      oDlg.attachCancel(onCancel);
+
+      oDlg.open("");
+    });
+  },
+
+  /**
+   * Mesmo diálogo de {@link openTableSelectDialog}, em múltipla seleção: resolve com os registros
+   * marcados (lista vazia se o usuário cancelar).
+   */
+  openTableMultiSelectDialog: async (
+    oController: Controller,
+    name: string,
+    filters: string[],
+  ): Promise<Context[]> => {
+    const oDlg = await getSelectDialog(oController, name, filters, []);
+    oDlg.setMultiSelect(true);
+
+    return new Promise<Context[]>(resolve => {
+      const finish = (contexts: Context[]) => {
+        oDlg.detachConfirm(onConfirm);
+        oDlg.detachCancel(onCancel);
+        resolve(contexts);
+      };
+
+      const onConfirm = (ev: TableSelectDialog$ConfirmEvent) => {
+        finish((ev.getParameter("selectedContexts") ?? []) as Context[]);
+      };
+
+      const onCancel = () => finish([]);
 
       oDlg.attachConfirm(onConfirm);
       oDlg.attachCancel(onCancel);

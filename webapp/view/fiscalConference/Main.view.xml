@@ -1,0 +1,156 @@
+<mvc:View
+	controllerName="siagrob1.controller.fiscalConference.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<Page title="Conferência Fiscal" busyIndicatorDelay="0" busy="{ui>/busy}" enableScrolling="false">
+		<subHeader>
+			<OverflowToolbar>
+				<Label text="Filial" labelFor="branchInput"/>
+				<Input id="branchInput" width="8rem" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBranchsValueHelp" value="{params>/BranchCode}">
+					<customData>
+						<core:CustomData key="descriptionProperty" value="BranchName:ShortName"/>
+					</customData>
+				</Input>
+				<Input width="14rem" value="{params>/BranchName}" editable="false"/>
+				<Label text="Mês" required="true" labelFor="monthPicker"/>
+				<DatePicker id="monthPicker" width="9rem" value="{params>/Month}" valueFormat="yyyy-MM-dd" displayFormat="MM/yyyy" required="true"/>
+				<Button type="Emphasized" icon="sap-icon://search" text="Consultar" press=".onSearch"/>
+			</OverflowToolbar>
+		</subHeader>
+		<content>
+			<IconTabBar id="conferenceTabs" expandable="false" stretchContentHeight="true" applyContentPadding="false">
+				<items>
+					<IconTabFilter key="documents" text="Documentos" count="{= ${conference>/documents}.length }">
+					<t:Table id="documentsTable" rows="{conference>/documents}" selectionMode="None" class="sapUiSizeCondensed" visibleRowCountMode="Auto" alternateRowColors="true" noData="{= ${conference>/searched} ? 'Nenhum registro no período.' : 'Consulte um mês para ver os dados.' }">
+						<t:extension>
+							<OverflowToolbar>
+								<Title text="{= ${conference>/documents}.length } linha(s)"/>
+								<ToolbarSpacer/>
+								<Button type="Transparent" text="Exportar Excel" press=".onExport('documents')"/>
+							</OverflowToolbar>
+						</t:extension>
+						<t:columns>
+								<t:Column label="Dir." width="4rem"><t:template><Text text="{conference>direction}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Data" width="7rem" hAlign="Center"><t:template><Text text="{ path: 'conference>date', formatter: 'formatter.formatDate' }" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Modelo" width="5rem"><t:template><Text text="{conference>model}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Série" width="5rem"><t:template><Text text="{conference>series}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Número" width="8rem"><t:template><Text text="{conference>number}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Nº interno" width="8rem"><t:template><Text text="{conference>internalNumber}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Chave de acesso" width="22rem"><t:template><Text text="{conference>accessKey}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Parceiro" width="16rem"><t:template><Text text="{conference>partner}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Produto" width="8rem"><t:template><Text text="{conference>itemCode}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Descrição" width="16rem"><t:template><Text text="{conference>itemName}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="CFOP" width="5rem"><t:template><Text text="{conference>cfop}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="CST ICMS" width="5rem"><t:template><Text text="{conference>cstIcms}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Valor operação" width="9rem" hAlign="End"><t:template><Text text="{ path: 'conference>operationValue', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Base ICMS" width="9rem" hAlign="End"><t:template><Text text="{ path: 'conference>icmsBase', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Alíq. ICMS" width="6rem" hAlign="End"><t:template><Text text="{ path: 'conference>icmsRate', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+								<t:Column label="ICMS" width="8rem" hAlign="End"><t:template><Text text="{ path: 'conference>icmsValue', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+								<t:Column label="CST PIS" width="5rem"><t:template><Text text="{conference>cstPis}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="PIS" width="7rem" hAlign="End"><t:template><Text text="{ path: 'conference>pisValue', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+								<t:Column label="CST COFINS" width="5rem"><t:template><Text text="{conference>cstCofins}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="COFINS" width="7rem" hAlign="End"><t:template><Text text="{ path: 'conference>cofinsValue', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Tipo" width="6rem"><t:template><Text text="{conference>documentType}" wrapping="false"/></t:template></t:Column>
+						</t:columns>
+					</t:Table>
+					</IconTabFilter>
+					<IconTabFilter key="summary" text="Resumo CST/CFOP">
+					<t:Table id="summaryTable" rows="{conference>/summary}" selectionMode="None" class="sapUiSizeCondensed" visibleRowCountMode="Auto" alternateRowColors="true" noData="{= ${conference>/searched} ? 'Nenhum registro no período.' : 'Consulte um mês para ver os dados.' }">
+						<t:extension>
+							<OverflowToolbar>
+								<Title text="{= ${conference>/summary}.length } linha(s)"/>
+								<ToolbarSpacer/>
+								<Button type="Transparent" text="Exportar Excel" press=".onExport('summary')"/>
+							</OverflowToolbar>
+						</t:extension>
+						<t:columns>
+								<t:Column label="Dir." width="4rem"><t:template><Text text="{conference>direction}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="CST ICMS" width="6rem"><t:template><Text text="{conference>cstIcms}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="CFOP" width="6rem"><t:template><Text text="{conference>cfop}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Alíq. ICMS" width="7rem" hAlign="End"><t:template><Text text="{ path: 'conference>icmsRate', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Valor operação" width="10rem" hAlign="End"><t:template><Text text="{ path: 'conference>operationValue', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Base ICMS" width="10rem" hAlign="End"><t:template><Text text="{ path: 'conference>icmsBase', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+								<t:Column label="ICMS" width="10rem" hAlign="End"><t:template><Text text="{ path: 'conference>icmsValue', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+						</t:columns>
+					</t:Table>
+					</IconTabFilter>
+					<IconTabFilter key="assessment" text="Apuração ICMS">
+						<HBox class="sapUiSmallMargin" wrap="Wrap">
+							<ObjectNumber class="sapUiMediumMarginEnd" state="Error" unit="Débitos" emphasized="true"
+								number="{ path: 'conference>/assessmentTotals/debits', formatter: 'formatter.formatDecimal2' }"/>
+							<ObjectNumber class="sapUiMediumMarginEnd" state="Success" unit="Créditos" emphasized="true"
+								number="{ path: 'conference>/assessmentTotals/credits', formatter: 'formatter.formatDecimal2' }"/>
+							<ObjectNumber emphasized="true" unit="Saldo (positivo = a recolher)"
+								number="{ path: 'conference>/assessmentTotals/balance', formatter: 'formatter.formatDecimal2' }"/>
+						</HBox>
+					<t:Table id="assessmentTable" rows="{conference>/assessment}" selectionMode="None" class="sapUiSizeCondensed" visibleRowCountMode="Auto" alternateRowColors="true" noData="{= ${conference>/searched} ? 'Nenhum registro no período.' : 'Consulte um mês para ver os dados.' }">
+						<t:extension>
+							<OverflowToolbar>
+								<Title text="{= ${conference>/assessment}.length } linha(s)"/>
+								<ToolbarSpacer/>
+								<Button type="Transparent" text="Exportar Excel" press=".onExport('assessment')"/>
+							</OverflowToolbar>
+						</t:extension>
+						<t:columns>
+								<t:Column label="CFOP" width="6rem"><t:template><Text text="{conference>cfop}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Valor operação" width="11rem" hAlign="End"><t:template><Text text="{ path: 'conference>operationValue', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Débito (saídas)" width="11rem" hAlign="End"><t:template><Text text="{ path: 'conference>debit', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Crédito (entradas)" width="11rem" hAlign="End"><t:template><Text text="{ path: 'conference>credit', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+						</t:columns>
+					</t:Table>
+					</IconTabFilter>
+					<IconTabFilter key="r2055" text="R-2055">
+					<t:Table id="r2055Table" rows="{conference>/r2055}" selectionMode="None" class="sapUiSizeCondensed" visibleRowCountMode="Auto" alternateRowColors="true" noData="{= ${conference>/searched} ? 'Nenhum registro no período.' : 'Consulte um mês para ver os dados.' }">
+						<t:extension>
+							<OverflowToolbar>
+								<Title text="{= ${conference>/r2055}.length } linha(s)"/>
+								<ToolbarSpacer/>
+								<Button type="Transparent" text="Exportar Excel" press=".onExport('r2055')"/>
+							</OverflowToolbar>
+						</t:extension>
+						<t:columns>
+								<t:Column label="Código" width="8rem"><t:template><Text text="{conference>cardCode}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Produtor" width="20rem"><t:template><Text text="{conference>cardName}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="CPF/CNPJ" width="11rem"><t:template><Text text="{conference>taxId}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Enquadramento" width="12rem"><t:template><Text text="{conference>producerType}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Base" width="9rem" hAlign="End"><t:template><Text text="{ path: 'conference>base', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+								<t:Column label="INSS" width="8rem" hAlign="End"><t:template><Text text="{ path: 'conference>inss', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+								<t:Column label="RAT" width="8rem" hAlign="End"><t:template><Text text="{ path: 'conference>rat', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+								<t:Column label="SENAR" width="8rem" hAlign="End"><t:template><Text text="{ path: 'conference>senar', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Total" width="9rem" hAlign="End"><t:template><Text text="{ path: 'conference>total', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+						</t:columns>
+					</t:Table>
+					</IconTabFilter>
+					<IconTabFilter key="issues" text="Inconsistências" count="{= ${conference>/issues}.length }" iconColor="{= ${conference>/issues}.length &gt; 0 ? 'Critical' : 'Default' }">
+					<t:Table id="issuesTable" rows="{conference>/issues}" selectionMode="None" class="sapUiSizeCondensed" visibleRowCountMode="Auto" alternateRowColors="true" noData="{= ${conference>/searched} ? 'Nenhum registro no período.' : 'Consulte um mês para ver os dados.' }">
+						<t:extension>
+							<OverflowToolbar>
+								<Title text="{= ${conference>/issues}.length } linha(s)"/>
+								<ToolbarSpacer/>
+								<Button type="Transparent" text="Exportar Excel" press=".onExport('issues')"/>
+							</OverflowToolbar>
+						</t:extension>
+						<t:columns>
+								<t:Column label="Dir." width="4rem"><t:template><Text text="{conference>direction}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Data" width="7rem" hAlign="Center"><t:template><Text text="{ path: 'conference>date', formatter: 'formatter.formatDate' }" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Número" width="8rem"><t:template><Text text="{conference>number}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Nº interno" width="8rem"><t:template><Text text="{conference>internalNumber}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Parceiro" width="16rem"><t:template><Text text="{conference>partner}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Produto" width="8rem"><t:template><Text text="{conference>itemCode}" wrapping="false"/></t:template></t:Column>
+								<t:Column label="Inconsistência" width="36rem"><t:template><Text text="{conference>rule}" wrapping="false"/></t:template></t:Column>
+						</t:columns>
+					</t:Table>
+					</IconTabFilter>
+				</items>
+			</IconTabBar>
+		</content>
+	</Page>
+
+</mvc:View>

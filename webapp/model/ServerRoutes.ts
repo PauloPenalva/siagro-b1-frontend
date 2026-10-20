@@ -2,6 +2,10 @@ export default {
   login: '/security/auth/login',
   // Painel da home (só STANDALONE; 404 em SAPB1).
   dashboard: '/reports/Dashboard',
+  fiscalConference: '/reports/FiscalConference',
+  fiscalKardex: '/reports/FiscalKardex',
+  fiscalInventory: '/reports/FiscalInventory',
+  fiscalInventoryBook: '/reports/FiscalInventory/Book',
   userInfo: '/security/auth/status',
   systemInfo: '/security/auth/info',
   logout: '/security/auth/logout',
