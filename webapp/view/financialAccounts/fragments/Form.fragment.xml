@@ -57,7 +57,9 @@
                 value="{BranchCode}"
                 showValueHelp="true"
                 showClearIcon="true"
+                valueHelpOnly="true"
                 editable="{ui>/editable}"
+                liveChange=".onBranchChange"
                 change=".onBranchChange"
                 valueHelpRequest=".openBranchsValueHelp"/>
             </f:fields>

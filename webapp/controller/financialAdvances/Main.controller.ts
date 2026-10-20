@@ -73,7 +73,9 @@ export default class Main extends FinancialDocumentsBaseController {
   /** Trocar o vínculo descarta o que só valia do outro lado: contrato escolhido ou parceiro digitado. */
   onAdvanceLinkChange(): void {
     this.onAdvanceContractTypeChange();
-    (this.getModel("viewModel") as JSONModel).setProperty("/advanceDialog/cardCode", "");
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    viewModel.setProperty("/advanceDialog/cardCode", "");
+    viewModel.setProperty("/advanceDialog/branchCode", "");
   }
 
   /** Parceiro do adiantamento sem contrato. */
