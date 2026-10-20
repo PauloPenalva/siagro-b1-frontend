@@ -1,0 +1,40 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+	<Dialog title="Transferências" contentWidth="60rem" class="sapUiContentPadding">
+		<HBox alignItems="Center" class="sapUiSmallMarginBottom">
+			<Label text="De" labelFor="transfersFrom" class="sapUiTinyMarginEnd"/>
+			<DatePicker id="transfersFrom" value="{viewModel>/transfers/from}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" width="10rem"/>
+			<Label text="Até" labelFor="transfersTo" class="sapUiSmallMarginBegin sapUiTinyMarginEnd"/>
+			<DatePicker id="transfersTo" value="{viewModel>/transfers/to}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" width="10rem"/>
+			<Button text="Filtrar" class="sapUiSmallMarginBegin" press=".onFilterTransfers"/>
+		</HBox>
+		<Table id="transfersTable" mode="SingleSelectLeft" class="sapUiSizeCondensed"
+			items="{path: '/FinancialAccountTransfers', sorter: {path: 'TransferDate', descending: true}}">
+			<columns>
+				<Column width="8rem"><Text text="Data"/></Column>
+				<Column><Text text="Origem"/></Column>
+				<Column><Text text="Destino"/></Column>
+				<Column hAlign="End" width="9rem"><Text text="Valor"/></Column>
+				<Column><Text text="Descrição"/></Column>
+			</columns>
+			<items>
+				<ColumnListItem>
+					<cells>
+						<Text text="{path: 'TransferDate', type: 'sap.ui.model.odata.type.Date'}"/>
+						<Text text="{FromAccountCode}"/>
+						<Text text="{ToAccountCode}"/>
+						<Text text="{path: 'Amount', type: 'sap.ui.model.odata.type.Double', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}"/>
+						<Text text="{Description}"/>
+					</cells>
+				</ColumnListItem>
+			</items>
+		</Table>
+		<beginButton>
+			<Button type="Reject" text="Excluir" press=".onDeleteTransfer"/>
+		</beginButton>
+		<endButton>
+			<Button text="Fechar" press=".onCloseTransfers"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>
