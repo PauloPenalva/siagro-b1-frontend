@@ -1,0 +1,79 @@
+<mvc:View
+	controllerName="siagrob1.controller.reports.financialSettlements.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:form="sap.ui.layout.form">
+	<Page title="{params>/Title}" busyIndicatorDelay="0" busy="{ui>/busy}">
+		<form:Form editable="true">
+			<form:layout>
+				<form:ColumnLayout columnsM="1" columnsL="2" columnsXL="2"/>
+			</form:layout>
+			<form:formContainers>
+				<form:FormContainer title="Filtros">
+					<form:formElements>
+						<form:FormElement label="De">
+							<form:fields>
+								<DatePicker value="{params>/DateFrom}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" required="true"/>
+							</form:fields>
+						</form:FormElement>
+						<form:FormElement label="Até">
+							<form:fields>
+								<DatePicker value="{params>/DateTo}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" required="true"/>
+							</form:fields>
+						</form:FormElement>
+						<form:FormElement label="Títulos">
+							<form:fields>
+								<SegmentedButton selectedKey="{params>/Mode}">
+									<items>
+										<SegmentedButtonItem key="Firm" text="Firmes"/>
+										<SegmentedButtonItem key="Provisional" text="Provisórios"/>
+									</items>
+								</SegmentedButton>
+							</form:fields>
+						</form:FormElement>
+						<form:FormElement label="Parceiro">
+							<form:fields>
+								<Input
+									value="{params>/CardCode}"
+									description="{params>/CardName}"
+									showValueHelp="true"
+									valueHelpOnly="true"
+									showClearIcon="true"
+									liveChange=".onPartnerLiveChange"
+									valueHelpRequest=".openPartnerValueHelp">
+									<customData>
+										<core:CustomData key="descriptionProperty" value="CardName:CardName"/>
+									</customData>
+								</Input>
+							</form:fields>
+						</form:FormElement>
+						<form:FormElement label="Conta financeira">
+							<form:fields>
+								<Input
+									value="{params>/AccountCode}"
+									description="{params>/AccountName}"
+									showValueHelp="true"
+									valueHelpOnly="true"
+									showClearIcon="true"
+									liveChange=".onAccountLiveChange"
+									valueHelpRequest=".openAccountValueHelp">
+									<customData>
+										<core:CustomData key="descriptionProperty" value="AccountName:Name"/>
+									</customData>
+								</Input>
+							</form:fields>
+						</form:FormElement>
+					</form:formElements>
+				</form:FormContainer>
+			</form:formContainers>
+		</form:Form>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Imprimir" type="Emphasized" press=".onPrintReport"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>
