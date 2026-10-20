@@ -9,6 +9,9 @@ import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import formatter from "siagrob1/model/formatter";
 import { isComplementType, missingUsageMessage } from "siagrob1/helpers/PurchaseInvoiceNfeHelpers";
 import { blankItemRow, draftItemRows, ImportedInvoiceItem, remittanceNumbersByItem, toNumber } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
+import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
+import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { BaseController } from "./BaseController";
 
 /** Rascunho devolvido pela leitura do XML — não é gravado ainda. */
@@ -58,10 +61,45 @@ export default class Add extends BaseController {
   onInit(): void {
     this.bindTransportGroupVisibility();
     this.getRouter().getRoute("purchaseInvoicesAdd")
-      .attachPatternMatched(() => void this.newRouteMatched());
+      .attachPatternMatched((ev: Route$PatternMatchedEvent) => void this.newRouteMatched(ev));
   }
 
-  private async newRouteMatched() {
+  /**
+   * Com `?dfe=<Id>` (vindo da Manifestação do Destinatário) o rascunho nasce do XML do DF-e, pelo mesmo
+   * caminho do Importar XML. Sem o parâmetro nada muda.
+   */
+  private async newRouteMatched(ev: Route$PatternMatchedEvent) {
+    const query = (ev.getParameter("arguments") as { "?query"?: { dfe?: string } })["?query"];
+    await this.prepareNewDraft();
+
+    if (query?.dfe) {
+      await this.importFromReceivedDfe(query.dfe);
+    }
+  }
+
+  private async importFromReceivedDfe(dfeId: string) {
+    let xmlContent: string;
+    let fileName: string;
+
+    this.setBusy(true);
+    try {
+      const result = await sendJson("GET", `${ServerRoutes.receivedDfesXml}(Id=${encodeURIComponent(dfeId)})`);
+      if (!result.ok) {
+        MessageBox.error(result.message);
+        return;
+      }
+
+      const data = odataValue<Record<string, string>>(result.data);
+      xmlContent = data.XmlContent ?? data.xmlContent;
+      fileName = data.FileName ?? data.fileName;
+    } finally {
+      this.setBusy(false);
+    }
+
+    await this.applyImportedXml(xmlContent, fileName);
+  }
+
+  private async prepareNewDraft() {
     this.clearStates("purchaseInvoicesForm");
 
     const uiModel = this.getModel("ui") as JSONModel;

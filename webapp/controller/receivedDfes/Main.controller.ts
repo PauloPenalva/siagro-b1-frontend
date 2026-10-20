@@ -418,7 +418,7 @@ export default class Main extends CommonController {
   onEnter(): void {
     const row = this.selectedRows()[0];
     if (row) {
-      this.navTo("purchaseInvoicesAdd");
+      this.navTo("purchaseInvoicesAdd", { "?query": { dfe: row.Id } });
     }
   }
 

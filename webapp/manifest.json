@@ -669,7 +669,7 @@
           "target": "purchaseInvoices"
         },
         {
-          "pattern": "purchase-invoices/add",
+          "pattern": "purchase-invoices/add:?query:",
           "name": "purchaseInvoicesAdd",
           "target": "purchaseInvoicesAdd"
         },
