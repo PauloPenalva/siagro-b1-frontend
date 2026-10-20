@@ -4,6 +4,8 @@ export default {
   dashboard: '/reports/Dashboard',
   fiscalConference: '/reports/FiscalConference',
   fiscalKardex: '/reports/FiscalKardex',
+  fiscalInventory: '/reports/FiscalInventory',
+  fiscalInventoryBook: '/reports/FiscalInventory/Book',
   userInfo: '/security/auth/status',
   systemInfo: '/security/auth/info',
   logout: '/security/auth/logout',

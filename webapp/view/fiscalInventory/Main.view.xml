@@ -1,0 +1,56 @@
+<mvc:View
+	controllerName="siagrob1.controller.fiscalInventory.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table">
+
+	<Page title="Inventário em Data" busyIndicatorDelay="0" busy="{ui>/busy}" enableScrolling="false">
+		<subHeader>
+			<OverflowToolbar>
+				<Label text="Filial" required="true" labelFor="branchInput"/>
+				<Input id="branchInput" width="8rem" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBranchsValueHelp" value="{params>/BranchCode}">
+					<customData>
+						<core:CustomData key="descriptionProperty" value="BranchName:ShortName"/>
+					</customData>
+				</Input>
+				<Input width="14rem" value="{params>/BranchName}" editable="false"/>
+				<Label text="Data" required="true" labelFor="refDate"/>
+				<DatePicker id="refDate" width="9rem" value="{params>/Date}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" required="true"/>
+				<Label text="Produto" labelFor="itemInput"/>
+				<Input id="itemInput" width="10rem" showValueHelp="true" valueHelpOnly="true" showClearIcon="true" valueHelpRequest=".openItemValueHelp" value="{params>/ItemCode}"/>
+				<Button type="Emphasized" icon="sap-icon://search" text="Consultar" press=".onSearch"/>
+			</OverflowToolbar>
+		</subHeader>
+		<content>
+			<VBox height="100%">
+				<MessageStrip visible="{= ${inventory>/pending}.length > 0 }" type="Warning" showIcon="true" class="sapUiTinyMargin"
+					text="{inventory>/pendingText}"/>
+				<t:Table id="inventoryTable" rows="{inventory>/rows}" selectionMode="None" class="sapUiSizeCondensed" visibleRowCountMode="Auto" alternateRowColors="false" noData="{= ${inventory>/searched} ? 'Nenhum produto com saldo na data.' : 'Informe a filial e a data e consulte.' }">
+					<t:extension>
+						<OverflowToolbar>
+							<Title text="{= ${inventory>/rows}.length } produto(s)"/>
+							<ToolbarSpacer/>
+							<Button type="Transparent" icon="sap-icon://excel-attachment" text="Exportar Excel" enabled="{= ${inventory>/rows}.length > 0 }" press=".onExport"/>
+							<Button type="Transparent" icon="sap-icon://print" text="Imprimir livro" enabled="{= !${params>/ItemCode} }" tooltip="{= ${params>/ItemCode} ? 'O livro é sempre da filial inteira: limpe o produto.' : '' }" press=".onPrintBook"/>
+						</OverflowToolbar>
+					</t:extension>
+					<t:footer>
+						<Text text="{ path: 'inventory>/totalValue', formatter: '.formatTotal' }" class="sapUiTinyMarginBeginEnd"/>
+					</t:footer>
+					<t:columns>
+						<t:Column label="NCM" width="8rem"><t:template><Text text="{inventory>ncm}" wrapping="false"/></t:template></t:Column>
+						<t:Column label="Produto" width="9rem"><t:template><Text text="{inventory>itemCode}" wrapping="false"/></t:template></t:Column>
+						<t:Column label="Descrição" width="24rem"><t:template><Text text="{inventory>itemName}" wrapping="false"/></t:template></t:Column>
+						<t:Column label="UM" width="4rem"><t:template><Text text="{inventory>unitOfMeasureCode}" wrapping="false"/></t:template></t:Column>
+						<t:Column label="Quantidade" width="9rem" hAlign="End"><t:template><Text text="{ path: 'inventory>quantity', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 3, maxFractionDigits: 3 } }" wrapping="false"/></t:template></t:Column>
+						<t:Column label="Custo unitário" width="9rem" hAlign="End"><t:template><Text text="{ path: 'inventory>unitCost', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 6, maxFractionDigits: 6 } }" wrapping="false"/></t:template></t:Column>
+						<t:Column label="Valor" width="10rem" hAlign="End"><t:template><Text text="{ path: 'inventory>value', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false"/></t:template></t:Column>
+					</t:columns>
+				</t:Table>
+			</VBox>
+		</content>
+	</Page>
+
+</mvc:View>

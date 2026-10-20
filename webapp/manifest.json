@@ -1275,6 +1275,11 @@
           "target": "fiscalKardex"
         },
         {
+          "pattern": "fiscal-inventory",
+          "name": "fiscalInventory",
+          "target": "fiscalInventory"
+        },
+        {
           "pattern": "financial-account-movements",
           "name": "financialAccountMovements",
           "target": "financialAccountMovements"
@@ -2697,6 +2702,12 @@
           "id": "fiscalKardex",
           "level": 1,
           "name": "siagrob1.view.fiscalKardex.Main",
+          "clearControlAggregation": true
+        },
+        "fiscalInventory": {
+          "id": "fiscalInventory",
+          "level": 1,
+          "name": "siagrob1.view.fiscalInventory.Main",
           "clearControlAggregation": true
         },
         "fiscalConference": {
