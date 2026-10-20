@@ -56,8 +56,9 @@
               <Input
                 value="{BranchCode}"
                 showValueHelp="true"
-                valueHelpOnly="true"
+                showClearIcon="true"
                 editable="{ui>/editable}"
+                change=".onBranchChange"
                 valueHelpRequest=".openBranchsValueHelp"/>
             </f:fields>
           </f:FormElement>

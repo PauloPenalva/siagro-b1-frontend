@@ -1,4 +1,6 @@
 import Input from "sap/m/Input";
+import { InputBase$ChangeEvent } from "sap/m/InputBase";
+import Context from "sap/ui/model/odata/v4/Context";
 import Select from "sap/m/Select";
 import { ValueState } from "sap/ui/core/library";
 import Form from "sap/ui/layout/form/Form";
@@ -15,6 +17,20 @@ import CommonController from "siagrob1/controller/common/CommonController";
  * obrigatórios fica aqui, percorrendo a hierarquia certa.
  */
 export abstract class BaseController extends CommonController {
+
+  /**
+   * Filial é opcional na conta. Campo limpo precisa virar `null`, nunca "": a coluna é FK para
+   * BRANCHES e "" não casa com nenhuma filial, então o backend recusaria a gravação.
+   * Vale para Add (create) e Edit (PATCH), os dois ligados ao mesmo contexto OData.
+   */
+  onBranchChange(ev: InputBase$ChangeEvent): void {
+    const ctx = ev.getSource().getBindingContext() as Context;
+    if (!ctx) return;
+
+    if (!(ev.getParameter("value") ?? "").trim()) {
+      void ctx.setProperty("BranchCode", null);
+    }
+  }
 
   /** Valida os campos `required` de um `sap.ui.layout.form.Form`. */
   protected validateFinancialForm(sFormId: string): boolean {
