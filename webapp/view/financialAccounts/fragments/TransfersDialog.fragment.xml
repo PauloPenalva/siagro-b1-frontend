@@ -21,7 +21,7 @@
 			<items>
 				<ColumnListItem>
 					<cells>
-						<Text text="{path: 'TransferDate', type: 'sap.ui.model.odata.type.Date'}"/>
+						<Text text="{path: 'TransferDate', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: {precision: 7}, formatOptions: {pattern: 'dd/MM/yyyy'}}"/>
 						<Text text="{FromAccountCode}"/>
 						<Text text="{ToAccountCode}"/>
 						<Text text="{path: 'Amount', type: 'sap.ui.model.odata.type.Double', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}}"/>

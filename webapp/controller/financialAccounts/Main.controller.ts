@@ -120,6 +120,7 @@ export default class Main extends BaseController {
 
     this.onCloseTransfer();
     MessageToast.show("Transferência registrada.");
+    if (this._transfersDialog?.isOpen()) (this.transfersTable().getBinding("items") as ODataListBinding)?.refresh();
   }
 
   async onOpenTransfers(): Promise<void> {
@@ -142,8 +143,15 @@ export default class Main extends BaseController {
   onFilterTransfers(): void {
     const range = this.viewModel().getProperty("/transfers") as { from: string; to: string };
     const filters: Filter[] = [];
-    if (range.from) filters.push(new Filter("TransferDate", FilterOperator.GE, range.from));
-    if (range.to) filters.push(new Filter("TransferDate", FilterOperator.LE, range.to));
+    // Meia-noite local; "ate" inclui o ultimo dia (LT do dia seguinte).
+    if (range.from) {
+      const [y, m, d] = range.from.split("-").map(Number);
+      filters.push(new Filter("TransferDate", FilterOperator.GE, new Date(y, m - 1, d)));
+    }
+    if (range.to) {
+      const [y, m, d] = range.to.split("-").map(Number);
+      filters.push(new Filter("TransferDate", FilterOperator.LT, new Date(y, m - 1, d + 1)));
+    }
     (this.transfersTable().getBinding("items") as ListBinding).filter(filters);
   }
 
