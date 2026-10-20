@@ -131,6 +131,9 @@ export default {
   contractMonthlyPositionReport: '/reports/ContractMonthlyPosition',
   funruralWithholdingReport: '/reports/FunruralWithholding',
   financialAccountStatementReport: '/reports/FinancialAccountStatement',
+  financialPortfolioReport: '/reports/FinancialPortfolio',
+  financialSettlementsReport: '/reports/FinancialSettlements',
+  partnerStatementReport: '/reports/PartnerStatement',
   royaltyPendingReport: '/reports/RoyaltyPending',
 
   purchaseContractsPriceFixations: '/odata/PurchaseContractsPriceFixations',
