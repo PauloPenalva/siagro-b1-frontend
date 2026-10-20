@@ -62,9 +62,10 @@ export default class Main extends CommonController {
 			return;
 		}
 		const filters: Filter[] = [];
-		// Meia-noite local; "até" inclui o último dia (LT do dia seguinte).
-		if (f.DateFrom) filters.push(new Filter("TransferDate", FilterOperator.GE, Main.localMidnight(f.DateFrom)));
-		if (f.DateTo) filters.push(new Filter("TransferDate", FilterOperator.LT, Main.localMidnight(f.DateTo, 1)));
+		// Meia-noite local; "até" inclui o último dia (LT do dia seguinte). O valor vai como literal ISO do
+		// Edm.DateTimeOffset: um Date cru vira o texto do JavaScript e o servidor recusa a URL.
+		if (f.DateFrom) filters.push(new Filter("TransferDate", FilterOperator.GE, Main.localMidnight(f.DateFrom).toISOString()));
+		if (f.DateTo) filters.push(new Filter("TransferDate", FilterOperator.LT, Main.localMidnight(f.DateTo, 1).toISOString()));
 		const account = f.AccountCode?.trim();
 		if (account) {
 			filters.push(new Filter({
@@ -77,7 +78,8 @@ export default class Main extends CommonController {
 		}
 		const binding = this.table().getBinding("rows") as ODataListBinding;
 		if (!binding) return;
-		binding.filter(filters);
+		// Filtros soltos no mesmo campo saem com "or": embrulha tudo em "and".
+		binding.filter(filters.length ? [new Filter({ filters, and: true })] : []);
 		if (binding.isSuspended()) binding.resume();
 		else binding.refresh();
 	}
