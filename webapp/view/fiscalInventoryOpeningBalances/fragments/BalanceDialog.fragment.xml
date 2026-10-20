@@ -1,0 +1,56 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+  <Dialog title="Saldo inicial do estoque fiscal" contentWidth="32rem" draggable="true">
+    <content>
+      <f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanM="4" labelSpanS="12">
+        <f:content>
+          <Label text="Filial" required="true" />
+          <Input
+            value="{balance>/BranchCode}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openBranchsValueHelp" />
+          <Label text="Produto" required="true" />
+          <Input
+            value="{balance>/ItemCode}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openItemValueHelp">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="ItemName" />
+            </customData>
+          </Input>
+          <Label text="Descrição" />
+          <Input value="{balance>/ItemName}" editable="false" />
+          <Label text="Data do saldo" required="true" />
+          <DatePicker
+            value="{balance>/BalanceDate}"
+            valueFormat="yyyy-MM-dd"
+            displayFormat="dd/MM/yyyy" />
+          <Label text="Quantidade" required="true" />
+          <Input value="{balance>/Quantity}" type="Number" />
+          <Label text="Valor total" required="true" />
+          <Input value="{balance>/TotalValue}" type="Number" />
+          <Label text="Unidade de medida" />
+          <Input
+            value="{balance>/UnitOfMeasureCode}"
+            maxLength="4"
+            placeholder="Vazio = unidade comercial do produto"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            showClearIcon="true"
+            valueHelpRequest=".openUnitsOfMeasureValueHelp" />
+        </f:content>
+      </f:SimpleForm>
+    </content>
+    <beginButton>
+      <Button text="Confirmar" type="Emphasized" press=".onConfirmBalance" />
+    </beginButton>
+    <endButton>
+      <Button text="Cancelar" press=".onCancelBalance" />
+    </endButton>
+  </Dialog>
+</core:FragmentDefinition>

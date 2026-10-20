@@ -3,6 +3,7 @@ export default {
   // Painel da home (só STANDALONE; 404 em SAPB1).
   dashboard: '/reports/Dashboard',
   fiscalConference: '/reports/FiscalConference',
+  fiscalKardex: '/reports/FiscalKardex',
   userInfo: '/security/auth/status',
   systemInfo: '/security/auth/info',
   logout: '/security/auth/logout',

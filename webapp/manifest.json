@@ -1265,6 +1265,16 @@
           "target": "fiscalConference"
         },
         {
+          "pattern": "fiscal-inventory-opening-balances",
+          "name": "fiscalInventoryOpeningBalances",
+          "target": "fiscalInventoryOpeningBalances"
+        },
+        {
+          "pattern": "fiscal-kardex",
+          "name": "fiscalKardex",
+          "target": "fiscalKardex"
+        },
+        {
           "pattern": "financial-account-movements",
           "name": "financialAccountMovements",
           "target": "financialAccountMovements"
@@ -2675,6 +2685,18 @@
           "id": "financialAdvances",
           "level": 1,
           "name": "siagrob1.view.financialAdvances.Main",
+          "clearControlAggregation": true
+        },
+        "fiscalInventoryOpeningBalances": {
+          "id": "fiscalInventoryOpeningBalances",
+          "level": 1,
+          "name": "siagrob1.view.fiscalInventoryOpeningBalances.Main",
+          "clearControlAggregation": true
+        },
+        "fiscalKardex": {
+          "id": "fiscalKardex",
+          "level": 1,
+          "name": "siagrob1.view.fiscalKardex.Main",
           "clearControlAggregation": true
         },
         "fiscalConference": {
