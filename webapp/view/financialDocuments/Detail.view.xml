@@ -101,7 +101,7 @@
                     &amp;&amp; ${path: 'AvailableAdvanceAmount', targetType: 'any'} > 0 }"
           press=".onRefundAdvance" />
         <Button
-          text="Vincular a outro contrato"
+          text="{= ${path: 'PurchaseContractKey', targetType: 'any'} == null &amp;&amp; ${path: 'SalesContractKey', targetType: 'any'} == null ? 'Vincular a contrato' : 'Vincular a outro contrato' }"
           icon="sap-icon://chain-link"
           visible="{= ${path: 'Nature', targetType: 'any'} === 'Advance'
                     &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Canceled'
