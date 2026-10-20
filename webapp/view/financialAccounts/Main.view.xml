@@ -41,8 +41,6 @@
 						<ToolbarSpacer />
 						<Button type="Emphasized" icon="sap-icon://add" text="Incluir" press=".onCreate"/>
 						<Button type="Transparent" text="Editar" press=".onEdit"/>
-						<Button type="Transparent" text="Transferir" press=".onTransfer"/>
-						<Button type="Transparent" text="Transferências" press=".onOpenTransfers"/>
 						<Button type="Transparent" text="Atualizar" press=".onRefresh"/>
 					</OverflowToolbar>
 				</t:extension>

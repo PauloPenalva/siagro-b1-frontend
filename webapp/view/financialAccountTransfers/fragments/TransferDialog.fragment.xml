@@ -12,31 +12,31 @@
 					<form:formElements>
 						<form:FormElement label="Conta de origem">
 							<form:fields>
-								<Input value="{viewModel>/transfer/from}" required="true" showValueHelp="true"
+								<Input value="{transfer>/from}" required="true" showValueHelp="true"
 									valueHelpRequest=".onFromAccountValueHelp"/>
 							</form:fields>
 						</form:FormElement>
 						<form:FormElement label="Conta de destino">
 							<form:fields>
-								<Input value="{viewModel>/transfer/to}" required="true" showValueHelp="true"
+								<Input value="{transfer>/to}" required="true" showValueHelp="true"
 									valueHelpRequest=".onToAccountValueHelp"/>
 							</form:fields>
 						</form:FormElement>
 						<form:FormElement label="Data">
 							<form:fields>
-								<DatePicker value="{viewModel>/transfer/date}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" required="true"/>
+								<DatePicker value="{transfer>/date}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" required="true"/>
 							</form:fields>
 						</form:FormElement>
 						<form:FormElement label="Valor">
 							<form:fields>
-								<StepInput value="{viewModel>/transfer/amount}" min="0" displayValuePrecision="2" step="1" required="true"/>
+								<StepInput value="{transfer>/amount}" min="0" displayValuePrecision="2" step="1" required="true"/>
 							</form:fields>
 						</form:FormElement>
 						<form:FormElement label="Descrição">
-							<form:fields><Input value="{viewModel>/transfer/description}" maxLength="200"/></form:fields>
+							<form:fields><Input value="{transfer>/description}" maxLength="200"/></form:fields>
 						</form:FormElement>
 						<form:FormElement label="Observação">
-							<form:fields><TextArea value="{viewModel>/transfer/notes}" maxLength="500" rows="2" width="100%"/></form:fields>
+							<form:fields><TextArea value="{transfer>/notes}" maxLength="500" rows="2" width="100%"/></form:fields>
 						</form:FormElement>
 					</form:formElements>
 				</form:FormContainer>
