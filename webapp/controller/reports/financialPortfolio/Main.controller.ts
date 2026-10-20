@@ -1,14 +1,11 @@
 import MessageBox from "sap/m/MessageBox";
-import { Input$ValueHelpRequestEvent } from "sap/m/Input";
+import { Input$LiveChangeEvent, Input$ValueHelpRequestEvent } from "sap/m/Input";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import CommonController from "siagrob1/controller/common/CommonController";
 import { openPdfReport } from "siagrob1/helpers/PdfReportHelpers";
+import { DIRECTION, MODE } from "siagrob1/helpers/FinancialReportHelpers";
 import { monthRange } from "siagrob1/helpers/FinancialAccountMovementHelpers";
-
-/** Espelha FinancialDirection / FinancialPositionMode do servidor (a API de relatórios lê enum numérico). */
-const DIRECTION = { Receivable: 0, Payable: 1 } as const;
-const MODE = { Firm: 0, Provisional: 1 } as const;
 
 type Params = { Title: string; Direction: number; DateFrom: string; DateTo: string; Mode: string; CardCode: string; CardName: string };
 
@@ -36,6 +33,11 @@ export default class Main extends CommonController {
 			Title: route.title, Direction: route.direction, DateFrom: from, DateTo: to,
 			Mode: "Firm", CardCode: "", CardName: "",
 		});
+	}
+
+	/** Campo é só value help: ao limpar pelo ícone, zera também a descrição para o envio sair nulo. */
+	onPartnerLiveChange(ev: Input$LiveChangeEvent): void {
+		if (!ev.getParameter("value")) (this.getModel("params") as JSONModel).setProperty("/CardName", "");
 	}
 
 	async openPartnerValueHelp(ev: Input$ValueHelpRequestEvent): Promise<void> {

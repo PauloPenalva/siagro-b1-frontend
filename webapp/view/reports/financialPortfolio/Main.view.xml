@@ -40,6 +40,8 @@
 									description="{params>/CardName}"
 									showValueHelp="true"
 									valueHelpOnly="true"
+									showClearIcon="true"
+									liveChange=".onPartnerLiveChange"
 									valueHelpRequest=".openPartnerValueHelp">
 									<customData>
 										<core:CustomData key="descriptionProperty" value="CardName:CardName"/>

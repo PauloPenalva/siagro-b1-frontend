@@ -40,6 +40,8 @@
 									description="{params>/CardName}"
 									showValueHelp="true"
 									valueHelpOnly="true"
+									showClearIcon="true"
+									liveChange=".onPartnerLiveChange"
 									valueHelpRequest=".openPartnerValueHelp">
 									<customData>
 										<core:CustomData key="descriptionProperty" value="CardName:CardName"/>
@@ -54,6 +56,8 @@
 									description="{params>/AccountName}"
 									showValueHelp="true"
 									valueHelpOnly="true"
+									showClearIcon="true"
+									liveChange=".onAccountLiveChange"
 									valueHelpRequest=".openAccountValueHelp">
 									<customData>
 										<core:CustomData key="descriptionProperty" value="AccountName:Name"/>

@@ -3,11 +3,8 @@ import { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import CommonController from "siagrob1/controller/common/CommonController";
 import { openPdfReport } from "siagrob1/helpers/PdfReportHelpers";
+import { DIRECTION, MODE } from "siagrob1/helpers/FinancialReportHelpers";
 import { monthRange } from "siagrob1/helpers/FinancialAccountMovementHelpers";
-
-/** Espelha FinancialDirection / FinancialPositionMode do servidor (a API de relatórios lê enum numérico). */
-const DIRECTION = { Receivable: 0, Payable: 1 } as const;
-const MODE = { Firm: 0, Provisional: 1 } as const;
 
 type Params = { Direction: string; DateFrom: string; DateTo: string; Mode: string; CardCode: string; CardName: string };
 
