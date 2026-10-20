@@ -135,6 +135,9 @@ export default {
   contractMonthlyPositionReport: '/reports/ContractMonthlyPosition',
   funruralWithholdingReport: '/reports/FunruralWithholding',
   financialAccountStatementReport: '/reports/FinancialAccountStatement',
+  financialPortfolioReport: '/reports/FinancialPortfolio',
+  financialSettlementsReport: '/reports/FinancialSettlements',
+  partnerStatementReport: '/reports/PartnerStatement',
   royaltyPendingReport: '/reports/RoyaltyPending',
 
   purchaseContractsPriceFixations: '/odata/PurchaseContractsPriceFixations',
@@ -369,6 +372,14 @@ export default {
 
   // NF-e STANDALONE (sub-projeto 2a).
   paymentConditions: '/odata/PaymentConditions',
+  // Manifestação do destinatário (DF-e recebidos da SEFAZ).
+  receivedDfes: '/odata/ReceivedDfes',
+  receivedDfesSync: '/odata/ReceivedDfesSync',
+  receivedDfesManifest: '/odata/ReceivedDfesManifest',
+  receivedDfesXml: '/odata/ReceivedDfesXml',
+  branchDfeSyncStates: '/odata/BranchDfeSyncStates',
+  branchDfeSyncStatesSetSchedule: '/odata/BranchDfeSyncStatesSetSchedule',
+  purchaseInvoicesLookup: '/odata/PurchaseInvoices',
   branchNfeSettingsGet: '/odata/BranchNfeSettingsGet',
   branchNfeSettingsSave: '/odata/BranchNfeSettingsSave',
   branchNfeSettingsUploadCertificate: '/odata/BranchNfeSettingsUploadCertificate',

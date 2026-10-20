@@ -539,6 +539,11 @@
           "target": "purchaseFiscalReconciliations"
         },
         {
+          "pattern": "received-dfes",
+          "name": "receivedDfes",
+          "target": "receivedDfes"
+        },
+        {
           "pattern": "warehouse-reconciliations/new",
           "name": "warehouseReconciliationsNew",
           "target": "warehouseReconciliationsNew"
@@ -664,7 +669,7 @@
           "target": "purchaseInvoices"
         },
         {
-          "pattern": "purchase-invoices/add",
+          "pattern": "purchase-invoices/add:?query:",
           "name": "purchaseInvoicesAdd",
           "target": "purchaseInvoicesAdd"
         },
@@ -1300,6 +1305,31 @@
           "target": "financialAccountReconciliationsDetail"
         },
         {
+          "pattern": "receivables-report",
+          "name": "receivablesReport",
+          "target": "financialPortfolioReport"
+        },
+        {
+          "pattern": "payables-report",
+          "name": "payablesReport",
+          "target": "financialPortfolioReport"
+        },
+        {
+          "pattern": "receivable-settlements-report",
+          "name": "receivableSettlementsReport",
+          "target": "financialSettlementsReport"
+        },
+        {
+          "pattern": "payable-settlements-report",
+          "name": "payableSettlementsReport",
+          "target": "financialSettlementsReport"
+        },
+        {
+          "pattern": "partner-statement-report",
+          "name": "partnerStatementReport",
+          "target": "partnerStatementReport"
+        },
+        {
           "pattern": "financial-account-statement/report",
           "name": "financialAccountStatementReport",
           "target": "financialAccountStatementReport"
@@ -1765,6 +1795,12 @@
           "id": "purchaseFiscalReconciliations",
           "level": 1,
           "name": "siagrob1.view.purchaseFiscalReconciliations.Main",
+          "clearControlAggregation": true
+        },
+        "receivedDfes": {
+          "id": "receivedDfes",
+          "level": 1,
+          "name": "siagrob1.view.receivedDfes.Main",
           "clearControlAggregation": true
         },
         "warehouseReconciliationsNew": {
@@ -2738,6 +2774,24 @@
           "id": "financialAccountReconciliationsDetail",
           "level": 2,
           "name": "siagrob1.view.financialAccountReconciliations.Detail",
+          "clearControlAggregation": true
+        },
+        "financialPortfolioReport": {
+          "id": "financialPortfolioReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.financialPortfolio.Main",
+          "clearControlAggregation": true
+        },
+        "financialSettlementsReport": {
+          "id": "financialSettlementsReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.financialSettlements.Main",
+          "clearControlAggregation": true
+        },
+        "partnerStatementReport": {
+          "id": "partnerStatementReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.partnerStatement.Main",
           "clearControlAggregation": true
         },
         "financialAccountStatementReport": {
