@@ -111,6 +111,11 @@ export default class Main extends CommonController {
       MessageBox.warning("Informe a quantidade.");
       return;
     }
+    // Mesma escala da lista (3 casas): o gravado nunca passa do que a tela mostra.
+    if (!/^-?\d+([.,]\d{1,3})?$/.test(String(data.Quantity).trim())) {
+      MessageBox.warning("A quantidade aceita no máximo 3 casas decimais.");
+      return;
+    }
     if (data.TotalValue === "" || data.TotalValue == null) {
       MessageBox.warning("Informe o valor.");
       return;
