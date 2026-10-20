@@ -108,7 +108,7 @@ export default class Main extends CommonController {
 			}
 
 			rows.push({
-				...base, ...empty, rowType: "closing", date: toDate, kind: "Saldo final",
+				...base, ...empty, rowType: "closing", date: `${toDate}T00:00:00`, kind: "Saldo final",
 				unitCost: item.closingQuantity ? item.closingValue / item.closingQuantity : null,
 				balanceQuantity: item.closingQuantity, balanceValue: item.closingValue,
 			} as KardexRow);

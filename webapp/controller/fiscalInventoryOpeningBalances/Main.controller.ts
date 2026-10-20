@@ -107,6 +107,14 @@ export default class Main extends CommonController {
       MessageBox.warning("Informe o produto.");
       return;
     }
+    if (data.Quantity === "" || data.Quantity == null) {
+      MessageBox.warning("Informe a quantidade.");
+      return;
+    }
+    if (data.TotalValue === "" || data.TotalValue == null) {
+      MessageBox.warning("Informe o valor.");
+      return;
+    }
     if (!data.BalanceDate) {
       MessageBox.warning("Informe a data do saldo.");
       return;
@@ -115,7 +123,9 @@ export default class Main extends CommonController {
     const model = this.getView().getModel() as ODataModel;
     const groupId = model.getUpdateGroupId();
     const unit = data.UnitOfMeasureCode?.trim().toUpperCase();
-    const payload: Record<string, string | number> = {
+    // null explícito: unidade vazia limpa o campo e o servidor assume a comercial do produto.
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+    const payload: Record<string, string | number | null> = {
       BranchCode: data.BranchCode,
       ItemCode: data.ItemCode,
       BalanceDate: `${data.BalanceDate}T12:00:00Z`,
