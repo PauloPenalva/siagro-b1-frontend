@@ -10,7 +10,7 @@
 	}">
 
 	<Page title="Conferência Fiscal" busyIndicatorDelay="0" busy="{ui>/busy}" enableScrolling="false">
-		<content>
+		<subHeader>
 			<OverflowToolbar>
 				<Label text="Filial" labelFor="branchInput"/>
 				<Input id="branchInput" width="8rem" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBranchsValueHelp" value="{params>/BranchCode}">
@@ -23,10 +23,12 @@
 				<DatePicker id="monthPicker" width="9rem" value="{params>/Month}" valueFormat="yyyy-MM-dd" displayFormat="MM/yyyy" required="true"/>
 				<Button type="Emphasized" icon="sap-icon://search" text="Consultar" press=".onSearch"/>
 			</OverflowToolbar>
+		</subHeader>
+		<content>
 			<IconTabBar id="conferenceTabs" expandable="false" stretchContentHeight="true" applyContentPadding="false">
 				<items>
 					<IconTabFilter key="documents" text="Documentos" count="{= ${conference>/documents}.length }">
-					<t:Table id="documentsTable" rows="{conference>/documents}" selectionMode="None" class="sapUiSizeCondensed" visibleRowCountMode="Auto" alternateRowColors="true" noData="Consulte um mês para ver os dados.">
+					<t:Table id="documentsTable" rows="{conference>/documents}" selectionMode="None" class="sapUiSizeCondensed" visibleRowCountMode="Auto" alternateRowColors="true" noData="{= ${conference>/searched} ? 'Nenhum registro no período.' : 'Consulte um mês para ver os dados.' }">
 						<t:extension>
 							<OverflowToolbar>
 								<Title text="{= ${conference>/documents}.length } linha(s)"/>
@@ -60,7 +62,7 @@
 					</t:Table>
 					</IconTabFilter>
 					<IconTabFilter key="summary" text="Resumo CST/CFOP">
-					<t:Table id="summaryTable" rows="{conference>/summary}" selectionMode="None" class="sapUiSizeCondensed" visibleRowCountMode="Auto" alternateRowColors="true" noData="Consulte um mês para ver os dados.">
+					<t:Table id="summaryTable" rows="{conference>/summary}" selectionMode="None" class="sapUiSizeCondensed" visibleRowCountMode="Auto" alternateRowColors="true" noData="{= ${conference>/searched} ? 'Nenhum registro no período.' : 'Consulte um mês para ver os dados.' }">
 						<t:extension>
 							<OverflowToolbar>
 								<Title text="{= ${conference>/summary}.length } linha(s)"/>
@@ -88,7 +90,7 @@
 							<ObjectNumber emphasized="true" unit="Saldo (positivo = a recolher)"
 								number="{ path: 'conference>/assessmentTotals/balance', formatter: 'formatter.formatDecimal2' }"/>
 						</HBox>
-					<t:Table id="assessmentTable" rows="{conference>/assessment}" selectionMode="None" class="sapUiSizeCondensed" visibleRowCountMode="Auto" alternateRowColors="true" noData="Consulte um mês para ver os dados.">
+					<t:Table id="assessmentTable" rows="{conference>/assessment}" selectionMode="None" class="sapUiSizeCondensed" visibleRowCountMode="Auto" alternateRowColors="true" noData="{= ${conference>/searched} ? 'Nenhum registro no período.' : 'Consulte um mês para ver os dados.' }">
 						<t:extension>
 							<OverflowToolbar>
 								<Title text="{= ${conference>/assessment}.length } linha(s)"/>
@@ -105,7 +107,7 @@
 					</t:Table>
 					</IconTabFilter>
 					<IconTabFilter key="r2055" text="R-2055">
-					<t:Table id="r2055Table" rows="{conference>/r2055}" selectionMode="None" class="sapUiSizeCondensed" visibleRowCountMode="Auto" alternateRowColors="true" noData="Consulte um mês para ver os dados.">
+					<t:Table id="r2055Table" rows="{conference>/r2055}" selectionMode="None" class="sapUiSizeCondensed" visibleRowCountMode="Auto" alternateRowColors="true" noData="{= ${conference>/searched} ? 'Nenhum registro no período.' : 'Consulte um mês para ver os dados.' }">
 						<t:extension>
 							<OverflowToolbar>
 								<Title text="{= ${conference>/r2055}.length } linha(s)"/>
@@ -127,7 +129,7 @@
 					</t:Table>
 					</IconTabFilter>
 					<IconTabFilter key="issues" text="Inconsistências" count="{= ${conference>/issues}.length }" iconColor="{= ${conference>/issues}.length &gt; 0 ? 'Critical' : 'Default' }">
-					<t:Table id="issuesTable" rows="{conference>/issues}" selectionMode="None" class="sapUiSizeCondensed" visibleRowCountMode="Auto" alternateRowColors="true" noData="Consulte um mês para ver os dados.">
+					<t:Table id="issuesTable" rows="{conference>/issues}" selectionMode="None" class="sapUiSizeCondensed" visibleRowCountMode="Auto" alternateRowColors="true" noData="{= ${conference>/searched} ? 'Nenhum registro no período.' : 'Consulte um mês para ver os dados.' }">
 						<t:extension>
 							<OverflowToolbar>
 								<Title text="{= ${conference>/issues}.length } linha(s)"/>

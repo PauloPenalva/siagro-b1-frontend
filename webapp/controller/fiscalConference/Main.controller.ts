@@ -16,6 +16,8 @@ type ConferenceData = {
 	assessmentTotals: { debits: number; credits: number; balance: number };
 	r2055: Record<string, unknown>[];
 	issues: Record<string, unknown>[];
+	/** true depois da primeira consulta; troca o texto de lista vazia. */
+	searched?: boolean;
 };
 
 const money = (label: string, property: string): Column => ({ label, property, type: EdmType.Number });
@@ -118,6 +120,7 @@ export default class Main extends CommonController {
 			(this.getModel("conference") as JSONModel).setData({
 				...Main.emptyResult(),
 				...(await response.json() as Partial<ConferenceData>),
+				searched: true,
 			});
 		} catch (error) {
 			MessageBox.error((error as Error).message);
