@@ -539,6 +539,11 @@
           "target": "purchaseFiscalReconciliations"
         },
         {
+          "pattern": "received-dfes",
+          "name": "receivedDfes",
+          "target": "receivedDfes"
+        },
+        {
           "pattern": "warehouse-reconciliations/new",
           "name": "warehouseReconciliationsNew",
           "target": "warehouseReconciliationsNew"
@@ -1745,6 +1750,12 @@
           "id": "purchaseFiscalReconciliations",
           "level": 1,
           "name": "siagrob1.view.purchaseFiscalReconciliations.Main",
+          "clearControlAggregation": true
+        },
+        "receivedDfes": {
+          "id": "receivedDfes",
+          "level": 1,
+          "name": "siagrob1.view.receivedDfes.Main",
           "clearControlAggregation": true
         },
         "warehouseReconciliationsNew": {
