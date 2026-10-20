@@ -1,0 +1,36 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+
+	<Dialog title="Agendamento da consulta" contentWidth="30rem" resizable="true">
+		<content>
+			<VBox class="sapUiSmallMargin">
+				<MessageStrip
+					showIcon="true"
+					class="sapUiSmallMarginBottom"
+					text="Combine os horários com o escritório de contabilidade para não consultarem o mesmo CNPJ na mesma hora."/>
+				<Text text="Filial: {schedule>/branchCode}" class="sapUiTinyMarginBottom"/>
+				<Text text="Última consulta: {schedule>/lastQueryAt}"/>
+				<Text text="Próxima consulta liberada: {schedule>/nextAllowedAt}" class="sapUiSmallMarginBottom"/>
+				<HBox alignItems="Center" class="sapUiTinyMarginBottom">
+					<TimePicker
+						width="9rem"
+						value="{schedule>/pick}"
+						valueFormat="HH:mm"
+						displayFormat="HH:mm"
+						placeholder="HH:mm"/>
+					<Button icon="sap-icon://add" text="Adicionar horário" type="Transparent" press=".onScheduleAddTime" class="sapUiTinyMarginBegin"/>
+				</HBox>
+				<List items="{schedule>/times}" noDataText="Sem horários: a consulta automática fica desligada." mode="Delete" delete=".onScheduleRemoveTime">
+					<StandardListItem title="{schedule>time}" icon="sap-icon://time-entry-request"/>
+				</List>
+			</VBox>
+		</content>
+		<beginButton>
+			<Button text="Salvar" type="Emphasized" press=".onScheduleSave"/>
+		</beginButton>
+		<endButton>
+			<Button text="Fechar" press=".onScheduleClose"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

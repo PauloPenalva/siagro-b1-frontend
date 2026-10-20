@@ -1,0 +1,156 @@
+<mvc:View
+	controllerName="siagrob1.controller.receivedDfes.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.f"
+	xmlns:fb="sap.ui.comp.filterbar">
+
+	<f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="Manifestação do Destinatário"/>
+				</f:heading>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:header>
+			<f:DynamicPageHeader>
+				<f:content>
+					<!-- O backend não filtra por filial: o $filter de BranchCode sai sempre desta barra. -->
+					<fb:FilterBar id="receivedDfesFb" search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+						<fb:filterGroupItems>
+							<fb:FilterGroupItem name="branchCode" label="Filial" groupName="GroupBranch" visibleInFilterBar="true">
+								<fb:control>
+									<Input
+										showValueHelp="true"
+										valueHelpRequest=".openBranchsValueHelp"
+										value="{filter>/BranchCode}"/>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="dateFrom" label="Emissão de" groupName="GroupDateFrom" visibleInFilterBar="true">
+								<fb:control>
+									<DatePicker
+										value="{ path: 'filter>/DateFrom', type: 'sap.ui.model.type.String' }"
+										displayFormat="dd/MM/yyyy"
+										valueFormat="yyyy-MM-dd"/>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="dateTo" label="Emissão até" groupName="GroupDateTo" visibleInFilterBar="true">
+								<fb:control>
+									<DatePicker
+										value="{ path: 'filter>/DateTo', type: 'sap.ui.model.type.String' }"
+										displayFormat="dd/MM/yyyy"
+										valueFormat="yyyy-MM-dd"/>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="issuer" label="Emitente (nome ou CNPJ)" groupName="GroupIssuer" visibleInFilterBar="true">
+								<fb:control>
+									<Input showClearIcon="true" value="{filter>/Issuer}"/>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="manifestationStatus" label="Manifestação" groupName="GroupManifestation" visibleInFilterBar="true">
+								<fb:control>
+									<Select forceSelection="false" selectedKey="{filter>/ManifestationStatus}">
+										<core:ListItem key="" text="Todas"/>
+										<core:ListItem key="None" text="Sem manifestação"/>
+										<core:ListItem key="Acknowledged" text="Ciência"/>
+										<core:ListItem key="Confirmed" text="Confirmada"/>
+										<core:ListItem key="Unknown" text="Desconhecida"/>
+										<core:ListItem key="NotPerformed" text="Não realizada"/>
+									</Select>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="situation" label="Situação" groupName="GroupSituation" visibleInFilterBar="true">
+								<fb:control>
+									<Select forceSelection="false" selectedKey="{filter>/Situation}">
+										<core:ListItem key="" text="Todas"/>
+										<core:ListItem key="Authorized" text="Autorizada"/>
+										<core:ListItem key="Denied" text="Denegada"/>
+										<core:ListItem key="Cancelled" text="Cancelada"/>
+									</Select>
+								</fb:control>
+							</fb:FilterGroupItem>
+						</fb:filterGroupItems>
+					</fb:FilterBar>
+				</f:content>
+			</f:DynamicPageHeader>
+		</f:header>
+		<f:content>
+			<Table
+				id="receivedDfesTable"
+				mode="MultiSelect"
+				growing="true"
+				growingThreshold="50"
+				growingScrollToLoad="true"
+				sticky="ColumnHeaders,HeaderToolbar"
+				class="sapUiSizeCondensed"
+				noDataText="Nenhum documento encontrado. Informe a filial e use Consultar SEFAZ."
+				selectionChange=".onSelectionChange"
+				updateFinished=".onUpdateFinished"
+				items="{
+					path: '/ReceivedDfes',
+					parameters: { $count: true },
+					sorter: { path: 'IssueDate', descending: true }
+				}">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="Documentos destinados"/>
+						<ToolbarSpacer/>
+						<Button type="Emphasized" icon="sap-icon://synchronize" text="Consultar SEFAZ" press=".onSync"/>
+						<Button type="Transparent" icon="sap-icon://history" text="Agendamento" press=".onSchedule"/>
+						<ToolbarSeparator/>
+						<Button type="Transparent" text="Ciência" enabled="{dfe>/canAcknowledge}" press=".onAcknowledge"/>
+						<Button type="Transparent" text="Confirmar operação" enabled="{dfe>/canManifest}" press=".onConfirm"/>
+						<Button type="Transparent" text="Desconhecer" enabled="{dfe>/canManifest}" press=".onUnknown"/>
+						<Button type="Transparent" text="Operação não realizada" enabled="{dfe>/canManifest}" press=".onNotPerformed"/>
+						<ToolbarSeparator/>
+						<Button type="Transparent" icon="sap-icon://download" text="Baixar XML" enabled="{dfe>/canDownload}" press=".onDownloadXml"/>
+						<Button type="Emphasized" text="Dar entrada" enabled="{dfe>/canEnter}" press=".onEnter"/>
+						<ToolbarSeparator/>
+						<Button type="Transparent" text="Atualizar" press=".onRefresh"/>
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column width="7rem"><Text text="Emissão"/></Column>
+					<Column minScreenWidth="Tablet" demandPopin="true"><Text text="Emitente"/></Column>
+					<Column width="7rem" hAlign="Center" minScreenWidth="Tablet" demandPopin="true"><Text text="Número"/></Column>
+					<Column width="9rem" hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="Valor"/></Column>
+					<Column width="8rem" hAlign="Center" minScreenWidth="Tablet" demandPopin="true"><Text text="Situação"/></Column>
+					<Column width="11rem" hAlign="Center" minScreenWidth="Tablet" demandPopin="true"><Text text="Manifestação"/></Column>
+					<Column width="5rem" hAlign="Center" minScreenWidth="Tablet" demandPopin="true"><Text text="XML"/></Column>
+					<Column width="8rem" hAlign="Center" minScreenWidth="Tablet" demandPopin="true"><Text text="Entrada"/></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Text text="{ path: 'IssueDate', targetType: 'any', formatter: '.formatter.formatDate' }" wrapping="false"/>
+							<VBox>
+								<Text text="{ path: 'IssuerTaxId', targetType: 'any', formatter: '.formatter.formatCnpj' }" wrapping="false"/>
+								<Text text="{IssuerName}" wrapping="false"/>
+							</VBox>
+							<Text text="{ path: 'AccessKey', targetType: 'any', formatter: '.formatter.accessKeyNumber' }" wrapping="false"/>
+							<Text text="{
+								path: 'TotalValue',
+								type: 'sap.ui.model.odata.type.Decimal',
+								constraints: { precision: 18, scale: 2 },
+								formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+							}" wrapping="false"/>
+							<ObjectStatus
+								text="{ path: 'Situation', targetType: 'any', formatter: '.formatter.dfeSituationText' }"
+								state="{ path: 'Situation', targetType: 'any', formatter: '.formatter.dfeSituationState' }"/>
+							<ObjectStatus
+								inverted="true"
+								text="{ path: 'ManifestationStatus', targetType: 'any', formatter: '.formatter.dfeManifestationText' }"
+								state="{ path: 'ManifestationStatus', targetType: 'any', formatter: '.formatter.dfeManifestationState' }"/>
+							<core:Icon src="sap-icon://accept" color="Positive" tooltip="XML disponível" visible="{= !!%{XmlDownloadedAt} }"/>
+							<Link text="Ver entrada" visible="{= !!%{PurchaseInvoiceDocEntry} }" press=".onOpenEntry"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</f:content>
+	</f:DynamicPage>
+
+</mvc:View>
