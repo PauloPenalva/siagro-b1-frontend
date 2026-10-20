@@ -39,9 +39,9 @@
                 visible="{= (${path: 'Nature', targetType: 'any'} === 'PurchaseReturn' || ${path: 'Nature', targetType: 'any'} === 'SalesReturn')
                           &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Canceled'
                           &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Settled' }"/>
-        <!-- Provisório com disponível para baixa recebe o crédito do adiantamento do contrato (spec 2026-10-14) -->
+        <!-- Qualquer título não cancelado e não adiantamento, com disponível para baixa, recebe crédito de adiantamento: do contrato (provisório) ou livre, do mesmo parceiro, direção e moeda (spec 2026-10-19). O backend devolve candidatos vazios quando não há. -->
         <Button type="Transparent" text="Compensar adiantamento" press=".onOpenApplyAdvanceDialog"
-                visible="{= ${path: 'Nature', targetType: 'any'} === 'Provisional'
+                visible="{= ${path: 'Nature', targetType: 'any'} !== 'Advance'
                           &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Canceled'
                           &amp;&amp; ${path: 'AvailableToSettleAmount', targetType: 'any'} > 0 }"/>
         <!-- Abatimento (desfaz pela composição), estorno e devolução de adiantamento o backend recusa: some com a linha selecionada -->

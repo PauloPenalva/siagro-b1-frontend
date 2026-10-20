@@ -38,6 +38,8 @@ export default class Main extends FinancialDocumentsBaseController {
   onInit(): void {
     this.createFilterModel();
     this.setPayablesFilters(false);
+    // Habilita o filtro "Vínculo com contrato" da barra compartilhada, que só esta tela usa.
+    (this.getView().getModel("pf") as JSONModel).setProperty("/advances", true);
 
     this.getRouter().getRoute("financialAdvances")
       .attachPatternMatched(() => this.onRouteMatched());
@@ -45,6 +47,10 @@ export default class Main extends FinancialDocumentsBaseController {
 
   async onCreate(): Promise<void> {
     (this.getModel("viewModel") as JSONModel).setProperty("/advanceDialog", {
+      link: "With",
+      direction: "Payable",
+      cardCode: "",
+      branchCode: "",
       contractType: "Purchase",
       contractCode: "",
       contractKey: null,
@@ -62,6 +68,36 @@ export default class Main extends FinancialDocumentsBaseController {
 
   onCloseAdvanceDialog(): void {
     this._advanceDialog?.close();
+  }
+
+  /** Trocar o vínculo descarta o que só valia do outro lado: contrato escolhido ou parceiro digitado. */
+  onAdvanceLinkChange(): void {
+    this.onAdvanceContractTypeChange();
+    (this.getModel("viewModel") as JSONModel).setProperty("/advanceDialog/cardCode", "");
+  }
+
+  /** Parceiro do adiantamento sem contrato. */
+  openAdvancePartnerValueHelp(ev: Input$ValueHelpRequestEvent): void {
+    void this.applyValueHelp(ev, "BusinessPartnersSelectDialog", ["CardCode", "CardName", "CardFName"], "CardCode");
+  }
+
+  /**
+   * Conta do pagamento. Além do código, sugere a filial da conta quando a filial do adiantamento
+   * ainda está vazia: no adiantamento sem contrato ela é obrigatória e a conta costuma já trazê-la.
+   */
+  async openAdvanceAccountValueHelp(): Promise<void> {
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    const oSelected = await DialogHelper.openTableSelectDialog(this, "FinancialAccountsSelectDialog",
+      ["Code", "Name"], [ new Filter("Inactive", FilterOperator.EQ, false) ]);
+
+    if (!oSelected) return;
+
+    viewModel.setProperty("/advanceDialog/financialAccountCode", oSelected.getProperty("Code") as string);
+
+    const accountBranch = oSelected.getProperty("BranchCode") as string;
+    if (accountBranch && !viewModel.getProperty("/advanceDialog/branchCode")) {
+      viewModel.setProperty("/advanceDialog/branchCode", accountBranch);
+    }
   }
 
   /** Trocar o tipo invalida o contrato ja escolhido — senao sobra contrato de compra num
@@ -108,11 +144,24 @@ export default class Main extends FinancialDocumentsBaseController {
   async onConfirmCreateAdvance(): Promise<void> {
     const viewModel = this.getModel("viewModel") as JSONModel;
     const form = viewModel.getProperty("/advanceDialog") as {
+      link: string; direction: string; cardCode: string; branchCode: string;
       contractType: string; contractKey: string; amount: number;
       dueDate: string; financialAccountCode: string; paymentDate: string; comments: string;
     };
 
-    if (!form.contractKey) {
+    const withoutContract = form.link === "Without";
+
+    if (withoutContract) {
+      if (!form.cardCode) {
+        MessageBox.alert("Selecione o parceiro.");
+        return;
+      }
+
+      if (!form.branchCode) {
+        MessageBox.alert("Selecione a filial.");
+        return;
+      }
+    } else if (!form.contractKey) {
       MessageBox.alert("Selecione o contrato.");
       return;
     }
@@ -143,8 +192,15 @@ export default class Main extends FinancialDocumentsBaseController {
     try {
       this.setBusy(true);
       const action = (this.getModel() as ODataModel).bindContext(this.api.financialAdvancesCreate);
-      action.setParameter("ContractType", form.contractType);
-      action.setParameter("ContractKey", form.contractKey);
+      if (withoutContract) {
+        // Sem contrato o backend exige Direction, CardCode e BranchCode e dispensa ContractType/ContractKey.
+        action.setParameter("Direction", form.direction);
+        action.setParameter("CardCode", form.cardCode);
+        action.setParameter("BranchCode", form.branchCode);
+      } else {
+        action.setParameter("ContractType", form.contractType);
+        action.setParameter("ContractKey", form.contractKey);
+      }
       action.setParameter("Amount", Number(form.amount));
       action.setParameter("DueDate", form.dueDate);
       action.setParameter("FinancialAccountCode", form.financialAccountCode);
