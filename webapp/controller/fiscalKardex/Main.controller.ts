@@ -79,6 +79,17 @@ export default class Main extends CommonController {
 			ToDate: localIsoDate(now),
 		}), "params");
 		this.getView().setModel(new JSONModel({ rows: [], searched: false }), "kardex");
+		void this.prefillBranch();
+	}
+
+	/** Filial de trabalho do usuário como padrão; só preenche se ele ainda não escolheu outra. */
+	private async prefillBranch(): Promise<void> {
+		const branch = await this.getBranchInfo();
+		const params = this.getModel("params") as JSONModel;
+		if (branch?.code && !params.getProperty("/BranchCode")) {
+			params.setProperty("/BranchCode", branch.code);
+			params.setProperty("/BranchName", branch.shortName);
+		}
 	}
 
 	/** Nulo/zero vira vazio nas linhas de saldo; nos movimentos, 0 aparece como 0. */

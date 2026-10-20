@@ -53,8 +53,8 @@ export default class Main extends CommonController {
 
   /** Custo unitário = valor total ÷ quantidade (somente leitura). */
   unitCost(quantity: number | string, totalValue: number | string): string {
-    const qty = Number(quantity);
-    const total = Number(totalValue);
+    const qty = Number(String(quantity ?? "").replace(",", "."));
+    const total = Number(String(totalValue ?? "").replace(",", "."));
     if (!Number.isFinite(qty) || !Number.isFinite(total) || qty === 0) return "";
     return (total / qty).toLocaleString("pt-BR", { minimumFractionDigits: 6, maximumFractionDigits: 6 });
   }

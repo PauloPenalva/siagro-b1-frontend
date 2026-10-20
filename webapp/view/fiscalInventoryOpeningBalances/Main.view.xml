@@ -40,16 +40,16 @@
 						<t:template><Text text="{ItemName}" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="Data do saldo" width="8rem" hAlign="Center">
-						<t:template><Text text="{ path: 'BalanceDate', formatter: 'formatter.formatDate' }" wrapping="false" /></t:template>
+						<t:template><Text text="{ path: 'BalanceDate', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy' } }" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="UM" width="4rem">
 						<t:template><Text text="{UnitOfMeasureCode}" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="Quantidade" width="9rem" hAlign="End">
-						<t:template><Text text="{ path: 'Quantity', formatter: 'formatter.formatDecimal3' }" wrapping="false" /></t:template>
+						<t:template><Text text="{ path: 'Quantity', type: 'sap.ui.model.odata.type.Decimal', constraints: { precision: 19, scale: 3 }, formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.', minFractionDigits: 3, maxFractionDigits: 3 } }" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="Valor total" width="9rem" hAlign="End">
-						<t:template><Text text="{ path: 'TotalValue', formatter: 'formatter.formatDecimal2' }" wrapping="false" /></t:template>
+						<t:template><Text text="{ path: 'TotalValue', type: 'sap.ui.model.odata.type.Decimal', constraints: { precision: 19, scale: 2 }, formatOptions: { decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.', minFractionDigits: 2, maxFractionDigits: 2 } }" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="Custo unitário" width="9rem" hAlign="End">
 						<t:template>
