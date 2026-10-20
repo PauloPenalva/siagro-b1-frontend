@@ -144,8 +144,8 @@
 								inverted="true"
 								text="{ path: 'ManifestationStatus', targetType: 'any', formatter: '.formatter.dfeManifestationText' }"
 								state="{ path: 'ManifestationStatus', targetType: 'any', formatter: '.formatter.dfeManifestationState' }"/>
-							<core:Icon src="sap-icon://accept" color="Positive" tooltip="XML disponível" visible="{= !!${XmlDownloadedAt} }"/>
-							<Link text="Ver entrada" visible="{= !!${PurchaseInvoiceDocEntry} }" press=".onOpenEntry"/>
+							<core:Icon src="sap-icon://accept" color="Positive" tooltip="XML disponível" visible="{= !!%{XmlDownloadedAt} }"/>
+							<Link text="Ver entrada" visible="{= !!%{PurchaseInvoiceDocEntry} }" press=".onOpenEntry"/>
 						</cells>
 					</ColumnListItem>
 				</items>

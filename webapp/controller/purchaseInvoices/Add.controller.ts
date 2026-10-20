@@ -58,6 +58,9 @@ export default class Add extends BaseController {
   /** Série Automático padrão de PurchaseInvoice, pré-selecionada em todo rascunho novo. */
   private defaultDocNumberKey: string;
 
+  /** Verdadeiro quando a inclusão veio da Manifestação do Destinatário (`?dfe=`): o cancelar volta para lá. */
+  private openedFromReceivedDfe = false;
+
   onInit(): void {
     this.bindTransportGroupVisibility();
     this.getRouter().getRoute("purchaseInvoicesAdd")
@@ -70,6 +73,7 @@ export default class Add extends BaseController {
    */
   private async newRouteMatched(ev: Route$PatternMatchedEvent) {
     const query = (ev.getParameter("arguments") as { "?query"?: { dfe?: string } })["?query"];
+    this.openedFromReceivedDfe = !!query?.dfe;
     await this.prepareNewDraft();
 
     if (query?.dfe) {
@@ -414,7 +418,7 @@ export default class Add extends BaseController {
       oModel.resetChanges(oModel.getUpdateGroupId());
     }
 
-    this.navTo("purchaseInvoices");
+    this.navTo(this.openedFromReceivedDfe ? "receivedDfes" : "purchaseInvoices");
   }
 
   /**
