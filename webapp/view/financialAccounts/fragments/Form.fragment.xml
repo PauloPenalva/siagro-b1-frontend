@@ -56,9 +56,12 @@
               <Input
                 value="{BranchCode}"
                 showValueHelp="true"
+                showClearIcon="true"
                 valueHelpOnly="true"
                 editable="{ui>/editable}"
-                valueHelpRequest=".openBranchsValueHelp"/>
+                liveChange=".onBranchChange"
+                change=".onBranchChange"
+                valueHelpRequest=".onBranchValueHelp"/>
             </f:fields>
           </f:FormElement>
           <f:FormElement label="Inativa">

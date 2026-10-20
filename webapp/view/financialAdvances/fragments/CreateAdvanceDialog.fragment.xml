@@ -7,7 +7,7 @@
   <content>
     <VBox class="sapUiSmallMargin" width="520px">
       <MessageStrip type="Information" showIcon="true" class="sapUiSmallMarginBottom"
-        text="O adiantamento é incluído já pago: a baixa é gravada na conta e na data do pagamento, e o valor fica disponível para compensar o provisório."/>
+        text="O adiantamento é incluído já pago: a baixa é gravada na conta e na data do pagamento, e o valor fica disponível para compensar títulos do contrato ou, sem contrato, do mesmo parceiro, direção e moeda."/>
       <f:Form editable="true">
         <f:layout>
           <f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
@@ -15,7 +15,43 @@
         <f:formContainers>
           <f:FormContainer>
             <f:formElements>
-              <f:FormElement label="Tipo de contrato">
+              <f:FormElement label="Vínculo">
+                <f:fields>
+                  <Select selectedKey="{viewModel>/advanceDialog/link}" change=".onAdvanceLinkChange">
+                    <core:ListItem key="With" text="Com contrato"/>
+                    <core:ListItem key="Without" text="Sem contrato"/>
+                  </Select>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Direção" visible="{= ${viewModel>/advanceDialog/link} === 'Without' }">
+                <f:fields>
+                  <Select selectedKey="{viewModel>/advanceDialog/direction}">
+                    <core:ListItem key="Payable" text="A pagar"/>
+                    <core:ListItem key="Receivable" text="A receber"/>
+                  </Select>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Parceiro" visible="{= ${viewModel>/advanceDialog/link} === 'Without' }">
+                <f:fields>
+                  <Input
+                    value="{viewModel>/advanceDialog/cardCode}"
+                    required="true"
+                    showValueHelp="true"
+                    valueHelpOnly="true"
+                    valueHelpRequest=".openAdvancePartnerValueHelp"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Filial" visible="{= ${viewModel>/advanceDialog/link} === 'Without' }">
+                <f:fields>
+                  <Input
+                    value="{viewModel>/advanceDialog/branchCode}"
+                    required="true"
+                    showValueHelp="true"
+                    valueHelpOnly="true"
+                    valueHelpRequest=".openBranchsValueHelp"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Tipo de contrato" visible="{= ${viewModel>/advanceDialog/link} === 'With' }">
                 <f:fields>
                   <Select selectedKey="{viewModel>/advanceDialog/contractType}" change=".onAdvanceContractTypeChange">
                     <core:ListItem key="Purchase" text="Compra (a pagar)"/>
@@ -23,7 +59,7 @@
                   </Select>
                 </f:fields>
               </f:FormElement>
-              <f:FormElement label="Contrato">
+              <f:FormElement label="Contrato" visible="{= ${viewModel>/advanceDialog/link} === 'With' }">
                 <f:fields>
                   <Input
                     value="{viewModel>/advanceDialog/contractCode}"
@@ -56,7 +92,7 @@
                     required="true"
                     showValueHelp="true"
                     valueHelpOnly="true"
-                    valueHelpRequest=".openFinancialAccountsValueHelp"/>
+                    valueHelpRequest=".openAdvanceAccountValueHelp"/>
                 </f:fields>
               </f:FormElement>
               <f:FormElement label="Data do pagamento">

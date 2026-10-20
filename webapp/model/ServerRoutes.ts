@@ -318,6 +318,8 @@ export default {
   // Lançamentos, reconciliação e extrato da conta (spec 2026-10-19): chamados por sendJson.
   financialAccountEntries: '/odata/FinancialAccountEntries',
   financialAccountEntriesCreate: '/odata/FinancialAccountEntriesCreate',
+  financialAccountTransfersCreate: '/odata/FinancialAccountTransfersCreate',
+  financialAccountTransfers: '/odata/FinancialAccountTransfers',
   financialAccountsGetMovements: '/odata/FinancialAccountsGetMovements',
   financialAccountReconciliations: '/odata/FinancialAccountReconciliations',
   financialAccountReconciliationsOpen: '/odata/FinancialAccountReconciliationsOpen',

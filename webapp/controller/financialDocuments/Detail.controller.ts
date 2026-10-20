@@ -306,7 +306,7 @@ export default class Detail extends CommonController {
 
     const candidates = odataCollection<FinancialAdvanceCandidate>(result.data);
     if (!candidates.length) {
-      MessageBox.information("Nenhum adiantamento com crédito disponível neste contrato.");
+      MessageBox.information("Nenhum adiantamento com crédito disponível para este título.");
       return;
     }
 

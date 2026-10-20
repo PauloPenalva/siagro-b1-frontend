@@ -77,6 +77,16 @@
       </fb:control>
     </fb:FilterGroupItem>
 
+    <fb:FilterGroupItem name="contractLink" label="Vínculo com contrato" groupName="GroupContractLink" visibleInFilterBar="true" visible="{= !!${pf>/advances} }">
+      <fb:control>
+        <Select forceSelection="false" selectedKey="{filter>/ContractLink}">
+          <core:ListItem key="" text="Todos"/>
+          <core:ListItem key="With" text="Com contrato"/>
+          <core:ListItem key="Without" text="Sem contrato"/>
+        </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
+
     <fb:FilterGroupItem name="dueFrom" label="Vencimento de" groupName="GroupDueFrom" visibleInFilterBar="true">
       <fb:control>
         <DatePicker

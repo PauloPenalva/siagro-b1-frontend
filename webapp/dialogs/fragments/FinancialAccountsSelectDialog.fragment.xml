@@ -12,6 +12,7 @@
   growingThreshold="20"
   items="{
     path: '/FinancialAccounts',
+    parameters: { $select: 'Code,Name,BranchCode' },
     sorter: {
       path: 'Code',
       descending: false

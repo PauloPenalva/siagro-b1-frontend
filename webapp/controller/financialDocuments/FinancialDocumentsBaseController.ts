@@ -113,6 +113,11 @@ export abstract class FinancialDocumentsBaseController extends CommonController 
 
       if (key === "Status" || key === "Nature") {
         filters.push(`${key} eq '${FinancialDocumentsBaseController.escapeODataLiteral(String(value))}'`);
+      } else if (key === "ContractLink") {
+        // Só a tela de adiantamentos expõe este filtro (spec 2026-10-19): adiantamento livre não tem contrato.
+        filters.push(value === "Without"
+          ? "(PurchaseContractKey eq null and SalesContractKey eq null)"
+          : "(PurchaseContractKey ne null or SalesContractKey ne null)");
       } else if (key === "DueFrom") {
         filters.push(`DueDate ge ${String(value)}`);
       } else if (key === "DueTo") {

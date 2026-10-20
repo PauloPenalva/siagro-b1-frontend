@@ -112,7 +112,7 @@
 						</t:template>
 					</t:Column>
 					<t:Column label="Contrato" width="12rem" sortProperty="OriginDocNumber">
-						<t:template><Text text="{OriginDocNumber}" wrapping="false"/></t:template>
+						<t:template><Text text="{= ${OriginDocNumber} || '' }" wrapping="false"/></t:template>
 					</t:Column>
 				</t:columns>
 			</t:Table>
