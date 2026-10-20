@@ -18,8 +18,15 @@
 				<Input width="14rem" value="{params>/BranchName}" editable="false"/>
 				<Label text="Data" required="true" labelFor="refDate"/>
 				<DatePicker id="refDate" width="9rem" value="{params>/Date}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" required="true"/>
-				<Label text="Produto" labelFor="itemInput"/>
-				<Input id="itemInput" width="10rem" showValueHelp="true" valueHelpOnly="true" showClearIcon="true" valueHelpRequest=".openItemValueHelp" value="{params>/ItemCode}"/>
+				<Label text="Produtos" labelFor="itemsInput"/>
+				<MultiInput id="itemsInput" width="22rem" placeholder="Todos" showValueHelp="true" valueHelpOnly="true"
+					valueHelpRequest=".onItemsValueHelp" tokenUpdate=".onItemsTokenUpdate"
+					tokens="{ path: 'params>/Items', templateShareable: false }">
+					<tokens>
+						<Token key="{params>ItemCode}" text="{params>ItemCode}" tooltip="{params>ItemName}"/>
+					</tokens>
+				</MultiInput>
+				<Button type="Transparent" icon="sap-icon://clear-filter" tooltip="Limpar produtos (todos)" enabled="{= ${params>/Items}.length > 0 }" press=".onClearItems"/>
 				<Button type="Emphasized" icon="sap-icon://search" text="Consultar" press=".onSearch"/>
 			</OverflowToolbar>
 		</subHeader>
@@ -33,7 +40,7 @@
 							<Title text="{= ${inventory>/rows}.length } produto(s)"/>
 							<ToolbarSpacer/>
 							<Button type="Transparent" icon="sap-icon://excel-attachment" text="Exportar Excel" enabled="{= ${inventory>/rows}.length > 0 }" press=".onExport"/>
-							<Button type="Transparent" icon="sap-icon://print" text="Imprimir livro" enabled="{= !${params>/ItemCode} }" tooltip="{= ${params>/ItemCode} ? 'O livro é sempre da filial inteira: limpe o produto.' : '' }" press=".onPrintBook"/>
+							<Button type="Transparent" icon="sap-icon://print" text="Imprimir livro" press=".onPrintBook"/>
 						</OverflowToolbar>
 					</t:extension>
 					<t:footer>

@@ -8,7 +8,10 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Spreadsheet from "sap/ui/export/Spreadsheet";
 import { EdmType } from "sap/ui/export/library";
 import CommonController from "siagrob1/controller/common/CommonController";
+import { MultiInput$TokenUpdateEvent } from "sap/m/MultiInput";
+import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { localIsoDate } from "siagrob1/helpers/DateHelpers";
+import { readErrorMessage } from "siagrob1/helpers/FetchHelpers";
 import { openPdfReport } from "siagrob1/helpers/PdfReportHelpers";
 
 type InventoryRow = {
@@ -27,7 +30,11 @@ type InventoryData = {
 	pendingComplementItems?: string[];
 };
 
-type Params = { BranchCode: string; BranchName: string; ItemCode: string; Date: string };
+type SelectedItem = { ItemCode: string; ItemName: string };
+
+type Params = { BranchCode: string; BranchName: string; Items: SelectedItem[]; Date: string };
+
+const SELECTION_KEY_PREFIX = "siagrob1.fiscalInventory.items.";
 
 type Column = { label: string; property: keyof InventoryRow; type?: EdmType; scale?: number; width?: number };
 
@@ -43,7 +50,8 @@ const COLUMNS: Column[] = [
 
 /**
  * Inventário em Data: posição do estoque PEPS ao fim do dia escolhido, por produto, com total geral, e impressão do
- * Livro de Registro de Inventário (modelo 7) da filial inteira.
+ * Livro de Registro de Inventário (modelo 7). A seleção de produtos (vazia = todos) vale para a grade e para o livro
+ * e fica guardada por usuário no navegador.
  * @namespace siagrob1.controller.fiscalInventory
  */
 export default class Main extends CommonController {
@@ -51,12 +59,70 @@ export default class Main extends CommonController {
 		// Padrão: 31/12 do ano anterior (data local, nunca toISOString).
 		const lastYearEnd = new Date(new Date().getFullYear() - 1, 11, 31);
 		this.getView().setModel(new JSONModel({
-			BranchCode: "", BranchName: "", ItemCode: "", Date: localIsoDate(lastYearEnd),
+			BranchCode: "", BranchName: "", Items: [], Date: localIsoDate(lastYearEnd),
 		}), "params");
 		this.getView().setModel(new JSONModel({
 			rows: [], totalValue: 0, pending: [], pendingText: "", searched: false,
 		}), "inventory");
 		void this.prefillBranch();
+		this.getRouter().getRoute("fiscalInventory")?.attachPatternMatched(() => this.restoreSelection());
+	}
+
+	/** Chave da última seleção de produtos do usuário logado. */
+	private selectionKey(): string {
+		const userName = (this.getModel("sessionModel") as JSONModel | undefined)?.getProperty("/userName") as string ?? "";
+		return SELECTION_KEY_PREFIX + userName.toLowerCase();
+	}
+
+	private restoreSelection(): void {
+		let items: SelectedItem[] = [];
+		try {
+			const stored = JSON.parse(window.localStorage.getItem(this.selectionKey()) ?? "[]") as unknown;
+			if (Array.isArray(stored)) {
+				items = (stored as SelectedItem[]).filter((i) => typeof i?.ItemCode === "string" && i.ItemCode !== "");
+			}
+		} catch {
+			items = [];
+		}
+		(this.getModel("params") as JSONModel).setProperty("/Items", items);
+	}
+
+	private saveSelection(items: SelectedItem[]): void {
+		(this.getModel("params") as JSONModel).setProperty("/Items", items);
+		try {
+			window.localStorage.setItem(this.selectionKey(), JSON.stringify(items));
+		} catch {
+			// navegador sem armazenamento local: a seleção só não é lembrada
+		}
+	}
+
+	private selectedItemCodes(): string[] {
+		return this.getParams().Items.map((i) => i.ItemCode);
+	}
+
+	/** Acrescenta à seleção os produtos marcados no diálogo (sem repetir). */
+	async onItemsValueHelp(): Promise<void> {
+		const contexts = await DialogHelper.openTableMultiSelectDialog(this, "ItemsSelectDialog", ["ItemCode", "ItemName"]);
+		if (!contexts.length) return;
+
+		const items = [...this.getParams().Items];
+		for (const context of contexts) {
+			const itemCode = context.getProperty("ItemCode") as string;
+			if (!items.some((i) => i.ItemCode === itemCode)) {
+				items.push({ ItemCode: itemCode, ItemName: context.getProperty("ItemName") as string });
+			}
+		}
+		this.saveSelection(items);
+	}
+
+	onItemsTokenUpdate(ev: MultiInput$TokenUpdateEvent): void {
+		const removed = (ev.getParameter("removedTokens") ?? []).map((t) => t.getKey());
+		if (!removed.length) return;
+		this.saveSelection(this.getParams().Items.filter((i) => !removed.includes(i.ItemCode)));
+	}
+
+	onClearItems(): void {
+		this.saveSelection([]);
 	}
 
 	/** Filial de trabalho do usuário como padrão; só preenche se ele ainda não escolheu outra. */
@@ -97,12 +163,12 @@ export default class Main extends CommonController {
 				body: JSON.stringify({
 					branchCode: params.BranchCode,
 					date: params.Date,
-					itemCode: params.ItemCode || null,
+					itemCodes: this.selectedItemCodes(),
 				}),
 			});
 
 			if (!response.ok) {
-				MessageBox.error((await response.text()) || "Falha ao consultar o inventário.");
+				MessageBox.error((await readErrorMessage(response)) || "Falha ao consultar o inventário.");
 				return;
 			}
 
@@ -147,7 +213,7 @@ export default class Main extends CommonController {
 			.finally(() => sheet.destroy());
 	}
 
-	/** Pede Nº do livro e folha inicial; o livro é sempre da filial inteira (botão desabilitado com produto). */
+	/** Pede Nº do livro e folha inicial; o livro sai com os produtos selecionados (vazio = todos). */
 	onPrintBook(): void {
 		const params = this.getParams();
 
@@ -192,11 +258,12 @@ export default class Main extends CommonController {
 	}
 
 	/**
-	 * Reconsulta o inventário da filial inteira (filial e data atuais, sem produto) para obter os complementos pendentes
-	 * reais do livro; o resultado da última consulta pode estar velho ou filtrado por produto.
+	 * Reconsulta o inventário com a filial, a data e a seleção de produtos ATUAIS para obter os complementos pendentes
+	 * reais do livro; o resultado da última consulta pode estar velho.
 	 */
 	private async confirmAndPrint(bookNumber: number, firstSheet: number): Promise<void> {
 		const params = this.getParams();
+		const itemCodes = this.selectedItemCodes();
 
 		try {
 			this.setBusy(true);
@@ -204,15 +271,17 @@ export default class Main extends CommonController {
 			const response = await fetch(this.api.fiscalInventory, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ branchCode: params.BranchCode, date: params.Date, itemCode: null }),
+				body: JSON.stringify({ branchCode: params.BranchCode, date: params.Date, itemCodes }),
 			});
 			if (!response.ok) {
-				MessageBox.error((await response.text()) || "Falha ao consultar o inventário.");
+				MessageBox.error((await readErrorMessage(response)) || "Falha ao consultar o inventário.");
 				return;
 			}
 			const pending = ((await response.json()) as InventoryData).pendingComplementItems ?? [];
 
 			if (pending.length) {
+				// sem o busy por cima do diálogo de confirmação
+				this.setBusy(false);
 				const proceed = await new Promise<boolean>((resolve) => {
 					MessageBox.confirm(
 						`Os produtos abaixo têm complemento de valor sem camada aberta e o valor do livro pode estar incompleto:\n\n${pending.join("\n")}\n\nImprimir mesmo assim?`,
@@ -225,10 +294,11 @@ export default class Main extends CommonController {
 					);
 				});
 				if (!proceed) return;
+				this.setBusy(true);
 			}
 
 			await openPdfReport(this.api.fiscalInventoryBook, {
-				branchCode: params.BranchCode, date: params.Date, bookNumber, firstSheet,
+				branchCode: params.BranchCode, date: params.Date, bookNumber, firstSheet, itemCodes,
 			});
 		} catch (error) {
 			MessageBox.error((error as Error).message);
