@@ -142,7 +142,9 @@ export default class Main extends CommonController {
 				})),
 			},
 		});
-		void sheet.build().finally(() => sheet.destroy());
+		void sheet.build()
+			.catch((error: unknown) => MessageBox.error((error as Error)?.message ?? "Falha ao exportar para Excel."))
+			.finally(() => sheet.destroy());
 	}
 
 	/** Pede Nº do livro e folha inicial; o livro é sempre da filial inteira (botão desabilitado com produto). */
@@ -154,11 +156,26 @@ export default class Main extends CommonController {
 			return;
 		}
 
-		const bookInput = new Input({ type: "Number", width: "100%", required: true });
-		const sheetInput = new Input({ type: "Number", width: "100%", value: "1" });
+		const submit = (): void => {
+			const bookNumber = parseInt(bookInput.getValue(), 10);
+			const firstSheet = parseInt(sheetInput.getValue() || "1", 10);
+			if (!(bookNumber >= 1)) {
+				bookInput.setValueState("Error").setValueStateText("Informe o número do livro.");
+				return;
+			}
+			if (!(firstSheet >= 1)) {
+				sheetInput.setValueState("Error").setValueStateText("A folha inicial deve ser 1 ou mais.");
+				return;
+			}
+			dialog.close();
+			void this.confirmAndPrint(bookNumber, firstSheet);
+		};
+		const bookInput = new Input({ type: "Number", width: "100%", required: true, submit });
+		const sheetInput = new Input({ type: "Number", width: "100%", value: "1", submit });
 		const dialog: Dialog = new Dialog({
 			title: "Imprimir livro de inventário",
 			contentWidth: "22rem",
+			initialFocus: bookInput,
 			content: [new VBox({
 				renderType: "Bare",
 				items: [
@@ -166,23 +183,7 @@ export default class Main extends CommonController {
 					new Label({ text: "Folha inicial", labelFor: sheetInput.getId() }).addStyleClass("sapUiSmallMarginTop"), sheetInput,
 				],
 			}).addStyleClass("sapUiSmallMargin")],
-			beginButton: new Button({
-				text: "Imprimir", type: "Emphasized",
-				press: () => {
-					const bookNumber = parseInt(bookInput.getValue(), 10);
-					const firstSheet = parseInt(sheetInput.getValue() || "1", 10);
-					if (!(bookNumber >= 1)) {
-						bookInput.setValueState("Error").setValueStateText("Informe o número do livro.");
-						return;
-					}
-					if (!(firstSheet >= 1)) {
-						sheetInput.setValueState("Error").setValueStateText("A folha inicial deve ser 1 ou mais.");
-						return;
-					}
-					dialog.close();
-					void this.confirmAndPrint(bookNumber, firstSheet);
-				},
-			}),
+			beginButton: new Button({ text: "Imprimir", type: "Emphasized", press: submit }),
 			endButton: new Button({ text: "Cancelar", press: () => dialog.close() }),
 			afterClose: () => dialog.destroy(),
 		});
@@ -190,28 +191,42 @@ export default class Main extends CommonController {
 		dialog.open();
 	}
 
-	/** Se há produtos pendentes de complemento, o usuário confirma antes de imprimir um livro possivelmente incompleto. */
+	/**
+	 * Reconsulta o inventário da filial inteira (filial e data atuais, sem produto) para obter os complementos pendentes
+	 * reais do livro; o resultado da última consulta pode estar velho ou filtrado por produto.
+	 */
 	private async confirmAndPrint(bookNumber: number, firstSheet: number): Promise<void> {
-		const pending = (this.getModel("inventory") as JSONModel).getProperty("/pending") as string[];
-
-		if (pending?.length) {
-			const proceed = await new Promise<boolean>((resolve) => {
-				MessageBox.confirm(
-					`Os produtos abaixo têm complemento de valor sem camada aberta e o valor do livro pode estar incompleto:\n\n${pending.join("\n")}\n\nImprimir mesmo assim?`,
-					{
-						title: "Complementos pendentes",
-						actions: [MessageBox.Action.YES, MessageBox.Action.NO],
-						emphasizedAction: MessageBox.Action.NO,
-						onClose: (action: unknown) => resolve(action === "YES"),
-					},
-				);
-			});
-			if (!proceed) return;
-		}
-
 		const params = this.getParams();
+
 		try {
 			this.setBusy(true);
+
+			const response = await fetch(this.api.fiscalInventory, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ branchCode: params.BranchCode, date: params.Date, itemCode: null }),
+			});
+			if (!response.ok) {
+				MessageBox.error((await response.text()) || "Falha ao consultar o inventário.");
+				return;
+			}
+			const pending = ((await response.json()) as InventoryData).pendingComplementItems ?? [];
+
+			if (pending.length) {
+				const proceed = await new Promise<boolean>((resolve) => {
+					MessageBox.confirm(
+						`Os produtos abaixo têm complemento de valor sem camada aberta e o valor do livro pode estar incompleto:\n\n${pending.join("\n")}\n\nImprimir mesmo assim?`,
+						{
+							title: "Complementos pendentes",
+							actions: [MessageBox.Action.YES, MessageBox.Action.NO],
+							emphasizedAction: MessageBox.Action.NO,
+							onClose: (action: unknown) => resolve(action === "YES"),
+						},
+					);
+				});
+				if (!proceed) return;
+			}
+
 			await openPdfReport(this.api.fiscalInventoryBook, {
 				branchCode: params.BranchCode, date: params.Date, bookNumber, firstSheet,
 			});
