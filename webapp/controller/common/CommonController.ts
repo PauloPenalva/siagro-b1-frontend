@@ -511,6 +511,25 @@ export default abstract class CommonController extends BaseController {
       [ new Filter("Inactive", FilterOperator.EQ, false) ]);
   }
 
+  /** Conta contábil de lançamento: só ativa e que aceita lançamento (analítica). */
+  openPostingLedgerAccountsValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "LedgerAccountsSelectDialog", ["Code", "Name"], "Code",
+      [ new Filter("Inactive", FilterOperator.EQ, false),
+        new Filter("AllowsPosting", FilterOperator.EQ, true) ]);
+  }
+
+  /**
+   * Value help das dimensões gerenciais (DimensionFields). O número da dimensão vem no
+   * `customData` `dim` do Input; lista centros de custo e regras de distribuição ativos dela.
+   */
+  onDimensionValueHelp(ev: Input$ValueHelpRequestEvent) {
+    const dim = Number(ev.getSource().data("dim"));
+
+    void this.applyValueHelp(ev, "DimensionCodesSelectDialog", ["Code", "Name"], "Code",
+      [ new Filter("DimensionNumber", FilterOperator.EQ, dim),
+        new Filter("Inactive", FilterOperator.EQ, false) ]);
+  }
+
   openTaxesValueHelp(ev: Input$ValueHelpRequestEvent) {
     void this.applyValueHelp(ev, "TaxesSelectDialog", ["Code", "Name"], "Code");
   }

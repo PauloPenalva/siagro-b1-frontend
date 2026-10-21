@@ -38,3 +38,4 @@ import "./helpers/NfeSeriesHelpers.qunit";
 import "./helpers/SessionRouteHelpers.qunit";
 import "./helpers/SalesIcmsComplementHelpers.qunit";
 import "./helpers/SimpleFormGroupHelpers.qunit";
+import "./helpers/DimensionHelpers.qunit";

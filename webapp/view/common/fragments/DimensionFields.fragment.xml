@@ -1,0 +1,104 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+<!-- Dimensões gerenciais + conta contábil. Inclua dentro de f:formElements; os campos
+     Dim1Code a Dim5Code e LedgerAccountCode são relativos ao objeto do contexto.
+     Visibilidade e rótulo vêm do model dims, carregado pelo Component (só STANDALONE). -->
+<f:FormElement visible="{dims>/items/0/Active}">
+  <f:label>
+    <Label text="{dims>/items/0/Name}" />
+  </f:label>
+  <f:fields>
+    <Input
+      editable="{ui>/editable}"
+      value="{Dim1Code}"
+      showValueHelp="true"
+      valueHelpOnly="true"
+      valueHelpRequest=".onDimensionValueHelp">
+      <customData>
+        <core:CustomData key="dim" value="1" />
+      </customData>
+    </Input>
+  </f:fields>
+</f:FormElement>
+<f:FormElement visible="{dims>/items/1/Active}">
+  <f:label>
+    <Label text="{dims>/items/1/Name}" />
+  </f:label>
+  <f:fields>
+    <Input
+      editable="{ui>/editable}"
+      value="{Dim2Code}"
+      showValueHelp="true"
+      valueHelpOnly="true"
+      valueHelpRequest=".onDimensionValueHelp">
+      <customData>
+        <core:CustomData key="dim" value="2" />
+      </customData>
+    </Input>
+  </f:fields>
+</f:FormElement>
+<f:FormElement visible="{dims>/items/2/Active}">
+  <f:label>
+    <Label text="{dims>/items/2/Name}" />
+  </f:label>
+  <f:fields>
+    <Input
+      editable="{ui>/editable}"
+      value="{Dim3Code}"
+      showValueHelp="true"
+      valueHelpOnly="true"
+      valueHelpRequest=".onDimensionValueHelp">
+      <customData>
+        <core:CustomData key="dim" value="3" />
+      </customData>
+    </Input>
+  </f:fields>
+</f:FormElement>
+<f:FormElement visible="{dims>/items/3/Active}">
+  <f:label>
+    <Label text="{dims>/items/3/Name}" />
+  </f:label>
+  <f:fields>
+    <Input
+      editable="{ui>/editable}"
+      value="{Dim4Code}"
+      showValueHelp="true"
+      valueHelpOnly="true"
+      valueHelpRequest=".onDimensionValueHelp">
+      <customData>
+        <core:CustomData key="dim" value="4" />
+      </customData>
+    </Input>
+  </f:fields>
+</f:FormElement>
+<f:FormElement visible="{dims>/items/4/Active}">
+  <f:label>
+    <Label text="{dims>/items/4/Name}" />
+  </f:label>
+  <f:fields>
+    <Input
+      editable="{ui>/editable}"
+      value="{Dim5Code}"
+      showValueHelp="true"
+      valueHelpOnly="true"
+      valueHelpRequest=".onDimensionValueHelp">
+      <customData>
+        <core:CustomData key="dim" value="5" />
+      </customData>
+    </Input>
+  </f:fields>
+</f:FormElement>
+<f:FormElement label="Conta contábil" visible="{dims>/items/0/Active}">
+  <f:fields>
+    <Input
+      editable="{ui>/editable}"
+      value="{LedgerAccountCode}"
+      showValueHelp="true"
+      valueHelpOnly="true"
+      valueHelpRequest=".openPostingLedgerAccountsValueHelp" />
+  </f:fields>
+</f:FormElement>
+</core:FragmentDefinition>

@@ -73,6 +73,7 @@ export default {
   // das tabelas locais. O caminho é o mesmo nos dois modos.
   costCenters: '/odata/CostCenters',
   ledgerAccounts: '/odata/LedgerAccounts',
+  accountingDimensions: '/odata/AccountingDimensions?$orderby=Number',
 
   // Notificação por WhatsApp. O log é somente leitura: as linhas nascem nos serviços de
   // mutação do contrato, na mesma transação da alteração.
