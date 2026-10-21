@@ -41,6 +41,11 @@ export default class Component extends UIComponent {
 		// create the device model
 		this.setModel(models.createDeviceModel(), "device");
 
+    // Versão exibida no login e no menu do avatar: o build troca o ${version} do manifest pela
+    // versão do package.json, então basta subir o número lá.
+    const version = String(this.getManifestEntry("/sap.app/applicationVersion/version") ?? "");
+    this.setModel(new JSONModel({ version: version.startsWith("${") ? "" : version }), "appInfo");
+
     SessionService.init(this);
 
     // Antes de qualquer render: o tema guardado da última sessão evita que a tela apareça no
