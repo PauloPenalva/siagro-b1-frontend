@@ -40,3 +40,4 @@ import "./helpers/SalesIcmsComplementHelpers.qunit";
 import "./helpers/SimpleFormGroupHelpers.qunit";
 import "./helpers/DimensionHelpers.qunit";
 import "./helpers/DistributionRuleHelpers.qunit";
+import "./view/DistributionRuleFragments.qunit";

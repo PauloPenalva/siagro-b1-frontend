@@ -42,15 +42,15 @@
 				</cells>
 			</ColumnListItem>
 		</items>
-		<footer>
-			<Toolbar>
-				<ToolbarSpacer />
-				<ObjectStatus
-					text="{rule>/TotalText}"
-					state="{= ${rule>/TotalOk} ? 'Success' : 'Error'}"
-					inverted="true" />
-			</Toolbar>
-		</footer>
+
 	</Table>
+
+	<Toolbar>
+		<ToolbarSpacer />
+		<ObjectStatus
+			text="{rule>/TotalText}"
+			state="{= ${rule>/TotalOk} ? 'Success' : 'Error'}"
+			inverted="true" />
+	</Toolbar>
 
 </core:FragmentDefinition>
