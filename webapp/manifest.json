@@ -1275,6 +1275,16 @@
           "target": "fiscalInventoryOpeningBalances"
         },
         {
+          "pattern": "fiscal-stock-adjustments",
+          "name": "fiscalStockAdjustments",
+          "target": "fiscalStockAdjustments"
+        },
+        {
+          "pattern": "fiscal-stock-periods",
+          "name": "fiscalStockPeriods",
+          "target": "fiscalStockPeriods"
+        },
+        {
           "pattern": "fiscal-kardex",
           "name": "fiscalKardex",
           "target": "fiscalKardex"
@@ -2732,6 +2742,18 @@
           "id": "fiscalInventoryOpeningBalances",
           "level": 1,
           "name": "siagrob1.view.fiscalInventoryOpeningBalances.Main",
+          "clearControlAggregation": true
+        },
+        "fiscalStockAdjustments": {
+          "id": "fiscalStockAdjustments",
+          "level": 1,
+          "name": "siagrob1.view.fiscalStockAdjustments.Main",
+          "clearControlAggregation": true
+        },
+        "fiscalStockPeriods": {
+          "id": "fiscalStockPeriods",
+          "level": 1,
+          "name": "siagrob1.view.fiscalStockPeriods.Main",
           "clearControlAggregation": true
         },
         "fiscalKardex": {

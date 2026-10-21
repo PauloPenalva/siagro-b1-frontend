@@ -1,0 +1,65 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+  <Dialog title="Ajuste do estoque fiscal" contentWidth="34rem" draggable="true">
+    <content>
+      <f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanM="4" labelSpanS="12">
+        <f:content>
+          <Label text="Nº" />
+          <Input value="{adjustment>/DocNumber}" editable="false" placeholder="Gerado ao gravar" />
+          <Label text="Filial" required="true" />
+          <Input
+            value="{adjustment>/BranchCode}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openBranchsValueHelp" />
+          <Label text="Data" required="true" />
+          <DatePicker
+            value="{adjustment>/AdjustmentDate}"
+            valueFormat="yyyy-MM-dd"
+            displayFormat="dd/MM/yyyy" />
+          <Label text="Tipo" required="true" />
+          <Select selectedKey="{adjustment>/Direction}">
+            <core:Item key="In" text="Entrada" />
+            <core:Item key="Out" text="Saída" />
+          </Select>
+          <Label text="Produto" required="true" />
+          <Input
+            value="{adjustment>/ItemCode}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openItemValueHelp">
+            <customData>
+              <core:CustomData key="descriptionProperty" value="ItemName" />
+            </customData>
+          </Input>
+          <Label text="Descrição" />
+          <Input value="{adjustment>/ItemName}" editable="false" />
+          <Label text="Quantidade" required="true" />
+          <Input value="{adjustment>/Quantity}" type="Number" />
+          <Label text="Valor total" required="true" />
+          <Input value="{adjustment>/TotalValue}" type="Number" />
+          <Label text="Unidade de medida" />
+          <Input
+            value="{adjustment>/UnitOfMeasureCode}"
+            maxLength="4"
+            placeholder="Vazio = unidade comercial do produto"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            showClearIcon="true"
+            valueHelpRequest=".openUnitsOfMeasureValueHelp" />
+          <Label text="Motivo" required="true" />
+          <TextArea value="{adjustment>/Reason}" rows="3" maxLength="500" growing="true" />
+        </f:content>
+      </f:SimpleForm>
+    </content>
+    <beginButton>
+      <Button text="Confirmar" type="Emphasized" press=".onConfirmAdjustment" />
+    </beginButton>
+    <endButton>
+      <Button text="Cancelar" press=".onCancelAdjustment" />
+    </endButton>
+  </Dialog>
+</core:FragmentDefinition>

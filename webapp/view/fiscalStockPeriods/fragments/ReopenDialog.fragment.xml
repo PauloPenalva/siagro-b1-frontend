@@ -1,0 +1,26 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+  <Dialog title="Reabrir mês do estoque fiscal" contentWidth="30rem" draggable="true">
+    <content>
+      <f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanM="3" labelSpanS="12">
+        <f:content>
+          <Label text="Filial" />
+          <Input value="{reopen>/BranchCode}" editable="false" />
+          <Label text="Mês" />
+          <Input value="{reopen>/MonthText}" editable="false" />
+          <Label text="Motivo" required="true" />
+          <TextArea value="{reopen>/Reason}" rows="3" maxLength="500" growing="true" />
+        </f:content>
+      </f:SimpleForm>
+    </content>
+    <beginButton>
+      <Button text="Reabrir" type="Emphasized" press=".onConfirmReopen" />
+    </beginButton>
+    <endButton>
+      <Button text="Cancelar" press=".onCancelReopen" />
+    </endButton>
+  </Dialog>
+</core:FragmentDefinition>

@@ -187,7 +187,7 @@
               }"
               editable="{ui>/editable}" />
 
-          <Label text="Data de entrada" />
+          <Label text="Data de entrada no estoque" />
           <DatePicker
               value="{
                 path: 'PostingDate',

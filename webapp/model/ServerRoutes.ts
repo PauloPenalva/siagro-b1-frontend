@@ -6,6 +6,9 @@ export default {
   fiscalKardex: '/reports/FiscalKardex',
   fiscalInventory: '/reports/FiscalInventory',
   fiscalInventoryBook: '/reports/FiscalInventory/Book',
+  // Fechar/reabrir o mês do estoque fiscal (actions OData de topo; 400 com mensagem pt-BR na recusa).
+  fiscalStockPeriodsClose: '/odata/FiscalStockPeriodsClose',
+  fiscalStockPeriodsReopen: '/odata/FiscalStockPeriodsReopen',
   userInfo: '/security/auth/status',
   systemInfo: '/security/auth/info',
   logout: '/security/auth/logout',

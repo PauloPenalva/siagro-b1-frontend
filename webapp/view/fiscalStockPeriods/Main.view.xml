@@ -1,0 +1,88 @@
+<mvc:View
+	controllerName="siagrob1.controller.fiscalStockPeriods.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table">
+
+	<Page title="Fechamento do estoque fiscal" showNavButton="true" navButtonPress=".onNavBack">
+		<content>
+			<MessageStrip
+				text="Fechar o mês trava, na filial, os lançamentos que movimentam o estoque fiscal com data naquele mês ou antes. Reabrir exige motivo."
+				type="Information"
+				showIcon="true"
+				class="sapUiSmallMargin" />
+			<OverflowToolbar class="sapUiSmallMarginBeginEnd">
+				<Label text="Filial" required="true" labelFor="periodBranch" />
+				<Input
+					id="periodBranch"
+					width="10rem"
+					value="{period>/BranchCode}"
+					showValueHelp="true"
+					valueHelpOnly="true"
+					valueHelpRequest=".openBranchsValueHelp" />
+				<Label text="Mês" required="true" labelFor="periodMonth" />
+				<DatePicker
+					id="periodMonth"
+					width="9rem"
+					value="{period>/Month}"
+					valueFormat="yyyy-MM"
+					displayFormat="MM/yyyy" />
+				<Button text="Fechar mês" icon="sap-icon://locked" type="Emphasized" press=".onClose" />
+			</OverflowToolbar>
+			<t:Table
+				id="periodsTable"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+				rows="{
+					path: '/FiscalStockPeriods',
+					sorter: [ { path: 'BranchCode' }, { path: 'Year', descending: true }, { path: 'Month', descending: true } ]
+				}">
+				<t:columns>
+					<t:Column label="Filial" width="6rem">
+						<t:template><Text text="{BranchCode}" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="Mês" width="6rem" hAlign="Center">
+						<t:template><Text text="{ parts: [ 'Month', 'Year' ], formatter: '.monthText' }" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="Situação" width="7rem">
+						<t:template>
+							<ObjectStatus
+								text="{= ${Status} === 'Closed' ? 'Fechado' : 'Aberto' }"
+								state="{= ${Status} === 'Closed' ? 'Warning' : 'Success' }" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Fechado em" width="9rem" hAlign="Center">
+						<t:template><Text text="{ path: 'ClosedAt', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy HH:mm' } }" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="Fechado por" width="8rem">
+						<t:template><Text text="{ClosedBy}" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="Reaberto em" width="9rem" hAlign="Center">
+						<t:template><Text text="{ path: 'ReopenedAt', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy HH:mm' } }" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="Reaberto por" width="8rem">
+						<t:template><Text text="{ReopenedBy}" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="Motivo da reabertura" width="18rem">
+						<t:template><Text text="{ReopenReason}" wrapping="false" tooltip="{ReopenReason}" /></t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<Button text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
+				<ToolbarSpacer />
+				<Button text="Reabrir" icon="sap-icon://unlocked" press=".onReopen" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+
+</mvc:View>
