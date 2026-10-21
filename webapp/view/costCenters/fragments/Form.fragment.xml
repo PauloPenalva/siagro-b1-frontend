@@ -47,7 +47,9 @@
           />
           <Label text="Dimensão" visible="{dims>/items/0/Active}" />
           <Select
-            selectedKey="{DimensionNumber}"
+            forceSelection="false"
+            selectedKey="{path: 'DimensionNumber', mode: 'OneWay'}"
+            change=".onDimensionChange"
             visible="{dims>/items/0/Active}"
             items="{
               path: 'dims>/items',
