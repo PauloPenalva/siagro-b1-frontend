@@ -5,6 +5,8 @@ import Table from "sap/ui/table/Table";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
 import Context from "sap/ui/model/odata/v4/Context";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
@@ -26,7 +28,10 @@ export default class Main extends CommonController {
   onInit(): void {
     const now = new Date();
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-    this.getView().setModel(new JSONModel({ BranchCode: "", Month: month }), "period");
+    const period = new JSONModel({ BranchCode: "", Month: month });
+    this.getView().setModel(period, "period");
+    // A lista mostra só a filial escolhida (todas enquanto vazia); reaplica a cada troca, inclusive pelo value help.
+    period.bindProperty("/BranchCode").attachChange(() => this.applyBranchFilter());
     this.getView().setModel(new JSONModel({}), "reopen");
     this.getRouter().getRoute("fiscalStockPeriods").attachPatternMatched(() => this.onRefresh());
   }
@@ -35,7 +40,14 @@ export default class Main extends CommonController {
     return this.byId("periodsTable") as Table;
   }
 
+  private applyBranchFilter(): void {
+    const branch = (this.getView().getModel("period") as JSONModel).getProperty("/BranchCode") as string;
+    (this.table().getBinding("rows") as ODataListBinding)?.filter(
+      branch ? [new Filter("BranchCode", FilterOperator.EQ, branch)] : []);
+  }
+
   onRefresh(): void {
+    this.applyBranchFilter();
     (this.table().getBinding("rows") as ODataListBinding)?.refresh();
   }
 
