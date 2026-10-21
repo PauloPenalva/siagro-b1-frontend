@@ -170,6 +170,8 @@ export default {
   purchaseContractsCommentUpdate: '/PurchaseContractsCommentUpdate(...)',
   purchaseContractsCommentDelete: '/PurchaseContractsCommentDelete(...)',
   priceFixationReport: '/reports/PriceFixation',
+  // Extrato do contrato (conferência físico/fiscal/financeiro): + `/purchase|sales/{key}/print`.
+  contractStatementReport: '/reports/ContractStatement',
 
   // Contratos para alocar o romaneio; perna de Expedição recebe só o contrato da liberação.
   purchaseContractsGetAvaiablesListForTransaction: '/PurchaseContractsGetAvaiablesListForTransaction(...)',
