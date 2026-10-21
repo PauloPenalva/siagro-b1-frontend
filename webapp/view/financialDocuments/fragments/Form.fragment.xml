@@ -186,4 +186,5 @@
       </f:FormContainer>
     </f:formContainers>
   </f:Form>
+  <core:Fragment fragmentName="siagrob1.view.common.fragments.DimensionsForm" type="XML" />
 </core:FragmentDefinition>

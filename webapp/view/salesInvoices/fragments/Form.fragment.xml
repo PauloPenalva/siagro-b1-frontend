@@ -385,4 +385,5 @@
             />         
         </f:content>
     </f:SimpleForm>
+    <core:Fragment fragmentName="siagrob1.view.common.fragments.DimensionsForm" type="XML" />
 </core:FragmentDefinition>

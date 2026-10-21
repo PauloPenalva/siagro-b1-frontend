@@ -386,28 +386,9 @@
             </f:formElements>
           </f:FormContainer>
 
-          <f:FormContainer title="Contábil">
+          <f:FormContainer title="Dimensões gerenciais" visible="{dims>/items/0/Active}">
             <f:formElements>
-              <f:FormElement label="Centro de Custo">
-                <f:fields>
-                  <Input
-                    editable="{ui>/editable}"
-                    value="{CostCenterCode}"
-                    showValueHelp="true"
-                    valueHelpOnly="true"
-                    valueHelpRequest=".openCostCentersValueHelp" />
-                </f:fields>
-              </f:FormElement>
-              <f:FormElement label="Conta Contábil">
-                <f:fields>
-                  <Input
-                    editable="{ui>/editable}"
-                    value="{LedgerAccountCode}"
-                    showValueHelp="true"
-                    valueHelpOnly="true"
-                    valueHelpRequest=".openLedgerAccountsValueHelp" />
-                </f:fields>
-              </f:FormElement>
+              <core:Fragment fragmentName="siagrob1.view.common.fragments.DimensionFields" type="XML" />
             </f:formElements>
           </f:FormContainer>
 

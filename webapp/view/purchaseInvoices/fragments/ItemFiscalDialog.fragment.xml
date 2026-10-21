@@ -9,7 +9,7 @@
 		class="sapUiSizeCompact">
 		<content>
 			<!-- A fotografia do cálculo pela natureza: travada, quem grava é o servidor ao salvar. -->
-			<f:SimpleForm editable="false" layout="ResponsiveGridLayout" labelSpanL="5" labelSpanM="5" columnsL="2" columnsM="2">
+			<f:SimpleForm editable="false" layout="ResponsiveGridLayout" labelSpanL="5" labelSpanM="5" columnsL="2" columnsM="2" visible="{= ${ui>/taxMode} === true }">
 				<f:content>
 					<core:Title text="Operação" />
 					<Label text="Natureza" />
@@ -97,6 +97,7 @@
 					<Text text="{ path: 'FunruralSenarValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
 				</f:content>
 			</f:SimpleForm>
+			<core:Fragment fragmentName="siagrob1.view.common.fragments.DimensionsForm" type="XML" />
 		</content>
 		<endButton>
 			<Button text="Fechar" press=".onCloseItemFiscal" />

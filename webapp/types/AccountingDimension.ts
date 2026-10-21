@@ -19,4 +19,6 @@ export interface DimensionItem {
 
 export interface DimsModelData {
 	items: DimensionItem[];
+	/** Resumo da dimensão ativa com papel Parceiro (campo "Padrão de ..." no cadastro do parceiro). */
+	partner?: { exists: boolean; number: number; label: string };
 }

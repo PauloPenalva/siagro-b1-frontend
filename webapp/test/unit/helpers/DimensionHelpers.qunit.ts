@@ -33,3 +33,9 @@ QUnit.test("aceita camelCase do REST e acha a dimensão por papel", function (as
 	assert.strictEqual(dimensionForRole(dims, "Partner"), 4);
 	assert.strictEqual(dimensionForRole(dims, "Vehicle"), undefined);
 });
+
+QUnit.test("buildDimsModel resume a dimensão de papel Parceiro", function (assert) {
+	const dims = buildDimsModel([{ number: 4, name: "Sócio", active: true, role: "Partner" }]);
+	assert.deepEqual(dims.partner, { exists: true, number: 4, label: "Padrão de Sócio" });
+	assert.strictEqual(buildDimsModel([]).partner.exists, false);
+});

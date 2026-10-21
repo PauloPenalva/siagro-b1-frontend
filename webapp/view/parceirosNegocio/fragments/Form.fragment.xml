@@ -144,6 +144,18 @@
           <Input value="{RuralProducerCpf}" maxLength="14" placeholder="Só dígitos" visible="{ui>/standalone}" enabled="{= !!${IsRuralProducer} }" />
           <Label text="Optante pela contribuição sobre a folha" visible="{ui>/standalone}" />
           <CheckBox selected="{RuralPayrollOption}" visible="{ui>/standalone}" enabled="{= !!${IsRuralProducer} &amp;&amp; ${path: 'RuralProducerType', targetType: 'any'} !== 'LegalEntity' }" />
+          <!-- Dimensão de papel Parceiro: padrão herdado pelos títulos manuais do parceiro. Só existe com a dimensão ativa. -->
+          <Label text="{dims>/partner/label}" visible="{dims>/partner/exists}" />
+          <Input
+              visible="{dims>/partner/exists}"
+              value="{DefaultDimensionCode}"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".onDimensionValueHelp">
+            <customData>
+              <core:CustomData key="dim" value="{dims>/partner/number}" />
+            </customData>
+          </Input>
           <core:Title text="Observações"/>
           <Label text="Observações" />
           <TextArea

@@ -63,6 +63,11 @@ export default class Main extends FinancialDocumentsBaseController {
 
     this._advanceDialog ??= await DialogHelper.createDialog(
       this, "siagrob1.view.financialAdvances.fragments.CreateAdvanceDialog");
+    // DimensionFields liga campos relativos (Dim1Code...): modelo padrão JSON e "ui" editável próprios do diálogo.
+    this._advanceDialog.setModel(new JSONModel({
+      Dim1Code: null, Dim2Code: null, Dim3Code: null, Dim4Code: null, Dim5Code: null, LedgerAccountCode: null,
+    }));
+    this._advanceDialog.setModel(new JSONModel({ editable: true }), "ui");
     this._advanceDialog.open();
   }
 
@@ -189,6 +194,7 @@ export default class Main extends FinancialDocumentsBaseController {
       return;
     }
 
+    const dims = (this._advanceDialog.getModel() as JSONModel).getData() as Record<string, string>;
     this.onCloseAdvanceDialog();
 
     try {
@@ -208,6 +214,12 @@ export default class Main extends FinancialDocumentsBaseController {
       action.setParameter("FinancialAccountCode", form.financialAccountCode);
       action.setParameter("PaymentDate", form.paymentDate);
       action.setParameter("Comments", form.comments ?? "");
+      // Parâmetros opcionais: só os preenchidos (o servidor aplica o padrão do parceiro/contrato nos demais).
+      for (const key of ["Dim1Code", "Dim2Code", "Dim3Code", "Dim4Code", "Dim5Code", "LedgerAccountCode"]) {
+        if (dims[key]) {
+          action.setParameter(key, dims[key]);
+        }
+      }
       await action.invoke();
 
       MessageToast.show("Adiantamento incluído e pago.");

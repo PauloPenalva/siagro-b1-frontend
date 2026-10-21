@@ -44,6 +44,13 @@ export default class Add extends BaseController {
 			IsDefault: false,
 			Inactive: false,
 			Description: null,
+			// Dimensões padrão + conta da natureza (DimensionFields): nulas no payload inicial.
+			Dim1Code: null,
+			Dim2Code: null,
+			Dim3Code: null,
+			Dim4Code: null,
+			Dim5Code: null,
+			LedgerAccountCode: null,
 			CfopOutgoingInState: null,
 			CfopOutgoingOutState: null,
 			// Tributação da NF-e STANDALONE (Taxation.fragment.xml).

@@ -38,6 +38,12 @@ export interface InvoiceItemPayload {
   /** Complemento de ICMS: base e valor do ICMS da linha (0 nos demais tipos). */
   IcmsBase: number;
   IcmsValue: number;
+  Dim1Code: string;
+  Dim2Code: string;
+  Dim3Code: string;
+  Dim4Code: string;
+  Dim5Code: string;
+  LedgerAccountCode: string;
 }
 
 /**
@@ -150,6 +156,7 @@ export function blankItemRow(): InvoiceItemPayload {
     SalesInvoiceItemKey: null, PurchaseContractKey: null, UsageCode: null, UsageName: null,
     NfeItemNumber: null, FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0,
     ComplementAmount: 0, ComplementedItemKey: null, IcmsBase: 0, IcmsValue: 0,
+    Dim1Code: null, Dim2Code: null, Dim3Code: null, Dim4Code: null, Dim5Code: null, LedgerAccountCode: null,
   };
 }
 

@@ -261,6 +261,8 @@ export default class Add extends BaseController {
       // servidor calcula tudo pelas alíquotas da natureza ao gravar.
       WithholdingBase: 0, WithheldIss: 0, WithheldIrrf: 0, WithheldInss: 0, WithheldPis: 0, WithheldCofins: 0, WithheldCsll: 0,
       WithholdingsManual: false,
+      // Dimensões gerenciais + conta contábil do cabeçalho: o PUT do servidor copia tudo, então vão sempre (nulos).
+      Dim1Code: null, Dim2Code: null, Dim3Code: null, Dim4Code: null, Dim5Code: null, LedgerAccountCode: null,
       // O XML volta ao servidor no POST: é a prova documental guardada com o documento.
       XmlFileName: draft?.XmlFileName ?? null,
       XmlData: xmlContent

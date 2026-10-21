@@ -29,7 +29,16 @@ export function buildDimsModel(rows: AccountingDimension[]): DimsModelData {
 		items.push(byNumber.get(n) ?? { Number: n, Name: "", Active: false, Role: "None" });
 	}
 
-	return { items };
+	const partnerItem = items.find(item => item.Active && item.Role === "Partner");
+
+	return {
+		items,
+		partner: {
+			exists: partnerItem !== undefined,
+			number: partnerItem?.Number ?? 0,
+			label: partnerItem ? `Padrão de ${partnerItem.Name}` : ""
+		}
+	};
 }
 
 function find(dims: DimsModelData, n: number): DimensionItem {
