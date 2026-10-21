@@ -21,7 +21,7 @@ export default class Add extends DistributionRulesBaseController {
 		const firstActive = dims.items.find(item => item.Active)?.Number ?? 1;
 
 		this.ruleModel().setData({
-			Header: { Code: "", Name: "", DimensionKey: String(firstActive) },
+			Header: { Code: "", Name: "", DimensionKey: String(firstActive), DimensionNumber: firstActive },
 			Selected: { ValidFrom: "" },
 			Lines: [{ CostCenterCode: "", Percentage: null }],
 			Editable: true,
@@ -29,6 +29,14 @@ export default class Add extends DistributionRulesBaseController {
 			TotalOk: false,
 			TotalText: ""
 		});
+		this.recomputeTotal();
+	}
+
+	/** Mantém o número da dimensão (usado no value help) e zera as linhas, que eram de outra dimensão. */
+	onDimensionChange(): void {
+		const model = this.ruleModel();
+		model.setProperty("/Header/DimensionNumber", Number(model.getProperty("/Header/DimensionKey")));
+		model.setProperty("/Lines", [{ CostCenterCode: "", Percentage: null }]);
 		this.recomputeTotal();
 	}
 

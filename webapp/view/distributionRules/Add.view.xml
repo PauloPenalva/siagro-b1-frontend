@@ -28,6 +28,7 @@
 								<Select
 									selectedKey="{rule>/Header/DimensionKey}"
 									forceSelection="false"
+									change=".onDimensionChange"
 									items="{
 										path: 'dims>/items',
 										filters: [{ path: 'Active', operator: 'EQ', value1: true }]

@@ -113,12 +113,15 @@ export function buildCreateRuleBody(
 	validFrom: string,
 	lines: RuleLine[]
 ) {
+	const code = (header.Code ?? "").trim().toUpperCase();
 	return {
-		Code: (header.Code ?? "").trim().toUpperCase(),
+		Code: code,
 		Name: header.Name,
 		DimensionNumber: header.DimensionNumber,
 		Inactive: false,
 		Versions: [{
+			// RuleCode é string não anulável no servidor: sem ele o ModelState do POST recusa.
+			RuleCode: code,
 			ValidFrom: validFrom,
 			Lines: lines.map(l => ({
 				CostCenterCode: (l.CostCenterCode ?? "").trim().toUpperCase(),

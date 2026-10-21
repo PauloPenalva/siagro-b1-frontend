@@ -68,6 +68,7 @@ QUnit.test("buildCreateRuleBody leva a primeira versão", function (assert) {
 		[{ CostCenterCode: "CAM01", Percentage: 100 }]);
 	assert.strictEqual(body.Code, "FROTA");
 	assert.strictEqual(body.Versions.length, 1);
+	assert.strictEqual(body.Versions[0].RuleCode, "FROTA", "versão aninhada leva RuleCode");
 	assert.strictEqual(body.Versions[0].Lines[0].Percentage, 100);
 });
 
