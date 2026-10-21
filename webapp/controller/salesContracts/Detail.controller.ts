@@ -1,4 +1,5 @@
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import { openPdfReport } from "siagrob1/helpers/PdfReportHelpers";
 import SalesContractsBaseController from "./SalesContractsBaseController";
 import Context from "sap/ui/model/odata/v4/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
@@ -419,4 +420,20 @@ export default class Detail extends SalesContractsBaseController {
     .done(() => this.setBusy(false));
   }
 
+  /** Extrato do contrato (equivalente ao AGRR062A do Protheus) em nova aba. */
+  async onPrintContractStatement() {
+    const oContext = this.getView().getBindingContext() as Context;
+    if (!oContext) {
+      return;
+    }
+
+    try {
+      this.setBusy(true);
+      await openPdfReport(`${this.api.contractStatementReport}/sales/${oContext.getProperty("Key") as string}/print`, {});
+    } catch (error) {
+      MessageBox.error((error as Error)?.message ?? "Falha ao gerar o extrato do contrato.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
 }

@@ -36,6 +36,7 @@
           <Button visible="{= ${path: 'Status', targetType: 'any'}==='Finished' &amp;&amp; !${ui>/readonly} }" text="Reabrir" type="Transparent" press=".onReopenContract"/>
           <!-- Sem binding de Status: assinatura vale em qualquer status do contrato. -->
           <Button visible="{= !${ui>/readonly} }" text="Assinatura" type="Transparent" icon="sap-icon://signature" press=".onOpenSignatureStatusDialog"/>
+          <Button text="Extrato" tooltip="Extrato do contrato: movimentação física, fiscal e financeira" type="Transparent" icon="sap-icon://customer-financial-fact-sheet" press=".onPrintContractStatement"/>
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>
