@@ -22,7 +22,7 @@
       <OverflowToolbar>
         <content>
           <Title text="Itens" />
-          <Button text="Tributos do item" icon="sap-icon://simulate" press=".onOpenItemFiscal" visible="{= ${ui>/taxMode} === true || ${dims>/items/0/Active} === true }" />
+          <Button text="Tributos e dimensões do item" icon="sap-icon://simulate" press=".onOpenItemFiscal" visible="{= ${ui>/taxMode} === true || ${dims>/items/0/Active} === true }" />
           <ToolbarSpacer />
           <ObjectNumber
             number="{ui>/documentTotal}"

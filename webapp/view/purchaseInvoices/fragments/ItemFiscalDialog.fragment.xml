@@ -4,7 +4,7 @@
 	xmlns:f="sap.ui.layout.form">
 	<Dialog
 		core:require="{ Decimal: 'sap/ui/model/odata/type/Decimal' }"
-		title="Tributos do item {ItemCode}"
+		title="Tributos e dimensões do item {ItemCode}"
 		contentWidth="48rem"
 		class="sapUiSizeCompact">
 		<content>

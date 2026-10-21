@@ -248,7 +248,7 @@ export default abstract class CommonController extends BaseController {
   }
 
   /**
-   * Diálogo de "Tributos do item" (Entrada e Saída), criado a CADA abertura e destruído ao fechar.
+   * Diálogo de "Tributos e dimensões do item" (Entrada e Saída), criado a CADA abertura e destruído ao fechar.
    *
    * Não pode ser reaproveitado: o contexto explícito é uma linha da grade de itens, e ela morre
    * quando a view troca de documento. Com o contexto próprio destruído, o diálogo (dependente da
