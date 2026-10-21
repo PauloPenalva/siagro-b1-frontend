@@ -155,7 +155,7 @@
 							}" />
 						</t:template>
 					</t:Column>
-					<t:Column label="Entrada" width="9rem" hAlign="Center" sortProperty="PostingDate">
+					<t:Column label="Data de entrada no estoque" width="12rem" hAlign="Center" sortProperty="PostingDate">
 						<t:template>
 							<Text text="{
 								path: 'PostingDate',
