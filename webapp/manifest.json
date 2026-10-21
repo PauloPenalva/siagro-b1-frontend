@@ -859,6 +859,31 @@
           "target": "usagesDetail"
         },
         {
+          "pattern": "accounting-dimensions",
+          "name": "accountingDimensions",
+          "target": "accountingDimensions"
+        },
+        {
+          "pattern": "distribution-rules",
+          "name": "distributionRules",
+          "target": "distributionRules"
+        },
+        {
+          "pattern": "distribution-rules/new",
+          "name": "distributionRulesNew",
+          "target": "distributionRulesNew"
+        },
+        {
+          "pattern": "distribution-rules/{id}/edit",
+          "name": "distributionRulesEdit",
+          "target": "distributionRulesEdit"
+        },
+        {
+          "pattern": "company-settings",
+          "name": "companySettings",
+          "target": "companySettings"
+        },
+        {
           "pattern": "cost-centers",
           "name": "costCenters",
           "target": "costCenters"
@@ -2220,6 +2245,36 @@
 					"id": "ruralContributionRates",
           "level": 2,
 					"name": "siagrob1.view.ruralContributionRates.Main",
+          "clearControlAggregation": true
+				},
+         "accountingDimensions": {
+					"id": "accountingDimensions",
+          "level": 1,
+					"name": "siagrob1.view.accountingDimensions.Main",
+          "clearControlAggregation": true
+				},
+         "distributionRules": {
+					"id": "distributionRules",
+          "level": 1,
+					"name": "siagrob1.view.distributionRules.Main",
+          "clearControlAggregation": true
+				},
+         "distributionRulesNew": {
+					"id": "distributionRulesNew",
+          "level": 2,
+					"name": "siagrob1.view.distributionRules.Add",
+          "clearControlAggregation": true
+				},
+         "distributionRulesEdit": {
+					"id": "distributionRulesEdit",
+          "level": 2,
+					"name": "siagrob1.view.distributionRules.Edit",
+          "clearControlAggregation": true
+				},
+         "companySettings": {
+					"id": "companySettings",
+          "level": 1,
+					"name": "siagrob1.view.companySettings.Main",
           "clearControlAggregation": true
 				},
          "costCenters": {

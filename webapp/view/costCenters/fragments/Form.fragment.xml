@@ -1,4 +1,7 @@
 <core:FragmentDefinition
+    core:require="{
+        StringType: 'sap/ui/model/type/String'
+    }"
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
     xmlns:l="sap.ui.layout"
@@ -42,6 +45,18 @@
               liveChange=".validateField"
               maxLength="100"
           />
+          <Label text="Dimensão" visible="{dims>/items/0/Active}" />
+          <Select
+            selectedKey="{DimensionNumber}"
+            visible="{dims>/items/0/Active}"
+            items="{
+              path: 'dims>/items',
+              filters: [{ path: 'Active', operator: 'EQ', value1: true }]
+            }">
+            <core:Item
+              key="{ path: 'dims>Number', type: 'StringType' }"
+              text="{dims>Name}" />
+          </Select>
           <Label text="Inativo ?" />
           <CheckBox
             selected="{Inactive}"

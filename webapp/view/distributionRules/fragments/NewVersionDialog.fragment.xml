@@ -1,0 +1,25 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+
+	<Dialog id="newVersionDialog" title="Nova versão" contentWidth="24rem">
+		<content>
+			<VBox class="sapUiSmallMargin">
+				<Label text="Vigência a partir de" labelFor="newVersionDate" required="true" />
+				<DatePicker
+					id="newVersionDate"
+					value="{rule>/NewVersionDate}"
+					valueFormat="yyyy-MM-dd"
+					displayFormat="dd/MM/yyyy" />
+				<Text text="A data deve ser posterior a hoje. A nova versão começa com as linhas da versão selecionada." class="sapUiTinyMarginTop" />
+			</VBox>
+		</content>
+		<beginButton>
+			<Button text="Criar" type="Emphasized" press=".onNewVersionConfirm" />
+		</beginButton>
+		<endButton>
+			<Button text="Cancelar" press=".onNewVersionCancel" />
+		</endButton>
+	</Dialog>
+
+</core:FragmentDefinition>

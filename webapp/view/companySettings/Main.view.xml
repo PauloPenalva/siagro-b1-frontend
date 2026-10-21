@@ -1,0 +1,37 @@
+<mvc:View
+	controllerName="siagrob1.controller.companySettings.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:f="sap.ui.layout.form">
+
+	<Page title="Parâmetros da Empresa" busy="{ui>/busy}">
+		<content>
+			<f:Form id="companySettingsForm" editable="true" binding="{/CompanySettings(1)}">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1" />
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer title="Lançamentos contábeis">
+						<f:formElements>
+							<f:FormElement label="Exige centro de custo">
+								<Switch state="{RequireCostCenter}" />
+							</f:FormElement>
+							<f:FormElement label="Exige conta contábil">
+								<Switch state="{RequireLedgerAccount}" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<footer>
+			<Toolbar>
+				<ToolbarSpacer />
+				<Button text="Cancelar alterações" press=".onCancel" />
+				<Button text="Salvar" type="Emphasized" press=".onSave" />
+			</Toolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

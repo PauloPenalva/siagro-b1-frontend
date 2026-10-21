@@ -24,7 +24,7 @@ export default class Add extends BaseController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const oContext = oBinding.create({ Inactive: false }, false, false, false);
+		const oContext = oBinding.create({ Inactive: false, DimensionNumber: 1 }, false, false, false);
 
 		oView.setBindingContext(oContext);
 	}

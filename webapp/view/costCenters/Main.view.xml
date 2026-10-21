@@ -52,6 +52,19 @@
 						</t:template>
 					</t:Column>
 					<t:Column
+						label="Dimensão"
+						sortProperty="DimensionNumber"
+						visible="{dims>/items/0/Active}"
+						width="14rem"
+						>
+						<t:template>
+							<Text text="{
+								parts: [{ path: 'DimensionNumber' }, { path: 'dims>/items' }],
+								formatter: '.formatDimensionName'
+							}" />
+						</t:template>
+					</t:Column>
+					<t:Column
 						label="Inativo"
 						sortProperty="Inactive"
 						filterProperty="Inactive"

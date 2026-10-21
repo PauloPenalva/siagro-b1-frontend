@@ -509,7 +509,7 @@ class SessionService {
    * Carrega as dimensões gerenciais no model `dims` do Component. Só em STANDALONE: em SAPB1 o
    * model fica vazio e todos os campos de dimensão ficam invisíveis. Nunca rejeita.
    */
-  private async loadDimensions(): Promise<void> {
+  public async loadDimensions(): Promise<void> {
     const dimsModel = this.component.getModel("dims") as JSONModel | undefined;
     dimsModel?.setData(buildDimsModel([]));
 

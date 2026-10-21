@@ -9,6 +9,8 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
 import formatter from "siagrob1/model/formatter";
+import { label } from "siagrob1/helpers/DimensionHelpers";
+import type { DimensionItem } from "siagrob1/types/AccountingDimension";
 
 /**
  * @namespace siagrob1.controller.costCenters
@@ -22,6 +24,11 @@ export default class Main extends BaseController {
 
 	private routeMatched() {
 		this.onRefresh();
+	}
+
+	/** Nome configurado da dimensão; reavalia quando o model `dims` é recarregado. */
+	formatDimensionName(dimensionNumber: number, items: DimensionItem[]): string {
+		return label({ items }, Number(dimensionNumber)) || (dimensionNumber == null ? "" : String(dimensionNumber));
 	}
 
 	onRefresh(): void {
