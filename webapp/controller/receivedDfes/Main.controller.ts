@@ -1,4 +1,4 @@
-import Table from "sap/m/Table";
+import Table from "sap/ui/table/Table";
 import Dialog from "sap/m/Dialog";
 import Fragment from "sap/ui/core/Fragment";
 import MessageBox from "sap/m/MessageBox";
@@ -110,7 +110,7 @@ export default class Main extends CommonController {
   }
 
   private itemsBinding(): ODataListBinding {
-    return this.table().getBinding("items") as ODataListBinding;
+    return this.table().getBinding("rows") as ODataListBinding;
   }
 
   private filterBranch(): string {
@@ -156,12 +156,16 @@ export default class Main extends CommonController {
   /* ------------------------------------------------------------------ */
 
   private selectedRows(): ReceivedDfeRow[] {
-    return this.table().getSelectedContexts().map(c => (c as Context).getObject() as ReceivedDfeRow);
+    const table = this.table();
+    return table.getSelectedIndices()
+      .map(i => table.getContextByIndex(i) as Context)
+      .filter(c => !!c)
+      .map(c => c.getObject() as ReceivedDfeRow);
   }
 
   onUpdateFinished(): void {
     // A lista recarregou (filtro/refresh): a seleção anterior não vale mais.
-    this.table().removeSelections(true);
+    this.table().clearSelection();
     this.refreshFlags();
   }
 
