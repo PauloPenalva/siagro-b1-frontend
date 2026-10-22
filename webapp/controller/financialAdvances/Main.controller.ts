@@ -36,7 +36,8 @@ export default class Main extends FinancialDocumentsBaseController {
   protected get originRoute(): string { return "financialAdvances"; }
 
   onInit(): void {
-    this.createFilterModel();
+    // Situação é múltipla seleção; vazia = todas.
+    this.createFilterModel({ Status: [] });
     this.setPayablesFilters(false);
     // Habilita o filtro "Vínculo com contrato" da barra compartilhada, que só esta tela usa.
     (this.getView().getModel("pf") as JSONModel).setProperty("/advances", true);

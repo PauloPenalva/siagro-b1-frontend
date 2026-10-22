@@ -28,13 +28,12 @@
 
     <fb:FilterGroupItem name="status" label="Situação" groupName="GroupStatus" visibleInFilterBar="true">
       <fb:control>
-        <Select forceSelection="false" selectedKey="{filter>/Status}">
-          <core:ListItem key="" text="Todas"/>
-          <core:ListItem key="Open" text="Em aberto"/>
-          <core:ListItem key="PartiallySettled" text="Baixado parcial"/>
-          <core:ListItem key="Settled" text="Quitado"/>
-          <core:ListItem key="Canceled" text="Cancelado"/>
-        </Select>
+        <MultiComboBox selectedKeys="{filter>/Status}">
+          <core:Item key="Open" text="Em aberto"/>
+          <core:Item key="PartiallySettled" text="Baixado parcial"/>
+          <core:Item key="Settled" text="Quitado"/>
+          <core:Item key="Canceled" text="Cancelado"/>
+        </MultiComboBox>
       </fb:control>
     </fb:FilterGroupItem>
 
