@@ -21,7 +21,8 @@
 				enableBusyIndicator="true"
 				alternateRowColors="true"
 				rows="{
-					path: '/LedgerAccounts'
+					path: '/LedgerAccounts',
+					sorter: { path: 'Code' }
 				}"
 			>
 				<t:extension>
@@ -63,6 +64,31 @@
 								targetType: 'any',
 								formatter: 'formatter.formatLedgerAccountType'
 							}" />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Natureza"
+						sortProperty="Nature"
+						width="8rem"
+						visible="{= ${sessionModel>/erp} === 'STANDALONE' }"
+						>
+						<t:template>
+							<Text text="{
+								path: 'Nature',
+								targetType: 'any',
+								formatter: 'formatter.formatLedgerAccountNature'
+							}" />
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Conta superior"
+						sortProperty="ParentCode"
+						filterProperty="ParentCode"
+						width="10rem"
+						visible="{= ${sessionModel>/erp} === 'STANDALONE' }"
+						>
+						<t:template>
+							<Text text="{ParentCode}" wrapping="false"/>
 						</t:template>
 					</t:Column>
 					<t:Column

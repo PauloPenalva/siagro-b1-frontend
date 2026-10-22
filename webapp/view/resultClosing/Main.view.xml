@@ -1,0 +1,77 @@
+<mvc:View
+	controllerName="siagrob1.controller.resultClosing.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:form="sap.ui.layout.form"
+	xmlns:t="sap.ui.table">
+
+	<Page title="Apuração de Resultado" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0">
+		<content>
+			<MessageStrip
+				text="Zera as contas de receita e despesa até a data contra a conta de apuração (a da conta ou a das Configurações Contábeis), por filial, conta, centro de custo e item. A DRE continua mostrando o resultado do período."
+				type="Information" showIcon="true" class="sapUiSmallMargin" />
+			<form:Form editable="true">
+				<form:layout>
+					<form:ColumnLayout columnsM="1" columnsL="2" columnsXL="2" />
+				</form:layout>
+				<form:formContainers>
+					<form:FormContainer>
+						<form:formElements>
+							<form:FormElement label="Data da apuração">
+								<form:fields>
+									<DatePicker value="{rc>/Date}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" required="true" />
+								</form:fields>
+							</form:FormElement>
+							<form:FormElement label="Filial">
+								<form:fields>
+									<Input value="{rc>/BranchCode}" placeholder="Todas" showValueHelp="true" valueHelpOnly="true"
+										showClearIcon="true" valueHelpRequest=".openBranchsValueHelp" />
+								</form:fields>
+							</form:FormElement>
+							<form:FormElement label="Histórico">
+								<form:fields>
+									<Input value="{rc>/History}" placeholder="Apuração de resultado MM/AAAA" maxLength="200" />
+								</form:fields>
+							</form:FormElement>
+						</form:formElements>
+					</form:FormContainer>
+				</form:formContainers>
+			</form:Form>
+
+			<t:Table title="Saldos a apurar" selectionMode="None" class="sapUiSizeCondensed sapUiSmallMarginTop"
+				visibleRowCount="8" alternateRowColors="true" rows="{rc>/Preview}">
+				<t:columns>
+					<t:Column label="Filial" width="6rem"><t:template><Text text="{rc>BranchCode}" /></t:template></t:Column>
+					<t:Column label="Conta" width="10rem"><t:template><Text text="{rc>AccountCode}" /></t:template></t:Column>
+					<t:Column label="Centro de custo" width="10rem"><t:template><Text text="{rc>CostCenterCode}" /></t:template></t:Column>
+					<t:Column label="Item contábil" width="10rem"><t:template><Text text="{rc>AccountingItemCode}" /></t:template></t:Column>
+					<t:Column label="Saldo" hAlign="End">
+						<t:template><Text text="{path: 'rc>Amount', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}} {rc>Side}" /></t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+
+			<t:Table title="Lançamentos gerados" selectionMode="None" class="sapUiSizeCondensed sapUiSmallMarginTop"
+				visibleRowCount="4" rows="{rc>/Entries}">
+				<t:columns>
+					<t:Column label="Nº interno" width="8rem"><t:template><Text text="{rc>DocEntry}" /></t:template></t:Column>
+					<t:Column label="Filial" width="6rem"><t:template><Text text="{rc>BranchCode}" /></t:template></t:Column>
+					<t:Column label="Data" width="9rem">
+						<t:template><Text text="{path: 'rc>PostingDate', type: 'sap.ui.model.odata.type.Date', formatOptions: {pattern: 'dd/MM/yyyy'}}" /></t:template>
+					</t:Column>
+					<t:Column label="Lote/Documento" width="12rem"><t:template><Text text="{rc>Document}" /></t:template></t:Column>
+					<t:Column label="Origem"><t:template><Text text="{= ${rc>Origin} === 'Reversal' ? 'Estorno' : 'Apuração'}" /></t:template></t:Column>
+				</t:columns>
+			</t:Table>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<Button text="Prévia" icon="sap-icon://detail-view" press=".onPreview" />
+				<ToolbarSpacer />
+				<Button text="Estornar última apuração" icon="sap-icon://undo" press=".onReverse" />
+				<Button text="Apurar" type="Emphasized" icon="sap-icon://accept" press=".onRun" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

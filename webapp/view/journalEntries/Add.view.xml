@@ -1,0 +1,110 @@
+<mvc:View
+	controllerName="siagrob1.controller.journalEntries.Add"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:t="sap.ui.table">
+
+	<Page title="Lançamento Contábil Manual" showNavButton="true" navButtonPress=".onCancel" busyIndicatorDelay="0">
+		<content>
+			<f:SimpleForm id="journalEntryHeader" editable="true" layout="ResponsiveGridLayout" columnsL="2" columnsXL="2" labelSpanL="4" labelSpanXL="4">
+				<f:content>
+					<Label text="Data" required="true" />
+					<DatePicker value="{entry>/PostingDate}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" />
+					<Label text="Filial" required="true" />
+					<Input value="{entry>/BranchCode}" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBranchsValueHelp" />
+					<Label text="Lote" />
+					<Input value="{entry>/Batch}" maxLength="6" />
+					<Label text="Observação" />
+					<Input value="{entry>/Comments}" maxLength="250" />
+				</f:content>
+			</f:SimpleForm>
+			<t:Table
+				id="journalEntryLinesEditTable"
+				selectionMode="MultiToggle"
+				class="sapUiSizeCondensed sapUiSmallMarginBeginEnd"
+				visibleRowCountMode="Auto"
+				minAutoRowCount="6"
+				rows="{entry>/Lines}">
+				<t:extension>
+					<OverflowToolbar>
+						<Title text="Linhas" />
+						<ToolbarSpacer />
+						<Button text="Adicionar linha" icon="sap-icon://add" press=".onAddLine" />
+						<Button text="Remover selecionadas" icon="sap-icon://delete" press=".onRemoveLines" />
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="Tipo" width="10rem">
+						<t:template>
+							<Select selectedKey="{entry>EntryType}" change=".onLineChange" width="100%">
+								<core:Item key="Double" text="Partida dobrada" />
+								<core:Item key="Debit" text="Débito" />
+								<core:Item key="Credit" text="Crédito" />
+							</Select>
+						</t:template>
+					</t:Column>
+					<t:Column label="Conta débito" width="9rem">
+						<t:template>
+							<Input value="{entry>DebitAccountCode}" enabled="{= ${entry>EntryType} !== 'Credit' }"
+								showValueHelp="true" valueHelpRequest=".openPostingLedgerAccountsValueHelp" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Conta crédito" width="9rem">
+						<t:template>
+							<Input value="{entry>CreditAccountCode}" enabled="{= ${entry>EntryType} !== 'Debit' }"
+								showValueHelp="true" valueHelpRequest=".openPostingLedgerAccountsValueHelp" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Valor" width="9rem" hAlign="End">
+						<t:template>
+							<Input value="{ path: 'entry>Amount', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }"
+								textAlign="End" change=".onLineChange" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Histórico" width="18rem">
+						<t:template><Input value="{entry>History}" maxLength="200" /></t:template>
+					</t:Column>
+					<t:Column label="C.Custo D" width="7rem">
+						<t:template>
+							<Input value="{entry>DebitCostCenterCode}" enabled="{= ${entry>EntryType} !== 'Credit' }"
+								showValueHelp="true" valueHelpOnly="true" showClearIcon="true" valueHelpRequest=".openCostCenterValueHelp" />
+						</t:template>
+					</t:Column>
+					<t:Column label="C.Custo C" width="7rem">
+						<t:template>
+							<Input value="{entry>CreditCostCenterCode}" enabled="{= ${entry>EntryType} !== 'Debit' }"
+								showValueHelp="true" valueHelpOnly="true" showClearIcon="true" valueHelpRequest=".openCostCenterValueHelp" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Item D" width="7rem">
+						<t:template>
+							<Input value="{entry>DebitAccountingItemCode}" enabled="{= ${entry>EntryType} !== 'Credit' }"
+								showValueHelp="true" valueHelpOnly="true" showClearIcon="true" valueHelpRequest=".openAccountingItemValueHelp" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Item C" width="7rem">
+						<t:template>
+							<Input value="{entry>CreditAccountingItemCode}" enabled="{= ${entry>EntryType} !== 'Debit' }"
+								showValueHelp="true" valueHelpOnly="true" showClearIcon="true" valueHelpRequest=".openAccountingItemValueHelp" />
+						</t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ObjectStatus title="Débito" text="{ path: 'entry>/TotalDebit', formatter: '.formatMoney' }" />
+				<ObjectStatus title="Crédito" text="{ path: 'entry>/TotalCredit', formatter: '.formatMoney' }" />
+				<ObjectStatus title="Diferença" text="{ path: 'entry>/Difference', formatter: '.formatMoney' }"
+					state="{= ${entry>/Difference} === 0 ? 'Success' : 'Error' }" />
+				<ToolbarSpacer />
+				<Button text="Cancelar" press=".onCancel" />
+				<Button text="Gravar" type="Emphasized" enabled="{entry>/CanSave}" press=".onSave" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

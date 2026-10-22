@@ -1221,9 +1221,13 @@ const formatter = {
     m.set("Liability", "Passivo");
     m.set("Revenue", "Receita");
     m.set("Expense", "Despesa");
+    m.set("Equity", "Patrimônio Líquido");
 
     return m.get(value) ?? "";
   },
+
+  formatLedgerAccountNature: (value: string) =>
+    value === "Debit" ? "Devedora" : value === "Credit" ? "Credora" : "",
 
   // ---------------------------------------------------------------------------
   // Natureza de operação

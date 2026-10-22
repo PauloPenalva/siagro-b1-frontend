@@ -1,0 +1,92 @@
+<mvc:View
+	controllerName="siagrob1.controller.managementViews.Edit"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:form="sap.ui.layout.form"
+	xmlns:t="sap.ui.table">
+
+	<Page title="Visão Gerencial {mv>/View/Code}" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0">
+		<content>
+			<form:Form editable="true">
+				<form:layout>
+					<form:ColumnLayout columnsM="2" columnsL="3" columnsXL="3" />
+				</form:layout>
+				<form:formContainers>
+					<form:FormContainer>
+						<form:formElements>
+							<form:FormElement label="Código">
+								<form:fields><Input value="{mv>/View/Code}" maxLength="10" required="true" editable="{mv>/IsNew}" /></form:fields>
+							</form:FormElement>
+							<form:FormElement label="Nome">
+								<form:fields><Input value="{mv>/View/Name}" maxLength="100" required="true" /></form:fields>
+							</form:FormElement>
+							<form:FormElement label="Tipo">
+								<form:fields>
+									<Select selectedKey="{mv>/View/Type}">
+										<core:Item key="IncomeStatement" text="DRE" />
+										<core:Item key="BalanceSheet" text="Balanço" />
+									</Select>
+								</form:fields>
+							</form:FormElement>
+						</form:formElements>
+					</form:FormContainer>
+				</form:formContainers>
+			</form:Form>
+			<MessageStrip type="Information" showIcon="true" class="sapUiSmallMargin"
+				text="Sinal: usado quando a linha entra no Total superior (Subtrai = entra negativa). Fórmula: só códigos de linha somados ou subtraídos. Oculta: não aparece no relatório, mas vale nas fórmulas." />
+			<t:Table id="managementViewLinesTable" selectionMode="Single" selectionBehavior="Row" class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto" minAutoRowCount="8" rows="{mv>/View/Lines}">
+				<t:extension>
+					<OverflowToolbar>
+						<Title text="Linhas" />
+						<ToolbarSpacer />
+						<Button text="Incluir linha" icon="sap-icon://add" press=".onAddLine" />
+						<Button text="Excluir linha" icon="sap-icon://delete" press=".onRemoveLine" />
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="Ordem" width="5rem"><t:template><Input value="{mv>Order}" type="Number" /></t:template></t:Column>
+					<t:Column label="Código" width="6rem"><t:template><Input value="{mv>Code}" maxLength="10" /></t:template></t:Column>
+					<t:Column label="Descrição" width="16rem"><t:template><Input value="{mv>Description}" maxLength="100" /></t:template></t:Column>
+					<t:Column label="Superior" width="6rem"><t:template><Input value="{mv>ParentCode}" maxLength="10" /></t:template></t:Column>
+					<t:Column label="Tipo" width="8rem">
+						<t:template>
+							<Select selectedKey="{mv>Kind}" width="100%">
+								<core:Item key="Accounts" text="Contas" />
+								<core:Item key="Total" text="Total" />
+								<core:Item key="Formula" text="Fórmula" />
+							</Select>
+						</t:template>
+					</t:Column>
+					<t:Column label="Conta de" width="9rem">
+						<t:template><Input value="{mv>AccountFrom}" enabled="{= ${mv>Kind} === 'Accounts' }" showValueHelp="true" valueHelpRequest=".openLedgerAccountsValueHelp" /></t:template>
+					</t:Column>
+					<t:Column label="Conta até" width="9rem">
+						<t:template><Input value="{mv>AccountTo}" enabled="{= ${mv>Kind} === 'Accounts' }" showValueHelp="true" valueHelpRequest=".openLedgerAccountsValueHelp" /></t:template>
+					</t:Column>
+					<t:Column label="Sinal" width="7rem">
+						<t:template>
+							<Select selectedKey="{mv>Sign}" width="100%">
+								<core:Item key="Plus" text="Soma" />
+								<core:Item key="Minus" text="Subtrai" />
+							</Select>
+						</t:template>
+					</t:Column>
+					<t:Column label="Fórmula" width="10rem">
+						<t:template><Input value="{mv>Formula}" enabled="{= ${mv>Kind} === 'Formula' }" placeholder="01 - 02" /></t:template>
+					</t:Column>
+					<t:Column label="Negrito" width="5rem" hAlign="Center"><t:template><CheckBox selected="{mv>Bold}" /></t:template></t:Column>
+					<t:Column label="Oculta" width="5rem" hAlign="Center"><t:template><CheckBox selected="{mv>Hidden}" /></t:template></t:Column>
+				</t:columns>
+			</t:Table>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer />
+				<Button text="Gravar" type="Emphasized" icon="sap-icon://save" press=".onSave" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

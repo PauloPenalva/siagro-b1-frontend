@@ -1,0 +1,49 @@
+<mvc:View
+	controllerName="siagrob1.controller.reports.accountingJournal.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:form="sap.ui.layout.form">
+	<Page title="Livro Diário" busyIndicatorDelay="0" busy="{ui>/busy}">
+		<form:Form editable="true">
+			<form:layout>
+				<form:ColumnLayout columnsM="1" columnsL="1" columnsXL="2"/>
+			</form:layout>
+			<form:formContainers>
+				<form:FormContainer title="Filtros">
+					<form:formElements>
+						<form:FormElement label="De">
+							<form:fields><DatePicker value="{params>/DateFrom}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" required="true" /></form:fields>
+						</form:FormElement>
+						<form:FormElement label="Até">
+							<form:fields><DatePicker value="{params>/DateTo}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" required="true" /></form:fields>
+						</form:FormElement>
+						<form:FormElement label="Filial">
+							<form:fields>
+								<Input value="{params>/BranchCode}" placeholder="Todas" showValueHelp="true" valueHelpOnly="true"
+									showClearIcon="true" valueHelpRequest=".openBranchsValueHelp" />
+							</form:fields>
+						</form:FormElement>
+					</form:formElements>
+				</form:FormContainer>
+				<form:FormContainer title="Livro">
+					<form:formElements>
+						<form:FormElement label="Número do livro">
+							<form:fields><StepInput value="{params>/BookNumber}" min="1" max="9999" /></form:fields>
+						</form:FormElement>
+						<form:FormElement label="Folha inicial">
+							<form:fields><StepInput value="{params>/StartPage}" min="1" max="999999" /></form:fields>
+						</form:FormElement>
+					</form:formElements>
+				</form:FormContainer>
+			</form:formContainers>
+		</form:Form>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Excel" icon="sap-icon://excel-attachment" press=".onExportExcel"/>
+				<Button text="Imprimir" type="Emphasized" icon="sap-icon://print" press=".onPrintReport"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

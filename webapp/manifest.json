@@ -859,6 +859,86 @@
           "target": "usagesDetail"
         },
         {
+          "pattern": "accounting-periods",
+          "name": "accountingPeriods",
+          "target": "accountingPeriods"
+        },
+        {
+          "pattern": "accounting-settings",
+          "name": "accountingSettings",
+          "target": "accountingSettings"
+        },
+        {
+          "pattern": "journal-entries",
+          "name": "journalEntries",
+          "target": "journalEntries"
+        },
+        {
+          "pattern": "journal-entries/new",
+          "name": "journalEntriesNew",
+          "target": "journalEntriesNew"
+        },
+        {
+          "pattern": "journal-entries/{id}",
+          "name": "journalEntriesDetail",
+          "target": "journalEntriesDetail"
+        },
+        {
+          "pattern": "accounting-ledger-report",
+          "name": "accountingLedgerReport",
+          "target": "accountingLedgerReport"
+        },
+        {
+          "pattern": "accounting-trial-balance-report",
+          "name": "accountingTrialBalanceReport",
+          "target": "accountingTrialBalanceReport"
+        },
+        {
+          "pattern": "standard-postings",
+          "name": "standardPostings",
+          "target": "standardPostings"
+        },
+        {
+          "pattern": "offline-posting",
+          "name": "offlinePosting",
+          "target": "offlinePosting"
+        },
+        {
+          "pattern": "result-closing",
+          "name": "resultClosing",
+          "target": "resultClosing"
+        },
+        {
+          "pattern": "management-views",
+          "name": "managementViews",
+          "target": "managementViews"
+        },
+        {
+          "pattern": "management-views/{code}",
+          "name": "managementViewsEdit",
+          "target": "managementViewsEdit"
+        },
+        {
+          "pattern": "accounting-journal-report",
+          "name": "accountingJournalReport",
+          "target": "accountingJournalReport"
+        },
+        {
+          "pattern": "income-statement-report",
+          "name": "incomeStatementReport",
+          "target": "incomeStatementReport"
+        },
+        {
+          "pattern": "balance-sheet-report",
+          "name": "balanceSheetReport",
+          "target": "balanceSheetReport"
+        },
+        {
+          "pattern": "standard-postings/{code}",
+          "name": "standardPostingsEdit",
+          "target": "standardPostingsEdit"
+        },
+        {
           "pattern": "distribution-rules",
           "name": "distributionRules",
           "target": "distributionRules"
@@ -2252,6 +2332,102 @@
 					"name": "siagrob1.view.ruralContributionRates.Main",
           "clearControlAggregation": true
 				},
+        "accountingPeriods": {
+          "id": "accountingPeriods",
+          "level": 1,
+          "name": "siagrob1.view.accountingPeriods.Main",
+          "clearControlAggregation": true
+        },
+        "accountingSettings": {
+          "id": "accountingSettings",
+          "level": 1,
+          "name": "siagrob1.view.accountingSettings.Main",
+          "clearControlAggregation": true
+        },
+        "journalEntries": {
+          "id": "journalEntries",
+          "level": 1,
+          "name": "siagrob1.view.journalEntries.Main",
+          "clearControlAggregation": true
+        },
+        "journalEntriesNew": {
+          "id": "journalEntriesNew",
+          "level": 2,
+          "name": "siagrob1.view.journalEntries.Add",
+          "clearControlAggregation": true
+        },
+        "journalEntriesDetail": {
+          "id": "journalEntriesDetail",
+          "level": 2,
+          "name": "siagrob1.view.journalEntries.Detail",
+          "clearControlAggregation": true
+        },
+        "accountingLedgerReport": {
+          "id": "accountingLedgerReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.accountingLedger.Main",
+          "clearControlAggregation": true
+        },
+        "accountingTrialBalanceReport": {
+          "id": "accountingTrialBalanceReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.accountingTrialBalance.Main",
+          "clearControlAggregation": true
+        },
+        "standardPostings": {
+          "id": "standardPostings",
+          "level": 1,
+          "name": "siagrob1.view.standardPostings.Main",
+          "clearControlAggregation": true
+        },
+        "offlinePosting": {
+          "id": "offlinePosting",
+          "level": 1,
+          "name": "siagrob1.view.offlinePosting.Main",
+          "clearControlAggregation": true
+        },
+        "resultClosing": {
+          "id": "resultClosing",
+          "level": 1,
+          "name": "siagrob1.view.resultClosing.Main",
+          "clearControlAggregation": true
+        },
+        "managementViews": {
+          "id": "managementViews",
+          "level": 1,
+          "name": "siagrob1.view.managementViews.Main",
+          "clearControlAggregation": true
+        },
+        "managementViewsEdit": {
+          "id": "managementViewsEdit",
+          "level": 2,
+          "name": "siagrob1.view.managementViews.Edit",
+          "clearControlAggregation": true
+        },
+        "accountingJournalReport": {
+          "id": "accountingJournalReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.accountingJournal.Main",
+          "clearControlAggregation": true
+        },
+        "incomeStatementReport": {
+          "id": "incomeStatementReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.incomeStatement.Main",
+          "clearControlAggregation": true
+        },
+        "balanceSheetReport": {
+          "id": "balanceSheetReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.balanceSheet.Main",
+          "clearControlAggregation": true
+        },
+        "standardPostingsEdit": {
+          "id": "standardPostingsEdit",
+          "level": 2,
+          "name": "siagrob1.view.standardPostings.Edit",
+          "clearControlAggregation": true
+        },
          "distributionRules": {
 					"id": "distributionRules",
           "level": 1,

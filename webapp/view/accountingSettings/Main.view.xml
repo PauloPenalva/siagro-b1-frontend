@@ -1,0 +1,55 @@
+<mvc:View
+	controllerName="siagrob1.controller.accountingSettings.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+
+	<Page title="Configurações Contábeis" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0">
+		<content>
+			<MessageStrip
+				text="Sem data de corte a contabilização automática fica desligada. Nada anterior ao corte é contabilizado automaticamente: esses valores entram pelo lançamento manual de saldo inicial."
+				type="Information" showIcon="true" class="sapUiSmallMargin" />
+			<f:Form id="accountingSettingsForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="2" />
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer title="Contabilização">
+						<f:formElements>
+							<f:FormElement label="Data de corte">
+								<DatePicker value="{settings>/CutoverDate}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="Apuração de resultado">
+						<f:formElements>
+							<f:FormElement label="Conta de apuração padrão">
+								<Input
+									value="{settings>/DefaultResultClosingAccountCode}"
+									showValueHelp="true"
+									valueHelpOnly="true"
+									valueHelpRequest=".openPostingLedgerAccountsValueHelp"
+									showClearIcon="true" />
+							</f:FormElement>
+							<f:FormElement label="Periodicidade">
+								<Select selectedKey="{settings>/ClosingFrequency}">
+									<core:Item key="Monthly" text="Mensal" />
+									<core:Item key="Yearly" text="Anual" />
+								</Select>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer />
+				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+
+</mvc:View>
