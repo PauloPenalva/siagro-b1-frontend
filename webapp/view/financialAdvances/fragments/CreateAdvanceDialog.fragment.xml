@@ -110,7 +110,7 @@
                 </f:fields>
               </f:FormElement>
               <!-- Atribuição contábil: o diálogo tem modelo padrão próprio e ui próprio, ver onCreateAdvance. -->
-              <core:Fragment fragmentName="siagrob1.view.common.fragments.AccountingAssignmentFields" type="XML"/>
+              <core:Fragment fragmentName="siagrob1.view.financialDocuments.fragments.TitleAccountingFields" type="XML"/>
             </f:formElements>
           </f:FormContainer>
         </f:formContainers>
