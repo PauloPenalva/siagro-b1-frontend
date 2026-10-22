@@ -1,4 +1,6 @@
 import {
+	ACTIVE_TRACTION_TRUCKS_FILTER,
+	ACTIVE_TRAILERS_FILTER,
 	licenseState,
 	truckBodyTypeText,
 	truckKindText,
@@ -13,6 +15,11 @@ const day = (offset: number): Date => {
 	return d;
 };
 const TODAY = day(0);
+
+QUnit.test("filtros de escolha: só tração ativa / só reboque ativo, como string crua (enum)", function (assert) {
+	assert.strictEqual(ACTIVE_TRACTION_TRUCKS_FILTER, "Kind eq 'Traction' and Inactive eq false");
+	assert.strictEqual(ACTIVE_TRAILERS_FILTER, "Kind eq 'Trailer' and Inactive eq false");
+});
 
 QUnit.test("truckKindText traduz tração e reboque", function (assert) {
 	assert.strictEqual(truckKindText("Traction"), "Tração");

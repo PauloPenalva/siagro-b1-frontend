@@ -59,3 +59,12 @@ export const licenseState = (
 	}
 	return days <= LICENSE_WARNING_DAYS ? "Warning" : "None";
 };
+
+/**
+ * $filter estático (string crua: Filter do UI5 não formata enum) da escolha de veículo nos
+ * lançamentos. Filtros de lista e relatórios não usam: precisam achar documento de veículo antigo.
+ */
+export const ACTIVE_TRACTION_TRUCKS_FILTER = "Kind eq 'Traction' and Inactive eq false";
+
+/** $filter estático da escolha de reboque no conjunto. */
+export const ACTIVE_TRAILERS_FILTER = "Kind eq 'Trailer' and Inactive eq false";

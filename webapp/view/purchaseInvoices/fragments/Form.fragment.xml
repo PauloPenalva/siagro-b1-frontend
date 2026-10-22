@@ -276,7 +276,7 @@
               editable="{ui>/editable}"
               showValueHelp="true"
               valueHelpOnly="true"
-              valueHelpRequest=".openTrucksValueHelp"
+              valueHelpRequest=".openTractionTrucksValueHelp"
               value="{TruckCode}">
             <layoutData>
               <l:GridData span="XL3 L3 M3 S8" />

@@ -234,7 +234,7 @@
               editable="{ui>/editable}"
               showValueHelp="true"
               valueHelpOnly="true"
-              valueHelpRequest=".openTrucksValueHelp"
+              valueHelpRequest=".openTractionTrucksValueHelp"
               required="true"
               value="{TruckCode}"
               >

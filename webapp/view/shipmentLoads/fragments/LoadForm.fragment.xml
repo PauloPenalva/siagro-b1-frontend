@@ -91,7 +91,7 @@
 								editable="{form>/planningEditable}"
 								showValueHelp="{form>/planningEditable}"
 								valueHelpOnly="true"
-								valueHelpRequest=".openTrucksValueHelp"
+								valueHelpRequest=".openTractionTrucksValueHelp"
 								value="{form>/TruckCode}"/>
 						</f:fields>
 					</f:FormElement>

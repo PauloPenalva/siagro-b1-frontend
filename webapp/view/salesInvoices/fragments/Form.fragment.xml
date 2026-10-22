@@ -210,7 +210,7 @@
               editable="{ui>/editable}"
               showValueHelp="true"
               valueHelpOnly="true"
-              valueHelpRequest=".openTrucksValueHelp"
+              valueHelpRequest=".openTractionTrucksValueHelp"
               value="{TruckCode}"
               >
               <layoutData>

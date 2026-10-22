@@ -109,7 +109,7 @@
               value="{TruckCode}" 
               showValueHelp="true" 
               valueHelpOnly="true" 
-              valueHelpRequest=".openTrucksValueHelp">
+              valueHelpRequest=".openTractionTrucksValueHelp">
             <layoutData>
                 <l:GridData span="XL3 L3 M3 S4" />
             </layoutData>

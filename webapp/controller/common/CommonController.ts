@@ -1,3 +1,4 @@
+import { ACTIVE_TRACTION_TRUCKS_FILTER, ACTIVE_TRAILERS_FILTER } from "siagrob1/helpers/TransportHelpers";
 import BaseController from "../BaseController";
 import Input, { Input$ValueHelpRequestEvent } from "sap/m/Input";
 import Context from "sap/ui/model/odata/v4/Context";
@@ -419,6 +420,21 @@ export default abstract class CommonController extends BaseController {
 
   openTrucksValueHelp(ev: Input$ValueHelpRequestEvent) {
     void this.applyValueHelp(ev, "TrucksSelectDialog", ['Code', 'Model'], "Code");
+  }
+
+  /**
+   * Escolha de veículo nos lançamentos (balança, romaneio, carga, notas): só tração ativa.
+   * Os filtros de lista e os relatórios seguem com `openTrucksValueHelp`, que mostra todos.
+   */
+  openTractionTrucksValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "TrucksSelectDialog", ['Code', 'Model'], "Code",
+      [], undefined, ACTIVE_TRACTION_TRUCKS_FILTER);
+  }
+
+  /** Reboque ativo, para o conjunto de veículos. */
+  openTrailersValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "TrucksSelectDialog", ['Code', 'Model'], "Code",
+      [], undefined, ACTIVE_TRAILERS_FILTER);
   }
 
   openBranchsValueHelp(ev: Input$ValueHelpRequestEvent) {
