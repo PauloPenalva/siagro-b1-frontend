@@ -37,7 +37,7 @@ export default class Add extends BaseController {
 		const oContext = oBinding.create({
       ...(SessionService.isSapMode() ? {} : { "DocNumberKey": null, "CardCode": "" }),
       "QryGroup23": "N",
-      "DefaultCostCenterCode": null,
+      "DefaultLedgerAccountCode": null,
       "DefaultAccountingItemCode": null,
       "Addresses": [],
       // Toda propriedade que o formulário edita precisa existir no payload, nem que seja

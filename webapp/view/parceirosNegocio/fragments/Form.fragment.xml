@@ -127,6 +127,7 @@
               valueHelpRequest=".openPaymentConditionsValueHelp"
               value="{PaymentConditionCode}" />
           <Input value="{ui>/paymentConditionName}" editable="false" visible="{ui>/standalone}" />
+          <core:Title text="Produtor Rural" />
           <!-- Produtor rural (Funrural/SENAR na compra): tipo, CPF e opção pela folha só valem com o flag marcado. -->
           <Label text="Produtor rural" visible="{ui>/standalone}" />
           <CheckBox selected="{IsRuralProducer}" visible="{ui>/standalone}" />
@@ -144,10 +145,11 @@
           <Input value="{RuralProducerCpf}" maxLength="14" placeholder="Só dígitos" visible="{ui>/standalone}" enabled="{= !!${IsRuralProducer} }" />
           <Label text="Optante pela contribuição sobre a folha" visible="{ui>/standalone}" />
           <CheckBox selected="{RuralPayrollOption}" visible="{ui>/standalone}" enabled="{= !!${IsRuralProducer} &amp;&amp; ${path: 'RuralProducerType', targetType: 'any'} !== 'LegalEntity' }" />
-          <Label text="Centro de custo padrão" visible="{ui>/standalone}" />
-          <Input value="{DefaultCostCenterCode}" showValueHelp="true" valueHelpOnly="true" showClearIcon="true"
-                 visible="{ui>/standalone}" valueHelpRequest=".openCostCentersValueHelp" />
-          <Label text="Item contábil padrão" visible="{ui>/standalone}" />
+          <core:Title text="Contabilidade" />
+          <Label text="Conta contábil" visible="{ui>/standalone}" />
+          <Input value="{DefaultLedgerAccountCode}" showValueHelp="true" valueHelpOnly="true" showClearIcon="true"
+                 visible="{ui>/standalone}" valueHelpRequest=".openPostingLedgerAccountsValueHelp" />
+          <Label text="Item contábil" visible="{ui>/standalone}" />
           <Input value="{DefaultAccountingItemCode}" showValueHelp="true" valueHelpOnly="true" showClearIcon="true"
                  visible="{ui>/standalone}" valueHelpRequest=".openAccountingItemsValueHelp" />
           <core:Title text="Observações"/>

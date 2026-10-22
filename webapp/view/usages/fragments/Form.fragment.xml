@@ -335,25 +335,4 @@
       </uxap:ObjectPageSubSection>
     </uxap:subSections>
   </uxap:ObjectPageSection>
-
-  <uxap:ObjectPageSection id="usagesDimensionsSection" titleUppercase="false" title="Contabilização padrão" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
-    <uxap:subSections>
-      <uxap:ObjectPageSubSection title=" " titleUppercase="false">
-        <uxap:blocks>
-          <f:Form editable="true">
-            <f:layout>
-              <f:ColumnLayout columnsM="2" columnsL="2" columnsXL="2" />
-            </f:layout>
-            <f:formContainers>
-              <f:FormContainer>
-                <f:formElements>
-                  <core:Fragment fragmentName="siagrob1.view.common.fragments.AccountingAssignmentFields" type="XML" />
-                </f:formElements>
-              </f:FormContainer>
-            </f:formContainers>
-          </f:Form>
-        </uxap:blocks>
-      </uxap:ObjectPageSubSection>
-    </uxap:subSections>
-  </uxap:ObjectPageSection>
 </core:FragmentDefinition>

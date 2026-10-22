@@ -44,11 +44,6 @@ export default class Add extends BaseController {
 			IsDefault: false,
 			Inactive: false,
 			Description: null,
-			// Atribuição contábil padrão da natureza: nula no payload inicial.
-			CostCenterCode: null,
-			AccountingItemCode: null,
-			DistributionRuleCode: null,
-			LedgerAccountCode: null,
 			CfopOutgoingInState: null,
 			CfopOutgoingOutState: null,
 			// Tributação da NF-e STANDALONE (Taxation.fragment.xml).
