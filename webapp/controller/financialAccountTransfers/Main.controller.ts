@@ -7,7 +7,7 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Table from "sap/ui/table/Table";
 import Context from "sap/ui/model/odata/v4/Context";
-import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
+import Sorter from "sap/ui/model/Sorter";
 import CommonController from "siagrob1/controller/common/CommonController";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { sendJson } from "siagrob1/helpers/FetchHelpers";
@@ -76,12 +76,14 @@ export default class Main extends CommonController {
 				and: false,
 			}));
 		}
-		const binding = this.table().getBinding("rows") as ODataListBinding;
-		if (!binding) return;
-		// Filtros soltos no mesmo campo saem com "or": embrulha tudo em "and".
-		binding.filter(filters.length ? [new Filter({ filters, and: true })] : []);
-		if (binding.isSuspended()) binding.resume();
-		else binding.refresh();
+		// Ligado no código, e não no XML com `suspended: true`: na volta à tela o UI5 recria o binding a partir da
+		// definição; recriado suspenso, a tabela renderizava antes do resume e abortava. Filtros soltos no mesmo
+		// campo saem com "or": embrulha tudo em "and".
+		this.table().bindRows({
+			path: "/FinancialAccountTransfers",
+			sorter: new Sorter("TransferDate", true),
+			filters: filters.length ? [new Filter({ filters, and: true })] : [],
+		});
 	}
 
 	async onTransfer(): Promise<void> {
