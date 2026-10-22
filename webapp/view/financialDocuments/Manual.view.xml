@@ -163,7 +163,7 @@
           </uxap:ObjectPageSubSection>
         </uxap:subSections>
       </uxap:ObjectPageSection>
-      <uxap:ObjectPageSection titleUppercase="false" title="Atribuição contábil" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
+      <uxap:ObjectPageSection titleUppercase="false" title="Contábil" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
         <uxap:subSections>
           <uxap:ObjectPageSubSection title=" " titleUppercase="false">
             <f:Form editable="true">

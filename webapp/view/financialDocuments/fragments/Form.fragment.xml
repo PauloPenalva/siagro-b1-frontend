@@ -189,7 +189,7 @@
   <f:Form editable="true" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
   <f:layout><f:ColumnLayout columnsM="2" columnsL="3" columnsXL="3" /></f:layout>
   <f:formContainers>
-    <f:FormContainer title="Atribuição contábil">
+    <f:FormContainer title="Contábil">
       <f:formElements>
         <core:Fragment fragmentName="siagrob1.view.common.fragments.AccountingAssignmentFields" type="XML" />
       </f:formElements>
