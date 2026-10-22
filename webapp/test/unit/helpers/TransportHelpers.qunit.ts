@@ -4,6 +4,7 @@ import {
 	buildCombinationSavePayload,
 	buildTransportSettingsPayload,
 	licenseState,
+	shouldSaveTransport,
 	trailersText,
 	truckBodyTypeText,
 	truckKindText,
@@ -65,6 +66,12 @@ QUnit.test("buildTransportSettingsPayload: sem responsável vai 0 e produção �
 	assert.strictEqual(payload.AverbaEnvironment, 1);
 	assert.strictEqual(payload.AverbaPassword, "x");
 	assert.strictEqual(payload.AverbaEnabled, false);
+});
+
+QUnit.test("shouldSaveTransport só grava quando é STANDALONE e a leitura deu certo", function (assert) {
+	assert.strictEqual(shouldSaveTransport(true, true), true);
+	assert.strictEqual(shouldSaveTransport(true, false), false, "leitura falhou: gravar apagaria a configuração");
+	assert.strictEqual(shouldSaveTransport(false, true), false, "SAPB1 não tem transportadora");
 });
 
 QUnit.test("truckKindText traduz tração e reboque", function (assert) {

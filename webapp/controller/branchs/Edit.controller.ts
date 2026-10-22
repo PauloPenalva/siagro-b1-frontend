@@ -4,7 +4,7 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
-import { buildTransportSettingsPayload, TransportSettings } from "siagrob1/helpers/TransportHelpers";
+import { buildTransportSettingsPayload, shouldSaveTransport, TransportSettings } from "siagrob1/helpers/TransportHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import CommonController from "../common/CommonController";
 
@@ -22,6 +22,7 @@ export default class Edit extends CommonController {
 		this.clearStates("formBranchs");
 		const { id: branchId } = ev.getParameter("arguments") as { id: string };
 		this.transport().setData({});
+		this.transportLoaded = false;
 		void this.refreshStandaloneFlag().then(() => this.isStandalone() ? this.loadTransport(branchId) : undefined);
 		this.setThirdPartyReturnUsageDescription("");
     
@@ -65,7 +66,7 @@ export default class Edit extends CommonController {
 			if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 				oModel.resetChanges(oModel.getUpdateGroupId())
 				// A filial já foi gravada; se a transportadora falhar, a tela fica aberta com a mensagem.
-				if (this.isStandalone() && !(await this.saveTransport())) {
+				if (shouldSaveTransport(this.isStandalone(), this.transportLoaded) && !(await this.saveTransport())) {
 					return;
 				}
 				MessageToast.show("Dados atualizados com sucesso.", {
@@ -88,6 +89,9 @@ export default class Edit extends CommonController {
 		this.onNavBack();
 	}
 
+	/** A leitura da transportadora deu certo; sem ela a gravação apagaria a configuração. */
+	private transportLoaded = false;
+
 	private transport(): JSONModel {
 		return this.getView().getModel("transport") as JSONModel;
 	}
@@ -107,6 +111,7 @@ export default class Edit extends CommonController {
 			return;
 		}
 		this.transport().setData({ ...odataValue<TransportSettings>(result.data), AverbaPassword: "" });
+		this.transportLoaded = true;
 	}
 
 	private async saveTransport(): Promise<boolean> {

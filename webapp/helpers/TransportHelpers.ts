@@ -134,3 +134,9 @@ export const buildTransportSettingsPayload = (branchCode: string, s: TransportSe
 	AverbaCode: blankToNull(s.AverbaCode),
 	AverbaEnvironment: ENVIRONMENT[s.AverbaEnvironment ?? ""] ?? 1,
 });
+
+/**
+ * A seção Transportadora só é gravada se a leitura dela deu certo: gravar o modelo vazio de uma
+ * leitura que falhou apagaria RNTRC, seguro e AT&M do servidor.
+ */
+export const shouldSaveTransport = (standalone: boolean, loaded: boolean): boolean => standalone && loaded;
