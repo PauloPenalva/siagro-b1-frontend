@@ -173,7 +173,7 @@
               <f:formContainers>
                 <f:FormContainer>
                   <f:formElements>
-                    <core:Fragment fragmentName="siagrob1.view.common.fragments.AccountingAssignmentFields" type="XML" />
+                    <core:Fragment fragmentName="siagrob1.view.financialDocuments.fragments.TitleAccountingFields" type="XML" />
                   </f:formElements>
                 </f:FormContainer>
               </f:formContainers>
