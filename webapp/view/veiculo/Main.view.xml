@@ -51,13 +51,29 @@
 							<Text text="{Model}" />
 						</t:template>
 					</t:Column>
-					<t:Column
-						label="Modelo"
-						sortProperty="Model"
-						filterProperty="Model"
-						>
+					<t:Column label="Tipo" sortProperty="Kind" width="7rem">
 						<t:template>
-							<Text text="{Model}" />
+							<Text text="{ path: 'Kind', formatter: 'formatter.truckKindText' }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Rodado" width="11rem">
+						<t:template>
+							<Text text="{ path: 'WheelType', formatter: 'formatter.truckWheelTypeText' }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Carroceria" width="11rem">
+						<t:template>
+							<Text text="{ path: 'BodyType', formatter: 'formatter.truckBodyTypeText' }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Tara (kg)" sortProperty="TareWeight" hAlign="End" width="7rem">
+						<t:template>
+							<Text text="{ path: 'TareWeight', type: 'sap.ui.model.type.Integer', formatOptions: { groupingEnabled: true, groupingSeparator: '.' } }" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Capacidade (kg)" sortProperty="CapacityKg" hAlign="End" width="8rem">
+						<t:template>
+							<Text text="{ path: 'CapacityKg', type: 'sap.ui.model.type.Integer', formatOptions: { groupingEnabled: true, groupingSeparator: '.' } }" />
 						</t:template>
 					</t:Column>
           <t:Column
@@ -76,6 +92,11 @@
 						>
 						<t:template>
 							<Text text="{State/Abbreviation}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Inativo" sortProperty="Inactive" hAlign="Center" width="5rem">
+						<t:template>
+							<CheckBox selected="{Inactive}" editable="false" />
 						</t:template>
 					</t:Column>
 				</t:columns>

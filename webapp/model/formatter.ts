@@ -1,3 +1,4 @@
+import { licenseState, truckBodyTypeText, truckKindText, truckWheelTypeText } from "siagrob1/helpers/TransportHelpers";
 import {
   allocationOriginHighlight,
   allocationOriginIcon,
@@ -1693,6 +1694,10 @@ const formatter = {
   ): string => formatter.formatDecimal(calculateFreightPrice(method, unitPrice, grossWeight), 2),
 
   freightUnitDescription,
+  truckKindText,
+  truckWheelTypeText,
+  truckBodyTypeText,
+  licenseState,
 };
 
 export default formatter;

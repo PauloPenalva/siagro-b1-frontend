@@ -1,6 +1,8 @@
 import { Input$LiveChangeEvent } from "sap/m/Input";
 import InputBase, { InputBase$ChangeEvent } from "sap/m/InputBase";
+import { Select$ChangeEvent } from "sap/m/Select";
 import { ValueState } from "sap/ui/core/library";
+import Context from "sap/ui/model/odata/v4/Context";
 import { INVALID_PLATE_MESSAGE, isValidPlate, normalizePlate } from "siagrob1/helpers/PlateHelpers";
 import CommonController from "../common/CommonController";
 
@@ -28,6 +30,39 @@ export default class VeiculoBaseController extends CommonController {
     const input = ev.getSource();
     input.setValue(normalizePlate(ev.getParameter("value")));
     this.validatePlate(input);
+  }
+
+  /**
+   * Select de enum anulável: a opção vazia grava `null`, não "" (o OData recusa "" num enum).
+   */
+  onNullableSelectChange(ev: Select$ChangeEvent): void {
+    const select = ev.getSource();
+    const context = select.getBindingContext() as Context;
+    const path = select.getBinding("selectedKey")?.getPath();
+
+    if (context && path && !select.getSelectedKey()) {
+      void context.setProperty(path, null);
+    }
+  }
+
+  /** Reboque não tem rodado: ao virar reboque, o rodado é apagado (o backend recusaria). */
+  onKindChange(ev: Select$ChangeEvent): void {
+    const context = ev.getSource().getBindingContext() as Context;
+
+    if (context && ev.getSource().getSelectedKey() === "Trailer") {
+      void context.setProperty("WheelType", null);
+    }
+  }
+
+  /** Voltar a "Próprio" limpa os dados do proprietário terceiro. */
+  onOwnerTypeChange(ev: Select$ChangeEvent): void {
+    const context = ev.getSource().getBindingContext() as Context;
+
+    if (context && ev.getSource().getSelectedKey() === "Own") {
+      void context.setProperty("OwnerCardCode", null);
+      void context.setProperty("OwnerRntrc", null);
+      void context.setProperty("OwnerKind", null);
+    }
   }
 
   protected validatePlate(input = this.byId("plateInput") as InputBase): boolean {

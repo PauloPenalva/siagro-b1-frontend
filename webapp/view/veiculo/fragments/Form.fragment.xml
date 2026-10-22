@@ -2,7 +2,6 @@
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
     xmlns:l="sap.ui.layout"
-    xmlns:t="sap.ui.table"
     xmlns:core="sap.ui.core"
 >
     <f:SimpleForm
@@ -21,14 +20,11 @@
       columnsXL="3"
       columnsL="2"
       columnsM="2"
-      singleContainerFullSize="true"
+      singleContainerFullSize="false"
 		  busyIndicatorDelay="0">
         <f:content>
-          <core:Title
-            text="Dados do Veiculo"
-            emphasized="true"
-          />
-          <Label text="Codigo" />
+          <core:Title text="Identificação" />
+          <Label text="Placa" />
           <!-- maxLength 8, não 7: colar "CUD 1H57" tem de chegar inteiro ao change, que tira o espaço (GAC-1190) -->
           <Input
             id="plateInput"
@@ -45,6 +41,61 @@
               editable="true"
               liveChange=".validateField"
           />
+          <Label text="RENAVAM" />
+          <Input value="{Renavam}" maxLength="11" type="Number" />
+          <Label text="Municipio" />
+          <Input
+              value="{City}"
+              editable="true"
+              liveChange=".validateField"
+          />
+          <Label text="Uf" />
+          <Input
+              value="{StateKey}"
+              editable="true"
+              required="true"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              valueHelpRequest=".openStatesValueHelp"
+              liveChange=".validateField">
+              <customData>
+                <core:CustomData key="descriptionProperty" value="State/Code,State/Abbreviation" />
+              </customData>
+            <layoutData>
+              <l:GridData span="XL2 L2 M3 S4" />
+            </layoutData>
+          </Input>
+          <Input value="{State/Abbreviation}" editable="false" />
+          <Label text="Inativo" />
+          <CheckBox selected="{Inactive}" />
+
+          <core:Title text="Características" />
+          <Label text="Tipo" />
+          <Select selectedKey="{Kind}" change=".onKindChange">
+            <core:Item key="Traction" text="Tração" />
+            <core:Item key="Trailer" text="Reboque" />
+          </Select>
+          <Label text="Tipo de rodado" />
+          <Select selectedKey="{WheelType}" forceSelection="false" change=".onNullableSelectChange"
+                  visible="{= ${Kind} !== 'Trailer' }">
+            <core:Item key="" text="" />
+            <core:Item key="Truck" text="01 - Truck" />
+            <core:Item key="Stump" text="02 - Toco" />
+            <core:Item key="TractorUnit" text="03 - Cavalo mecânico" />
+            <core:Item key="Van" text="04 - VAN" />
+            <core:Item key="Utility" text="05 - Utilitário" />
+            <core:Item key="Other" text="06 - Outros" />
+          </Select>
+          <Label text="Tipo de carroceria" />
+          <Select selectedKey="{BodyType}" forceSelection="false" change=".onNullableSelectChange">
+            <core:Item key="" text="" />
+            <core:Item key="NotApplicable" text="00 - Não aplicável" />
+            <core:Item key="Open" text="01 - Aberta" />
+            <core:Item key="ClosedBox" text="02 - Fechada/Baú" />
+            <core:Item key="Bulk" text="03 - Graneleira" />
+            <core:Item key="Container" text="04 - Porta-container" />
+            <core:Item key="Sider" text="05 - Sider" />
+          </Select>
           <Label text="Tara (kg)" />
           <Input
             value="{
@@ -57,31 +108,36 @@
             }"
             editable="true"
           />
-          <Label text="Municipio" />
-          <Input
-              value="{City}"
-              editable="true"
-              liveChange=".validateField"
-          />
-          <Label text="Uf" />
-          <Input
-              value="{StateKey}"
-              editable="true"
-              required="true"
-              showValueHelp="true" 
-              valueHelpOnly="true" 
-              valueHelpRequest=".openStatesValueHelp"
-              liveChange=".validateField">
-              <customData>
-                <core:CustomData key="descriptionProperty" value="State/Code,State/Abbreviation" />
-              </customData>
-            <layoutData>
-              <l:GridData span="XL2 L2 M3 S4" />
-            </layoutData>
-          </Input>
-          <Input value="{State/Abbreviation}" editable="false" />
+          <Label text="Capacidade (kg)" />
+          <Input value="{ path: 'CapacityKg', type: 'sap.ui.model.type.Integer', formatOptions: { groupingEnabled: true, groupingSeparator: '.' } }" />
+          <Label text="Capacidade (m³)" />
+          <Input value="{ path: 'CapacityM3', type: 'sap.ui.model.type.Integer' }" />
+
+          <!-- O visible do Title não vale para o container do SimpleForm: sem texto, o cabeçalho some. -->
+          <core:Title text="{= ${ui>/standalone} ? 'Proprietário' : '' }" />
+          <Label text="Proprietário" visible="{ui>/standalone}" />
+          <Select selectedKey="{OwnerType}" visible="{ui>/standalone}" change=".onOwnerTypeChange">
+            <core:Item key="Own" text="Próprio" />
+            <core:Item key="ThirdParty" text="Terceiro" />
+          </Select>
+          <Label text="Parceiro proprietário" required="true"
+                 visible="{= ${ui>/standalone} === true &amp;&amp; ${OwnerType} === 'ThirdParty' }" />
+          <Input value="{OwnerCardCode}" showValueHelp="true" valueHelpOnly="true"
+                 valueHelpRequest=".openBusinessPartnersValueHelp"
+                 visible="{= ${ui>/standalone} === true &amp;&amp; ${OwnerType} === 'ThirdParty' }" />
+          <Label text="RNTRC do proprietário"
+                 visible="{= ${ui>/standalone} === true &amp;&amp; ${OwnerType} === 'ThirdParty' }" />
+          <Input value="{OwnerRntrc}" maxLength="8" type="Number"
+                 visible="{= ${ui>/standalone} === true &amp;&amp; ${OwnerType} === 'ThirdParty' }" />
+          <Label text="Tipo de proprietário"
+                 visible="{= ${ui>/standalone} === true &amp;&amp; ${OwnerType} === 'ThirdParty' }" />
+          <Select selectedKey="{OwnerKind}" forceSelection="false" change=".onNullableSelectChange"
+                  visible="{= ${ui>/standalone} === true &amp;&amp; ${OwnerType} === 'ThirdParty' }">
+            <core:Item key="" text="" />
+            <core:Item key="TacAggregate" text="0 - TAC Agregado" />
+            <core:Item key="TacIndependent" text="1 - TAC Independente" />
+            <core:Item key="Other" text="2 - Outros" />
+          </Select>
         </f:content>
-        <core:Title />
-        <core:Title />
     </f:SimpleForm>
 </core:FragmentDefinition>
