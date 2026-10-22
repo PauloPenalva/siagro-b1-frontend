@@ -118,16 +118,6 @@ export default class Main extends BaseController {
 		this.navTo("usagesNew");
 	}
 
-	/** Alíquotas de IBS/CBS por vigência (só STANDALONE — o botão some em SAPB1). */
-	onOpenIbsCbsRates() {
-		this.navTo("ibsCbsRates");
-	}
-
-	/** Alíquotas da contribuição social do produtor rural por vigência (só STANDALONE). */
-	onOpenRuralContributionRates() {
-		this.navTo("ruralContributionRates");
-	}
-
 	onDetail(): void {
 		const oContext = this.getSelectRowContext(this.byId("usagesTable") as Table);
 		if (!oContext) {
