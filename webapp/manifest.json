@@ -859,6 +859,41 @@
           "target": "usagesDetail"
         },
         {
+          "pattern": "accounting-periods",
+          "name": "accountingPeriods",
+          "target": "accountingPeriods"
+        },
+        {
+          "pattern": "accounting-settings",
+          "name": "accountingSettings",
+          "target": "accountingSettings"
+        },
+        {
+          "pattern": "journal-entries",
+          "name": "journalEntries",
+          "target": "journalEntries"
+        },
+        {
+          "pattern": "journal-entries/new",
+          "name": "journalEntriesNew",
+          "target": "journalEntriesNew"
+        },
+        {
+          "pattern": "journal-entries/{id}",
+          "name": "journalEntriesDetail",
+          "target": "journalEntriesDetail"
+        },
+        {
+          "pattern": "accounting-ledger-report",
+          "name": "accountingLedgerReport",
+          "target": "accountingLedgerReport"
+        },
+        {
+          "pattern": "accounting-trial-balance-report",
+          "name": "accountingTrialBalanceReport",
+          "target": "accountingTrialBalanceReport"
+        },
+        {
           "pattern": "distribution-rules",
           "name": "distributionRules",
           "target": "distributionRules"
@@ -2252,6 +2287,48 @@
 					"name": "siagrob1.view.ruralContributionRates.Main",
           "clearControlAggregation": true
 				},
+        "accountingPeriods": {
+          "id": "accountingPeriods",
+          "level": 1,
+          "name": "siagrob1.view.accountingPeriods.Main",
+          "clearControlAggregation": true
+        },
+        "accountingSettings": {
+          "id": "accountingSettings",
+          "level": 1,
+          "name": "siagrob1.view.accountingSettings.Main",
+          "clearControlAggregation": true
+        },
+        "journalEntries": {
+          "id": "journalEntries",
+          "level": 1,
+          "name": "siagrob1.view.journalEntries.Main",
+          "clearControlAggregation": true
+        },
+        "journalEntriesNew": {
+          "id": "journalEntriesNew",
+          "level": 2,
+          "name": "siagrob1.view.journalEntries.Add",
+          "clearControlAggregation": true
+        },
+        "journalEntriesDetail": {
+          "id": "journalEntriesDetail",
+          "level": 2,
+          "name": "siagrob1.view.journalEntries.Detail",
+          "clearControlAggregation": true
+        },
+        "accountingLedgerReport": {
+          "id": "accountingLedgerReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.accountingLedger.Main",
+          "clearControlAggregation": true
+        },
+        "accountingTrialBalanceReport": {
+          "id": "accountingTrialBalanceReport",
+          "level": 1,
+          "name": "siagrob1.view.reports.accountingTrialBalance.Main",
+          "clearControlAggregation": true
+        },
          "distributionRules": {
 					"id": "distributionRules",
           "level": 1,
