@@ -2322,13 +2322,13 @@
 				},
         "ibsCbsRates": {
 					"id": "ibsCbsRates",
-          "level": 2,
+          "level": 1,
 					"name": "siagrob1.view.ibsCbsRates.Main",
           "clearControlAggregation": true
 				},
         "ruralContributionRates": {
 					"id": "ruralContributionRates",
-          "level": 2,
+          "level": 1,
 					"name": "siagrob1.view.ruralContributionRates.Main",
           "clearControlAggregation": true
 				},
