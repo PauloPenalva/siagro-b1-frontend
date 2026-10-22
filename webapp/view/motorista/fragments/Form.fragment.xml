@@ -79,7 +79,7 @@
           <Label text="Validade da CNH" />
           <DatePicker
               value="{ path: 'LicenseExpiresOn', type: 'sap.ui.model.odata.type.Date' }"
-              valueState="{ path: 'LicenseExpiresOn', formatter: 'formatter.licenseState' }"
+              valueState="{ path: 'LicenseExpiresOn', targetType: 'any', formatter: 'formatter.licenseState' }"
               valueStateText="CNH vencida ou a vencer em até 30 dias." />
         </f:content>
         <core:Title />

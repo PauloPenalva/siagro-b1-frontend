@@ -76,7 +76,7 @@
 						<t:template>
 							<ObjectStatus
 								text="{ path: 'LicenseExpiresOn', type: 'sap.ui.model.odata.type.Date' }"
-								state="{ path: 'LicenseExpiresOn', formatter: 'formatter.licenseState' }" />
+								state="{ path: 'LicenseExpiresOn', targetType: 'any', formatter: 'formatter.licenseState' }" />
 						</t:template>
 					</t:Column>
 					<t:Column label="Inativo" sortProperty="Inactive" hAlign="Center" width="5rem">

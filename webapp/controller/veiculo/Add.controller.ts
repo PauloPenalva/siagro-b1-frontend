@@ -25,7 +25,7 @@ export default class Add extends VeiculoBaseController {
 		}
 
 		// Os Selects de Tipo e Proprietário precisam de valor inicial (os defaults do servidor só chegam depois de gravar).
-		const oContext = oBinding.create({ Kind: "Traction", OwnerType: "Own", Inactive: false }, false, false, false);
+		const oContext = oBinding.create({ Kind: "Traction", OwnerType: "Own", Inactive: false, WheelType: null, BodyType: null, OwnerKind: null }, false, false, false);
 
 		oView.setBindingContext(oContext);
 	}

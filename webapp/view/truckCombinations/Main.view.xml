@@ -22,7 +22,7 @@
 				alternateRowColors="true"
 				rows="{
 					path: '/TruckCombinations',
-					parameters: { $expand: 'Trailers' },
+					parameters: { $expand: { Trailers: { $select: ['Position', 'TrailerTruckCode'] } } },
 					sorter: { path: 'Code' }
 				}"
 			>
@@ -50,7 +50,7 @@
 					</t:Column>
 					<t:Column label="Reboques" width="16rem">
 						<t:template>
-							<Text text="{ path: 'Trailers', formatter: 'formatter.trailersText' }" wrapping="false"/>
+							<Text text="{ path: 'Trailers', targetType: 'any', formatter: 'formatter.trailersText' }" wrapping="false"/>
 						</t:template>
 					</t:Column>
 					<t:Column label="Motorista padrão" sortProperty="DefaultDriverCode" width="9rem">

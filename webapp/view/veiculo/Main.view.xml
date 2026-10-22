@@ -53,17 +53,17 @@
 					</t:Column>
 					<t:Column label="Tipo" sortProperty="Kind" width="7rem">
 						<t:template>
-							<Text text="{ path: 'Kind', formatter: 'formatter.truckKindText' }" wrapping="false"/>
+							<Text text="{ path: 'Kind', targetType: 'any', formatter: 'formatter.truckKindText' }" wrapping="false"/>
 						</t:template>
 					</t:Column>
 					<t:Column label="Rodado" width="11rem">
 						<t:template>
-							<Text text="{ path: 'WheelType', formatter: 'formatter.truckWheelTypeText' }" wrapping="false"/>
+							<Text text="{ path: 'WheelType', targetType: 'any', formatter: 'formatter.truckWheelTypeText' }" wrapping="false"/>
 						</t:template>
 					</t:Column>
 					<t:Column label="Carroceria" width="11rem">
 						<t:template>
-							<Text text="{ path: 'BodyType', formatter: 'formatter.truckBodyTypeText' }" wrapping="false"/>
+							<Text text="{ path: 'BodyType', targetType: 'any', formatter: 'formatter.truckBodyTypeText' }" wrapping="false"/>
 						</t:template>
 					</t:Column>
 					<t:Column label="Tara (kg)" sortProperty="TareWeight" hAlign="End" width="7rem">
