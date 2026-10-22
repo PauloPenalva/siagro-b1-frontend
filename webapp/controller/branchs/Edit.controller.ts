@@ -2,6 +2,10 @@ import MessageToast from "sap/m/MessageToast";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
+import { buildTransportSettingsPayload, TransportSettings } from "siagrob1/helpers/TransportHelpers";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
 import CommonController from "../common/CommonController";
 
 /**
@@ -10,12 +14,15 @@ import CommonController from "../common/CommonController";
 export default class Edit extends CommonController {
 
 	onInit(): void {	
+		this.getView().setModel(new JSONModel({}), "transport");
 		this.getRouter().getRoute("branchsEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
 		this.clearStates("formBranchs");
-		void this.refreshStandaloneFlag();
+		const { id: branchId } = ev.getParameter("arguments") as { id: string };
+		this.transport().setData({});
+		void this.refreshStandaloneFlag().then(() => this.isStandalone() ? this.loadTransport(branchId) : undefined);
 		this.setThirdPartyReturnUsageDescription("");
     
     const oModel = this.getView().getModel() as ODataModel;
@@ -57,6 +64,10 @@ export default class Edit extends CommonController {
 			await oModel.submitBatch(oModel.getUpdateGroupId());
 			if (!oModel.hasPendingChanges(oModel.getUpdateGroupId())) {
 				oModel.resetChanges(oModel.getUpdateGroupId())
+				// A filial já foi gravada; se a transportadora falhar, a tela fica aberta com a mensagem.
+				if (this.isStandalone() && !(await this.saveTransport())) {
+					return;
+				}
 				MessageToast.show("Dados atualizados com sucesso.", {
 					closeOnBrowserNavigation: false
 				});
@@ -75,5 +86,65 @@ export default class Edit extends CommonController {
 		}
 
 		this.onNavBack();
+	}
+
+	private transport(): JSONModel {
+		return this.getView().getModel("transport") as JSONModel;
+	}
+
+	private isStandalone(): boolean {
+		return (this.getModel("ui") as JSONModel)?.getProperty("/standalone") === true;
+	}
+
+	private branchCode(): string {
+		return this.getView().getBindingContext()?.getProperty("Code") as string;
+	}
+
+	private async loadTransport(branchCode: string): Promise<void> {
+		const result = await sendJson("GET", `${ServerRoutes.branchTransportSettingsGet}(BranchCode='${encodeURIComponent(branchCode)}')`);
+		if (!result.ok) {
+			MessageBox.error(result.message);
+			return;
+		}
+		this.transport().setData({ ...odataValue<TransportSettings>(result.data), AverbaPassword: "" });
+	}
+
+	private async saveTransport(): Promise<boolean> {
+		const code = this.branchCode();
+		const result = await sendJson("POST", ServerRoutes.branchTransportSettingsSave,
+			buildTransportSettingsPayload(code, this.transport().getData() as TransportSettings));
+		if (!result.ok) {
+			MessageBox.error(`Filial gravada, mas a transportadora não: ${result.message}`);
+			return false;
+		}
+		this.transport().setData({ ...odataValue<TransportSettings>(result.data), AverbaPassword: "" });
+		return true;
+	}
+
+	/** Só o login na AT&M, com o que está na tela (senha vazia usa a gravada). Não grava nada. */
+	async onTestAverba(): Promise<void> {
+		const payload = buildTransportSettingsPayload(this.branchCode(), this.transport().getData() as TransportSettings);
+		this.setBusy(true);
+		try {
+			const result = await sendJson("POST", ServerRoutes.branchTransportSettingsTestAverba, {
+				BranchCode: payload.BranchCode,
+				AverbaUser: payload.AverbaUser,
+				AverbaPassword: payload.AverbaPassword,
+				AverbaCode: payload.AverbaCode,
+				AverbaEnvironment: payload.AverbaEnvironment,
+			});
+			if (!result.ok) {
+				MessageBox.error(result.message);
+				return;
+			}
+			const test = odataValue<{ Success: boolean; Message: string }>(result.data);
+			if (test.Success) {
+				MessageToast.show(test.Message);
+			} else {
+				MessageBox.error(test.Message);
+			}
+		} finally {
+			this.setBusy(false);
+		}
 	}
 }

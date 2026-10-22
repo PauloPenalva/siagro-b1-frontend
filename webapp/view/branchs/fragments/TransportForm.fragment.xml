@@ -1,0 +1,56 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+    <!-- Seção "Transportadora" (só STANDALONE): RNTRC, seguro padrão do CT-e/MDF-e e averbação AT&M.
+         Modelo próprio (transport), gravado pela ação BranchTransportSettingsSave depois da filial. -->
+    <f:SimpleForm
+      id="formTransport"
+      visible="{ui>/standalone}"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0"
+      columnsXL="3" columnsL="2" columnsM="2"
+      singleContainerFullSize="false">
+        <f:content>
+          <core:Title text="Transportadora" />
+          <Label text="RNTRC" />
+          <Input value="{transport>/CompanyRntrc}" maxLength="8" type="Number" />
+
+          <core:Title text="Seguro padrão" />
+          <Label text="Responsável" />
+          <Select selectedKey="{transport>/InsuranceResponsible}" forceSelection="false">
+            <core:Item key="" text="" />
+            <core:Item key="Issuer" text="1 - Emitente" />
+            <core:Item key="Contractor" text="2 - Contratante" />
+          </Select>
+          <Label text="CNPJ da seguradora" />
+          <Input value="{transport>/InsurerTaxId}" maxLength="18" />
+          <Label text="Nome da seguradora" />
+          <Input value="{transport>/InsurerName}" maxLength="115" />
+          <Label text="Apólice" />
+          <Input value="{transport>/PolicyNumber}" maxLength="20" />
+
+          <core:Title text="Averbação AT&amp;M" />
+          <Label text="Averbar pela AT&amp;M" />
+          <CheckBox selected="{transport>/AverbaEnabled}" />
+          <Label text="Ambiente" />
+          <Select selectedKey="{transport>/AverbaEnvironment}">
+            <core:Item key="Production" text="Produção" />
+            <core:Item key="Homologation" text="Homologação" />
+          </Select>
+          <Label text="Usuário" />
+          <Input value="{transport>/AverbaUser}" maxLength="100" />
+          <Label text="Senha" />
+          <Input value="{transport>/AverbaPassword}" type="Password"
+                 placeholder="{= ${transport>/HasAverbaPassword} ? 'Senha gravada — deixe em branco para manter' : '' }" />
+          <Label text="Código" />
+          <Input value="{transport>/AverbaCode}" maxLength="20" />
+          <Label text="" />
+          <Button text="Testar conexão AT&amp;M" icon="sap-icon://connected" press=".onTestAverba" />
+        </f:content>
+    </f:SimpleForm>
+</core:FragmentDefinition>

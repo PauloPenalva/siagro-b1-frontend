@@ -14,6 +14,7 @@
 		<content>
 
 			<core:Fragment fragmentName="siagrob1.view.branchs.fragments.Form" type="XML" />
+			<core:Fragment fragmentName="siagrob1.view.branchs.fragments.TransportForm" type="XML" />
 
 		</content>
 		<footer>

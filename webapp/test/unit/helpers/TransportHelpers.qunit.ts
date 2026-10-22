@@ -2,6 +2,7 @@ import {
 	ACTIVE_TRACTION_TRUCKS_FILTER,
 	ACTIVE_TRAILERS_FILTER,
 	buildCombinationSavePayload,
+	buildTransportSettingsPayload,
 	licenseState,
 	trailersText,
 	truckBodyTypeText,
@@ -41,6 +42,29 @@ QUnit.test("trailersText junta as placas na ordem da posição", function (asser
 		{ Position: 2, TrailerTruckCode: "CAR2D44" }, { Position: 1, TrailerTruckCode: "CAR1C33" },
 	]), "CAR1C33, CAR2D44");
 	assert.strictEqual(trailersText(undefined), "");
+});
+
+QUnit.test("buildTransportSettingsPayload converte enums do OData para os códigos e omite senha vazia", function (assert) {
+	const payload = buildTransportSettingsPayload("01", {
+		CompanyRntrc: "11382119", InsuranceResponsible: "Issuer", InsurerTaxId: "61573796000166",
+		InsurerName: "ALLIANZ", PolicyNumber: "123", AverbaEnabled: true, AverbaUser: "COSTA",
+		AverbaPassword: "", AverbaCode: "11371106", AverbaEnvironment: "Homologation",
+	});
+
+	assert.deepEqual(payload, {
+		BranchCode: "01", CompanyRntrc: "11382119", InsuranceResponsible: 1, InsurerTaxId: "61573796000166",
+		InsurerName: "ALLIANZ", PolicyNumber: "123", AverbaEnabled: true, AverbaUser: "COSTA",
+		AverbaPassword: null, AverbaCode: "11371106", AverbaEnvironment: 2,
+	});
+});
+
+QUnit.test("buildTransportSettingsPayload: sem responsável vai 0 e produção é o padrão", function (assert) {
+	const payload = buildTransportSettingsPayload("01", { InsuranceResponsible: null, AverbaEnvironment: null, AverbaPassword: "x" });
+
+	assert.strictEqual(payload.InsuranceResponsible, 0);
+	assert.strictEqual(payload.AverbaEnvironment, 1);
+	assert.strictEqual(payload.AverbaPassword, "x");
+	assert.strictEqual(payload.AverbaEnabled, false);
 });
 
 QUnit.test("truckKindText traduz tração e reboque", function (assert) {

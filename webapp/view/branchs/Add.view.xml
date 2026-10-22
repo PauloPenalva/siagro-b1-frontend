@@ -13,6 +13,7 @@
 	<Page title="Filial">
 		<content>
       <core:Fragment fragmentName="siagrob1.view.branchs.fragments.Form" type="XML" />
+      <MessageStrip text="Grave a filial para configurar a transportadora." type="Information" showIcon="true" visible="{ui>/standalone}" class="sapUiSmallMargin" />
 		</content>
 		<footer>
 			<Toolbar>

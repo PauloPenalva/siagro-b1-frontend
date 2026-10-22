@@ -96,3 +96,41 @@ export const buildCombinationSavePayload = (form: CombinationForm) => ({
 /** Placas dos reboques na ordem da posição, para a lista de conjuntos. */
 export const trailersText = (trailers: { Position: number; TrailerTruckCode: string }[]): string =>
 	[...(trailers ?? [])].sort((a, b) => a.Position - b.Position).map((t) => t.TrailerTruckCode).join(", ");
+
+/** Configuração de transporte da filial como chega do OData (enums pelo nome). */
+export interface TransportSettings {
+	CompanyRntrc?: string;
+	InsuranceResponsible?: string;
+	InsurerTaxId?: string;
+	InsurerName?: string;
+	PolicyNumber?: string;
+	AverbaEnabled?: boolean;
+	AverbaUser?: string;
+	AverbaPassword?: string;
+	HasAverbaPassword?: boolean;
+	AverbaCode?: string;
+	AverbaEnvironment?: string;
+}
+
+const INSURANCE_RESPONSIBLE: Record<string, number> = { Issuer: 1, Contractor: 2 };
+const ENVIRONMENT: Record<string, number> = { Production: 1, Homologation: 2 };
+
+const blankToNull = (value: string): string => (value ?? "").trim() || null;
+
+/**
+ * Corpo da ação BranchTransportSettingsSave. Os enums vão como código (0 = sem responsável) e a
+ * senha vazia vai null, o que mantém a gravada.
+ */
+export const buildTransportSettingsPayload = (branchCode: string, s: TransportSettings) => ({
+	BranchCode: branchCode,
+	CompanyRntrc: blankToNull(s.CompanyRntrc),
+	InsuranceResponsible: INSURANCE_RESPONSIBLE[s.InsuranceResponsible ?? ""] ?? 0,
+	InsurerTaxId: blankToNull(s.InsurerTaxId),
+	InsurerName: blankToNull(s.InsurerName),
+	PolicyNumber: blankToNull(s.PolicyNumber),
+	AverbaEnabled: !!s.AverbaEnabled,
+	AverbaUser: blankToNull(s.AverbaUser),
+	AverbaPassword: blankToNull(s.AverbaPassword),
+	AverbaCode: blankToNull(s.AverbaCode),
+	AverbaEnvironment: ENVIRONMENT[s.AverbaEnvironment ?? ""] ?? 1,
+});
