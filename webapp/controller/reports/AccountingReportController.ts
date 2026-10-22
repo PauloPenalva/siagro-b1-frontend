@@ -36,6 +36,9 @@ export default abstract class AccountingReportController extends CommonControlle
   protected abstract fileName: string;
   protected abstract excelColumns(): ExcelColumn[];
 
+  /** Ajuste das linhas do /data antes do Excel (ex.: achatar colunas dinâmicas). Roda antes de excelColumns(). */
+  protected rowsTransform: (rows: Record<string, unknown>[]) => Record<string, unknown>[] = (rows) => rows;
+
   onInit(): void {
     this.getView().setModel(new JSONModel(), "params");
     this.getRouter().getRoute(this.routeName).attachPatternMatched(() => {
@@ -102,7 +105,7 @@ export default abstract class AccountingReportController extends CommonControlle
         MessageBox.error(result.message);
         return;
       }
-      const rows = (result.data as object[]) ?? [];
+      const rows = this.rowsTransform((result.data as Record<string, unknown>[]) ?? []);
       if (rows.length === 0) {
         MessageBox.information("Nenhum lançamento no período.");
         return;

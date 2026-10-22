@@ -10,7 +10,7 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import Context from "sap/ui/model/odata/v4/Context";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
-import { sendJson } from "siagrob1/helpers/FetchHelpers";
+import { odataCollection, sendJson } from "siagrob1/helpers/FetchHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 
 /** Valores numéricos de AccountingPeriodStatus no backend (a action recebe o número). */
@@ -73,7 +73,12 @@ export default class Main extends CommonController {
       return;
     }
     const text = this.monthText(ctx.getProperty("Month") as number, ctx.getProperty("Year") as number);
-    if (!(await confirmDialog(`Deseja fechar o período ${text} ?`, "Fechar período ?"))) return;
+    // Aviso (não bloqueia): documentos que a contabilização off-line ainda contabilizaria no mês.
+    const check = await sendJson("GET", `${ServerRoutes.accountingPeriodsCloseWarnings}(Id=${String(ctx.getProperty("Id"))})`);
+    const warnings = check.ok ? odataCollection<string>(check.data) : [];
+    const question = `Deseja fechar o período ${text} ?`;
+    const message = warnings.length ? `${warnings.join("\n")}\n\n${question}` : question;
+    if (!(await confirmDialog(message, "Fechar período ?"))) return;
     await this.setStatus(ctx, STATUS.Closed, "Período fechado.");
   }
 
