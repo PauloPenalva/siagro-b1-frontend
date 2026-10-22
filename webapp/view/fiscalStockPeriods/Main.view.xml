@@ -6,7 +6,7 @@
 	xmlns:core="sap.ui.core"
 	xmlns:t="sap.ui.table">
 
-	<Page title="Fechamento do estoque fiscal" showNavButton="true" navButtonPress=".onNavBack">
+	<Page title="Fechamento de Estoque Mensal" showNavButton="true" navButtonPress=".onNavBack">
 		<content>
 			<MessageStrip
 				text="Fechar o mês trava, na filial, os lançamentos que movimentam o estoque fiscal com data naquele mês ou antes. Reabrir exige motivo."

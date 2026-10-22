@@ -26,7 +26,7 @@ type AdjustmentForm = {
 };
 
 /**
- * Ajustes manuais do estoque fiscal (Kardex Fiscal), entrada ou saída por filial + produto, com motivo obrigatório
+ * Ajustes manuais do estoque fiscal (Registro Kardex), entrada ou saída por filial + produto, com motivo obrigatório
  * (só STANDALONE; o servidor recusa fora do modo e em mês fechado). Mesmo padrão do saldo inicial: diálogo com
  * JSONModel gravando pelo modelo OData; decimais como Number (Double) e data ao meio-dia UTC. O enum Direction
  * trafega pelo nome ("In"/"Out").

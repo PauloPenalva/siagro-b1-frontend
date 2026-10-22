@@ -9,10 +9,10 @@
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-	<Page title="Saldo inicial do estoque fiscal" showNavButton="true" navButtonPress=".onNavBack">
+	<Page title="Saldo Inicial do Estoque" showNavButton="true" navButtonPress=".onNavBack">
 		<content>
 			<MessageStrip
-				text="Saldo inicial valorizado por filial e produto: é a camada mais antiga do Kardex Fiscal (PEPS), na data do saldo. Movimentos até essa data são ignorados pelo Kardex. Um lançamento por filial e produto."
+				text="Saldo inicial valorizado por filial e produto: é a camada mais antiga do Registro Kardex (PEPS), na data do saldo. Movimentos até essa data são ignorados pelo Kardex. Um lançamento por filial e produto."
 				type="Information"
 				showIcon="true"
 				class="sapUiSmallMargin" />
