@@ -11,7 +11,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import SimpleForm from "sap/ui/layout/form/SimpleForm";
 import Input, { Input$LiveChangeEvent } from "sap/m/Input";
 import { ValueState } from "sap/ui/core/library";
-import Select from "sap/m/Select";
+import Select, { Select$ChangeEvent } from "sap/m/Select";
 import ComboBox from "sap/m/ComboBox";
 import DatePicker from "sap/m/DatePicker";
 import Table from "sap/ui/table/Table";
@@ -345,4 +345,16 @@ export default abstract class BaseController extends Controller {
     return (JSON.parse(localStorage.getItem(SYSTEM_SETUP_KEY)) ?? {}) as SystemSetup
   }
 
+  /**
+   * Select anulável ligado ao OData v4: a opção vazia grava `null`, não "" (o OData recusa "" num enum).
+   */
+  onNullableSelectChange(ev: Select$ChangeEvent): void {
+    const select = ev.getSource();
+    const context = select.getBindingContext() as Context;
+    const path = select.getBinding("selectedKey")?.getPath();
+
+    if (context && path && !select.getSelectedKey()) {
+      void context.setProperty(path, null);
+    }
+  }
 }

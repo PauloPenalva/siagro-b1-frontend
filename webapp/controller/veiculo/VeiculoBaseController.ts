@@ -32,19 +32,6 @@ export default class VeiculoBaseController extends CommonController {
     this.validatePlate(input);
   }
 
-  /**
-   * Select de enum anulável: a opção vazia grava `null`, não "" (o OData recusa "" num enum).
-   */
-  onNullableSelectChange(ev: Select$ChangeEvent): void {
-    const select = ev.getSource();
-    const context = select.getBindingContext() as Context;
-    const path = select.getBinding("selectedKey")?.getPath();
-
-    if (context && path && !select.getSelectedKey()) {
-      void context.setProperty(path, null);
-    }
-  }
-
   /** Reboque não tem rodado: ao virar reboque, o rodado é apagado (o backend recusaria). */
   onKindChange(ev: Select$ChangeEvent): void {
     const context = ev.getSource().getBindingContext() as Context;

@@ -32,7 +32,7 @@
 				</t:extension>
 				<t:columns>
 					<t:Column
-						label="Codigo"
+						label="CPF"
 						sortProperty="Code"
 						filterProperty="Code"
             visible="true"
@@ -65,6 +65,23 @@
 						>
 						<t:template>
 							<Text text="{Phone}" />
+						</t:template>
+					</t:Column>
+									<t:Column label="Categoria CNH" sortProperty="LicenseCategory" width="7rem" hAlign="Center">
+						<t:template>
+							<Text text="{LicenseCategory}" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Validade CNH" sortProperty="LicenseExpiresOn" width="9rem">
+						<t:template>
+							<ObjectStatus
+								text="{ path: 'LicenseExpiresOn', type: 'sap.ui.model.odata.type.Date' }"
+								state="{ path: 'LicenseExpiresOn', formatter: 'formatter.licenseState' }" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Inativo" sortProperty="Inactive" hAlign="Center" width="5rem">
+						<t:template>
+							<CheckBox selected="{Inactive}" editable="false" />
 						</t:template>
 					</t:Column>
 				</t:columns>

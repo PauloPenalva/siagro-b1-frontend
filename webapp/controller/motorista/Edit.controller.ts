@@ -1,4 +1,5 @@
 import MessageToast from "sap/m/MessageToast";
+import Input from "sap/m/Input";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
@@ -10,6 +11,8 @@ import BaseController from "../BaseController";
 export default class Edit extends BaseController {
 
 	onInit(): void {	
+		// O CPF é a chave do motorista: não muda depois de gravado.
+		(this.byId("cpfInput") as Input).setEditable(false);
 		this.getRouter().getRoute("motoristasEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
 	}
 
