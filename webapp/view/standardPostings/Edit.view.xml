@@ -1,0 +1,164 @@
+<mvc:View
+	controllerName="siagrob1.controller.standardPostings.Edit"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:t="sap.ui.table">
+
+	<Page title="Lançamento Padrão {lp>/Code} – {lp>/Description}" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0">
+		<content>
+			<MessageStrip text="{lp>/Help}" type="Information" showIcon="true" class="sapUiSmallMargin" />
+			<f:SimpleForm editable="true" layout="ResponsiveGridLayout" columnsL="2" columnsXL="2" labelSpanL="3" labelSpanXL="3">
+				<f:content>
+					<Label text="Ativo" />
+					<Switch state="{lp>/Active}" />
+					<Label text="Lote" />
+					<Text text="{lp>/Batch}" />
+					<Label text="Marcadores do histórico" />
+					<Text text="{lp>/PlaceholdersText}" />
+				</f:content>
+			</f:SimpleForm>
+			<t:Table
+				id="standardPostingLinesTable"
+				selectionMode="MultiToggle"
+				class="sapUiSizeCondensed sapUiSmallMarginBeginEnd"
+				visibleRowCountMode="Auto"
+				minAutoRowCount="5"
+				rows="{lp>/Lines}">
+				<t:extension>
+					<OverflowToolbar>
+						<Title text="Sequências" />
+						<ToolbarSpacer />
+						<Button text="Adicionar sequência" icon="sap-icon://add" press=".onAddLine" />
+						<Button text="Remover selecionadas" icon="sap-icon://delete" press=".onRemoveLines" />
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="Seq." width="4rem">
+						<t:template><Input value="{lp>Sequence}" maxLength="3" /></t:template>
+					</t:Column>
+					<t:Column label="Ativa" width="4rem" hAlign="Center">
+						<t:template><CheckBox selected="{lp>Active}" /></t:template>
+					</t:Column>
+					<t:Column label="Tipo" width="9rem">
+						<t:template>
+							<Select selectedKey="{lp>EntryType}" width="100%">
+								<core:Item key="Double" text="Partida dobrada" />
+								<core:Item key="Debit" text="Débito" />
+								<core:Item key="Credit" text="Crédito" />
+							</Select>
+						</t:template>
+					</t:Column>
+					<t:Column label="Débito: origem" width="13rem">
+						<t:template>
+							<Select selectedKey="{lp>DebitAccountSource}" width="100%" enabled="{= ${lp>EntryType} !== 'Credit' }"
+								items="{ path: 'lp>/AccountSources', templateShareable: false }">
+								<core:Item key="{lp>key}" text="{lp>text}" />
+							</Select>
+						</t:template>
+					</t:Column>
+					<t:Column label="Débito: conta fixa" width="8rem">
+						<t:template>
+							<Input value="{lp>DebitAccountCode}" enabled="{= ${lp>EntryType} !== 'Credit' }" showValueHelp="true"
+								showClearIcon="true" valueHelpRequest=".openPostingLedgerAccountsValueHelp" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Crédito: origem" width="13rem">
+						<t:template>
+							<Select selectedKey="{lp>CreditAccountSource}" width="100%" enabled="{= ${lp>EntryType} !== 'Debit' }"
+								items="{ path: 'lp>/AccountSources', templateShareable: false }">
+								<core:Item key="{lp>key}" text="{lp>text}" />
+							</Select>
+						</t:template>
+					</t:Column>
+					<t:Column label="Crédito: conta fixa" width="8rem">
+						<t:template>
+							<Input value="{lp>CreditAccountCode}" enabled="{= ${lp>EntryType} !== 'Debit' }" showValueHelp="true"
+								showClearIcon="true" valueHelpRequest=".openPostingLedgerAccountsValueHelp" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Valor" width="14rem">
+						<t:template>
+							<Select selectedKey="{lp>ValueSource}" width="100%" items="{ path: 'lp>/ValueSources', templateShareable: false }">
+								<core:Item key="{lp>key}" text="{lp>text}" />
+							</Select>
+						</t:template>
+					</t:Column>
+					<t:Column label="Histórico" width="16rem">
+						<t:template><Input value="{lp>HistoryTemplate}" maxLength="200" /></t:template>
+					</t:Column>
+					<t:Column label="C.Custo D" width="9rem">
+						<t:template>
+							<Select selectedKey="{lp>DebitCostCenterSource}" width="100%" enabled="{= ${lp>EntryType} !== 'Credit' }">
+								<core:Item key="None" text="Nenhum" />
+								<core:Item key="Document" text="Do documento" />
+								<core:Item key="Fixed" text="Fixo" />
+							</Select>
+						</t:template>
+					</t:Column>
+					<t:Column label="C.Custo D fixo" width="7rem">
+						<t:template>
+							<Input value="{lp>DebitCostCenterCode}" enabled="{= ${lp>DebitCostCenterSource} === 'Fixed' }" showValueHelp="true"
+								valueHelpOnly="true" showClearIcon="true" valueHelpRequest=".openAnalyticCostCenterValueHelp" />
+						</t:template>
+					</t:Column>
+					<t:Column label="C.Custo C" width="9rem">
+						<t:template>
+							<Select selectedKey="{lp>CreditCostCenterSource}" width="100%" enabled="{= ${lp>EntryType} !== 'Debit' }">
+								<core:Item key="None" text="Nenhum" />
+								<core:Item key="Document" text="Do documento" />
+								<core:Item key="Fixed" text="Fixo" />
+							</Select>
+						</t:template>
+					</t:Column>
+					<t:Column label="C.Custo C fixo" width="7rem">
+						<t:template>
+							<Input value="{lp>CreditCostCenterCode}" enabled="{= ${lp>CreditCostCenterSource} === 'Fixed' }" showValueHelp="true"
+								valueHelpOnly="true" showClearIcon="true" valueHelpRequest=".openAnalyticCostCenterValueHelp" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Item D" width="9rem">
+						<t:template>
+							<Select selectedKey="{lp>DebitItemSource}" width="100%" enabled="{= ${lp>EntryType} !== 'Credit' }">
+								<core:Item key="None" text="Nenhum" />
+								<core:Item key="Document" text="Do documento" />
+								<core:Item key="Fixed" text="Fixo" />
+							</Select>
+						</t:template>
+					</t:Column>
+					<t:Column label="Item D fixo" width="7rem">
+						<t:template>
+							<Input value="{lp>DebitItemCode}" enabled="{= ${lp>DebitItemSource} === 'Fixed' }" showValueHelp="true"
+								valueHelpOnly="true" showClearIcon="true" valueHelpRequest=".openAnalyticAccountingItemValueHelp" />
+						</t:template>
+					</t:Column>
+					<t:Column label="Item C" width="9rem">
+						<t:template>
+							<Select selectedKey="{lp>CreditItemSource}" width="100%" enabled="{= ${lp>EntryType} !== 'Debit' }">
+								<core:Item key="None" text="Nenhum" />
+								<core:Item key="Document" text="Do documento" />
+								<core:Item key="Fixed" text="Fixo" />
+							</Select>
+						</t:template>
+					</t:Column>
+					<t:Column label="Item C fixo" width="7rem">
+						<t:template>
+							<Input value="{lp>CreditItemCode}" enabled="{= ${lp>CreditItemSource} === 'Fixed' }" showValueHelp="true"
+								valueHelpOnly="true" showClearIcon="true" valueHelpRequest=".openAnalyticAccountingItemValueHelp" />
+						</t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer />
+				<Button text="Cancelar" press=".onNavBack" />
+				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

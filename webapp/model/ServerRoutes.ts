@@ -394,6 +394,8 @@ export default {
   accountingSettingsGet: '/odata/AccountingSettingsGet',
   accountingSettingsSave: '/odata/AccountingSettingsSave',
   journalEntries: '/odata/JournalEntries',
+  standardPostings: '/odata/StandardPostings',
+  standardPostingCatalog: '/odata/StandardPostingCatalogGet',
   journalEntriesReverse: '/odata/JournalEntriesReverse',
   accountingLedgerReport: '/reports/AccountingLedger',
   accountingLedgerReportData: '/reports/AccountingLedger/data',

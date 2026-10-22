@@ -894,6 +894,16 @@
           "target": "accountingTrialBalanceReport"
         },
         {
+          "pattern": "standard-postings",
+          "name": "standardPostings",
+          "target": "standardPostings"
+        },
+        {
+          "pattern": "standard-postings/{code}",
+          "name": "standardPostingsEdit",
+          "target": "standardPostingsEdit"
+        },
+        {
           "pattern": "distribution-rules",
           "name": "distributionRules",
           "target": "distributionRules"
@@ -2327,6 +2337,18 @@
           "id": "accountingTrialBalanceReport",
           "level": 1,
           "name": "siagrob1.view.reports.accountingTrialBalance.Main",
+          "clearControlAggregation": true
+        },
+        "standardPostings": {
+          "id": "standardPostings",
+          "level": 1,
+          "name": "siagrob1.view.standardPostings.Main",
+          "clearControlAggregation": true
+        },
+        "standardPostingsEdit": {
+          "id": "standardPostingsEdit",
+          "level": 2,
+          "name": "siagrob1.view.standardPostings.Edit",
           "clearControlAggregation": true
         },
          "distributionRules": {
