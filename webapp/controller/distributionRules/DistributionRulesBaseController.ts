@@ -1,6 +1,4 @@
 import JSONModel from "sap/ui/model/json/JSONModel";
-import Filter from "sap/ui/model/Filter";
-import FilterOperator from "sap/ui/model/FilterOperator";
 import { Input$ValueHelpRequestEvent, Input$LiveChangeEvent } from "sap/m/Input";
 import { Button$PressEvent } from "sap/m/Button";
 import CommonController from "../common/CommonController";
@@ -36,7 +34,7 @@ export default abstract class DistributionRulesBaseController extends CommonCont
 
 	onAddLine(): void {
 		const lines = this.lines();
-		lines.push({ CostCenterCode: "", Percentage: null });
+		lines.push({ CostCenterCode: "", AccountingItemCode: "", Percentage: null });
 		this.ruleModel().setProperty("/Lines", lines);
 		this.recomputeTotal();
 	}
@@ -61,13 +59,13 @@ export default abstract class DistributionRulesBaseController extends CommonCont
 		this.recomputeTotal();
 	}
 
-	/** Só centros de custo ativos da dimensão da regra. */
+	/** Só centros de custo analíticos e ativos. */
 	onRuleCostCenterValueHelp(ev: Input$ValueHelpRequestEvent): void {
-		const dimension = Number(this.ruleModel().getProperty("/Header/DimensionNumber"));
+		this.openCostCentersValueHelp(ev);
+	}
 
-		void this.applyValueHelp(ev, "CostCentersSelectDialog", ["Code", "Name"], "Code", [
-			new Filter("DimensionNumber", FilterOperator.EQ, dimension),
-			new Filter("Inactive", FilterOperator.EQ, false)
-		]);
+	/** Só itens contábeis analíticos e ativos. */
+	onRuleAccountingItemValueHelp(ev: Input$ValueHelpRequestEvent): void {
+		this.openAccountingItemsValueHelp(ev);
 	}
 }

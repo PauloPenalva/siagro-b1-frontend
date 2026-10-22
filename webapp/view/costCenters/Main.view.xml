@@ -52,16 +52,44 @@
 						</t:template>
 					</t:Column>
 					<t:Column
-						label="Dimensão"
-						sortProperty="DimensionNumber"
-						visible="{dims>/items/0/Active}"
-						width="14rem"
+						label="Classe"
+						sortProperty="Class"
+						width="9rem"
 						>
 						<t:template>
 							<Text text="{
-								parts: [{ path: 'DimensionNumber' }, { path: 'dims>/items' }],
-								formatter: '.formatDimensionName'
-							}" />
+								path: 'Class',
+								targetType: 'any',
+								formatter: '.formatClass'
+							}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Superior"
+						sortProperty="ParentCode"
+						filterProperty="ParentCode"
+						width="10rem"
+						>
+						<t:template>
+							<Text text="{ParentCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Vigência de"
+						sortProperty="ValidFrom"
+						width="9rem"
+						>
+						<t:template>
+							<Text text="{path: 'ValidFrom', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: {precision: 7}, formatOptions: {pattern: 'dd/MM/yyyy'}}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column
+						label="Vigência até"
+						sortProperty="ValidTo"
+						width="9rem"
+						>
+						<t:template>
+							<Text text="{path: 'ValidTo', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: {precision: 7}, formatOptions: {pattern: 'dd/MM/yyyy'}}" wrapping="false"/>
 						</t:template>
 					</t:Column>
 					<t:Column

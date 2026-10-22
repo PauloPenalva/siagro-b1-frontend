@@ -336,7 +336,7 @@
     </uxap:subSections>
   </uxap:ObjectPageSection>
 
-  <uxap:ObjectPageSection id="usagesDimensionsSection" titleUppercase="false" title="Dimensões padrão" visible="{dims>/items/0/Active}">
+  <uxap:ObjectPageSection id="usagesDimensionsSection" titleUppercase="false" title="Dimensões padrão" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
     <uxap:subSections>
       <uxap:ObjectPageSubSection title=" " titleUppercase="false">
         <uxap:blocks>

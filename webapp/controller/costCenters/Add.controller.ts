@@ -2,8 +2,6 @@ import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import BaseController from "../BaseController";
-import Context from "sap/ui/model/odata/v4/Context";
-import { Select$ChangeEvent } from "sap/m/Select";
 
 /**
  * @namespace siagrob1.controller.costCenters
@@ -26,7 +24,10 @@ export default class Add extends BaseController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const oContext = oBinding.create({ Code: null, Name: null, Inactive: false, DimensionNumber: 1 }, false, false, false);
+		const oContext = oBinding.create({
+			Code: null, Name: null, Inactive: false,
+			Class: "Analytic", ParentCode: null, ValidFrom: null, ValidTo: null
+		}, false, false, false);
 
 		oView.setBindingContext(oContext);
 	}
@@ -51,12 +52,6 @@ export default class Add extends BaseController {
 		} finally {
 			this.setBusy(false);
 		}
-	}
-
-	/** Grava a dimensão escolhida no contexto; o Select é só de leitura no binding (não escreve ao renderizar). */
-	onDimensionChange(ev: Select$ChangeEvent): void {
-		const key = ev.getParameter("selectedItem")?.getKey();
-		void (ev.getSource().getBindingContext() as Context).setProperty("DimensionNumber", Number(key));
 	}
 
 	onCancel() {

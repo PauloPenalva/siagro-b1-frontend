@@ -7,12 +7,10 @@ import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import { sendJson, odataValue } from "siagrob1/helpers/FetchHelpers";
-import { label } from "siagrob1/helpers/DimensionHelpers";
 import {
-	Rule, RuleVersion, buildSaveVersionBody, formatIsoDateBr, isTotalValid, isVersionEditable,
-	normalizeRule, todayInBrasilia, versionStatus, versionStatusText
+	Rule, RuleVersion, buildSaveVersionBody, formatIsoDateBr, isVersionEditable,
+	normalizeRule, todayInBrasilia, validateRuleLines, versionStatus, versionStatusText
 } from "siagrob1/helpers/DistributionRuleHelpers";
-import type { DimsModelData } from "siagrob1/types/AccountingDimension";
 import DistributionRulesBaseController from "./DistributionRulesBaseController";
 
 /** Versão como o model `rule` a guarda: dados do servidor + campos de exibição. */
@@ -59,16 +57,13 @@ export default class Edit extends DistributionRulesBaseController {
 	}
 
 	private fillModel(rule: Rule, selectDate?: string) {
-		const dims = (this.getOwnerComponent().getModel("dims") as JSONModel).getData() as DimsModelData;
 		const today = todayInBrasilia();
 
 		this.ruleModel().setData({
 			Header: {
 				Code: rule.Code,
 				Name: rule.Name,
-				Inactive: rule.Inactive,
-				DimensionNumber: rule.DimensionNumber,
-				DimensionName: label(dims, rule.DimensionNumber) || String(rule.DimensionNumber)
+				Inactive: rule.Inactive
 			},
 			Today: today,
 			Versions: this.decorate(rule.Versions, today),
@@ -220,13 +215,9 @@ export default class Edit extends DistributionRulesBaseController {
 		const validFrom = model.getProperty("/Selected/ValidFrom") as string;
 		const lines = this.lines();
 
-		if (lines.length === 0 || lines.some(line => !line.CostCenterCode?.trim())) {
-			MessageBox.warning("Informe o centro de custo de todas as linhas.");
-			return;
-		}
-
-		if (!isTotalValid(lines)) {
-			MessageBox.warning("Os percentuais das linhas devem somar exatamente 100%.");
+		const problem = validateRuleLines(lines);
+		if (problem) {
+			MessageBox.warning(problem);
 			return;
 		}
 

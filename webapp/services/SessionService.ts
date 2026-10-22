@@ -14,9 +14,7 @@ import { rememberCompany } from "siagrob1/helpers/CompanySelectionHelpers";
 import { BranchInfo } from "siagrob1/types/BranchInfo";
 import { SystemInfo } from "siagrob1/types/SystemInfo";
 import { AuthStatus, LoginResult, UserIdentity } from "siagrob1/types/UserIdentity";
-import { buildDimsModel } from "siagrob1/helpers/DimensionHelpers";
-import { odataCollection } from "siagrob1/helpers/FetchHelpers";
-import type { AccountingDimension } from "siagrob1/types/AccountingDimension";
+
 
 export const USER_MENU_KEY = "USER_MENU";
 export const SYSTEM_SETUP_KEY = "SYSTEM_SETUP";
@@ -209,7 +207,7 @@ class SessionService {
 
     await Promise.all([
       this.loadUserMenu(),
-      this.loadSystemInfo().then(() => this.loadDimensions()),
+      this.loadSystemInfo(),
       this.loadBranchInfo(),
       this.loadSystemSetup(),
       // NUNCA rejeita: uma rejeição aqui derruba o `hydrate` inteiro e o Component deixa de chamar
@@ -359,7 +357,6 @@ class SessionService {
     this.applyUserIdentity(undefined);
 
     this.getMenuModel()?.setData({});
-    (this.component.getModel("dims") as JSONModel | undefined)?.setData(buildDimsModel([]));
 
     window.localStorage.removeItem(USER_MENU_KEY);
     window.localStorage.removeItem(SYSTEM_SETUP_KEY);
@@ -503,26 +500,6 @@ class SessionService {
 
     // Modo de integração: as telas de usuário usam isto para saber quem manda no cadastro.
     this.getSessionModel().setProperty("/erp", systemInfo?.erp ?? "STANDALONE");
-  }
-
-  /**
-   * Carrega as dimensões gerenciais no model `dims` do Component. Só em STANDALONE: em SAPB1 o
-   * model fica vazio e todos os campos de dimensão ficam invisíveis. Nunca rejeita.
-   */
-  public async loadDimensions(): Promise<void> {
-    const dimsModel = this.component.getModel("dims") as JSONModel | undefined;
-    dimsModel?.setData(buildDimsModel([]));
-
-    if (!dimsModel || this.isSapMode()) {
-      return;
-    }
-
-    try {
-      const response = await new RequestModel().get<unknown>(ServerRoutes.accountingDimensions);
-      dimsModel.setData(buildDimsModel(odataCollection<AccountingDimension>(response)));
-    } catch (error) {
-      console.warn("Falha ao carregar as dimensões gerenciais.", error);
-    }
   }
 
   /** `true` quando o cadastro de usuários é mantido no SAP Business One. */

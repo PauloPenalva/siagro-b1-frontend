@@ -501,9 +501,28 @@ export default abstract class CommonController extends BaseController {
     void this.applyValueHelp(ev, "WarehousesSelectDialog", ["Code", "Name", "TaxId", "FName"], "Code");
   }
 
+  /** Centro de custo que recebe lançamento: só analítico e ativo. */
   openCostCentersValueHelp(ev: Input$ValueHelpRequestEvent) {
     void this.applyValueHelp(ev, "CostCentersSelectDialog", ["Code", "Name"], "Code",
-      [ new Filter("Inactive", FilterOperator.EQ, false) ]);
+      [ new Filter("Inactive", FilterOperator.EQ, false) ], undefined, "Class eq 'Analytic'");
+  }
+
+  /** Centro de custo superior: só sintético e ativo. */
+  openSyntheticCostCentersValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "CostCentersSelectDialog", ["Code", "Name"], "Code",
+      [ new Filter("Inactive", FilterOperator.EQ, false) ], undefined, "Class eq 'Synthetic'");
+  }
+
+  /** Item contábil que recebe lançamento: só analítico e ativo. */
+  openAccountingItemsValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "AccountingItemsSelectDialog", ["Code", "Name"], "Code",
+      [ new Filter("Inactive", FilterOperator.EQ, false) ], undefined, "Class eq 'Analytic'");
+  }
+
+  /** Item contábil superior: só sintético e ativo. */
+  openSyntheticAccountingItemsValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "AccountingItemsSelectDialog", ["Code", "Name"], "Code",
+      [ new Filter("Inactive", FilterOperator.EQ, false) ], undefined, "Class eq 'Synthetic'");
   }
 
   openLedgerAccountsValueHelp(ev: Input$ValueHelpRequestEvent) {
@@ -516,18 +535,6 @@ export default abstract class CommonController extends BaseController {
     void this.applyValueHelp(ev, "LedgerAccountsSelectDialog", ["Code", "Name"], "Code",
       [ new Filter("Inactive", FilterOperator.EQ, false),
         new Filter("AllowsPosting", FilterOperator.EQ, true) ]);
-  }
-
-  /**
-   * Value help das dimensões gerenciais (DimensionFields). O número da dimensão vem no
-   * `customData` `dim` do Input; lista centros de custo e regras de distribuição ativos dela.
-   */
-  onDimensionValueHelp(ev: Input$ValueHelpRequestEvent) {
-    const dim = Number(ev.getSource().data("dim"));
-
-    void this.applyValueHelp(ev, "DimensionCodesSelectDialog", ["Code", "Name"], "Code",
-      [ new Filter("DimensionNumber", FilterOperator.EQ, dim),
-        new Filter("Inactive", FilterOperator.EQ, false) ]);
   }
 
   openTaxesValueHelp(ev: Input$ValueHelpRequestEvent) {

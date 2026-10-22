@@ -9,8 +9,7 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
 import formatter from "siagrob1/model/formatter";
-import { label } from "siagrob1/helpers/DimensionHelpers";
-import type { DimensionItem } from "siagrob1/types/AccountingDimension";
+import { accountingClassText } from "siagrob1/helpers/AccountingMasterDataHelpers";
 
 /**
  * @namespace siagrob1.controller.costCenters
@@ -26,9 +25,9 @@ export default class Main extends BaseController {
 		this.onRefresh();
 	}
 
-	/** Nome configurado da dimensão; reavalia quando o model `dims` é recarregado. */
-	formatDimensionName(dimensionNumber: number, items: DimensionItem[]): string {
-		return label({ items }, Number(dimensionNumber)) || (dimensionNumber == null ? "" : String(dimensionNumber));
+	/** Texto pt-BR da classe (enum `Synthetic`/`Analytic`). */
+	formatClass(value: string): string {
+		return accountingClassText(value);
 	}
 
 	onRefresh(): void {

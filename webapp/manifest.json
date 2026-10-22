@@ -859,11 +859,6 @@
           "target": "usagesDetail"
         },
         {
-          "pattern": "accounting-dimensions",
-          "name": "accountingDimensions",
-          "target": "accountingDimensions"
-        },
-        {
           "pattern": "distribution-rules",
           "name": "distributionRules",
           "target": "distributionRules"
@@ -879,11 +874,6 @@
           "target": "distributionRulesEdit"
         },
         {
-          "pattern": "company-settings",
-          "name": "companySettings",
-          "target": "companySettings"
-        },
-        {
           "pattern": "cost-centers",
           "name": "costCenters",
           "target": "costCenters"
@@ -897,6 +887,21 @@
           "pattern": "cost-centers/{id}/edit",
           "name": "costCentersEdit",
           "target": "costCentersEdit"
+        },
+        {
+          "pattern": "accounting-items",
+          "name": "accountingItems",
+          "target": "accountingItems"
+        },
+        {
+          "pattern": "accounting-items/new",
+          "name": "accountingItemsNew",
+          "target": "accountingItemsNew"
+        },
+        {
+          "pattern": "accounting-items/{id}/edit",
+          "name": "accountingItemsEdit",
+          "target": "accountingItemsEdit"
         },
         {
           "pattern": "ledger-accounts",
@@ -2247,12 +2252,6 @@
 					"name": "siagrob1.view.ruralContributionRates.Main",
           "clearControlAggregation": true
 				},
-         "accountingDimensions": {
-					"id": "accountingDimensions",
-          "level": 1,
-					"name": "siagrob1.view.accountingDimensions.Main",
-          "clearControlAggregation": true
-				},
          "distributionRules": {
 					"id": "distributionRules",
           "level": 1,
@@ -2271,12 +2270,6 @@
 					"name": "siagrob1.view.distributionRules.Edit",
           "clearControlAggregation": true
 				},
-         "companySettings": {
-					"id": "companySettings",
-          "level": 1,
-					"name": "siagrob1.view.companySettings.Main",
-          "clearControlAggregation": true
-				},
          "costCenters": {
 					"id": "costCenters",
           "level": 1,
@@ -2293,6 +2286,24 @@
 					"id": "costCentersEdit",
           "level": 2,
 					"name": "siagrob1.view.costCenters.Edit",
+          "clearControlAggregation": true
+				},
+        "accountingItems": {
+					"id": "accountingItems",
+          "level": 1,
+					"name": "siagrob1.view.accountingItems.Main",
+          "clearControlAggregation": true
+				},
+        "accountingItemsNew": {
+					"id": "accountingItemsNew",
+          "level": 2,
+					"name": "siagrob1.view.accountingItems.Add",
+          "clearControlAggregation": true
+				},
+        "accountingItemsEdit": {
+					"id": "accountingItemsEdit",
+          "level": 2,
+					"name": "siagrob1.view.accountingItems.Edit",
           "clearControlAggregation": true
 				},
          "ledgerAccounts": {

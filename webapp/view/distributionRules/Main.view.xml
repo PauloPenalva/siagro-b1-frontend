@@ -40,14 +40,6 @@
 							<Text text="{Name}" />
 						</t:template>
 					</t:Column>
-					<t:Column label="Dimensão" sortProperty="DimensionNumber" width="16rem">
-						<t:template>
-							<Text text="{
-								parts: [{ path: 'DimensionNumber' }, { path: 'dims>/items' }],
-								formatter: '.formatDimensionName'
-							}" />
-						</t:template>
-					</t:Column>
 					<t:Column label="Inativa" sortProperty="Inactive" filterProperty="Inactive" width="8rem">
 						<t:template>
 							<Text text="{

@@ -14,7 +14,6 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { Router$RouteMatchedEvent } from "sap/ui/core/routing/Router";
 
-import { buildDimsModel } from "./helpers/DimensionHelpers";
 import { isPublicRoute } from "./helpers/SessionRouteHelpers";
 
 /**
@@ -41,9 +40,6 @@ export default class Component extends UIComponent {
 
 		// create the device model
 		this.setModel(models.createDeviceModel(), "device");
-
-    // Dimensões gerenciais: preenchido pelo SessionService só em STANDALONE (vazio = tudo invisível).
-    this.setModel(new JSONModel(buildDimsModel([])), "dims");
 
     // Versão exibida no login e no menu do avatar: o build troca o ${version} do manifest pela
     // versão do package.json, então basta subir o número lá.

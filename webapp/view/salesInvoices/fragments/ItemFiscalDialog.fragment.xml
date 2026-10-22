@@ -386,7 +386,7 @@
             </f:formElements>
           </f:FormContainer>
 
-          <f:FormContainer title="Dimensões gerenciais" visible="{dims>/items/0/Active}">
+          <f:FormContainer title="Dimensões gerenciais" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
             <f:formElements>
               <core:Fragment fragmentName="siagrob1.view.common.fragments.DimensionFields" type="XML" />
             </f:formElements>

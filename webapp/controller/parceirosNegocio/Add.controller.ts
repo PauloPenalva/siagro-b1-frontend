@@ -37,7 +37,7 @@ export default class Add extends BaseController {
 		const oContext = oBinding.create({
       ...(SessionService.isSapMode() ? {} : { "DocNumberKey": null, "CardCode": "" }),
       "QryGroup23": "N",
-      "DefaultDimensionCode": null,
+      // TODO Task 6: DefaultCostCenterCode / DefaultAccountingItemCode.
       "Addresses": [],
       // Toda propriedade que o formulário edita precisa existir no payload, nem que seja
       // null: sem isso o Select de enum (targetType 'any') e o value help abrem "Must not

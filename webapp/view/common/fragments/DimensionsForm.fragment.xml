@@ -4,8 +4,8 @@
     xmlns:core="sap.ui.core"
 >
 <!-- Seção "Dimensões gerenciais" autônoma: envolve DimensionFields num f:Form.
-     Para telas que não são Form (SimpleForm, diálogos). Oculta quando não há dimensões (SAPB1). -->
-<f:Form editable="true" visible="{dims>/items/0/Active}">
+     Para telas que não são Form (SimpleForm, diálogos). Oculta em SAPB1. TODO Task 6: substituir. -->
+<f:Form editable="true" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
   <f:layout>
     <f:ColumnLayout columnsM="2" columnsL="3" columnsXL="3" />
   </f:layout>

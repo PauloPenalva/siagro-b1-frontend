@@ -44,12 +44,7 @@ export default class Add extends BaseController {
 			IsDefault: false,
 			Inactive: false,
 			Description: null,
-			// Dimensões padrão + conta da natureza (DimensionFields): nulas no payload inicial.
-			Dim1Code: null,
-			Dim2Code: null,
-			Dim3Code: null,
-			Dim4Code: null,
-			Dim5Code: null,
+			// Conta da natureza (DimensionFields): nula no payload inicial. TODO Task 6: centro de custo, item e rateio.
 			LedgerAccountCode: null,
 			CfopOutgoingInState: null,
 			CfopOutgoingOutState: null,

@@ -163,7 +163,7 @@
           </uxap:ObjectPageSubSection>
         </uxap:subSections>
       </uxap:ObjectPageSection>
-      <uxap:ObjectPageSection titleUppercase="false" title="Dimensões gerenciais" visible="{dims>/items/0/Active}">
+      <uxap:ObjectPageSection titleUppercase="false" title="Dimensões gerenciais" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
         <uxap:subSections>
           <uxap:ObjectPageSubSection title=" " titleUppercase="false">
             <f:Form editable="true">

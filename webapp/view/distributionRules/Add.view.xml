@@ -5,9 +5,7 @@
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:core="sap.ui.core"
 	xmlns:f="sap.ui.layout.form"
-	core:require="{
-		StringType: 'sap/ui/model/type/String'
-	}">
+>
 
 	<Page title="Nova Regra de Distribuição" busy="{ui>/busy}">
 		<content>
@@ -23,20 +21,6 @@
 							</f:FormElement>
 							<f:FormElement label="Nome">
 								<Input value="{rule>/Header/Name}" required="true" maxLength="100" />
-							</f:FormElement>
-							<f:FormElement label="Dimensão">
-								<Select
-									selectedKey="{rule>/Header/DimensionKey}"
-									forceSelection="false"
-									change=".onDimensionChange"
-									items="{
-										path: 'dims>/items',
-										filters: [{ path: 'Active', operator: 'EQ', value1: true }]
-									}">
-									<core:Item
-										key="{ path: 'dims>Number', type: 'StringType' }"
-										text="{dims>Name}" />
-								</Select>
 							</f:FormElement>
 							<f:FormElement label="Vigência da primeira versão">
 								<DatePicker

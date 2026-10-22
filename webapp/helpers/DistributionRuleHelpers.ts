@@ -5,6 +5,7 @@
 
 export interface RuleLine {
 	CostCenterCode: string;
+	AccountingItemCode: string;
 	Percentage: number;
 }
 
@@ -20,7 +21,6 @@ export interface RuleVersion {
 export interface Rule {
 	Code: string;
 	Name: string;
-	DimensionNumber: number;
 	Inactive: boolean;
 	Versions: RuleVersion[];
 }
@@ -83,6 +83,7 @@ export function normalizeRule(raw: Raw): Rule {
 		ValidFrom: text(pick(v, "ValidFrom")).slice(0, 10),
 		Lines: ((pick(v, "Lines") as Raw[]) ?? []).map(l => ({
 			CostCenterCode: text(pick(l, "CostCenterCode")),
+			AccountingItemCode: text(pick(l, "AccountingItemCode")),
 			Percentage: Number(pick(l, "Percentage"))
 		}))
 	}));
@@ -91,10 +92,52 @@ export function normalizeRule(raw: Raw): Rule {
 	return {
 		Code: text(pick(raw, "Code")),
 		Name: text(pick(raw, "Name")),
-		DimensionNumber: Number(pick(raw, "DimensionNumber")),
 		Inactive: pick(raw, "Inactive") === true,
 		Versions: versions
 	};
+}
+
+/** Código sem espaços e em maiúsculas; vazio vira texto vazio (o servidor lê "" como "sem código"). */
+export function normalizeCode(code: string): string {
+	return (code ?? "").trim().toUpperCase();
+}
+
+/**
+ * Valida as linhas de uma versão antes de enviar. Devolve a mensagem pt-BR do primeiro problema,
+ * ou texto vazio quando estão válidas. Cada linha precisa de centro de custo e/ou item contábil e de
+ * percentual maior que zero; o par (centro, item) não pode se repetir; o total fecha em 100%.
+ */
+export function validateRuleLines(lines: RuleLine[]): string {
+	if (!lines || lines.length === 0) {
+		return "Informe ao menos uma linha na distribuição.";
+	}
+
+	const pairs = new Set<string>();
+
+	for (const line of lines) {
+		const center = normalizeCode(line.CostCenterCode);
+		const item = normalizeCode(line.AccountingItemCode);
+
+		if (!center && !item) {
+			return "Informe o centro de custo ou o item contábil em cada linha.";
+		}
+
+		if (!(Number(line.Percentage) > 0)) {
+			return "O percentual de cada linha deve ser maior que zero.";
+		}
+
+		const key = `${center}|${item}`;
+		if (pairs.has(key)) {
+			return "O par centro de custo/item contábil se repete na distribuição.";
+		}
+		pairs.add(key);
+	}
+
+	if (!isTotalValid(lines)) {
+		return "Os percentuais das linhas devem somar exatamente 100%.";
+	}
+
+	return "";
 }
 
 /** Arrays paralelos exigidos pela action DistributionRulesSaveVersion. */
@@ -102,14 +145,15 @@ export function buildSaveVersionBody(code: string, validFrom: string, lines: Rul
 	return {
 		Code: code,
 		ValidFrom: validFrom,
-		LineCostCenterCodes: lines.map(l => (l.CostCenterCode ?? "").trim().toUpperCase()),
+		LineCostCenterCodes: lines.map(l => normalizeCode(l.CostCenterCode)),
+		LineAccountingItemCodes: lines.map(l => normalizeCode(l.AccountingItemCode)),
 		LinePercentages: lines.map(l => Number(l.Percentage) || 0)
 	};
 }
 
 /** Corpo do POST de DistributionRules: regra + primeira versão. */
 export function buildCreateRuleBody(
-	header: { Code: string; Name: string; DimensionNumber: number },
+	header: { Code: string; Name: string },
 	validFrom: string,
 	lines: RuleLine[]
 ) {
@@ -117,14 +161,14 @@ export function buildCreateRuleBody(
 	return {
 		Code: code,
 		Name: header.Name,
-		DimensionNumber: header.DimensionNumber,
 		Inactive: false,
 		Versions: [{
 			// RuleCode é string não anulável no servidor: sem ele o ModelState do POST recusa.
 			RuleCode: code,
 			ValidFrom: validFrom,
 			Lines: lines.map(l => ({
-				CostCenterCode: (l.CostCenterCode ?? "").trim().toUpperCase(),
+				CostCenterCode: normalizeCode(l.CostCenterCode),
+				AccountingItemCode: normalizeCode(l.AccountingItemCode),
 				Percentage: Number(l.Percentage) || 0
 			}))
 		}]

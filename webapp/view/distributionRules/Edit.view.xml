@@ -28,9 +28,6 @@
 							<f:FormElement label="Nome">
 								<Input value="{rule>/Header/Name}" required="true" maxLength="100" />
 							</f:FormElement>
-							<f:FormElement label="Dimensão">
-								<Text text="{rule>/Header/DimensionName}" />
-							</f:FormElement>
 							<f:FormElement label="Inativa">
 								<Switch state="{rule>/Header/Inactive}" />
 							</f:FormElement>

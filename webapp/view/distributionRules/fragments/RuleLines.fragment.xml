@@ -15,6 +15,7 @@
 		</headerToolbar>
 		<columns>
 			<Column><Text text="Centro de custo" /></Column>
+			<Column><Text text="Item contábil" /></Column>
 			<Column width="12rem" hAlign="End"><Text text="Percentual (%)" /></Column>
 			<Column width="4rem" />
 		</columns>
@@ -27,6 +28,12 @@
 						showValueHelp="true"
 						valueHelpOnly="true"
 						valueHelpRequest=".onRuleCostCenterValueHelp" />
+					<Input
+						value="{rule>AccountingItemCode}"
+						editable="{rule>/Editable}"
+						showValueHelp="true"
+						valueHelpOnly="true"
+						valueHelpRequest=".onRuleAccountingItemValueHelp" />
 					<Input
 						value="{rule>Percentage}"
 						type="Number"

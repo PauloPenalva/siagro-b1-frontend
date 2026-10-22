@@ -5,7 +5,8 @@ QUnit.module("Fragments de regras de distribuição - carregam sem agregação i
 const names = [
 	"siagrob1.view.distributionRules.fragments.RuleLines",
 	"siagrob1.view.distributionRules.fragments.NewVersionDialog",
-	"siagrob1.view.costCenters.fragments.Form"
+	"siagrob1.view.costCenters.fragments.Form",
+	"siagrob1.view.accountingItems.fragments.Form"
 ];
 
 names.forEach(name => {

@@ -35,7 +35,7 @@
           <Input
               value="{Code}"
               required="true"
-              maxLength="10"
+              maxLength="20"
           />
           <Label text="Nome" />
           <Input
@@ -45,20 +45,41 @@
               liveChange=".validateField"
               maxLength="100"
           />
-          <Label text="Dimensão" visible="{dims>/items/0/Active}" />
+          <Label text="Classe" required="true" />
           <Select
+            selectedKey="{ path: 'Class', targetType: 'any' }"
             forceSelection="false"
-            selectedKey="{path: 'DimensionNumber', mode: 'OneWay'}"
-            change=".onDimensionChange"
-            visible="{dims>/items/0/Active}"
-            items="{
-              path: 'dims>/items',
-              filters: [{ path: 'Active', operator: 'EQ', value1: true }]
-            }">
-            <core:Item
-              key="{ path: 'dims>Number', type: 'StringType' }"
-              text="{dims>Name}" />
+          >
+            <core:ListItem key="Analytic" text="Analítico" />
+            <core:ListItem key="Synthetic" text="Sintético" />
           </Select>
+          <Label text="Superior" />
+          <Input
+            value="{ParentCode}"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openSyntheticCostCentersValueHelp"
+          />
+          <Label text="Vigência de" />
+          <DatePicker
+            value="{
+              path: 'ValidFrom',
+              type: 'sap.ui.model.odata.type.DateTimeOffset',
+              constraints: { precision: 7 },
+              formatOptions: { pattern: 'dd/MM/yyyy' }
+            }"
+            displayFormat="dd/MM/yyyy"
+          />
+          <Label text="Vigência até" />
+          <DatePicker
+            value="{
+              path: 'ValidTo',
+              type: 'sap.ui.model.odata.type.DateTimeOffset',
+              constraints: { precision: 7 },
+              formatOptions: { pattern: 'dd/MM/yyyy' }
+            }"
+            displayFormat="dd/MM/yyyy"
+          />
           <Label text="Inativo ?" />
           <CheckBox
             selected="{Inactive}"
