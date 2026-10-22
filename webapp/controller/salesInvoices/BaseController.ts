@@ -23,6 +23,18 @@ import Title from "sap/ui/core/Title";
 
 export abstract class BaseController extends CommonController {
 
+  /** Value help do PRODUTO da linha: além do código e da descrição, a unidade e a conta contábil vêm do produto. */
+  async openLineItemValueHelp(ev: Input$ValueHelpRequestEvent) {
+    const line = ev.getSource().getBindingContext() as Context;
+    const previousItemCode = line?.getProperty("ItemCode") as string;
+
+    await this.applyValueHelp(ev, "ItemsSelectDialog", ["ItemCode", "ItemName"], "ItemCode");
+
+    if (line && line.getProperty("ItemCode") !== previousItemCode) {
+      void this.applyProductDefaultsToLine(line).catch((): void => undefined);
+    }
+  }
+
     private itemFiscalDialog: Dialog;
 
     private itemChangeLogsDialog: Dialog;

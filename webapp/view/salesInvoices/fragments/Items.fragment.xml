@@ -80,7 +80,7 @@
             value="{ItemCode}" 
             showValueHelp="true" 
             valueHelpOnly="true" 
-            valueHelpRequest=".openItemValueHelp">
+            valueHelpRequest=".openLineItemValueHelp">
               <customData>
                 <core:CustomData key="descriptionProperty" value="ItemName" />
               </customData>

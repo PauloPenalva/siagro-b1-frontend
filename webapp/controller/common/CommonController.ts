@@ -19,6 +19,7 @@ import { DocNumberInfo } from "siagrob1/types/DocNumberInfo";
 import { Column as ExportColumn } from "sap/ui/export/library";
 import { Select$ChangeEvent } from "sap/m/Select";
 import CustomData from "sap/ui/core/CustomData";
+import { lineProductDefaults } from "siagrob1/helpers/InvoiceLineProductDefaults";
 
 /**
  * @namespace siagrob1.controller
@@ -486,6 +487,54 @@ export default abstract class CommonController extends BaseController {
   openCostumersValueHelp(ev: Input$ValueHelpRequestEvent) {
     void this.applyValueHelp(ev, "CostumersSelectDialog", ['CardCode', 'CardName', 'CardFName'], "CardCode",
       [ new Filter("CardType", FilterOperator.EQ, 'C') ]);
+  }
+
+  /**
+   * Linha de documento (entrada/saída): ao escolher o produto, a unidade de medida e a conta contábil vêm dele
+   * (pedido de 22/10). Sobrescreve a unidade e a conta que a linha tinha; produto sem conta (sempre em SAPB1) mantém a
+   * da linha. A unidade é a comercial do complemento do produto ou, sem ela, a padrão do sistema. Roda sem `await` no
+   * chamador (no grupo deferido a Promise de `setProperty` só resolve no Save) e descarta a resposta de um produto que
+   * já foi trocado na linha.
+   */
+  protected async applyProductDefaultsToLine(line: Context): Promise<void> {
+    const requestedItemCode = line.getProperty("ItemCode") as string;
+    if (!requestedItemCode) {
+      return;
+    }
+    const model = this.getModel() as ODataModel;
+
+    const complement = (async (): Promise<string> => {
+      try {
+        const func = model.bindContext(this.api.itemsGetComplement);
+        func.setParameter("ItemCode", requestedItemCode);
+        await func.invoke();
+        return (func.getBoundContext().getObject() as { CommercialUnitOfMeasureCode?: string })?.CommercialUnitOfMeasureCode;
+      } catch {
+        return undefined; // sem complemento legível, cai na unidade padrão
+      }
+    })();
+    const ledger = (async (): Promise<string> => {
+      try {
+        const item = await model.bindContext(
+          `/Items('${requestedItemCode.replace(/'/g, "''")}')`, undefined, { $select: "LedgerAccountCode" }
+        ).requestObject() as { LedgerAccountCode?: string };
+        return item?.LedgerAccountCode;
+      } catch {
+        return undefined;
+      }
+    })();
+
+    const defaults = lineProductDefaults(await complement, this.getSystemSetup().DefaultUoM, await ledger);
+
+    if (line.getProperty("ItemCode") !== requestedItemCode) {
+      return;
+    }
+    if (defaults.UnitOfMeasureCode) {
+      void line.setProperty("UnitOfMeasureCode", defaults.UnitOfMeasureCode);
+    }
+    if (defaults.LedgerAccountCode) {
+      void line.setProperty("LedgerAccountCode", defaults.LedgerAccountCode);
+    }
   }
 
   openItemValueHelp(ev: Input$ValueHelpRequestEvent) {

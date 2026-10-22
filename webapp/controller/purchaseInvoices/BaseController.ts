@@ -16,7 +16,7 @@ import { PurchasePurpose, summarizeInvoiceTaxes, TaxLine, Withholdings } from "s
 import { formatAmount, lineFunrural, purchaseChargeLineOf, summarizeInvoiceCharges } from "siagrob1/helpers/InvoiceChargeTotalsHelpers";
 import {
   complementedItemLabel, complementedItemLabels, complementLineFrom, inheritedContracts, isOtherPurchaseDocument, isOtherPurchaseEligible, isOtherPurchaseUsage,
-  missingUnitOfMeasureMessage, toNumber, unitSuggestionToApply, withEntry
+  missingUnitOfMeasureMessage, toNumber, withEntry
 } from "siagrob1/helpers/PurchaseInvoiceDraftHelpers";
 import Fragment from "sap/ui/core/Fragment";
 import SimpleForm from "sap/ui/layout/form/SimpleForm";
@@ -70,7 +70,6 @@ interface UsageFlagsRow {
  * @namespace siagrob1.controller.purchaseInvoices
  */
 /** Última unidade SUGERIDA por linha: permite renovar a sugestão sem tocar na unidade escolhida à mão. */
-const lastSuggestedUnit = new WeakMap<Context, string>();
 
 export abstract class BaseController extends CommonController {
 
@@ -754,39 +753,6 @@ export abstract class BaseController extends CommonController {
     await oTarget.setProperty("PurchaseContractKey", oSelected.getProperty("Key"));
   }
 
-  /**
-   * B7: ao escolher o produto, sugere a unidade da linha — a unidade comercial do complemento do produto ou, sem ela, a
-   * padrão do sistema. Roda sem `await` (a leitura do complemento não pode atrasar a limpeza do contrato). A unidade que
-   * o operador escolheu à mão nunca é sobrescrita; uma sugestão anterior é renovada quando o produto muda, e a resposta
-   * de um produto que já foi trocado é descartada (ver `unitSuggestionToApply`).
-   */
-  private async suggestUnitOfMeasure(line: Context): Promise<void> {
-    const requestedItemCode = line.getProperty("ItemCode") as string;
-
-    let commercial: string;
-    try {
-      const model = this.getModel() as ODataModel;
-      const func = model.bindContext(this.api.itemsGetComplement);
-      func.setParameter("ItemCode", requestedItemCode);
-      await func.invoke();
-      commercial = (func.getBoundContext().getObject() as { CommercialUnitOfMeasureCode?: string })
-        ?.CommercialUnitOfMeasureCode;
-    } catch {
-      // Sem complemento legível, cai na unidade padrão.
-      commercial = undefined;
-    }
-
-    const suggested = unitSuggestionToApply(
-      requestedItemCode, line.getProperty("ItemCode") as string, line.getProperty("UnitOfMeasureCode") as string,
-      lastSuggestedUnit.get(line), commercial, this.getSystemSetup().DefaultUoM);
-
-    if (suggested) {
-      lastSuggestedUnit.set(line, suggested);
-      // Sem `await`, como a chave do contrato: no grupo deferido a Promise só resolve no Save.
-      void line.setProperty("UnitOfMeasureCode", suggested);
-    }
-  }
-
   /** Mensagem do Save para linha sem unidade de medida (vazio = todas informadas). Ver `missingUnitOfMeasureMessage`. */
   protected missingUnitOfMeasure(lines: Context[], invoiceType?: string): string {
     // Devolução com NF-e e contra-nota: a unidade vem da origem e a tela a trava; o servidor também não a exige aqui.
@@ -838,7 +804,7 @@ export abstract class BaseController extends CommonController {
     await oTarget.setProperty("PurchaseContract/Code", null, null);
     void oTarget.setProperty("PurchaseContractKey", null);
 
-    void this.suggestUnitOfMeasure(oTarget).catch((): void => undefined);
+    void this.applyProductDefaultsToLine(oTarget).catch((): void => undefined);
   }
 
   private complementDialog: TableSelectDialog;
