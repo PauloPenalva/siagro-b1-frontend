@@ -117,7 +117,10 @@ export default class Main extends CommonController {
 			this, "siagrob1.view.financialAccountMovements.fragments.AddEntryDialog");
 		// AccountingAssignmentFields liga campos relativos (CostCenterCode, LedgerAccountCode...): o diálogo ganha um modelo padrão JSON próprio e um
 		// "ui" editável, sem tocar no OData da tela.
-		this._entryDialog.setModel(new JSONModel(emptyEntryDimensions()));
+		// Sem contexto de binding o "{CostCenterCode}" relativo não resolve e a escolha nunca chega ao modelo: ancora em "/".
+		const entryModel = new JSONModel(emptyEntryDimensions());
+		this._entryDialog.setModel(entryModel);
+		this._entryDialog.setBindingContext(entryModel.createBindingContext("/"));
 		this._entryDialog.setModel(new JSONModel({ editable: true }), "ui");
 		this._entryDialog.open();
 	}

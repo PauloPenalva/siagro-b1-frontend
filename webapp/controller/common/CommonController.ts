@@ -538,7 +538,8 @@ export default abstract class CommonController extends BaseController {
     const oModel = oBinding?.getModel();
 
     if (oModel?.isA("sap.ui.model.json.JSONModel")) {
-      const sPath = oBinding.getPath();
+      // Binding relativo (diálogo com contexto "/"): o caminho absoluto vem da resolução, não de getPath().
+      const sPath = oBinding.getResolvedPath?.() ?? oBinding.getPath();
       const sParent = sPath.slice(0, sPath.lastIndexOf("/"));
       aNames.forEach((sName) => (oModel as JSONModel).setProperty(`${sParent}/${sName}`, null));
       return;

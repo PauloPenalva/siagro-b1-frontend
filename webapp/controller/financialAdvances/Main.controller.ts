@@ -64,12 +64,15 @@ export default class Main extends FinancialDocumentsBaseController {
     this._advanceDialog ??= await DialogHelper.createDialog(
       this, "siagrob1.view.financialAdvances.fragments.CreateAdvanceDialog");
     // AccountingAssignmentFields liga campos relativos (CostCenterCode, LedgerAccountCode...): modelo padrão JSON e "ui" editável próprios do diálogo.
-    this._advanceDialog.setModel(new JSONModel({
+    const assignmentModel = new JSONModel({
       CostCenterCode: null,
       AccountingItemCode: null,
       DistributionRuleCode: null,
       LedgerAccountCode: null,
-    }));
+    });
+    this._advanceDialog.setModel(assignmentModel);
+    // Sem contexto de binding os campos relativos não resolvem e a escolha nunca chega ao modelo: ancora em "/".
+    this._advanceDialog.setBindingContext(assignmentModel.createBindingContext("/"));
     this._advanceDialog.setModel(new JSONModel({ editable: true }), "ui");
     this._advanceDialog.open();
   }
