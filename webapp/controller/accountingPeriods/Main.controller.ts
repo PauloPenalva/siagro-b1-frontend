@@ -83,6 +83,10 @@ export default class Main extends CommonController {
       MessageBox.alert("Selecione um mês.");
       return;
     }
+    if (ctx.getProperty("Status") !== "Open") {
+      MessageBox.alert("Só é possível bloquear um período aberto.");
+      return;
+    }
     await this.setStatus(ctx, STATUS.Blocked, "Período bloqueado.");
   }
 
