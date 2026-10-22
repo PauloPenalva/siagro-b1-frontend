@@ -1,9 +1,15 @@
+import Button from "sap/m/Button";
+import Dialog from "sap/m/Dialog";
+import Input from "sap/m/Input";
+import Label from "sap/m/Label";
 import MessageBox from "sap/m/MessageBox";
+import VBox from "sap/m/VBox";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Spreadsheet from "sap/ui/export/Spreadsheet";
 import { EdmType } from "sap/ui/export/library";
 import CommonController from "siagrob1/controller/common/CommonController";
 import { localIsoDate } from "siagrob1/helpers/DateHelpers";
+import { openPdfReport } from "siagrob1/helpers/PdfReportHelpers";
 
 type RowType = "opening" | "line" | "closing";
 
@@ -65,9 +71,10 @@ const COLUMNS: Column[] = [
 ];
 
 /**
- * Kardex Fiscal: movimentação PEPS por produto (entradas, saídas, devoluções e complementos) com saldo anterior e
+ * Registro Kardex: movimentação PEPS por produto (entradas, saídas, devoluções e complementos) com saldo anterior e
  * saldo final. O backend devolve itens com linhas; aqui viram uma grade só (cabeçalho "Saldo anterior", movimentos,
- * "Saldo final"), com as linhas de alerta destacadas.
+ * "Saldo final"), com as linhas de alerta destacadas. "Imprimir livro" gera o Registro de Controle da Produção e do
+ * Estoque (modelo 3) da filial, período e produto da tela.
  * @namespace siagrob1.controller.fiscalKardex
  */
 export default class Main extends CommonController {
@@ -187,7 +194,7 @@ export default class Main extends CommonController {
 			dataSource: data,
 			fileName: `KardexFiscal-${params.BranchCode}-${params.FromDate}-${params.ToDate}.xlsx`,
 			workbook: {
-				context: { sheetName: "Kardex Fiscal" },
+				context: { sheetName: "Registro Kardex" },
 				columns: COLUMNS.map((c) => ({
 					label: c.label,
 					property: c.property,
@@ -199,5 +206,68 @@ export default class Main extends CommonController {
 			},
 		});
 		void sheet.build().finally(() => sheet.destroy());
+	}
+
+	/** Pede Nº do livro e folha inicial; o livro sai com a filial, o período e o produto da tela (vazio = todos). */
+	onPrintBook(): void {
+		const params = (this.getModel("params") as JSONModel).getData() as {
+			BranchCode: string; ItemCode: string; FromDate: string; ToDate: string;
+		};
+
+		if (!params.BranchCode || !params.FromDate || !params.ToDate) {
+			MessageBox.warning("Informe a filial e o período.");
+			return;
+		}
+
+		const submit = (): void => {
+			const bookNumber = parseInt(bookInput.getValue(), 10);
+			const firstSheet = parseInt(sheetInput.getValue() || "1", 10);
+			if (!(bookNumber >= 1)) {
+				bookInput.setValueState("Error").setValueStateText("Informe o número do livro.");
+				return;
+			}
+			if (!(firstSheet >= 1)) {
+				sheetInput.setValueState("Error").setValueStateText("A folha inicial deve ser 1 ou mais.");
+				return;
+			}
+			dialog.close();
+			void this.printBook(params, bookNumber, firstSheet);
+		};
+		const bookInput = new Input({ type: "Number", width: "100%", required: true, submit });
+		const sheetInput = new Input({ type: "Number", width: "100%", value: "1", submit });
+		const dialog: Dialog = new Dialog({
+			title: "Imprimir Registro Kardex (modelo 3)",
+			contentWidth: "22rem",
+			initialFocus: bookInput,
+			content: [new VBox({
+				renderType: "Bare",
+				items: [
+					new Label({ text: "Nº do livro", required: true, labelFor: bookInput.getId() }), bookInput,
+					new Label({ text: "Folha inicial", labelFor: sheetInput.getId() }).addStyleClass("sapUiSmallMarginTop"), sheetInput,
+				],
+			}).addStyleClass("sapUiSmallMargin")],
+			beginButton: new Button({ text: "Imprimir", type: "Emphasized", press: submit }),
+			endButton: new Button({ text: "Cancelar", press: () => dialog.close() }),
+			afterClose: () => dialog.destroy(),
+		});
+		this.getView().addDependent(dialog);
+		dialog.open();
+	}
+
+	private async printBook(
+		params: { BranchCode: string; ItemCode: string; FromDate: string; ToDate: string },
+		bookNumber: number, firstSheet: number,
+	): Promise<void> {
+		try {
+			this.setBusy(true);
+			await openPdfReport(this.api.fiscalKardexBook, {
+				branchCode: params.BranchCode, itemCode: params.ItemCode || null,
+				fromDate: params.FromDate, toDate: params.ToDate, bookNumber, firstSheet,
+			});
+		} catch (error) {
+			MessageBox.error((error as Error).message);
+		} finally {
+			this.setBusy(false);
+		}
 	}
 }

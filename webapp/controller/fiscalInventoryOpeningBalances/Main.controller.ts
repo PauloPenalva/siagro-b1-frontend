@@ -23,7 +23,7 @@ type BalanceForm = {
 };
 
 /**
- * Saldo inicial do estoque fiscal (Kardex Fiscal), um lançamento por filial + produto (só STANDALONE; o servidor
+ * Saldo inicial do estoque fiscal (Registro Kardex), um lançamento por filial + produto (só STANDALONE; o servidor
  * recusa fora do modo). Inclusão e edição por diálogo com JSONModel, gravando pelo modelo OData. As decimais vão
  * como Number (Double) — o OData não aceita Decimal editável como texto — e a data como meio-dia UTC, para o
  * dia não mudar com o fuso.

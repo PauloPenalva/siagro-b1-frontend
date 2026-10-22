@@ -4,6 +4,7 @@ export default {
   dashboard: '/reports/Dashboard',
   fiscalConference: '/reports/FiscalConference',
   fiscalKardex: '/reports/FiscalKardex',
+  fiscalKardexBook: '/reports/FiscalKardex/Book',
   fiscalInventory: '/reports/FiscalInventory',
   fiscalInventoryBook: '/reports/FiscalInventory/Book',
   // Fechar/reabrir o mês do estoque fiscal (actions OData de topo; 400 com mensagem pt-BR na recusa).

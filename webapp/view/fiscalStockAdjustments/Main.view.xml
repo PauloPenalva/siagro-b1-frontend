@@ -6,10 +6,10 @@
 	xmlns:core="sap.ui.core"
 	xmlns:t="sap.ui.table">
 
-	<Page title="Ajustes do estoque fiscal" showNavButton="true" navButtonPress=".onNavBack">
+	<Page title="Ajuste de Estoque" showNavButton="true" navButtonPress=".onNavBack">
 		<content>
 			<MessageStrip
-				text="Ajuste manual de entrada ou saída no Kardex Fiscal (PEPS), por filial e produto. A saída não pode passar da quantidade nem do valor em estoque na data. O motivo é obrigatório e não é possível lançar em mês fechado."
+				text="Ajuste manual de entrada ou saída no Registro Kardex (PEPS), por filial e produto. A saída não pode passar da quantidade nem do valor em estoque na data. O motivo é obrigatório e não é possível lançar em mês fechado."
 				type="Information"
 				showIcon="true"
 				class="sapUiSmallMargin" />

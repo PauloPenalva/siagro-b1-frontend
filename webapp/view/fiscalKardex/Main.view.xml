@@ -9,7 +9,7 @@
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-	<Page title="Kardex Fiscal" busyIndicatorDelay="0" busy="{ui>/busy}" enableScrolling="false">
+	<Page title="Registro Kardex" busyIndicatorDelay="0" busy="{ui>/busy}" enableScrolling="false">
 		<subHeader>
 			<OverflowToolbar>
 				<Label text="Filial" required="true" labelFor="branchInput"/>
@@ -38,6 +38,7 @@
 						<Title text="{= ${kardex>/rows}.length } linha(s)"/>
 						<ToolbarSpacer/>
 						<Button type="Transparent" icon="sap-icon://excel-attachment" text="Exportar Excel" press=".onExport"/>
+						<Button type="Transparent" icon="sap-icon://print" text="Imprimir livro" press=".onPrintBook"/>
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>

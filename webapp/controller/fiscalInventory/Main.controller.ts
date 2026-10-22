@@ -49,7 +49,7 @@ const COLUMNS: Column[] = [
 ];
 
 /**
- * Inventário em Data: posição do estoque PEPS ao fim do dia escolhido, por produto, com total geral, e impressão do
+ * Registro de Inventário Modelo P7: posição do estoque PEPS ao fim do dia escolhido, por produto, com total geral, e impressão do
  * Livro de Registro de Inventário (modelo 7). A seleção de produtos (vazia = todos) vale para a grade e para o livro
  * e fica guardada por usuário no navegador.
  * @namespace siagrob1.controller.fiscalInventory

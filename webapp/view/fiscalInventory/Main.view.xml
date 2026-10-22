@@ -6,7 +6,7 @@
 	xmlns:core="sap.ui.core"
 	xmlns:t="sap.ui.table">
 
-	<Page title="Inventário em Data" busyIndicatorDelay="0" busy="{ui>/busy}" enableScrolling="false">
+	<Page title="Registro de Inventário Modelo P7" busyIndicatorDelay="0" busy="{ui>/busy}" enableScrolling="false">
 		<subHeader>
 			<OverflowToolbar>
 				<Label text="Filial" required="true" labelFor="branchInput"/>
