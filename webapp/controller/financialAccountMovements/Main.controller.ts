@@ -26,7 +26,7 @@ type MovementsResult = {
 };
 
 function emptyEntryDimensions(): Record<string, string> {
-	return { LedgerAccountCode: null };
+	return { CostCenterCode: null, AccountingItemCode: null, DistributionRuleCode: null, LedgerAccountCode: null };
 }
 
 /**
@@ -115,7 +115,7 @@ export default class Main extends CommonController {
 
 		this._entryDialog ??= await DialogHelper.createDialog(
 			this, "siagrob1.view.financialAccountMovements.fragments.AddEntryDialog");
-		// DimensionFields liga campos relativos (LedgerAccountCode...): o diálogo ganha um modelo padrão JSON próprio e um
+		// AccountingAssignmentFields liga campos relativos (CostCenterCode, LedgerAccountCode...): o diálogo ganha um modelo padrão JSON próprio e um
 		// "ui" editável, sem tocar no OData da tela.
 		this._entryDialog.setModel(new JSONModel(emptyEntryDimensions()));
 		this._entryDialog.setModel(new JSONModel({ editable: true }), "ui");
@@ -146,7 +146,9 @@ export default class Main extends CommonController {
 			DocumentReference: entry.documentReference || null,
 			Notes: entry.notes || null,
 			// Parâmetros opcionais: vazio vai como null (o servidor aplica o padrão/regra da empresa).
-			// TODO Task 6: CostCenterCode / AccountingItemCode / DistributionRuleCode.
+			CostCenterCode: dims.CostCenterCode || null,
+			AccountingItemCode: dims.AccountingItemCode || null,
+			DistributionRuleCode: dims.DistributionRuleCode || null,
 			LedgerAccountCode: dims.LedgerAccountCode || null,
 		});
 		this.setBusy(false);

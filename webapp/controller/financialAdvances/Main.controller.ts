@@ -63,8 +63,11 @@ export default class Main extends FinancialDocumentsBaseController {
 
     this._advanceDialog ??= await DialogHelper.createDialog(
       this, "siagrob1.view.financialAdvances.fragments.CreateAdvanceDialog");
-    // DimensionFields liga campos relativos (LedgerAccountCode...): modelo padrão JSON e "ui" editável próprios do diálogo.
+    // AccountingAssignmentFields liga campos relativos (CostCenterCode, LedgerAccountCode...): modelo padrão JSON e "ui" editável próprios do diálogo.
     this._advanceDialog.setModel(new JSONModel({
+      CostCenterCode: null,
+      AccountingItemCode: null,
+      DistributionRuleCode: null,
       LedgerAccountCode: null,
     }));
     this._advanceDialog.setModel(new JSONModel({ editable: true }), "ui");
@@ -215,7 +218,7 @@ export default class Main extends FinancialDocumentsBaseController {
       action.setParameter("PaymentDate", form.paymentDate);
       action.setParameter("Comments", form.comments ?? "");
       // Parâmetros opcionais: só os preenchidos (o servidor aplica o padrão do parceiro/contrato nos demais).
-      for (const key of ["LedgerAccountCode"]) {
+      for (const key of ["CostCenterCode", "AccountingItemCode", "DistributionRuleCode", "LedgerAccountCode"]) {
         if (dims[key]) {
           action.setParameter(key, dims[key]);
         }

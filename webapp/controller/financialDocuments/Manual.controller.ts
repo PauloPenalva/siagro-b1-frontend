@@ -74,12 +74,10 @@ export default class Manual extends CommonController {
         DocumentDate: new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString(),
         NetAmount: 0,
         Currency: "Brl",
-        // Dimensões e conta: nulas no payload inicial (o servidor aplica o padrão do parceiro).
-        Dim1Code: null,
-        Dim2Code: null,
-        Dim3Code: null,
-        Dim4Code: null,
-        Dim5Code: null,
+        // Atribuição contábil: nulas no payload inicial (o servidor aplica o padrão do parceiro).
+        CostCenterCode: null,
+        AccountingItemCode: null,
+        DistributionRuleCode: null,
         LedgerAccountCode: null,
       }, false, false, false);
 

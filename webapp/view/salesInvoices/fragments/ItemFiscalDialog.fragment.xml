@@ -386,9 +386,9 @@
             </f:formElements>
           </f:FormContainer>
 
-          <f:FormContainer title="Dimensões gerenciais" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
+          <f:FormContainer title="Atribuição contábil" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
             <f:formElements>
-              <core:Fragment fragmentName="siagrob1.view.common.fragments.DimensionFields" type="XML" />
+              <core:Fragment fragmentName="siagrob1.view.common.fragments.AccountingAssignmentFields" type="XML" />
             </f:formElements>
           </f:FormContainer>
 

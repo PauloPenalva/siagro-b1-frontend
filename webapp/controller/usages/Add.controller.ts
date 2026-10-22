@@ -44,7 +44,10 @@ export default class Add extends BaseController {
 			IsDefault: false,
 			Inactive: false,
 			Description: null,
-			// Conta da natureza (DimensionFields): nula no payload inicial. TODO Task 6: centro de custo, item e rateio.
+			// Atribuição contábil padrão da natureza: nula no payload inicial.
+			CostCenterCode: null,
+			AccountingItemCode: null,
+			DistributionRuleCode: null,
 			LedgerAccountCode: null,
 			CfopOutgoingInState: null,
 			CfopOutgoingOutState: null,

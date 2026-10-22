@@ -109,8 +109,8 @@
                   <TextArea value="{viewModel>/advanceDialog/comments}" rows="3" width="100%" maxLength="500"/>
                 </f:fields>
               </f:FormElement>
-              <!-- Dimensões: o diálogo tem modelo padrão próprio e ui próprio, ver onCreateAdvance. -->
-              <core:Fragment fragmentName="siagrob1.view.common.fragments.DimensionFields" type="XML"/>
+              <!-- Atribuição contábil: o diálogo tem modelo padrão próprio e ui próprio, ver onCreateAdvance. -->
+              <core:Fragment fragmentName="siagrob1.view.common.fragments.AccountingAssignmentFields" type="XML"/>
             </f:formElements>
           </f:FormContainer>
         </f:formContainers>

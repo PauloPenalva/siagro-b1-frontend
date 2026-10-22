@@ -525,6 +525,59 @@ export default abstract class CommonController extends BaseController {
       [ new Filter("Inactive", FilterOperator.EQ, false) ], undefined, "Class eq 'Synthetic'");
   }
 
+  /**
+   * Limpa os campos irmãos de atribuição contábil do Input escolhido. Em contexto OData o irmão é uma
+   * propriedade da mesma linha; em JSON model, o vizinho do caminho do código.
+   */
+  private clearAssignmentSiblings(oInput: Input, aNames: string[]) {
+    const oBinding = oInput.getBinding("value");
+    const oModel = oBinding?.getModel();
+
+    if (oModel?.isA("sap.ui.model.json.JSONModel")) {
+      const sPath = oBinding.getPath();
+      const sParent = sPath.slice(0, sPath.lastIndexOf("/"));
+      aNames.forEach((sName) => (oModel as JSONModel).setProperty(`${sParent}/${sName}`, null));
+      return;
+    }
+
+    const oContext = oBinding?.getContext() ?? oInput.getBindingContext();
+    if (oContext?.isA("sap.ui.model.odata.v4.Context")) {
+      aNames.forEach((sName) => void (oContext as Context).setProperty(sName, null));
+    }
+  }
+
+  /** Escolha feita no value help? Compara o valor do Input antes e depois do diálogo. */
+  private async applyAssignmentValueHelp(
+    ev: Input$ValueHelpRequestEvent,
+    run: () => Promise<void>,
+    aSiblingsToClear: string[]
+  ) {
+    const oInput = ev.getSource();
+    const sBefore = oInput.getValue();
+    await run();
+    if (oInput.getValue() !== sBefore) {
+      this.clearAssignmentSiblings(oInput, aSiblingsToClear);
+    }
+  }
+
+  /** Centro de custo da atribuição contábil: escolher um limpa o rateio. */
+  openAssignmentCostCenterValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyAssignmentValueHelp(ev, () => this.applyValueHelp(ev, "CostCentersSelectDialog", ["Code", "Name"], "Code",
+      [ new Filter("Inactive", FilterOperator.EQ, false) ], undefined, "Class eq 'Analytic'"), ["DistributionRuleCode"]);
+  }
+
+  /** Item contábil da atribuição contábil: escolher um limpa o rateio. */
+  openAssignmentAccountingItemValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyAssignmentValueHelp(ev, () => this.applyValueHelp(ev, "AccountingItemsSelectDialog", ["Code", "Name"], "Code",
+      [ new Filter("Inactive", FilterOperator.EQ, false) ], undefined, "Class eq 'Analytic'"), ["DistributionRuleCode"]);
+  }
+
+  /** Rateio ativo: escolher um limpa o centro de custo e o item contábil. */
+  openAssignmentDistributionRuleValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyAssignmentValueHelp(ev, () => this.applyValueHelp(ev, "DistributionRulesSelectDialog", ["Code", "Name"], "Code",
+      [ new Filter("Inactive", FilterOperator.EQ, false) ]), ["CostCenterCode", "AccountingItemCode"]);
+  }
+
   openLedgerAccountsValueHelp(ev: Input$ValueHelpRequestEvent) {
     void this.applyValueHelp(ev, "LedgerAccountsSelectDialog", ["Code", "Name"], "Code",
       [ new Filter("Inactive", FilterOperator.EQ, false) ]);

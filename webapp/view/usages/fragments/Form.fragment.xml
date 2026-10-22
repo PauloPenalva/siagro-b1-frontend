@@ -336,7 +336,7 @@
     </uxap:subSections>
   </uxap:ObjectPageSection>
 
-  <uxap:ObjectPageSection id="usagesDimensionsSection" titleUppercase="false" title="Dimensões padrão" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
+  <uxap:ObjectPageSection id="usagesDimensionsSection" titleUppercase="false" title="Contabilização padrão" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
     <uxap:subSections>
       <uxap:ObjectPageSubSection title=" " titleUppercase="false">
         <uxap:blocks>
@@ -347,7 +347,7 @@
             <f:formContainers>
               <f:FormContainer>
                 <f:formElements>
-                  <core:Fragment fragmentName="siagrob1.view.common.fragments.DimensionFields" type="XML" />
+                  <core:Fragment fragmentName="siagrob1.view.common.fragments.AccountingAssignmentFields" type="XML" />
                 </f:formElements>
               </f:FormContainer>
             </f:formContainers>
