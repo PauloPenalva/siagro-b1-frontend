@@ -5,14 +5,14 @@ import Context from "sap/ui/model/odata/v4/Context";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
-import RootBaseController from "../BaseController";
+import CommonController from "../common/CommonController";
 import JSONModel from "sap/ui/model/json/JSONModel";
 
 /**
  * Base das telas de natureza (inclusão, edição e detalhe): modo ERP, edição e o value help da natureza de devolução.
  * @namespace siagrob1.controller.usages
  */
-export default class BaseController extends RootBaseController {
+export default class BaseController extends CommonController {
 
 	/**
 	 * ui>/editable liga os campos dos fragmentos: true na inclusão e na edição, false no detalhe (só leitura).
