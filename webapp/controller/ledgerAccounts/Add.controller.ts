@@ -29,7 +29,11 @@ export default class Add extends BaseController {
 		// before it has been read" quando o usuário escolhe o tipo.
 		// AllowsPosting nasce marcado porque conta analítica é o caso comum.
 		const oContext = oBinding.create(
-			{ Type: null, AllowsPosting: true, Inactive: false },
+			{
+				Type: null, AllowsPosting: true, Inactive: false,
+				AcceptsCostCenter: false, RequiresCostCenter: false,
+				AcceptsAccountingItem: false, RequiresAccountingItem: false
+			},
 			false,
 			false,
 			false

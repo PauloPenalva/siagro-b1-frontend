@@ -9,6 +9,7 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import Context from "sap/ui/model/odata/v4/Context";
 import formatter from "siagrob1/model/formatter";
+import { accountingClassText } from "siagrob1/helpers/AccountingMasterDataHelpers";
 
 /**
  * @namespace siagrob1.controller.costCenters
@@ -22,6 +23,11 @@ export default class Main extends BaseController {
 
 	private routeMatched() {
 		this.onRefresh();
+	}
+
+	/** Texto pt-BR da classe (enum `Synthetic`/`Analytic`). */
+	formatClass(value: string): string {
+		return accountingClassText(value);
 	}
 
 	onRefresh(): void {

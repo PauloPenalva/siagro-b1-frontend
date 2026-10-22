@@ -19,6 +19,7 @@ import { DocNumberInfo } from "siagrob1/types/DocNumberInfo";
 import { Column as ExportColumn } from "sap/ui/export/library";
 import { Select$ChangeEvent } from "sap/m/Select";
 import CustomData from "sap/ui/core/CustomData";
+import { lineProductDefaults } from "siagrob1/helpers/InvoiceLineProductDefaults";
 
 /**
  * @namespace siagrob1.controller
@@ -248,7 +249,7 @@ export default abstract class CommonController extends BaseController {
   }
 
   /**
-   * Diálogo de "Tributos do item" (Entrada e Saída), criado a CADA abertura e destruído ao fechar.
+   * Diálogo de "Tributos e dimensões do item" (Entrada e Saída), criado a CADA abertura e destruído ao fechar.
    *
    * Não pode ser reaproveitado: o contexto explícito é uma linha da grade de itens, e ela morre
    * quando a view troca de documento. Com o contexto próprio destruído, o diálogo (dependente da
@@ -284,7 +285,8 @@ export default abstract class CommonController extends BaseController {
     property: string,
     defaultFilters: Filter[] = [],
     elementPath?: string,
-    staticFilter?: string
+    staticFilter?: string,
+    onSelected?: (oInput: Input) => void
   ) {
     const oContext = await DialogHelper.openTableSelectDialog(
       this, name, filters, defaultFilters, elementPath, staticFilter);
@@ -294,6 +296,9 @@ export default abstract class CommonController extends BaseController {
     }
 
     const oInput = ev.getSource();
+    // Roda antes de gravar o código: quem limpa campos mutuamente exclusivos precisa fazê-lo antes,
+    // senão um update group que envia PATCH na hora manda os dois juntos e o servidor recusa.
+    onSelected?.(oInput);
     oInput.setValue(oContext.getProperty(property) as string);
 
     await this.applyValueHelpDescription(oInput, oContext);
@@ -484,6 +489,54 @@ export default abstract class CommonController extends BaseController {
       [ new Filter("CardType", FilterOperator.EQ, 'C') ]);
   }
 
+  /**
+   * Linha de documento (entrada/saída): ao escolher o produto, a unidade de medida e a conta contábil vêm dele
+   * (pedido de 22/10). Sobrescreve a unidade e a conta que a linha tinha; produto sem conta (sempre em SAPB1) mantém a
+   * da linha. A unidade é a comercial do complemento do produto ou, sem ela, a padrão do sistema. Roda sem `await` no
+   * chamador (no grupo deferido a Promise de `setProperty` só resolve no Save) e descarta a resposta de um produto que
+   * já foi trocado na linha.
+   */
+  protected async applyProductDefaultsToLine(line: Context): Promise<void> {
+    const requestedItemCode = line.getProperty("ItemCode") as string;
+    if (!requestedItemCode) {
+      return;
+    }
+    const model = this.getModel() as ODataModel;
+
+    const complement = (async (): Promise<string> => {
+      try {
+        const func = model.bindContext(this.api.itemsGetComplement);
+        func.setParameter("ItemCode", requestedItemCode);
+        await func.invoke();
+        return (func.getBoundContext().getObject() as { CommercialUnitOfMeasureCode?: string })?.CommercialUnitOfMeasureCode;
+      } catch {
+        return undefined; // sem complemento legível, cai na unidade padrão
+      }
+    })();
+    const ledger = (async (): Promise<string> => {
+      try {
+        const item = await model.bindContext(
+          `/Items('${requestedItemCode.replace(/'/g, "''")}')`, undefined, { $select: "LedgerAccountCode" }
+        ).requestObject() as { LedgerAccountCode?: string };
+        return item?.LedgerAccountCode;
+      } catch {
+        return undefined;
+      }
+    })();
+
+    const defaults = lineProductDefaults(await complement, this.getSystemSetup().DefaultUoM, await ledger);
+
+    if (line.getProperty("ItemCode") !== requestedItemCode) {
+      return;
+    }
+    if (defaults.UnitOfMeasureCode) {
+      void line.setProperty("UnitOfMeasureCode", defaults.UnitOfMeasureCode);
+    }
+    if (defaults.LedgerAccountCode) {
+      void line.setProperty("LedgerAccountCode", defaults.LedgerAccountCode);
+    }
+  }
+
   openItemValueHelp(ev: Input$ValueHelpRequestEvent) {
     void this.applyValueHelp(ev, "ItemsSelectDialog", ["ItemCode", "ItemName"], "ItemCode");
   }
@@ -501,14 +554,95 @@ export default abstract class CommonController extends BaseController {
     void this.applyValueHelp(ev, "WarehousesSelectDialog", ["Code", "Name", "TaxId", "FName"], "Code");
   }
 
+  /** Centro de custo que recebe lançamento: só analítico e ativo. */
   openCostCentersValueHelp(ev: Input$ValueHelpRequestEvent) {
     void this.applyValueHelp(ev, "CostCentersSelectDialog", ["Code", "Name"], "Code",
+      [ new Filter("Inactive", FilterOperator.EQ, false) ], undefined, "Class eq 'Analytic'");
+  }
+
+  /** Centro de custo superior: só sintético e ativo. */
+  openSyntheticCostCentersValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "CostCentersSelectDialog", ["Code", "Name"], "Code",
+      [ new Filter("Inactive", FilterOperator.EQ, false) ], undefined, "Class eq 'Synthetic'");
+  }
+
+  /** Item contábil que recebe lançamento: só analítico e ativo. */
+  openAccountingItemsValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "AccountingItemsSelectDialog", ["Code", "Name"], "Code",
+      [ new Filter("Inactive", FilterOperator.EQ, false) ], undefined, "Class eq 'Analytic'");
+  }
+
+  /** Item contábil superior: só sintético e ativo. */
+  openSyntheticAccountingItemsValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "AccountingItemsSelectDialog", ["Code", "Name"], "Code",
+      [ new Filter("Inactive", FilterOperator.EQ, false) ], undefined, "Class eq 'Synthetic'");
+  }
+
+  /**
+   * Limpa os campos irmãos de atribuição contábil do Input escolhido. Em contexto OData o irmão é uma
+   * propriedade da mesma linha; em JSON model, o vizinho do caminho do código.
+   */
+  private clearAssignmentSiblings(oInput: Input, aNames: string[]) {
+    const oBinding = oInput.getBinding("value");
+    const oModel = oBinding?.getModel();
+
+    if (oModel?.isA("sap.ui.model.json.JSONModel")) {
+      // Binding relativo (diálogo com contexto "/"): o caminho absoluto vem da resolução, não de getPath().
+      const sPath = oBinding.getResolvedPath?.() ?? oBinding.getPath();
+      const sParent = sPath.slice(0, sPath.lastIndexOf("/"));
+      aNames.forEach((sName) => (oModel as JSONModel).setProperty(`${sParent}/${sName}`, null));
+      return;
+    }
+
+    const oContext = oBinding?.getContext() ?? oInput.getBindingContext();
+    if (oContext?.isA("sap.ui.model.odata.v4.Context")) {
+      aNames.forEach((sName) => void (oContext as Context).setProperty(sName, null));
+    }
+  }
+
+  /**
+   * Value help de atribuição contábil: ao escolher, limpa os irmãos exclusivos ANTES de gravar o
+   * código escolhido (cancelar não limpa nada).
+   */
+  private applyAssignmentValueHelp(
+    ev: Input$ValueHelpRequestEvent,
+    name: string,
+    aSiblingsToClear: string[],
+    defaultFilters: Filter[],
+    staticFilter?: string
+  ) {
+    void this.applyValueHelp(ev, name, ["Code", "Name"], "Code", defaultFilters, undefined, staticFilter,
+      (oInput) => this.clearAssignmentSiblings(oInput, aSiblingsToClear));
+  }
+
+  /** Centro de custo da atribuição contábil: escolher um limpa o rateio. */
+  openAssignmentCostCenterValueHelp(ev: Input$ValueHelpRequestEvent) {
+    this.applyAssignmentValueHelp(ev, "CostCentersSelectDialog", ["DistributionRuleCode"],
+      [ new Filter("Inactive", FilterOperator.EQ, false) ], "Class eq 'Analytic'");
+  }
+
+  /** Item contábil da atribuição contábil: escolher um limpa o rateio. */
+  openAssignmentAccountingItemValueHelp(ev: Input$ValueHelpRequestEvent) {
+    this.applyAssignmentValueHelp(ev, "AccountingItemsSelectDialog", ["DistributionRuleCode"],
+      [ new Filter("Inactive", FilterOperator.EQ, false) ], "Class eq 'Analytic'");
+  }
+
+  /** Rateio ativo: escolher um limpa o centro de custo e o item contábil. */
+  openAssignmentDistributionRuleValueHelp(ev: Input$ValueHelpRequestEvent) {
+    this.applyAssignmentValueHelp(ev, "DistributionRulesSelectDialog", ["CostCenterCode", "AccountingItemCode"],
       [ new Filter("Inactive", FilterOperator.EQ, false) ]);
   }
 
   openLedgerAccountsValueHelp(ev: Input$ValueHelpRequestEvent) {
     void this.applyValueHelp(ev, "LedgerAccountsSelectDialog", ["Code", "Name"], "Code",
       [ new Filter("Inactive", FilterOperator.EQ, false) ]);
+  }
+
+  /** Conta contábil de lançamento: só ativa e que aceita lançamento (analítica). */
+  openPostingLedgerAccountsValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "LedgerAccountsSelectDialog", ["Code", "Name"], "Code",
+      [ new Filter("Inactive", FilterOperator.EQ, false),
+        new Filter("AllowsPosting", FilterOperator.EQ, true) ]);
   }
 
   openTaxesValueHelp(ev: Input$ValueHelpRequestEvent) {

@@ -44,6 +44,8 @@
 						<form:FormElement label="Observação">
 							<form:fields><TextArea value="{viewModel>/entry/notes}" maxLength="500" rows="2" width="100%"/></form:fields>
 						</form:FormElement>
+						<!-- Atribuição contábil: o diálogo tem modelo padrão próprio  e ui próprio, ver onCreateEntry. -->
+						<core:Fragment fragmentName="siagrob1.view.common.fragments.AccountingAssignmentFields" type="XML"/>
 					</form:formElements>
 				</form:FormContainer>
 			</form:formContainers>

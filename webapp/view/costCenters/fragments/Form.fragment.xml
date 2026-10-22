@@ -1,4 +1,7 @@
 <core:FragmentDefinition
+    core:require="{
+        StringType: 'sap/ui/model/type/String'
+    }"
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
     xmlns:l="sap.ui.layout"
@@ -28,11 +31,12 @@
               text="Dados do Centro de Custo"
               emphasized="true"
           />
-          <Label text="Codigo" />
+          <Label text="Código" />
           <Input
               value="{Code}"
+              editable="{ui>/codeEditable}"
               required="true"
-              maxLength="10"
+              maxLength="20"
           />
           <Label text="Nome" />
           <Input
@@ -41,6 +45,42 @@
               required="true"
               liveChange=".validateField"
               maxLength="100"
+          />
+          <Label text="Classe" required="true" />
+          <Select
+            selectedKey="{ path: 'Class', targetType: 'any' }"
+            forceSelection="false"
+          >
+            <core:ListItem key="Analytic" text="Analítico" />
+            <core:ListItem key="Synthetic" text="Sintético" />
+          </Select>
+          <Label text="Superior" />
+          <Input
+            value="{ParentCode}"
+            showClearIcon="true"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openSyntheticCostCentersValueHelp"
+          />
+          <Label text="Vigência de" />
+          <DatePicker
+            value="{
+              path: 'ValidFrom',
+              type: 'sap.ui.model.odata.type.DateTimeOffset',
+              constraints: { precision: 7 },
+              formatOptions: { pattern: 'dd/MM/yyyy' }
+            }"
+            displayFormat="dd/MM/yyyy"
+          />
+          <Label text="Vigência até" />
+          <DatePicker
+            value="{
+              path: 'ValidTo',
+              type: 'sap.ui.model.odata.type.DateTimeOffset',
+              constraints: { precision: 7 },
+              formatOptions: { pattern: 'dd/MM/yyyy' }
+            }"
+            displayFormat="dd/MM/yyyy"
           />
           <Label text="Inativo ?" />
           <CheckBox

@@ -1,0 +1,87 @@
+<mvc:View
+	controllerName="siagrob1.controller.distributionRules.Edit"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+
+	<Page title="Regra de Distribuição" busy="{ui>/busy}">
+		<content>
+			<f:Form id="distributionRuleForm" editable="true">
+				<f:toolbar>
+					<Toolbar>
+						<Title text="Dados da regra" />
+						<ToolbarSpacer />
+						<Button text="Salvar dados" icon="sap-icon://save" press=".onSaveHeader" />
+					</Toolbar>
+				</f:toolbar>
+				<f:layout>
+					<f:ColumnLayout columnsM="2" columnsL="2" columnsXL="2" />
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="Código">
+								<Text text="{rule>/Header/Code}" />
+							</f:FormElement>
+							<f:FormElement label="Nome">
+								<Input value="{rule>/Header/Name}" required="true" maxLength="100" />
+							</f:FormElement>
+							<f:FormElement label="Inativa">
+								<Switch state="{rule>/Header/Inactive}" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+
+			<Table
+				id="ruleVersionsTable"
+				class="sapUiSizeCondensed"
+				mode="SingleSelectMaster"
+				selectionChange=".onVersionSelected"
+				items="{rule>/Versions}">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="Versões" />
+						<ToolbarSpacer />
+						<Button text="Nova versão" icon="sap-icon://add" press=".onNewVersion" />
+						<Button text="Excluir versão" icon="sap-icon://delete" press=".onDeleteVersion" />
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column><Text text="Vigência a partir de" /></Column>
+					<Column width="10rem"><Text text="Situação" /></Column>
+				</columns>
+				<items>
+					<ColumnListItem selected="{rule>IsSelected}">
+						<cells>
+							<Text text="{rule>ValidFromText}" />
+							<ObjectStatus
+								text="{rule>StatusText}"
+								state="{= ${rule>Status} === 'Future' ? 'Information' : (${rule>Status} === 'Current' ? 'Success' : 'None')}" />
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+
+			<MessageStrip
+				class="sapUiSmallMarginTop"
+				visible="{= !${rule>/Editable}}"
+				type="Information"
+				showIcon="true"
+				text="Versões vigentes ou passadas são somente leitura. Crie uma nova versão com início futuro para alterar a distribuição." />
+
+			<core:Fragment fragmentName="siagrob1.view.distributionRules.fragments.RuleLines" type="XML" />
+		</content>
+		<footer>
+			<Toolbar>
+				<ToolbarSpacer />
+				<Button text="Voltar" press=".onCancel" />
+				<Button text="Salvar versão" type="Emphasized" visible="{rule>/Editable}" press=".onSaveVersion" />
+			</Toolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

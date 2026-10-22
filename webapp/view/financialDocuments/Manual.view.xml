@@ -163,6 +163,24 @@
           </uxap:ObjectPageSubSection>
         </uxap:subSections>
       </uxap:ObjectPageSection>
+      <uxap:ObjectPageSection titleUppercase="false" title="Contábil" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection title=" " titleUppercase="false">
+            <f:Form editable="true">
+              <f:layout>
+                <f:ColumnLayout columnsM="2" columnsL="3" columnsXL="3" />
+              </f:layout>
+              <f:formContainers>
+                <f:FormContainer>
+                  <f:formElements>
+                    <core:Fragment fragmentName="siagrob1.view.financialDocuments.fragments.TitleAccountingFields" type="XML" />
+                  </f:formElements>
+                </f:FormContainer>
+              </f:formContainers>
+            </f:Form>
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
     </uxap:sections>
 
     <uxap:footer>

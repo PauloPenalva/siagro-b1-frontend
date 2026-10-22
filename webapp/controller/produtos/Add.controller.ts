@@ -44,6 +44,9 @@ export default class Add extends BaseController {
       "GoodsOrigin": null,
       "Ncm": null,
       "Cest": null,
+      "LedgerAccountCode": null,
+      "CostCenterCode": null,
+      "AccountingItemCode": null,
     }, false, false, false);
 
 		this._itemContext = oContext;

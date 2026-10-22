@@ -1,0 +1,53 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+<!-- Atribuição contábil (Centro de Custo, Item Contábil, Rateio, Conta Contábil): FormElements para
+     dentro de um FormContainer. O rateio exclui o par centro de custo/item (a escolha de um limpa o outro,
+     nos handlers do CommonController). Visível só em STANDALONE. -->
+<f:FormElement label="Centro de custo" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
+  <f:fields>
+    <Input
+      editable="{ui>/editable}"
+      value="{CostCenterCode}"
+      showValueHelp="true"
+      valueHelpOnly="true"
+      showClearIcon="true"
+      valueHelpRequest=".openAssignmentCostCenterValueHelp" />
+  </f:fields>
+</f:FormElement>
+<f:FormElement label="Item contábil" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
+  <f:fields>
+    <Input
+      editable="{ui>/editable}"
+      value="{AccountingItemCode}"
+      showValueHelp="true"
+      valueHelpOnly="true"
+      showClearIcon="true"
+      valueHelpRequest=".openAssignmentAccountingItemValueHelp" />
+  </f:fields>
+</f:FormElement>
+<f:FormElement label="Rateio" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
+  <f:fields>
+    <Input
+      editable="{ui>/editable}"
+      value="{DistributionRuleCode}"
+      showValueHelp="true"
+      valueHelpOnly="true"
+      showClearIcon="true"
+      valueHelpRequest=".openAssignmentDistributionRuleValueHelp" />
+  </f:fields>
+</f:FormElement>
+<f:FormElement label="Conta contábil" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
+  <f:fields>
+    <Input
+      editable="{ui>/editable}"
+      value="{LedgerAccountCode}"
+      showValueHelp="true"
+      valueHelpOnly="true"
+      showClearIcon="true"
+      valueHelpRequest=".openPostingLedgerAccountsValueHelp" />
+  </f:fields>
+</f:FormElement>
+</core:FragmentDefinition>

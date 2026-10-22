@@ -63,6 +63,17 @@ export default class Main extends FinancialDocumentsBaseController {
 
     this._advanceDialog ??= await DialogHelper.createDialog(
       this, "siagrob1.view.financialAdvances.fragments.CreateAdvanceDialog");
+    // AccountingAssignmentFields liga campos relativos (CostCenterCode, LedgerAccountCode...): modelo padrão JSON e "ui" editável próprios do diálogo.
+    const assignmentModel = new JSONModel({
+      CostCenterCode: null,
+      AccountingItemCode: null,
+      DistributionRuleCode: null,
+      LedgerAccountCode: null,
+    });
+    this._advanceDialog.setModel(assignmentModel);
+    // Sem contexto de binding os campos relativos não resolvem e a escolha nunca chega ao modelo: ancora em "/".
+    this._advanceDialog.setBindingContext(assignmentModel.createBindingContext("/"));
+    this._advanceDialog.setModel(new JSONModel({ editable: true }), "ui");
     this._advanceDialog.open();
   }
 
@@ -189,6 +200,7 @@ export default class Main extends FinancialDocumentsBaseController {
       return;
     }
 
+    const dims = (this._advanceDialog.getModel() as JSONModel).getData() as Record<string, string>;
     this.onCloseAdvanceDialog();
 
     try {
@@ -208,6 +220,12 @@ export default class Main extends FinancialDocumentsBaseController {
       action.setParameter("FinancialAccountCode", form.financialAccountCode);
       action.setParameter("PaymentDate", form.paymentDate);
       action.setParameter("Comments", form.comments ?? "");
+      // Parâmetros opcionais: só os preenchidos (o servidor aplica o padrão do parceiro/contrato nos demais).
+      for (const key of ["CostCenterCode", "AccountingItemCode", "DistributionRuleCode", "LedgerAccountCode"]) {
+        if (dims[key]) {
+          action.setParameter(key, dims[key]);
+        }
+      }
       await action.invoke();
 
       MessageToast.show("Adiantamento incluído e pago.");

@@ -1,0 +1,30 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+<!-- Seção Contábil do título a pagar/receber: só Conta contábil e Centro de custo, nesta ordem.
+     Item contábil e rateio ficam nos documentos fiscais. Visível só em STANDALONE. -->
+<f:FormElement label="Conta contábil" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
+  <f:fields>
+    <Input
+      editable="{ui>/editable}"
+      value="{LedgerAccountCode}"
+      showValueHelp="true"
+      valueHelpOnly="true"
+      showClearIcon="true"
+      valueHelpRequest=".openPostingLedgerAccountsValueHelp" />
+  </f:fields>
+</f:FormElement>
+<f:FormElement label="Centro de custo" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
+  <f:fields>
+    <Input
+      editable="{ui>/editable}"
+      value="{CostCenterCode}"
+      showValueHelp="true"
+      valueHelpOnly="true"
+      showClearIcon="true"
+      valueHelpRequest=".openAssignmentCostCenterValueHelp" />
+  </f:fields>
+</f:FormElement>
+</core:FragmentDefinition>

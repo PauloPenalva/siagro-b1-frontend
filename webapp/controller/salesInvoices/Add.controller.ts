@@ -124,6 +124,10 @@ export default class Add extends BaseController {
         TaxPayerComments: null,
         TaxComments: null,
         Comments: null,
+        CostCenterCode: null,
+        AccountingItemCode: null,
+        DistributionRuleCode: null,
+        LedgerAccountCode: null,
       }, false, false, false);
 
       oView.setBindingContext(oContext);
@@ -210,6 +214,8 @@ export default class Add extends BaseController {
       CofinsRate: 0,
       CofinsValue: 0,
       CostCenterCode: null,
+      AccountingItemCode: null,
+      DistributionRuleCode: null,
       LedgerAccountCode: null,
       Cfop: null,
     }, false, true, false);

@@ -261,6 +261,8 @@ export default class Add extends BaseController {
       // servidor calcula tudo pelas alíquotas da natureza ao gravar.
       WithholdingBase: 0, WithheldIss: 0, WithheldIrrf: 0, WithheldInss: 0, WithheldPis: 0, WithheldCofins: 0, WithheldCsll: 0,
       WithholdingsManual: false,
+      // Atribuição contábil (centro de custo, item, rateio) + conta contábil do cabeçalho: o PUT do servidor copia tudo, então vão sempre (nulos).
+      CostCenterCode: null, AccountingItemCode: null, DistributionRuleCode: null, LedgerAccountCode: null,
       // O XML volta ao servidor no POST: é a prova documental guardada com o documento.
       XmlFileName: draft?.XmlFileName ?? null,
       XmlData: xmlContent

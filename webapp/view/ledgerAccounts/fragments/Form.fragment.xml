@@ -60,6 +60,26 @@
           <CheckBox
             selected="{AllowsPosting}"
           />
+          <Label text="Aceita centro de custo ?" visible="{= ${sessionModel>/erp} === 'STANDALONE' }" />
+          <CheckBox
+            selected="{AcceptsCostCenter}"
+            visible="{= ${sessionModel>/erp} === 'STANDALONE' }"
+          />
+          <Label text="Exige centro de custo ?" visible="{= ${sessionModel>/erp} === 'STANDALONE' }" />
+          <CheckBox
+            selected="{RequiresCostCenter}"
+            visible="{= ${sessionModel>/erp} === 'STANDALONE' }"
+          />
+          <Label text="Aceita item contábil ?" visible="{= ${sessionModel>/erp} === 'STANDALONE' }" />
+          <CheckBox
+            selected="{AcceptsAccountingItem}"
+            visible="{= ${sessionModel>/erp} === 'STANDALONE' }"
+          />
+          <Label text="Exige item contábil ?" visible="{= ${sessionModel>/erp} === 'STANDALONE' }" />
+          <CheckBox
+            selected="{RequiresAccountingItem}"
+            visible="{= ${sessionModel>/erp} === 'STANDALONE' }"
+          />
           <Label text="Inativo ?" />
           <CheckBox
             selected="{Inactive}"

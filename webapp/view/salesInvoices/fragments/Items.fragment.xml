@@ -71,7 +71,7 @@
       </OverflowToolbar>
     </t:extension>
     <t:columns>
-      <t:Column label="Produto">
+      <t:Column label="Produto" width="11rem">
         <t:template>
           <Input
             editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/icmsComplement} !== true }"
@@ -80,19 +80,19 @@
             value="{ItemCode}" 
             showValueHelp="true" 
             valueHelpOnly="true" 
-            valueHelpRequest=".openItemValueHelp">
+            valueHelpRequest=".openLineItemValueHelp">
               <customData>
                 <core:CustomData key="descriptionProperty" value="ItemName" />
               </customData>
           </Input>
         </t:template>
       </t:Column>
-      <t:Column label="Descricao">
+      <t:Column label="Descricao" width="16rem">
         <t:template>
           <Text text="{ItemName}" />
         </t:template>
       </t:Column>
-      <t:Column label="Quantidade" visible="{= ${ui>/icmsComplement} !== true }">
+      <t:Column label="Quantidade" width="9rem" hAlign="End" visible="{= ${ui>/icmsComplement} !== true }">
         <t:template>
           <Input
               required="true"
@@ -113,14 +113,14 @@
       </t:Column>
       <!-- GAC-1171 (rateio): quanto da linha já voltou em devolução confirmada. Só no Detalhe: na
            inclusão e na edição o contexto é JSON e a coluna não existe. -->
-      <t:Column label="Qtd. Devolvida" hAlign="End" visible="{= !${ui>/editable} &amp;&amp; ${ui>/icmsComplement} !== true }">
+      <t:Column label="Qtd. Devolvida" width="9rem" hAlign="End" visible="{= !${ui>/editable} &amp;&amp; ${ui>/icmsComplement} !== true }">
         <t:template>
           <ObjectNumber
             textAlign="End"
             number="{ path: 'ReturnedQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
         </t:template>
       </t:Column>
-       <t:Column label="Und.Med.">
+       <t:Column label="Und.Med." width="7rem">
         <t:template>
           <Input 
             editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/icmsComplement} !== true }"
@@ -135,7 +135,7 @@
           </Input>
         </t:template>
       </t:Column>
-      <t:Column label="Valor Unitário" visible="{= ${ui>/icmsComplement} !== true }">
+      <t:Column label="Valor Unitário" width="10rem" hAlign="End" visible="{= ${ui>/icmsComplement} !== true }">
         <t:template>
           <Input
               required="true"
@@ -243,7 +243,31 @@
             }" />
         </t:template>
       </t:Column>
-      <t:Column label="Total" visible="{= ${ui>/icmsComplement} !== true }">
+      <!-- Conta contábil e centro de custo da linha (só STANDALONE). Escolher o centro de custo limpa o rateio da linha
+           (CommonController.clearAssignmentSiblings, que lê o contexto da própria linha). -->
+      <t:Column label="Conta contábil" width="10rem" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
+        <t:template>
+          <Input
+            editable="{ui>/editable}"
+            value="{LedgerAccountCode}"
+            showValueHelp="{ui>/editable}"
+            valueHelpOnly="true"
+            showClearIcon="true"
+            valueHelpRequest=".openPostingLedgerAccountsValueHelp" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Centro de custo" width="10rem" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
+        <t:template>
+          <Input
+            editable="{ui>/editable}"
+            value="{CostCenterCode}"
+            showValueHelp="{ui>/editable}"
+            valueHelpOnly="true"
+            showClearIcon="true"
+            valueHelpRequest=".openAssignmentCostCenterValueHelp" />
+        </t:template>
+      </t:Column>
+      <t:Column label="Total" width="9rem" hAlign="End" visible="{= ${ui>/icmsComplement} !== true }">
         <t:template>
           <!-- Total geral da linha (itens + frete + seguro + outras despesas − desconto), calculado no cliente: `GrandTotal`
                é [NotMapped] e só existe depois que o servidor responde. `targetType: 'any'` em cada parte é obrigatório —
@@ -270,12 +294,12 @@
            preencher (inclusão), e o resto das telas continua com o texto navegado.
            `canPickContract` PRECISA ser inicializado como false nas outras telas —
            binding indefinido faz `visible` valer true. -->
-      <t:Column label="Contrato" visible="{= !${ui>/canPickContract} }">
+      <t:Column label="Contrato" width="10rem" visible="{= !${ui>/canPickContract} }">
         <t:template>
           <Text text="{SalesContract/Code}" />
         </t:template>
       </t:Column>
-      <t:Column label="Contrato" visible="{ui>/canPickContract}">
+      <t:Column label="Contrato" width="10rem" visible="{ui>/canPickContract}">
         <t:template>
           <Input
             editable="{= ${ui>/editable} === true &amp;&amp; ${ui>/nfeReturn} !== true &amp;&amp; ${ui>/icmsComplement} !== true }"

@@ -64,6 +64,17 @@
                 valueHelpRequest=".onBranchValueHelp"/>
             </f:fields>
           </f:FormElement>
+          <f:FormElement label="Conta contábil" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
+            <f:fields>
+              <Input
+                value="{LedgerAccountCode}"
+                showValueHelp="true"
+                valueHelpOnly="true"
+                showClearIcon="true"
+                editable="{ui>/editable}"
+                valueHelpRequest=".openPostingLedgerAccountsValueHelp"/>
+            </f:fields>
+          </f:FormElement>
           <f:FormElement label="Inativa">
             <f:fields>
               <CheckBox selected="{Inactive}" editable="{ui>/editable}"/>

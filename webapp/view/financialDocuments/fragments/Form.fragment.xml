@@ -186,4 +186,14 @@
       </f:FormContainer>
     </f:formContainers>
   </f:Form>
+  <f:Form editable="true" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
+  <f:layout><f:ColumnLayout columnsM="2" columnsL="3" columnsXL="3" /></f:layout>
+  <f:formContainers>
+    <f:FormContainer title="Contábil">
+      <f:formElements>
+        <core:Fragment fragmentName="siagrob1.view.financialDocuments.fragments.TitleAccountingFields" type="XML" />
+      </f:formElements>
+    </f:FormContainer>
+  </f:formContainers>
+</f:Form>
 </core:FragmentDefinition>

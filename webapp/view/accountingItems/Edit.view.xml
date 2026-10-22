@@ -1,0 +1,23 @@
+<mvc:View
+	controllerName="siagrob1.controller.accountingItems.Edit"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core">
+
+	<Page title="Item Contábil" busy="{ui>/busy}">
+		<content>
+
+			<core:Fragment fragmentName="siagrob1.view.accountingItems.fragments.Form" type="XML" />
+
+		</content>
+		<footer>
+			<Toolbar>
+				<ToolbarSpacer />
+				<Button text="Cancelar" press=".onCancel"  />
+				<Button text="Salvar" type="Emphasized" press=".onSave"/>
+			</Toolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

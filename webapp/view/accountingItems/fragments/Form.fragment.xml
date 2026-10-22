@@ -1,0 +1,88 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+    <f:SimpleForm
+      id="accountingItemsForm"
+      editable="true"
+      layout="ResponsiveGridLayout"
+      labelSpanXL="4"
+      labelSpanL="4"
+      labelSpanM="4"
+      labelSpanS="12"
+      adjustLabelSpan="false"
+      emptySpanXL="0"
+      emptySpanL="0"
+      emptySpanM="0"
+      emptySpanS="0"
+      columnsXL="3"
+      columnsL="2"
+      columnsM="2"
+      singleContainerFullSize="true"
+		  busyIndicatorDelay="0">
+        <f:content>
+          <core:Title
+              text="Dados do Item Contábil"
+              emphasized="true"
+          />
+          <Label text="Código" />
+          <Input
+              value="{Code}"
+              editable="{ui>/codeEditable}"
+              required="true"
+              maxLength="20"
+          />
+          <Label text="Nome" />
+          <Input
+              value="{Name}"
+              editable="true"
+              required="true"
+              liveChange=".validateField"
+              maxLength="100"
+          />
+          <Label text="Classe" required="true" />
+          <Select
+            selectedKey="{ path: 'Class', targetType: 'any' }"
+            forceSelection="false"
+          >
+            <core:ListItem key="Analytic" text="Analítico" />
+            <core:ListItem key="Synthetic" text="Sintético" />
+          </Select>
+          <Label text="Superior" />
+          <Input
+            value="{ParentCode}"
+            showClearIcon="true"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openSyntheticAccountingItemsValueHelp"
+          />
+          <Label text="Vigência de" />
+          <DatePicker
+            value="{
+              path: 'ValidFrom',
+              type: 'sap.ui.model.odata.type.DateTimeOffset',
+              constraints: { precision: 7 },
+              formatOptions: { pattern: 'dd/MM/yyyy' }
+            }"
+            displayFormat="dd/MM/yyyy"
+          />
+          <Label text="Vigência até" />
+          <DatePicker
+            value="{
+              path: 'ValidTo',
+              type: 'sap.ui.model.odata.type.DateTimeOffset',
+              constraints: { precision: 7 },
+              formatOptions: { pattern: 'dd/MM/yyyy' }
+            }"
+            displayFormat="dd/MM/yyyy"
+          />
+          <Label text="Inativo ?" />
+          <CheckBox
+            selected="{Inactive}"
+          />
+        </f:content>
+        <core:Title />
+        <core:Title />
+    </f:SimpleForm>
+</core:FragmentDefinition>

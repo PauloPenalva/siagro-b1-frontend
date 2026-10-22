@@ -1,0 +1,65 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+
+	<Table
+		id="ruleLinesTable"
+		class="sapUiSizeCondensed"
+		items="{rule>/Lines}">
+		<headerToolbar>
+			<OverflowToolbar>
+				<Title text="Linhas da distribuição" />
+				<ToolbarSpacer />
+				<Button text="Adicionar linha" icon="sap-icon://add" visible="{rule>/Editable}" press=".onAddLine" />
+			</OverflowToolbar>
+		</headerToolbar>
+		<columns>
+			<Column><Text text="Centro de custo" /></Column>
+			<Column><Text text="Item contábil" /></Column>
+			<Column width="12rem" hAlign="End"><Text text="Percentual (%)" /></Column>
+			<Column width="4rem" />
+		</columns>
+		<items>
+			<ColumnListItem>
+				<cells>
+					<Input
+						value="{rule>CostCenterCode}"
+						editable="{rule>/Editable}"
+						showValueHelp="true"
+						valueHelpOnly="true"
+						showClearIcon="true"
+						valueHelpRequest=".onRuleCostCenterValueHelp" />
+					<Input
+						value="{rule>AccountingItemCode}"
+						editable="{rule>/Editable}"
+						showValueHelp="true"
+						valueHelpOnly="true"
+						showClearIcon="true"
+						valueHelpRequest=".onRuleAccountingItemValueHelp" />
+					<Input
+						value="{rule>Percentage}"
+						type="Number"
+						textAlign="End"
+						editable="{rule>/Editable}"
+						liveChange=".onPercentageLiveChange"
+						change=".onPercentageChange" />
+					<Button
+						icon="sap-icon://delete"
+						type="Transparent"
+						visible="{rule>/Editable}"
+						press=".onRemoveLine" />
+				</cells>
+			</ColumnListItem>
+		</items>
+
+	</Table>
+
+	<Toolbar>
+		<ToolbarSpacer />
+		<ObjectStatus
+			text="{rule>/TotalText}"
+			state="{= ${rule>/TotalOk} ? 'Success' : 'Error'}"
+			inverted="true" />
+	</Toolbar>
+
+</core:FragmentDefinition>

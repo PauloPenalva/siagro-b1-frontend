@@ -18,6 +18,7 @@ QUnit.test("a linha em branco já traz as chaves que a tela edita, nulas", funct
 		SalesInvoiceItemKey: null, PurchaseContractKey: null, UsageCode: null, UsageName: null,
 		NfeItemNumber: null, FreightValue: 0, InsuranceValue: 0, DiscountValue: 0, OtherExpensesValue: 0,
 		ComplementAmount: 0, ComplementedItemKey: null, IcmsBase: 0, IcmsValue: 0,
+		CostCenterCode: null, AccountingItemCode: null, DistributionRuleCode: null, LedgerAccountCode: null,
 	});
 });
 

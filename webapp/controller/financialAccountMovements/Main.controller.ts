@@ -25,6 +25,10 @@ type MovementsResult = {
 	OpeningBalance: number; ClosingBalance: number; TotalIn: number; TotalOut: number; Rows: MovementRow[];
 };
 
+function emptyEntryDimensions(): Record<string, string> {
+	return { CostCenterCode: null, AccountingItemCode: null, DistributionRuleCode: null, LedgerAccountCode: null };
+}
+
 /**
  * Lançamentos da conta financeira: baixas de títulos (com juros, multa e desconto) e lançamentos manuais, com saldo
  * anterior, saldo acumulado e marca de conciliado. Inclui/exclui lançamento manual e imprime o extrato do período.
@@ -111,6 +115,13 @@ export default class Main extends CommonController {
 
 		this._entryDialog ??= await DialogHelper.createDialog(
 			this, "siagrob1.view.financialAccountMovements.fragments.AddEntryDialog");
+		// AccountingAssignmentFields liga campos relativos (CostCenterCode, LedgerAccountCode...): o diálogo ganha um modelo padrão JSON próprio e um
+		// "ui" editável, sem tocar no OData da tela.
+		// Sem contexto de binding o "{CostCenterCode}" relativo não resolve e a escolha nunca chega ao modelo: ancora em "/".
+		const entryModel = new JSONModel(emptyEntryDimensions());
+		this._entryDialog.setModel(entryModel);
+		this._entryDialog.setBindingContext(entryModel.createBindingContext("/"));
+		this._entryDialog.setModel(new JSONModel({ editable: true }), "ui");
 		this._entryDialog.open();
 	}
 
@@ -123,6 +134,7 @@ export default class Main extends CommonController {
 			date: string; type: "In" | "Out"; amount: number; description: string; documentReference: string; notes: string;
 		};
 
+		const dims = (this._entryDialog.getModel() as JSONModel).getData() as Record<string, string>;
 		const amount = signedEntryAmount(entry.type, entry.amount);
 		if (!entry.date) { MessageBox.warning("Informe a data do lançamento."); return; }
 		if (Number.isNaN(amount)) { MessageBox.warning("Informe um valor maior que zero."); return; }
@@ -136,6 +148,11 @@ export default class Main extends CommonController {
 			Description: entry.description.trim(),
 			DocumentReference: entry.documentReference || null,
 			Notes: entry.notes || null,
+			// Parâmetros opcionais: vazio vai como null (o servidor aplica o padrão/regra da empresa).
+			CostCenterCode: dims.CostCenterCode || null,
+			AccountingItemCode: dims.AccountingItemCode || null,
+			DistributionRuleCode: dims.DistributionRuleCode || null,
+			LedgerAccountCode: dims.LedgerAccountCode || null,
 		});
 		this.setBusy(false);
 

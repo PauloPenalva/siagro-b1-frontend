@@ -386,31 +386,6 @@
             </f:formElements>
           </f:FormContainer>
 
-          <f:FormContainer title="Contábil">
-            <f:formElements>
-              <f:FormElement label="Centro de Custo">
-                <f:fields>
-                  <Input
-                    editable="{ui>/editable}"
-                    value="{CostCenterCode}"
-                    showValueHelp="true"
-                    valueHelpOnly="true"
-                    valueHelpRequest=".openCostCentersValueHelp" />
-                </f:fields>
-              </f:FormElement>
-              <f:FormElement label="Conta Contábil">
-                <f:fields>
-                  <Input
-                    editable="{ui>/editable}"
-                    value="{LedgerAccountCode}"
-                    showValueHelp="true"
-                    valueHelpOnly="true"
-                    valueHelpRequest=".openLedgerAccountsValueHelp" />
-                </f:fields>
-              </f:FormElement>
-            </f:formElements>
-          </f:FormContainer>
-
         </f:formContainers>
       </f:Form>
     </content>

@@ -95,7 +95,34 @@
           <Input value="{Cest}" maxLength="9" placeholder="00.000.00" visible="{ui>/standalone}" />
 
 
-          <core:Title />
+          <core:Title text="Contábil" emphasized="true" visible="{= ${sessionModel>/erp} === 'STANDALONE' }" />
+          <Label text="Conta contábil" visible="{= ${sessionModel>/erp} === 'STANDALONE' }" />
+          <Input
+              value="{LedgerAccountCode}"
+              editable="true"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              showClearIcon="true"
+              valueHelpRequest=".openPostingLedgerAccountsValueHelp"
+              visible="{= ${sessionModel>/erp} === 'STANDALONE' }" />
+          <Label text="Centro de custo" visible="{= ${sessionModel>/erp} === 'STANDALONE' }" />
+          <Input
+              value="{CostCenterCode}"
+              editable="true"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              showClearIcon="true"
+              valueHelpRequest=".openCostCentersValueHelp"
+              visible="{= ${sessionModel>/erp} === 'STANDALONE' }" />
+          <Label text="Item contábil" visible="{= ${sessionModel>/erp} === 'STANDALONE' }" />
+          <Input
+              value="{AccountingItemCode}"
+              editable="true"
+              showValueHelp="true"
+              valueHelpOnly="true"
+              showClearIcon="true"
+              valueHelpRequest=".openAccountingItemsValueHelp"
+              visible="{= ${sessionModel>/erp} === 'STANDALONE' }" />
 
         </f:content>
     </f:SimpleForm>
