@@ -645,6 +645,13 @@ export default abstract class CommonController extends BaseController {
         new Filter("AllowsPosting", FilterOperator.EQ, true) ]);
   }
 
+  /** Conta superior no plano de contas: só sintética (não aceita lançamento). */
+  openSyntheticLedgerAccountsValueHelp(ev: Input$ValueHelpRequestEvent) {
+    void this.applyValueHelp(ev, "LedgerAccountsSelectDialog", ["Code", "Name"], "Code",
+      [ new Filter("Inactive", FilterOperator.EQ, false),
+        new Filter("AllowsPosting", FilterOperator.EQ, false) ]);
+  }
+
   openTaxesValueHelp(ev: Input$ValueHelpRequestEvent) {
     void this.applyValueHelp(ev, "TaxesSelectDialog", ["Code", "Name"], "Code");
   }

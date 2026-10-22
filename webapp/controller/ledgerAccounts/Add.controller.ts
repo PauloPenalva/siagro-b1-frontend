@@ -1,12 +1,12 @@
 import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
-import BaseController from "../BaseController";
+import CommonController from "../common/CommonController";
 
 /**
  * @namespace siagrob1.controller.ledgerAccounts
  */
-export default class Add extends BaseController {
+export default class Add extends CommonController {
 
 	onInit(): void {
 		this.getRouter().getRoute("ledgerAccountsNew").attachPatternMatched(() => this.newRouteMatched());
@@ -32,7 +32,9 @@ export default class Add extends BaseController {
 			{
 				Type: null, AllowsPosting: true, Inactive: false,
 				AcceptsCostCenter: false, RequiresCostCenter: false,
-				AcceptsAccountingItem: false, RequiresAccountingItem: false
+				AcceptsAccountingItem: false, RequiresAccountingItem: false,
+				ParentCode: null, Nature: null, ResultClosingAccountCode: null, ReferentialCode: null,
+				BlockedFrom: null, BlockedTo: null
 			},
 			false,
 			false,

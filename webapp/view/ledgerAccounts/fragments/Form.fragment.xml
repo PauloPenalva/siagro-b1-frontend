@@ -55,7 +55,30 @@
             <core:ListItem key="Liability" text="Passivo" />
             <core:ListItem key="Revenue" text="Receita" />
             <core:ListItem key="Expense" text="Despesa" />
+            <core:ListItem key="Equity" text="Patrimônio Líquido" />
           </Select>
+          <Label text="Natureza" visible="{= ${sessionModel>/erp} === 'STANDALONE' }" />
+          <Select
+            visible="{= ${sessionModel>/erp} === 'STANDALONE' }"
+            selectedKey="{
+              path: 'Nature',
+              targetType: 'any'
+            }"
+            forceSelection="false"
+          >
+            <core:ListItem key="Debit" text="Devedora" />
+            <core:ListItem key="Credit" text="Credora" />
+          </Select>
+          <Label text="Conta superior" visible="{= ${sessionModel>/erp} === 'STANDALONE' }" />
+          <Input
+            value="{ParentCode}"
+            visible="{= ${sessionModel>/erp} === 'STANDALONE' }"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openSyntheticLedgerAccountsValueHelp"
+            showClearIcon="true"
+            maxLength="20"
+          />
           <Label text="Aceita lançamento ?" />
           <CheckBox
             selected="{AllowsPosting}"
@@ -79,6 +102,33 @@
           <CheckBox
             selected="{RequiresAccountingItem}"
             visible="{= ${sessionModel>/erp} === 'STANDALONE' }"
+          />
+          <Label text="Conta de apuração" visible="{= ${sessionModel>/erp} === 'STANDALONE' &amp;&amp; (${Type} === 'Revenue' || ${Type} === 'Expense') }" />
+          <Input
+            value="{ResultClosingAccountCode}"
+            visible="{= ${sessionModel>/erp} === 'STANDALONE' &amp;&amp; (${Type} === 'Revenue' || ${Type} === 'Expense') }"
+            showValueHelp="true"
+            valueHelpOnly="true"
+            valueHelpRequest=".openPostingLedgerAccountsValueHelp"
+            showClearIcon="true"
+            maxLength="20"
+          />
+          <Label text="Código referencial (RFB)" visible="{= ${sessionModel>/erp} === 'STANDALONE' }" />
+          <Input
+            value="{ReferentialCode}"
+            visible="{= ${sessionModel>/erp} === 'STANDALONE' }"
+            maxLength="30"
+          />
+          <Label text="Bloqueada de / até" visible="{= ${sessionModel>/erp} === 'STANDALONE' }" />
+          <DatePicker
+            visible="{= ${sessionModel>/erp} === 'STANDALONE' }"
+            value="{ path: 'BlockedFrom', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy' } }"
+            displayFormat="dd/MM/yyyy"
+          />
+          <DatePicker
+            visible="{= ${sessionModel>/erp} === 'STANDALONE' }"
+            value="{ path: 'BlockedTo', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy' } }"
+            displayFormat="dd/MM/yyyy"
           />
           <Label text="Inativo ?" />
           <CheckBox

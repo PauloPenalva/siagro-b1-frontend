@@ -1,5 +1,5 @@
 import { SearchField$SearchEvent } from "sap/m/SearchField";
-import BaseController from "../BaseController";
+import CommonController from "../common/CommonController";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
@@ -13,7 +13,7 @@ import formatter from "siagrob1/model/formatter";
 /**
  * @namespace siagrob1.controller.ledgerAccounts
  */
-export default class Main extends BaseController {
+export default class Main extends CommonController {
   formatter = { ...formatter }
 
 	onInit(): void {
