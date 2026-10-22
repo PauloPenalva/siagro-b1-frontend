@@ -1,8 +1,8 @@
 import CommonController from "siagrob1/controller/common/CommonController";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Table from "sap/ui/table/Table";
-import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import Filter from "sap/ui/model/Filter";
+import Sorter from "sap/ui/model/Sorter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import { Link$PressEvent } from "sap/m/Link";
 import Context from "sap/ui/model/odata/v4/Context";
@@ -13,7 +13,9 @@ type ListFilter = { DateFrom: string; DateTo: string; Batch: string; Origin: str
 
 /**
  * Lançamentos contábeis (CT2): consulta por período, lote, origem e filial; abre o detalhe e inclui manual.
- * O binding nasce suspenso e só busca depois que o filtro do período é aplicado.
+ * As linhas são ligadas no código (bindRows) já com o filtro do período, e não no XML com `suspended: true`: ao sair
+ * da tela o roteador tira a view do container, o binding é destruído e, na volta, o UI5 o recria a partir da
+ * definição. Recriado suspenso, a tabela renderizava antes do resume e abortava ("root binding is suspended").
  *
  * @namespace siagrob1.controller.journalEntries
  */
@@ -24,10 +26,6 @@ export default class Main extends CommonController {
     const { from, to } = monthRange(new Date());
     this.getView().setModel(new JSONModel({ DateFrom: from, DateTo: to, Batch: "", Origin: "", BranchCode: "" }), "filter");
     this.getRouter().getRoute("journalEntries").attachPatternMatched(() => this.onRefresh());
-  }
-
-  private binding(): ODataListBinding {
-    return (this.byId("journalEntriesTable") as Table).getBinding("rows") as ODataListBinding;
   }
 
   firstHistory(lines: JournalLine[]): string {
@@ -48,11 +46,13 @@ export default class Main extends CommonController {
     if (f.Origin) filters.push(new Filter("Origin", FilterOperator.EQ, f.Origin));
     if (f.BranchCode?.trim()) filters.push(new Filter("BranchCode", FilterOperator.EQ, f.BranchCode.trim()));
 
-    const binding = this.binding();
     // Filtros no mesmo campo (PostingDate de/até) viram OU no UI5 se forem soltos: agrupa tudo com E.
-    binding.filter(filters.length ? [new Filter({ filters, and: true })] : []);
-    if (binding.isSuspended()) binding.resume();
-    else binding.refresh();
+    (this.byId("journalEntriesTable") as Table).bindRows({
+      path: "/JournalEntries",
+      parameters: { $expand: "Lines($select=LineNumber,EntryType,Amount,History)" },
+      sorter: [new Sorter("PostingDate", true), new Sorter("DocEntry", true)],
+      filters: filters.length ? [new Filter({ filters, and: true })] : [],
+    });
   }
 
   onOpen(ev: Link$PressEvent): void {

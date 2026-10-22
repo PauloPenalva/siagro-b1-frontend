@@ -36,13 +36,7 @@
 				class="sapUiSizeCondensed"
 				visibleRowCountMode="Auto"
 				enableBusyIndicator="true"
-				alternateRowColors="true"
-				rows="{
-					path: '/JournalEntries',
-					parameters: { $expand: 'Lines($select=LineNumber,EntryType,Amount,History)' },
-					sorter: [ { path: 'PostingDate', descending: true }, { path: 'DocEntry', descending: true } ],
-					suspended: true
-				}">
+				alternateRowColors="true">
 				<t:columns>
 					<t:Column label="Data" width="7rem" hAlign="Center">
 						<t:template><Text text="{ path: 'PostingDate', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd/MM/yyyy' } }" wrapping="false" /></t:template>

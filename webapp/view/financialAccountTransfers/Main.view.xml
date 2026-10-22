@@ -55,8 +55,7 @@
 				class="sapUiSizeCondensed"
 				visibleRowCountMode="Auto"
 				alternateRowColors="true"
-				noData="Nenhuma transferência no período."
-				rows="{path: '/FinancialAccountTransfers', sorter: {path: 'TransferDate', descending: true}, suspended: true}">
+				noData="Nenhuma transferência no período.">
 				<t:extension>
 					<OverflowToolbar>
 						<Title text="Transferências"/>
