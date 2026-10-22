@@ -15,7 +15,7 @@
 		"start:dist": "npm start -- --config ui5-dist.yaml",
 		"start:dist-cdn": "npm run start-cdn -- --config ui5-dist.yaml",
 		"ts-typecheck": "tsc --noEmit",
-		"lint": "eslint webapp",
+		"lint": "eslint webapp && node scripts/check-expression-bindings.js",
 		"ui5lint": "ui5lint",
 		"test-runner": "ui5-test-runner --url http://localhost:8080/test/testsuite.qunit.html",
 		"test-runner-coverage": "ui5-test-runner --url http://localhost:8080/test/testsuite.qunit.html --coverage -ccb 50 -ccf 50 -ccl 50 -ccs 50",
