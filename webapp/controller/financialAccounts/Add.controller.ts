@@ -31,6 +31,7 @@ export default class Add extends BaseController {
       BankBranch: null,
       BankAccountNumber: null,
       BranchCode: null,
+      LedgerAccountCode: null,
       Inactive: false,
     }, false, false, false);
 
