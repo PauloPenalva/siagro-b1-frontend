@@ -397,6 +397,8 @@ export default {
   standardPostings: '/odata/StandardPostings',
   standardPostingCatalog: '/odata/StandardPostingCatalogGet',
   journalEntriesReverse: '/odata/JournalEntriesReverse',
+  offlinePostingRuns: '/odata/OfflinePostingRuns',
+  offlinePostingRequest: '/odata/OfflinePostingRequest',
   accountingLedgerReport: '/reports/AccountingLedger',
   accountingLedgerReportData: '/reports/AccountingLedger/data',
   accountingTrialBalanceReport: '/reports/AccountingTrialBalance',

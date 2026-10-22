@@ -899,6 +899,11 @@
           "target": "standardPostings"
         },
         {
+          "pattern": "offline-posting",
+          "name": "offlinePosting",
+          "target": "offlinePosting"
+        },
+        {
           "pattern": "standard-postings/{code}",
           "name": "standardPostingsEdit",
           "target": "standardPostingsEdit"
@@ -2343,6 +2348,12 @@
           "id": "standardPostings",
           "level": 1,
           "name": "siagrob1.view.standardPostings.Main",
+          "clearControlAggregation": true
+        },
+        "offlinePosting": {
+          "id": "offlinePosting",
+          "level": 1,
+          "name": "siagrob1.view.offlinePosting.Main",
           "clearControlAggregation": true
         },
         "standardPostingsEdit": {
