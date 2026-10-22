@@ -17,6 +17,8 @@ export default class Edit extends VeiculoBaseController {
 	}
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
+		// Campos de transporte (proprietário terceiro, rótulo CPF) dependem do modo do ERP.
+		void this.refreshStandaloneFlag();
 		this.clearStates("formVeiculo");
     
     const oModel = this.getView().getModel() as ODataModel;

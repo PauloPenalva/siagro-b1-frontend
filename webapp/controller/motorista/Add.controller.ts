@@ -12,6 +12,8 @@ export default class Add extends BaseController {
 		this.getRouter().getRoute("motoristasNew").attachPatternMatched(() => this.newRouteMatched());
 	}
 	private newRouteMatched() {
+		// Campos de transporte (proprietário terceiro, rótulo CPF) dependem do modo do ERP.
+		void this.refreshStandaloneFlag();
 		
     this.clearStates("formMotorista");
     

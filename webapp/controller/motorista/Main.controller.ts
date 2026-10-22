@@ -21,6 +21,8 @@ export default class Main extends BaseController {
 	}
 
 	private routeMatched() {
+		// Campos de transporte (proprietário terceiro, rótulo CPF) dependem do modo do ERP.
+		void this.refreshStandaloneFlag();
 		this.onRefresh();
 	}
 
