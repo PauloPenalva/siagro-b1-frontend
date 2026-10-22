@@ -1,0 +1,25 @@
+<mvc:View
+	controllerName="siagrob1.controller.reports.accountingLedger.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:form="sap.ui.layout.form">
+	<Page title="Razão Contábil" busyIndicatorDelay="0" busy="{ui>/busy}">
+		<form:Form editable="true">
+			<form:layout>
+				<form:ColumnLayout columnsM="1" columnsL="1" columnsXL="2"/>
+			</form:layout>
+			<form:formContainers>
+				<core:Fragment fragmentName="siagrob1.view.reports.fragments.AccountingReportFilters" type="XML" />
+			</form:formContainers>
+		</form:Form>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Excel" icon="sap-icon://excel-attachment" press=".onExportExcel"/>
+				<Button text="Imprimir" type="Emphasized" icon="sap-icon://print" press=".onPrintReport"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

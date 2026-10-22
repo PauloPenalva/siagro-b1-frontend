@@ -1,0 +1,46 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:form="sap.ui.layout.form"
+>
+  <form:FormContainer title="Período e filtros">
+    <form:formElements>
+      <form:FormElement label="De">
+        <form:fields>
+          <DatePicker value="{params>/DateFrom}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" required="true" />
+        </form:fields>
+      </form:FormElement>
+      <form:FormElement label="Até">
+        <form:fields>
+          <DatePicker value="{params>/DateTo}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" required="true" />
+        </form:fields>
+      </form:FormElement>
+      <form:FormElement label="Filial">
+        <form:fields>
+          <Input value="{params>/BranchCode}" placeholder="Todas" showValueHelp="true" valueHelpOnly="true"
+            showClearIcon="true" valueHelpRequest=".openBranchsValueHelp" />
+        </form:fields>
+      </form:FormElement>
+      <form:FormElement label="Conta de / até">
+        <form:fields>
+          <Input value="{params>/AccountFrom}" showValueHelp="true" showClearIcon="true"
+            valueHelpRequest=".openLedgerAccountsValueHelp" />
+          <Input value="{params>/AccountTo}" showValueHelp="true" showClearIcon="true"
+            valueHelpRequest=".openLedgerAccountsValueHelp" />
+        </form:fields>
+      </form:FormElement>
+      <form:FormElement label="Centro de custo">
+        <form:fields>
+          <Input value="{params>/CostCenterCode}" showValueHelp="true" valueHelpOnly="true" showClearIcon="true"
+            valueHelpRequest=".openCostCenterFilterValueHelp" />
+        </form:fields>
+      </form:FormElement>
+      <form:FormElement label="Item contábil">
+        <form:fields>
+          <Input value="{params>/AccountingItemCode}" showValueHelp="true" valueHelpOnly="true" showClearIcon="true"
+            valueHelpRequest=".openAccountingItemFilterValueHelp" />
+        </form:fields>
+      </form:FormElement>
+    </form:formElements>
+  </form:FormContainer>
+</core:FragmentDefinition>

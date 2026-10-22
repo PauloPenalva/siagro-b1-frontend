@@ -393,6 +393,7 @@ export default {
   accountingPeriodsSetStatus: '/odata/AccountingPeriodsSetStatus',
   accountingSettingsGet: '/odata/AccountingSettingsGet',
   accountingSettingsSave: '/odata/AccountingSettingsSave',
+  journalEntries: '/odata/JournalEntries',
   journalEntriesReverse: '/odata/JournalEntriesReverse',
   accountingLedgerReport: '/reports/AccountingLedger',
   accountingLedgerReportData: '/reports/AccountingLedger/data',

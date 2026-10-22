@@ -1,0 +1,37 @@
+<mvc:View
+	controllerName="siagrob1.controller.reports.accountingTrialBalance.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:form="sap.ui.layout.form">
+	<Page title="Balancete de Verificação" busyIndicatorDelay="0" busy="{ui>/busy}">
+		<form:Form editable="true">
+			<form:layout>
+				<form:ColumnLayout columnsM="1" columnsL="1" columnsXL="2"/>
+			</form:layout>
+			<form:formContainers>
+				<core:Fragment fragmentName="siagrob1.view.reports.fragments.AccountingReportFilters" type="XML" />
+				<form:FormContainer title="Apresentação">
+					<form:formElements>
+						<form:FormElement label="Até o nível">
+							<form:fields>
+								<StepInput value="{params>/Level}" min="0" max="9" description="0 = todos" />
+							</form:fields>
+						</form:FormElement>
+						<form:FormElement label="Só contas com movimento">
+							<form:fields><CheckBox selected="{params>/OnlyWithMovement}"/></form:fields>
+						</form:FormElement>
+					</form:formElements>
+				</form:FormContainer>
+			</form:formContainers>
+		</form:Form>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Excel" icon="sap-icon://excel-attachment" press=".onExportExcel"/>
+				<Button text="Imprimir" type="Emphasized" icon="sap-icon://print" press=".onPrintReport"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>
