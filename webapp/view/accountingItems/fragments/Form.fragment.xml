@@ -1,11 +1,6 @@
 <core:FragmentDefinition
-    core:require="{
-        StringType: 'sap/ui/model/type/String'
-    }"
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
-    xmlns:l="sap.ui.layout"
-    xmlns:t="sap.ui.table"
     xmlns:core="sap.ui.core"
 >
     <f:SimpleForm
@@ -31,9 +26,10 @@
               text="Dados do Item Contábil"
               emphasized="true"
           />
-          <Label text="Codigo" />
+          <Label text="Código" />
           <Input
               value="{Code}"
+              editable="{ui>/codeEditable}"
               required="true"
               maxLength="20"
           />
@@ -56,6 +52,7 @@
           <Label text="Superior" />
           <Input
             value="{ParentCode}"
+            showClearIcon="true"
             showValueHelp="true"
             valueHelpOnly="true"
             valueHelpRequest=".openSyntheticAccountingItemsValueHelp"

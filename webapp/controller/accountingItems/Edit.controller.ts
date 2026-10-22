@@ -1,3 +1,4 @@
+import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageToast from "sap/m/MessageToast";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
@@ -14,6 +15,7 @@ export default class Edit extends BaseController {
 	}
 
 	private editRouteMatched(ev: Route$MatchedEvent) {
+		(this.getModel("ui") as JSONModel).setProperty("/codeEditable", false);
 		this.clearStates("accountingItemsForm");
 
     const oModel = this.getView().getModel() as ODataModel;

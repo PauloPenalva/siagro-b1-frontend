@@ -31,9 +31,10 @@
               text="Dados do Centro de Custo"
               emphasized="true"
           />
-          <Label text="Codigo" />
+          <Label text="Código" />
           <Input
               value="{Code}"
+              editable="{ui>/codeEditable}"
               required="true"
               maxLength="20"
           />
@@ -56,6 +57,7 @@
           <Label text="Superior" />
           <Input
             value="{ParentCode}"
+            showClearIcon="true"
             showValueHelp="true"
             valueHelpOnly="true"
             valueHelpRequest=".openSyntheticCostCentersValueHelp"

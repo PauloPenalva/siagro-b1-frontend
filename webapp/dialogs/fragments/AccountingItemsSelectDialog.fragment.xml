@@ -23,7 +23,7 @@
 <columns>
   <Column>
     <header>
-      <Text text="Codigo" />
+      <Text text="Código" />
     </header>
   </Column>
   <Column>

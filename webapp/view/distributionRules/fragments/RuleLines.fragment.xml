@@ -27,12 +27,14 @@
 						editable="{rule>/Editable}"
 						showValueHelp="true"
 						valueHelpOnly="true"
+						showClearIcon="true"
 						valueHelpRequest=".onRuleCostCenterValueHelp" />
 					<Input
 						value="{rule>AccountingItemCode}"
 						editable="{rule>/Editable}"
 						showValueHelp="true"
 						valueHelpOnly="true"
+						showClearIcon="true"
 						valueHelpRequest=".onRuleAccountingItemValueHelp" />
 					<Input
 						value="{rule>Percentage}"

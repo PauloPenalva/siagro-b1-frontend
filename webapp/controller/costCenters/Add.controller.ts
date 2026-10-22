@@ -1,3 +1,4 @@
+import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
@@ -14,6 +15,7 @@ export default class Add extends BaseController {
 
 	private newRouteMatched() {
 
+    (this.getModel("ui") as JSONModel).setProperty("/codeEditable", true);
     this.clearStates("costCentersForm");
 
     const oView = this.getView();
