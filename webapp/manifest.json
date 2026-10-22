@@ -279,6 +279,21 @@
           "target": "motoristasEdit"
         },
         {
+          "pattern": "truck-combinations",
+          "name": "truckCombinations",
+          "target": "truckCombinations"
+        },
+        {
+          "pattern": "truck-combinations/new",
+          "name": "truckCombinationsNew",
+          "target": "truckCombinationsForm"
+        },
+        {
+          "pattern": "truck-combinations/{id}/edit",
+          "name": "truckCombinationsEdit",
+          "target": "truckCombinationsForm"
+        },
+        {
           "pattern": "vehicles",
           "name": "veiculos",
           "target": "veiculos"
@@ -1659,6 +1674,18 @@
 					"name": "siagrob1.view.veiculo.Add",
           "clearControlAggregation": true
 				},
+        "truckCombinations": {
+          "id": "truckCombinations",
+          "level": 1,
+          "name": "siagrob1.view.truckCombinations.Main",
+          "clearControlAggregation": true
+        },
+        "truckCombinationsForm": {
+          "id": "truckCombinationsForm",
+          "level": 2,
+          "name": "siagrob1.view.truckCombinations.Form",
+          "clearControlAggregation": true
+        },
         "veiculosEdit": {
 					"id": "veiculosEdit",
           "level": 2,

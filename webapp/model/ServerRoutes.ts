@@ -86,6 +86,8 @@ export default {
   agents: '/odata/Agents',
   truckDrivers: '/odata/TruckDrivers',
   trucks: '/odata/Trucks',
+  truckCombinations: '/odata/TruckCombinations',
+  truckCombinationsSave: '/odata/TruckCombinationsSave',
   truckScales: '/odata/TruckScales',
   userTruckScales: '/odata/UserTruckScales',
 

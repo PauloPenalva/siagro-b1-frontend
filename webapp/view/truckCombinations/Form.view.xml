@@ -1,0 +1,77 @@
+<mvc:View
+	controllerName="siagrob1.controller.truckCombinations.Form"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+
+	<Page title="{= ${combo>/IsNew} ? 'Novo Conjunto de Veículos' : 'Editar Conjunto de Veículos' }"
+		showNavButton="true" navButtonPress=".onCancel">
+		<content>
+			<f:SimpleForm
+				id="formCombination"
+				editable="true"
+				layout="ResponsiveGridLayout"
+				labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12"
+				adjustLabelSpan="false"
+				emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0"
+				columnsXL="2" columnsL="2" columnsM="1"
+				singleContainerFullSize="false">
+				<f:content>
+					<core:Title text="Conjunto" />
+					<Label text="Código" required="true" />
+					<Input value="{combo>/Code}" maxLength="20" editable="{combo>/IsNew}" />
+					<Label text="Descrição" required="true" />
+					<Input value="{combo>/Description}" maxLength="100" />
+					<Label text="Inativo" />
+					<CheckBox selected="{combo>/Inactive}" />
+
+					<core:Title text="Tração e motorista" />
+					<Label text="Veículo de tração" required="true" />
+					<Input value="{combo>/TractionTruckCode}" showValueHelp="true" valueHelpOnly="true"
+						valueHelpRequest=".openTractionTrucksValueHelp" />
+					<Label text="Motorista padrão" />
+					<Input value="{combo>/DefaultDriverCode}" showValueHelp="true" valueHelpOnly="true"
+						valueHelpRequest=".openTruckDriversValueHelp" />
+				</f:content>
+			</f:SimpleForm>
+
+			<Table id="tableTrailers" items="{combo>/Trailers}" class="sapUiSmallMarginTop sapUiSizeCompact"
+				noDataText="Sem reboques: o conjunto é só a tração.">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="Reboques (até 3, na ordem)" />
+						<ToolbarSpacer />
+						<Button text="Adicionar" icon="sap-icon://add" press=".onAddTrailer"
+							enabled="{= ${combo>/Trailers}.length &lt; 3 }" />
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column><Text text="Reboque" /></Column>
+					<Column width="10rem" hAlign="End"><Text text="" /></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Input value="{combo>TrailerTruckCode}" showValueHelp="true" valueHelpOnly="true"
+								valueHelpRequest=".openTrailersValueHelp" />
+							<HBox justifyContent="End">
+								<Button icon="sap-icon://navigation-up-arrow" tooltip="Subir" type="Transparent" press=".onMoveTrailer($event, -1)" />
+								<Button icon="sap-icon://navigation-down-arrow" tooltip="Descer" type="Transparent" press=".onMoveTrailer($event, 1)" />
+								<Button icon="sap-icon://delete" tooltip="Remover" type="Transparent" press=".onRemoveTrailer" />
+							</HBox>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer />
+				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave" />
+				<Button text="Cancelar" press=".onCancel" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

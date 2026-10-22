@@ -1,4 +1,4 @@
-import { licenseState, truckBodyTypeText, truckKindText, truckWheelTypeText } from "siagrob1/helpers/TransportHelpers";
+import { licenseState, trailersText, truckBodyTypeText, truckKindText, truckWheelTypeText } from "siagrob1/helpers/TransportHelpers";
 import {
   allocationOriginHighlight,
   allocationOriginIcon,
@@ -1698,6 +1698,7 @@ const formatter = {
   truckWheelTypeText,
   truckBodyTypeText,
   licenseState,
+  trailersText,
 };
 
 export default formatter;

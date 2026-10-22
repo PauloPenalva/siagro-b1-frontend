@@ -68,3 +68,31 @@ export const ACTIVE_TRACTION_TRUCKS_FILTER = "Kind eq 'Traction' and Inactive eq
 
 /** $filter estático da escolha de reboque no conjunto. */
 export const ACTIVE_TRAILERS_FILTER = "Kind eq 'Trailer' and Inactive eq false";
+
+/** Estado do formulário do conjunto (modelo JSON da tela). */
+export interface CombinationForm {
+	IsNew: boolean;
+	Code: string;
+	Description: string;
+	TractionTruckCode: string;
+	DefaultDriverCode: string;
+	Inactive: boolean;
+	Trailers: { TrailerTruckCode: string }[];
+}
+
+/** Corpo da ação TruckCombinationsSave: placas em maiúsculas, reboque vazio fora, motorista vazio = null. */
+export const buildCombinationSavePayload = (form: CombinationForm) => ({
+	IsNew: form.IsNew,
+	Code: (form.Code ?? "").trim().toUpperCase(),
+	Description: (form.Description ?? "").trim(),
+	TractionTruckCode: (form.TractionTruckCode ?? "").trim().toUpperCase(),
+	DefaultDriverCode: form.DefaultDriverCode?.trim() || null,
+	Inactive: !!form.Inactive,
+	TrailerCodes: (form.Trailers ?? [])
+		.map((t) => (t.TrailerTruckCode ?? "").trim().toUpperCase())
+		.filter((code) => code.length > 0),
+});
+
+/** Placas dos reboques na ordem da posição, para a lista de conjuntos. */
+export const trailersText = (trailers: { Position: number; TrailerTruckCode: string }[]): string =>
+	[...(trailers ?? [])].sort((a, b) => a.Position - b.Position).map((t) => t.TrailerTruckCode).join(", ");
