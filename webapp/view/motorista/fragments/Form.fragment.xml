@@ -28,14 +28,14 @@
               text="Dados do Motorista"
               emphasized="true"
           />
-          <Label text="CPF" />
+          <Label text="{= ${ui>/standalone} ? 'CPF' : 'Codigo' }" />
           <!-- O CPF é o código do motorista: o CT-e e o MDF-e o leem daqui. O backend tira a máscara. -->
           <Input
               id="cpfInput"
               value="{Code}"
               required="true"
               maxLength="14"
-              placeholder="000.000.000-00"
+              placeholder="{= ${ui>/standalone} ? '000.000.000-00' : '' }"
           />
           <Label text="Nome" />
           <Input
