@@ -85,7 +85,8 @@ export const SOURCE_TEXT: Record<string, string> = {
   "Settlement.DiscountAmount": "Desconto",
   "Entry.Amount": "Valor do lançamento",
   "Transfer.Amount": "Valor da transferência",
-  "Item.CostOfSales": "CMV do produto no mês",
+  "Item.CostOfSales": "CMV do produto no mês (saídas de venda)",
+  "Item.SalesReturnCost": "Custo devolvido pelas devoluções de venda",
 };
 
 export function sourceText(source: string): string {
