@@ -7,34 +7,34 @@
 	xmlns:f="sap.ui.layout.form"
 	xmlns:t="sap.ui.table">
 
-	<Page title="Lançamento {Batch}/{DocumentNumber}" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0">
+	<Page title="Lançamento {doc>/Batch}/{doc>/DocumentNumber}" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0">
 		<content>
 			<f:SimpleForm editable="false" layout="ResponsiveGridLayout" columnsL="3" columnsXL="3" labelSpanL="4" labelSpanXL="4">
 				<f:content>
 					<core:Title text="Documento" />
 					<Label text="Data" />
-					<Text text="{ path: 'PostingDate', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy', UTC: true } }" />
+					<Text text="{ path: 'doc>/PostingDate', formatter: '.dateText' }" />
 					<Label text="Lote / Sublote / Doc" />
-					<Text text="{Batch} / {SubBatch} / {DocumentNumber}" />
+					<Text text="{doc>/Batch} / {doc>/SubBatch} / {doc>/DocumentNumber}" />
 					<Label text="Filial" />
-					<Text text="{BranchCode}" />
+					<Text text="{doc>/BranchCode}" />
 					<core:Title text="Origem" />
 					<Label text="Origem" />
-					<Text text="{ path: 'Origin', targetType: 'any', formatter: '.originText' }" />
+					<Text text="{ path: 'doc>/Origin', formatter: '.originText' }" />
 					<Label text="Lançamento padrão" />
-					<Text text="{StandardPostingCode}" />
+					<Text text="{doc>/StandardPostingCode}" />
 					<Label text="Documento de origem" />
-					<Text text="{SourceDocumentType} {SourceDocumentKey} {SourceEvent}" />
+					<Text text="{doc>/SourceDocumentType} {doc>/SourceDocumentKey} {doc>/SourceEvent}" />
 					<core:Title text="Controle" />
 					<Label text="Incluído por" />
-					<Text text="{CreatedBy}" />
+					<Text text="{doc>/CreatedBy}" />
 					<Label text="Estorno" />
 					<HBox>
-						<Link text="Estornado pelo doc. {ReversedByDocEntry}" visible="{= !!${ReversedByDocEntry} }" press=".onOpenReversedBy" />
-						<Link text="Estorna o doc. {ReversalOfDocEntry}" visible="{= !!${ReversalOfDocEntry} }" press=".onOpenReversalOf" />
+						<Link text="Estornado pelo doc. {doc>/ReversedByDocEntry}" visible="{= !!${doc>/ReversedByDocEntry} }" press=".onOpenReversedBy" />
+						<Link text="Estorna o doc. {doc>/ReversalOfDocEntry}" visible="{= !!${doc>/ReversalOfDocEntry} }" press=".onOpenReversalOf" />
 					</HBox>
 					<Label text="Observação" />
-					<Text text="{Comments}" />
+					<Text text="{doc>/Comments}" />
 				</f:content>
 			</f:SimpleForm>
 			<t:Table
@@ -44,37 +44,37 @@
 				visibleRowCountMode="Auto"
 				minAutoRowCount="5"
 				alternateRowColors="true"
-				rows="{ path: 'Lines', sorter: { path: 'LineNumber' } }">
+				rows="{ path: 'doc>/Lines' }">
 				<t:columns>
 					<t:Column label="Linha" width="4rem" hAlign="End">
-						<t:template><Text text="{LineNumber}" /></t:template>
+						<t:template><Text text="{doc>LineNumber}" /></t:template>
 					</t:Column>
 					<t:Column label="Tipo" width="9rem">
-						<t:template><Text text="{ path: 'EntryType', targetType: 'any', formatter: '.entryTypeText' }" wrapping="false" /></t:template>
+						<t:template><Text text="{ path: 'doc>EntryType', formatter: '.entryTypeText' }" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="Débito" width="8rem">
-						<t:template><Text text="{DebitAccountCode}" wrapping="false" /></t:template>
+						<t:template><Text text="{doc>DebitAccountCode}" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="Crédito" width="8rem">
-						<t:template><Text text="{CreditAccountCode}" wrapping="false" /></t:template>
+						<t:template><Text text="{doc>CreditAccountCode}" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="Valor" width="9rem" hAlign="End">
-						<t:template><Text text="{ path: 'Amount', targetType: 'any', formatter: '.formatMoney' }" wrapping="false" /></t:template>
+						<t:template><Text text="{ path: 'doc>Amount', formatter: '.formatMoney' }" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="Histórico">
-						<t:template><Text text="{History}" wrapping="false" /></t:template>
+						<t:template><Text text="{doc>History}" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="C.Custo D" width="6rem">
-						<t:template><Text text="{DebitCostCenterCode}" wrapping="false" /></t:template>
+						<t:template><Text text="{doc>DebitCostCenterCode}" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="C.Custo C" width="6rem">
-						<t:template><Text text="{CreditCostCenterCode}" wrapping="false" /></t:template>
+						<t:template><Text text="{doc>CreditCostCenterCode}" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="Item D" width="6rem">
-						<t:template><Text text="{DebitAccountingItemCode}" wrapping="false" /></t:template>
+						<t:template><Text text="{doc>DebitAccountingItemCode}" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="Item C" width="6rem">
-						<t:template><Text text="{CreditAccountingItemCode}" wrapping="false" /></t:template>
+						<t:template><Text text="{doc>CreditAccountingItemCode}" wrapping="false" /></t:template>
 					</t:Column>
 				</t:columns>
 			</t:Table>
@@ -83,7 +83,7 @@
 			<OverflowToolbar>
 				<ToolbarSpacer />
 				<Button text="Estornar" icon="sap-icon://undo" type="Reject"
-					enabled="{= !${ReversedByDocEntry} &amp;&amp; !${ReversalOfDocEntry} }" press=".onReverse" />
+					enabled="{= !${doc>/ReversedByDocEntry} &amp;&amp; !${doc>/ReversalOfDocEntry} }" press=".onReverse" />
 			</OverflowToolbar>
 		</footer>
 	</Page>

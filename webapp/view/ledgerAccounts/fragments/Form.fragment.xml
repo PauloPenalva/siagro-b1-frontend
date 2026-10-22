@@ -103,10 +103,10 @@
             selected="{RequiresAccountingItem}"
             visible="{= ${sessionModel>/erp} === 'STANDALONE' }"
           />
-          <Label text="Conta de apuração" visible="{= ${sessionModel>/erp} === 'STANDALONE' &amp;&amp; (${Type} === 'Revenue' || ${Type} === 'Expense') }" />
+          <Label text="Conta de apuração" visible="{= ${sessionModel>/erp} === 'STANDALONE' &amp;&amp; (%{Type} === 'Revenue' || %{Type} === 'Expense') }" />
           <Input
             value="{ResultClosingAccountCode}"
-            visible="{= ${sessionModel>/erp} === 'STANDALONE' &amp;&amp; (${Type} === 'Revenue' || ${Type} === 'Expense') }"
+            visible="{= ${sessionModel>/erp} === 'STANDALONE' &amp;&amp; (%{Type} === 'Revenue' || %{Type} === 'Expense') }"
             showValueHelp="true"
             valueHelpOnly="true"
             valueHelpRequest=".openPostingLedgerAccountsValueHelp"

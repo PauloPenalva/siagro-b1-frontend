@@ -123,8 +123,8 @@ export default class Add extends CommonController {
 
     const text = (v: string) => (v?.trim() ? v.trim() : null);
     const payload = {
-      // Meio-dia UTC: o servidor usa só a data, e o dia não muda em nenhum fuso do Brasil.
-      PostingDate: `${data.PostingDate}T12:00:00Z`,
+      // PostingDate é Edm.Date (coluna DATE): vai só a data, sem hora nem fuso.
+      PostingDate: data.PostingDate,
       BranchCode: data.BranchCode,
       Batch: data.Batch?.trim() ?? "",
       SubBatch: "001",

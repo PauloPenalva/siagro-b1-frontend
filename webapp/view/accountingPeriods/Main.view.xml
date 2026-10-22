@@ -33,7 +33,7 @@
 				}">
 				<t:columns>
 					<t:Column label="Mês" width="6rem" hAlign="Center">
-						<t:template><Text text="{ parts: [ 'Month', 'Year' ], formatter: '.monthText' }" wrapping="false" /></t:template>
+						<t:template><Text text="{ parts: [ { path: 'Month', targetType: 'any' }, { path: 'Year', targetType: 'any' } ], formatter: '.monthText' }" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="Início" width="7rem" hAlign="Center">
 						<t:template><Text text="{ path: 'StartDate', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd/MM/yyyy' } }" wrapping="false" /></t:template>
@@ -44,8 +44,8 @@
 					<t:Column label="Situação" width="7rem">
 						<t:template>
 							<ObjectStatus
-								text="{= ${Status} === 'Closed' ? 'Fechado' : ${Status} === 'Blocked' ? 'Bloqueado' : 'Aberto' }"
-								state="{= ${Status} === 'Closed' ? 'Warning' : ${Status} === 'Blocked' ? 'Error' : 'Success' }" />
+								text="{= %{Status} === 'Closed' ? 'Fechado' : %{Status} === 'Blocked' ? 'Bloqueado' : 'Aberto' }"
+								state="{= %{Status} === 'Closed' ? 'Warning' : %{Status} === 'Blocked' ? 'Error' : 'Success' }" />
 						</t:template>
 					</t:Column>
 					<t:Column label="Fechado em" width="9rem" hAlign="Center">

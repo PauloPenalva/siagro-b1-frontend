@@ -41,15 +41,16 @@ export default class Main extends CommonController {
   onRefresh(): void {
     const f = (this.getView().getModel("filter") as JSONModel).getData() as ListFilter;
     const filters: Filter[] = [];
-    // PostingDate é DATE no banco mas Edm.DateTimeOffset no EDM: compara pelo dia inteiro.
-    if (f.DateFrom) filters.push(new Filter("PostingDate", FilterOperator.GE, `${f.DateFrom}T00:00:00Z`));
-    if (f.DateTo) filters.push(new Filter("PostingDate", FilterOperator.LE, `${f.DateTo}T23:59:59Z`));
+    // PostingDate é Edm.Date: o filtro compara a data pura (yyyy-MM-dd).
+    if (f.DateFrom) filters.push(new Filter("PostingDate", FilterOperator.GE, f.DateFrom));
+    if (f.DateTo) filters.push(new Filter("PostingDate", FilterOperator.LE, f.DateTo));
     if (f.Batch?.trim()) filters.push(new Filter("Batch", FilterOperator.EQ, f.Batch.trim()));
     if (f.Origin) filters.push(new Filter("Origin", FilterOperator.EQ, f.Origin));
     if (f.BranchCode?.trim()) filters.push(new Filter("BranchCode", FilterOperator.EQ, f.BranchCode.trim()));
 
     const binding = this.binding();
-    binding.filter(filters);
+    // Filtros no mesmo campo (PostingDate de/até) viram OU no UI5 se forem soltos: agrupa tudo com E.
+    binding.filter(filters.length ? [new Filter({ filters, and: true })] : []);
     if (binding.isSuspended()) binding.resume();
     else binding.refresh();
   }

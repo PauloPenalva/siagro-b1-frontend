@@ -39,13 +39,13 @@
 				alternateRowColors="true"
 				rows="{
 					path: '/JournalEntries',
-					parameters: { $expand: 'Lines' },
+					parameters: { $expand: 'Lines($select=LineNumber,EntryType,Amount,History)' },
 					sorter: [ { path: 'PostingDate', descending: true }, { path: 'DocEntry', descending: true } ],
 					suspended: true
 				}">
 				<t:columns>
 					<t:Column label="Data" width="7rem" hAlign="Center">
-						<t:template><Text text="{ path: 'PostingDate', type: 'sap.ui.model.odata.type.DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy', UTC: true } }" wrapping="false" /></t:template>
+						<t:template><Text text="{ path: 'PostingDate', type: 'sap.ui.model.odata.type.Date', formatOptions: { pattern: 'dd/MM/yyyy' } }" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="Lote/Doc" width="8rem">
 						<t:template><Link text="{Batch}/{DocumentNumber}" press=".onOpen" /></t:template>
@@ -60,10 +60,10 @@
 						<t:template><Text text="{StandardPostingCode}" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="Histórico">
-						<t:template><Text text="{ path: 'Lines', formatter: '.firstHistory' }" wrapping="false" /></t:template>
+						<t:template><Text text="{ path: 'Lines', targetType: 'any', formatter: '.firstHistory' }" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="Valor" width="9rem" hAlign="End">
-						<t:template><Text text="{ path: 'Lines', formatter: '.totalDebit' }" wrapping="false" /></t:template>
+						<t:template><Text text="{ path: 'Lines', targetType: 'any', formatter: '.totalDebit' }" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="Estorno" width="8rem">
 						<t:template>
