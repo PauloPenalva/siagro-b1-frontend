@@ -61,6 +61,7 @@ export default class Main extends CommonController {
         KindText: r.Simulation ? "Simulação" : "Processamento",
         ModulesText: r.Modules.split(",").map((m) => MODULE_TEXT[m] ?? m).join(", "),
         BranchText: r.BranchCode || "Todas",
+        RequestedAtText: new Date(r.RequestedAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }),
       }));
       const busy = runs.some((r) => isActive(r.Status));
       this.op().setProperty("/Runs", runs);

@@ -40,11 +40,9 @@
 						<form:formElements>
 							<form:FormElement label="Módulos">
 								<form:fields>
-									<HBox wrap="Wrap">
-										<CheckBox text="Entradas" selected="{params>/PurchaseInvoices}" />
-										<CheckBox text="Saídas" selected="{params>/SalesInvoices}" />
-										<CheckBox text="Financeiro" selected="{params>/Financial}" />
-									</HBox>
+									<CheckBox text="Entradas" selected="{params>/PurchaseInvoices}" />
+									<CheckBox text="Saídas" selected="{params>/SalesInvoices}" />
+									<CheckBox text="Financeiro" selected="{params>/Financial}" />
 								</form:fields>
 							</form:FormElement>
 						</form:formElements>
@@ -63,7 +61,7 @@
 				rows="{op>/Runs}">
 				<t:columns>
 					<t:Column label="Pedido em" width="10rem">
-						<t:template><Text text="{path: 'op>RequestedAt', type: 'sap.ui.model.odata.type.DateTimeOffset', formatOptions: {pattern: 'dd/MM/yyyy HH:mm'}}" wrapping="false" /></t:template>
+						<t:template><Text text="{op>RequestedAtText}" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="Usuário" width="8rem">
 						<t:template><Text text="{op>RequestedBy}" wrapping="false" /></t:template>
