@@ -4,12 +4,12 @@
 	xmlns:f="sap.ui.layout.form">
 	<Dialog
 		core:require="{ Decimal: 'sap/ui/model/odata/type/Decimal' }"
-		title="Tributos e dimensões do item {ItemCode}"
+		title="Tributos do item {ItemCode}"
 		contentWidth="48rem"
 		class="sapUiSizeCompact">
 		<content>
 			<!-- A fotografia do cálculo pela natureza: travada, quem grava é o servidor ao salvar. -->
-			<f:SimpleForm editable="false" layout="ResponsiveGridLayout" labelSpanL="5" labelSpanM="5" columnsL="2" columnsM="2" visible="{= ${ui>/taxMode} === true }">
+			<f:SimpleForm editable="false" layout="ResponsiveGridLayout" labelSpanL="5" labelSpanM="5" columnsL="2" columnsM="2">
 				<f:content>
 					<core:Title text="Operação" />
 					<Label text="Natureza" />
@@ -97,16 +97,6 @@
 					<Text text="{ path: 'FunruralSenarValue', type: 'Decimal', constraints: { precision: 18, scale: 2 } }" />
 				</f:content>
 			</f:SimpleForm>
-			<f:Form editable="true" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
-  <f:layout><f:ColumnLayout columnsM="2" columnsL="3" columnsXL="3" /></f:layout>
-  <f:formContainers>
-    <f:FormContainer title="Atribuição contábil">
-      <f:formElements>
-        <core:Fragment fragmentName="siagrob1.view.common.fragments.AccountingAssignmentFields" type="XML" />
-      </f:formElements>
-    </f:FormContainer>
-  </f:formContainers>
-</f:Form>
 		</content>
 		<endButton>
 			<Button text="Fechar" press=".onCloseItemFiscal" />

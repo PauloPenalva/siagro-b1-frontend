@@ -386,12 +386,6 @@
             </f:formElements>
           </f:FormContainer>
 
-          <f:FormContainer title="Atribuição contábil" visible="{= ${sessionModel>/erp} === 'STANDALONE' }">
-            <f:formElements>
-              <core:Fragment fragmentName="siagrob1.view.common.fragments.AccountingAssignmentFields" type="XML" />
-            </f:formElements>
-          </f:FormContainer>
-
         </f:formContainers>
       </f:Form>
     </content>
