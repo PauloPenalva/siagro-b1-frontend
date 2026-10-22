@@ -21,7 +21,8 @@ export default class Main extends FinancialDocumentsBaseController {
   protected get originRoute(): string { return "accountsReceivable"; }
 
   onInit(): void {
-    this.createFilterModel();
+    // Situação: todas menos Cancelado (título firme cancelado quando o vínculo é desfeito só polui a lista).
+    this.createFilterModel({ Status: ["Open", "PartiallySettled", "Settled"] });
     this.setPayablesFilters(true, "SalesReturn", "Devolução de venda");
 
     this.getRouter().getRoute("accountsReceivable")

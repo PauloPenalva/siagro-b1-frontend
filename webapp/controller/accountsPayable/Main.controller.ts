@@ -22,7 +22,8 @@ export default class Main extends FinancialDocumentsBaseController {
   protected get originRoute(): string { return "accountsPayable"; }
 
   onInit(): void {
-    this.createFilterModel();
+    // Situação: todas menos Cancelado (título firme cancelado quando o vínculo é desfeito só polui a lista).
+    this.createFilterModel({ Status: ["Open", "PartiallySettled", "Settled"] });
     // Filtros exclusivos do contas a pagar (Natureza firme/devolucao, "Com saldo a resolver").
     this.setPayablesFilters(true);
 

@@ -8,6 +8,7 @@ import formatter from "siagrob1/model/formatter";
 import Table from "sap/ui/table/Table";
 import CommonController from "siagrob1/controller/common/CommonController";
 import { pendingResolutionFilter } from "siagrob1/helpers/FinancialDocumentFilterHelpers";
+import { anyOfFilter } from "siagrob1/helpers/FilterHelpers";
 
 /**
  * Lógica comum das três listas de documento financeiro (Contas a Pagar, Contas a Receber e
@@ -95,8 +96,14 @@ export abstract class FinancialDocumentsBaseController extends CommonController 
    */
   protected applyFilters(): void {
     const filterModel = this.getModel("filter") as JSONModel;
-    const filterData = (filterModel?.getData() ?? {}) as Record<string, string | boolean>;
+    const filterData = (filterModel?.getData() ?? {}) as Record<string, string | boolean | string[]>;
     const filters: string[] = [];
+
+    // Situação é múltipla seleção: nenhuma marcada = todas.
+    const statusFilter = anyOfFilter("Status", filterData.Status as string[]);
+    if (statusFilter) {
+      filters.push(statusFilter);
+    }
 
     if (this.direction) {
       filters.push(`Direction eq '${this.direction}'`);
@@ -109,9 +116,9 @@ export abstract class FinancialDocumentsBaseController extends CommonController 
     Object.keys(filterData).forEach((key: string) => {
       const value = filterData[key];
 
-      if (value === "" || value === null || value === undefined || value === false) return;
+      if (value === "" || value === null || value === undefined || value === false || key === "Status") return;
 
-      if (key === "Status" || key === "Nature") {
+      if (key === "Nature") {
         filters.push(`${key} eq '${FinancialDocumentsBaseController.escapeODataLiteral(String(value))}'`);
       } else if (key === "ContractLink") {
         // Só a tela de adiantamentos expõe este filtro (spec 2026-10-19): adiantamento livre não tem contrato.
