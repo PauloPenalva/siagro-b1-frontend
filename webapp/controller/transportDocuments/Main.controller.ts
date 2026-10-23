@@ -5,9 +5,9 @@ import Context from "sap/ui/model/odata/v4/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
-import { sendJson } from "siagrob1/helpers/FetchHelpers";
+import { odataValue, readErrorMessage, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
-	TransportDocumentsFilter, buildTransportDocumentsFilter, cteActions, cteStatusState, cteStatusText,
+	TransportDocumentsFilter, batchSelectionError, buildTransportDocumentsFilter, cteActions, endorsementStatusState, endorsementStatusText, cteStatusState, cteStatusText,
 	formatAccessKey, partyNameByRole, takerName,
 } from "siagrob1/helpers/CteHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
@@ -24,6 +24,8 @@ export default class Main extends BaseController {
 	cteStatusText = cteStatusText;
 	cteStatusState = cteStatusState;
 	formatAccessKey = formatAccessKey;
+	endorsementStatusText = endorsementStatusText;
+	endorsementStatusState = endorsementStatusState;
 	takerName = (parties: Parties, takerRole: number) => takerName(parties, takerRole);
 	senderName = (parties: Parties) => partyNameByRole(parties, "Sender");
 	recipientName = (parties: Parties) => partyNameByRole(parties, "Recipient");
@@ -64,12 +66,12 @@ export default class Main extends BaseController {
 
 	private selected(action: string): Context {
 		const table = this.byId("tableTransportDocuments") as Table;
-		const i = table.getSelectedIndex();
-		if (i < 0) {
-			MessageBox.alert(`Selecione um CT-e para ${action}.`);
+		const indices = table.getSelectedIndices();
+		if (indices.length !== 1) {
+			MessageBox.alert(`Selecione um único CT-e para ${action}.`);
 			return null;
 		}
-		return table.getContextByIndex(i) as Context;
+		return table.getContextByIndex(indices[0]) as Context;
 	}
 
 	onDetail(): void {
@@ -108,5 +110,88 @@ export default class Main extends BaseController {
 		} finally {
 			this.setBusy(false);
 		}
+	}
+
+	/** Chaves das linhas marcadas, ou null (com aviso) fora de 1 a 200. */
+	private selectedKeys(): string[] {
+		const table = this.byId("tableTransportDocuments") as Table;
+		const keys = table.getSelectedIndices()
+			.map((i) => table.getContextByIndex(i)?.getProperty("Key") as string)
+			.filter(Boolean);
+		const error = batchSelectionError(keys.length);
+		if (error) {
+			MessageBox.alert(error);
+			return null;
+		}
+		return keys;
+	}
+
+	/** Lote pelo Hangfire: o servidor devolve quantos foram enfileirados; o resultado fica em cada CT-e. */
+	private async runBatch(url: string, verb: string): Promise<void> {
+		const keys = this.selectedKeys();
+		if (!keys || !(await confirmDialog(`${verb} ${keys.length} CT-e em segundo plano?`, `${verb} selecionados?`))) {
+			return;
+		}
+		this.setBusy(true);
+		try {
+			const result = await sendJson("POST", url, { Keys: keys });
+			if (!result.ok) {
+				MessageBox.error(result.message);
+				return;
+			}
+			const count = odataValue<number>(result.data);
+			MessageBox.information(`${count} CT-e enfileirado(s). Atualize a lista para acompanhar a situação de cada um.`);
+		} finally {
+			this.setBusy(false);
+		}
+	}
+
+	async onTransmitBatch(): Promise<void> {
+		await this.runBatch(ServerRoutes.transportDocumentsTransmitBatch, "Transmitir");
+	}
+
+	async onEndorseBatch(): Promise<void> {
+		await this.runBatch(ServerRoutes.transportDocumentsEndorseBatch, "Averbar");
+	}
+
+	/** POST que devolve um ZIP: fetch cru + blob, erro pelo readErrorMessage. */
+	private async downloadZip(url: string, fileName: string): Promise<void> {
+		const keys = this.selectedKeys();
+		if (!keys) {
+			return;
+		}
+		this.setBusy(true);
+		try {
+			const response = await fetch(url, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ Keys: keys }),
+			});
+			if (!response.ok) {
+				MessageBox.error((await readErrorMessage(response)) || "Falha ao gerar o arquivo.");
+				return;
+			}
+			const blob = await response.blob();
+			const href = URL.createObjectURL(blob);
+			const link = document.createElement("a");
+			link.href = href;
+			link.download = fileName;
+			document.body.appendChild(link);
+			link.click();
+			link.remove();
+			URL.revokeObjectURL(href);
+		} catch {
+			MessageBox.error("Falha ao baixar o arquivo.");
+		} finally {
+			this.setBusy(false);
+		}
+	}
+
+	async onDownloadXmlBatch(): Promise<void> {
+		await this.downloadZip(ServerRoutes.transportDocumentsXmlBatch, "xml-cte.zip");
+	}
+
+	async onDownloadDacteBatch(): Promise<void> {
+		await this.downloadZip(ServerRoutes.dacteBatchReport, "dacte-cte.zip");
 	}
 }

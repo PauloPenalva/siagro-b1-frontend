@@ -51,6 +51,15 @@
 									</Select>
 								</fb:control>
 							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="endorsed" label="Averbado" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<Select forceSelection="false" selectedKey="{filter>/Endorsed}">
+										<core:ListItem key="" text="Todos"/>
+										<core:ListItem key="yes" text="Sim"/>
+										<core:ListItem key="no" text="Não"/>
+									</Select>
+								</fb:control>
+							</fb:FilterGroupItem>
 							<fb:FilterGroupItem name="taker" label="Tomador" groupName="G" visibleInFilterBar="true">
 								<fb:control><Input showClearIcon="true" value="{filter>/Taker}"/></fb:control>
 							</fb:FilterGroupItem>
@@ -73,7 +82,7 @@
 			<t:Table
 				id="tableTransportDocuments"
 				busyIndicatorDelay="0"
-				selectionMode="Single"
+				selectionMode="MultiToggle"
 				selectionBehavior="Row"
 				class="sapUiSizeCondensed"
 				visibleRowCountMode="Auto"
@@ -82,7 +91,7 @@
 				rows="{
 					path: '/TransportDocuments',
 					parameters: {
-						$select: 'Key,Number,Series,IssuedAt,Status,TakerRole,TractionPlate,ServiceTotal,AccessKey,CreatedAt',
+						$select: 'Key,Number,Series,IssuedAt,Status,TakerRole,TractionPlate,ServiceTotal,AccessKey,CreatedAt,EndorsementStatus',
 						$expand: { Parties: { $select: ['Key', 'Role', 'Name'] } }
 					},
 					sorter: { path: 'CreatedAt', descending: true }
@@ -95,6 +104,11 @@
 						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
 						<Button type="Transparent" text="Editar" press=".onEdit"/>
 						<Button type="Transparent" text="Excluir" press=".onDelete"/>
+						<ToolbarSeparator/>
+						<Button type="Transparent" icon="sap-icon://paper-plane" text="Transmitir selecionados" press=".onTransmitBatch"/>
+						<Button type="Transparent" icon="sap-icon://shield" text="Averbar selecionados" press=".onEndorseBatch"/>
+						<Button type="Transparent" icon="sap-icon://download" text="Baixar XML" press=".onDownloadXmlBatch"/>
+						<Button type="Transparent" icon="sap-icon://pdf-attachment" text="Baixar DACTE" press=".onDownloadDacteBatch"/>
 						<ToolbarSeparator/>
 						<Button type="Transparent" icon="sap-icon://refresh" text="Atualizar" press=".onRefresh"/>
 					</OverflowToolbar>
@@ -115,6 +129,13 @@
 							<ObjectStatus
 								text="{ path: 'Status', targetType: 'any', formatter: '.cteStatusText' }"
 								state="{ path: 'Status', targetType: 'any', formatter: '.cteStatusState' }"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Averbação" width="10rem">
+						<t:template>
+							<ObjectStatus
+								text="{ path: 'EndorsementStatus', targetType: 'any', formatter: '.endorsementStatusText' }"
+								state="{ path: 'EndorsementStatus', targetType: 'any', formatter: '.endorsementStatusState' }"/>
 						</t:template>
 					</t:Column>
 					<t:Column label="Tomador" width="14rem">
