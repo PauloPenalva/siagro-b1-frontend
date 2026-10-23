@@ -1,0 +1,154 @@
+<mvc:View
+	controllerName="siagrob1.controller.transportDocuments.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.f"
+	xmlns:fb="sap.ui.comp.filterbar"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+	<f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="Conhecimentos de Transporte (CT-e)"/>
+				</f:heading>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:header>
+			<f:DynamicPageHeader>
+				<f:content>
+					<fb:FilterBar id="transportDocumentsFb" search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+						<fb:filterGroupItems>
+							<fb:FilterGroupItem name="dateFrom" label="Emissão de" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<DatePicker value="{ path: 'filter>/DateFrom', type: 'sap.ui.model.type.String' }"
+										displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="dateTo" label="Emissão até" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<DatePicker value="{ path: 'filter>/DateTo', type: 'sap.ui.model.type.String' }"
+										displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="status" label="Situação" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<!-- Enum: vai como string crua no $filter estático (buildTransportDocumentsFilter). -->
+									<Select forceSelection="false" selectedKey="{filter>/Status}">
+										<core:ListItem key="" text="Todas"/>
+										<core:ListItem key="Draft" text="Rascunho"/>
+										<core:ListItem key="Confirmed" text="Confirmado"/>
+										<core:ListItem key="Processing" text="Em processamento"/>
+										<core:ListItem key="Authorized" text="Autorizado"/>
+										<core:ListItem key="Rejected" text="Rejeitado"/>
+										<core:ListItem key="Denied" text="Denegado"/>
+										<core:ListItem key="Cancelled" text="Cancelado"/>
+										<core:ListItem key="Voided" text="Inutilizado"/>
+									</Select>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="taker" label="Tomador" groupName="G" visibleInFilterBar="true">
+								<fb:control><Input showClearIcon="true" value="{filter>/Taker}"/></fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="sender" label="Remetente" groupName="G" visibleInFilterBar="true">
+								<fb:control><Input showClearIcon="true" value="{filter>/Sender}"/></fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="recipient" label="Destinatário" groupName="G" visibleInFilterBar="true">
+								<fb:control><Input showClearIcon="true" value="{filter>/Recipient}"/></fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="plate" label="Placa" groupName="G" visibleInFilterBar="true">
+								<fb:control><Input showClearIcon="true" value="{filter>/Plate}"/></fb:control>
+							</fb:FilterGroupItem>
+						</fb:filterGroupItems>
+					</fb:FilterBar>
+				</f:content>
+			</f:DynamicPageHeader>
+		</f:header>
+		<f:content>
+			<!-- $expand de Parties com $select explícito: com autoExpandSelect o filho só traz o que é pedido. -->
+			<t:Table
+				id="tableTransportDocuments"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+				rows="{
+					path: '/TransportDocuments',
+					parameters: {
+						$select: 'Key,Number,Series,IssuedAt,Status,TakerRole,TractionPlate,ServiceTotal,AccessKey,CreatedAt',
+						$expand: { Parties: { $select: ['Key', 'Role', 'Name'] } }
+					},
+					sorter: { path: 'CreatedAt', descending: true }
+				}">
+				<t:extension>
+					<OverflowToolbar>
+						<Title text="CT-e"/>
+						<ToolbarSpacer/>
+						<Button type="Emphasized" icon="sap-icon://add" text="Incluir" press=".onCreate"/>
+						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
+						<Button type="Transparent" text="Editar" press=".onEdit"/>
+						<Button type="Transparent" text="Excluir" press=".onDelete"/>
+						<ToolbarSeparator/>
+						<Button type="Transparent" icon="sap-icon://refresh" text="Atualizar" press=".onRefresh"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="Número/Série" width="8rem">
+						<t:template>
+							<Text text="{= ${Number} ? ${Number} + ' / ' + ${Series} : '(sem número) / ' + ${Series} }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Emissão" width="9rem" sortProperty="IssuedAt">
+						<t:template>
+							<Text text="{ path: 'IssuedAt', targetType: 'any', formatter: 'formatter.formatDateTime' }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Situação" width="9rem">
+						<t:template>
+							<ObjectStatus
+								text="{ path: 'Status', targetType: 'any', formatter: '.cteStatusText' }"
+								state="{ path: 'Status', targetType: 'any', formatter: '.cteStatusState' }"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Tomador" width="14rem">
+						<t:template>
+							<Text wrapping="false" text="{ parts: [ { path: 'Parties', targetType: 'any' }, { path: 'TakerRole', targetType: 'any' } ], formatter: '.takerName' }"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Remetente" width="14rem">
+						<t:template>
+							<Text wrapping="false" text="{ path: 'Parties', targetType: 'any', formatter: '.senderName' }"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Destinatário" width="14rem">
+						<t:template>
+							<Text wrapping="false" text="{ path: 'Parties', targetType: 'any', formatter: '.recipientName' }"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Placa" width="7rem" sortProperty="TractionPlate">
+						<t:template>
+							<Text text="{TractionPlate}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Valor da prestação" width="9rem" hAlign="End" sortProperty="ServiceTotal">
+						<t:template>
+							<Text text="{ path: 'ServiceTotal', targetType: 'any', formatter: 'formatter.formatBrl' }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Chave" width="26rem">
+						<t:template>
+							<Text text="{ path: 'AccessKey', targetType: 'any', formatter: '.formatAccessKey' }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</f:content>
+	</f:DynamicPage>
+</mvc:View>

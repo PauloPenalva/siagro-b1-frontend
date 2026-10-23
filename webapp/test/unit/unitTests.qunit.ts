@@ -43,3 +43,4 @@ import "./helpers/SimpleFormGroupHelpers.qunit";
 import "./helpers/AccountingMasterDataHelpers.qunit";
 import "./helpers/DistributionRuleHelpers.qunit";
 import "./view/DistributionRuleFragments.qunit";
+import "./helpers/CteHelpers.qunit";

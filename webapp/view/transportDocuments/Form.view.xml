@@ -1,0 +1,236 @@
+<mvc:View
+	controllerName="siagrob1.controller.transportDocuments.Form"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:u="sap.ui.unified"
+	xmlns:f="sap.ui.layout.form"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<Page title="{= ${doc>/Key} ? 'Editar CT-e' : 'Novo CT-e' }" showNavButton="true" navButtonPress=".onCancel"
+		busy="{ui>/busy}" busyIndicatorDelay="0">
+		<content>
+			<MessageStrip type="Error" showIcon="true" class="sapUiSmallMargin" text="{doc>/StatusReason}"
+				visible="{= ${doc>/Status} === 'Rejected' }"/>
+
+			<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanL="4" labelSpanM="4" columnsL="2" columnsM="1"
+				singleContainerFullSize="false">
+				<f:content>
+					<core:Title text="Natureza e tomador"/>
+					<Label text="Filial" required="true"/>
+					<Input value="{doc>/BranchCode}" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".onPickBranch"
+						editable="{= !${doc>/Key} }"/>
+					<Label text="Série" required="true"/>
+					<Select selectedKey="{doc>/Series}" items="{series>/}" forceSelection="false"
+						enabled="{= ${doc>/Status} !== 'Rejected' }">
+						<core:ListItem key="{series>Series}" text="{series>Series} - {series>Description}"/>
+					</Select>
+					<Label text="Natureza de operação"/>
+					<Input value="{doc>/UsageCode}" description="{doc>/UsageName}" showValueHelp="true" valueHelpOnly="true"
+						valueHelpRequest=".onPickUsage"/>
+					<Label text="Tomador do serviço" required="true"/>
+					<Select selectedKey="{doc>/TakerRole}" items="{takers>/}">
+						<core:ListItem key="{takers>key}" text="{takers>text}"/>
+					</Select>
+
+					<core:Title text="Participantes"/>
+					<Label text="Remetente" required="true"/>
+					<Input value="{doc>/Sender/CardCode}" description="{doc>/Sender/CardName}" showValueHelp="true" valueHelpOnly="true"
+						valueHelpRequest=".onPickParty($event, 'Sender')"/>
+					<Label text="Expedidor"/>
+					<HBox>
+						<Input value="{doc>/Shipper/CardCode}" description="{doc>/Shipper/CardName}" showValueHelp="true" valueHelpOnly="true"
+							valueHelpRequest=".onPickParty($event, 'Shipper')"/>
+						<Button icon="sap-icon://decline" type="Transparent" tooltip="Limpar" press=".onClearParty($event, 'Shipper')"/>
+					</HBox>
+					<Label text="Recebedor"/>
+					<HBox>
+						<Input value="{doc>/Receiver/CardCode}" description="{doc>/Receiver/CardName}" showValueHelp="true" valueHelpOnly="true"
+							valueHelpRequest=".onPickParty($event, 'Receiver')"/>
+						<Button icon="sap-icon://decline" type="Transparent" tooltip="Limpar" press=".onClearParty($event, 'Receiver')"/>
+					</HBox>
+					<Label text="Destinatário" required="true"/>
+					<Input value="{doc>/Recipient/CardCode}" description="{doc>/Recipient/CardName}" showValueHelp="true" valueHelpOnly="true"
+						valueHelpRequest=".onPickParty($event, 'Recipient')"/>
+					<Label text="Tomador (outros)" required="{= ${doc>/TakerRole} === '4' }"/>
+					<HBox>
+						<Input value="{doc>/OtherTaker/CardCode}" description="{doc>/OtherTaker/CardName}" showValueHelp="true" valueHelpOnly="true"
+							valueHelpRequest=".onPickParty($event, 'OtherTaker')" enabled="{= ${doc>/TakerRole} === '4' }"/>
+						<Button icon="sap-icon://decline" type="Transparent" tooltip="Limpar" press=".onClearParty($event, 'OtherTaker')"/>
+					</HBox>
+
+					<core:Title text="Rota"/>
+					<Label text="Município de início"/>
+					<Input value="{doc>/StartMunicipalityCode}" showValueHelp="true" valueHelpRequest=".openMunicipalitiesValueHelp"
+						placeholder="Vazio: o do expedidor, senão o do remetente" maxLength="7"/>
+					<Label text="Município de término"/>
+					<Input value="{doc>/EndMunicipalityCode}" showValueHelp="true" valueHelpRequest=".openMunicipalitiesValueHelp"
+						placeholder="Vazio: o do recebedor, senão o do destinatário" maxLength="7"/>
+
+					<core:Title text="Carga"/>
+					<Label text="Produto predominante"/>
+					<Input value="{doc>/PredominantProduct}" maxLength="60"/>
+					<Label text="Valor da carga"/>
+					<Input value="{doc>/CargoValue}" type="Number"/>
+				</f:content>
+			</f:SimpleForm>
+
+			<Table items="{doc>/NfeKeys}" class="sapUiSmallMarginBeginEnd sapUiSizeCompact" width="auto"
+				noDataText="Nenhuma NF-e transportada.">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="NF-e transportadas"/>
+						<ToolbarSpacer/>
+						<u:FileUploader id="cteNfeXmlUploader" buttonOnly="true" buttonText="Importar XML da NF-e" icon="sap-icon://upload"
+							multiple="true" fileType="xml" sameFilenameAllowed="true" change=".onImportNfeXml"/>
+						<Button text="Adicionar chave" icon="sap-icon://add" press=".onAddNfeKey"/>
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column><Text text="Chave de acesso"/></Column>
+					<Column width="4rem" hAlign="End"><Text text=""/></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Input value="{doc>AccessKey}" maxLength="54" placeholder="44 dígitos"/>
+							<Button icon="sap-icon://delete" type="Transparent" tooltip="Remover" press=".onRemoveRow($event, 'NfeKeys')"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+
+			<Table items="{doc>/Quantities}" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop sapUiSizeCompact" width="auto"
+				noDataText="Nenhuma quantidade informada.">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="Quantidades da carga"/>
+						<ToolbarSpacer/>
+						<Button text="Adicionar" icon="sap-icon://add" press=".onAddQuantity"/>
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column width="12rem"><Text text="Unidade"/></Column>
+					<Column><Text text="Tipo de medida"/></Column>
+					<Column width="12rem" hAlign="End"><Text text="Quantidade"/></Column>
+					<Column width="4rem" hAlign="End"><Text text=""/></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Select selectedKey="{doc>UnitCode}" items="{units>/}">
+								<core:ListItem key="{units>key}" text="{units>text}"/>
+							</Select>
+							<Input value="{doc>MeasureType}" maxLength="20" placeholder="PESO BRUTO"/>
+							<Input value="{doc>Quantity}" type="Number" textAlign="End"/>
+							<Button icon="sap-icon://delete" type="Transparent" tooltip="Remover" press=".onRemoveRow($event, 'Quantities')"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+
+			<Table items="{doc>/Components}" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop sapUiSizeCompact" width="auto"
+				noDataText="Informe ao menos um componente com o valor da prestação.">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="Componentes da prestação"/>
+						<ToolbarSpacer/>
+						<Button text="Adicionar" icon="sap-icon://add" press=".onAddComponent"/>
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column><Text text="Nome"/></Column>
+					<Column width="12rem" hAlign="End"><Text text="Valor"/></Column>
+					<Column width="4rem" hAlign="End"><Text text=""/></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Input value="{doc>Name}" maxLength="15"/>
+							<Input value="{doc>Value}" type="Number" textAlign="End"/>
+							<Button icon="sap-icon://delete" type="Transparent" tooltip="Remover" press=".onRemoveRow($event, 'Components')"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+
+			<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanL="4" labelSpanM="4" columnsL="2" columnsM="1"
+				singleContainerFullSize="false">
+				<f:content>
+					<core:Title text="Tributos (recalculados ao gravar)"/>
+					<Label text="CFOP / natureza"/>
+					<Text text="{doc>/Taxes/Cfop} {doc>/Taxes/NatureText}"/>
+					<Label text="Valor da prestação"/>
+					<Text text="{ path: 'doc>/Taxes/ServiceTotal', formatter: 'formatter.formatBrl' }"/>
+					<Label text="ICMS (CST / base / alíquota / valor)"/>
+					<Text text="{doc>/Taxes/IcmsCst} / { path: 'doc>/Taxes/IcmsBase', formatter: 'formatter.formatBrl' } / {doc>/Taxes/IcmsRate}% / { path: 'doc>/Taxes/IcmsValue', formatter: 'formatter.formatBrl' }"/>
+					<Label text="IBS/CBS (CST / classificação / base)"/>
+					<Text text="{doc>/Taxes/IbsCbsCst} / {doc>/Taxes/IbsCbsClassCode} / { path: 'doc>/Taxes/IbsCbsBase', formatter: 'formatter.formatBrl' }"/>
+					<Label text="CBS / IBS UF / IBS município"/>
+					<Text text="{ path: 'doc>/Taxes/CbsValue', formatter: 'formatter.formatBrl' } / { path: 'doc>/Taxes/IbsStateValue', formatter: 'formatter.formatBrl' } / { path: 'doc>/Taxes/IbsMunicipalValue', formatter: 'formatter.formatBrl' }"/>
+
+					<core:Title text="Modal rodoviário"/>
+					<Label text="Veículo"/>
+					<SegmentedButton selectedKey="{doc>/VehicleMode}">
+						<items>
+							<SegmentedButtonItem key="Combination" text="Conjunto"/>
+							<SegmentedButtonItem key="Traction" text="Só tração"/>
+						</items>
+					</SegmentedButton>
+					<Label text="Conjunto" visible="{= ${doc>/VehicleMode} === 'Combination' }"/>
+					<Input value="{doc>/TruckCombinationCode}" showValueHelp="true" valueHelpOnly="true"
+						valueHelpRequest=".onPickCombination" visible="{= ${doc>/VehicleMode} === 'Combination' }"/>
+					<Label text="Tração" visible="{= ${doc>/VehicleMode} === 'Traction' }"/>
+					<Input value="{doc>/TractionPlate}" showValueHelp="true" valueHelpOnly="true"
+						valueHelpRequest=".openTractionTrucksValueHelp" visible="{= ${doc>/VehicleMode} === 'Traction' }"/>
+					<Label text="Motorista"/>
+					<Input value="{doc>/DriverCpf}" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openTruckDriversValueHelp"
+						placeholder="Vazio: o motorista padrão do conjunto"/>
+
+					<core:Title text="Seguro"/>
+					<Label text="Responsável"/>
+					<Select selectedKey="{doc>/InsuranceResponsible}" forceSelection="false">
+						<core:ListItem key="" text="Padrão da filial"/>
+						<core:ListItem key="1" text="Emitente do CT-e"/>
+						<core:ListItem key="2" text="Contratante do serviço"/>
+					</Select>
+					<Label text="CNPJ da seguradora"/>
+					<Input value="{doc>/InsurerTaxId}" maxLength="18"/>
+					<Label text="Seguradora"/>
+					<Input value="{doc>/InsurerName}" maxLength="30"/>
+					<Label text="Apólice"/>
+					<Input value="{doc>/PolicyNumber}" maxLength="20"/>
+
+					<core:Title text="Observações"/>
+					<Label text="Observações"/>
+					<TextArea value="{doc>/Observation}" rows="3" maxLength="2000" width="100%"/>
+					<Label text="Rastreado"/>
+					<CheckBox selected="{doc>/Tracked}"/>
+					<Label text="Transporte próprio"/>
+					<CheckBox selected="{doc>/OwnTransport}"/>
+
+					<core:Title text="Dimensões gerenciais"/>
+					<Label text="Centro de custo"/>
+					<Input value="{doc>/CostCenterCode}" showValueHelp="true" valueHelpOnly="true"
+						valueHelpRequest=".openAssignmentCostCenterValueHelp" showClearIcon="true"/>
+					<Label text="Item contábil"/>
+					<Input value="{doc>/AccountingItemCode}" showValueHelp="true" valueHelpOnly="true"
+						valueHelpRequest=".openAssignmentAccountingItemValueHelp" showClearIcon="true"/>
+					<Label text="Rateio"/>
+					<Input value="{doc>/DistributionRuleCode}" showValueHelp="true" valueHelpOnly="true"
+						valueHelpRequest=".openAssignmentDistributionRuleValueHelp" showClearIcon="true"/>
+				</f:content>
+			</f:SimpleForm>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave"/>
+				<Button text="Cancelar" press=".onCancel"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>
