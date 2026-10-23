@@ -60,9 +60,9 @@
 				text="{= ${check>/blockingCount} &gt; 0 ? ${check>/blockingCount} + ' inconsistência(s) bloqueante(s): corrija antes de gerar o arquivo.' : ${check>/warningCount} &gt; 0 ? 'Sem bloqueios; ' + ${check>/warningCount} + ' aviso(s).' : 'Nenhuma inconsistência encontrada.' }"/>
 
 			<HBox class="sapUiSmallMargin" wrap="Wrap" visible="{check>/checked}">
-				<ObjectNumber class="sapUiMediumMarginEnd" state="Error" unit="Débitos" emphasized="true"
+				<ObjectNumber class="sapUiMediumMarginEnd" state="{= ${check>/totals/totalDebit} === ${check>/totals/totalCredit} ? 'Success' : 'Error' }" unit="Débitos" emphasized="true"
 					number="{ path: 'check>/totals/totalDebit', formatter: 'formatter.formatDecimal2' }"/>
-				<ObjectNumber class="sapUiMediumMarginEnd" state="Success" unit="Créditos" emphasized="true"
+				<ObjectNumber class="sapUiMediumMarginEnd" state="{= ${check>/totals/totalDebit} === ${check>/totals/totalCredit} ? 'Success' : 'Error' }" unit="Créditos" emphasized="true"
 					number="{ path: 'check>/totals/totalCredit', formatter: 'formatter.formatDecimal2' }"/>
 				<ObjectNumber emphasized="true" unit="Resultado do exercício (lucro positivo)"
 					number="{ path: 'check>/totals/netIncome', formatter: 'formatter.formatDecimal2' }"/>
