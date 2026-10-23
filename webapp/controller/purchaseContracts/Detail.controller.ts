@@ -12,6 +12,7 @@ import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import { Link$PressEvent } from "sap/m/Link";
 import { odataCollection, sendJson } from "siagrob1/helpers/FetchHelpers";
 import { FinancialDocumentByContract } from "siagrob1/types/FinancialDocumentByContract";
+import { contractFinancialSummary } from "siagrob1/helpers/ContractFinancialSummaryHelpers";
 
 /**
  * @namespace siagrob1.controller.purchaseContracts
@@ -22,7 +23,7 @@ export default class Detail extends PurchaseContractsBaseController {
   private _financialContractKey: string;
 
 	onInit(): void  {	
-		this.getView().setModel(new JSONModel({ rows: [] }), "contractFinancial");
+		this.getView().setModel(new JSONModel({ rows: [], summary: contractFinancialSummary([]) }), "contractFinancial");
 		this.initContractDrafts();
 		this.getRouter().getRoute("purchaseContractsDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
 	}
@@ -70,7 +71,7 @@ export default class Detail extends PurchaseContractsBaseController {
   private async loadContractFinancial(contractKey: string): Promise<void> {
     this._financialContractKey = contractKey;
     const model = this.getModel("contractFinancial") as JSONModel;
-    model.setData({ rows: [] });
+    model.setData({ rows: [], summary: contractFinancialSummary([]) });
 
     const result = await sendJson("GET",
       `${this.api.financialDocumentsGetByContract}(ContractType='Purchase',ContractKey=${contractKey})`);
@@ -81,7 +82,8 @@ export default class Detail extends PurchaseContractsBaseController {
       return;
     }
 
-    model.setData({ rows: odataCollection<FinancialDocumentByContract>(result.data) });
+    const rows = odataCollection<FinancialDocumentByContract>(result.data);
+    model.setData({ rows, summary: contractFinancialSummary(rows) });
   }
 
   onOpenContractFinancialDocument(ev: Link$PressEvent): void {
