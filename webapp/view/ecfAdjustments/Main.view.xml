@@ -1,0 +1,124 @@
+<mvc:View
+	controllerName="siagrob1.controller.ecfAdjustments.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+
+	<Page title="Ajustes da ECF (LALUR/LACS)" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0" busy="{ui>/busy}">
+		<subHeader>
+			<OverflowToolbar>
+				<Label text="Filial" required="true" labelFor="branchInput"/>
+				<Input id="branchInput" width="8rem" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBranchsValueHelp" value="{filter>/BranchCode}">
+					<customData>
+						<core:CustomData key="descriptionProperty" value="BranchName:ShortName"/>
+					</customData>
+				</Input>
+				<Input width="14rem" value="{filter>/BranchName}" editable="false"/>
+				<Label text="Ano" required="true" labelFor="yearInput"/>
+				<StepInput id="yearInput" width="8rem" value="{filter>/Year}" min="2000" max="9999" step="1" displayValuePrecision="0"/>
+				<Button type="Emphasized" icon="sap-icon://refresh" text="Carregar" press=".onLoad"/>
+			</OverflowToolbar>
+		</subHeader>
+		<content>
+			<Table id="adjustmentsTable" items="{list>/items}" class="sapUiSizeCondensed sapUiSmallMargin" width="auto" noDataText="Escolha a filial e o ano e clique em Carregar, ou nenhum ajuste lançado.">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="Ajustes do ano"/>
+						<ToolbarSpacer/>
+						<Button text="Adicionar" icon="sap-icon://add" press=".onAdd" enabled="{filter>/loaded}"/>
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column width="8rem"><Text text="Período"/></Column>
+					<Column width="6rem"><Text text="Tributo"/></Column>
+					<Column width="10rem"><Text text="Tipo"/></Column>
+					<Column width="9rem"><Text text="Código da tabela"/></Column>
+					<Column><Text text="Descrição"/></Column>
+					<Column width="9rem" hAlign="End"><Text text="Valor"/></Column>
+					<Column width="9rem"><Text text="Conta contábil"/></Column>
+					<Column width="9rem"><Text text="Conta parte B"/></Column>
+					<Column width="6rem"><Text text=""/></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Text text="{= ${list>Period} === 0 ? 'Anual' : ${list>Period} + 'º trimestre' }"/>
+							<Text text="{= ${list>Tax} === 'Both' ? 'IRPJ e CSLL' : ${list>Tax} === 'Irpj' ? 'IRPJ' : 'CSLL' }"/>
+							<Text text="{= ${list>Kind} === 'Addition' ? 'Adição' : ${list>Kind} === 'Exclusion' ? 'Exclusão' : 'Compensação de prejuízo' }"/>
+							<Text text="{list>TableCode}"/>
+							<Text text="{list>Description}"/>
+							<Text textAlign="End" wrapping="false" text="{ path: 'list>Amount', type: 'sap.ui.model.type.Float', formatOptions: { decimalSeparator: ',', groupingSeparator: '.', minFractionDigits: 2, maxFractionDigits: 2 } }"/>
+							<Text text="{list>LedgerAccountCode}"/>
+							<Text text="{list>PartBAccountCode}"/>
+							<HBox>
+								<Button icon="sap-icon://edit" type="Transparent" tooltip="Editar" press=".onEdit"/>
+								<Button icon="sap-icon://delete" type="Transparent" tooltip="Excluir" press=".onDelete"/>
+							</HBox>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</content>
+		<dependents>
+			<Dialog id="adjustmentDialog" title="Ajuste" contentWidth="34rem">
+				<f:Form editable="true">
+					<f:layout>
+						<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+					</f:layout>
+					<f:formContainers>
+						<f:FormContainer>
+							<f:formElements>
+								<f:FormElement label="Período">
+									<Select selectedKey="{adj>/Period}" items="{periods>/items}">
+										<core:Item key="{periods>key}" text="{periods>text}"/>
+									</Select>
+								</f:FormElement>
+								<f:FormElement label="Tributo">
+									<Select selectedKey="{adj>/Tax}">
+										<core:Item key="Both" text="IRPJ e CSLL"/>
+										<core:Item key="Irpj" text="IRPJ"/>
+										<core:Item key="Csll" text="CSLL"/>
+									</Select>
+								</f:FormElement>
+								<f:FormElement label="Tipo">
+									<Select selectedKey="{adj>/Kind}">
+										<core:Item key="Addition" text="Adição"/>
+										<core:Item key="Exclusion" text="Exclusão"/>
+										<core:Item key="LossOffset" text="Compensação de prejuízo"/>
+									</Select>
+								</f:FormElement>
+								<f:FormElement label="Código da tabela">
+									<Input value="{adj>/TableCode}" maxLength="20" required="true"/>
+								</f:FormElement>
+								<f:FormElement label="Descrição">
+									<Input value="{adj>/Description}" maxLength="250" required="true"/>
+								</f:FormElement>
+								<f:FormElement label="Valor">
+									<Input textAlign="End" required="true" value="{ path: 'adj>/Amount', type: 'sap.ui.model.type.Float', formatOptions: { decimalSeparator: ',', groupingSeparator: '.', minFractionDigits: 2, maxFractionDigits: 2 } }"/>
+								</f:FormElement>
+								<f:FormElement label="Conta contábil">
+									<Input value="{adj>/LedgerAccountCode}" maxLength="50"/>
+								</f:FormElement>
+								<f:FormElement label="Conta parte B">
+									<Input value="{adj>/PartBAccountCode}" maxLength="50"/>
+								</f:FormElement>
+								<f:FormElement label="Nome da conta parte B">
+									<Input value="{adj>/PartBAccountName}" maxLength="100"/>
+								</f:FormElement>
+							</f:formElements>
+						</f:FormContainer>
+					</f:formContainers>
+				</f:Form>
+				<beginButton>
+					<Button text="Salvar" type="Emphasized" press=".onSaveAdjustment"/>
+				</beginButton>
+				<endButton>
+					<Button text="Cancelar" press=".onCancel"/>
+				</endButton>
+			</Dialog>
+		</dependents>
+	</Page>
+
+</mvc:View>

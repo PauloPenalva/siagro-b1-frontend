@@ -1,0 +1,127 @@
+<mvc:View
+	controllerName="siagrob1.controller.ecf.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<Page title="ECF (Lucro Real)" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0" busy="{ui>/busy}">
+		<content>
+			<f:Form id="ecfForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2"/>
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer title="Período">
+						<f:formElements>
+							<f:FormElement label="Filial">
+								<f:fields>
+									<Input id="branchInput" required="true" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBranchsValueHelp" value="{params>/BranchCode}" change=".onParamsChanged">
+										<layoutData>
+											<f:ColumnElementData cellsLarge="4" cellsSmall="4"/>
+										</layoutData>
+										<customData>
+											<core:CustomData key="descriptionProperty" value="BranchName:ShortName"/>
+										</customData>
+									</Input>
+									<Input value="{params>/BranchName}" editable="false"/>
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement label="Ano">
+								<StepInput id="yearInput" required="true" value="{params>/Year}" min="2000" max="9999" step="1" displayValuePrecision="0" change=".onParamsChanged"/>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="Finalidade">
+						<f:formElements>
+							<f:FormElement label="Finalidade">
+								<Select selectedKey="{params>/Purpose}" change=".onParamsChanged">
+									<core:Item key="0" text="Original"/>
+									<core:Item key="1" text="Retificadora"/>
+								</Select>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+
+			<MessageStrip
+				visible="{check>/checked}"
+				class="sapUiSmallMarginBeginEnd sapUiTinyMarginBottom"
+				showIcon="true"
+				type="{= ${check>/blockingCount} &gt; 0 ? 'Error' : ${check>/warningCount} &gt; 0 ? 'Warning' : 'Success' }"
+				text="{= ${check>/blockingCount} &gt; 0 ? ${check>/blockingCount} + ' inconsistência(s) bloqueante(s): corrija antes de gerar o arquivo.' : ${check>/warningCount} &gt; 0 ? 'Sem bloqueios; ' + ${check>/warningCount} + ' aviso(s).' : 'Nenhuma inconsistência encontrada.' }"/>
+
+			<Table id="periodsTable" items="{check>/periods}" visible="{check>/checked}" class="sapUiSizeCondensed sapUiSmallMargin" width="auto" noDataText="Sem períodos apurados.">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="Totais por período"/>
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column width="6rem"><Text text="Período"/></Column>
+					<Column width="9rem" hAlign="End"><Text text="Lucro antes do IR"/></Column>
+					<Column width="9rem" hAlign="End"><Text text="Adições"/></Column>
+					<Column width="9rem" hAlign="End"><Text text="Exclusões"/></Column>
+					<Column width="9rem" hAlign="End"><Text text="Compensação"/></Column>
+					<Column width="9rem" hAlign="End"><Text text="Base IRPJ"/></Column>
+					<Column width="9rem" hAlign="End"><Text text="IRPJ"/></Column>
+					<Column width="9rem" hAlign="End"><Text text="Adicional"/></Column>
+					<Column width="9rem" hAlign="End"><Text text="Base CSLL"/></Column>
+					<Column width="9rem" hAlign="End"><Text text="CSLL"/></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Text text="{check>period}"/>
+							<Text wrapping="false" textAlign="End" text="{ path: 'check>bookProfit', formatter: 'formatter.formatDecimal2' }"/>
+							<Text wrapping="false" textAlign="End" text="{ path: 'check>irpjAdditions', formatter: 'formatter.formatDecimal2' }"/>
+							<Text wrapping="false" textAlign="End" text="{ path: 'check>irpjExclusions', formatter: 'formatter.formatDecimal2' }"/>
+							<Text wrapping="false" textAlign="End" text="{ path: 'check>irpjLossOffset', formatter: 'formatter.formatDecimal2' }"/>
+							<Text wrapping="false" textAlign="End" text="{ path: 'check>irpjBase', formatter: 'formatter.formatDecimal2' }"/>
+							<Text wrapping="false" textAlign="End" text="{ path: 'check>irpj', formatter: 'formatter.formatDecimal2' }"/>
+							<Text wrapping="false" textAlign="End" text="{ path: 'check>irpjSurtax', formatter: 'formatter.formatDecimal2' }"/>
+							<Text wrapping="false" textAlign="End" text="{ path: 'check>csllBase', formatter: 'formatter.formatDecimal2' }"/>
+							<Text wrapping="false" textAlign="End" text="{ path: 'check>csll', formatter: 'formatter.formatDecimal2' }"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+
+			<Table id="issuesTable" items="{check>/issues}" visible="{check>/checked}" class="sapUiSizeCondensed sapUiSmallMarginBeginEnd" width="auto" noDataText="Nenhuma inconsistência." growing="true" growingThreshold="100">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="Inconsistências"/>
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column width="8rem"><Text text="Gravidade"/></Column>
+					<Column width="14rem"><Text text="Referência"/></Column>
+					<Column><Text text="Mensagem"/></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<ObjectStatus text="{= ${check>blocking} ? 'Bloqueante' : 'Aviso' }" state="{= ${check>blocking} ? 'Error' : 'Warning' }"/>
+							<Text text="{check>reference}"/>
+							<Text text="{check>message}"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Verificar" icon="sap-icon://inspect" press=".onCheck"/>
+				<Button text="Gerar arquivo" type="Emphasized" icon="sap-icon://download" press=".onGenerate"
+					enabled="{= ${check>/checked} &amp;&amp; ${check>/blockingCount} === 0 }"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

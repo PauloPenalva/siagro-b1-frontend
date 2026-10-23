@@ -1,0 +1,141 @@
+<mvc:View
+	controllerName="siagrob1.controller.ecfSettings.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+
+	<Page title="Parâmetros da ECF" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0" busy="{ui>/busy}">
+		<subHeader>
+			<OverflowToolbar>
+				<Label text="Filial" required="true" labelFor="branchInput"/>
+				<Input id="branchInput" width="8rem" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBranchsValueHelp" value="{settings>/BranchCode}">
+					<customData>
+						<core:CustomData key="descriptionProperty" value="BranchName:ShortName"/>
+					</customData>
+				</Input>
+				<Input width="14rem" value="{settings>/BranchName}" editable="false"/>
+				<Button type="Emphasized" icon="sap-icon://refresh" text="Carregar" press=".onLoad"/>
+			</OverflowToolbar>
+		</subHeader>
+		<content>
+			<MessageStrip
+				text="Escolha a filial e clique em Carregar antes de editar. Filial sem parâmetros gravados mostra os valores padrão."
+				type="Information" showIcon="true" class="sapUiSmallMargin"/>
+			<f:Form id="ecfSettingsForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="2"/>
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer title="Apuração e empresa">
+						<f:formElements>
+							<f:FormElement label="Forma de apuração">
+								<Select selectedKey="{settings>/AssessmentForm}">
+									<core:Item key="Annual" text="Anual com estimativas"/>
+									<core:Item key="Quarterly" text="Trimestral"/>
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="CNAE principal (7 dígitos)">
+								<Input value="{settings>/MainCnae}" maxLength="7"/>
+							</f:FormElement>
+							<f:FormElement label="Natureza jurídica (4 dígitos)">
+								<Input value="{settings>/NatureCode}" maxLength="4"/>
+							</f:FormElement>
+							<f:FormElement label="Qualificação da PJ (2 dígitos)">
+								<Input value="{settings>/LegalEntityQualification}" maxLength="2"/>
+							</f:FormElement>
+							<f:FormElement label="Hash da ECF anterior">
+								<Input value="{settings>/PreviousEcfHash}" maxLength="40"/>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+
+			<Table id="partnersTable" items="{partners>/items}" class="sapUiSizeCondensed sapUiSmallMarginBeginEnd sapUiSmallMarginTop" width="auto" noDataText="Nenhum sócio cadastrado para a filial.">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="Quadro societário"/>
+						<ToolbarSpacer/>
+						<ObjectStatus visible="{partners>/loaded}" state="{= ${partners>/balanced} ? 'Success' : 'Warning' }"
+							text="{partners>/totalText}"/>
+						<Button text="Adicionar" icon="sap-icon://add" press=".onAddPartner"/>
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column><Text text="Nome"/></Column>
+					<Column width="10rem"><Text text="CPF/CNPJ"/></Column>
+					<Column width="7rem"><Text text="Qualificação"/></Column>
+					<Column width="8rem" hAlign="End"><Text text="% votante"/></Column>
+					<Column width="8rem" hAlign="End"><Text text="% total"/></Column>
+					<Column width="5rem"><Text text="País"/></Column>
+					<Column width="6rem"><Text text=""/></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Text text="{partners>Name}"/>
+							<Text text="{partners>TaxId}"/>
+							<Text text="{partners>Qualification}"/>
+							<Text textAlign="End" text="{ path: 'partners>VotingCapitalPercent', type: 'sap.ui.model.type.Float', formatOptions: { decimalSeparator: ',', groupingSeparator: '.', minFractionDigits: 2, maxFractionDigits: 2 } }"/>
+							<Text textAlign="End" text="{ path: 'partners>TotalCapitalPercent', type: 'sap.ui.model.type.Float', formatOptions: { decimalSeparator: ',', groupingSeparator: '.', minFractionDigits: 2, maxFractionDigits: 2 } }"/>
+							<Text text="{partners>CountryCode}"/>
+							<HBox>
+								<Button icon="sap-icon://edit" type="Transparent" tooltip="Editar" press=".onEditPartner"/>
+								<Button icon="sap-icon://delete" type="Transparent" tooltip="Excluir" press=".onDeletePartner"/>
+							</HBox>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</content>
+		<dependents>
+			<Dialog id="partnerDialog" title="Sócio" contentWidth="32rem">
+				<f:Form editable="true">
+					<f:layout>
+						<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+					</f:layout>
+					<f:formContainers>
+						<f:FormContainer>
+							<f:formElements>
+								<f:FormElement label="Nome">
+									<Input value="{partner>/Name}" maxLength="100" required="true"/>
+								</f:FormElement>
+								<f:FormElement label="CPF/CNPJ (só dígitos)">
+									<Input value="{partner>/TaxId}" maxLength="18" required="true"/>
+								</f:FormElement>
+								<f:FormElement label="Qualificação (2 dígitos)">
+									<Input value="{partner>/Qualification}" maxLength="2" required="true"/>
+								</f:FormElement>
+								<f:FormElement label="% capital votante">
+									<Input textAlign="End" value="{ path: 'partner>/VotingCapitalPercent', type: 'sap.ui.model.type.Float', formatOptions: { decimalSeparator: ',', groupingSeparator: '.', minFractionDigits: 2, maxFractionDigits: 2 } }"/>
+								</f:FormElement>
+								<f:FormElement label="% capital total">
+									<Input textAlign="End" value="{ path: 'partner>/TotalCapitalPercent', type: 'sap.ui.model.type.Float', formatOptions: { decimalSeparator: ',', groupingSeparator: '.', minFractionDigits: 2, maxFractionDigits: 2 } }"/>
+								</f:FormElement>
+								<f:FormElement label="País (código BACEN)">
+									<Input value="{partner>/CountryCode}" maxLength="3"/>
+								</f:FormElement>
+							</f:formElements>
+						</f:FormContainer>
+					</f:formContainers>
+				</f:Form>
+				<beginButton>
+					<Button text="Salvar" type="Emphasized" press=".onSavePartner"/>
+				</beginButton>
+				<endButton>
+					<Button text="Cancelar" press=".onCancelPartner"/>
+				</endButton>
+			</Dialog>
+		</dependents>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave"
+					enabled="{= ${settings>/LoadedFor} !== '' &amp;&amp; ${settings>/LoadedFor} === ${settings>/BranchCode} }"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

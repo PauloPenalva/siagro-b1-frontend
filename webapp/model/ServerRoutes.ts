@@ -11,6 +11,12 @@ export default {
   ecd: '/reports/Ecd',
   ecdSettingsGet: '/odata/EcdSettingsGet',
   ecdSettingsSave: '/odata/EcdSettingsSave',
+  // ECF / Lucro Real (só STANDALONE): POST baixa o TXT; POST /Check devolve inconsistências e totais por período.
+  ecf: '/reports/Ecf',
+  ecfSettingsGet: '/odata/EcfSettingsGet',
+  ecfSettingsSave: '/odata/EcfSettingsSave',
+  ecfPartners: '/odata/EcfPartners',
+  ecfAdjustments: '/odata/EcfAdjustments',
   spedFiscalSettingsGet: '/odata/SpedFiscalSettingsGet',
   spedFiscalSettingsSave: '/odata/SpedFiscalSettingsSave',
   fiscalKardex: '/reports/FiscalKardex',
