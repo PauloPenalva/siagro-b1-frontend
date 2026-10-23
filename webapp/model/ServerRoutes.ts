@@ -7,6 +7,10 @@ export default {
   spedFiscal: '/reports/SpedFiscal',
   // EFD Contribuições (só STANDALONE): POST baixa o TXT; POST /Check devolve inconsistências e totais.
   efdContributions: '/reports/EfdContributions',
+  // ECD / SPED Contábil (só STANDALONE): POST baixa o TXT; POST /Check devolve inconsistências e totais.
+  ecd: '/reports/Ecd',
+  ecdSettingsGet: '/odata/EcdSettingsGet',
+  ecdSettingsSave: '/odata/EcdSettingsSave',
   spedFiscalSettingsGet: '/odata/SpedFiscalSettingsGet',
   spedFiscalSettingsSave: '/odata/SpedFiscalSettingsSave',
   fiscalKardex: '/reports/FiscalKardex',

@@ -1440,6 +1440,16 @@
           "target": "spedFiscal"
         },
         {
+          "pattern": "ecd",
+          "name": "ecd",
+          "target": "ecd"
+        },
+        {
+          "pattern": "ecd-settings",
+          "name": "ecdSettings",
+          "target": "ecdSettings"
+        },
+        {
           "pattern": "sped-fiscal-settings",
           "name": "spedFiscalSettings",
           "target": "spedFiscalSettings"
@@ -3144,6 +3154,18 @@
           "id": "efdContributions",
           "level": 1,
           "name": "siagrob1.view.efdContributions.Main",
+          "clearControlAggregation": true
+        },
+        "ecd": {
+          "id": "ecd",
+          "level": 1,
+          "name": "siagrob1.view.ecd.Main",
+          "clearControlAggregation": true
+        },
+        "ecdSettings": {
+          "id": "ecdSettings",
+          "level": 1,
+          "name": "siagrob1.view.ecdSettings.Main",
           "clearControlAggregation": true
         },
         "spedFiscalSettings": {
