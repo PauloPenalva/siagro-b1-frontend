@@ -1,4 +1,4 @@
-import { contractFinancialSummary } from "siagrob1/helpers/ContractFinancialSummaryHelpers";
+import { contractFinancialSummary, visibleContractFinancialRows } from "siagrob1/helpers/ContractFinancialSummaryHelpers";
 import { FinancialDocumentByContract } from "siagrob1/types/FinancialDocumentByContract";
 
 QUnit.module("ContractFinancialSummaryHelpers - resumo financeiro do contrato");
@@ -19,17 +19,26 @@ QUnit.test("sem títulos tudo zero", function (assert) {
 	assert.strictEqual(s.HasRows, false);
 });
 
-QUnit.test("soma provisório e firme, ignora cancelado e aceita decimal string", function (assert) {
+QUnit.test("só firmes entram; provisório (aglutinador) e cancelado ficam fora", function (assert) {
 	const s = contractFinancialSummary([
-		row({ Nature: "Provisional", NetAmount: "1000.50", SettledAmount: 0, OpenAmount: "1000.50" }),
-		row({ Nature: "Firm", NetAmount: 500, SettledAmount: 200, OpenAmount: 300 }),
+		row({ Nature: "Provisional", NetAmount: "1000.50", OpenAmount: "1000.50" }),
+		row({ Nature: "Firm", NetAmount: "500.25", SettledAmount: 200, OpenAmount: "300.25" }),
 		row({ Nature: "Firm", Status: "Canceled", NetAmount: 999, OpenAmount: 999 })
 	]);
-	assert.strictEqual(s.TitlesAmount, 1500.5);
+	assert.strictEqual(s.TitlesAmount, 500.25);
 	assert.strictEqual(s.SettledAmount, 200);
-	assert.strictEqual(s.OpenAmount, 1300.5);
-	assert.strictEqual(s.Balance, 1300.5);
-	assert.strictEqual(s.HasRows, true);
+	assert.strictEqual(s.OpenAmount, 300.25);
+	assert.strictEqual(s.Balance, 300.25);
+});
+
+QUnit.test("grade esconde provisório e cancelado", function (assert) {
+	const rows = visibleContractFinancialRows([
+		row({ Code: "P", Nature: "Provisional" }),
+		row({ Code: "C", Nature: "Firm", Status: "Canceled" }),
+		row({ Code: "F", Nature: "Firm" }),
+		row({ Code: "A", Nature: "Advance", Status: "Settled" })
+	]);
+	assert.deepEqual(rows.map(r => r.Code), ["F", "A"]);
 });
 
 QUnit.test("crédito de adiantamento disponível abate o saldo", function (assert) {

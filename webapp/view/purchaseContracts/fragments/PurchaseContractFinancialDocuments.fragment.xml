@@ -8,11 +8,11 @@
     existe no provisório (nos demais vem 0,00). Aplicado e crédito disponível só aparecem no adiantamento (spec 2026-10-14). Os formatters vêm do controller (.formatter), como nas demais
     seções do Detail, sem core:require no fragmento.
   -->
-  <!-- Resumo da situação financeira do contrato (spec 2026-10-23): saldo a pagar = em aberto menos crédito de adiantamento. -->
+  <!-- Grade sem provisório nem cancelado (pedido 2026-10-23). Resumo da situação financeira do contrato (spec 2026-10-23): saldo a pagar = firmes em aberto menos crédito de adiantamento. -->
   <VBox>
   <FlexBox wrap="Wrap" class="sapUiSmallMarginBottom" visible="{contractFinancial>/summary/HasRows}">
     <VBox class="sapUiMediumMarginEnd sapUiSmallMarginBottom">
-      <Label text="Títulos (provisório + firme)" />
+      <Label text="Títulos firmes" />
       <ObjectNumber number="{path: 'contractFinancial>/summary/TitlesAmount', formatter: '.formatter.formatDecimal2'}" unit="BRL" />
     </VBox>
     <VBox class="sapUiMediumMarginEnd sapUiSmallMarginBottom">
@@ -46,7 +46,7 @@
   <Table
     class="sapUiSizeCondensed"
     items="{contractFinancial>/rows}"
-    noDataText="Nenhum título financeiro neste contrato.">
+    noDataText="Nenhum título firme ou adiantamento neste contrato.">
     <columns>
       <Column width="9rem"><Text text="Título" /></Column>
       <Column width="8rem"><Text text="Natureza" /></Column>

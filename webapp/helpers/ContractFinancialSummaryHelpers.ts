@@ -3,7 +3,7 @@ import { FinancialDocumentByContract } from "siagrob1/types/FinancialDocumentByC
 /** Resumo da seção Financeiro do contrato (compra ou venda), calculado sobre as linhas já carregadas. */
 export type ContractFinancialSummary = {
 	HasRows: boolean;
-	/** Provisórios + firmes (não cancelados). */
+	/** Só firmes (não cancelados): o provisório aglutina os firmes, somar os dois duplicaria. */
 	TitlesAmount: number;
 	SettledAmount: number;
 	OpenAmount: number;
@@ -30,7 +30,6 @@ export function contractFinancialSummary(rows: FinancialDocumentByContract[]): C
 	for (const r of rows ?? []) {
 		if (r.Status === "Canceled") continue;
 		switch (r.Nature) {
-			case "Provisional":
 			case "Firm":
 				titles += num(r.NetAmount);
 				settled += num(r.SettledAmount);
@@ -61,4 +60,9 @@ export function contractFinancialSummary(rows: FinancialDocumentByContract[]): C
 		WithholdingOpen: round2(withholding),
 		ReturnsOpen: round2(returns)
 	};
+}
+
+/** Linhas da grade do Financeiro: sem provisório (aglutinador dos firmes) e sem cancelado. */
+export function visibleContractFinancialRows(rows: FinancialDocumentByContract[]): FinancialDocumentByContract[] {
+	return (rows ?? []).filter(r => r.Nature !== "Provisional" && r.Status !== "Canceled");
 }

@@ -5,11 +5,11 @@
   <!--
     Seção Financeiro do contrato de venda (spec 2026-10-15, firmes a receber): provisórios, firmes, devoluções de venda e adiantamentos, pela function FinancialDocumentsGetByContract, no JSONModel "contractFinancial". Somente leitura. A coluna NF mostra TaxDocumentNumber, que traz o número interno quando o documento não tem NF.
   -->
-  <!-- Resumo da situação financeira do contrato (spec 2026-10-23): saldo a receber = em aberto menos crédito de adiantamento. -->
+  <!-- Grade sem provisório nem cancelado (pedido 2026-10-23). Resumo da situação financeira do contrato (spec 2026-10-23): saldo a receber = firmes em aberto menos crédito de adiantamento. -->
   <VBox>
   <FlexBox wrap="Wrap" class="sapUiSmallMarginBottom" visible="{contractFinancial>/summary/HasRows}">
     <VBox class="sapUiMediumMarginEnd sapUiSmallMarginBottom">
-      <Label text="Títulos (provisório + firme)" />
+      <Label text="Títulos firmes" />
       <ObjectNumber number="{path: 'contractFinancial>/summary/TitlesAmount', formatter: '.formatter.formatDecimal2'}" unit="BRL" />
     </VBox>
     <VBox class="sapUiMediumMarginEnd sapUiSmallMarginBottom">
@@ -43,7 +43,7 @@
   <Table
     class="sapUiSizeCondensed"
     items="{contractFinancial>/rows}"
-    noDataText="Nenhum título financeiro neste contrato.">
+    noDataText="Nenhum título firme ou adiantamento neste contrato.">
     <columns>
       <Column width="9rem"><Text text="Título" /></Column>
       <Column width="8rem"><Text text="Natureza" /></Column>
