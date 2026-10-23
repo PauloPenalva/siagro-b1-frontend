@@ -6,7 +6,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import { odataCollection, odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
 	ManifestCteRow, ManifestPaymentForm, TRANSPORT_MANIFEST_EXPAND, TransportManifestForm, WEIGHT_UNITS, buildTransportManifestSavePayload,
-	cargoTypeText, ciotError, formatAccessKey, groupCtesByUnloadingCity, mdfeActions, transportManifestFormFrom,
+	cargoTypeText, ciotError, ciotResponsibleError, formatAccessKey, ncmError, groupCtesByUnloadingCity, mdfeActions, transportManifestFormFrom,
 } from "siagrob1/helpers/MdfeHelpers";
 import { STATE_CODES } from "siagrob1/helpers/StateCodes";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
@@ -133,10 +133,8 @@ export default class Form extends BaseController {
 		if (!form.WeightUnit) {
 			return "Informe a unidade do peso.";
 		}
-		if (this.head().getProperty("/requiresCiot") === true && !String(form.CiotNumber ?? "").trim()) {
-			return "A filial exige o CIOT no MDF-e.";
-		}
-		return ciotError(form.CiotNumber);
+		const cteCount = Number(this.head().getProperty("/CteCount") ?? 0);
+		return ncmError(form.Ncm, cteCount) ?? ciotError(form.CiotNumber) ?? ciotResponsibleError(form.CiotResponsibleTaxId);
 	}
 
 	async onSave(): Promise<void> {

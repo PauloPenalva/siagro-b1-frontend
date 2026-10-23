@@ -12,11 +12,13 @@ import {
 	buildTransportManifestsFilter,
 	cargoTypeText,
 	ciotError,
+	ciotResponsibleError,
 	endorsementText,
 	filterEligibleCtes,
 	formatAccessKey,
 	groupCtesByUnloadingCity,
 	manifestLinkText,
+	ncmError,
 	mdfeActions,
 	mdfeStatusState,
 	mdfeStatusText,
@@ -69,12 +71,27 @@ QUnit.test("vínculo no CT-e: número/série (situação), vazio sem MDF-e", fun
 
 QUnit.module("MdfeHelpers - CIOT");
 
-QUnit.test("CIOT: 11 dígitos dá erro, 12 dá null, vazio dá null", function (assert) {
+QUnit.test("CIOT: obrigatório; 11 dígitos dá erro, 12 dá null, vazio dá erro", function (assert) {
 	assert.ok(ciotError("12345678901"));
 	assert.strictEqual(ciotError("123456789012"), null);
-	assert.strictEqual(ciotError(""), null);
-	assert.strictEqual(ciotError(undefined), null);
+	assert.ok(ciotError("").includes("rejeição 684"));
+	assert.ok(ciotError(undefined));
 	assert.ok(ciotError("12345678901A"));
+});
+
+QUnit.test("responsável do CIOT: CPF ou CNPJ, obrigatório", function (assert) {
+	assert.strictEqual(ciotResponsibleError("529.982.247-25"), null);
+	assert.strictEqual(ciotResponsibleError("11.222.333/0001-81"), null);
+	assert.ok(ciotResponsibleError(""));
+	assert.ok(ciotResponsibleError("123"));
+});
+
+QUnit.test("NCM: obrigatório com um único CT-e (8 dígitos); com vários, só valida se informado", function (assert) {
+	assert.ok(ncmError("", 1));
+	assert.ok(ncmError("1201", 1));
+	assert.strictEqual(ncmError("1201.90.00", 1), null);
+	assert.strictEqual(ncmError("", 2), null);
+	assert.ok(ncmError("1201", 2));
 });
 
 QUnit.module("MdfeHelpers - payloads");
@@ -87,6 +104,7 @@ const form = (): TransportManifestForm => ({
 	Seals: [{ Number: "L1" }, { Number: " " }],
 	LoadingZip: "78.000-000",
 	UnloadingZip: "",
+	Ncm: "1201.90.00",
 	GrossWeight: "1234,5",
 	WeightUnit: "02",
 	CiotNumber: "",
@@ -114,6 +132,7 @@ QUnit.test("save: peso vira Number (vírgula aceita) e linhas vazias somem", fun
 	assert.deepEqual(payload.Model.Seals, ["L1"]);
 	assert.strictEqual(payload.Model.LoadingZip, "78000000");
 	assert.strictEqual(payload.Model.UnloadingZip, null);
+	assert.strictEqual(payload.Model.Ncm, "12019000");
 	assert.strictEqual(payload.Model.WeightUnit, "02");
 	assert.strictEqual(payload.Model.CiotNumber, null);
 	assert.strictEqual(payload.Model.TollValue, null);

@@ -53,13 +53,28 @@ export const CARGO_TYPES = [
 ];
 export const cargoTypeText = (code: string): string => CARGO_TYPES.find((c) => c.key === code)?.text ?? (code ?? "");
 
-/** CIOT: 12 dígitos. Vazio = válido (a exigência é da filial e o servidor confere). */
+/** CIOT: obrigatório (12 dígitos) — o MDF-e sempre leva o RNTRC e a SEFAZ rejeita sem CIOT (684). */
 export const ciotError = (text: string): string => {
 	const value = (text ?? "").trim();
 	if (!value) {
-		return null;
+		return "CIOT obrigatório no MDF-e quando há RNTRC (rejeição 684 da SEFAZ): informe o CIOT e o responsável.";
 	}
 	return /^\d{12}$/.test(value) ? null : "O CIOT deve ter 12 dígitos.";
+};
+
+/** Responsável pelo CIOT: CPF (11) ou CNPJ (14) dígitos, obrigatório. */
+export const ciotResponsibleError = (text: string): string => {
+	const length = (text ?? "").replace(/\D/g, "").length;
+	return length === 11 || length === 14 ? null : "Informe o CPF ou CNPJ do responsável pelo CIOT.";
+};
+
+/** NCM do produto predominante: 8 dígitos, obrigatório na carga lotação (um único CT-e; rejeição 301). */
+export const ncmError = (text: string, cteCount: number): string => {
+	const length = (text ?? "").replace(/\D/g, "").length;
+	if (cteCount !== 1 && length === 0) {
+		return null;
+	}
+	return length === 8 ? null : "Carga lotação: informe o NCM do produto predominante (8 dígitos).";
 };
 
 /** Vínculo do CT-e com o MDF-e (função TransportDocumentsManifest). */
@@ -200,6 +215,7 @@ export interface TransportManifestForm {
 	Seals: { Number: string }[];
 	LoadingZip: string;
 	UnloadingZip: string;
+	Ncm: string;
 	GrossWeight: Num;
 	WeightUnit: string;
 	CiotNumber: string;
@@ -239,6 +255,7 @@ export const transportManifestFormFrom = (m: Record<string, unknown>): Transport
 		Seals: list<{ Number: string }>("Seals").map((s) => ({ Number: s.Number })),
 		LoadingZip: str(m.LoadingZip),
 		UnloadingZip: str(m.UnloadingZip),
+		Ncm: str(m.Ncm),
 		GrossWeight: (m.GrossWeight as number) ?? 0,
 		WeightUnit: str(m.WeightUnit) || "01",
 		CiotNumber: str(m.CiotNumber),
@@ -267,6 +284,7 @@ export const buildTransportManifestSavePayload = (f: TransportManifestForm) => (
 		Seals: (f.Seals ?? []).map((s) => str(s.Number).trim()).filter(Boolean),
 		LoadingZip: digitsOrNull(f.LoadingZip),
 		UnloadingZip: digitsOrNull(f.UnloadingZip),
+		Ncm: digitsOrNull(f.Ncm),
 		GrossWeight: num(f.GrossWeight),
 		WeightUnit: f.WeightUnit || "01",
 		CiotNumber: digitsOrNull(f.CiotNumber),

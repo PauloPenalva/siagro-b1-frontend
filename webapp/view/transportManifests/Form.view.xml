@@ -47,6 +47,8 @@
 					<Input value="{doc>/LoadingZip}" maxLength="9"/>
 					<Label text="CEP de descarregamento" required="true"/>
 					<Input value="{doc>/UnloadingZip}" maxLength="9"/>
+					<Label text="NCM do produto predominante" required="{= ${head>/CteCount} === 1 }"/>
+					<Input value="{doc>/Ncm}" maxLength="10" placeholder="8 dígitos"/>
 					<Label text="Peso bruto / unidade" required="true"/>
 					<Input value="{doc>/GrossWeight}"/>
 					<Select selectedKey="{doc>/WeightUnit}" items="{weightUnits>/}">
@@ -66,9 +68,9 @@
 					<Text text="{head>/InsurerTaxId} {head>/InsurerName} {head>/PolicyNumber}"/>
 
 					<core:Title text="CIOT e vale-pedágio"/>
-					<Label text="CIOT" required="{head>/requiresCiot}"/>
+					<Label text="CIOT" required="true"/>
 					<Input value="{doc>/CiotNumber}" maxLength="12" placeholder="12 dígitos"/>
-					<Label text="CPF/CNPJ do responsável pelo CIOT"/>
+					<Label text="CPF/CNPJ do responsável pelo CIOT" required="true"/>
 					<Input value="{doc>/CiotResponsibleTaxId}" maxLength="18"/>
 					<Label text="CNPJ do fornecedor do vale-pedágio"/>
 					<Input value="{doc>/TollSupplierCnpj}" maxLength="18"/>
