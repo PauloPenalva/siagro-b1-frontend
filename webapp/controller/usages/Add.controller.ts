@@ -78,6 +78,8 @@ export default class Add extends BaseController {
 			CofinsCst: null,
 			CofinsRate: null,
 			ExcludeIcmsFromPisCofinsBase: false,
+			PisCofinsRevenueNatureCode: null,
+			PisCofinsCreditBaseCode: null,
 			IbsCbsCst: null,
 			IbsCbsClassCode: null,
 			IbsRateReduction: null,

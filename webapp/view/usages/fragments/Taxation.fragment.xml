@@ -123,6 +123,10 @@
               <Input editable="{ui>/editable}" value="{ path: 'CofinsRate', type: 'sap.ui.model.odata.type.Double', formatOptions: { decimals: 4, groupingEnabled: false } }" />
               <Label text="Excluir o ICMS da base do PIS/COFINS ?" />
               <CheckBox selected="{ExcludeIcmsFromPisCofinsBase}" editable="{ui>/editable}" />
+              <Label text="Natureza da receita (EFD Contribuições)" />
+              <Input value="{PisCofinsRevenueNatureCode}" maxLength="3" editable="{ui>/editable}" />
+              <Label text="Base de cálculo do crédito (EFD Contribuições)" />
+              <Input value="{PisCofinsCreditBaseCode}" maxLength="2" editable="{ui>/editable}" />
             </f:content>
           </f:SimpleForm>
         </uxap:blocks>

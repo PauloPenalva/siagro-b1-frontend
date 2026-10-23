@@ -5,6 +5,8 @@ export default {
   fiscalConference: '/reports/FiscalConference',
   // SPED Fiscal (só STANDALONE): POST baixa o TXT; POST /Check devolve as inconsistências.
   spedFiscal: '/reports/SpedFiscal',
+  // EFD Contribuições (só STANDALONE): POST baixa o TXT; POST /Check devolve inconsistências e totais.
+  efdContributions: '/reports/EfdContributions',
   spedFiscalSettingsGet: '/odata/SpedFiscalSettingsGet',
   spedFiscalSettingsSave: '/odata/SpedFiscalSettingsSave',
   fiscalKardex: '/reports/FiscalKardex',
