@@ -1,5 +1,5 @@
 import { Button$PressEvent } from "sap/m/Button";
-import { Input$ValueHelpRequestEvent } from "sap/m/Input";
+import { Input$LiveChangeEvent, Input$ValueHelpRequestEvent } from "sap/m/Input";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
@@ -11,7 +11,7 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { odataCollection, odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
 	CtePartyRoleName, PARTY_ROLES, QUANTITY_UNITS, TAKER_ROLES, TransportDocumentForm, TransportDocumentRead,
-	TRANSPORT_DOCUMENT_EXPAND, buildTransportDocumentSavePayload, emptyTransportDocumentForm, transportDocumentFormFrom,
+	TRANSPORT_DOCUMENT_EXPAND, buildTransportDocumentSavePayload, emptyTransportDocumentForm, paymentConditionAfterPartyPick, transportDocumentFormFrom,
 } from "siagrob1/helpers/CteHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import CommonController from "../common/CommonController";
@@ -131,30 +131,44 @@ export default class Form extends CommonController {
 		const ctx = await DialogHelper.openTableSelectDialog(this, "BusinessPartnersSelectDialog", ["CardCode", "CardName", "CardFName"]);
 		if (ctx) {
 			this.doc().setProperty(`/${role}`, { CardCode: ctx.getProperty("CardCode") as string, CardName: ctx.getProperty("CardName") as string });
-			await this.suggestPaymentCondition();
+			await this.suggestPaymentCondition(role);
 		}
 	}
 
 	async onTakerChanged(): Promise<void> {
-		await this.suggestPaymentCondition();
+		await this.suggestPaymentCondition(null);
 	}
 
-	/** Condição de pagamento sugerida do cadastro do tomador (continua editável). */
-	private async suggestPaymentCondition(): Promise<void> {
+	/** Ícone de limpar / texto apagado: some também a descrição. */
+	onPaymentConditionLiveChange(ev: Input$LiveChangeEvent): void {
+		if (!ev.getParameter("value")) {
+			this.doc().setProperty("/PaymentConditionCode", "");
+			void this.refreshPaymentConditionName(null);
+		}
+	}
+
+	/**
+	 * Condição sugerida do cadastro do tomador (continua editável). `pickedRole` null = o tomador
+	 * mudou; outro papel que não o tomador não mexe na condição.
+	 */
+	private async suggestPaymentCondition(pickedRole: CtePartyRoleName): Promise<void> {
 		const form = this.doc().getData() as TransportDocumentForm;
-		const role = PARTY_ROLES[Number(form.TakerRole)];
-		const cardCode = role ? form[role]?.CardCode : "";
-		if (!cardCode) {
+		const takerRole = PARTY_ROLES[Number(form.TakerRole)];
+		if (pickedRole !== null && pickedRole !== takerRole) {
 			return;
 		}
-		const result = await sendJson("GET",
-			`/odata/BusinessPartners('${encodeURIComponent(cardCode.replace(/'/g, "''"))}')?$select=CardCode,PaymentConditionCode`);
-		const code = result.ok ? odataValue<{ PaymentConditionCode?: number }>(result.data)?.PaymentConditionCode : null;
-		if (code === null || code === undefined) {
-			return;
+		const cardCode = takerRole ? form[takerRole]?.CardCode : "";
+		let partnerCode: number = null;
+		if (cardCode) {
+			const result = await sendJson("GET",
+				`/odata/BusinessPartners('${encodeURIComponent(cardCode.replace(/'/g, "''"))}')?$select=CardCode,PaymentConditionCode`);
+			partnerCode = result.ok ? odataValue<{ PaymentConditionCode?: number }>(result.data)?.PaymentConditionCode ?? null : null;
 		}
-		this.doc().setProperty("/PaymentConditionCode", String(code));
-		await this.refreshPaymentConditionName(code);
+		const next = paymentConditionAfterPartyPick(form.TakerRole, pickedRole, form.PaymentConditionCode, partnerCode);
+		if (next.changed) {
+			this.doc().setProperty("/PaymentConditionCode", next.code ?? "");
+			await this.refreshPaymentConditionName(next.code);
+		}
 	}
 
 	onClearParty(_ev: Button$PressEvent, role: CtePartyRoleName): void {

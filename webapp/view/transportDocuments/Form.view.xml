@@ -37,7 +37,7 @@
 					</Select>
 					<Label text="Condição de pagamento"/>
 					<Input value="{doc>/PaymentConditionCode}" description="{ui>/paymentConditionName}" showValueHelp="true"
-						valueHelpOnly="true" valueHelpRequest=".openPaymentConditionsValueHelp" showClearIcon="true"
+						valueHelpOnly="true" valueHelpRequest=".openPaymentConditionsValueHelp" showClearIcon="true" liveChange=".onPaymentConditionLiveChange"
 						tooltip="Sugerida do cadastro do tomador; define as parcelas do título a receber."/>
 
 					<core:Title text="Participantes"/>

@@ -2,6 +2,7 @@ import {
 	CTE_CORRECTABLE_FIELDS,
 	batchSelectionError,
 	canEndorse,
+	paymentConditionAfterPartyPick,
 	endorsementStatusState,
 	endorsementStatusText,
 	buildCorrectionPayload,
@@ -283,4 +284,14 @@ QUnit.test("filtro Averbado e condição de pagamento no payload", function (ass
 	assert.strictEqual(buildTransportDocumentSavePayload(form).PaymentConditionCode, 3);
 	assert.strictEqual(buildTransportDocumentSavePayload(emptyTransportDocumentForm("0001", 1)).PaymentConditionCode, null);
 	assert.strictEqual(transportDocumentFormFrom({ PaymentConditionCode: 7 }).PaymentConditionCode, "7");
+});
+
+QUnit.test("condição de pagamento só segue o tomador", function (assert) {
+	// Tomador = Remetente (0): escolher o destinatário não mexe na condição.
+	assert.deepEqual(paymentConditionAfterPartyPick("0", "Recipient", "5", 9), { code: "5", changed: false });
+	assert.deepEqual(paymentConditionAfterPartyPick("0", "Sender", "5", 9), { code: "9", changed: true });
+	assert.deepEqual(paymentConditionAfterPartyPick("0", "Sender", "5", null), { code: null, changed: true });
+	// Troca do tomador (pickedRole null) sempre recalcula.
+	assert.deepEqual(paymentConditionAfterPartyPick("3", null, "5", 7), { code: "7", changed: true });
+	assert.deepEqual(paymentConditionAfterPartyPick("3", null, "", null), { code: null, changed: false });
 });

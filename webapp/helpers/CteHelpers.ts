@@ -448,3 +448,19 @@ export const batchSelectionError = (count: number): string => {
 	}
 	return count > CTE_BATCH_MAX ? `Selecione no máximo ${CTE_BATCH_MAX} CT-e por vez.` : "";
 };
+
+/**
+ * Condição de pagamento depois de escolher um participante (`pickedRole`) ou trocar o tomador
+ * (`pickedRole` null). Só o tomador manda: escolher outro papel mantém o código; tomador sem
+ * condição no cadastro limpa (não fica a do tomador anterior).
+ */
+export const paymentConditionAfterPartyPick = (
+	takerRole: number | string, pickedRole: string, currentCode: string, partnerCode: number | string,
+): { code: string; changed: boolean } => {
+	const current = currentCode ? String(currentCode) : null;
+	if (pickedRole !== null && PARTY_ROLES[Number(takerRole)] !== pickedRole) {
+		return { code: current, changed: false };
+	}
+	const code = partnerCode === null || partnerCode === undefined || partnerCode === "" ? null : String(partnerCode);
+	return { code, changed: code !== current };
+};
