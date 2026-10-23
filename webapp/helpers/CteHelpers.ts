@@ -394,3 +394,21 @@ export const cteActions = (status: string, number: number) => ({
 	discardNumber: (status === "Draft" || status === "Confirmed" || status === "Rejected") && number !== null && number !== undefined,
 	delete: status === "Draft" && (number === null || number === undefined),
 });
+
+const PARTY_ROLE_TEXT: Record<string, string> = {
+	Sender: "Remetente", Shipper: "Expedidor", Receiver: "Recebedor", Recipient: "Destinatário", OtherTaker: "Tomador (outros)",
+};
+
+/** Papel do participante pelo nome do enum CtePartyRole. */
+export const partyRoleText = (role: string): string => (role ? PARTY_ROLE_TEXT[role] ?? role : "");
+
+/** Desfecho da SEFAZ (StatusCode/Reason): 100 autorizado, 101/135 evento registrado, 102 inutilizado. */
+export const sefazOutcome = (status: { StatusCode: number; Reason: string }): { ok: boolean; text: string } => ({
+	ok: [100, 101, 102, 135, 136, 155].includes(Number(status?.StatusCode)),
+	text: `${status?.StatusCode ?? ""} - ${status?.Reason ?? ""}`,
+});
+
+/** $expand dos filhos com $select explícito (lição do sub-projeto 2). */
+export const TRANSPORT_DOCUMENT_EXPAND =
+	"$expand=Parties($select=Role,CardCode,Name),NfeKeys($select=AccessKey,Order)," +
+	"Quantities($select=UnitCode,MeasureType,Quantity),Components($select=Name,Value)";

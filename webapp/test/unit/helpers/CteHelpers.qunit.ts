@@ -13,6 +13,8 @@ import {
 	formatAccessKey,
 	localOffset,
 	partyNameByRole,
+	partyRoleText,
+	sefazOutcome,
 	quantityUnitText,
 	takerName,
 	takerRoleText,
@@ -230,4 +232,12 @@ QUnit.test("ações seguem as travas dos serviços", function (assert) {
 	assert.ok(cteActions("Authorized", 5).cancel);
 	assert.ok(cteActions("Cancelled", 5).dacte);
 	assert.notOk(cteActions("Cancelled", 5).correction);
+});
+
+QUnit.test("papel do participante e desfecho da SEFAZ", function (assert) {
+	assert.strictEqual(partyRoleText("Shipper"), "Expedidor");
+	assert.strictEqual(partyRoleText(""), "");
+	assert.deepEqual(sefazOutcome({ StatusCode: 100, Reason: "Autorizado o uso do CT-e" }),
+		{ ok: true, text: "100 - Autorizado o uso do CT-e" });
+	assert.notOk(sefazOutcome({ StatusCode: 539, Reason: "Duplicidade" }).ok);
 });

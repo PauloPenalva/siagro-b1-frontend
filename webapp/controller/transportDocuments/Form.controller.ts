@@ -11,17 +11,13 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { odataCollection, odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
 	CtePartyRoleName, QUANTITY_UNITS, TAKER_ROLES, TransportDocumentForm, TransportDocumentRead,
-	buildTransportDocumentSavePayload, emptyTransportDocumentForm, transportDocumentFormFrom,
+	TRANSPORT_DOCUMENT_EXPAND, buildTransportDocumentSavePayload, emptyTransportDocumentForm, transportDocumentFormFrom,
 } from "siagrob1/helpers/CteHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import CommonController from "../common/CommonController";
 
 type CteSettings = { DefaultSeries: number; DefaultQuantityUnit: string; SeriesList: { Series: number; Description: string }[] };
 
-/** $expand dos filhos com $select explícito (lição do sub-projeto 2). */
-export const TRANSPORT_DOCUMENT_EXPAND =
-	"$expand=Parties($select=Role,CardCode,Name),NfeKeys($select=AccessKey,Order)," +
-	"Quantities($select=UnitCode,MeasureType,Quantity),Components($select=Name,Value)";
 
 /**
  * Inclusão e edição do CT-e (página). Grava pela ação TransportDocumentsSave, que substitui os
