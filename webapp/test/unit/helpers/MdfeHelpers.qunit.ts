@@ -2,10 +2,12 @@ import {
 	MDFE_BATCH_MAX,
 	buildMdfeSettingsSavePayload,
 	cancellationJustificationError,
+	closeBatchItemsFrom,
 	closeBatchSelectionError,
 	cpfError,
 	mdfeEventOutcome,
 	notClosedRowFrom,
+	sefazStatusFrom,
 	buildTransportManifestSavePayload,
 	buildTransportManifestsFilter,
 	cargoTypeText,
@@ -281,4 +283,22 @@ QUnit.test("linha dos não encerrados: ações conforme a situação (Pascal ou 
 	const outside = notClosedRowFrom({ AccessKey: "3", OutsideSystem: true, StatusDiverges: false });
 	assert.ok(!outside.canClose && !outside.canConsult);
 	assert.strictEqual(outside.situation, "MDF-e fora do sistema");
+});
+
+QUnit.test("em processamento só consulta (o lote encerra só autorizado)", function (assert) {
+	const row = notClosedRowFrom({ AccessKey: "4", ManifestKey: "k4", Status: "Processing", StatusDiverges: false, OutsideSystem: false });
+	assert.ok(!row.canClose && row.canConsult);
+});
+
+QUnit.test("resultado do lote em camelCase ou PascalCase", function (assert) {
+	assert.deepEqual(closeBatchItemsFrom([{ key: "a", number: 7, success: true, message: "135 - ok" }, { Key: "b", Number: null, Success: false, Message: "x" }]), [
+		{ key: "a", number: 7, success: true, message: "135 - ok" },
+		{ key: "b", number: null, success: false, message: "x" },
+	]);
+	assert.deepEqual(closeBatchItemsFrom(null), []);
+});
+
+QUnit.test("retorno da SEFAZ em camelCase vira PascalCase", function (assert) {
+	assert.deepEqual(sefazStatusFrom({ statusCode: 100, reason: "ok" }), { StatusCode: 100, Reason: "ok" });
+	assert.deepEqual(sefazStatusFrom({ StatusCode: 135, Reason: "r" }), { StatusCode: 135, Reason: "r" });
 });

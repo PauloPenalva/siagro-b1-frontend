@@ -12,9 +12,10 @@ import { openAttachmentViewer } from "siagrob1/dialogs/AttachmentViewer";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { sefazOutcome } from "siagrob1/helpers/CteHelpers";
 import { localIsoDate } from "siagrob1/helpers/DateHelpers";
-import { odataCollection, odataValue, readErrorMessage, sendJson } from "siagrob1/helpers/FetchHelpers";
+import { downloadPostedFile } from "siagrob1/helpers/DownloadHelpers";
+import { odataCollection, odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
-	EligibleCteFilter, MDFE_STATUSES, NotClosedRow, closeBatchItemsFrom, closeBatchSelectionError, notClosedRowFrom, TransportManifestsFilter, buildTransportManifestsFilter, endorsementState, endorsementText, filterEligibleCtes,
+	EligibleCteFilter, MDFE_STATUSES, NotClosedRow, closeBatchItemsFrom, closeBatchSelectionError, notClosedRowFrom, sefazStatusFrom, TransportManifestsFilter, buildTransportManifestsFilter, endorsementState, endorsementText, filterEligibleCtes,
 	formatAccessKey, notEndorsedMessage,
 	mdfeActions, mdfeStatusState, mdfeStatusText, weightUnitText,
 } from "siagrob1/helpers/MdfeHelpers";
@@ -263,7 +264,7 @@ export default class Main extends BaseController {
 		this.closeResultDialog?.close();
 	}
 
-	/** POST que devolve um ZIP: fetch cru + blob, erro pelo readErrorMessage. */
+	/** POST que devolve um ZIP (downloadPostedFile). */
 	private async downloadZip(url: string, fileName: string): Promise<void> {
 		const keys = this.selectedKeys();
 		if (!keys) {
@@ -271,26 +272,7 @@ export default class Main extends BaseController {
 		}
 		this.setBusy(true);
 		try {
-			const response = await fetch(url, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ Keys: keys }),
-			});
-			if (!response.ok) {
-				MessageBox.error((await readErrorMessage(response)) || "Falha ao gerar o arquivo.");
-				return;
-			}
-			const blob = await response.blob();
-			const href = URL.createObjectURL(blob);
-			const link = document.createElement("a");
-			link.href = href;
-			link.download = fileName;
-			document.body.appendChild(link);
-			link.click();
-			link.remove();
-			URL.revokeObjectURL(href);
-		} catch {
-			MessageBox.error("Falha ao baixar o arquivo.");
+			await downloadPostedFile(url, { Keys: keys }, fileName);
 		} finally {
 			this.setBusy(false);
 		}
@@ -359,11 +341,12 @@ export default class Main extends BaseController {
 			if (!result.ok) {
 				MessageBox.error(result.message);
 			} else {
-				const data = odataValue<Record<string, unknown>>(result.data);
-				MessageToast.show(sefazOutcome({
-					StatusCode: (data?.StatusCode ?? data?.statusCode) as number,
-					Reason: (data?.Reason ?? data?.reason) as string,
-				}).text);
+				const outcome = sefazOutcome(sefazStatusFrom(odataValue<Record<string, unknown>>(result.data)));
+				if (outcome.ok) {
+					MessageToast.show(outcome.text);
+				} else {
+					MessageBox.error(outcome.text);
+				}
 			}
 		} finally {
 			this.setBusy(false);

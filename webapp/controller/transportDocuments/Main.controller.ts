@@ -5,7 +5,8 @@ import Context from "sap/ui/model/odata/v4/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import Table from "sap/ui/table/Table";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
-import { odataValue, readErrorMessage, sendJson } from "siagrob1/helpers/FetchHelpers";
+import { downloadPostedFile } from "siagrob1/helpers/DownloadHelpers";
+import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
 	TransportDocumentsFilter, batchSelectionError, buildTransportDocumentsFilter, cteActions, endorsementStatusState, endorsementStatusText, cteStatusState, cteStatusText,
 	formatAccessKey, partyNameByRole, takerName,
@@ -154,7 +155,7 @@ export default class Main extends BaseController {
 		await this.runBatch(ServerRoutes.transportDocumentsEndorseBatch, "Averbar");
 	}
 
-	/** POST que devolve um ZIP: fetch cru + blob, erro pelo readErrorMessage. */
+	/** POST que devolve um ZIP (downloadPostedFile). */
 	private async downloadZip(url: string, fileName: string): Promise<void> {
 		const keys = this.selectedKeys();
 		if (!keys) {
@@ -162,26 +163,7 @@ export default class Main extends BaseController {
 		}
 		this.setBusy(true);
 		try {
-			const response = await fetch(url, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ Keys: keys }),
-			});
-			if (!response.ok) {
-				MessageBox.error((await readErrorMessage(response)) || "Falha ao gerar o arquivo.");
-				return;
-			}
-			const blob = await response.blob();
-			const href = URL.createObjectURL(blob);
-			const link = document.createElement("a");
-			link.href = href;
-			link.download = fileName;
-			document.body.appendChild(link);
-			link.click();
-			link.remove();
-			URL.revokeObjectURL(href);
-		} catch {
-			MessageBox.error("Falha ao baixar o arquivo.");
+			await downloadPostedFile(url, { Keys: keys }, fileName);
 		} finally {
 			this.setBusy(false);
 		}

@@ -390,6 +390,7 @@ export const notClosedRowFrom = (raw: Record<string, unknown>): NotClosedRow => 
 	const diverges = prop<boolean>(raw, "StatusDiverges") === true;
 	const outside = prop<boolean>(raw, "OutsideSystem") === true;
 	const linked = !outside && !!manifestKey;
+	// O lote só encerra autorizado; em processamento só consulta.
 	const open = status === "Authorized" || status === "Processing";
 	return {
 		AccessKey: prop<string>(raw, "AccessKey") ?? "",
@@ -401,7 +402,7 @@ export const notClosedRowFrom = (raw: Record<string, unknown>): NotClosedRow => 
 		TractionPlate: prop<string>(raw, "TractionPlate") ?? "",
 		StatusDiverges: diverges,
 		OutsideSystem: outside,
-		canClose: linked && open && !diverges,
+		canClose: linked && status === "Authorized" && !diverges,
 		canConsult: linked && (open || diverges),
 		state: diverges ? "Warning" : "None",
 		situation: outside
@@ -420,3 +421,9 @@ export const closeBatchItemsFrom = (rows: Record<string, unknown>[]): CloseBatch
 		success: prop<boolean>(r, "Success") === true,
 		message: prop<string>(r, "Message") ?? "",
 	}));
+
+/** Retorno da SEFAZ (NfeServiceStatusDto) em PascalCase ou camelCase → forma do sefazOutcome. */
+export const sefazStatusFrom = (data: Record<string, unknown>): { StatusCode: number; Reason: string } => ({
+	StatusCode: prop<number>(data, "StatusCode"),
+	Reason: prop<string>(data, "Reason"),
+});

@@ -11,7 +11,7 @@ import { localIsoDate } from "siagrob1/helpers/DateHelpers";
 import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import { sefazOutcome } from "siagrob1/helpers/CteHelpers";
 import {
-	ManifestCteRow, TRANSPORT_MANIFEST_EXPAND, cancellationJustificationError, cargoTypeText, cpfError, mdfeEventOutcome, formatAccessKey, mdfeActions, mdfeStatusState, mdfeStatusText, weightUnitText,
+	ManifestCteRow, TRANSPORT_MANIFEST_EXPAND, cancellationJustificationError, cargoTypeText, cpfError, mdfeEventOutcome, sefazStatusFrom, formatAccessKey, mdfeActions, mdfeStatusState, mdfeStatusText, weightUnitText,
 } from "siagrob1/helpers/MdfeHelpers";
 import { STATE_CODES } from "siagrob1/helpers/StateCodes";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
@@ -126,7 +126,7 @@ export default class Detail extends BaseController {
 			if (!result.ok) {
 				MessageBox.error(result.message);
 			} else {
-				const outcome = sefazOutcome(odataValue<{ StatusCode: number; Reason: string }>(result.data));
+				const outcome = sefazOutcome(sefazStatusFrom(odataValue<Record<string, unknown>>(result.data)));
 				if (outcome.ok) {
 					MessageBox.success(outcome.text);
 				} else {
@@ -239,13 +239,16 @@ export default class Detail extends BaseController {
 	}
 
 	/** Evento do MDF-e: 135/136 sucesso; 132/101/151 aviso (já encerrado/cancelado na SEFAZ); resto erro. */
-	private async runEvent(url: string, body: object): Promise<void> {
+	private async runEvent(url: string, body: object, dialog: Dialog): Promise<void> {
 		this.setBusy(true);
 		try {
 			const result = await sendJson("POST", url, { Key: this.key, ...body });
 			if (!result.ok) {
+				// Recusa (400): o diálogo fica aberto para não perder o que foi digitado.
 				MessageBox.error(result.message);
+				return;
 			} else {
+				dialog.close();
 				const outcome = mdfeEventOutcome(odataValue<Record<string, unknown>>(result.data));
 				if (outcome.kind === "success") {
 					MessageBox.success(outcome.text);
@@ -278,8 +281,7 @@ export default class Detail extends BaseController {
 			MessageBox.error(error);
 			return;
 		}
-		this.cancelDialog.close();
-		await this.runEvent(ServerRoutes.transportManifestsCancel, { Justification: justification });
+		await this.runEvent(ServerRoutes.transportManifestsCancel, { Justification: justification }, this.cancelDialog);
 	}
 
 	async onIncludeDriver(): Promise<void> {
@@ -299,8 +301,8 @@ export default class Detail extends BaseController {
 			MessageBox.error(error);
 			return;
 		}
-		this.driverDialog.close();
-		await this.runEvent(ServerRoutes.transportManifestsIncludeDriver, { Cpf: str(data.Cpf).replace(/\D/g, ""), Name: str(data.Name).trim() });
+		await this.runEvent(ServerRoutes.transportManifestsIncludeDriver,
+			{ Cpf: str(data.Cpf).replace(/\D/g, ""), Name: str(data.Name).trim() }, this.driverDialog);
 	}
 }
 

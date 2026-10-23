@@ -20,7 +20,7 @@
 							<Text text="{= ${notClosed>Number} ? ${notClosed>Number} + ' / ' + ${notClosed>Series} : '' }"/>
 							<Text text="{notClosed>TractionPlate}"/>
 							<ObjectStatus text="{notClosed>situation}" state="{notClosed>state}"/>
-							<Text text="{ path: 'notClosed>AccessKey', formatter: '.formatAccessKey' }"/>
+							<Text text="{ path: 'notClosed>AccessKey', targetType: 'any', formatter: '.formatAccessKey' }"/>
 							<Text text="{notClosed>Protocol}"/>
 							<HBox justifyContent="End">
 								<Button text="Encerrar" type="Emphasized" press=".onNotClosedClose" visible="{notClosed>canClose}" class="sapUiTinyMarginEnd"/>
