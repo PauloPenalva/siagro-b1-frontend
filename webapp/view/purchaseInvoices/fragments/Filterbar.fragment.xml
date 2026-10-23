@@ -58,14 +58,13 @@
     <!-- Sem "Retornado": InvoiceStatus é o enum compartilhado com o documento de saída e tem o
          valor Returned, mas nenhum serviço do documento de ENTRADA o atribui — o ciclo é
          Pending → Confirmed → Pending (estorno) → Cancelled. Seria um filtro que nunca traz nada. -->
-    <fb:FilterGroupItem name="status" label="Situação" groupName="GroupStatus" visibleInFilterBar="true">
+    <fb:FilterGroupItem name="status" label="Status" groupName="GroupStatus" visibleInFilterBar="true">
       <fb:control>
-        <Select forceSelection="false" selectedKey="{filter>/InvoiceStatus}">
-          <core:ListItem key="" text="Todos"/>
-          <core:ListItem key="Pending" text="Pendente"/>
-          <core:ListItem key="Confirmed" text="Confirmado"/>
-          <core:ListItem key="Cancelled" text="Cancelado"/>
-        </Select>
+        <MultiComboBox selectedKeys="{filter>/InvoiceStatus}">
+          <core:Item key="Pending" text="Pendente"/>
+          <core:Item key="Confirmed" text="Confirmado"/>
+          <core:Item key="Cancelled" text="Cancelado"/>
+        </MultiComboBox>
       </fb:control>
     </fb:FilterGroupItem>
 

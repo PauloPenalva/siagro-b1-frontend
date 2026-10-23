@@ -102,7 +102,7 @@
 							<Text text="{ProducerInvoice/TaxDocumentNumber}" wrapping="false" />
 						</t:template>
 					</t:Column>
-					<t:Column label="Situação" width="10rem" hAlign="Center" sortProperty="InvoiceStatus">
+					<t:Column label="Status" width="10rem" hAlign="Center" sortProperty="InvoiceStatus">
 						<t:template>
 							<ObjectStatus
 								inverted="true"
