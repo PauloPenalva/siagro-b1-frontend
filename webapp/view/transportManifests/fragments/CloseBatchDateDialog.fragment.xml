@@ -1,0 +1,22 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<Dialog title="Encerrar MDF-e" contentWidth="30rem">
+		<content>
+			<MessageStrip text="{closeBatch>/message}" type="Warning" showIcon="true" class="sapUiSmallMargin"/>
+			<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanL="4" labelSpanM="4" columnsL="1" columnsM="1">
+				<f:content>
+					<Label text="Data do encerramento"/>
+					<DatePicker value="{ path: 'closeBatch>/ClosedOn', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+				</f:content>
+			</f:SimpleForm>
+		</content>
+		<beginButton>
+			<Button text="Encerrar" type="Emphasized" press=".onConfirmCloseBatch"/>
+		</beginButton>
+		<endButton>
+			<Button text="Voltar" press=".onCancelCloseBatch"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

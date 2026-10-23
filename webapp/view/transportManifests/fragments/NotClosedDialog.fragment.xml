@@ -1,0 +1,41 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+	<Dialog title="MDF-e não encerrados na SEFAZ" contentWidth="70rem" resizable="true">
+		<content>
+			<MessageStrip text="Consulta à SEFAZ pelo CNPJ da filial. Linha em aviso: a situação no sistema diverge da SEFAZ; consulte para atualizar."
+				type="Information" showIcon="true" class="sapUiSmallMargin"/>
+			<Table items="{notClosed>/rows}" class="sapUiSizeCompact" noDataText="Nenhum MDF-e não encerrado.">
+				<columns>
+					<Column width="8rem"><Text text="Número/Série"/></Column>
+					<Column width="7rem"><Text text="Placa"/></Column>
+					<Column width="16rem"><Text text="Situação"/></Column>
+					<Column><Text text="Chave"/></Column>
+					<Column width="10rem"><Text text="Protocolo"/></Column>
+					<Column width="12rem" hAlign="End"><Text text="Ações"/></Column>
+				</columns>
+				<items>
+					<ColumnListItem highlight="{notClosed>state}">
+						<cells>
+							<Text text="{= ${notClosed>Number} ? ${notClosed>Number} + ' / ' + ${notClosed>Series} : '' }"/>
+							<Text text="{notClosed>TractionPlate}"/>
+							<ObjectStatus text="{notClosed>situation}" state="{notClosed>state}"/>
+							<Text text="{ path: 'notClosed>AccessKey', formatter: '.formatAccessKey' }"/>
+							<Text text="{notClosed>Protocol}"/>
+							<HBox justifyContent="End">
+								<Button text="Encerrar" type="Emphasized" press=".onNotClosedClose" visible="{notClosed>canClose}" class="sapUiTinyMarginEnd"/>
+								<Button text="Consultar" press=".onNotClosedConsult" visible="{notClosed>canConsult}"/>
+							</HBox>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</content>
+		<beginButton>
+			<Button text="Atualizar" icon="sap-icon://refresh" press=".onReloadNotClosed"/>
+		</beginButton>
+		<endButton>
+			<Button text="Fechar" press=".onCloseNotClosed"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

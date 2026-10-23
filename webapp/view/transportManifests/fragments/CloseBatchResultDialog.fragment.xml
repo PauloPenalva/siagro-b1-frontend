@@ -1,0 +1,28 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+	<Dialog title="Resultado do encerramento" contentWidth="40rem">
+		<content>
+			<Table items="{closeResult>/items}" class="sapUiSizeCompact">
+				<columns>
+					<Column width="8rem"><Text text="MDF-e"/></Column>
+					<Column width="8rem"><Text text="Resultado"/></Column>
+					<Column><Text text="Mensagem"/></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Text text="{= ${closeResult>number} ? ${closeResult>number} : '(sem número)' }"/>
+							<ObjectStatus text="{= ${closeResult>success} ? 'Encerrado' : 'Falhou' }"
+								state="{= ${closeResult>success} ? 'Success' : 'Error' }"/>
+							<Text text="{closeResult>message}"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</content>
+		<endButton>
+			<Button text="Fechar" press=".onCloseBatchResult"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

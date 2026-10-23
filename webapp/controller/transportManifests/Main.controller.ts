@@ -1,4 +1,6 @@
+import { Button$PressEvent } from "sap/m/Button";
 import Dialog from "sap/m/Dialog";
+import MessageToast from "sap/m/MessageToast";
 import MessageBox from "sap/m/MessageBox";
 import Table from "sap/m/Table";
 import Fragment from "sap/ui/core/Fragment";
@@ -8,9 +10,11 @@ import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import GridTable from "sap/ui/table/Table";
 import { openAttachmentViewer } from "siagrob1/dialogs/AttachmentViewer";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
-import { odataCollection, odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
+import { sefazOutcome } from "siagrob1/helpers/CteHelpers";
+import { localIsoDate } from "siagrob1/helpers/DateHelpers";
+import { odataCollection, odataValue, readErrorMessage, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
-	EligibleCteFilter, MDFE_STATUSES, TransportManifestsFilter, buildTransportManifestsFilter, endorsementState, endorsementText, filterEligibleCtes,
+	EligibleCteFilter, MDFE_STATUSES, NotClosedRow, closeBatchItemsFrom, closeBatchSelectionError, notClosedRowFrom, TransportManifestsFilter, buildTransportManifestsFilter, endorsementState, endorsementText, filterEligibleCtes,
 	formatAccessKey, notEndorsedMessage,
 	mdfeActions, mdfeStatusState, mdfeStatusText, weightUnitText,
 } from "siagrob1/helpers/MdfeHelpers";
@@ -18,6 +22,9 @@ import ServerRoutes from "siagrob1/model/ServerRoutes";
 import BaseController from "../BaseController";
 
 const SELECT_CTES_FRAGMENT = "siagrob1.view.transportManifests.fragments.SelectCtesDialog";
+const CLOSE_BATCH_FRAGMENT = "siagrob1.view.transportManifests.fragments.CloseBatchDateDialog";
+const CLOSE_RESULT_FRAGMENT = "siagrob1.view.transportManifests.fragments.CloseBatchResultDialog";
+const NOT_CLOSED_FRAGMENT = "siagrob1.view.transportManifests.fragments.NotClosedDialog";
 
 type EligibleCte = { Key: string; Number?: number; TractionPlate?: string; IssuedAt?: string; EndorsementStatus?: string };
 
@@ -38,13 +45,22 @@ export default class Main extends BaseController {
 	private selectDialog: Dialog;
 	private eligibleAll: EligibleCte[] = [];
 	private branchCode = "";
+	private closeBatchDialog: Dialog;
+	private closeResultDialog: Dialog;
+	private notClosedDialog: Dialog;
+	private closeKeys: string[] = [];
 
 	onInit(): void {
 		this.getView().setModel(new JSONModel({}), "filter");
 		this.getView().setModel(new JSONModel(MDFE_STATUSES), "statuses");
 		this.getView().setModel(new JSONModel({ rows: [], filter: {} }), "eligible");
+		this.getView().setModel(new JSONModel({}), "closeBatch");
+		this.getView().setModel(new JSONModel({ items: [] }), "closeResult");
+		this.getView().setModel(new JSONModel({ rows: [] }), "notClosed");
 		this.getRouter().getRoute("transportManifests").attachPatternMatched(() => {
 			void this.refreshStandaloneFlag();
+			// Diálogo deixado aberto bloquearia os cliques ao voltar à lista.
+			[this.selectDialog, this.closeBatchDialog, this.closeResultDialog, this.notClosedDialog].forEach((d) => d?.close());
 			this.applyFilters();
 		});
 	}
@@ -175,5 +191,184 @@ export default class Main extends BaseController {
 		} finally {
 			this.setBusy(false);
 		}
+	}
+
+	// ---------- entrega B: lote, ZIP, não encerrados ----------
+
+	/** Chaves das linhas marcadas, ou null (com aviso) fora de 1 a 50. */
+	private selectedKeys(): string[] {
+		const table = this.byId("tableTransportManifests") as GridTable;
+		const keys = table.getSelectedIndices()
+			.map((i) => table.getContextByIndex(i)?.getProperty("Key") as string)
+			.filter(Boolean);
+		const error = closeBatchSelectionError(keys.length);
+		if (error) {
+			MessageBox.alert(error);
+			return null;
+		}
+		return keys;
+	}
+
+	async onCloseBatch(): Promise<void> {
+		const keys = this.selectedKeys();
+		if (keys) {
+			await this.openCloseBatch(keys);
+		}
+	}
+
+	/** Data local de hoje (nunca toISOString: à noite viraria o dia seguinte em UTC). */
+	private async openCloseBatch(keys: string[]): Promise<void> {
+		this.closeKeys = keys;
+		(this.getView().getModel("closeBatch") as JSONModel).setData({
+			ClosedOn: localIsoDate(new Date()),
+			message: `Encerrar ${keys.length} MDF-e na SEFAZ? O encerramento não pode ser desfeito. UF e município vêm da descarga de cada MDF-e.`,
+		});
+		this.closeBatchDialog ??= await DialogHelper.createDialog(this, CLOSE_BATCH_FRAGMENT);
+		this.closeBatchDialog.open();
+	}
+
+	onCancelCloseBatch(): void {
+		this.closeBatchDialog?.close();
+	}
+
+	async onConfirmCloseBatch(): Promise<void> {
+		const closedOn = (this.getView().getModel("closeBatch") as JSONModel).getProperty("/ClosedOn") as string;
+		this.closeBatchDialog.close();
+		this.setBusy(true);
+		try {
+			const body: { Keys: string[]; ClosedOn?: string } = { Keys: this.closeKeys };
+			if (closedOn) {
+				body.ClosedOn = closedOn;
+			}
+			const result = await sendJson("POST", ServerRoutes.transportManifestsCloseBatch, body);
+			if (!result.ok) {
+				MessageBox.error(result.message);
+				return;
+			}
+			const items = closeBatchItemsFrom(odataCollection<Record<string, unknown>>(result.data));
+			(this.getView().getModel("closeResult") as JSONModel).setData({ items });
+			this.closeResultDialog ??= await DialogHelper.createDialog(this, CLOSE_RESULT_FRAGMENT);
+			this.closeResultDialog.open();
+		} finally {
+			this.setBusy(false);
+		}
+		// Refresh explícito: o "Iniciar" da FilterBar não refaz a busca com os mesmos filtros.
+		this.binding()?.refresh();
+		if (this.notClosedDialog?.isOpen()) {
+			await this.loadNotClosed();
+		}
+	}
+
+	onCloseBatchResult(): void {
+		this.closeResultDialog?.close();
+	}
+
+	/** POST que devolve um ZIP: fetch cru + blob, erro pelo readErrorMessage. */
+	private async downloadZip(url: string, fileName: string): Promise<void> {
+		const keys = this.selectedKeys();
+		if (!keys) {
+			return;
+		}
+		this.setBusy(true);
+		try {
+			const response = await fetch(url, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ Keys: keys }),
+			});
+			if (!response.ok) {
+				MessageBox.error((await readErrorMessage(response)) || "Falha ao gerar o arquivo.");
+				return;
+			}
+			const blob = await response.blob();
+			const href = URL.createObjectURL(blob);
+			const link = document.createElement("a");
+			link.href = href;
+			link.download = fileName;
+			document.body.appendChild(link);
+			link.click();
+			link.remove();
+			URL.revokeObjectURL(href);
+		} catch {
+			MessageBox.error("Falha ao baixar o arquivo.");
+		} finally {
+			this.setBusy(false);
+		}
+	}
+
+	async onDownloadXmlBatch(): Promise<void> {
+		await this.downloadZip(ServerRoutes.transportManifestsXmlZip, "xml-mdfe.zip");
+	}
+
+	async onDownloadDamdfeBatch(): Promise<void> {
+		await this.downloadZip(ServerRoutes.damdfeBatchReport, "damdfe-mdfe.zip");
+	}
+
+	private async loadNotClosed(): Promise<boolean> {
+		this.setBusy(true);
+		try {
+			const result = await sendJson("GET", `${ServerRoutes.mdfeNotClosed}(BranchCode='${encodeURIComponent(this.branchCode.replace(/'/g, "''"))}')`);
+			if (!result.ok) {
+				MessageBox.error(result.message);
+				return false;
+			}
+			(this.getView().getModel("notClosed") as JSONModel).setData({
+				rows: odataCollection<Record<string, unknown>>(result.data).map(notClosedRowFrom),
+			});
+			return true;
+		} finally {
+			this.setBusy(false);
+		}
+	}
+
+	async onNotClosed(): Promise<void> {
+		const branch = await this.getBranchInfo();
+		this.branchCode = branch?.code ?? "";
+		if (!this.branchCode) {
+			MessageBox.error("Escolha a filial da sessão antes de consultar os MDF-e não encerrados.");
+			return;
+		}
+		if (!(await this.loadNotClosed())) {
+			return;
+		}
+		this.notClosedDialog ??= await DialogHelper.createDialog(this, NOT_CLOSED_FRAGMENT);
+		this.notClosedDialog.open();
+	}
+
+	async onReloadNotClosed(): Promise<void> {
+		await this.loadNotClosed();
+	}
+
+	onCloseNotClosed(): void {
+		this.notClosedDialog?.close();
+	}
+
+	private notClosedRow(ev: Button$PressEvent): NotClosedRow {
+		return ev.getSource().getBindingContext("notClosed").getObject() as NotClosedRow;
+	}
+
+	async onNotClosedClose(ev: Button$PressEvent): Promise<void> {
+		await this.openCloseBatch([this.notClosedRow(ev).ManifestKey]);
+	}
+
+	async onNotClosedConsult(ev: Button$PressEvent): Promise<void> {
+		const row = this.notClosedRow(ev);
+		this.setBusy(true);
+		try {
+			const result = await sendJson("POST", ServerRoutes.transportManifestsConsult, { Key: row.ManifestKey });
+			if (!result.ok) {
+				MessageBox.error(result.message);
+			} else {
+				const data = odataValue<Record<string, unknown>>(result.data);
+				MessageToast.show(sefazOutcome({
+					StatusCode: (data?.StatusCode ?? data?.statusCode) as number,
+					Reason: (data?.Reason ?? data?.reason) as string,
+				}).text);
+			}
+		} finally {
+			this.setBusy(false);
+		}
+		this.binding()?.refresh();
+		await this.loadNotClosed();
 	}
 }

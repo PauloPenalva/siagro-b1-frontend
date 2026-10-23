@@ -61,7 +61,7 @@
 			<t:Table
 				id="tableTransportManifests"
 				busyIndicatorDelay="0"
-				selectionMode="Single"
+				selectionMode="MultiToggle"
 				selectionBehavior="Row"
 				class="sapUiSizeCondensed"
 				visibleRowCountMode="Auto"
@@ -80,7 +80,12 @@
 						<ToolbarSpacer/>
 						<Button type="Emphasized" icon="sap-icon://add" text="Incluir" press=".onCreate"/>
 						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
-						<Button type="Transparent" icon="sap-icon://pdf-attachment" text="Baixar DAMDFE" press=".onDamdfe"/>
+						<Button type="Transparent" icon="sap-icon://pdf-attachment" text="Ver DAMDFE" press=".onDamdfe"/>
+						<ToolbarSeparator/>
+						<Button type="Transparent" icon="sap-icon://complete" text="Encerrar selecionados" press=".onCloseBatch"/>
+						<Button type="Transparent" icon="sap-icon://download" text="Baixar XML" tooltip="ZIP com o XML dos MDF-e autorizados selecionados" press=".onDownloadXmlBatch"/>
+						<Button type="Transparent" icon="sap-icon://attachment-zip-file" text="Baixar DAMDFE" tooltip="ZIP com o DAMDFE dos MDF-e autorizados selecionados" press=".onDownloadDamdfeBatch"/>
+						<Button type="Transparent" icon="sap-icon://search" text="Consultar não encerrados" press=".onNotClosed"/>
 						<ToolbarSeparator/>
 						<Button type="Transparent" icon="sap-icon://refresh" text="Atualizar" press=".onRefresh"/>
 					</OverflowToolbar>
