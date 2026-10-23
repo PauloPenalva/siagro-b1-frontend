@@ -1,0 +1,86 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<VBox>
+		<MessageStrip text="Escolha a filial para ver a configuração do CT-e." type="Information" showIcon="true"
+			class="sapUiSmallMargin" visible="{= ${cte>/loaded} !== true }" />
+		<MessageStrip text="Ambiente de homologação — CT-e sem valor fiscal. O certificado é o da NF-e da filial."
+			type="Warning" showIcon="true" class="sapUiSmallMargin"
+			visible="{= ${cte>/loaded} === true &amp;&amp; ${cte>/Environment} === 'Homologation' }" />
+
+		<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanL="3" labelSpanM="4" columnsL="2" columnsM="1"
+			visible="{= ${cte>/loaded} === true }">
+			<f:content>
+				<core:Title text="CT-e (modelo 57)" />
+				<Label text="Emite CT-e" />
+				<CheckBox selected="{cte>/Enabled}" />
+				<Label text="Ambiente" />
+				<Select selectedKey="{cte>/Environment}">
+					<core:Item key="Homologation" text="Homologação" />
+					<core:Item key="Production" text="Produção" />
+				</Select>
+				<Label text="Unidade padrão da quantidade" />
+				<Select selectedKey="{cte>/DefaultQuantityUnit}" items="{cteUnits>/}">
+					<core:Item key="{cteUnits>key}" text="{cteUnits>text}" />
+				</Select>
+			</f:content>
+		</f:SimpleForm>
+
+		<Table items="{cte>/SeriesList}" width="auto" class="sapUiSmallMarginBeginEnd" visible="{= ${cte>/loaded} === true }">
+			<headerToolbar>
+				<OverflowToolbar>
+					<Title text="Séries do CT-e" />
+					<ToolbarSpacer />
+					<Button text="Adicionar série" icon="sap-icon://add" press=".onAddCteSeries" />
+				</OverflowToolbar>
+			</headerToolbar>
+			<columns>
+				<Column width="8rem"><Text text="Série" /></Column>
+				<Column><Text text="Descrição" /></Column>
+				<Column width="12rem"><Text text="Próximo número" /></Column>
+				<Column width="6rem" hAlign="Center"><Text text="Padrão" /></Column>
+				<Column width="4rem" hAlign="Center"><Text text="" /></Column>
+			</columns>
+			<items>
+				<ColumnListItem>
+					<cells>
+						<Input value="{cte>Series}" type="Number" enabled="{cte>isNew}" />
+						<Input value="{cte>Description}" maxLength="60" />
+						<Input value="{cte>NextNumber}" type="Number" />
+						<RadioButton groupName="cteDefaultSeries"
+							selected="{= Number(${cte>Series}) === Number(${cte>/DefaultSeries}) }"
+							select=".onSelectDefaultCteSeries" />
+						<Button icon="sap-icon://delete" type="Transparent" press=".onDeleteCteSeries"
+							enabled="{= !${cte>IsUsed} &amp;&amp; Number(${cte>Series}) !== Number(${cte>/DefaultSeries}) }" />
+					</cells>
+				</ColumnListItem>
+			</items>
+		</Table>
+
+		<Table items="{cte>/NumbersToVoid}" width="auto" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop"
+			visible="{= ${cte>/loaded} === true }" noDataText="Nenhum número pendente de inutilização.">
+			<headerToolbar>
+				<OverflowToolbar>
+					<Title text="Números a inutilizar" />
+				</OverflowToolbar>
+			</headerToolbar>
+			<columns>
+				<Column width="6rem"><Text text="Série" /></Column>
+				<Column width="8rem"><Text text="Número" /></Column>
+				<Column><Text text="Motivo do descarte" /></Column>
+				<Column width="9rem" hAlign="End"><Text text="" /></Column>
+			</columns>
+			<items>
+				<ColumnListItem>
+					<cells>
+						<Text text="{cte>Series}" />
+						<Text text="{cte>Number}" />
+						<Text text="{cte>Reason}" />
+						<Button text="Inutilizar" icon="sap-icon://locked" press=".onVoidCteNumber" />
+					</cells>
+				</ColumnListItem>
+			</items>
+		</Table>
+	</VBox>
+</core:FragmentDefinition>

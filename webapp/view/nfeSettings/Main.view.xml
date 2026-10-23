@@ -8,6 +8,20 @@
 
 	<Page title="Configuração da NF-e" busy="{ui>/busy}" busyIndicatorDelay="0">
 		<content>
+			<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanL="3" labelSpanM="4" columnsL="2" columnsM="1">
+				<f:content>
+					<Label text="Filial" required="true" />
+					<Input
+						id="nfeSettingsBranch"
+						value="{nfe>/BranchCode}"
+						showValueHelp="true"
+						valueHelpOnly="true"
+						valueHelpRequest=".onPickBranch" />
+				</f:content>
+			</f:SimpleForm>
+			<IconTabBar selectedKey="{tab>/key}" expandable="false" class="sapUiResponsiveContentPadding">
+				<items>
+					<IconTabFilter key="nfe" text="NF-e">
 			<MessageStrip
 				text="O servidor não tem a chave Nfe:CertificateKey: o certificado não pode ser enviado nem a NF-e emitida."
 				type="Error" showIcon="true" class="sapUiSmallMargin"
@@ -19,15 +33,7 @@
 
 			<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanL="3" labelSpanM="4" columnsL="2" columnsM="1">
 				<f:content>
-					<core:Title text="Filial" />
-					<Label text="Filial" required="true" />
-					<Input
-						id="nfeSettingsBranch"
-						value="{nfe>/BranchCode}"
-						showValueHelp="true"
-						valueHelpOnly="true"
-						valueHelpRequest=".onPickBranch" />
-
+					<core:Title text="NF-e" />
 					<Label text="Ambiente" />
 					<Select selectedKey="{nfe>/Environment}" enabled="{= ${nfe>/loaded} === true }">
 						<core:Item key="Homologation" text="Homologação" />
@@ -74,16 +80,24 @@
 					</ColumnListItem>
 				</items>
 			</Table>
+					</IconTabFilter>
+					<IconTabFilter key="cte" text="CT-e">
+						<core:Fragment fragmentName="siagrob1.view.nfeSettings.fragments.CteTab" type="XML" />
+					</IconTabFilter>
+				</items>
+			</IconTabBar>
 		</content>
 		<footer>
 			<OverflowToolbar>
 				<Button text="Testar comunicação" icon="sap-icon://connected" press=".onTestConnection"
-					enabled="{= ${nfe>/HasCertificate} === true }" />
+					enabled="{= ${nfe>/HasCertificate} === true }" visible="{= ${tab>/key} === 'nfe' }" />
 				<ToolbarSpacer />
 				<Button text="Enviar certificado" icon="sap-icon://upload" press=".onOpenCertificate"
-					enabled="{= ${nfe>/loaded} === true }" />
+					enabled="{= ${nfe>/loaded} === true }" visible="{= ${tab>/key} === 'nfe' }" />
 				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave"
-					enabled="{= ${nfe>/loaded} === true }" />
+					enabled="{= ${nfe>/loaded} === true }" visible="{= ${tab>/key} === 'nfe' }" />
+				<Button text="Salvar CT-e" type="Emphasized" icon="sap-icon://save" press=".onSaveCte"
+					enabled="{= ${cte>/loaded} === true }" visible="{= ${tab>/key} === 'cte' }" />
 			</OverflowToolbar>
 		</footer>
 	</Page>

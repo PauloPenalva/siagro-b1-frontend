@@ -15,6 +15,8 @@ import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
   certificateDaysToExpire, certificateState, environmentCode, readFileAsBase64,
 } from "siagrob1/helpers/NfeHelpers";
+import { CteSeriesRow, CteSettingsForm, QUANTITY_UNITS, buildCteSettingsSavePayload, sefazOutcome } from "siagrob1/helpers/CteHelpers";
+import { openNfeCancelDialog } from "siagrob1/dialogs/NfeCancelDialog";
 import { NfeSeries, NfeSeriesRow, buildSeriesSavePayload, followDefaultSeries, hasBlankSeriesRow } from "siagrob1/helpers/NfeSeriesHelpers";
 
 const CERTIFICATE_FRAGMENT = "siagrob1.view.nfeSettings.fragments.CertificateDialog";
@@ -44,7 +46,13 @@ export default class Main extends CommonController {
 
   onInit(): void {
     this.getView().setModel(new JSONModel({ loaded: false }), "nfe");
-    this.getRouter().getRoute("nfeSettings").attachPatternMatched(() => this.reset());
+    this.getView().setModel(new JSONModel({ loaded: false }), "cte");
+    this.getView().setModel(new JSONModel({ key: "nfe" }), "tab");
+    this.getView().setModel(new JSONModel(QUANTITY_UNITS), "cteUnits");
+    this.getRouter().getRoute("nfeSettings").attachPatternMatched(() => {
+      void this.refreshStandaloneFlag();
+      this.reset();
+    });
   }
 
   private model(): JSONModel {
@@ -53,6 +61,11 @@ export default class Main extends CommonController {
 
   private reset() {
     this.model().setData({ loaded: false });
+    this.cte().setData({ loaded: false });
+  }
+
+  private cte(): JSONModel {
+    return this.getView().getModel("cte") as JSONModel;
   }
 
   async onPickBranch(ev: Input$ValueHelpRequestEvent) {
@@ -67,7 +80,9 @@ export default class Main extends CommonController {
     ev.getSource().setValue(code);
     // Zera as configurações da filial anterior: se a leitura falhar, nada dela pode ser salvo na nova.
     this.model().setData({ loaded: false, BranchCode: code });
+    this.cte().setData({ loaded: false, BranchCode: code });
     await this.load(code);
+    await this.loadCte(code);
   }
 
   private async load(branchCode: string) {
@@ -235,6 +250,110 @@ export default class Main extends CommonController {
       } else {
         MessageBox.warning(text);
       }
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  // ---------- CT-e (modelo 57) ----------
+
+  private async loadCte(branchCode: string) {
+    this.setBusy(true);
+    try {
+      const result = await sendJson("GET", `${ServerRoutes.branchCteSettingsGet}(BranchCode='${encodeURIComponent(branchCode)}')`);
+      if (!result.ok) {
+        this.cte().setData({ loaded: false, BranchCode: branchCode });
+        MessageBox.error(result.message);
+        return;
+      }
+      this.showCte(odataValue<CteSettingsForm>(result.data));
+      await this.loadCteNumbersToVoid(branchCode);
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  private showCte(settings: CteSettingsForm) {
+    this.cte().setData({
+      ...settings,
+      SeriesList: (settings.SeriesList ?? []).map((row) => ({ ...row, isNew: false })),
+      NumbersToVoid: (this.cte().getProperty("/NumbersToVoid") as unknown[]) ?? [],
+      loaded: true,
+    });
+  }
+
+  private async loadCteNumbersToVoid(branchCode: string) {
+    const filter = encodeURIComponent(`BranchCode eq '${branchCode.replace(/'/g, "''")}' and VoidedAt eq null`);
+    const result = await sendJson("GET", `${ServerRoutes.cteNumbersToVoid}?$filter=${filter}&$orderby=Series,Number`);
+    this.cte().setProperty("/NumbersToVoid", result.ok ? odataValue<unknown[]>(result.data) ?? [] : []);
+  }
+
+  onAddCteSeries() {
+    const row: CteSeriesRow = { Series: "", Description: "", NextNumber: 1, IsUsed: false, isNew: true };
+    this.cte().setProperty("/SeriesList", [...(this.cte().getProperty("/SeriesList") as CteSeriesRow[]), row]);
+  }
+
+  onDeleteCteSeries(ev: Button$PressEvent) {
+    const row = ev.getSource().getBindingContext("cte").getObject() as CteSeriesRow;
+    this.cte().setProperty("/SeriesList", (this.cte().getProperty("/SeriesList") as CteSeriesRow[]).filter((r) => r !== row));
+  }
+
+  onSelectDefaultCteSeries(ev: RadioButton$SelectEvent) {
+    if (!ev.getParameter("selected")) {
+      return;
+    }
+    const row = ev.getSource().getBindingContext("cte").getObject() as CteSeriesRow;
+    this.cte().setProperty("/DefaultSeries", Number(row.Series));
+  }
+
+  async onSaveCte() {
+    const data = this.cte().getData() as CteSettingsForm;
+    if (hasBlankSeriesRow((data.SeriesList ?? []) as unknown as NfeSeriesRow[])) {
+      MessageBox.error("Informe o número da série e o próximo número em todas as linhas.");
+      return;
+    }
+    this.setBusy(true);
+    try {
+      const result = await sendJson("POST", ServerRoutes.branchCteSettingsSave, buildCteSettingsSavePayload(data));
+      if (!result.ok) {
+        MessageBox.error(result.message);
+        return;
+      }
+      this.showCte(odataValue<CteSettingsForm>(result.data));
+      MessageToast.show("Configuração do CT-e gravada.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  /** Inutiliza na SEFAZ o número descartado da linha (faixa de um número só). */
+  async onVoidCteNumber(ev: Button$PressEvent) {
+    const row = ev.getSource().getBindingContext("cte").getObject() as { Series: number; Number: number };
+    const justification = await openNfeCancelDialog(this.getView(), {
+      title: `Inutilizar CT-e nº ${row.Number} série ${row.Series}`,
+      confirm: "Inutilizar",
+      warning: "A inutilização é enviada à SEFAZ e não pode ser desfeita: o número não poderá mais ser usado.",
+    });
+    if (justification === null) {
+      return;
+    }
+    const branchCode = this.cte().getProperty("/BranchCode") as string;
+    this.setBusy(true);
+    try {
+      const result = await sendJson("POST", ServerRoutes.cteNumbersVoid, {
+        BranchCode: branchCode, Series: row.Series, From: row.Number, To: row.Number, Justification: justification,
+      });
+      if (!result.ok) {
+        MessageBox.error(result.message);
+        return;
+      }
+      const outcome = sefazOutcome(odataValue<{ StatusCode: number; Reason: string }>(result.data));
+      if (outcome.ok) {
+        MessageBox.success(outcome.text);
+      } else {
+        MessageBox.warning(outcome.text);
+      }
+      await this.loadCteNumbersToVoid(branchCode);
     } finally {
       this.setBusy(false);
     }
