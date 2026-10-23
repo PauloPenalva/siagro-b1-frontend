@@ -6,7 +6,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import { odataCollection, odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
 	ManifestCteRow, ManifestPaymentForm, TRANSPORT_MANIFEST_EXPAND, TransportManifestForm, WEIGHT_UNITS, buildTransportManifestSavePayload,
-	cargoTypeText, ciotError, ciotResponsibleError, formatAccessKey, ncmError, groupCtesByUnloadingCity, mdfeActions, transportManifestFormFrom,
+	cargoTypeText, ciotResponsibleSaveError, ciotSaveError, formatAccessKey, ncmSaveError, groupCtesByUnloadingCity, mdfeActions, transportManifestFormFrom,
 } from "siagrob1/helpers/MdfeHelpers";
 import { STATE_CODES } from "siagrob1/helpers/StateCodes";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
@@ -133,8 +133,8 @@ export default class Form extends BaseController {
 		if (!form.WeightUnit) {
 			return "Informe a unidade do peso.";
 		}
-		const cteCount = Number(this.head().getProperty("/CteCount") ?? 0);
-		return ncmError(form.Ncm, cteCount) ?? ciotError(form.CiotNumber) ?? ciotResponsibleError(form.CiotResponsibleTaxId);
+		// Vazio não bloqueia a gravação (o servidor avisa e o Confirmar exige); só valor digitado malformado bloqueia.
+		return ncmSaveError(form.Ncm) ?? ciotSaveError(form.CiotNumber) ?? ciotResponsibleSaveError(form.CiotResponsibleTaxId);
 	}
 
 	async onSave(): Promise<void> {

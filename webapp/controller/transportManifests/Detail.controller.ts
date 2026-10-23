@@ -11,7 +11,7 @@ import { localIsoDate } from "siagrob1/helpers/DateHelpers";
 import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import { sefazOutcome } from "siagrob1/helpers/CteHelpers";
 import {
-	ManifestCteRow, TRANSPORT_MANIFEST_EXPAND, cancellationJustificationError, cargoTypeText, cpfError, mdfeEventOutcome, sefazStatusFrom, formatAccessKey, mdfeActions, mdfeStatusState, mdfeStatusText, weightUnitText,
+	ManifestCteRow, TRANSPORT_MANIFEST_EXPAND, cancellationJustificationError, cargoTypeText, cpfError, mdfeEventOutcome, mdfeEventTypeText, sefazStatusFrom, formatAccessKey, mdfeActions, mdfeStatusState, mdfeStatusText, weightUnitText,
 } from "siagrob1/helpers/MdfeHelpers";
 import { STATE_CODES } from "siagrob1/helpers/StateCodes";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
@@ -36,6 +36,7 @@ const byLine = <T extends { LineNum?: number }>(rows: T[]) => [...(rows ?? [])].
  */
 export default class Detail extends BaseController {
 	mdfeStatusText = mdfeStatusText;
+	mdfeEventTypeText = mdfeEventTypeText;
 	mdfeStatusState = mdfeStatusState;
 	formatAccessKey = formatAccessKey;
 	cargoTypeText = cargoTypeText;

@@ -77,6 +77,18 @@ export const ncmError = (text: string, cteCount: number): string => {
 	return length === 8 ? null : "Carga lotação: informe o NCM do produto predominante (8 dígitos).";
 };
 
+/** Validação da GRAVAÇÃO: vazio não bloqueia (o servidor avisa; o Confirmar é que exige); valor digitado malformado bloqueia. */
+export const ciotSaveError = (text: string): string => ((text ?? "").trim() ? ciotError(text) : null);
+export const ciotResponsibleSaveError = (text: string): string => ((text ?? "").trim() ? ciotResponsibleError(text) : null);
+export const ncmSaveError = (text: string): string => ((text ?? "").replace(/\D/g, "") ? ncmError(text, 2) : null);
+
+const EVENT_TYPE_TEXT: Record<string, string> = {
+	Closing: "Encerramento", Cancellation: "Cancelamento", DriverInclusion: "Inclusão de condutor",
+	"0": "Encerramento", "1": "Cancelamento", "2": "Inclusão de condutor",
+};
+/** Tipo do evento (MdfeEventType) em pt-BR. */
+export const mdfeEventTypeText = (type: string | number): string => (type === null || type === undefined ? "" : EVENT_TYPE_TEXT[String(type)] ?? String(type));
+
 /** Vínculo do CT-e com o MDF-e (função TransportDocumentsManifest). */
 export type CteManifestLink = { ManifestKey: string; Number: number; Series: number; Status: string };
 export const manifestLinkText = (link: CteManifestLink): string =>

@@ -12,6 +12,10 @@ import {
 	buildTransportManifestsFilter,
 	cargoTypeText,
 	ciotError,
+	ciotResponsibleSaveError,
+	ciotSaveError,
+	mdfeEventTypeText,
+	ncmSaveError,
 	ciotResponsibleError,
 	endorsementText,
 	filterEligibleCtes,
@@ -92,6 +96,28 @@ QUnit.test("NCM: obrigatório com um único CT-e (8 dígitos); com vários, só 
 	assert.strictEqual(ncmError("1201.90.00", 1), null);
 	assert.strictEqual(ncmError("", 2), null);
 	assert.ok(ncmError("1201", 2));
+});
+
+QUnit.test("gravação: vazio não bloqueia, malformado bloqueia", function (assert) {
+	assert.strictEqual(ciotSaveError(""), null);
+	assert.strictEqual(ciotSaveError(undefined), null);
+	assert.ok(ciotSaveError("123"));
+	assert.strictEqual(ciotSaveError("123456789012"), null);
+	assert.strictEqual(ciotResponsibleSaveError(""), null);
+	assert.ok(ciotResponsibleSaveError("123"));
+	assert.strictEqual(ciotResponsibleSaveError("11.222.333/0001-81"), null);
+	assert.strictEqual(ncmSaveError(""), null);
+	assert.ok(ncmSaveError("1201"));
+	assert.strictEqual(ncmSaveError("1201.90.00"), null);
+});
+
+QUnit.test("tipo do evento em pt-BR (nome ou número do enum)", function (assert) {
+	assert.strictEqual(mdfeEventTypeText("Closing"), "Encerramento");
+	assert.strictEqual(mdfeEventTypeText("Cancellation"), "Cancelamento");
+	assert.strictEqual(mdfeEventTypeText("DriverInclusion"), "Inclusão de condutor");
+	assert.strictEqual(mdfeEventTypeText(2), "Inclusão de condutor");
+	assert.strictEqual(mdfeEventTypeText(undefined), "");
+	assert.strictEqual(mdfeEventTypeText("Outro"), "Outro");
 });
 
 QUnit.module("MdfeHelpers - payloads");

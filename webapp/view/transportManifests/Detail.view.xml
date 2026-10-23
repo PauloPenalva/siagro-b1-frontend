@@ -140,7 +140,7 @@
 							<items>
 								<ColumnListItem>
 									<cells>
-										<Text text="{doc>Type}"/>
+										<Text text="{ path: 'doc>Type', targetType: 'any', formatter: '.mdfeEventTypeText' }"/>
 										<Text text="{ path: 'doc>RegisteredAt', formatter: 'formatter.formatDateTime' }"/>
 										<Text text="{doc>ProtocolNumber}"/>
 										<Text text="{doc>StatusCode} {doc>StatusReason}"/>
