@@ -19,7 +19,7 @@ type Row = { Address: string };
  * Cada Detail cria uma instância e delega os handlers da view para ela (o diálogo usa a própria
  * instância como controller do fragmento).
  *
- * `documentType`: 1 = saída, 2 = entrada (contrato `NfeEmailDefaultRecipients`).
+ * `documentType`: 1 = saída, 2 = entrada, 3 = CT-e (contrato `NfeEmailDefaultRecipients`).
  */
 export default class NfeEmailHelper {
   private dialog?: Dialog;
@@ -30,7 +30,7 @@ export default class NfeEmailHelper {
 
   constructor(
     private readonly view: View,
-    private readonly documentType: 1 | 2,
+    private readonly documentType: 1 | 2 | 3,
     private readonly sendRoute: string,
   ) {
     view.setModel(this.historyModel, "nfeEmail");

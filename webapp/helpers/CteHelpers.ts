@@ -166,6 +166,8 @@ export interface TransportDocumentForm {
 	CostCenterCode: string;
 	AccountingItemCode: string;
 	DistributionRuleCode: string;
+	/** Condição de pagamento do título a receber (sugerida do tomador). */
+	PaymentConditionCode: string;
 	/** Tributos (só leitura, recalculados pelo servidor ao gravar). */
 	Taxes?: Record<string, unknown>;
 }
@@ -180,7 +182,7 @@ export const emptyTransportDocumentForm = (branchCode: string, series: number): 
 	VehicleMode: "Combination", TruckCombinationCode: "", TractionPlate: "", DriverCpf: "",
 	InsuranceResponsible: "", InsurerTaxId: "", InsurerName: "", PolicyNumber: "",
 	Tracked: true, OwnTransport: true, Observation: "",
-	CostCenterCode: "", AccountingItemCode: "", DistributionRuleCode: "",
+	CostCenterCode: "", AccountingItemCode: "", DistributionRuleCode: "", PaymentConditionCode: "",
 });
 
 /** Documento lido do OData (com $expand dos filhos). */
@@ -237,6 +239,7 @@ export const transportDocumentFormFrom = (doc: TransportDocumentRead): Transport
 		CostCenterCode: str(doc.CostCenterCode),
 		AccountingItemCode: str(doc.AccountingItemCode),
 		DistributionRuleCode: str(doc.DistributionRuleCode),
+		PaymentConditionCode: str(doc.PaymentConditionCode),
 		Taxes: taxes,
 	};
 };
@@ -297,6 +300,7 @@ export const buildTransportDocumentSavePayload = (form: TransportDocumentForm) =
 		CostCenterCode: text(form.CostCenterCode),
 		AccountingItemCode: text(form.AccountingItemCode),
 		DistributionRuleCode: text(form.DistributionRuleCode),
+		PaymentConditionCode: blank(form.PaymentConditionCode) ? null : num(form.PaymentConditionCode),
 	};
 };
 
@@ -322,6 +326,8 @@ const dateLiteral = (date: Date): string => {
 export type TransportDocumentsFilter = {
 	DateFrom?: string; DateTo?: string; Status?: string;
 	Taker?: string; Sender?: string; Recipient?: string; Plate?: string;
+	/** "yes" = averbado, "no" = não averbado, vazio = todos. */
+	Endorsed?: string;
 };
 
 const esc = (value: string) => value.replace(/'/g, "''");
@@ -357,6 +363,11 @@ export const buildTransportDocumentsFilter = (f: TransportDocumentsFilter): stri
 	const plate = f.Plate?.trim();
 	if (plate) {
 		parts.push(`contains(TractionPlate,'${esc(plate.toUpperCase())}')`);
+	}
+	if (f.Endorsed === "yes") {
+		parts.push("EndorsementStatus eq 'Endorsed'");
+	} else if (f.Endorsed === "no") {
+		parts.push("EndorsementStatus ne 'Endorsed'");
 	}
 	return parts.length ? parts.join(" and ") : undefined;
 };
@@ -412,3 +423,28 @@ export const sefazOutcome = (status: { StatusCode: number; Reason: string }): { 
 export const TRANSPORT_DOCUMENT_EXPAND =
 	"$expand=Parties($select=Role,CardCode,Name),NfeKeys($select=AccessKey,Order)," +
 	"Quantities($select=UnitCode,MeasureType,Quantity),Components($select=Name,Value)";
+
+const ENDORSEMENT_TEXT: Record<string, string> = {
+	None: "Não averbado", Endorsed: "Averbado", CancellationPending: "Cancelamento pendente", Cancelled: "Averbação cancelada",
+};
+const ENDORSEMENT_STATE: Record<string, string> = {
+	Endorsed: "Success", CancellationPending: "Warning", Cancelled: "Information",
+};
+
+/** Situação da averbação (enum CteEndorsementStatus). */
+export const endorsementStatusText = (status: string): string => (status ? ENDORSEMENT_TEXT[status] ?? status : "");
+export const endorsementStatusState = (status: string): string => ENDORSEMENT_STATE[status] ?? "None";
+
+/** Averbação é manual: só CT-e autorizado, ainda não averbado, com a AT&M ligada na filial. */
+export const canEndorse = (status: string, endorsementStatus: string, averbaEnabled: boolean): boolean =>
+	status === "Authorized" && (!endorsementStatus || endorsementStatus === "None") && averbaEnabled === true;
+
+export const CTE_BATCH_MAX = 200;
+
+/** Lote (transmitir/averbar/baixar): de 1 a 200 CT-e. Vazio = ok. */
+export const batchSelectionError = (count: number): string => {
+	if (!count || count < 1) {
+		return "Selecione ao menos um CT-e.";
+	}
+	return count > CTE_BATCH_MAX ? `Selecione no máximo ${CTE_BATCH_MAX} CT-e por vez.` : "";
+};

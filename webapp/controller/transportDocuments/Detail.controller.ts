@@ -1,3 +1,4 @@
+import { Link$PressEvent } from "sap/m/Link";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
@@ -6,15 +7,32 @@ import { openAttachmentViewer } from "siagrob1/dialogs/AttachmentViewer";
 import { openCteCorrectionDialog } from "siagrob1/dialogs/CteCorrectionDialog";
 import { openNfeCancelDialog } from "siagrob1/dialogs/NfeCancelDialog";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
-import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
+import NfeEmailHelper from "siagrob1/controller/common/NfeEmailHelper";
+import { odataCollection, odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
-	buildCorrectionPayload, cancellationJustificationError, cteActions, cteStatusState, cteStatusText,
+	buildCorrectionPayload, canEndorse, cancellationJustificationError, endorsementStatusState, endorsementStatusText, cteActions, cteStatusState, cteStatusText,
 	TRANSPORT_DOCUMENT_EXPAND, formatAccessKey, partyRoleText, quantityUnitText, sefazOutcome, takerRoleText,
 } from "siagrob1/helpers/CteHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import BaseController from "../BaseController";
 
-type DetailDoc = { Key: string; Status: string; Number: number; Series: number; AccessKey: string };
+type DetailDoc = {
+	Key: string; Status: string; Number: number; Series: number; AccessKey: string; BranchCode: string;
+	EndorsementStatus: string; FinancialError: string;
+};
+
+type TitleRow = { Key: string; Code: string; DueDate: string; NetAmount: number; Status: string };
+
+/** Filhos da averbação com $select explícito. */
+const ENDORSEMENTS_EXPAND = ",Endorsements($select=EndorsementNumber,InsurerTaxId,InsurerName,PolicyNumber,Amount,Branch,MovementType)";
+
+const actionsFor = (doc: DetailDoc, averbaEnabled: boolean, hasTitle: boolean) => ({
+	...cteActions(doc?.Status ?? "", doc?.Number ?? null),
+	endorse: canEndorse(doc?.Status, doc?.EndorsementStatus, averbaEnabled),
+	resendEndorsementCancellation: doc?.EndorsementStatus === "CancellationPending",
+	sendEmail: doc?.Status === "Authorized" || doc?.Status === "Cancelled",
+	generateTitle: doc?.Status === "Authorized" && !hasTitle,
+});
 
 /**
  * Detalhe do CT-e (ObjectPage). Lê por fetch num JSONModel e mostra os botões conforme a
@@ -28,12 +46,17 @@ export default class Detail extends BaseController {
 	takerRoleText = takerRoleText;
 	partyRoleText = partyRoleText;
 	quantityUnitText = quantityUnitText;
+	endorsementStatusText = endorsementStatusText;
+	endorsementStatusState = endorsementStatusState;
 
 	private key: string;
+	private nfeEmail: NfeEmailHelper;
 
 	onInit(): void {
 		this.getView().setModel(new JSONModel({}), "doc");
-		this.getView().setModel(new JSONModel(cteActions("", null)), "act");
+		this.getView().setModel(new JSONModel(actionsFor(null, false, false)), "act");
+		this.getView().setModel(new JSONModel([]), "titles");
+		this.nfeEmail = new NfeEmailHelper(this.getView(), 3, ServerRoutes.transportDocumentsSendEmail);
 		this.getRouter().getRoute("transportDocumentsDetail").attachPatternMatched((ev: Route$MatchedEvent) => {
 			void this.refreshStandaloneFlag();
 			this.key = (ev.getParameter("arguments") as { id: string }).id;
@@ -47,22 +70,84 @@ export default class Detail extends BaseController {
 
 	private async reload(): Promise<void> {
 		(this.getView().getModel("doc") as JSONModel).setData({});
-		(this.getView().getModel("act") as JSONModel).setData(cteActions("", null));
+		(this.getView().getModel("act") as JSONModel).setData(actionsFor(null, false, false));
+		(this.getView().getModel("titles") as JSONModel).setData([]);
 		this.setBusy(true);
 		try {
 			const result = await sendJson("GET",
 				`${ServerRoutes.transportDocuments}(${encodeURIComponent(this.key)})?${TRANSPORT_DOCUMENT_EXPAND}` +
-				",Corrections($select=Sequence,SentAt,Protocol,ItemsJson)");
+				",Corrections($select=Sequence,SentAt,Protocol,ItemsJson)" + ENDORSEMENTS_EXPAND);
 			if (!result.ok) {
 				MessageBox.error(result.message);
 				return;
 			}
 			const doc = odataValue<DetailDoc>(result.data);
 			(this.getView().getModel("doc") as JSONModel).setData(doc);
-			(this.getView().getModel("act") as JSONModel).setData(cteActions(doc.Status, doc.Number));
+			const [averbaEnabled, titles] = await Promise.all([this.loadAverbaEnabled(doc.BranchCode), this.loadTitles(doc.Key)]);
+			(this.getView().getModel("titles") as JSONModel).setData(titles);
+			(this.getView().getModel("act") as JSONModel).setData(actionsFor(doc, averbaEnabled, titles.length > 0));
 		} finally {
 			this.setBusy(false);
 		}
+	}
+
+	/** AT&M ligada na filial? Falha = false (o servidor continua sendo quem trava). */
+	private async loadAverbaEnabled(branchCode: string): Promise<boolean> {
+		if (!branchCode) {
+			return false;
+		}
+		const result = await sendJson("GET", `${ServerRoutes.branchTransportSettingsGet}(BranchCode='${encodeURIComponent(branchCode)}')`);
+		return result.ok && odataValue<{ AverbaEnabled?: boolean }>(result.data)?.AverbaEnabled === true;
+	}
+
+	/** Títulos a receber gerados pelo CT-e (origem TransportDocument, OriginKey = chave do documento). */
+	private async loadTitles(key: string): Promise<TitleRow[]> {
+		const result = await sendJson("GET", `${ServerRoutes.financialDocuments}?$filter=OriginType eq 'TransportDocument' and OriginKey eq ${key}` +
+			"&$select=Key,Code,DueDate,NetAmount,Status&$orderby=DueDate");
+		return result.ok ? odataCollection<TitleRow>(result.data) : [];
+	}
+
+	/** Ação da AT&M: devolve { Success, Message }. */
+	private async runAverba(url: string): Promise<void> {
+		this.setBusy(true);
+		try {
+			const result = await sendJson("POST", url, { Key: this.key });
+			if (!result.ok) {
+				MessageBox.error(result.message);
+			} else {
+				const outcome = odataValue<{ Success: boolean; Message: string }>(result.data);
+				if (outcome?.Success) {
+					MessageBox.success(outcome.Message || "Averbação registrada.");
+				} else {
+					MessageBox.warning(outcome?.Message || "A AT&M não confirmou a operação.");
+				}
+			}
+		} finally {
+			this.setBusy(false);
+		}
+		await this.reload();
+	}
+
+	async onEndorse(): Promise<void> {
+		if (await confirmDialog("Enviar este CT-e para averbação na AT&M?", "Averbar CT-e?")) {
+			await this.runAverba(ServerRoutes.transportDocumentsEndorse);
+		}
+	}
+
+	async onResendEndorsementCancellation(): Promise<void> {
+		await this.runAverba(ServerRoutes.transportDocumentsResendEndorsementCancellation);
+	}
+
+	async onGenerateTitle(): Promise<void> {
+		await this.run(ServerRoutes.transportDocumentsGenerateTitle, {}, "Título a receber gerado.");
+	}
+
+	async onSendEmail(): Promise<void> {
+		await this.nfeEmail.send(this.key, (busy) => this.setBusy(busy));
+	}
+
+	onOpenTitle(ev: Link$PressEvent): void {
+		this.navTo("financialDocumentsDetail", { id: ev.getSource().getBindingContext("titles").getProperty("Key") as string });
 	}
 
 	/** Ação simples (só Key) com mensagem de sucesso. */

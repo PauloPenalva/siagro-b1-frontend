@@ -32,9 +32,13 @@
 					<Input value="{doc>/UsageCode}" description="{doc>/UsageName}" showValueHelp="true" valueHelpOnly="true"
 						valueHelpRequest=".onPickUsage"/>
 					<Label text="Tomador do serviço" required="true"/>
-					<Select selectedKey="{doc>/TakerRole}" items="{takers>/}">
+					<Select selectedKey="{doc>/TakerRole}" items="{takers>/}" change=".onTakerChanged">
 						<core:ListItem key="{takers>key}" text="{takers>text}"/>
 					</Select>
+					<Label text="Condição de pagamento"/>
+					<Input value="{doc>/PaymentConditionCode}" description="{ui>/paymentConditionName}" showValueHelp="true"
+						valueHelpOnly="true" valueHelpRequest=".openPaymentConditionsValueHelp" showClearIcon="true"
+						tooltip="Sugerida do cadastro do tomador; define as parcelas do título a receber."/>
 
 					<core:Title text="Participantes"/>
 					<Label text="Remetente" required="true"/>

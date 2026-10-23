@@ -30,6 +30,11 @@
 					<Button text="Transmitir" type="Success" icon="sap-icon://paper-plane" press=".onTransmit" visible="{act>/transmit}"/>
 					<Button text="Consultar situação" icon="sap-icon://synchronize" press=".onConsult" visible="{act>/consult}"/>
 					<Button text="DACTE" icon="sap-icon://pdf-attachment" press=".onDacte" visible="{act>/dacte}"/>
+					<Button text="Averbar" icon="sap-icon://shield" press=".onEndorse" visible="{act>/endorse}"/>
+					<Button text="Reenviar cancelamento da averbação" type="Critical" icon="sap-icon://redo" press=".onResendEndorsementCancellation"
+						visible="{act>/resendEndorsementCancellation}"/>
+					<Button text="Enviar e-mail" icon="sap-icon://email" press=".onSendEmail" visible="{act>/sendEmail}"/>
+					<Button text="Gerar título" icon="sap-icon://money-bills" press=".onGenerateTitle" visible="{act>/generateTitle}"/>
 					<Button text="Carta de Correção" icon="sap-icon://edit-outside" press=".onCorrection" visible="{act>/correction}"/>
 					<Button text="Cancelar CT-e" type="Reject" press=".onCancelCte" visible="{act>/cancel}"/>
 					<Button text="Descartar número" type="Critical" icon="sap-icon://locked" press=".onDiscardNumber" visible="{act>/discardNumber}"/>
@@ -42,6 +47,9 @@
 				<ObjectStatus text="{ path: 'doc>/Status', formatter: '.cteStatusText' }" state="{ path: 'doc>/Status', formatter: '.cteStatusState' }"/>
 				<Text text="{ path: 'doc>/AccessKey', formatter: '.formatAccessKey' }"/>
 				<Text text="{= ${doc>/StatusCode} ? ${doc>/StatusCode} + ' - ' + ${doc>/StatusReason} : '' }"/>
+				<ObjectStatus title="Averbação" text="{ path: 'doc>/EndorsementStatus', formatter: '.endorsementStatusText' }"
+					state="{ path: 'doc>/EndorsementStatus', formatter: '.endorsementStatusState' }"/>
+				<ObjectStatus text="{doc>/FinancialError}" state="Error" icon="sap-icon://message-error" visible="{= !!${doc>/FinancialError} }"/>
 			</VBox>
 		</uxap:headerContent>
 
@@ -166,6 +174,78 @@
 								</items>
 							</Table>
 						</VBox>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
+			<uxap:ObjectPageSection title="Averbação">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<VBox>
+							<f:SimpleForm editable="false" layout="ResponsiveGridLayout" labelSpanL="4" labelSpanM="4" columnsL="2" columnsM="1"
+								singleContainerFullSize="false">
+								<f:content>
+									<Label text="Situação"/>
+									<ObjectStatus text="{ path: 'doc>/EndorsementStatus', formatter: '.endorsementStatusText' }"
+										state="{ path: 'doc>/EndorsementStatus', formatter: '.endorsementStatusState' }"/>
+									<Label text="Protocolo"/>
+									<Text text="{doc>/EndorsementProtocol}"/>
+									<Label text="Data"/>
+									<Text text="{ path: 'doc>/EndorsedAt', formatter: 'formatter.formatDateTime' }"/>
+									<Label text="Protocolo do cancelamento" visible="{= !!${doc>/EndorsementCancellationProtocol} }"/>
+									<Text text="{doc>/EndorsementCancellationProtocol}" visible="{= !!${doc>/EndorsementCancellationProtocol} }"/>
+									<Label text="Último erro" visible="{= !!${doc>/EndorsementError} }"/>
+									<Text text="{doc>/EndorsementError}" visible="{= !!${doc>/EndorsementError} }"/>
+								</f:content>
+							</f:SimpleForm>
+							<Table items="{doc>/Endorsements}" headerText="Seguros averbados" class="sapUiSizeCompact" noDataText="Nenhum seguro averbado.">
+								<columns>
+									<Column><Text text="Nº da averbação"/></Column>
+									<Column><Text text="Seguradora"/></Column>
+									<Column width="10rem"><Text text="Apólice"/></Column>
+									<Column width="8rem"><Text text="Ramo"/></Column>
+									<Column width="6rem"><Text text="Movimento"/></Column>
+									<Column hAlign="End" width="9rem"><Text text="Valor averbado"/></Column>
+								</columns>
+								<items>
+									<ColumnListItem>
+										<cells>
+											<Text text="{doc>EndorsementNumber}"/>
+											<Text text="{doc>InsurerTaxId} - {doc>InsurerName}"/>
+											<Text text="{doc>PolicyNumber}"/>
+											<Text text="{doc>Branch}"/>
+											<Text text="{doc>MovementType}"/>
+											<Text text="{ path: 'doc>Amount', formatter: 'formatter.formatBrl' }"/>
+										</cells>
+									</ColumnListItem>
+								</items>
+							</Table>
+						</VBox>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
+			<uxap:ObjectPageSection title="Título a receber">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<Table items="{titles>/}" class="sapUiSizeCompact" noDataText="Nenhum título gerado.">
+							<columns>
+								<Column><Text text="Título"/></Column>
+								<Column width="9rem"><Text text="Vencimento"/></Column>
+								<Column hAlign="End" width="9rem"><Text text="Valor"/></Column>
+								<Column width="8rem"><Text text="Situação"/></Column>
+							</columns>
+							<items>
+								<ColumnListItem>
+									<cells>
+										<Link text="{= ${titles>Code} || 'Abrir título' }" press=".onOpenTitle"/>
+										<Text text="{ path: 'titles>DueDate', formatter: 'formatter.formatDate' }"/>
+										<Text text="{ path: 'titles>NetAmount', formatter: 'formatter.formatBrl' }"/>
+										<Text text="{ path: 'titles>Status', formatter: 'formatter.formatBillingReceivableStatus' }"/>
+									</cells>
+								</ColumnListItem>
+							</items>
+						</Table>
 					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>

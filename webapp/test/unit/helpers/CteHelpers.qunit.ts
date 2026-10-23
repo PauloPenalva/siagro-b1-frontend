@@ -1,5 +1,9 @@
 import {
 	CTE_CORRECTABLE_FIELDS,
+	batchSelectionError,
+	canEndorse,
+	endorsementStatusState,
+	endorsementStatusText,
 	buildCorrectionPayload,
 	buildCteSettingsSavePayload,
 	buildTransportDocumentSavePayload,
@@ -241,4 +245,42 @@ QUnit.test("papel do participante e desfecho da SEFAZ", function (assert) {
 		{ ok: true, text: "100 - Autorizado o uso do CT-e" });
 	assert.notOk(sefazOutcome({ StatusCode: 539, Reason: "Duplicidade" }).ok);
 	assert.ok(sefazOutcome({ StatusCode: 150, Reason: "Autorizado fora de prazo" }).ok);
+});
+
+QUnit.module("CteHelpers - averbação e lote");
+
+QUnit.test("situação da averbação", function (assert) {
+	assert.strictEqual(endorsementStatusText("None"), "Não averbado");
+	assert.strictEqual(endorsementStatusText("Endorsed"), "Averbado");
+	assert.strictEqual(endorsementStatusText("CancellationPending"), "Cancelamento pendente");
+	assert.strictEqual(endorsementStatusText("Cancelled"), "Averbação cancelada");
+	assert.strictEqual(endorsementStatusText(null), "");
+	assert.strictEqual(endorsementStatusState("Endorsed"), "Success");
+	assert.strictEqual(endorsementStatusState("CancellationPending"), "Warning");
+	assert.strictEqual(endorsementStatusState("None"), "None");
+});
+
+QUnit.test("averbar só autorizado, não averbado, com AT&M ligada", function (assert) {
+	assert.ok(canEndorse("Authorized", "None", true));
+	assert.ok(canEndorse("Authorized", null, true));
+	assert.notOk(canEndorse("Authorized", "None", false));
+	assert.notOk(canEndorse("Authorized", "Endorsed", true));
+	assert.notOk(canEndorse("Cancelled", "None", true));
+	assert.notOk(canEndorse("Confirmed", "None", true));
+});
+
+QUnit.test("seleção do lote: 1 a 200", function (assert) {
+	assert.ok(batchSelectionError(0));
+	assert.strictEqual(batchSelectionError(1), "");
+	assert.strictEqual(batchSelectionError(200), "");
+	assert.ok(batchSelectionError(201));
+});
+
+QUnit.test("filtro Averbado e condição de pagamento no payload", function (assert) {
+	assert.strictEqual(buildTransportDocumentsFilter({ Endorsed: "yes" }), "EndorsementStatus eq 'Endorsed'");
+	assert.strictEqual(buildTransportDocumentsFilter({ Endorsed: "no" }), "EndorsementStatus ne 'Endorsed'");
+	const form = { ...emptyTransportDocumentForm("0001", 1), PaymentConditionCode: "3" };
+	assert.strictEqual(buildTransportDocumentSavePayload(form).PaymentConditionCode, 3);
+	assert.strictEqual(buildTransportDocumentSavePayload(emptyTransportDocumentForm("0001", 1)).PaymentConditionCode, null);
+	assert.strictEqual(transportDocumentFormFrom({ PaymentConditionCode: 7 }).PaymentConditionCode, "7");
 });

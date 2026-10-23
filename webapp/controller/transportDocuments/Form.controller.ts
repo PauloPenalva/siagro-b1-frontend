@@ -10,7 +10,7 @@ import FileUploader, { FileUploader$ChangeEvent } from "sap/ui/unified/FileUploa
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { odataCollection, odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
-	CtePartyRoleName, QUANTITY_UNITS, TAKER_ROLES, TransportDocumentForm, TransportDocumentRead,
+	CtePartyRoleName, PARTY_ROLES, QUANTITY_UNITS, TAKER_ROLES, TransportDocumentForm, TransportDocumentRead,
 	TRANSPORT_DOCUMENT_EXPAND, buildTransportDocumentSavePayload, emptyTransportDocumentForm, transportDocumentFormFrom,
 } from "siagrob1/helpers/CteHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
@@ -50,6 +50,7 @@ export default class Form extends CommonController {
 		const branch = await this.getBranchInfo();
 		const code = branch?.code ?? "";
 		this.doc().setData(emptyTransportDocumentForm(code, 1));
+		await this.refreshPaymentConditionName(null);
 		if (code) {
 			await this.loadSettings(code, true);
 		}
@@ -91,6 +92,7 @@ export default class Form extends CommonController {
 			this.doc().setData({ ...form, StatusReason: read.StatusReason ?? "", UsageName: "" });
 			await this.loadSettings(form.BranchCode, false);
 			await this.loadUsageName(form.UsageCode);
+			await this.refreshPaymentConditionName(form.PaymentConditionCode);
 		} finally {
 			this.setBusy(false);
 		}
@@ -129,7 +131,30 @@ export default class Form extends CommonController {
 		const ctx = await DialogHelper.openTableSelectDialog(this, "BusinessPartnersSelectDialog", ["CardCode", "CardName", "CardFName"]);
 		if (ctx) {
 			this.doc().setProperty(`/${role}`, { CardCode: ctx.getProperty("CardCode") as string, CardName: ctx.getProperty("CardName") as string });
+			await this.suggestPaymentCondition();
 		}
+	}
+
+	async onTakerChanged(): Promise<void> {
+		await this.suggestPaymentCondition();
+	}
+
+	/** Condição de pagamento sugerida do cadastro do tomador (continua editável). */
+	private async suggestPaymentCondition(): Promise<void> {
+		const form = this.doc().getData() as TransportDocumentForm;
+		const role = PARTY_ROLES[Number(form.TakerRole)];
+		const cardCode = role ? form[role]?.CardCode : "";
+		if (!cardCode) {
+			return;
+		}
+		const result = await sendJson("GET",
+			`/odata/BusinessPartners('${encodeURIComponent(cardCode.replace(/'/g, "''"))}')?$select=CardCode,PaymentConditionCode`);
+		const code = result.ok ? odataValue<{ PaymentConditionCode?: number }>(result.data)?.PaymentConditionCode : null;
+		if (code === null || code === undefined) {
+			return;
+		}
+		this.doc().setProperty("/PaymentConditionCode", String(code));
+		await this.refreshPaymentConditionName(code);
 	}
 
 	onClearParty(_ev: Button$PressEvent, role: CtePartyRoleName): void {
