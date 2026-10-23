@@ -11,13 +11,15 @@ import { localIsoDate } from "siagrob1/helpers/DateHelpers";
 import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import { sefazOutcome } from "siagrob1/helpers/CteHelpers";
 import {
-	ManifestCteRow, TRANSPORT_MANIFEST_EXPAND, cargoTypeText, formatAccessKey, mdfeActions, mdfeStatusState, mdfeStatusText, weightUnitText,
+	ManifestCteRow, TRANSPORT_MANIFEST_EXPAND, cancellationJustificationError, cargoTypeText, cpfError, mdfeEventOutcome, formatAccessKey, mdfeActions, mdfeStatusState, mdfeStatusText, weightUnitText,
 } from "siagrob1/helpers/MdfeHelpers";
 import { STATE_CODES } from "siagrob1/helpers/StateCodes";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import BaseController from "../BaseController";
 
 const CLOSE_FRAGMENT = "siagrob1.view.transportManifests.fragments.CloseDialog";
+const CANCEL_FRAGMENT = "siagrob1.view.transportManifests.fragments.CancelDialog";
+const DRIVER_FRAGMENT = "siagrob1.view.transportManifests.fragments.IncludeDriverDialog";
 const EVENTS_EXPAND = ",Events($select=Type,Sequence,ProtocolNumber,RegisteredAt,StatusCode,StatusReason)";
 
 type DetailDoc = Record<string, unknown> & {
@@ -43,14 +45,22 @@ export default class Detail extends BaseController {
 
 	private key: string;
 	private closeDialog: Dialog;
+	private cancelDialog: Dialog;
+	private driverDialog: Dialog;
 
 	onInit(): void {
 		this.getView().setModel(new JSONModel({}), "doc");
 		this.getView().setModel(new JSONModel(mdfeActions("", null)), "act");
 		this.getView().setModel(new JSONModel({}), "close");
+		this.getView().setModel(new JSONModel({}), "cancel");
+		this.getView().setModel(new JSONModel({}), "driver");
 		this.getView().setModel(new JSONModel(STATE_CODES), "states");
 		this.getRouter().getRoute("transportManifestsDetail").attachPatternMatched((ev: Route$MatchedEvent) => {
 			void this.refreshStandaloneFlag();
+			// Diálogo aberto de outra visita bloquearia os cliques da página.
+			this.closeDialog?.close();
+			this.cancelDialog?.close();
+			this.driverDialog?.close();
 			this.key = (ev.getParameter("arguments") as { id: string }).id;
 			void this.reload();
 		});
@@ -226,6 +236,71 @@ export default class Detail extends BaseController {
 		await this.runSefaz(ServerRoutes.transportManifestsClose, {
 			ClosedOn: data.ClosedOn, UfCode: data.UfCode, CityIbge: data.CityIbge.trim(),
 		});
+	}
+
+	/** Evento do MDF-e: 135/136 sucesso; 132/101/151 aviso (já encerrado/cancelado na SEFAZ); resto erro. */
+	private async runEvent(url: string, body: object): Promise<void> {
+		this.setBusy(true);
+		try {
+			const result = await sendJson("POST", url, { Key: this.key, ...body });
+			if (!result.ok) {
+				MessageBox.error(result.message);
+			} else {
+				const outcome = mdfeEventOutcome(odataValue<Record<string, unknown>>(result.data));
+				if (outcome.kind === "success") {
+					MessageBox.success(outcome.text);
+				} else if (outcome.kind === "warning") {
+					MessageBox.warning(outcome.text);
+				} else {
+					MessageBox.error(outcome.text);
+				}
+			}
+		} finally {
+			this.setBusy(false);
+		}
+		await this.reload();
+	}
+
+	async onCancelMdfe(): Promise<void> {
+		(this.getView().getModel("cancel") as JSONModel).setData({ Justification: "" });
+		this.cancelDialog ??= await DialogHelper.createDialog(this, CANCEL_FRAGMENT);
+		this.cancelDialog.open();
+	}
+
+	onCloseCancelDialog(): void {
+		this.cancelDialog?.close();
+	}
+
+	async onConfirmCancel(): Promise<void> {
+		const justification = ((this.getView().getModel("cancel") as JSONModel).getProperty("/Justification") as string ?? "").trim();
+		const error = cancellationJustificationError(justification);
+		if (error) {
+			MessageBox.error(error);
+			return;
+		}
+		this.cancelDialog.close();
+		await this.runEvent(ServerRoutes.transportManifestsCancel, { Justification: justification });
+	}
+
+	async onIncludeDriver(): Promise<void> {
+		(this.getView().getModel("driver") as JSONModel).setData({ Cpf: "", Name: "" });
+		this.driverDialog ??= await DialogHelper.createDialog(this, DRIVER_FRAGMENT);
+		this.driverDialog.open();
+	}
+
+	onCloseIncludeDriver(): void {
+		this.driverDialog?.close();
+	}
+
+	async onConfirmIncludeDriver(): Promise<void> {
+		const data = (this.getView().getModel("driver") as JSONModel).getData() as { Cpf: string; Name: string };
+		const error = cpfError(data.Cpf) || (str(data.Name).trim().length < 2 ? "Informe o nome do condutor." : "");
+		if (error) {
+			MessageBox.error(error);
+			return;
+		}
+		this.driverDialog.close();
+		await this.runEvent(ServerRoutes.transportManifestsIncludeDriver, { Cpf: str(data.Cpf).replace(/\D/g, ""), Name: str(data.Name).trim() });
 	}
 }
 

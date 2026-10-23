@@ -1,0 +1,21 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+	<Dialog title="Cancelar MDF-e" contentWidth="32rem">
+		<content>
+			<VBox class="sapUiSmallMargin">
+				<MessageStrip text="O cancelamento é enviado à SEFAZ e não pode ser desfeito (prazo de 24 horas da autorização, sem encerramento)." type="Warning" showIcon="true" class="sapUiSmallMarginBottom"/>
+				<Label text="Justificativa (15 a 255 caracteres)" required="true" labelFor="mdfeCancelJustification"/>
+				<TextArea id="mdfeCancelJustification" value="{ path: 'cancel>/Justification', type: 'sap.ui.model.type.String' }"
+					rows="4" width="100%" maxLength="255" showExceededText="false" valueLiveUpdate="true"/>
+				<Text text="{= (${cancel>/Justification} || '').trim().length + ' / 255' }" class="sapUiTinyMarginTop"/>
+			</VBox>
+		</content>
+		<beginButton>
+			<Button text="Cancelar MDF-e" type="Reject" press=".onConfirmCancel"/>
+		</beginButton>
+		<endButton>
+			<Button text="Voltar" press=".onCloseCancelDialog"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

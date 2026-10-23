@@ -1,0 +1,24 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<Dialog title="Incluir condutor" contentWidth="30rem">
+		<content>
+			<MessageStrip text="A inclusão do condutor é um evento enviado à SEFAZ." type="Information" showIcon="true" class="sapUiSmallMargin"/>
+			<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanL="3" labelSpanM="3" columnsL="1" columnsM="1">
+				<f:content>
+					<Label text="CPF" required="true"/>
+					<Input value="{driver>/Cpf}" maxLength="14" placeholder="000.000.000-00"/>
+					<Label text="Nome" required="true"/>
+					<Input value="{driver>/Name}" maxLength="60"/>
+				</f:content>
+			</f:SimpleForm>
+		</content>
+		<beginButton>
+			<Button text="Incluir" type="Emphasized" press=".onConfirmIncludeDriver"/>
+		</beginButton>
+		<endButton>
+			<Button text="Voltar" press=".onCloseIncludeDriver"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

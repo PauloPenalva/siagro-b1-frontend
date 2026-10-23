@@ -80,6 +80,8 @@ export const mdfeActions = (status: string, number: number) => {
 		damdfe: status === "Authorized" || status === "Closed" || status === "Cancelled",
 		discardNumber: (status === "Draft" || status === "Confirmed" || status === "Rejected") && hasNumber,
 		delete: status === "Draft" && !hasNumber,
+		cancel: status === "Authorized",
+		includeDriver: status === "Authorized",
 	};
 };
 
@@ -317,3 +319,104 @@ export const TRANSPORT_MANIFEST_EXPAND =
 	"Contractors($select=TaxId,Name),Seals($select=Number)," +
 	"Payments($select=ContractorTaxId,ContractorName,Total,IndPag,Pix,BankCode,Agency;" +
 	"$expand=Components($select=Type,Value,Description),Installments($select=Number,DueDate,Value))";
+
+// ---------- entrega B: cancelamento, condutor, encerramento em lote, não encerrados ----------
+
+export const MDFE_CANCEL_MIN = 15;
+export const MDFE_CANCEL_MAX = 255;
+
+/** Justificativa do cancelamento: 15 a 255 caracteres após o trim (mesma conta do servidor). "" = válida. */
+export const cancellationJustificationError = (text: string): string => {
+	const length = (text ?? "").trim().length;
+	return length >= MDFE_CANCEL_MIN && length <= MDFE_CANCEL_MAX
+		? ""
+		: `A justificativa deve ter de ${MDFE_CANCEL_MIN} a ${MDFE_CANCEL_MAX} caracteres.`;
+};
+
+/** CPF com dígitos verificadores (aceita máscara). "" = válido. */
+export const cpfError = (text: string): string => {
+	const cpf = (text ?? "").replace(/\D/g, "");
+	if (!cpf) {
+		return "Informe o CPF do condutor.";
+	}
+	if (!/^\d{11}$/.test(cpf) || /^(\d)\1{10}$/.test(cpf)) {
+		return "CPF inválido.";
+	}
+	const check = (len: number) => {
+		let sum = 0;
+		for (let i = 0; i < len; i++) {
+			sum += Number(cpf[i]) * (len + 1 - i);
+		}
+		const rest = (sum * 10) % 11;
+		return rest === 10 ? 0 : rest;
+	};
+	return check(9) === Number(cpf[9]) && check(10) === Number(cpf[10]) ? "" : "CPF inválido.";
+};
+
+/** Lê a propriedade em PascalCase ou camelCase (o REST do backend serializa em camelCase). */
+const prop = <T>(o: Record<string, unknown>, name: string): T =>
+	(o?.[name] ?? o?.[name.charAt(0).toLowerCase() + name.slice(1)]) as T;
+
+/**
+ * Retorno de evento do MDF-e (cancelamento, inclusão de condutor): 135/136 sucesso; 132/101/151 = o
+ * MDF-e já estava encerrado/cancelado na SEFAZ e a situação foi atualizada (aviso); o resto é erro.
+ */
+export const mdfeEventOutcome = (status: Record<string, unknown>): { kind: "success" | "warning" | "error"; text: string } => {
+	const code = Number(prop<number>(status, "StatusCode"));
+	const text = `${prop<number>(status, "StatusCode") ?? ""} - ${prop<string>(status, "Reason") ?? ""}`;
+	const kind = [135, 136].includes(code) ? "success" : [132, 101, 151].includes(code) ? "warning" : "error";
+	return { kind, text };
+};
+
+export const MDFE_BATCH_MAX = 50;
+
+export const closeBatchSelectionError = (count: number): string => {
+	if (!count || count < 1) {
+		return "Selecione ao menos um MDF-e.";
+	}
+	return count > MDFE_BATCH_MAX ? `Selecione no máximo ${MDFE_BATCH_MAX} MDF-e por vez.` : "";
+};
+
+export type NotClosedRow = {
+	AccessKey: string; Protocol: string; ManifestKey: string; Number: number; Series: number; Status: string;
+	TractionPlate: string; StatusDiverges: boolean; OutsideSystem: boolean;
+	canClose: boolean; canConsult: boolean; state: string; situation: string;
+};
+
+/** Linha de MdfeNotClosed com as ações: divergente só consulta; fora do sistema não tem ação. */
+export const notClosedRowFrom = (raw: Record<string, unknown>): NotClosedRow => {
+	const status = prop<string>(raw, "Status") ?? "";
+	const manifestKey = prop<string>(raw, "ManifestKey") ?? "";
+	const diverges = prop<boolean>(raw, "StatusDiverges") === true;
+	const outside = prop<boolean>(raw, "OutsideSystem") === true;
+	const linked = !outside && !!manifestKey;
+	const open = status === "Authorized" || status === "Processing";
+	return {
+		AccessKey: prop<string>(raw, "AccessKey") ?? "",
+		Protocol: prop<string>(raw, "Protocol") ?? "",
+		ManifestKey: manifestKey,
+		Number: prop<number>(raw, "Number") ?? null,
+		Series: prop<number>(raw, "Series") ?? null,
+		Status: status,
+		TractionPlate: prop<string>(raw, "TractionPlate") ?? "",
+		StatusDiverges: diverges,
+		OutsideSystem: outside,
+		canClose: linked && open && !diverges,
+		canConsult: linked && (open || diverges),
+		state: diverges ? "Warning" : "None",
+		situation: outside
+			? "MDF-e fora do sistema"
+			: diverges ? `${mdfeStatusText(status)} no sistema — diverge da SEFAZ` : mdfeStatusText(status),
+	};
+};
+
+export type CloseBatchItem = { key: string; number: number; success: boolean; message: string };
+
+/** Resultado do TransportManifestsCloseBatch (camelCase; aceita PascalCase). */
+export const closeBatchItemsFrom = (rows: Record<string, unknown>[]): CloseBatchItem[] =>
+	(rows ?? []).map((r) => ({
+		key: prop<string>(r, "Key"),
+		number: prop<number>(r, "Number") ?? null,
+		success: prop<boolean>(r, "Success") === true,
+		message: prop<string>(r, "Message") ?? "",
+	}));

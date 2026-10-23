@@ -30,6 +30,8 @@
 					<Button text="Transmitir" type="Success" icon="sap-icon://paper-plane" press=".onTransmit" visible="{act>/transmit}"/>
 					<Button text="Consultar situação" icon="sap-icon://synchronize" press=".onConsult" visible="{act>/consult}"/>
 					<Button text="Encerrar" type="Emphasized" icon="sap-icon://complete" press=".onClose" visible="{act>/close}"/>
+					<Button text="Incluir condutor" icon="sap-icon://add-employee" press=".onIncludeDriver" visible="{act>/includeDriver}"/>
+					<Button text="Cancelar MDF-e" type="Reject" icon="sap-icon://cancel" press=".onCancelMdfe" visible="{act>/cancel}"/>
 					<Button text="DAMDFE" icon="sap-icon://pdf-attachment" press=".onDamdfe" visible="{act>/damdfe}"/>
 					<Button text="Excluir" type="Reject" icon="sap-icon://delete" press=".onDelete" visible="{act>/delete}"/>
 					<Button text="Descartar número" type="Critical" icon="sap-icon://locked" press=".onDiscardNumber" visible="{act>/discardNumber}"/>

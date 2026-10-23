@@ -1,5 +1,11 @@
 import {
+	MDFE_BATCH_MAX,
 	buildMdfeSettingsSavePayload,
+	cancellationJustificationError,
+	closeBatchSelectionError,
+	cpfError,
+	mdfeEventOutcome,
+	notClosedRowFrom,
 	buildTransportManifestSavePayload,
 	buildTransportManifestsFilter,
 	cargoTypeText,
@@ -190,6 +196,7 @@ QUnit.test("CT-e agrupados por município de descarga na ordem das linhas", func
 QUnit.test("botões do detalhe conforme a situação", function (assert) {
 	assert.deepEqual(mdfeActions("Draft", null), {
 		edit: true, confirm: true, reopen: false, transmit: false, consult: false, close: false, damdfe: false, discardNumber: false, delete: true,
+		cancel: false, includeDriver: false,
 	});
 	const authorized = mdfeActions("Authorized", 3);
 	assert.ok(authorized.close && authorized.damdfe && authorized.consult);
@@ -218,4 +225,60 @@ QUnit.test("mensagem lista só os CT-e não averbados", function (assert) {
 	];
 	assert.strictEqual(notEndorsedMessage(rows), "Averbe os CT-e antes de incluir no MDF-e: 2, 3.");
 	assert.strictEqual(notEndorsedMessage([rows[0]]), "");
+});
+
+QUnit.module("MdfeHelpers - entrega B");
+
+QUnit.test("justificativa do cancelamento: 15 a 255 caracteres após o trim", function (assert) {
+	const msg = "A justificativa deve ter de 15 a 255 caracteres.";
+	assert.strictEqual(cancellationJustificationError("a".repeat(14)), msg);
+	assert.strictEqual(cancellationJustificationError("a".repeat(15)), "");
+	assert.strictEqual(cancellationJustificationError("a".repeat(255)), "");
+	assert.strictEqual(cancellationJustificationError("a".repeat(256)), msg);
+	assert.strictEqual(cancellationJustificationError(`  ${"a".repeat(14)}  `), msg);
+	assert.strictEqual(cancellationJustificationError(null), msg);
+});
+
+QUnit.test("CPF do condutor: 11 dígitos com dígitos verificadores", function (assert) {
+	assert.strictEqual(cpfError("529.982.247-25"), "");
+	assert.strictEqual(cpfError("52998224725"), "");
+	assert.strictEqual(cpfError("52998224724"), "CPF inválido.");
+	assert.strictEqual(cpfError("11111111111"), "CPF inválido.");
+	assert.strictEqual(cpfError("1234"), "CPF inválido.");
+	assert.strictEqual(cpfError(""), "Informe o CPF do condutor.");
+});
+
+QUnit.test("ações de cancelar e incluir condutor só para autorizado", function (assert) {
+	assert.ok(mdfeActions("Authorized", 3).cancel && mdfeActions("Authorized", 3).includeDriver);
+	assert.notOk(mdfeActions("Closed", 3).cancel || mdfeActions("Closed", 3).includeDriver);
+});
+
+QUnit.test("resultado do evento: 135/136 sucesso, 132/101/151 aviso, resto erro (aceita camelCase)", function (assert) {
+	assert.deepEqual(mdfeEventOutcome({ StatusCode: 135, Reason: "ok" }), { kind: "success", text: "135 - ok" });
+	assert.deepEqual(mdfeEventOutcome({ statusCode: 136, reason: "ok" }), { kind: "success", text: "136 - ok" });
+	assert.strictEqual(mdfeEventOutcome({ statusCode: 132, reason: "x" }).kind, "warning");
+	assert.strictEqual(mdfeEventOutcome({ statusCode: 101, reason: "x" }).kind, "warning");
+	assert.strictEqual(mdfeEventOutcome({ statusCode: 151, reason: "x" }).kind, "warning");
+	assert.deepEqual(mdfeEventOutcome({ statusCode: 218, reason: "Rejeição" }), { kind: "error", text: "218 - Rejeição" });
+});
+
+QUnit.test("lote de encerramento: 1 a 50 selecionados", function (assert) {
+	assert.strictEqual(MDFE_BATCH_MAX, 50);
+	assert.strictEqual(closeBatchSelectionError(0), "Selecione ao menos um MDF-e.");
+	assert.strictEqual(closeBatchSelectionError(1), "");
+	assert.strictEqual(closeBatchSelectionError(50), "");
+	assert.strictEqual(closeBatchSelectionError(51), "Selecione no máximo 50 MDF-e por vez.");
+});
+
+QUnit.test("linha dos não encerrados: ações conforme a situação (Pascal ou camelCase)", function (assert) {
+	const open = notClosedRowFrom({ accessKey: "1", protocol: "p", manifestKey: "k", number: 5, series: 1, status: "Authorized", statusDiverges: false, outsideSystem: false });
+	assert.ok(open.canClose && open.canConsult);
+	assert.strictEqual(open.ManifestKey, "k");
+	assert.strictEqual(open.state, "None");
+	const diverges = notClosedRowFrom({ AccessKey: "2", ManifestKey: "k2", Status: "Closed", StatusDiverges: true, OutsideSystem: false });
+	assert.ok(!diverges.canClose && diverges.canConsult);
+	assert.strictEqual(diverges.state, "Warning");
+	const outside = notClosedRowFrom({ AccessKey: "3", OutsideSystem: true, StatusDiverges: false });
+	assert.ok(!outside.canClose && !outside.canConsult);
+	assert.strictEqual(outside.situation, "MDF-e fora do sistema");
 });
