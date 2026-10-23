@@ -244,7 +244,7 @@
 				<f:content>
 					<core:Title text="Observações"/>
 					<Label text="Informações complementares"/>
-					<TextArea value="{doc>/AdditionalInfo}" rows="4" maxLength="5000" width="100%"/>
+					<TextArea value="{doc>/AdditionalInfo}" rows="4" maxLength="2000" width="100%"/>
 				</f:content>
 			</f:SimpleForm>
 		</content>

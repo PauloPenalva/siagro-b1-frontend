@@ -75,7 +75,8 @@ export default class Detail extends BaseController {
 			const list = <T>(name: string) => (doc[name] as T[]) ?? [];
 			(this.getView().getModel("doc") as JSONModel).setData({
 				...doc,
-				Ctes: byLine(doc.Ctes).filter((c) => (c as { IsActive?: boolean }).IsActive !== false),
+				// Todos os CT-e vinculados: encerrado/anulado/denegado inativa os vínculos, mas o documento continua mostrando-os.
+				Ctes: byLine(doc.Ctes),
 				routeText: byLine(list<{ LineNum: number; Uf: string }>("RouteUfs")).map((r) => r.Uf).join(", "),
 				loadingCitiesText: byLine(list<{ LineNum: number; CityName: string }>("LoadingCities")).map((c) => c.CityName).join(", "),
 				vehiclesText: byLine(list<{ LineNum: number; Plate: string; IsTraction: boolean }>("Vehicles"))
