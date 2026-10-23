@@ -1,0 +1,259 @@
+<mvc:View
+	controllerName="siagrob1.controller.transportManifests.Form"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<Page title="{= 'Editar MDF-e ' + (${head>/Number} ? ${head>/Number} : '(sem número)') + ' / série ' + ${head>/Series} }"
+		showNavButton="true" navButtonPress=".onCancel" busy="{ui>/busy}" busyIndicatorDelay="0">
+		<content>
+			<MessageStrip type="Error" showIcon="true" class="sapUiSmallMargin"
+				text="{head>/RejectionCode} - {head>/RejectionReason}" visible="{= ${head>/Status} === 'Rejected' }"/>
+
+			<!-- CT-e: só leitura, mudam escolhendo outro conjunto na inclusão. -->
+			<List items="{head>/cteGroups}" headerText="CT-e por município de descarga" class="sapUiSmallMarginBeginEnd sapUiSizeCompact">
+				<CustomListItem>
+					<VBox class="sapUiSmallMargin">
+						<Title level="H6" text="{head>CityName} ({head>CityIbge})"/>
+						<List items="{ path: 'head>Ctes', templateShareable: false }" showSeparators="None">
+							<StandardListItem title="{ path: 'head>CteAccessKey', formatter: '.formatAccessKey' }"/>
+						</List>
+					</VBox>
+				</CustomListItem>
+			</List>
+
+			<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanL="4" labelSpanM="4" columnsL="2" columnsM="1"
+				singleContainerFullSize="false">
+				<f:content>
+					<core:Title text="Percurso"/>
+					<Label text="UF de início / fim"/>
+					<Text text="{head>/UfStart} → {head>/UfEnd}"/>
+					<Label text="Municípios de carregamento"/>
+					<Text text="{head>/loadingCitiesText}"/>
+
+					<core:Title text="Carga"/>
+					<Label text="Tipo de carga"/>
+					<Text text="{ path: 'head>/CargoType', formatter: '.cargoTypeText' }"/>
+					<Label text="Produto predominante"/>
+					<Text text="{head>/ProductDescription} {head>/Ncm}"/>
+					<Label text="Valor da carga"/>
+					<Text text="{ path: 'head>/CargoValue', formatter: 'formatter.formatBrl' }"/>
+					<Label text="CEP de carregamento" required="true"/>
+					<Input value="{doc>/LoadingZip}" maxLength="9"/>
+					<Label text="CEP de descarregamento" required="true"/>
+					<Input value="{doc>/UnloadingZip}" maxLength="9"/>
+					<Label text="Peso bruto / unidade" required="true"/>
+					<Input value="{doc>/GrossWeight}"/>
+					<Select selectedKey="{doc>/WeightUnit}" items="{weightUnits>/}">
+						<core:Item key="{weightUnits>key}" text="{weightUnits>text}"/>
+					</Select>
+
+					<core:Title text="Veículo e condutor principal"/>
+					<Label text="Tração"/>
+					<Text text="{head>/TractionPlate}"/>
+					<Label text="Condutor"/>
+					<Text text="{head>/DriverCpf} {head>/DriverName}"/>
+
+					<core:Title text="Seguro"/>
+					<Label text="Responsável"/>
+					<Text text="{head>/InsuranceResponsible}"/>
+					<Label text="Seguradora / apólice"/>
+					<Text text="{head>/InsurerTaxId} {head>/InsurerName} {head>/PolicyNumber}"/>
+
+					<core:Title text="CIOT e vale-pedágio"/>
+					<Label text="CIOT" required="{head>/requiresCiot}"/>
+					<Input value="{doc>/CiotNumber}" maxLength="12" placeholder="12 dígitos"/>
+					<Label text="CPF/CNPJ do responsável pelo CIOT"/>
+					<Input value="{doc>/CiotResponsibleTaxId}" maxLength="18"/>
+					<Label text="CNPJ do fornecedor do vale-pedágio"/>
+					<Input value="{doc>/TollSupplierCnpj}" maxLength="18"/>
+					<Label text="Nº do comprovante / valor"/>
+					<Input value="{doc>/TollVoucherNumber}" maxLength="20"/>
+					<Input value="{doc>/TollValue}"/>
+				</f:content>
+			</f:SimpleForm>
+
+			<Table items="{doc>/RouteUfs}" class="sapUiSmallMarginBeginEnd sapUiSizeCompact" width="auto"
+				noDataText="Nenhuma UF de percurso (só as UFs entre o início e o fim).">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="UFs de percurso"/>
+						<ToolbarSpacer/>
+						<Button icon="sap-icon://add" text="Adicionar" press=".onAddRow($event, 'RouteUfs')"/>
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column><Text text="UF"/></Column>
+					<Column width="4rem"/>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Select selectedKey="{doc>Uf}" items="{ path: 'states>/', templateShareable: false }" forceSelection="false">
+								<core:Item key="{states>key}" text="{states>key}"/>
+							</Select>
+							<Button icon="sap-icon://delete" type="Transparent" tooltip="Remover" press=".onRemoveRow($event, 'RouteUfs')"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+
+			<Table items="{doc>/TrailerPlates}" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop sapUiSizeCompact" width="auto"
+				noDataText="Nenhum reboque.">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="Reboques (placa; dados vêm do cadastro de veículos)"/>
+						<ToolbarSpacer/>
+						<Button icon="sap-icon://add" text="Adicionar" press=".onAddRow($event, 'TrailerPlates')"/>
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column><Text text="Placa"/></Column>
+					<Column width="4rem"/>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Input value="{doc>Plate}" maxLength="8"/>
+							<Button icon="sap-icon://delete" type="Transparent" tooltip="Remover" press=".onRemoveRow($event, 'TrailerPlates')"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+
+			<Table items="{doc>/AdditionalDrivers}" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop sapUiSizeCompact" width="auto"
+				noDataText="Nenhum condutor adicional.">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="Condutores adicionais"/>
+						<ToolbarSpacer/>
+						<Button icon="sap-icon://add" text="Adicionar" press=".onAddRow($event, 'AdditionalDrivers')"/>
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column width="12rem"><Text text="CPF"/></Column>
+					<Column><Text text="Nome"/></Column>
+					<Column width="4rem"/>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Input value="{doc>Cpf}" maxLength="14"/>
+							<Input value="{doc>Name}" maxLength="60"/>
+							<Button icon="sap-icon://delete" type="Transparent" tooltip="Remover" press=".onRemoveRow($event, 'AdditionalDrivers')"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+
+			<Table items="{doc>/Seals}" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop sapUiSizeCompact" width="auto"
+				noDataText="Nenhum lacre.">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="Lacres"/>
+						<ToolbarSpacer/>
+						<Button icon="sap-icon://add" text="Adicionar" press=".onAddRow($event, 'Seals')"/>
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column><Text text="Número do lacre"/></Column>
+					<Column width="4rem"/>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Input value="{doc>Number}" maxLength="60"/>
+							<Button icon="sap-icon://delete" type="Transparent" tooltip="Remover" press=".onRemoveRow($event, 'Seals')"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+
+			<Table items="{doc>/Contractors}" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop sapUiSizeCompact" width="auto"
+				noDataText="Nenhum contratante.">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="Contratantes"/>
+						<ToolbarSpacer/>
+						<Button icon="sap-icon://add" text="Adicionar" press=".onAddRow($event, 'Contractors')"/>
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column width="14rem"><Text text="CPF/CNPJ"/></Column>
+					<Column><Text text="Nome"/></Column>
+					<Column width="4rem"/>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Input value="{doc>TaxId}" maxLength="18"/>
+							<Input value="{doc>Name}" maxLength="60"/>
+							<Button icon="sap-icon://delete" type="Transparent" tooltip="Remover" press=".onRemoveRow($event, 'Contractors')"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+
+			<Table items="{doc>/Payments}" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop sapUiSizeCompact" width="auto"
+				noDataText="Nenhum pagamento do frete informado.">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="Pagamento do frete (o primeiro componente e a primeira parcela)"/>
+						<ToolbarSpacer/>
+						<Button icon="sap-icon://add" text="Adicionar" press=".onAddPayment"/>
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column width="11rem"><Text text="CPF/CNPJ contratante"/></Column>
+					<Column><Text text="Nome"/></Column>
+					<Column width="7rem" hAlign="End"><Text text="Total"/></Column>
+					<Column width="8rem"><Text text="Forma"/></Column>
+					<Column width="9rem"><Text text="PIX"/></Column>
+					<Column width="5rem"><Text text="Banco"/></Column>
+					<Column width="6rem"><Text text="Agência"/></Column>
+					<Column width="10rem"><Text text="Vencimento (a prazo)"/></Column>
+					<Column width="4rem"/>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Input value="{doc>ContractorTaxId}" maxLength="18"/>
+							<Input value="{doc>ContractorName}" maxLength="60"/>
+							<Input value="{doc>Total}"/>
+							<Select selectedKey="{doc>IndPag}">
+								<core:Item key="0" text="À vista"/>
+								<core:Item key="1" text="A prazo"/>
+							</Select>
+							<Input value="{doc>Pix}" maxLength="60"/>
+							<Input value="{doc>BankCode}" maxLength="5"/>
+							<Input value="{doc>Agency}" maxLength="10"/>
+							<DatePicker value="{ path: 'doc>dueDate', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy"
+								valueFormat="yyyy-MM-dd" enabled="{= ${doc>IndPag} === '1' }"/>
+							<Button icon="sap-icon://delete" type="Transparent" tooltip="Remover" press=".onRemoveRow($event, 'Payments')"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+
+			<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanL="2" labelSpanM="3" columnsL="1" columnsM="1">
+				<f:content>
+					<core:Title text="Observações"/>
+					<Label text="Informações complementares"/>
+					<TextArea value="{doc>/AdditionalInfo}" rows="4" maxLength="5000" width="100%"/>
+				</f:content>
+			</f:SimpleForm>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave"/>
+				<Button text="Cancelar" press=".onCancel"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

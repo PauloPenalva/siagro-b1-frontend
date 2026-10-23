@@ -1,0 +1,52 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+	<Dialog title="Incluir MDF-e: escolha os CT-e autorizados" contentWidth="70rem" contentHeight="32rem" resizable="true" draggable="true">
+		<subHeader>
+			<OverflowToolbar>
+				<Label text="Placa"/>
+				<Input value="{eligible>/filter/Plate}" width="9rem" showClearIcon="true" change=".onFilterEligible"/>
+				<Label text="Emissão de"/>
+				<DatePicker value="{ path: 'eligible>/filter/DateFrom', type: 'sap.ui.model.type.String' }" width="10rem"
+					displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" change=".onFilterEligible"/>
+				<Label text="até"/>
+				<DatePicker value="{ path: 'eligible>/filter/DateTo', type: 'sap.ui.model.type.String' }" width="10rem"
+					displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" change=".onFilterEligible"/>
+			</OverflowToolbar>
+		</subHeader>
+		<content>
+			<Table id="mdfeEligibleCtesTable" items="{eligible>/rows}" mode="MultiSelect" growing="true" growingThreshold="100"
+				noDataText="Nenhum CT-e autorizado fora de MDF-e nesta filial." class="sapUiSizeCompact">
+				<columns>
+					<Column width="8rem"><Text text="Número/Série"/></Column>
+					<Column width="9rem"><Text text="Emissão"/></Column>
+					<Column width="7rem"><Text text="Placa"/></Column>
+					<Column width="9rem"><Text text="Término"/></Column>
+					<Column hAlign="End" width="9rem"><Text text="Valor da carga"/></Column>
+					<Column><Text text="Chave"/></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Text text="{eligible>Number} / {eligible>Series}"/>
+							<Text text="{ path: 'eligible>IssuedAt', formatter: 'formatter.formatDateTime' }"/>
+							<Text text="{eligible>TractionPlate}"/>
+							<Text text="{eligible>EndMunicipalityCode} {eligible>EndState}"/>
+							<Text text="{ path: 'eligible>CargoValue', formatter: 'formatter.formatBrl' }"/>
+							<Text text="{ path: 'eligible>AccessKey', formatter: '.formatAccessKey' }" wrapping="false"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</content>
+		<beginButton>
+			<Button text="Criar MDF-e" type="Emphasized" press=".onConfirmSelectCtes"/>
+		</beginButton>
+		<endButton>
+			<Button text="Cancelar" press=".onCloseSelectCtes"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,140 @@
+<mvc:View
+	controllerName="siagrob1.controller.transportManifests.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.f"
+	xmlns:fb="sap.ui.comp.filterbar"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+	<f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="Manifestos Eletrônicos (MDF-e)"/>
+				</f:heading>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:header>
+			<f:DynamicPageHeader>
+				<f:content>
+					<fb:FilterBar id="transportManifestsFb" search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+						<fb:filterGroupItems>
+							<fb:FilterGroupItem name="dateFrom" label="Emissão de" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<DatePicker value="{ path: 'filter>/DateFrom', type: 'sap.ui.model.type.String' }"
+										displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="dateTo" label="Emissão até" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<DatePicker value="{ path: 'filter>/DateTo', type: 'sap.ui.model.type.String' }"
+										displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="status" label="Situação" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<!-- Enum: vai como string crua no $filter (buildTransportManifestsFilter). -->
+									<MultiComboBox selectedKeys="{filter>/Statuses}" items="{statuses>/}" enabled="{= !${filter>/OnlyOpen} }">
+										<core:Item key="{statuses>key}" text="{statuses>text}"/>
+									</MultiComboBox>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="plate" label="Placa" groupName="G" visibleInFilterBar="true">
+								<fb:control><Input showClearIcon="true" value="{filter>/Plate}"/></fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="driver" label="Motorista" groupName="G" visibleInFilterBar="true">
+								<fb:control><Input showClearIcon="true" value="{filter>/Driver}"/></fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="onlyOpen" label="Só não encerrados" groupName="G" visibleInFilterBar="true">
+								<fb:control><Switch state="{filter>/OnlyOpen}" customTextOn="Sim" customTextOff="Não" change=".onSearch"/></fb:control>
+							</fb:FilterGroupItem>
+						</fb:filterGroupItems>
+					</fb:FilterBar>
+				</f:content>
+			</f:DynamicPageHeader>
+		</f:header>
+		<f:content>
+			<t:Table
+				id="tableTransportManifests"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+				rows="{
+					path: '/TransportManifests',
+					parameters: {
+						$select: 'Key,Number,Series,IssuedAt,Status,UfStart,UfEnd,TractionPlate,DriverName,CteCount,GrossWeight,WeightUnit,AccessKey,CreatedAt'
+					},
+					sorter: { path: 'CreatedAt', descending: true }
+				}">
+				<t:extension>
+					<OverflowToolbar>
+						<Title text="MDF-e"/>
+						<ToolbarSpacer/>
+						<Button type="Emphasized" icon="sap-icon://add" text="Incluir" press=".onCreate"/>
+						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
+						<Button type="Transparent" icon="sap-icon://pdf-attachment" text="Baixar DAMDFE" press=".onDamdfe"/>
+						<ToolbarSeparator/>
+						<Button type="Transparent" icon="sap-icon://refresh" text="Atualizar" press=".onRefresh"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="Número/Série" width="8rem">
+						<t:template>
+							<Text text="{= ${Number} ? ${Number} + ' / ' + ${Series} : '(sem número) / ' + ${Series} }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Emissão" width="9rem" sortProperty="IssuedAt">
+						<t:template>
+							<Text text="{ path: 'IssuedAt', targetType: 'any', formatter: 'formatter.formatDateTime' }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Situação" width="13rem">
+						<t:template>
+							<ObjectStatus
+								text="{ path: 'Status', targetType: 'any', formatter: '.mdfeStatusText' }"
+								state="{ path: 'Status', targetType: 'any', formatter: '.mdfeStatusState' }"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="UF início → fim" width="8rem">
+						<t:template>
+							<Text text="{UfStart} → {UfEnd}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Placa" width="7rem" sortProperty="TractionPlate">
+						<t:template>
+							<Text text="{TractionPlate}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Motorista" width="14rem">
+						<t:template>
+							<Text text="{DriverName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Qtd. CT-e" width="6rem" hAlign="End">
+						<t:template>
+							<Text text="{CteCount}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Peso" width="9rem" hAlign="End">
+						<t:template>
+							<Text text="{ parts: [ { path: 'GrossWeight', targetType: 'any' }, { path: 'WeightUnit', targetType: 'any' } ], formatter: '.weightText' }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Chave" width="26rem">
+						<t:template>
+							<Text text="{ path: 'AccessKey', targetType: 'any', formatter: '.formatAccessKey' }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</f:content>
+	</f:DynamicPage>
+</mvc:View>

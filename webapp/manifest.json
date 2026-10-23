@@ -299,6 +299,26 @@
           "target": "transportDocumentsDetail"
         },
         {
+          "pattern": "transport-manifests",
+          "name": "transportManifests",
+          "target": "transportManifests"
+        },
+        {
+          "pattern": "transport-manifests/new",
+          "name": "transportManifestsNew",
+          "target": "transportManifestsForm"
+        },
+        {
+          "pattern": "transport-manifests/{id}/edit",
+          "name": "transportManifestsEdit",
+          "target": "transportManifestsForm"
+        },
+        {
+          "pattern": "transport-manifests/{id}",
+          "name": "transportManifestsDetail",
+          "target": "transportManifestsDetail"
+        },
+        {
           "pattern": "truck-combinations",
           "name": "truckCombinations",
           "target": "truckCombinations"
@@ -1710,6 +1730,24 @@
           "id": "transportDocumentsDetail",
           "level": 2,
           "name": "siagrob1.view.transportDocuments.Detail",
+          "clearControlAggregation": true
+        },
+        "transportManifests": {
+          "id": "transportManifests",
+          "level": 1,
+          "name": "siagrob1.view.transportManifests.Main",
+          "clearControlAggregation": true
+        },
+        "transportManifestsForm": {
+          "id": "transportManifestsForm",
+          "level": 2,
+          "name": "siagrob1.view.transportManifests.Form",
+          "clearControlAggregation": true
+        },
+        "transportManifestsDetail": {
+          "id": "transportManifestsDetail",
+          "level": 2,
+          "name": "siagrob1.view.transportManifests.Detail",
           "clearControlAggregation": true
         },
         "truckCombinations": {

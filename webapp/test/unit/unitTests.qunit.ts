@@ -44,3 +44,4 @@ import "./helpers/AccountingMasterDataHelpers.qunit";
 import "./helpers/DistributionRuleHelpers.qunit";
 import "./view/DistributionRuleFragments.qunit";
 import "./helpers/CteHelpers.qunit";
+import "./helpers/MdfeHelpers.qunit";
