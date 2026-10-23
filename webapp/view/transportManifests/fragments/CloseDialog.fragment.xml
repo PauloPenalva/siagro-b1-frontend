@@ -1,0 +1,28 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<Dialog title="Encerrar MDF-e" contentWidth="30rem">
+		<content>
+			<MessageStrip text="O encerramento é enviado à SEFAZ e não pode ser desfeito." type="Warning" showIcon="true" class="sapUiSmallMargin"/>
+			<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanL="4" labelSpanM="4" columnsL="1" columnsM="1">
+				<f:content>
+					<Label text="Data do encerramento" required="true"/>
+					<DatePicker value="{ path: 'close>/ClosedOn', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+					<Label text="UF" required="true"/>
+					<Select selectedKey="{close>/UfCode}" items="{ path: 'states>/', templateShareable: false }" forceSelection="false">
+						<core:Item key="{states>key}" text="{states>key}"/>
+					</Select>
+					<Label text="Município (código IBGE)" required="true"/>
+					<Input value="{close>/CityIbge}" maxLength="7" description="{close>/CityName}"/>
+				</f:content>
+			</f:SimpleForm>
+		</content>
+		<beginButton>
+			<Button text="Encerrar" type="Emphasized" press=".onConfirmClose"/>
+		</beginButton>
+		<endButton>
+			<Button text="Cancelar" press=".onCancelClose"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

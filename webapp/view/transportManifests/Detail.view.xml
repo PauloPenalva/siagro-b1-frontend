@@ -1,0 +1,154 @@
+<mvc:View
+	controllerName="siagrob1.controller.transportManifests.Detail"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:uxap="sap.uxap"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<uxap:ObjectPageLayout showFooter="false" toggleHeaderOnTitleClick="true" preserveHeaderStateOnScroll="false"
+		busy="{ui>/busy}" busyIndicatorDelay="0">
+		<uxap:headerTitle>
+			<uxap:ObjectPageDynamicHeaderTitle>
+				<uxap:navigationActions>
+					<Button icon="sap-icon://decline" type="Transparent" tooltip="Voltar à lista" press=".onBack"/>
+				</uxap:navigationActions>
+				<uxap:expandedHeading>
+					<Title text="{= 'MDF-e ' + (${doc>/Number} ? ${doc>/Number} : '(sem número)') + ' / série ' + ${doc>/Series} }"/>
+				</uxap:expandedHeading>
+				<uxap:snappedHeading>
+					<Title text="{= 'MDF-e ' + (${doc>/Number} ? ${doc>/Number} : '(sem número)') + ' / série ' + ${doc>/Series} }"/>
+				</uxap:snappedHeading>
+				<uxap:actions>
+					<Button text="Editar" type="Emphasized" icon="sap-icon://edit" press=".onEdit" visible="{act>/edit}"/>
+					<Button text="Confirmar" type="Success" press=".onConfirm" visible="{act>/confirm}"/>
+					<Button text="Reabrir" press=".onReopen" visible="{act>/reopen}"/>
+					<Button text="Transmitir" type="Success" icon="sap-icon://paper-plane" press=".onTransmit" visible="{act>/transmit}"/>
+					<Button text="Consultar situação" icon="sap-icon://synchronize" press=".onConsult" visible="{act>/consult}"/>
+					<Button text="Encerrar" type="Emphasized" icon="sap-icon://complete" press=".onClose" visible="{act>/close}"/>
+					<Button text="DAMDFE" icon="sap-icon://pdf-attachment" press=".onDamdfe" visible="{act>/damdfe}"/>
+					<Button text="Excluir" type="Reject" icon="sap-icon://delete" press=".onDelete" visible="{act>/delete}"/>
+					<Button text="Descartar número" type="Critical" icon="sap-icon://locked" press=".onDiscardNumber" visible="{act>/discardNumber}"/>
+				</uxap:actions>
+			</uxap:ObjectPageDynamicHeaderTitle>
+		</uxap:headerTitle>
+
+		<uxap:headerContent>
+			<VBox>
+				<ObjectStatus text="{ path: 'doc>/Status', formatter: '.mdfeStatusText' }" state="{ path: 'doc>/Status', formatter: '.mdfeStatusState' }"/>
+				<Text text="{ path: 'doc>/AccessKey', formatter: '.formatAccessKey' }"/>
+				<Text text="{= ${doc>/RejectionCode} ? ${doc>/RejectionCode} + ' - ' + ${doc>/RejectionReason} : '' }"/>
+			</VBox>
+		</uxap:headerContent>
+
+		<uxap:sections>
+			<uxap:ObjectPageSection title="Dados gerais">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<f:SimpleForm editable="false" layout="ResponsiveGridLayout" labelSpanL="4" labelSpanM="4" columnsL="2" columnsM="1"
+							singleContainerFullSize="false">
+							<f:content>
+								<core:Title text="Documento"/>
+								<Label text="Filial"/>
+								<Text text="{doc>/BranchCode}"/>
+								<Label text="Emissão"/>
+								<Text text="{ path: 'doc>/IssuedAt', formatter: 'formatter.formatDateTime' }"/>
+								<Label text="Protocolo / autorização"/>
+								<Text text="{doc>/ProtocolNumber} { path: 'doc>/AuthorizedAt', formatter: 'formatter.formatDateTime' }"/>
+								<Label text="Encerramento" visible="{= !!${doc>/ClosedOn} }"/>
+								<Text text="{ path: 'doc>/ClosedOn', formatter: '.closedOnText' } - {doc>/ClosingCityIbge}/{doc>/ClosingUf}"
+									visible="{= !!${doc>/ClosedOn} }"/>
+
+								<core:Title text="Percurso e carga"/>
+								<Label text="UF início → fim"/>
+								<Text text="{doc>/UfStart} → {doc>/UfEnd}"/>
+								<Label text="UFs de percurso"/>
+								<Text text="{doc>/routeText}"/>
+								<Label text="Carregamento"/>
+								<Text text="{doc>/loadingCitiesText}"/>
+								<Label text="Tipo / produto"/>
+								<Text text="{ path: 'doc>/CargoType', formatter: '.cargoTypeText' } - {doc>/ProductDescription}"/>
+								<Label text="CEPs (carregamento / descarga)"/>
+								<Text text="{doc>/LoadingZip} / {doc>/UnloadingZip}"/>
+								<Label text="Peso bruto"/>
+								<Text text="{doc>/GrossWeight} { path: 'doc>/WeightUnit', formatter: '.weightUnitText' }"/>
+								<Label text="Valor da carga"/>
+								<Text text="{ path: 'doc>/CargoValue', formatter: 'formatter.formatBrl' }"/>
+
+								<core:Title text="Veículos e condutores"/>
+								<Label text="Placas"/>
+								<Text text="{doc>/vehiclesText}"/>
+								<Label text="Condutores"/>
+								<Text text="{doc>/driversText}"/>
+								<Label text="Lacres"/>
+								<Text text="{doc>/sealsText}"/>
+
+								<core:Title text="CIOT, pedágio e seguro"/>
+								<Label text="CIOT"/>
+								<Text text="{doc>/CiotNumber} {doc>/CiotResponsibleTaxId}"/>
+								<Label text="Vale-pedágio"/>
+								<Text text="{doc>/TollSupplierCnpj} {doc>/TollVoucherNumber} { path: 'doc>/TollValue', formatter: 'formatter.formatBrl' }"/>
+								<Label text="Seguro"/>
+								<Text text="{doc>/InsurerName} {doc>/PolicyNumber}"/>
+								<Label text="Observações"/>
+								<Text text="{doc>/AdditionalInfo}"/>
+							</f:content>
+						</f:SimpleForm>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
+			<uxap:ObjectPageSection title="CT-e">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<Table items="{doc>/Ctes}" class="sapUiSizeCompact">
+							<columns>
+								<Column width="5rem"><Text text="Linha"/></Column>
+								<Column width="16rem"><Text text="Município de descarga"/></Column>
+								<Column><Text text="Chave do CT-e"/></Column>
+							</columns>
+							<items>
+								<ColumnListItem>
+									<cells>
+										<Text text="{doc>LineNum}"/>
+										<Text text="{doc>UnloadingCityName} ({doc>UnloadingCityIbge})"/>
+										<Link text="{ path: 'doc>CteAccessKey', formatter: '.formatAccessKey' }" press=".onOpenCte"/>
+									</cells>
+								</ColumnListItem>
+							</items>
+						</Table>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
+			<uxap:ObjectPageSection title="Eventos">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<Table items="{doc>/Events}" class="sapUiSizeCompact" noDataText="Nenhum evento.">
+							<columns>
+								<Column width="10rem"><Text text="Tipo"/></Column>
+								<Column width="12rem"><Text text="Registro"/></Column>
+								<Column width="12rem"><Text text="Protocolo"/></Column>
+								<Column><Text text="Retorno"/></Column>
+							</columns>
+							<items>
+								<ColumnListItem>
+									<cells>
+										<Text text="{doc>Type}"/>
+										<Text text="{ path: 'doc>RegisteredAt', formatter: 'formatter.formatDateTime' }"/>
+										<Text text="{doc>ProtocolNumber}"/>
+										<Text text="{doc>StatusCode} {doc>StatusReason}"/>
+									</cells>
+								</ColumnListItem>
+							</items>
+						</Table>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+		</uxap:sections>
+	</uxap:ObjectPageLayout>
+</mvc:View>
