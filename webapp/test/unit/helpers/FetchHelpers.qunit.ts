@@ -1,4 +1,4 @@
-import { odataCollection, odataValue } from "siagrob1/helpers/FetchHelpers";
+import { odataCollection, odataValue, readErrorMessage } from "siagrob1/helpers/FetchHelpers";
 
 /**
  * A regra que estes testes fixam: no SiagroB1, uma Function do EDM declarada com tipo de
@@ -58,4 +58,38 @@ QUnit.test("`value: false` não pode ser confundido com ausência", function (as
 QUnit.test("ausência continua sendo ausência", function (assert) {
 	assert.strictEqual(odataValue(undefined), undefined);
 	assert.strictEqual(odataValue(null), null);
+});
+
+QUnit.module("FetchHelpers - readErrorMessage");
+
+QUnit.test("string do OData (BadRequest(texto)) devolve só a mensagem", function (assert) {
+	const done = assert.async();
+	const response = new Response(JSON.stringify({ "@odata.context": "$metadata#Edm.String", value: "O XML do CT-e não passou." }), { status: 400 });
+	void readErrorMessage(response).then((message) => {
+		assert.strictEqual(message, "O XML do CT-e não passou.");
+		done();
+	});
+});
+
+QUnit.test("corpo {error:{message}} devolve a mensagem", function (assert) {
+	const done = assert.async();
+	const response = new Response(JSON.stringify({ error: { code: "x", message: "Falhou aqui." } }), { status: 400 });
+	void readErrorMessage(response).then((message) => {
+		assert.strictEqual(message, "Falhou aqui.");
+		done();
+	});
+});
+
+QUnit.test("texto puro, JSON string e corpo vazio continuam como antes", function (assert) {
+	const done = assert.async();
+	void Promise.all([
+		readErrorMessage(new Response("Texto simples", { status: 400 })),
+		readErrorMessage(new Response("\"Entre aspas\"", { status: 400 })),
+		readErrorMessage(new Response("", { status: 400 })),
+	]).then(([plain, quoted, empty]) => {
+		assert.strictEqual(plain, "Texto simples");
+		assert.strictEqual(quoted, "Entre aspas");
+		assert.strictEqual(empty, "");
+		done();
+	});
 });

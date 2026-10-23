@@ -18,8 +18,18 @@ export async function readErrorMessage(response: Response): Promise<string> {
     if (typeof parsed === "string") {
       return parsed;
     }
-    const o = parsed as { message?: string; error?: { message?: string } };
-    return o?.error?.message ?? o?.message ?? body;
+    // `value` é o envelope do OData para um BadRequest(string): {"@odata.context":…,"value":"mensagem"}.
+    const o = parsed as { message?: string; value?: unknown; error?: { message?: string } };
+    if (typeof o?.error?.message === "string") {
+      return o.error.message;
+    }
+    if (typeof o?.message === "string") {
+      return o.message;
+    }
+    if (typeof o?.value === "string") {
+      return o.value;
+    }
+    return body;
   } catch {
     return body;
   }
