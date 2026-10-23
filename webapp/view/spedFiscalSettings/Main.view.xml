@@ -1,0 +1,113 @@
+<mvc:View
+	controllerName="siagrob1.controller.spedFiscalSettings.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+
+	<Page title="Parâmetros do SPED Fiscal" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0" busy="{ui>/busy}">
+		<subHeader>
+			<OverflowToolbar>
+				<Label text="Filial" required="true" labelFor="branchInput"/>
+				<Input id="branchInput" width="8rem" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBranchsValueHelp" value="{settings>/BranchCode}">
+					<customData>
+						<core:CustomData key="descriptionProperty" value="BranchName:ShortName"/>
+					</customData>
+				</Input>
+				<Input width="14rem" value="{settings>/BranchName}" editable="false"/>
+				<Button type="Emphasized" icon="sap-icon://refresh" text="Carregar" press=".onLoad"/>
+			</OverflowToolbar>
+		</subHeader>
+		<content>
+			<MessageStrip
+				text="Escolha a filial e clique em Carregar antes de editar. Filial sem parâmetros gravados mostra os valores padrão."
+				type="Information" showIcon="true" class="sapUiSmallMargin"/>
+			<f:Form id="spedFiscalSettingsForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="2"/>
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer title="Arquivo">
+						<f:formElements>
+							<f:FormElement label="Perfil de apresentação">
+								<Select selectedKey="{settings>/Profile}">
+									<core:Item key="A" text="A"/>
+									<core:Item key="B" text="B"/>
+									<core:Item key="C" text="C"/>
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="Tipo de atividade">
+								<Select selectedKey="{settings>/ActivityType}">
+									<core:Item key="0" text="0 - Industrial ou equiparado a industrial"/>
+									<core:Item key="1" text="1 - Outros"/>
+								</Select>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="Recolhimento do ICMS">
+						<f:formElements>
+							<f:FormElement label="Código de receita">
+								<Input value="{settings>/IcmsRevenueCode}" maxLength="30"/>
+							</f:FormElement>
+							<f:FormElement label="Dia do vencimento (mês seguinte)">
+								<StepInput value="{settings>/IcmsDueDay}" min="1" max="31" step="1"/>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="Contabilista">
+						<f:formElements>
+							<f:FormElement label="Nome">
+								<Input value="{settings>/AccountantName}" maxLength="100"/>
+							</f:FormElement>
+							<f:FormElement label="CPF (só dígitos)">
+								<Input value="{settings>/AccountantCpf}" maxLength="11"/>
+							</f:FormElement>
+							<f:FormElement label="CRC">
+								<Input value="{settings>/AccountantCrc}" maxLength="15"/>
+							</f:FormElement>
+							<f:FormElement label="CNPJ do escritório (só dígitos)">
+								<Input value="{settings>/AccountantCnpj}" maxLength="14"/>
+							</f:FormElement>
+							<f:FormElement label="E-mail">
+								<Input type="Email" value="{settings>/AccountantEmail}" maxLength="100"/>
+							</f:FormElement>
+							<f:FormElement label="Telefone (só dígitos)">
+								<Input type="Tel" value="{settings>/AccountantPhone}" maxLength="11"/>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="Endereço do contabilista">
+						<f:formElements>
+							<f:FormElement label="CEP (só dígitos)">
+								<Input value="{settings>/AccountantZipCode}" maxLength="8"/>
+							</f:FormElement>
+							<f:FormElement label="Logradouro">
+								<Input value="{settings>/AccountantStreet}" maxLength="60"/>
+							</f:FormElement>
+							<f:FormElement label="Número">
+								<Input value="{settings>/AccountantNumber}" maxLength="10"/>
+							</f:FormElement>
+							<f:FormElement label="Complemento">
+								<Input value="{settings>/AccountantComplement}" maxLength="60"/>
+							</f:FormElement>
+							<f:FormElement label="Bairro">
+								<Input value="{settings>/AccountantDistrict}" maxLength="60"/>
+							</f:FormElement>
+							<f:FormElement label="Município (código IBGE)">
+								<Input value="{settings>/AccountantMunicipalityCode}" maxLength="7"/>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+
+</mvc:View>
