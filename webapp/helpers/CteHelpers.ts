@@ -402,9 +402,9 @@ const PARTY_ROLE_TEXT: Record<string, string> = {
 /** Papel do participante pelo nome do enum CtePartyRole. */
 export const partyRoleText = (role: string): string => (role ? PARTY_ROLE_TEXT[role] ?? role : "");
 
-/** Desfecho da SEFAZ (StatusCode/Reason): 100 autorizado, 101/135 evento registrado, 102 inutilizado. */
+/** Desfecho da SEFAZ (StatusCode/Reason): 100/150 autorizado (150 = fora de prazo), 101/135 evento registrado, 102 inutilizado. */
 export const sefazOutcome = (status: { StatusCode: number; Reason: string }): { ok: boolean; text: string } => ({
-	ok: [100, 101, 102, 135, 136, 155].includes(Number(status?.StatusCode)),
+	ok: [100, 150, 101, 102, 135, 136, 155].includes(Number(status?.StatusCode)),
 	text: `${status?.StatusCode ?? ""} - ${status?.Reason ?? ""}`,
 });
 

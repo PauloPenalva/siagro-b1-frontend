@@ -240,4 +240,5 @@ QUnit.test("papel do participante e desfecho da SEFAZ", function (assert) {
 	assert.deepEqual(sefazOutcome({ StatusCode: 100, Reason: "Autorizado o uso do CT-e" }),
 		{ ok: true, text: "100 - Autorizado o uso do CT-e" });
 	assert.notOk(sefazOutcome({ StatusCode: 539, Reason: "Duplicidade" }).ok);
+	assert.ok(sefazOutcome({ StatusCode: 150, Reason: "Autorizado fora de prazo" }).ok);
 });
