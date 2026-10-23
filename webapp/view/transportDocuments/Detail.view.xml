@@ -49,6 +49,10 @@
 				<Text text="{= ${doc>/StatusCode} ? ${doc>/StatusCode} + ' - ' + ${doc>/StatusReason} : '' }"/>
 				<ObjectStatus title="Averbação" text="{ path: 'doc>/EndorsementStatus', formatter: '.endorsementStatusText' }"
 					state="{ path: 'doc>/EndorsementStatus', formatter: '.endorsementStatusState' }"/>
+				<HBox alignItems="Center" visible="{= !!${mdfe>/ManifestKey} }">
+					<Label text="MDF-e:" class="sapUiTinyMarginEnd"/>
+					<Link text="{mdfe>/text}" press=".onOpenManifest"/>
+				</HBox>
 				<ObjectStatus text="{doc>/FinancialError}" state="Error" icon="sap-icon://message-error" visible="{= !!${doc>/FinancialError} }"/>
 			</VBox>
 		</uxap:headerContent>

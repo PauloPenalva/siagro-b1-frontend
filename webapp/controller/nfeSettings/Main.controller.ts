@@ -16,6 +16,7 @@ import {
   certificateDaysToExpire, certificateState, environmentCode, readFileAsBase64,
 } from "siagrob1/helpers/NfeHelpers";
 import { CteSeriesRow, CteSettingsForm, QUANTITY_UNITS, buildCteSettingsSavePayload, sefazOutcome } from "siagrob1/helpers/CteHelpers";
+import { CARGO_TYPES, MdfeSeriesRow, MdfeSettingsForm, buildMdfeSettingsSavePayload } from "siagrob1/helpers/MdfeHelpers";
 import { openNfeCancelDialog } from "siagrob1/dialogs/NfeCancelDialog";
 import { NfeSeries, NfeSeriesRow, buildSeriesSavePayload, followDefaultSeries, hasBlankSeriesRow } from "siagrob1/helpers/NfeSeriesHelpers";
 
@@ -47,6 +48,8 @@ export default class Main extends CommonController {
   onInit(): void {
     this.getView().setModel(new JSONModel({ loaded: false }), "nfe");
     this.getView().setModel(new JSONModel({ loaded: false }), "cte");
+    this.getView().setModel(new JSONModel({ loaded: false }), "mdfe");
+    this.getView().setModel(new JSONModel(CARGO_TYPES), "mdfeCargoTypes");
     this.getView().setModel(new JSONModel({ key: "nfe" }), "tab");
     this.getView().setModel(new JSONModel(QUANTITY_UNITS), "cteUnits");
     this.getRouter().getRoute("nfeSettings").attachPatternMatched(() => {
@@ -62,6 +65,7 @@ export default class Main extends CommonController {
   private reset() {
     this.model().setData({ loaded: false });
     this.cte().setData({ loaded: false });
+    this.mdfe().setData({ loaded: false });
   }
 
   private cte(): JSONModel {
@@ -81,8 +85,10 @@ export default class Main extends CommonController {
     // Zera as configurações da filial anterior: se a leitura falhar, nada dela pode ser salvo na nova.
     this.model().setData({ loaded: false, BranchCode: code });
     this.cte().setData({ loaded: false, BranchCode: code });
+    this.mdfe().setData({ loaded: false, BranchCode: code });
     await this.load(code);
     await this.loadCte(code);
+    await this.loadMdfe(code);
   }
 
   private async load(branchCode: string) {
@@ -250,6 +256,73 @@ export default class Main extends CommonController {
       } else {
         MessageBox.warning(text);
       }
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  // ---------- MDF-e (modelo 58) ----------
+
+  private mdfe(): JSONModel {
+    return this.getView().getModel("mdfe") as JSONModel;
+  }
+
+  private async loadMdfe(branchCode: string) {
+    this.setBusy(true);
+    try {
+      const result = await sendJson("GET", `${ServerRoutes.branchMdfeSettingsGet}(BranchCode='${encodeURIComponent(branchCode)}')`);
+      if (!result.ok) {
+        this.mdfe().setData({ loaded: false, BranchCode: branchCode });
+        MessageBox.error(result.message);
+        return;
+      }
+      this.showMdfe(odataValue<MdfeSettingsForm>(result.data));
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  private showMdfe(settings: MdfeSettingsForm) {
+    this.mdfe().setData({
+      ...settings,
+      SeriesList: (settings.SeriesList ?? []).map((row) => ({ ...row, isNew: false })),
+      loaded: true,
+    });
+  }
+
+  onAddMdfeSeries() {
+    const row: MdfeSeriesRow = { Series: "", Description: "", NextNumber: 1, IsUsed: false, isNew: true };
+    this.mdfe().setProperty("/SeriesList", [...(this.mdfe().getProperty("/SeriesList") as MdfeSeriesRow[]), row]);
+  }
+
+  onDeleteMdfeSeries(ev: Button$PressEvent) {
+    const row = ev.getSource().getBindingContext("mdfe").getObject() as MdfeSeriesRow;
+    this.mdfe().setProperty("/SeriesList", (this.mdfe().getProperty("/SeriesList") as MdfeSeriesRow[]).filter((r) => r !== row));
+  }
+
+  onSelectDefaultMdfeSeries(ev: RadioButton$SelectEvent) {
+    if (!ev.getParameter("selected")) {
+      return;
+    }
+    const row = ev.getSource().getBindingContext("mdfe").getObject() as MdfeSeriesRow;
+    this.mdfe().setProperty("/DefaultSeries", Number(row.Series));
+  }
+
+  async onSaveMdfe() {
+    const data = this.mdfe().getData() as MdfeSettingsForm;
+    if (hasBlankSeriesRow((data.SeriesList ?? []) as unknown as NfeSeriesRow[])) {
+      MessageBox.error("Informe o número da série e o próximo número em todas as linhas.");
+      return;
+    }
+    this.setBusy(true);
+    try {
+      const result = await sendJson("POST", ServerRoutes.branchMdfeSettingsSave, buildMdfeSettingsSavePayload(data));
+      if (!result.ok) {
+        MessageBox.error(result.message);
+        return;
+      }
+      this.showMdfe(odataValue<MdfeSettingsForm>(result.data));
+      MessageToast.show("Configuração do MDF-e gravada.");
     } finally {
       this.setBusy(false);
     }

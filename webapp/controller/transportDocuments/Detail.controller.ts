@@ -13,6 +13,7 @@ import {
 	buildCorrectionPayload, canEndorse, cancellationJustificationError, endorsementStatusState, endorsementStatusText, cteActions, cteStatusState, cteStatusText,
 	TRANSPORT_DOCUMENT_EXPAND, formatAccessKey, partyRoleText, quantityUnitText, sefazOutcome, takerRoleText,
 } from "siagrob1/helpers/CteHelpers";
+import { CteManifestLink, manifestLinkText } from "siagrob1/helpers/MdfeHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import BaseController from "../BaseController";
 
@@ -56,6 +57,7 @@ export default class Detail extends BaseController {
 		this.getView().setModel(new JSONModel({}), "doc");
 		this.getView().setModel(new JSONModel(actionsFor(null, false, false)), "act");
 		this.getView().setModel(new JSONModel([]), "titles");
+		this.getView().setModel(new JSONModel({}), "mdfe");
 		this.nfeEmail = new NfeEmailHelper(this.getView(), 3, ServerRoutes.transportDocumentsSendEmail);
 		this.getRouter().getRoute("transportDocumentsDetail").attachPatternMatched((ev: Route$MatchedEvent) => {
 			void this.refreshStandaloneFlag();
@@ -72,6 +74,7 @@ export default class Detail extends BaseController {
 		(this.getView().getModel("doc") as JSONModel).setData({});
 		(this.getView().getModel("act") as JSONModel).setData(actionsFor(null, false, false));
 		(this.getView().getModel("titles") as JSONModel).setData([]);
+		(this.getView().getModel("mdfe") as JSONModel).setData({});
 		this.setBusy(true);
 		try {
 			const result = await sendJson("GET",
@@ -86,8 +89,23 @@ export default class Detail extends BaseController {
 			const [averbaEnabled, titles] = await Promise.all([this.loadAverbaEnabled(doc.BranchCode), this.loadTitles(doc.Key)]);
 			(this.getView().getModel("titles") as JSONModel).setData(titles);
 			(this.getView().getModel("act") as JSONModel).setData(actionsFor(doc, averbaEnabled, titles.length > 0));
+			await this.loadManifestLink(doc.Key);
 		} finally {
 			this.setBusy(false);
+		}
+	}
+
+	/** MDF-e do CT-e (ativo, senão o último). 204 sem corpo = nenhum; falha não atrapalha o detalhe. */
+	private async loadManifestLink(key: string): Promise<void> {
+		const result = await sendJson("GET", `${ServerRoutes.transportDocumentsManifest}(Key=${encodeURIComponent(key)})`);
+		const link = result.ok && result.data && typeof result.data === "object" ? odataValue<CteManifestLink>(result.data) : null;
+		(this.getView().getModel("mdfe") as JSONModel).setData(link?.ManifestKey ? { ...link, text: manifestLinkText(link) } : {});
+	}
+
+	onOpenManifest(): void {
+		const key = (this.getView().getModel("mdfe") as JSONModel).getProperty("/ManifestKey") as string;
+		if (key) {
+			this.navTo("transportManifestsDetail", { id: key });
 		}
 	}
 

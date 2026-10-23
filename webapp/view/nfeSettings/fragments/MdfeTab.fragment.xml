@@ -1,0 +1,63 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<VBox>
+		<MessageStrip text="Escolha a filial para ver a configuração do MDF-e." type="Information" showIcon="true"
+			class="sapUiSmallMargin" visible="{= ${mdfe>/loaded} !== true }" />
+		<MessageStrip text="Ambiente de homologação: MDF-e sem valor fiscal. O certificado é o da NF-e da filial."
+			type="Warning" showIcon="true" class="sapUiSmallMargin"
+			visible="{= ${mdfe>/loaded} === true &amp;&amp; ${mdfe>/Environment} === 'Homologation' }" />
+
+		<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanL="3" labelSpanM="4" columnsL="2" columnsM="1"
+			visible="{= ${mdfe>/loaded} === true }">
+			<f:content>
+				<core:Title text="MDF-e (modelo 58)" />
+				<Label text="Emite MDF-e" />
+				<CheckBox selected="{mdfe>/Enabled}" />
+				<Label text="Ambiente" />
+				<Select selectedKey="{mdfe>/Environment}">
+					<core:Item key="Homologation" text="Homologação" />
+					<core:Item key="Production" text="Produção" />
+				</Select>
+				<Label text="Tipo de carga padrão" />
+				<Select selectedKey="{mdfe>/DefaultCargoType}" items="{mdfeCargoTypes>/}">
+					<core:Item key="{mdfeCargoTypes>key}" text="{mdfeCargoTypes>key} - {mdfeCargoTypes>text}" />
+				</Select>
+				<Label text="Exige CIOT" />
+				<CheckBox selected="{mdfe>/RequiresCiot}" />
+			</f:content>
+		</f:SimpleForm>
+
+		<Table items="{mdfe>/SeriesList}" width="auto" class="sapUiSmallMarginBeginEnd" visible="{= ${mdfe>/loaded} === true }">
+			<headerToolbar>
+				<OverflowToolbar>
+					<Title text="Séries do MDF-e" />
+					<ToolbarSpacer />
+					<Button text="Adicionar série" icon="sap-icon://add" press=".onAddMdfeSeries" />
+				</OverflowToolbar>
+			</headerToolbar>
+			<columns>
+				<Column width="8rem"><Text text="Série" /></Column>
+				<Column><Text text="Descrição" /></Column>
+				<Column width="12rem"><Text text="Próximo número" /></Column>
+				<Column width="6rem" hAlign="Center"><Text text="Padrão" /></Column>
+				<Column width="4rem" hAlign="Center"><Text text="" /></Column>
+			</columns>
+			<items>
+				<ColumnListItem>
+					<cells>
+						<Input value="{mdfe>Series}" type="Number" enabled="{mdfe>isNew}" />
+						<Input value="{mdfe>Description}" maxLength="60" />
+						<Input value="{mdfe>NextNumber}" type="Number" />
+						<RadioButton groupName="mdfeDefaultSeries"
+							selected="{= Number(${mdfe>Series}) === Number(${mdfe>/DefaultSeries}) }"
+							select=".onSelectDefaultMdfeSeries" />
+						<Button icon="sap-icon://delete" type="Transparent" press=".onDeleteMdfeSeries"
+							enabled="{= !${mdfe>IsUsed} &amp;&amp; Number(${mdfe>Series}) !== Number(${mdfe>/DefaultSeries}) }" />
+					</cells>
+				</ColumnListItem>
+			</items>
+		</Table>
+	</VBox>
+</core:FragmentDefinition>

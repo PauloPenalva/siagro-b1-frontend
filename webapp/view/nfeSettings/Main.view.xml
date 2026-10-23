@@ -84,6 +84,9 @@
 					<IconTabFilter key="cte" text="CT-e">
 						<core:Fragment fragmentName="siagrob1.view.nfeSettings.fragments.CteTab" type="XML" />
 					</IconTabFilter>
+					<IconTabFilter key="mdfe" text="MDF-e">
+						<core:Fragment fragmentName="siagrob1.view.nfeSettings.fragments.MdfeTab" type="XML" />
+					</IconTabFilter>
 				</items>
 			</IconTabBar>
 		</content>
@@ -98,6 +101,8 @@
 					enabled="{= ${nfe>/loaded} === true }" visible="{= ${tab>/key} === 'nfe' }" />
 				<Button text="Salvar CT-e" type="Emphasized" icon="sap-icon://save" press=".onSaveCte"
 					enabled="{= ${cte>/loaded} === true }" visible="{= ${tab>/key} === 'cte' }" />
+				<Button text="Salvar MDF-e" type="Emphasized" icon="sap-icon://save" press=".onSaveMdfe"
+					enabled="{= ${mdfe>/loaded} === true }" visible="{= ${tab>/key} === 'mdfe' }" />
 			</OverflowToolbar>
 		</footer>
 	</Page>
