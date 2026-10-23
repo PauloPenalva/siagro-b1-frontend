@@ -1435,6 +1435,16 @@
           "target": "fiscalConference"
         },
         {
+          "pattern": "sped-fiscal",
+          "name": "spedFiscal",
+          "target": "spedFiscal"
+        },
+        {
+          "pattern": "sped-fiscal-settings",
+          "name": "spedFiscalSettings",
+          "target": "spedFiscalSettings"
+        },
+        {
           "pattern": "fiscal-inventory-opening-balances",
           "name": "fiscalInventoryOpeningBalances",
           "target": "fiscalInventoryOpeningBalances"
@@ -3117,6 +3127,18 @@
           "id": "fiscalConference",
           "level": 1,
           "name": "siagrob1.view.fiscalConference.Main",
+          "clearControlAggregation": true
+        },
+        "spedFiscal": {
+          "id": "spedFiscal",
+          "level": 1,
+          "name": "siagrob1.view.spedFiscal.Main",
+          "clearControlAggregation": true
+        },
+        "spedFiscalSettings": {
+          "id": "spedFiscalSettings",
+          "level": 1,
+          "name": "siagrob1.view.spedFiscalSettings.Main",
           "clearControlAggregation": true
         },
         "financialAccountMovements": {

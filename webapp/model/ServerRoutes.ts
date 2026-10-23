@@ -3,6 +3,10 @@ export default {
   // Painel da home (só STANDALONE; 404 em SAPB1).
   dashboard: '/reports/Dashboard',
   fiscalConference: '/reports/FiscalConference',
+  // SPED Fiscal (só STANDALONE): POST baixa o TXT; POST /Check devolve as inconsistências.
+  spedFiscal: '/reports/SpedFiscal',
+  spedFiscalSettingsGet: '/odata/SpedFiscalSettingsGet',
+  spedFiscalSettingsSave: '/odata/SpedFiscalSettingsSave',
   fiscalKardex: '/reports/FiscalKardex',
   fiscalKardexBook: '/reports/FiscalKardex/Book',
   fiscalInventory: '/reports/FiscalInventory',

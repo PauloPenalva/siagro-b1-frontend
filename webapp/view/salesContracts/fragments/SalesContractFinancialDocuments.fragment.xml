@@ -5,10 +5,45 @@
   <!--
     Seção Financeiro do contrato de venda (spec 2026-10-15, firmes a receber): provisórios, firmes, devoluções de venda e adiantamentos, pela function FinancialDocumentsGetByContract, no JSONModel "contractFinancial". Somente leitura. A coluna NF mostra TaxDocumentNumber, que traz o número interno quando o documento não tem NF.
   -->
+  <!-- Grade sem provisório nem cancelado (pedido 2026-10-23). Resumo da situação financeira do contrato (spec 2026-10-23): saldo a receber = firmes em aberto menos crédito de adiantamento. -->
+  <VBox>
+  <FlexBox wrap="Wrap" class="sapUiSmallMarginBottom" visible="{contractFinancial>/summary/HasRows}">
+    <VBox class="sapUiMediumMarginEnd sapUiSmallMarginBottom">
+      <Label text="Títulos firmes" />
+      <ObjectNumber number="{path: 'contractFinancial>/summary/TitlesAmount', formatter: '.formatter.formatDecimal2'}" unit="BRL" />
+    </VBox>
+    <VBox class="sapUiMediumMarginEnd sapUiSmallMarginBottom">
+      <Label text="Baixado" />
+      <ObjectNumber number="{path: 'contractFinancial>/summary/SettledAmount', formatter: '.formatter.formatDecimal2'}" unit="BRL" state="Success" />
+    </VBox>
+    <VBox class="sapUiMediumMarginEnd sapUiSmallMarginBottom">
+      <Label text="Em aberto" />
+      <ObjectNumber number="{path: 'contractFinancial>/summary/OpenAmount', formatter: '.formatter.formatDecimal2'}" unit="BRL" />
+    </VBox>
+    <VBox class="sapUiMediumMarginEnd sapUiSmallMarginBottom">
+      <Label text="Adiantamentos (crédito disponível)" />
+      <ObjectNumber number="{path: 'contractFinancial>/summary/AdvanceAvailable', formatter: '.formatter.formatDecimal2'}" unit="BRL"
+                    tooltip="Total adiantado: {path: 'contractFinancial>/summary/AdvanceAmount', formatter: '.formatter.formatDecimal2'}" />
+    </VBox>
+    <VBox class="sapUiMediumMarginEnd sapUiSmallMarginBottom">
+      <Label text="Saldo a receber" design="Bold" />
+      <ObjectNumber number="{path: 'contractFinancial>/summary/Balance', formatter: '.formatter.formatDecimal2'}" unit="BRL" emphasized="true"
+                    state="{= ${contractFinancial>/summary/Balance} > 0 ? 'Warning' : 'Success' }" />
+    </VBox>
+    <VBox class="sapUiMediumMarginEnd sapUiSmallMarginBottom" visible="{= ${contractFinancial>/summary/WithholdingOpen} !== 0 }">
+      <Label text="Retenções em aberto" />
+      <ObjectNumber number="{path: 'contractFinancial>/summary/WithholdingOpen', formatter: '.formatter.formatDecimal2'}" unit="BRL" />
+    </VBox>
+    <VBox class="sapUiMediumMarginEnd sapUiSmallMarginBottom" visible="{= ${contractFinancial>/summary/ReturnsOpen} !== 0 }">
+      <Label text="Devoluções em aberto" />
+      <ObjectNumber number="{path: 'contractFinancial>/summary/ReturnsOpen', formatter: '.formatter.formatDecimal2'}" unit="BRL"
+                    tooltip="Já compensadas no firme ou no provisório; informativo." />
+    </VBox>
+  </FlexBox>
   <Table
     class="sapUiSizeCondensed"
     items="{contractFinancial>/rows}"
-    noDataText="Nenhum título financeiro neste contrato.">
+    noDataText="Nenhum título firme ou adiantamento neste contrato.">
     <columns>
       <Column width="9rem"><Text text="Título" /></Column>
       <Column width="8rem"><Text text="Natureza" /></Column>
@@ -42,4 +77,5 @@
       </ColumnListItem>
     </items>
   </Table>
+  </VBox>
 </core:FragmentDefinition>

@@ -39,6 +39,7 @@ import "./helpers/CompanySelectionHelpers.qunit";
 import "./helpers/NfeSeriesHelpers.qunit";
 import "./helpers/SessionRouteHelpers.qunit";
 import "./helpers/SalesIcmsComplementHelpers.qunit";
+import "./helpers/ContractFinancialSummaryHelpers.qunit";
 import "./helpers/SimpleFormGroupHelpers.qunit";
 import "./helpers/AccountingMasterDataHelpers.qunit";
 import "./helpers/DistributionRuleHelpers.qunit";

@@ -15,6 +15,7 @@ import { canCancelNfe, canVoidNfeNumber, nfeOutcomeMessage, NfeOutcome } from "s
 import { openNfeCancelDialog } from "siagrob1/dialogs/NfeCancelDialog";
 import { runNfeVoidNumber } from "siagrob1/dialogs/NfeVoidNumberAction";
 import { BaseController } from "./BaseController";
+import { anyOfFilter } from "siagrob1/helpers/FilterHelpers";
 
 /**
  * Lista dos documentos de entrada — NF de fornecedor, venda futura do produtor e suas remessas,
@@ -26,7 +27,8 @@ export default class Main extends BaseController {
   formatter = { ...formatter }
 
   onInit(): void {
-    this.createFilterModel();
+    // Situação em múltipla seleção: abre com todas menos Cancelado (nenhuma marcada = todas).
+    this.createFilterModel({ InvoiceStatus: ["Pending", "Confirmed"] });
 
     this.getRouter().getRoute("purchaseInvoices")
       .attachPatternMatched(() => {
@@ -65,12 +67,17 @@ export default class Main extends BaseController {
     const filterData = (filterModel?.getData() ?? {}) as Record<string, string>;
     const filters: string[] = [];
 
+    const statusFilter = anyOfFilter("InvoiceStatus", filterData.InvoiceStatus as unknown as string[]);
+    if (statusFilter) {
+      filters.push(statusFilter);
+    }
+
     Object.keys(filterData).forEach((key: string) => {
       const value = filterData[key];
 
-      if (!value) return;
+      if (!value || key === "InvoiceStatus") return;
 
-      if (key === "InvoiceType" || key === "TaxDocumentKind" || key === "IssuerType" || key === "InvoiceStatus" || key === "NfeStatus") {
+      if (key === "InvoiceType" || key === "TaxDocumentKind" || key === "IssuerType" || key === "NfeStatus") {
         filters.push(`${key} eq '${value}'`);
       } else if (key === "DateFrom") {
         filters.push(`IssueDate ge ${value}`);

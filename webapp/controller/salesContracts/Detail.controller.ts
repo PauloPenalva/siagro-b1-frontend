@@ -18,6 +18,7 @@ import SessionService from "siagrob1/services/SessionService";
 import { Link$PressEvent } from "sap/m/Link";
 import { odataCollection, sendJson } from "siagrob1/helpers/FetchHelpers";
 import { FinancialDocumentByContract } from "siagrob1/types/FinancialDocumentByContract";
+import { contractFinancialSummary, visibleContractFinancialRows } from "siagrob1/helpers/ContractFinancialSummaryHelpers";
 
 /** Complemento fiscal do contrato (DTO PascalCase da function; vem nulo quando ainda não existe). */
 type FiscalComplement = {
@@ -46,7 +47,7 @@ export default class Detail extends SalesContractsBaseController {
 	onInit(): void  {	
 		this.getView().setModel(new JSONModel({}), "fiscalComplement");
 		this.getView().setModel(new JSONModel({}), "fiscalComplementDialog");
-		this.getView().setModel(new JSONModel({ rows: [] }), "contractFinancial");
+		this.getView().setModel(new JSONModel({ rows: [], summary: contractFinancialSummary([]) }), "contractFinancial");
 		this.initContractDrafts();
 		this.getRouter().getRoute("salesContractsDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
 	}
@@ -104,7 +105,7 @@ export default class Detail extends SalesContractsBaseController {
   private async loadContractFinancial(contractKey: string): Promise<void> {
     this._financialContractKey = contractKey;
     const model = this.getModel("contractFinancial") as JSONModel;
-    model.setData({ rows: [] });
+    model.setData({ rows: [], summary: contractFinancialSummary([]) });
 
     const result = await sendJson("GET",
       `${this.api.financialDocumentsGetByContract}(ContractType='Sales',ContractKey=${contractKey})`);
@@ -115,7 +116,8 @@ export default class Detail extends SalesContractsBaseController {
       return;
     }
 
-    model.setData({ rows: odataCollection<FinancialDocumentByContract>(result.data) });
+    const rows = odataCollection<FinancialDocumentByContract>(result.data);
+    model.setData({ rows: visibleContractFinancialRows(rows), summary: contractFinancialSummary(rows) });
   }
 
   onOpenContractFinancialDocument(ev: Link$PressEvent): void {

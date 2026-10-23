@@ -1,0 +1,119 @@
+<mvc:View
+	controllerName="siagrob1.controller.spedFiscal.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<Page title="SPED Fiscal (EFD ICMS/IPI)" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0" busy="{ui>/busy}">
+		<content>
+			<f:Form id="spedFiscalForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2"/>
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer title="Período">
+						<f:formElements>
+							<f:FormElement label="Filial">
+								<f:fields>
+									<Input id="branchInput" required="true" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBranchsValueHelp" value="{params>/BranchCode}" change=".onParamsChanged">
+										<layoutData>
+											<f:ColumnElementData cellsLarge="4" cellsSmall="4"/>
+										</layoutData>
+										<customData>
+											<core:CustomData key="descriptionProperty" value="BranchName:ShortName"/>
+										</customData>
+									</Input>
+									<Input value="{params>/BranchName}" editable="false"/>
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement label="Mês">
+								<DatePicker id="monthPicker" required="true" value="{params>/Month}" valueFormat="yyyy-MM-dd" displayFormat="MM/yyyy" change=".onParamsChanged"/>
+							</f:FormElement>
+							<f:FormElement label="Finalidade">
+								<Select selectedKey="{params>/Purpose}" change=".onParamsChanged">
+									<core:Item key="0" text="0 - Remessa do arquivo original"/>
+									<core:Item key="1" text="1 - Remessa do arquivo substituto (retificadora)"/>
+								</Select>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="Apuração e inventário">
+						<f:formElements>
+							<f:FormElement label="Saldo credor do período anterior">
+								<Input textAlign="End" value="{ path: 'params>/PreviousCreditBalance', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2, groupingEnabled: true, decimalSeparator: ',', groupingSeparator: '.' }, constraints: { minimum: 0 } }" description="R$" change=".onParamsChanged"/>
+							</f:FormElement>
+							<f:FormElement label="Incluir inventário (bloco H)">
+								<Switch state="{params>/IncludeInventory}" customTextOn="Sim" customTextOff="Não" change=".onParamsChanged"/>
+							</f:FormElement>
+							<f:FormElement label="Data do inventário">
+								<DatePicker value="{params>/InventoryDate}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy" enabled="{params>/IncludeInventory}" placeholder="Último dia do ano anterior" change=".onParamsChanged"/>
+							</f:FormElement>
+							<f:FormElement label="Motivo do inventário">
+								<Select selectedKey="{params>/InventoryReason}" enabled="{params>/IncludeInventory}" change=".onParamsChanged">
+									<core:Item key="01" text="01 - No final do período"/>
+									<core:Item key="02" text="02 - Na mudança de forma de tributação da mercadoria"/>
+									<core:Item key="03" text="03 - Na solicitação da baixa cadastral, paralisação temporária e outras situações"/>
+									<core:Item key="04" text="04 - Na alteração de regime de pagamento"/>
+									<core:Item key="05" text="05 - Por determinação dos fiscos"/>
+									<core:Item key="06" text="06 - Para controle da posse e propriedade de terceiros"/>
+								</Select>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+
+			<MessageStrip
+				visible="{check>/checked}"
+				class="sapUiSmallMarginBeginEnd sapUiTinyMarginBottom"
+				showIcon="true"
+				type="{= ${check>/blockingCount} &gt; 0 ? 'Error' : ${check>/warningCount} &gt; 0 ? 'Warning' : 'Success' }"
+				text="{= ${check>/blockingCount} &gt; 0 ? ${check>/blockingCount} + ' inconsistência(s) bloqueante(s): corrija antes de gerar o arquivo.' : ${check>/warningCount} &gt; 0 ? 'Sem bloqueios; ' + ${check>/warningCount} + ' aviso(s).' : 'Nenhuma inconsistência encontrada.' }"/>
+
+			<HBox class="sapUiSmallMargin" wrap="Wrap" visible="{check>/checked}">
+				<ObjectNumber class="sapUiMediumMarginEnd" state="Error" unit="Débitos" emphasized="true"
+					number="{ path: 'check>/totals/debits', formatter: 'formatter.formatDecimal2' }"/>
+				<ObjectNumber class="sapUiMediumMarginEnd" state="Success" unit="Créditos" emphasized="true"
+					number="{ path: 'check>/totals/credits', formatter: 'formatter.formatDecimal2' }"/>
+				<ObjectNumber emphasized="true" unit="Saldo (positivo = a recolher)"
+					number="{ path: 'check>/totals/balance', formatter: 'formatter.formatDecimal2' }"/>
+			</HBox>
+
+			<Table id="issuesTable" items="{check>/issues}" visible="{check>/checked}" class="sapUiSizeCondensed sapUiSmallMarginBeginEnd" width="auto" noDataText="Nenhuma inconsistência." growing="true" growingThreshold="100">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="Inconsistências"/>
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column width="8rem"><Text text="Gravidade"/></Column>
+					<Column width="14rem"><Text text="Referência"/></Column>
+					<Column><Text text="Mensagem"/></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<ObjectStatus text="{= ${check>blocking} ? 'Bloqueante' : 'Aviso' }" state="{= ${check>blocking} ? 'Error' : 'Warning' }"/>
+							<Text text="{check>reference}"/>
+							<Text text="{check>message}"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Verificar" icon="sap-icon://inspect" press=".onCheck"/>
+				<Button text="Gerar arquivo" type="Emphasized" icon="sap-icon://download" press=".onGenerate"
+					enabled="{= ${check>/checked} &amp;&amp; ${check>/blockingCount} === 0 }"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

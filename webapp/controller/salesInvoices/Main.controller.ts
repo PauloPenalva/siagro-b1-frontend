@@ -18,6 +18,7 @@ import { runNfeVoidNumber } from "siagrob1/dialogs/NfeVoidNumberAction";
 import { sendJson, odataValue } from "siagrob1/helpers/FetchHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import Sorter from "sap/ui/model/Sorter";
+import { anyOfFilter } from "siagrob1/helpers/FilterHelpers";
 
 const NFE_KEY_LENGTH = 44;
 
@@ -70,7 +71,8 @@ export default class Main extends BaseController {
   private _branchesLoaded = false;
 
 	onInit(): void  {
-    this.createFilterModel();
+    // Status em múltipla seleção: abre com todos menos Cancelado (nenhum marcado = todos).
+    this.createFilterModel({ InvoiceStatus: ["Pending", "Confirmed", "Returned"] });
     this.getView().setModel(new JSONModel([]), "branches");
 
     this.getRouter().getRoute("salesInvoices")
@@ -118,6 +120,11 @@ export default class Main extends BaseController {
     const filterData = filterModel.getData() as Record<string, string>;
     const filters: string[] = [];
 
+    const statusFilter = anyOfFilter("InvoiceStatus", filterData.InvoiceStatus as unknown as string[]);
+    if (statusFilter) {
+      filters.push(statusFilter);
+    }
+
     // Escapa a aspa simples DOBRANDO-A, como manda o OData — sem isso um cliente com apóstrofo
     // no nome quebra o `$filter` inteiro. Mesmo helper do `applyReconciliationFilters` no
     // BaseController.
@@ -132,14 +139,14 @@ export default class Main extends BaseController {
       const filterKey = key;
       const value = filterData[filterKey];
 
-      if (!value) return;
+      if (!value || filterKey === "InvoiceStatus") return;
 
       // `InvoiceStatus` e `InvoiceType` são ENUM e entram como string crua de propósito.
       // `sap.ui.model.Filter` faria o UI5 montar o literal a partir do metadata, e ele não sabe
       // formatar enum: estoura "Unsupported type: SIAGROB1.SalesInvoiceType" num diálogo, com a
       // lista sem filtrar nada. Cair no `else` seria pior ainda — `contains(InvoiceType,'Return')`
       // é recusado pelo backend.
-      if (filterKey == "InvoiceStatus" || filterKey == "InvoiceType" || filterKey == "NfeStatus"
+      if (filterKey == "InvoiceType" || filterKey == "NfeStatus"
         || filterKey == "TaxDocumentKind") {
         filters.push(`${filterKey} eq '${esc(value)}'`)
       } else if (filterKey == "DateFrom") {
