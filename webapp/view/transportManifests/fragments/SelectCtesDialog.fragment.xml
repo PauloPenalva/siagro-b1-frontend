@@ -26,6 +26,7 @@
 					<Column width="7rem"><Text text="Placa"/></Column>
 					<Column width="9rem"><Text text="Término"/></Column>
 					<Column hAlign="End" width="9rem"><Text text="Valor da carga"/></Column>
+					<Column width="8rem"><Text text="Averbação"/></Column>
 					<Column><Text text="Chave"/></Column>
 				</columns>
 				<items>
@@ -36,6 +37,8 @@
 							<Text text="{eligible>TractionPlate}"/>
 							<Text text="{eligible>EndMunicipalityCode} {eligible>EndState}"/>
 							<Text text="{ path: 'eligible>CargoValue', formatter: 'formatter.formatBrl' }"/>
+							<ObjectStatus text="{ path: 'eligible>EndorsementStatus', targetType: 'any', formatter: '.endorsementText' }"
+								state="{ path: 'eligible>EndorsementStatus', targetType: 'any', formatter: '.endorsementState' }"/>
 							<Text text="{ path: 'eligible>AccessKey', formatter: '.formatAccessKey' }" wrapping="false"/>
 						</cells>
 					</ColumnListItem>

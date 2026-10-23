@@ -130,6 +130,17 @@ export const buildTransportManifestsFilter = (f: TransportManifestsFilter): stri
 
 // ---------- inclusão ----------
 
+/** Averbação do CT-e (CteEndorsementStatus): o enum chega como nome ("Endorsed") ou número (1). */
+export const isEndorsed = (status: unknown): boolean => status === "Endorsed" || status === 1 || status === "1";
+export const endorsementText = (status: unknown): string => (isEndorsed(status) ? "Averbado" : "Não averbado");
+export const endorsementState = (status: unknown): string => (isEndorsed(status) ? "Success" : "Warning");
+
+/** "Averbe os CT-e antes de incluir no MDF-e: 2, 3." — vazio quando todos estão averbados (a SEFAZ rejeita sem nAver). */
+export const notEndorsedMessage = (rows: { Number?: number; EndorsementStatus?: unknown }[]): string => {
+	const missing = rows.filter((r) => !isEndorsed(r.EndorsementStatus)).map((r) => r.Number ?? "?");
+	return missing.length ? `Averbe os CT-e antes de incluir no MDF-e: ${missing.join(", ")}.` : "";
+};
+
 export type EligibleCteFilter = { Plate?: string; DateFrom?: string; DateTo?: string };
 
 const ymdLocal = (iso: string): string => {

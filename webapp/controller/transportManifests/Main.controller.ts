@@ -10,7 +10,8 @@ import { openAttachmentViewer } from "siagrob1/dialogs/AttachmentViewer";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { odataCollection, odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
-	EligibleCteFilter, MDFE_STATUSES, TransportManifestsFilter, buildTransportManifestsFilter, filterEligibleCtes, formatAccessKey,
+	EligibleCteFilter, MDFE_STATUSES, TransportManifestsFilter, buildTransportManifestsFilter, endorsementState, endorsementText, filterEligibleCtes,
+	formatAccessKey, notEndorsedMessage,
 	mdfeActions, mdfeStatusState, mdfeStatusText, weightUnitText,
 } from "siagrob1/helpers/MdfeHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
@@ -18,7 +19,7 @@ import BaseController from "../BaseController";
 
 const SELECT_CTES_FRAGMENT = "siagrob1.view.transportManifests.fragments.SelectCtesDialog";
 
-type EligibleCte = { Key: string; TractionPlate?: string; IssuedAt?: string };
+type EligibleCte = { Key: string; Number?: number; TractionPlate?: string; IssuedAt?: string; EndorsementStatus?: string };
 
 /**
  * Lista de MDF-e (só STANDALONE). Filtros vão como $filter cru (Status é enum). A inclusão parte dos
@@ -29,6 +30,8 @@ export default class Main extends BaseController {
 	mdfeStatusText = mdfeStatusText;
 	mdfeStatusState = mdfeStatusState;
 	formatAccessKey = formatAccessKey;
+	endorsementText = endorsementText;
+	endorsementState = endorsementState;
 	weightText = (weight: number, unit: string) =>
 		weight === null || weight === undefined ? "" : `${Number(weight).toLocaleString("pt-BR")} ${weightUnitText(unit)}`;
 
@@ -148,10 +151,16 @@ export default class Main extends BaseController {
 	}
 
 	async onConfirmSelectCtes(): Promise<void> {
-		const keys = (this.eligibleTable()?.getSelectedContexts(true) ?? [])
-			.map((c) => (c.getObject() as EligibleCte).Key).filter(Boolean);
+		const rows = (this.eligibleTable()?.getSelectedContexts(true) ?? []).map((c) => c.getObject() as EligibleCte);
+		const keys = rows.map((r) => r.Key).filter(Boolean);
 		if (keys.length === 0) {
 			MessageBox.alert("Selecione ao menos um CT-e.");
+			return;
+		}
+		// Sem averbação a SEFAZ rejeita o MDF-e (699); o servidor também recusa.
+		const missing = notEndorsedMessage(rows);
+		if (missing) {
+			MessageBox.warning(missing);
 			return;
 		}
 		this.setBusy(true);

@@ -162,9 +162,9 @@ export default class Detail extends BaseController {
 	}
 
 	async onDiscardNumber(): Promise<void> {
-		if (await confirmDialog("O número volta para a fila de inutilização da filial e o MDF-e fica em rascunho, sem número nem chave.",
+		if (await confirmDialog("Descartar o número do MDF-e? Ele fica anulado com este número (o MDF-e não tem inutilização) e os CT-e voltam a ficar livres.",
 			"Descartar número do MDF-e?")) {
-			await this.run(ServerRoutes.transportManifestsDiscardNumber, "Número descartado.");
+			await this.run(ServerRoutes.transportManifestsDiscardNumber, "Número descartado: o MDF-e ficou anulado e os CT-e estão livres.");
 		}
 	}
 

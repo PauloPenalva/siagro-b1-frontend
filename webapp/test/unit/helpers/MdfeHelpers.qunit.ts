@@ -4,6 +4,7 @@ import {
 	buildTransportManifestsFilter,
 	cargoTypeText,
 	ciotError,
+	endorsementText,
 	filterEligibleCtes,
 	formatAccessKey,
 	groupCtesByUnloadingCity,
@@ -11,6 +12,7 @@ import {
 	mdfeActions,
 	mdfeStatusState,
 	mdfeStatusText,
+	notEndorsedMessage,
 	transportManifestFormFrom,
 	weightUnitText,
 } from "siagrob1/helpers/MdfeHelpers";
@@ -196,4 +198,24 @@ QUnit.test("botões do detalhe conforme a situação", function (assert) {
 	assert.ok(confirmed.transmit && confirmed.reopen && confirmed.discardNumber);
 	assert.ok(mdfeActions("Closed", 3).damdfe);
 	assert.notOk(mdfeActions("Closed", 3).close);
+});
+
+QUnit.module("MdfeHelpers - averbação dos CT-e");
+
+QUnit.test("texto da averbação aceita enum como nome ou número", function (assert) {
+	assert.strictEqual(endorsementText("Endorsed"), "Averbado");
+	assert.strictEqual(endorsementText(1), "Averbado");
+	assert.strictEqual(endorsementText("None"), "Não averbado");
+	assert.strictEqual(endorsementText("Cancelled"), "Não averbado");
+	assert.strictEqual(endorsementText(null), "Não averbado");
+});
+
+QUnit.test("mensagem lista só os CT-e não averbados", function (assert) {
+	const rows = [
+		{ Number: 1, EndorsementStatus: "Endorsed" },
+		{ Number: 2, EndorsementStatus: "None" },
+		{ Number: 3, EndorsementStatus: "CancellationPending" },
+	];
+	assert.strictEqual(notEndorsedMessage(rows), "Averbe os CT-e antes de incluir no MDF-e: 2, 3.");
+	assert.strictEqual(notEndorsedMessage([rows[0]]), "");
 });
