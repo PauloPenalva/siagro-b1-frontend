@@ -63,8 +63,6 @@
     </content>
     <footer>
       <OverflowToolbar >
-        <Text text="Desenvolvido por IDX Tecnologia" />
-        <ToolbarSeparator />
         <Text text="Versão: {appInfo>/version}" />
         <ToolbarSpacer />
         <!-- <Button icon="sap-icon://action-settings"/> -->
