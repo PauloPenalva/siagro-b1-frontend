@@ -23,6 +23,8 @@ type CheckResult = {
 	totals: { debits: number; credits: number; balance: number };
 	/** true só enquanto a verificação corresponde aos parâmetros atuais; qualquer mudança zera. */
 	checked: boolean;
+	/** JSON do pedido verificado; o arquivo só sai se o pedido atual for idêntico. */
+	checkedKey?: string;
 	blockingCount: number;
 	warningCount: number;
 };
@@ -35,7 +37,7 @@ type CheckResult = {
 export default class Main extends CommonController {
 	onInit(): void {
 		const now = new Date();
-		this.getView().setModel(new JSONModel({
+		const paramsModel = new JSONModel({
 			BranchCode: "",
 			BranchName: "",
 			Month: localIsoDate(new Date(now.getFullYear(), now.getMonth() - 1, 1)),
@@ -44,7 +46,10 @@ export default class Main extends CommonController {
 			InventoryDate: null,
 			InventoryReason: "01",
 			PreviousCreditBalance: 0,
-		} as Params), "params");
+		} as Params);
+		// O value help da filial usa setValue, que não dispara `change`: o modelo é quem enxerga toda mudança.
+		paramsModel.attachPropertyChange(() => this.onParamsChanged());
+		this.getView().setModel(paramsModel, "params");
 		this.getView().setModel(new JSONModel(Main.emptyResult()), "check");
 	}
 
@@ -114,6 +119,7 @@ export default class Main extends CommonController {
 				issues,
 				totals: data.totals ?? { debits: 0, credits: 0, balance: 0 },
 				checked: true,
+				checkedKey: JSON.stringify(request),
 				blockingCount: issues.filter((i) => i.blocking).length,
 				warningCount: issues.filter((i) => !i.blocking).length,
 			} as CheckResult);
@@ -125,6 +131,12 @@ export default class Main extends CommonController {
 	async onGenerate(): Promise<void> {
 		const request = this.buildRequest();
 		if (!request) return;
+
+		const checkModel = this.getModel("check") as JSONModel;
+		if (!(checkModel.getProperty("/checked") as boolean) || JSON.stringify(request) !== (checkModel.getProperty("/checkedKey") as string)) {
+			MessageBox.warning("Os parâmetros mudaram desde a última verificação. Clique em Verificar novamente.");
+			return;
+		}
 
 		this.setBusy(true);
 		try {

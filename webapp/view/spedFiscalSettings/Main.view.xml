@@ -105,7 +105,8 @@
 		<footer>
 			<OverflowToolbar>
 				<ToolbarSpacer/>
-				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave"/>
+				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave"
+					enabled="{= ${settings>/LoadedFor} !== '' &amp;&amp; ${settings>/LoadedFor} === ${settings>/BranchCode} }"/>
 			</OverflowToolbar>
 		</footer>
 	</Page>

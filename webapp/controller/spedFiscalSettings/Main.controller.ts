@@ -8,6 +8,8 @@ import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 type Settings = {
   BranchCode: string;
   BranchName: string;
+  /** Filial cujos dados estão na tela; "Salvar" só vale quando é a filial atual. */
+  LoadedFor: string;
   Profile: string;
   ActivityType: string;
   AccountantName: string;
@@ -39,13 +41,23 @@ const OPTIONAL_TEXT = [
  */
 export default class Main extends CommonController {
   onInit(): void {
-    this.getView().setModel(new JSONModel(Main.blank("", "")), "settings");
+    const model = new JSONModel(Main.blank("", ""));
+    // O value help usa setValue (sem `change`): trocar a filial zera o formulário para não gravar A sob B.
+    model.attachPropertyChange((event) => {
+      if (event.getParameter("path") !== "/BranchCode") return;
+      const data = model.getData() as Settings;
+      if (data.BranchCode?.trim() !== data.LoadedFor) {
+        model.setData(Main.blank(data.BranchCode, data.BranchName));
+      }
+    });
+    this.getView().setModel(model, "settings");
   }
 
   private static blank(branchCode: string, branchName: string): Settings {
     return {
       BranchCode: branchCode,
       BranchName: branchName,
+      LoadedFor: "",
       Profile: "A",
       ActivityType: "1",
       AccountantName: "",
@@ -88,9 +100,9 @@ export default class Main extends CommonController {
 
       const data = odataValue<Record<string, string | number>>(result.data) ?? {};
       const blank = Main.blank(branchCode, branchName);
-      const loaded: Record<string, string | number> = { ...blank };
+      const loaded: Record<string, string | number> = { ...blank, LoadedFor: branchCode };
       for (const key of Object.keys(blank)) {
-        if (key === "BranchCode" || key === "BranchName") continue;
+        if (key === "BranchCode" || key === "BranchName" || key === "LoadedFor") continue;
         const value = data[key];
         if (value !== null && value !== undefined) loaded[key] = key === "ActivityType" ? String(value) : value;
       }
@@ -104,6 +116,10 @@ export default class Main extends CommonController {
     const data = this.model().getData() as Settings;
     if (!data.BranchCode?.trim()) {
       MessageBox.warning("Informe a filial.");
+      return;
+    }
+    if (data.BranchCode.trim() !== data.LoadedFor) {
+      MessageBox.warning("Clique em Carregar para a filial escolhida antes de salvar.");
       return;
     }
 
