@@ -1445,6 +1445,11 @@
           "target": "spedFiscalSettings"
         },
         {
+          "pattern": "efd-contributions",
+          "name": "efdContributions",
+          "target": "efdContributions"
+        },
+        {
           "pattern": "fiscal-inventory-opening-balances",
           "name": "fiscalInventoryOpeningBalances",
           "target": "fiscalInventoryOpeningBalances"
@@ -3133,6 +3138,12 @@
           "id": "spedFiscal",
           "level": 1,
           "name": "siagrob1.view.spedFiscal.Main",
+          "clearControlAggregation": true
+        },
+        "efdContributions": {
+          "id": "efdContributions",
+          "level": 1,
+          "name": "siagrob1.view.efdContributions.Main",
           "clearControlAggregation": true
         },
         "spedFiscalSettings": {
