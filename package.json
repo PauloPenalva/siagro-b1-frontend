@@ -6,6 +6,9 @@
 	"license": "Apache-2.0",
 	"scripts": {
 		"clean": "rimraf dist coverage",
+		"stamp-manifest": "node -e \"const f='webapp/manifest.json',t=new Date();require('fs').utimesSync(f,t,t)\"",
+		"prebuild": "yarn -s stamp-manifest",
+		"prebuild:opt": "yarn -s stamp-manifest",
 		"build": "ui5 build --clean-dest --exclude-task=createDebugFiles",
 		"build:opt": "ui5 build self-contained --clean-dest --all",
 		"start": "ui5 serve --port 8080 -o index.html",
