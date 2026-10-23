@@ -45,7 +45,7 @@
 					<f:FormContainer title="Apuração e inventário">
 						<f:formElements>
 							<f:FormElement label="Saldo credor do período anterior">
-								<Input type="Number" value="{ path: 'params>/PreviousCreditBalance', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2 } }" description="R$" change=".onParamsChanged"/>
+								<Input textAlign="End" value="{ path: 'params>/PreviousCreditBalance', type: 'sap.ui.model.type.Float', formatOptions: { minFractionDigits: 2, maxFractionDigits: 2, groupingEnabled: true, decimalSeparator: ',', groupingSeparator: '.' }, constraints: { minimum: 0 } }" description="R$" change=".onParamsChanged"/>
 							</f:FormElement>
 							<f:FormElement label="Incluir inventário (bloco H)">
 								<Switch state="{params>/IncludeInventory}" customTextOn="Sim" customTextOff="Não" change=".onParamsChanged"/>
