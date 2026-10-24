@@ -28,6 +28,7 @@ import "./helpers/InvoiceLineProductDefaults.qunit";
 import "./helpers/InvoiceTaxTotalsHelpers.qunit";
 import "./helpers/InvoiceChargeTotalsHelpers.qunit";
 import "./helpers/AppSearchHelpers.qunit";
+import "./helpers/ReinfHelpers.qunit";
 import "./helpers/DateHelpers.qunit";
 import "./helpers/ShellBarSearchHelpers.qunit";
 import "./helpers/StorageDepositHelpers.qunit";

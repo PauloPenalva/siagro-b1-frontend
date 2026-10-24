@@ -1,0 +1,126 @@
+<mvc:View
+	controllerName="siagrob1.controller.reinfSettings.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+
+	<Page title="Parâmetros da EFD-Reinf" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0" busy="{ui>/busy}">
+		<subHeader>
+			<OverflowToolbar>
+				<Label text="Contribuinte" required="true" labelFor="reinfSettingsContributor"/>
+				<Select id="reinfSettingsContributor" width="24rem" forceSelection="false"
+					selectedKey="{settings>/TaxIdRoot}" change=".onContributorChange"
+					items="{contributors>/items}">
+					<core:Item key="{contributors>TaxIdRoot}" text="{contributors>TaxIdRoot} - {contributors>Name}"/>
+				</Select>
+				<ToolbarSpacer/>
+				<Label text="R-1000:"/>
+				<ObjectStatus text="{settings>/RegistrationStatusText}" state="{settings>/RegistrationStatusState}"/>
+				<Text text="{= ${settings>/RegistrationReceipt} ? 'Recibo ' + ${settings>/RegistrationReceipt} : '' }"/>
+			</OverflowToolbar>
+		</subHeader>
+		<content>
+			<MessageStrip
+				text="R-1000 sem confirmação da Receita: o lote pode ter sido recebido. Confira no portal antes de liberar o reenvio."
+				type="Warning" showIcon="true" class="sapUiSmallMargin" visible="{settings>/RegistrationUnconfirmed}"/>
+			<MessageStrip
+				text="Alterações salvas; envie o R-1000 para atualizar o cadastro na Receita."
+				type="Information" showIcon="true" class="sapUiSmallMargin" visible="{settings>/RegistrationUpdatePending}"/>
+			<f:Form id="reinfSettingsForm" editable="true" visible="{= ${settings>/LoadedFor} !== '' }">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="2"/>
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer title="Contribuinte">
+						<f:formElements>
+							<f:FormElement label="Filial do certificado">
+								<Input width="10rem" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBranchsValueHelp" value="{settings>/BranchCode}">
+									<customData>
+										<core:CustomData key="descriptionProperty" value="BranchName:ShortName"/>
+									</customData>
+								</Input>
+							</f:FormElement>
+							<f:FormElement label="Ambiente">
+								<Select selectedKey="{settings>/Environment}">
+									<core:Item key="2" text="Produção restrita"/>
+									<core:Item key="1" text="Produção"/>
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="Classificação tributária (2 dígitos)">
+								<Input value="{settings>/TaxClassification}" maxLength="2" width="5rem"/>
+							</f:FormElement>
+							<f:FormElement label="Escrituração contábil">
+								<Switch state="{settings>/KeepsBookkeeping}" customTextOn="Sim" customTextOff="Não"/>
+							</f:FormElement>
+							<f:FormElement label="Desoneração da folha">
+								<Switch state="{settings>/PayrollRelief}" customTextOn="Sim" customTextOff="Não"/>
+							</f:FormElement>
+							<f:FormElement label="Acordo de isenção de multa">
+								<Switch state="{settings>/FineExemptionAgreement}" customTextOn="Sim" customTextOff="Não"/>
+							</f:FormElement>
+							<f:FormElement label="Situação da PJ">
+								<Select selectedKey="{settings>/CompanySituation}">
+									<core:Item key="" text="(não informada)"/>
+									<core:Item key="0" text="0 - Normal"/>
+									<core:Item key="1" text="1 - Extinção"/>
+									<core:Item key="2" text="2 - Fusão"/>
+									<core:Item key="3" text="3 - Cisão"/>
+									<core:Item key="4" text="4 - Incorporação"/>
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="Início de validade (AAAA-MM)">
+								<Input value="{settings>/ValidFrom}" maxLength="7" width="8rem" placeholder="AAAA-MM"/>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="Contato">
+						<f:formElements>
+							<f:FormElement label="Nome">
+								<Input value="{settings>/ContactName}" maxLength="70"/>
+							</f:FormElement>
+							<f:FormElement label="CPF (só dígitos)">
+								<Input value="{settings>/ContactCpf}" maxLength="11"/>
+							</f:FormElement>
+							<f:FormElement label="Telefone (só dígitos)">
+								<Input type="Tel" value="{settings>/ContactPhone}" maxLength="13"/>
+							</f:FormElement>
+							<f:FormElement label="E-mail">
+								<Input type="Email" value="{settings>/ContactEmail}" maxLength="60"/>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="Responsável pelo fechamento (R-2099)">
+						<f:formElements>
+							<f:FormElement label="Nome">
+								<Input value="{settings>/ClosingResponsibleName}" maxLength="70" placeholder="igual ao contato"/>
+							</f:FormElement>
+							<f:FormElement label="CPF (só dígitos)">
+								<Input value="{settings>/ClosingResponsibleCpf}" maxLength="11" placeholder="igual ao contato"/>
+							</f:FormElement>
+							<f:FormElement label="Telefone (só dígitos)">
+								<Input type="Tel" value="{settings>/ClosingResponsiblePhone}" maxLength="13" placeholder="igual ao contato"/>
+							</f:FormElement>
+							<f:FormElement label="E-mail">
+								<Input type="Email" value="{settings>/ClosingResponsibleEmail}" maxLength="60" placeholder="igual ao contato"/>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Liberar reenvio" icon="sap-icon://restart" press=".onReleaseUnconfirmed"
+					visible="{settings>/RegistrationUnconfirmed}"/>
+				<Button text="Enviar R-1000" icon="sap-icon://paper-plane" press=".onSendRegistration"
+					enabled="{= ${settings>/Exists} &amp;&amp; ${settings>/LoadedFor} !== '' }"/>
+				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave"
+					enabled="{= ${settings>/LoadedFor} !== '' }"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

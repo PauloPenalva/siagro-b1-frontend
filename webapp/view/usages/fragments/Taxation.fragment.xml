@@ -172,6 +172,15 @@
                 <core:ListItem key="Full" text="FUNRURAL (INSS + RAT + SENAR)" />
                 <core:ListItem key="SenarOnly" text="Somente SENAR" />
               </Select>
+              <!-- EFD-Reinf R-2055: processo judicial que suspende a contribuição; só no modo Somente SENAR. -->
+              <Label text="Processo judicial"
+                  visible="{= ${path: 'RuralContributionMode', targetType: 'any'} === 'SenarOnly' }" />
+              <Input editable="{ui>/editable}" value="{RuralJudicialProcessNumber}" maxLength="21"
+                  visible="{= ${path: 'RuralContributionMode', targetType: 'any'} === 'SenarOnly' }" />
+              <Label text="Código de suspensão"
+                  visible="{= ${path: 'RuralContributionMode', targetType: 'any'} === 'SenarOnly' }" />
+              <Input editable="{ui>/editable}" value="{RuralJudicialSuspensionCode}" maxLength="14"
+                  visible="{= ${path: 'RuralContributionMode', targetType: 'any'} === 'SenarOnly' }" />
             </f:content>
           </f:SimpleForm>
         </uxap:blocks>

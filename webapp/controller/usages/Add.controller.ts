@@ -85,6 +85,8 @@ export default class Add extends BaseController {
 			IbsRateReduction: null,
 			CbsRateReduction: null,
 			RuralContributionMode: "None",
+			RuralJudicialProcessNumber: null,
+			RuralJudicialSuspensionCode: null,
 			// Retenções de serviço (Form.fragment.xml) — só natureza de entrada.
 			WithholdingIssRate: null,
 			WithholdingIrrfRate: null,
