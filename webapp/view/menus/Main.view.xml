@@ -5,63 +5,141 @@
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:core="sap.ui.core"
 	xmlns:t="sap.ui.table"
-	core:require="{
-		formatter: 'siagrob1/model/formatter'
-	}">
+	xmlns:dnd="sap.ui.core.dnd"
+	xmlns:l="sap.ui.layout"
+	xmlns:f="sap.ui.layout.form">
 
-	<Page title="Menus">
+	<Page title="Organização do Menu" busy="{ui>/busy}" busyIndicatorDelay="0">
 		<content>
-      <t:Table
-				id="tableMenus"
-				busyIndicatorDelay="0"
-				selectionMode="Single"
-				selectionBehavior="Row"
-				class="sapUiSizeCondensed"
-				visibleRowCountMode="Auto"
-				enableBusyIndicator="true"
-				alternateRowColors="true"
-				rows="{
-					path: '/MenuItems'
-				}"
-			>
-				<t:extension>
-					<OverflowToolbar >
-            <ToolbarSpacer />
-						<SearchField placeholder="Pesquisar..." width="30%" search=".onSearch"/>
-					</OverflowToolbar>
-				</t:extension>
-				<t:columns>
-					<t:Column
-						label="Codigo"
-						sortProperty="Key"
-						filterProperty="Key"
-            visible="true"
-            width="10rem"
-						>
-						<t:template>
-							<Text text="{Key}" wrapping="false"/>
-						</t:template>
-					</t:Column>
-					<t:Column
-						label="Titulo"
-						sortProperty="Title"
-						filterProperty="Title"
-						>
-						<t:template>
-							<Text text="{Title}" />
-						</t:template>
-					</t:Column>
-				</t:columns>
+			<l:Splitter height="100%">
+				<t:TreeTable
+					id="menuTree"
+					selectionMode="Single"
+					selectionBehavior="RowOnly"
+					class="sapUiSizeCondensed"
+					rowSelectionChange=".onSelectionChange"
+					rows="{ path: 'tree>/nodes', parameters: { arrayNames: ['children'] } }">
+					<t:layoutData>
+						<l:SplitterLayoutData size="60%" />
+					</t:layoutData>
+					<t:rowMode>
+						<rm:Auto xmlns:rm="sap.ui.table.rowmodes" />
+					</t:rowMode>
+					<t:extension>
+						<OverflowToolbar>
+							<Title text="Arraste os itens para reorganizar" level="H2" />
+							<ToolbarSpacer />
+							<Button icon="sap-icon://expand-all" tooltip="Expandir tudo" press=".onExpandAll" />
+							<Button icon="sap-icon://collapse-all" tooltip="Recolher tudo" press=".onCollapseAll" />
+							<ToolbarSeparator />
+							<Button icon="sap-icon://navigation-up-arrow" tooltip="Subir" press=".onMoveUp" enabled="{= !!${ui>/selectedPath} }" />
+							<Button icon="sap-icon://navigation-down-arrow" tooltip="Descer" press=".onMoveDown" enabled="{= !!${ui>/selectedPath} }" />
+							<Button icon="sap-icon://decrease-line-height" tooltip="Mover para o nível acima" press=".onOutdent" enabled="{= !!${ui>/selectedPath} }" />
+							<Button icon="sap-icon://increase-line-height" tooltip="Tornar subitem do item acima" press=".onIndent" enabled="{= !!${ui>/selectedPath} }" />
+						</OverflowToolbar>
+					</t:extension>
+					<t:dragDropConfig>
+						<dnd:DragDropInfo
+							sourceAggregation="rows"
+							targetAggregation="rows"
+							dropPosition="OnOrBetween"
+							drop=".onDrop" />
+					</t:dragDropConfig>
+					<t:columns>
+						<t:Column label="Título" width="22rem">
+							<t:template>
+								<HBox alignItems="Center">
+									<core:Icon src="{tree>Icon}" class="sapUiTinyMarginEnd" />
+									<Text text="{tree>Title}" wrapping="false" />
+								</HBox>
+							</t:template>
+						</t:Column>
+						<t:Column label="Código" width="14rem">
+							<t:template>
+								<Text text="{tree>Key}" wrapping="false" />
+							</t:template>
+						</t:Column>
+						<t:Column label="Situação">
+							<t:template>
+								<HBox>
+									<ObjectStatus text="Inativo" state="Error" visible="{= !${tree>Enabled} }" class="sapUiTinyMarginEnd" />
+									<ObjectStatus text="Só STANDALONE" state="Information" visible="{tree>StandaloneOnly}" class="sapUiTinyMarginEnd" />
+									<ObjectStatus text="Novo" state="Success" visible="{= !!${tree>isNew} }" />
+								</HBox>
+							</t:template>
+						</t:Column>
+					</t:columns>
+				</t:TreeTable>
 
-			</t:Table>
+				<VBox class="sapUiSmallMargin">
+					<layoutData>
+						<l:SplitterLayoutData size="auto" />
+					</layoutData>
+					<MessageStrip
+						text="Selecione um item na árvore para editar, ou use 'Novo item'."
+						visible="{= !${ui>/selectedPath} }"
+						showIcon="true" />
+					<f:Form id="menuItemForm" editable="true" visible="{= !!${ui>/selectedPath} }">
+						<f:title>
+							<core:Title text="Dados do item" />
+						</f:title>
+						<f:layout>
+							<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1" />
+						</f:layout>
+						<f:formContainers>
+							<f:FormContainer>
+								<f:formElements>
+									<f:FormElement label="Código">
+										<f:fields>
+											<Input id="keyInput" value="{tree>Key}" maxLength="50" required="true" editable="{= !!${tree>isNew} }" liveChange=".onFieldChange" />
+										</f:fields>
+									</f:FormElement>
+									<f:FormElement label="Título">
+										<f:fields>
+											<Input value="{tree>Title}" maxLength="100" required="true" liveChange=".onFieldChange" />
+										</f:fields>
+									</f:FormElement>
+									<f:FormElement label="Ícone">
+										<f:fields>
+											<Input value="{tree>Icon}" maxLength="100" placeholder="sap-icon://folder-blank" liveChange=".onFieldChange" />
+											<core:Icon src="{tree>Icon}" size="1.5rem">
+												<core:layoutData>
+													<f:ColumnElementData cellsSmall="2" cellsLarge="2" />
+												</core:layoutData>
+											</core:Icon>
+										</f:fields>
+									</f:FormElement>
+									<f:FormElement label="Ativo">
+										<f:fields>
+											<Switch state="{tree>Enabled}" customTextOn="Sim" customTextOff="Não" change=".onFieldChange" />
+										</f:fields>
+									</f:FormElement>
+									<f:FormElement label="Expandido">
+										<f:fields>
+											<Switch state="{tree>Expanded}" customTextOn="Sim" customTextOff="Não" change=".onFieldChange" />
+										</f:fields>
+									</f:FormElement>
+									<f:FormElement label="Só STANDALONE">
+										<f:fields>
+											<Switch state="{tree>StandaloneOnly}" customTextOn="Sim" customTextOff="Não" change=".onFieldChange" />
+										</f:fields>
+									</f:FormElement>
+								</f:formElements>
+							</f:FormContainer>
+						</f:formContainers>
+					</f:Form>
+				</VBox>
+			</l:Splitter>
 		</content>
-    <footer>
+		<footer>
 			<OverflowToolbar>
-				<Button text="Atualizar" icon="sap-icon://refresh" press=".onRefresh" />
+				<Button text="Recarregar" icon="sap-icon://refresh" press=".onRefresh" />
+				<ObjectStatus text="Alterações não salvas" state="Warning" icon="sap-icon://edit" visible="{ui>/dirty}" />
 				<ToolbarSpacer />
-				<Button text="Incluir" icon="sap-icon://add" type="Emphasized" press=".onCreate"/>
-				<Button text="Editar" icon="sap-icon://edit" press=".onEdit"/>
-				<Button text="Deletar" icon="sap-icon://delete" press=".onDelete"/>
+				<Button text="Novo item" icon="sap-icon://add" press=".onCreate" />
+				<Button text="Excluir" icon="sap-icon://delete" press=".onDelete" enabled="{= !!${ui>/selectedPath} }" />
+				<Button text="Descartar" press=".onDiscard" enabled="{ui>/dirty}" />
+				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave" enabled="{ui>/dirty}" />
 			</OverflowToolbar>
 		</footer>
 	</Page>
