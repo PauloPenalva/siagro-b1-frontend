@@ -1,5 +1,5 @@
 import {
-	reinfSituationState, reinfPeriodStatusText, reinfPeriodActions, reinfPendingBatchKeys, pascalKeys, reinfRegistrationText,
+	reinfSituationState, reinfPeriodStatusText, reinfPreviousPeriod, reinfPeriodActions, reinfPendingBatchKeys, pascalKeys, reinfRegistrationText,
 } from "siagrob1/helpers/ReinfHelpers";
 
 QUnit.module("ReinfHelpers");
@@ -35,4 +35,10 @@ QUnit.test("lotes pendentes sem repetição", function (assert) {
 QUnit.test("normaliza chaves e textos do R-1000", function (assert) {
 	assert.deepEqual(pascalKeys({ "@odata.context": "x", taxIdRoot: "1", Name: "n" }), { TaxIdRoot: "1", Name: "n" });
 	assert.strictEqual(reinfRegistrationText(2), "Aceito");
+});
+
+QUnit.test("mês anterior sem estouro no fim do mês", function (assert) {
+	assert.strictEqual(reinfPreviousPeriod(new Date(2026, 2, 31)), "2026-02");
+	assert.strictEqual(reinfPreviousPeriod(new Date(2026, 0, 15)), "2025-12");
+	assert.strictEqual(reinfPreviousPeriod(new Date(2026, 9, 24)), "2026-09");
 });

@@ -88,7 +88,7 @@
 										<Text text="{reinf>Receipt}"/>
 										<Text text="{reinf>BatchProtocol}"/>
 										<Text text="{ path: 'reinf>BatchStatus', formatter: '.formatBatchStatusText' }"/>
-										<Text text="{reinf>CreatedAt}"/>
+										<Text text="{ path: 'reinf>CreatedAt', formatter: 'formatter.formatDateTime' }"/>
 										<Text text="{reinf>Occurrences}" tooltip="{reinf>Occurrences}" maxLines="2" wrapping="true"/>
 										<HBox>
 											<Button text="Ver XML" type="Transparent" press=".onShowEventXml"/>

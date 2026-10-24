@@ -92,3 +92,9 @@ export function pascalKeys<T>(obj: unknown): T {
 export function odataString(value: string): string {
   return `'${encodeURIComponent(value.replace(/'/g, "''"))}'`;
 }
+
+/** Mês anterior (AAAA-MM) ao da data; sempre a partir do dia 1, sem estouro em 29–31. */
+export function reinfPreviousPeriod(today: Date): string {
+  const d = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}

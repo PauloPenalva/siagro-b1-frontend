@@ -10,7 +10,7 @@ import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { odataCollection, odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
   odataString, pascalKeys, reinfBatchStatusText, reinfEventStatusState, reinfEventStatusText, reinfPendingBatchKeys,
-  reinfPeriodActions, reinfPeriodStatusText, reinfSituationState,
+  reinfPeriodActions, reinfPeriodStatusText, reinfPreviousPeriod, reinfSituationState,
 } from "siagrob1/helpers/ReinfHelpers";
 
 type Contributor = { TaxIdRoot: string; Name: string; HasSettings: boolean };
@@ -32,9 +32,7 @@ export default class Main extends CommonController {
   private xmlDialog: Dialog;
 
   onInit(): void {
-    const now = new Date();
-    now.setMonth(now.getMonth() - 1);
-    const period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const period = reinfPreviousPeriod(new Date());
     this.getView().setModel(new JSONModel({
       TaxIdRoot: "", Period: period, Loaded: false, PeriodStatus: "", PeriodStatusText: "", ClosingReceipt: "",
       Rows: [], Issues: [], IssuesText: "", Events: [], CanTransmit: false, CanClose: false, CanReopen: false,
@@ -69,7 +67,15 @@ export default class Main extends CommonController {
   }
 
   onFilterChange(): void {
-    this.model().setProperty("/Loaded", false);
+    const m = this.model();
+    m.setProperty("/Loaded", false);
+    m.setProperty("/Rows", []);
+    m.setProperty("/Issues", []);
+    m.setProperty("/IssuesText", "");
+    m.setProperty("/Events", []);
+    m.setProperty("/PeriodStatus", "");
+    m.setProperty("/PeriodStatusText", "");
+    m.setProperty("/ClosingReceipt", "");
     this.applyActions();
   }
 
