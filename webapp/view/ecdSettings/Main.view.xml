@@ -1,0 +1,105 @@
+<mvc:View
+	controllerName="siagrob1.controller.ecdSettings.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+
+	<Page title="Parâmetros da ECD" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0" busy="{ui>/busy}">
+		<subHeader>
+			<OverflowToolbar>
+				<Label text="Filial" required="true" labelFor="branchInput"/>
+				<Input id="branchInput" width="8rem" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBranchsValueHelp" value="{settings>/BranchCode}">
+					<customData>
+						<core:CustomData key="descriptionProperty" value="BranchName:ShortName"/>
+					</customData>
+				</Input>
+				<Input width="14rem" value="{settings>/BranchName}" editable="false"/>
+				<Button type="Emphasized" icon="sap-icon://refresh" text="Carregar" press=".onLoad"/>
+			</OverflowToolbar>
+		</subHeader>
+		<content>
+			<MessageStrip
+				text="Escolha a filial e clique em Carregar antes de editar. Filial sem parâmetros gravados mostra os valores padrão."
+				type="Information" showIcon="true" class="sapUiSmallMargin"/>
+			<f:Form id="ecdSettingsForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="2"/>
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer title="Livro e empresa">
+						<f:formElements>
+							<f:FormElement label="Número do livro">
+								<StepInput value="{settings>/BookNumber}" min="1" max="99999" step="1" displayValuePrecision="0"/>
+							</f:FormElement>
+							<f:FormElement label="Possui NIRE">
+								<Switch state="{settings>/HasNire}" customTextOn="Sim" customTextOff="Não"/>
+							</f:FormElement>
+							<f:FormElement label="NIRE (11 dígitos)">
+								<Input value="{settings>/Nire}" maxLength="11" enabled="{settings>/HasNire}"/>
+							</f:FormElement>
+							<f:FormElement label="Data do arquivamento dos atos constitutivos">
+								<DatePicker value="{settings>/ConstitutiveActsDate}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy"/>
+							</f:FormElement>
+							<f:FormElement label="Empresa de grande porte">
+								<Switch state="{settings>/LargeCompany}" customTextOn="Sim" customTextOff="Não"/>
+							</f:FormElement>
+							<f:FormElement label="Plano referencial">
+								<Select selectedKey="{settings>/ReferentialPlanCode}">
+									<core:Item key="1" text="1 - PJ em geral - Lucro Real"/>
+									<core:Item key="2" text="2 - PJ em geral - Lucro Presumido"/>
+									<core:Item key="3" text="3 - Financeiras - Lucro Real"/>
+									<core:Item key="4" text="4 - Seguradoras - Lucro Real"/>
+									<core:Item key="5" text="5 - Imunes e isentas em geral"/>
+									<core:Item key="6" text="6 - Financeiras - Imunes e isentas"/>
+									<core:Item key="7" text="7 - Seguradoras - Imunes e isentas"/>
+									<core:Item key="8" text="8 - Entidades fechadas de previdência complementar"/>
+									<core:Item key="9" text="9 - Partidos políticos"/>
+									<core:Item key="10" text="10 - Código 10"/>
+								</Select>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="Responsável (signatário)">
+						<f:formElements>
+							<f:FormElement label="Nome">
+								<Input value="{settings>/SignerName}" maxLength="100"/>
+							</f:FormElement>
+							<f:FormElement label="CPF (só dígitos)">
+								<Input value="{settings>/SignerCpf}" maxLength="11"/>
+							</f:FormElement>
+							<f:FormElement label="Qualificação (código)">
+								<Input value="{settings>/SignerQualificationCode}" maxLength="3"/>
+							</f:FormElement>
+							<f:FormElement label="E-mail">
+								<Input type="Email" value="{settings>/SignerEmail}" maxLength="100"/>
+							</f:FormElement>
+							<f:FormElement label="Telefone (só dígitos)">
+								<Input type="Tel" value="{settings>/SignerPhone}" maxLength="11"/>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="Contabilista">
+						<f:formElements>
+							<f:FormElement label="Número sequencial do CRC">
+								<Input value="{settings>/AccountantCrcSequence}" maxLength="50"/>
+							</f:FormElement>
+							<f:FormElement label="Validade do CRC">
+								<DatePicker value="{settings>/AccountantCrcValidUntil}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy"/>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave"
+					enabled="{= ${settings>/LoadedFor} !== '' &amp;&amp; ${settings>/LoadedFor} === ${settings>/BranchCode} }"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

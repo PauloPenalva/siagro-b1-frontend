@@ -1440,6 +1440,31 @@
           "target": "spedFiscal"
         },
         {
+          "pattern": "ecd",
+          "name": "ecd",
+          "target": "ecd"
+        },
+        {
+          "pattern": "ecd-settings",
+          "name": "ecdSettings",
+          "target": "ecdSettings"
+        },
+        {
+          "pattern": "ecf",
+          "name": "ecf",
+          "target": "ecf"
+        },
+        {
+          "pattern": "ecf-settings",
+          "name": "ecfSettings",
+          "target": "ecfSettings"
+        },
+        {
+          "pattern": "ecf-adjustments",
+          "name": "ecfAdjustments",
+          "target": "ecfAdjustments"
+        },
+        {
           "pattern": "sped-fiscal-settings",
           "name": "spedFiscalSettings",
           "target": "spedFiscalSettings"
@@ -3144,6 +3169,36 @@
           "id": "efdContributions",
           "level": 1,
           "name": "siagrob1.view.efdContributions.Main",
+          "clearControlAggregation": true
+        },
+        "ecd": {
+          "id": "ecd",
+          "level": 1,
+          "name": "siagrob1.view.ecd.Main",
+          "clearControlAggregation": true
+        },
+        "ecdSettings": {
+          "id": "ecdSettings",
+          "level": 1,
+          "name": "siagrob1.view.ecdSettings.Main",
+          "clearControlAggregation": true
+        },
+        "ecf": {
+          "id": "ecf",
+          "level": 1,
+          "name": "siagrob1.view.ecf.Main",
+          "clearControlAggregation": true
+        },
+        "ecfSettings": {
+          "id": "ecfSettings",
+          "level": 1,
+          "name": "siagrob1.view.ecfSettings.Main",
+          "clearControlAggregation": true
+        },
+        "ecfAdjustments": {
+          "id": "ecfAdjustments",
+          "level": 1,
+          "name": "siagrob1.view.ecfAdjustments.Main",
           "clearControlAggregation": true
         },
         "spedFiscalSettings": {

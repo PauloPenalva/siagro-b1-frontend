@@ -1,0 +1,103 @@
+<mvc:View
+	controllerName="siagrob1.controller.ecd.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<Page title="ECD (SPED Contábil)" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0" busy="{ui>/busy}">
+		<content>
+			<f:Form id="ecdForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2"/>
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer title="Período">
+						<f:formElements>
+							<f:FormElement label="Filial">
+								<f:fields>
+									<Input id="branchInput" required="true" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBranchsValueHelp" value="{params>/BranchCode}" change=".onParamsChanged">
+										<layoutData>
+											<f:ColumnElementData cellsLarge="4" cellsSmall="4"/>
+										</layoutData>
+										<customData>
+											<core:CustomData key="descriptionProperty" value="BranchName:ShortName"/>
+										</customData>
+									</Input>
+									<Input value="{params>/BranchName}" editable="false"/>
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement label="Ano">
+								<StepInput id="yearInput" required="true" value="{params>/Year}" min="2000" max="9999" step="1" displayValuePrecision="0" change=".onParamsChanged"/>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="Finalidade">
+						<f:formElements>
+							<f:FormElement label="Finalidade">
+								<Select selectedKey="{params>/Purpose}" change=".onParamsChanged">
+									<core:Item key="0" text="0 - Remessa do arquivo original"/>
+									<core:Item key="1" text="1 - Remessa do arquivo substituto"/>
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="Hash do livro substituído" visible="{= ${params>/Purpose} === '1' }">
+								<Input id="replacedHashInput" required="true" maxLength="40" value="{params>/ReplacedBookHash}" change=".onParamsChanged"/>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+
+			<MessageStrip
+				visible="{check>/checked}"
+				class="sapUiSmallMarginBeginEnd sapUiTinyMarginBottom"
+				showIcon="true"
+				type="{= ${check>/blockingCount} &gt; 0 ? 'Error' : ${check>/warningCount} &gt; 0 ? 'Warning' : 'Success' }"
+				text="{= ${check>/blockingCount} &gt; 0 ? ${check>/blockingCount} + ' inconsistência(s) bloqueante(s): corrija antes de gerar o arquivo.' : ${check>/warningCount} &gt; 0 ? 'Sem bloqueios; ' + ${check>/warningCount} + ' aviso(s).' : 'Nenhuma inconsistência encontrada.' }"/>
+
+			<HBox class="sapUiSmallMargin" wrap="Wrap" visible="{check>/checked}">
+				<ObjectNumber class="sapUiMediumMarginEnd" state="{= ${check>/totals/totalDebit} === ${check>/totals/totalCredit} ? 'Success' : 'Error' }" unit="Débitos" emphasized="true"
+					number="{ path: 'check>/totals/totalDebit', formatter: 'formatter.formatDecimal2' }"/>
+				<ObjectNumber class="sapUiMediumMarginEnd" state="{= ${check>/totals/totalDebit} === ${check>/totals/totalCredit} ? 'Success' : 'Error' }" unit="Créditos" emphasized="true"
+					number="{ path: 'check>/totals/totalCredit', formatter: 'formatter.formatDecimal2' }"/>
+				<ObjectNumber emphasized="true" unit="Resultado do exercício (lucro positivo)"
+					number="{ path: 'check>/totals/netIncome', formatter: 'formatter.formatDecimal2' }"/>
+			</HBox>
+
+			<Table id="issuesTable" items="{check>/issues}" visible="{check>/checked}" class="sapUiSizeCondensed sapUiSmallMarginBeginEnd" width="auto" noDataText="Nenhuma inconsistência." growing="true" growingThreshold="100">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="Inconsistências"/>
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column width="8rem"><Text text="Gravidade"/></Column>
+					<Column width="14rem"><Text text="Referência"/></Column>
+					<Column><Text text="Mensagem"/></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<ObjectStatus text="{= ${check>blocking} ? 'Bloqueante' : 'Aviso' }" state="{= ${check>blocking} ? 'Error' : 'Warning' }"/>
+							<Text text="{check>reference}"/>
+							<Text text="{check>message}"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Verificar" icon="sap-icon://inspect" press=".onCheck"/>
+				<Button text="Gerar arquivo" type="Emphasized" icon="sap-icon://download" press=".onGenerate"
+					enabled="{= ${check>/checked} &amp;&amp; ${check>/blockingCount} === 0 }"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+
+</mvc:View>
