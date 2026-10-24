@@ -13,6 +13,8 @@ import {
 	CtePartyRoleName, PARTY_ROLES, QUANTITY_UNITS, TAKER_ROLES, TransportDocumentForm, TransportDocumentRead,
 	TRANSPORT_DOCUMENT_EXPAND, buildTransportDocumentSavePayload, emptyTransportDocumentForm, paymentConditionAfterPartyPick, transportDocumentFormFrom,
 } from "siagrob1/helpers/CteHelpers";
+import { calculateFreightPrice, FreightCalculationMethod } from "siagrob1/helpers/FreightHelpers";
+import { cteGrossWeightKg, usableFreightOrdersFilter } from "siagrob1/helpers/FreightOrderHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import CommonController from "../common/CommonController";
 
@@ -92,6 +94,7 @@ export default class Form extends CommonController {
 			this.doc().setData({ ...form, StatusReason: read.StatusReason ?? "", UsageName: "" });
 			await this.loadSettings(form.BranchCode, false);
 			await this.loadUsageName(form.UsageCode);
+			await this.loadFreightOrderCode(form.FreightOrderKey);
 			await this.refreshPaymentConditionName(form.PaymentConditionCode);
 		} finally {
 			this.setBusy(false);
@@ -106,6 +109,53 @@ export default class Form extends CommonController {
 		if (result.ok) {
 			this.doc().setProperty("/UsageName", odataValue<{ Name: string }>(result.data)?.Name ?? "");
 		}
+	}
+
+	private async loadFreightOrderCode(key: string): Promise<void> {
+		if (!key) {
+			return;
+		}
+		const result = await sendJson("GET", `${ServerRoutes.freightOrders}(${encodeURIComponent(key)})?$select=Key,Code`);
+		if (result.ok) {
+			this.doc().setProperty("/FreightOrderCode", odataValue<{ Code: string }>(result.data)?.Code ?? "");
+		}
+	}
+
+	/** Value help da ordem: só do tomador atual e Aberta/Em execução. Com peso informado, sugere o valor do FRETE. */
+	async onPickFreightOrder(): Promise<void> {
+		const form = this.doc().getData() as TransportDocumentForm;
+		const takerRole = PARTY_ROLES[Number(form.TakerRole)];
+		const takerCode = takerRole ? form[takerRole]?.CardCode : "";
+		if (!takerCode) {
+			MessageBox.warning("Informe o tomador antes de escolher a ordem de frete.");
+			return;
+		}
+		const ctx = await DialogHelper.openTableSelectDialog(this, "FreightOrdersSelectDialog", ["Code", "ItemName"],
+			[], undefined, usableFreightOrdersFilter(takerCode));
+		if (!ctx) {
+			return;
+		}
+		this.doc().setProperty("/FreightOrderKey", ctx.getProperty("Key"));
+		this.doc().setProperty("/FreightOrderCode", ctx.getProperty("Code"));
+		const weightKg = cteGrossWeightKg(form.Quantities);
+		if (weightKg > 0) {
+			const value = calculateFreightPrice(ctx.getProperty("PriceMethod") as FreightCalculationMethod,
+				Number(ctx.getProperty("UnitPrice")), weightKg);
+			const components = [...(form.Components ?? [])];
+			const index = components.findIndex((c) => String(c.Name).trim().toUpperCase() === "FRETE");
+			if (index >= 0) {
+				components[index] = { ...components[index], Value: value };
+			} else {
+				components.push({ Name: "FRETE", Value: value });
+			}
+			this.doc().setProperty("/Components", components);
+			MessageToast.show(`Valor do frete sugerido pela ordem: ${value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}.`);
+		}
+	}
+
+	onClearFreightOrder(): void {
+		this.doc().setProperty("/FreightOrderKey", "");
+		this.doc().setProperty("/FreightOrderCode", "");
 	}
 
 	async onPickBranch(): Promise<void> {

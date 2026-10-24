@@ -299,6 +299,26 @@
           "target": "transportDocumentsDetail"
         },
         {
+          "pattern": "freight-orders",
+          "name": "freightOrders",
+          "target": "freightOrders"
+        },
+        {
+          "pattern": "freight-orders/new",
+          "name": "freightOrdersNew",
+          "target": "freightOrdersForm"
+        },
+        {
+          "pattern": "freight-orders/{id}/edit",
+          "name": "freightOrdersEdit",
+          "target": "freightOrdersForm"
+        },
+        {
+          "pattern": "freight-orders/{id}",
+          "name": "freightOrdersDetail",
+          "target": "freightOrdersDetail"
+        },
+        {
           "pattern": "transport-manifests",
           "name": "transportManifests",
           "target": "transportManifests"
@@ -1780,6 +1800,24 @@
           "id": "transportDocumentsDetail",
           "level": 2,
           "name": "siagrob1.view.transportDocuments.Detail",
+          "clearControlAggregation": true
+        },
+        "freightOrders": {
+          "id": "freightOrders",
+          "level": 1,
+          "name": "siagrob1.view.freightOrders.Main",
+          "clearControlAggregation": true
+        },
+        "freightOrdersForm": {
+          "id": "freightOrdersForm",
+          "level": 2,
+          "name": "siagrob1.view.freightOrders.Form",
+          "clearControlAggregation": true
+        },
+        "freightOrdersDetail": {
+          "id": "freightOrdersDetail",
+          "level": 2,
+          "name": "siagrob1.view.freightOrders.Detail",
           "clearControlAggregation": true
         },
         "transportManifests": {

@@ -1,0 +1,92 @@
+<mvc:View
+	controllerName="siagrob1.controller.freightOrders.Form"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+
+	<Page title="{= ${doc>/Key} ? 'Editar ordem de frete ' + ${doc>/Code} : 'Nova ordem de frete' }"
+		showNavButton="true" navButtonPress=".onCancel" busy="{ui>/busy}" busyIndicatorDelay="0">
+		<content>
+			<MessageStrip type="Information" showIcon="true" class="sapUiSmallMargin" visible="{form>/locked}"
+				text="A ordem já tem CT-e autorizado: tomador e produto não podem mais mudar."/>
+			<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanL="4" labelSpanM="4" columnsL="2" columnsM="1"
+				singleContainerFullSize="false">
+				<f:content>
+					<core:Title text="Identificação"/>
+					<Label text="Numeração" required="true"/>
+					<Select selectedKey="{doc>/DocNumberKey}" items="{series>/}" enabled="{= !${doc>/Key} }" change=".onSeriesChange"
+						forceSelection="false">
+						<core:ListItem key="{series>Key}" text="{series>Name}"/>
+					</Select>
+					<Text text="{doc>/Code}" visible="{= !!${doc>/Key} }"/>
+					<Input value="{doc>/TypedCode}" maxLength="20" visible="{= !${doc>/Key} }"
+						editable="{= ${form>/manual} === true }" required="{= ${form>/manual} === true }"
+						placeholder="{= ${form>/manual} ? 'Número' : 'Automático' }"/>
+					<Label text="Filial"/>
+					<Text text="{doc>/BranchCode}"/>
+					<Label text="Data" required="true"/>
+					<DatePicker value="{ path: 'doc>/OrderDate', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+					<Label text="Vigência (início / fim)" required="true"/>
+					<DatePicker value="{ path: 'doc>/ValidFrom', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+					<DatePicker value="{ path: 'doc>/ValidTo', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"
+						placeholder="Sem fim"/>
+
+					<core:Title text="Participantes"/>
+					<Label text="Tomador" required="true"/>
+					<Input value="{doc>/TakerCardCode}" description="{doc>/TakerName}" showValueHelp="true" valueHelpOnly="true"
+						valueHelpRequest=".onPickParty($event, 'Taker')" editable="{= !${form>/locked} }"/>
+					<Label text="Remetente"/>
+					<HBox>
+						<Input value="{doc>/SenderCardCode}" description="{doc>/SenderName}" showValueHelp="true" valueHelpOnly="true"
+							valueHelpRequest=".onPickParty($event, 'Sender')"/>
+						<Button icon="sap-icon://decline" type="Transparent" tooltip="Limpar" press=".onClearParty($event, 'Sender')"/>
+					</HBox>
+					<Label text="Destinatário"/>
+					<HBox>
+						<Input value="{doc>/RecipientCardCode}" description="{doc>/RecipientName}" showValueHelp="true" valueHelpOnly="true"
+							valueHelpRequest=".onPickParty($event, 'Recipient')"/>
+						<Button icon="sap-icon://decline" type="Transparent" tooltip="Limpar" press=".onClearParty($event, 'Recipient')"/>
+					</HBox>
+
+					<core:Title text="Rota e carga"/>
+					<Label text="Município de origem" required="true"/>
+					<Input value="{doc>/StartMunicipalityCode}" description="{doc>/StartMunicipalityName} {doc>/StartState}" showValueHelp="true"
+						valueHelpOnly="true" valueHelpRequest=".onPickMunicipality($event, 'Start')"/>
+					<Label text="Município de destino" required="true"/>
+					<Input value="{doc>/EndMunicipalityCode}" description="{doc>/EndMunicipalityName} {doc>/EndState}" showValueHelp="true"
+						valueHelpOnly="true" valueHelpRequest=".onPickMunicipality($event, 'End')"/>
+					<Label text="Produto" required="true"/>
+					<Input value="{doc>/ItemCode}" description="{doc>/ItemName}" showValueHelp="true" valueHelpOnly="true"
+						valueHelpRequest=".onPickItem" editable="{= !${form>/locked} }"/>
+					<Label text="Volume contratado (t)" required="true"/>
+					<Input value="{doc>/ContractedTons}" type="Number" textAlign="End"/>
+
+					<core:Title text="Preço e cobrança"/>
+					<Label text="Método de preço" required="true"/>
+					<Select selectedKey="{doc>/PriceMethod}" items="{priceMethods>/}">
+						<core:ListItem key="{priceMethods>key}" text="{priceMethods>text}"/>
+					</Select>
+					<Label text="Preço" required="true"/>
+					<Input value="{doc>/UnitPrice}" type="Number" textAlign="End"/>
+					<Label text="Condição de pagamento"/>
+					<Input value="{doc>/PaymentConditionCode}" description="{ui>/paymentConditionName}" showValueHelp="true"
+						valueHelpOnly="true" valueHelpRequest=".openPaymentConditionsValueHelp"/>
+					<Label text="Natureza de operação"/>
+					<Input value="{doc>/UsageCode}" description="{doc>/UsageName}" showValueHelp="true" valueHelpOnly="true"
+						valueHelpRequest=".onPickUsage"/>
+					<Label text="Observação"/>
+					<TextArea value="{doc>/Observation}" rows="3" maxLength="2000" width="100%"/>
+				</f:content>
+			</f:SimpleForm>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave"/>
+				<Button text="Cancelar" press=".onCancel"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

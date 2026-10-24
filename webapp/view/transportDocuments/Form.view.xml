@@ -40,6 +40,13 @@
 						valueHelpOnly="true" valueHelpRequest=".openPaymentConditionsValueHelp" showClearIcon="true" liveChange=".onPaymentConditionLiveChange"
 						tooltip="Sugerida do cadastro do tomador; define as parcelas do título a receber."/>
 
+					<Label text="Ordem de frete"/>
+					<HBox>
+						<Input value="{doc>/FreightOrderCode}" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".onPickFreightOrder"
+							tooltip="Ordens abertas ou em execução do tomador. Com o peso informado, sugere o valor do frete."/>
+						<Button icon="sap-icon://decline" type="Transparent" tooltip="Desvincular" press=".onClearFreightOrder"/>
+					</HBox>
+
 					<core:Title text="Participantes"/>
 					<Label text="Remetente" required="true"/>
 					<Input value="{doc>/Sender/CardCode}" description="{doc>/Sender/CardName}" showValueHelp="true" valueHelpOnly="true"

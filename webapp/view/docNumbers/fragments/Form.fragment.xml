@@ -52,6 +52,8 @@
               <core:ListItem key="FinancialDocument" text="Financeiro"/>
               <core:ListItem key="WarehouseReconciliation" text="Conferência de Saldo"/>
               <core:ListItem key="PurchaseInvoice" text="Documento de Entrada"/>
+              <core:ListItem key="FreightOrder" text="Ordem de Frete"/>
+              <core:ListItem key="FreightInvoice" text="Fatura de Frete"/>
               <core:ListItem key="Customer" text="Cliente"/>
               <core:ListItem key="Supplier" text="Fornecedor"/>
               <core:ListItem key="Item" text="Produto"/>
