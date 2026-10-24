@@ -32,19 +32,19 @@
 			<IconTabBar expandable="false" stretchContentHeight="false">
 				<items>
 					<IconTabFilter text="Apuração" key="overview">
-						<Table items="{reinf>/Rows}" noDataText="Clique em Apurar." sticky="ColumnHeaders" growing="true" growingThreshold="100">
+						<ScrollContainer horizontal="true" vertical="false" width="100%"><Table width="90rem" items="{reinf>/Rows}" noDataText="Clique em Apurar." sticky="ColumnHeaders" growing="true" growingThreshold="100">
 							<columns>
-								<Column width="6rem"><Text text="Filial"/></Column>
-								<Column><Text text="Produtor"/></Column>
+								<Column width="4rem"><Text text="Filial"/></Column>
+								<Column width="15rem"><Text text="Produtor"/></Column>
 								<Column width="10rem"><Text text="CPF/CNPJ"/></Column>
 								<Column width="5rem"><Text text="Optante"/></Column>
-								<Column hAlign="End"><Text text="Bruto"/></Column>
-								<Column hAlign="End"><Text text="INSS"/></Column>
-								<Column hAlign="End"><Text text="RAT"/></Column>
-								<Column hAlign="End"><Text text="SENAR"/></Column>
+								<Column width="7rem" hAlign="End"><Text text="Bruto"/></Column>
+								<Column width="7rem" hAlign="End"><Text text="INSS"/></Column>
+								<Column width="7rem" hAlign="End"><Text text="RAT"/></Column>
+								<Column width="7rem" hAlign="End"><Text text="SENAR"/></Column>
 								<Column width="8rem"><Text text="Situação"/></Column>
-								<Column><Text text="Recibo"/></Column>
-								<Column><Text text="Ocorrências"/></Column>
+								<Column width="12rem"><Text text="Recibo"/></Column>
+								<Column width="16rem"><Text text="Ocorrências"/></Column>
 							</columns>
 							<items>
 								<ColumnListItem>
@@ -63,7 +63,7 @@
 									</cells>
 								</ColumnListItem>
 							</items>
-						</Table>
+						</Table></ScrollContainer>
 					</IconTabFilter>
 					<IconTabFilter text="Lotes e eventos" key="events">
 						<Table items="{reinf>/Events}" noDataText="Nenhum evento no período." sticky="ColumnHeaders" growing="true" growingThreshold="100">
