@@ -1,0 +1,31 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
+	<Dialog title="Gerar faturas em lote" contentWidth="32rem" busyIndicatorDelay="0">
+		<content>
+			<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanL="4" labelSpanM="4" columnsL="1" columnsM="1">
+				<f:content>
+					<Label text="Filial"/>
+					<Text text="{batch>/BranchCode}"/>
+					<Label text="Período (de / até)" required="true"/>
+					<DatePicker value="{ path: 'batch>/From', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+					<DatePicker value="{ path: 'batch>/To', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+					<Label text="Tomador"/>
+					<HBox>
+						<Input value="{batch>/TakerCardCode}" description="{batch>/TakerName}" showValueHelp="true" valueHelpOnly="true"
+							valueHelpRequest=".onBatchPickTaker" placeholder="Todos"/>
+						<Button icon="sap-icon://decline" type="Transparent" tooltip="Limpar" press=".onBatchClearTaker"/>
+					</HBox>
+					<Label text="Emitir já"/>
+					<CheckBox selected="{batch>/Issue}" text="Emitir as faturas geradas"/>
+				</f:content>
+			</f:SimpleForm>
+			<MessageStrip type="Information" showIcon="true" class="sapUiSmallMargin"
+				text="Gera uma fatura por tomador com os CT-e elegíveis do período; a emissão da fatura é o fim do período."/>
+		</content>
+		<beginButton>
+			<Button text="Gerar" type="Emphasized" press=".onBatchRun"/>
+		</beginButton>
+		<endButton>
+			<Button text="Fechar" press=".onBatchClose"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

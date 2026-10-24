@@ -295,3 +295,11 @@ QUnit.test("condição de pagamento só segue o tomador", function (assert) {
 	assert.deepEqual(paymentConditionAfterPartyPick("3", null, "5", 7), { code: "7", changed: true });
 	assert.deepEqual(paymentConditionAfterPartyPick("3", null, "", null), { code: null, changed: false });
 });
+
+QUnit.test("payload: FreightOrderKey sempre presente (vazio vira null, preenchido vai como está)", function (assert) {
+	const empty = buildTransportDocumentSavePayload({ ...filledForm(), FreightOrderKey: "" });
+	assert.ok(Object.prototype.hasOwnProperty.call(empty, "FreightOrderKey"), "a chave existe mesmo sem ordem");
+	assert.strictEqual(empty.FreightOrderKey, null);
+	const linked = buildTransportDocumentSavePayload({ ...filledForm(), FreightOrderKey: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee" });
+	assert.strictEqual(linked.FreightOrderKey, "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
+});

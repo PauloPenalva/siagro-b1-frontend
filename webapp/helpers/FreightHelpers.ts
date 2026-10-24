@@ -8,7 +8,10 @@
  */
 
 /** Membros do enum `FreightCalculationMethod` do backend, como o OData os serializa. */
-export type FreightCalculationMethod = "Fixed" | "PerBag";
+export type FreightCalculationMethod = "Fixed" | "PerBag" | "PerTon";
+
+/** Peso da tonelada (PerTon só é oferecido na ordem de frete). */
+const KG_PER_TON = 1000;
 
 /** Peso do saco de referência. Os pesos do sistema estão sempre em KG. */
 const KG_PER_BAG = 60;
@@ -29,14 +32,18 @@ export function calculateFreightPrice(
 ): number {
   const unit = toNumber(unitPrice);
 
-  if (method !== "PerBag") {
+  if (method !== "PerBag" && method !== "PerTon") {
     return unit;
   }
 
-  const total = toNumber(grossWeightKg) / KG_PER_BAG * unit;
+  const divisor = method === "PerTon" ? KG_PER_TON : KG_PER_BAG;
+  const total = toNumber(grossWeightKg) / divisor * unit;
   return Math.round((total + Number.EPSILON) * 100) / 100;
 }
 
 export function freightUnitDescription(method: FreightCalculationMethod): string {
+  if (method === "PerTon") {
+    return "por tonelada";
+  }
   return method === "PerBag" ? "por saco (60 kg)" : "por viagem";
 }

@@ -1,0 +1,34 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+<TableSelectDialog
+  class="sapUiSizeCompact"
+  growing="true"
+  growingThreshold="20"
+  items="{
+    path: '/FreightOrders',
+    parameters: { $select: 'Key,Code,OrderDate,TakerCardCode,ItemName,StartState,EndState,ContractedWeightKg,TransportedWeightKg,PriceMethod,UnitPrice,Status' },
+    sorter: { path: 'OrderDate', descending: true }
+  }"
+  rememberSelections="false"
+  title="Ordens de frete do tomador"
+>
+<columns>
+  <Column><header><Text text="Número" /></header></Column>
+  <Column><header><Text text="Produto" /></header></Column>
+  <Column><header><Text text="Origem → Destino" /></header></Column>
+  <Column hAlign="End"><header><Text text="Contratado (kg)" /></header></Column>
+  <Column hAlign="End"><header><Text text="Transportado (kg)" /></header></Column>
+</columns>
+<ColumnListItem>
+  <cells>
+    <Text text="{Code}" />
+    <Text text="{ItemName}" />
+    <Text text="{StartState} → {EndState}" />
+    <Text text="{ContractedWeightKg}" />
+    <Text text="{TransportedWeightKg}" />
+  </cells>
+</ColumnListItem>
+</TableSelectDialog>
+</core:FragmentDefinition>

@@ -1,0 +1,129 @@
+<mvc:View
+	controllerName="siagrob1.controller.freightInvoices.Detail"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:uxap="sap.uxap"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<uxap:ObjectPageLayout showFooter="false" toggleHeaderOnTitleClick="false" alwaysShowContentHeader="true" preserveHeaderStateOnScroll="false"
+		busy="{ui>/busy}" busyIndicatorDelay="0">
+		<uxap:headerTitle>
+			<uxap:ObjectPageDynamicHeaderTitle>
+				<uxap:navigationActions>
+					<Button icon="sap-icon://decline" type="Transparent" tooltip="Voltar à lista" press=".onBack"/>
+				</uxap:navigationActions>
+				<uxap:expandedHeading>
+					<Title text="Fatura de frete {doc>/Code}"/>
+				</uxap:expandedHeading>
+				<uxap:snappedHeading>
+					<Title text="Fatura de frete {doc>/Code}"/>
+				</uxap:snappedHeading>
+				<uxap:content>
+					<ObjectStatus text="{ path: 'doc>/Status', formatter: '.statusText' }" state="{ path: 'doc>/Status', formatter: '.statusState' }"
+						inverted="true"/>
+				</uxap:content>
+				<uxap:actions>
+					<Button text="Editar" type="Emphasized" icon="sap-icon://edit" press=".onEdit" visible="{act>/edit}"/>
+					<Button text="Emitir" type="Success" icon="sap-icon://accept" press=".onIssue" visible="{act>/issue}"/>
+					<Button text="Imprimir" icon="sap-icon://print" press=".onPrint" visible="{act>/print}"/>
+					<Button text="Cancelar" type="Reject" icon="sap-icon://cancel" press=".onCancelInvoice" visible="{act>/cancel}"/>
+				</uxap:actions>
+			</uxap:ObjectPageDynamicHeaderTitle>
+		</uxap:headerTitle>
+
+		<uxap:headerContent>
+			<HBox wrap="Wrap">
+				<ObjectStatus class="sapUiMediumMarginEnd" text="{ path: 'doc>/Status', formatter: '.statusText' }"
+					state="{ path: 'doc>/Status', formatter: '.statusState' }"/>
+				<ObjectAttribute class="sapUiMediumMarginEnd" title="Total" text="{ path: 'doc>/TotalAmount', formatter: 'formatter.formatBrl' }"/>
+				<ObjectAttribute title="CT-e" text="{= ${items>/}.length }"/>
+			</HBox>
+		</uxap:headerContent>
+
+		<uxap:sections>
+			<uxap:ObjectPageSection title="Dados">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<f:SimpleForm editable="false" layout="ResponsiveGridLayout" labelSpanL="4" labelSpanM="4" columnsL="2" columnsM="1"
+							singleContainerFullSize="false">
+							<f:content>
+								<core:Title text="Identificação"/>
+								<Label text="Filial"/>
+								<Text text="{doc>/BranchCode}"/>
+								<Label text="Tomador"/>
+								<Text text="{doc>/TakerName}"/>
+								<Label text="Criada por"/>
+								<Text text="{doc>/CreatedBy}"/>
+								<Label text="Emitida em" visible="{= !!${doc>/IssuedAt} }"/>
+								<Text text="{ path: 'doc>/IssuedAt', formatter: 'formatter.formatDateTime' }" visible="{= !!${doc>/IssuedAt} }"/>
+
+								<core:Title text="Cobrança"/>
+								<Label text="Emissão"/>
+								<Text text="{ path: 'doc>/IssueDate', formatter: '.dateText' }"/>
+								<Label text="Vencimento"/>
+								<Text text="{ui>/freightInvoiceDueText}"/>
+								<Label text="Condição de pagamento"/>
+								<Text text="{ui>/paymentConditionName}"/>
+								<Label text="Observação"/>
+								<Text text="{doc>/Observation}"/>
+							</f:content>
+						</f:SimpleForm>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
+			<uxap:ObjectPageSection title="CT-e">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<Table items="{items>/}" class="sapUiSizeCompact" noDataText="Nenhum CT-e na fatura.">
+							<columns>
+								<Column width="9rem"><Text text="Número/Série"/></Column>
+								<Column width="10rem"><Text text="Emissão"/></Column>
+								<Column hAlign="End"><Text text="Valor"/></Column>
+							</columns>
+							<items>
+								<ColumnListItem type="Navigation" press=".onOpenCte">
+									<cells>
+										<Text text="{items>TransportDocument/Number} / {items>TransportDocument/Series}"/>
+										<Text text="{ path: 'items>TransportDocument/IssuedAt', formatter: 'formatter.formatDateTime' }"/>
+										<Text text="{ path: 'items>Amount', formatter: 'formatter.formatBrl' }"/>
+									</cells>
+								</ColumnListItem>
+							</items>
+						</Table>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
+			<uxap:ObjectPageSection title="Títulos gerados">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<Table items="{titles>/}" class="sapUiSizeCompact" noDataText="Nenhum título gerado (a fatura gera o título ao ser emitida).">
+							<columns>
+								<Column><Text text="Título"/></Column>
+								<Column width="9rem"><Text text="Vencimento"/></Column>
+								<Column width="10rem" hAlign="End"><Text text="Valor"/></Column>
+								<Column width="10rem"><Text text="Situação"/></Column>
+							</columns>
+							<items>
+								<ColumnListItem>
+									<cells>
+										<Link text="{= ${titles>Code} || 'Abrir título' }" press=".onOpenTitle"/>
+										<Text text="{ path: 'titles>DueDate', formatter: 'formatter.formatDate' }"/>
+										<Text text="{ path: 'titles>NetAmount', formatter: 'formatter.formatBrl' }"/>
+										<Text text="{ path: 'titles>Status', formatter: 'formatter.formatBillingReceivableStatus' }"/>
+									</cells>
+								</ColumnListItem>
+							</items>
+						</Table>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+		</uxap:sections>
+	</uxap:ObjectPageLayout>
+</mvc:View>

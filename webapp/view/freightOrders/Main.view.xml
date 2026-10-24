@@ -1,0 +1,123 @@
+<mvc:View
+	controllerName="siagrob1.controller.freightOrders.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:f="sap.f"
+	xmlns:fb="sap.ui.comp.filterbar">
+	<f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="Ordens de Frete"/>
+				</f:heading>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:header>
+			<f:DynamicPageHeader>
+				<f:content>
+					<fb:FilterBar id="freightOrdersFb" search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+						<fb:filterGroupItems>
+							<fb:FilterGroupItem name="taker" label="Tomador" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<Input value="{filter>/TakerCardCode}" description="{filter>/TakerName}" showValueHelp="true"
+										valueHelpRequest=".onPickTaker" showClearIcon="true"/>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="status" label="Situação" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<MultiComboBox selectedKeys="{filter>/Statuses}" items="{statuses>/}">
+										<core:Item key="{statuses>key}" text="{statuses>text}"/>
+									</MultiComboBox>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="dateFrom" label="Data de" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<DatePicker value="{ path: 'filter>/DateFrom', type: 'sap.ui.model.type.String' }"
+										displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="dateTo" label="Data até" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<DatePicker value="{ path: 'filter>/DateTo', type: 'sap.ui.model.type.String' }"
+										displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="item" label="Produto" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<Input value="{filter>/ItemCode}" description="{filter>/ItemName}" showValueHelp="true"
+										valueHelpRequest=".onPickItem" showClearIcon="true"/>
+								</fb:control>
+							</fb:FilterGroupItem>
+						</fb:filterGroupItems>
+					</fb:FilterBar>
+				</f:content>
+			</f:DynamicPageHeader>
+		</f:header>
+		<f:content>
+			<t:Table
+				id="tableFreightOrders"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				visibleRowCountMode="Auto"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+				rows="{
+					path: '/FreightOrders',
+					parameters: {
+						$select: 'Key,Code,OrderDate,TakerCardCode,TakerName,StartMunicipalityCode,StartMunicipalityName,EndMunicipalityName,StartState,EndMunicipalityCode,EndState,ItemName,ContractedWeightKg,TransportedWeightKg,Status,CreatedAt'
+					},
+					sorter: { path: 'CreatedAt', descending: true }
+				}">
+				<t:extension>
+					<OverflowToolbar>
+						<Title text="Ordens"/>
+						<ToolbarSpacer/>
+						<Button type="Emphasized" icon="sap-icon://add" text="Incluir" press=".onCreate"/>
+						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
+						<Button type="Transparent" icon="sap-icon://refresh" text="Atualizar" press=".onRefresh"/>
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="Número" width="8rem" sortProperty="Code">
+						<t:template><Text text="{Code}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Data" width="7rem" sortProperty="OrderDate">
+						<t:template><Text text="{ path: 'OrderDate', targetType: 'any', formatter: '.dateText' }" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Tomador" width="10rem" sortProperty="TakerName">
+						<t:template><Text text="{TakerName}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Origem → Destino" width="14rem">
+						<t:template><Text text="{StartMunicipalityName}/{StartState} → {EndMunicipalityName}/{EndState}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Produto" width="14rem">
+						<t:template><Text text="{ItemName}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Contratado (t)" width="8rem" hAlign="End">
+						<t:template><Text text="{ path: 'ContractedWeightKg', targetType: 'any', formatter: '.tonsText' }" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Transportado (t)" width="8rem" hAlign="End">
+						<t:template><Text text="{ path: 'TransportedWeightKg', targetType: 'any', formatter: '.tonsText' }" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column label="Saldo (t)" width="8rem" hAlign="End">
+						<t:template>
+							<Text text="{ parts: [ { path: 'ContractedWeightKg', targetType: 'any' }, { path: 'TransportedWeightKg', targetType: 'any' } ], formatter: '.balanceTonsText' }" wrapping="false"/>
+						</t:template>
+					</t:Column>
+					<t:Column label="Situação" width="9rem">
+						<t:template>
+							<ObjectStatus
+								text="{ path: 'Status', targetType: 'any', formatter: '.statusText' }"
+								state="{ path: 'Status', targetType: 'any', formatter: '.statusState' }"/>
+						</t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</f:content>
+	</f:DynamicPage>
+</mvc:View>

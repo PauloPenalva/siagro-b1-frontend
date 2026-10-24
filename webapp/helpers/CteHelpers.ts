@@ -168,6 +168,10 @@ export interface TransportDocumentForm {
 	DistributionRuleCode: string;
 	/** Condição de pagamento do título a receber (sugerida do tomador). */
 	PaymentConditionCode: string;
+	/** Ordem de frete vinculada. ⚠️ Nulo no save DESVINCULA: sempre reenviar a atual. */
+	FreightOrderKey: string;
+	/** Só exibição (número da ordem). */
+	FreightOrderCode?: string;
 	/** Tributos (só leitura, recalculados pelo servidor ao gravar). */
 	Taxes?: Record<string, unknown>;
 }
@@ -183,6 +187,7 @@ export const emptyTransportDocumentForm = (branchCode: string, series: number): 
 	InsuranceResponsible: "", InsurerTaxId: "", InsurerName: "", PolicyNumber: "",
 	Tracked: true, OwnTransport: true, Observation: "",
 	CostCenterCode: "", AccountingItemCode: "", DistributionRuleCode: "", PaymentConditionCode: "",
+	FreightOrderKey: "", FreightOrderCode: "",
 });
 
 /** Documento lido do OData (com $expand dos filhos). */
@@ -240,6 +245,8 @@ export const transportDocumentFormFrom = (doc: TransportDocumentRead): Transport
 		AccountingItemCode: str(doc.AccountingItemCode),
 		DistributionRuleCode: str(doc.DistributionRuleCode),
 		PaymentConditionCode: str(doc.PaymentConditionCode),
+		FreightOrderKey: str(doc.FreightOrderKey),
+		FreightOrderCode: "",
 		Taxes: taxes,
 	};
 };
@@ -301,6 +308,7 @@ export const buildTransportDocumentSavePayload = (form: TransportDocumentForm) =
 		AccountingItemCode: text(form.AccountingItemCode),
 		DistributionRuleCode: text(form.DistributionRuleCode),
 		PaymentConditionCode: blank(form.PaymentConditionCode) ? null : num(form.PaymentConditionCode),
+		FreightOrderKey: text(form.FreightOrderKey),
 	};
 };
 
