@@ -45,7 +45,7 @@
 							<f:FormElement label="Qualificação da PJ (2 dígitos)">
 								<Input value="{settings>/LegalEntityQualification}" maxLength="2"/>
 							</f:FormElement>
-							<f:FormElement label="Hash da ECF anterior">
+							<f:FormElement label="Nº do recibo da ECF anterior">
 								<Input value="{settings>/PreviousEcfHash}" maxLength="40"/>
 							</f:FormElement>
 						</f:formElements>
