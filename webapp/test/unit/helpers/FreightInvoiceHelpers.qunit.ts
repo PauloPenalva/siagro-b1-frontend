@@ -1,5 +1,5 @@
 import {
-	activeItemsCount, buildFreightInvoiceBatchPayload, buildFreightInvoiceSavePayload, buildFreightInvoicesFilter, eligibleCtesUrl,
+	activeItemsCount, cteRouteText, dueDateText, buildFreightInvoiceBatchPayload, buildFreightInvoiceSavePayload, buildFreightInvoicesFilter, eligibleCtesUrl,
 	emptyFreightInvoiceForm, freightInvoiceActions, freightInvoiceFormError, freightInvoiceStatusText, invoiceOfCteFilter, selectedTotal,
 } from "siagrob1/helpers/FreightInvoiceHelpers";
 
@@ -53,4 +53,16 @@ QUnit.test("filtro da lista: enum em texto e 'até' inclui o dia", function (ass
 	const s = buildFreightInvoicesFilter({ TakerCardCode: "C1", Statuses: ["Draft", "Issued"], DateTo: "2026-10-31" });
 	assert.ok(s.startsWith("TakerCardCode eq 'C1' and (Status eq 'Draft' or Status eq 'Issued') and IssueDate lt 2026-11-01T00:00:00"), s);
 	assert.strictEqual(invoiceOfCteFilter("g"), "Items/any(i: i/TransportDocumentKey eq g and i/IsActive) and Status ne 'Cancelled'");
+});
+
+QUnit.test("vencimento do detalhe: títulos, DueDate, condição", function (assert) {
+	assert.strictEqual(dueDateText(["2026-11-30T00:00:00Z"], null, "30 dias"), "30/11/2026");
+	assert.strictEqual(dueDateText(["2026-12-30", "2026-11-30", "2027-01-29"], null, ""), "1ª 30/11/2026 … 29/01/2027 (3 parcelas)");
+	assert.strictEqual(dueDateText([], "2026-11-15T00:00:00Z", "x"), "15/11/2026");
+	assert.strictEqual(dueDateText([], null, "30 dias"), "Pela condição: 30 dias");
+	assert.strictEqual(dueDateText([], null, ""), "");
+});
+
+QUnit.test("percurso do item do rascunho", function (assert) {
+	assert.strictEqual(cteRouteText({ "4106902": "Curitiba" }, "4106902", "PR", "9999999", ""), "Curitiba/PR → 9999999");
 });

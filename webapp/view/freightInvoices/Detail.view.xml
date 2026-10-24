@@ -10,7 +10,7 @@
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-	<uxap:ObjectPageLayout showFooter="false" toggleHeaderOnTitleClick="true" preserveHeaderStateOnScroll="false"
+	<uxap:ObjectPageLayout showFooter="false" toggleHeaderOnTitleClick="false" alwaysShowContentHeader="true" preserveHeaderStateOnScroll="false"
 		busy="{ui>/busy}" busyIndicatorDelay="0">
 		<uxap:headerTitle>
 			<uxap:ObjectPageDynamicHeaderTitle>
@@ -23,6 +23,10 @@
 				<uxap:snappedHeading>
 					<Title text="Fatura de frete {doc>/Code}"/>
 				</uxap:snappedHeading>
+				<uxap:content>
+					<ObjectStatus text="{ path: 'doc>/Status', formatter: '.statusText' }" state="{ path: 'doc>/Status', formatter: '.statusState' }"
+						inverted="true"/>
+				</uxap:content>
 				<uxap:actions>
 					<Button text="Editar" type="Emphasized" icon="sap-icon://edit" press=".onEdit" visible="{act>/edit}"/>
 					<Button text="Emitir" type="Success" icon="sap-icon://accept" press=".onIssue" visible="{act>/issue}"/>
@@ -62,7 +66,7 @@
 								<Label text="Emissão"/>
 								<Text text="{ path: 'doc>/IssueDate', formatter: '.dateText' }"/>
 								<Label text="Vencimento"/>
-								<Text text="{ path: 'doc>/DueDate', formatter: '.dateText' }"/>
+								<Text text="{ui>/freightInvoiceDueText}"/>
 								<Label text="Condição de pagamento"/>
 								<Text text="{ui>/paymentConditionName}"/>
 								<Label text="Observação"/>

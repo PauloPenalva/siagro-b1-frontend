@@ -6,20 +6,26 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { odataCollection, odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
 	FreightInvoiceForm, buildFreightInvoiceSavePayload, eligibleCtesUrl, emptyFreightInvoiceForm, freightInvoiceActions,
-	freightInvoiceFormError, freightInvoiceFormFrom, num, selectedTotal,
+	cteRouteText, freightInvoiceFormError, freightInvoiceFormFrom, num, selectedTotal,
 } from "siagrob1/helpers/FreightInvoiceHelpers";
-import { tonsText } from "siagrob1/helpers/FreightOrderHelpers";
+import { cteGrossWeightKg, tonsText } from "siagrob1/helpers/FreightOrderHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import CommonController from "../common/CommonController";
 
 type CteRow = {
 	TransportDocumentKey: string; Number: number; Series: number; IssuedAt: string; Route: string;
 	WeightKg: number; Amount: number; selected?: boolean;
+	/** Item já gravado neste rascunho (a função de elegíveis não o lista). */
+	current?: boolean;
 };
 
 type InvoiceItem = {
 	TransportDocumentKey: string; Amount: number; IsActive: boolean;
-	TransportDocument?: { Number: number; Series: number; IssuedAt: string };
+	TransportDocument?: {
+		Number: number; Series: number; IssuedAt: string;
+		StartMunicipalityCode: string; StartState: string; EndMunicipalityCode: string; EndState: string;
+		Quantities: { UnitCode: string; MeasureType: string; Quantity: number }[];
+	};
 };
 
 const esc = (v: string) => encodeURIComponent(v.replace(/'/g, "''"));
@@ -74,7 +80,9 @@ export default class Form extends CommonController {
 		this.setBusy(true);
 		try {
 			const result = await sendJson("GET", `${ServerRoutes.freightInvoices}(${encodeURIComponent(id)})`
-				+ "?$expand=Items($expand=TransportDocument($select=Number,Series,IssuedAt))");
+				+ "?$expand=Items($filter=IsActive eq true;$orderby=LineNum;$expand=TransportDocument("
+				+ "$select=Number,Series,IssuedAt,StartMunicipalityCode,StartState,EndMunicipalityCode,EndState;"
+				+ "$expand=Quantities($select=UnitCode,MeasureType,Quantity)))");
 			if (!result.ok) {
 				MessageBox.error(result.message);
 				return;
@@ -88,15 +96,36 @@ export default class Form extends CommonController {
 			const form = freightInvoiceFormFrom(read);
 			this.doc().setData(form);
 			// Itens atuais do rascunho (a função de elegíveis não os lista: já estão nesta fatura).
-			const current = ((read.Items as InvoiceItem[]) ?? []).filter((i) => i.IsActive).map((i): CteRow => ({
-				TransportDocumentKey: i.TransportDocumentKey, Number: i.TransportDocument?.Number, Series: i.TransportDocument?.Series,
-				IssuedAt: i.TransportDocument?.IssuedAt, Route: "", WeightKg: null, Amount: num(i.Amount), selected: true,
-			}));
+			const items = ((read.Items as InvoiceItem[]) ?? []).filter((i) => i.IsActive);
+			const names = await this.municipalityNames(items.flatMap((i) =>
+				[i.TransportDocument?.StartMunicipalityCode, i.TransportDocument?.EndMunicipalityCode]));
+			const current = items.map((i): CteRow => {
+				const t = i.TransportDocument;
+				return {
+					TransportDocumentKey: i.TransportDocumentKey, Number: t?.Number, Series: t?.Series, IssuedAt: t?.IssuedAt,
+					Route: t ? cteRouteText(names, t.StartMunicipalityCode, t.StartState, t.EndMunicipalityCode, t.EndState) : "",
+					WeightKg: cteGrossWeightKg(t?.Quantities ?? []), Amount: num(i.Amount), selected: true, current: true,
+				};
+			});
 			await this.refreshPaymentConditionName(form.PaymentConditionCode === "" ? null : form.PaymentConditionCode);
 			await this.loadEligible(current);
 		} finally {
 			this.setBusy(false);
 		}
+	}
+
+	/** Nomes dos municípios (código IBGE → nome) numa consulta só. */
+	private async municipalityNames(codes: string[]): Promise<Record<string, string>> {
+		const list = [...new Set(codes.filter((c) => !!c))];
+		if (!list.length) {
+			return {};
+		}
+		const r = await sendJson("GET", `/odata/Municipalities?$filter=${encodeURIComponent(list.map((c) => `Code eq '${c.replace(/'/g, "''")}'`).join(" or "))}&$select=Code,Name`);
+		const map: Record<string, string> = {};
+		if (r.ok) {
+			odataCollection<{ Code: string; Name: string }>(r.data).forEach((m) => { map[m.Code] = m.Name; });
+		}
+		return map;
 	}
 
 	private async loadEligible(keep: CteRow[] = []): Promise<void> {
@@ -133,7 +162,8 @@ export default class Form extends CommonController {
 	}
 
 	async onSearchCtes(): Promise<void> {
-		const keep = (this.ctes().getData() as CteRow[]).filter((r) => r.selected && !r.Route);
+		// Mantém, pela chave, os já marcados e os itens do rascunho (mesmo desmarcados).
+		const keep = (this.ctes().getData() as CteRow[]).filter((r) => r.selected || r.current);
 		this.setBusy(true);
 		try {
 			await this.loadEligible(keep);

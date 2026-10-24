@@ -66,10 +66,10 @@
 				rows="{
 					path: '/FreightInvoices',
 					parameters: {
-						$select: 'Key,Code,TakerCardCode,TakerName,IssueDate,DueDate,TotalAmount,Status,CreatedAt',
-						$expand: 'Items($select=Key,IsActive)'
+						$select: 'Key,Code,TakerCardCode,TakerName,IssueDate,DueDate,TotalAmount,Status',
+						$expand: 'Items($select=Key;$filter=IsActive eq true)'
 					},
-					sorter: { path: 'CreatedAt', descending: true }
+					sorter: [ { path: 'IssueDate', descending: true }, { path: 'Code', descending: true } ]
 				}">
 				<t:extension>
 					<OverflowToolbar>
@@ -98,7 +98,7 @@
 						<t:template><Text text="{ path: 'TotalAmount', targetType: 'any', formatter: 'formatter.formatBrl' }" wrapping="false"/></t:template>
 					</t:Column>
 					<t:Column label="Qtd CT-e" width="6rem" hAlign="End">
-						<t:template><Text text="{ path: 'Items', targetType: 'any', formatter: '.itemsCount' }" wrapping="false"/></t:template>
+						<t:template><Text text="{Items/$count}" wrapping="false"/></t:template>
 					</t:Column>
 					<t:Column label="Situação" width="9rem">
 						<t:template>

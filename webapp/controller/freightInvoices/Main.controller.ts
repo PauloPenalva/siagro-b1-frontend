@@ -8,7 +8,7 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import { dateText } from "siagrob1/helpers/FreightOrderHelpers";
 import {
-	FREIGHT_INVOICE_STATUSES, FreightInvoicesFilter, activeItemsCount, buildFreightInvoiceBatchPayload, buildFreightInvoicesFilter,
+	FREIGHT_INVOICE_STATUSES, FreightInvoicesFilter, buildFreightInvoiceBatchPayload, buildFreightInvoicesFilter,
 	freightInvoiceStatusState, freightInvoiceStatusText,
 } from "siagrob1/helpers/FreightInvoiceHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
@@ -25,7 +25,6 @@ export default class Main extends BaseController {
 	statusText = freightInvoiceStatusText;
 	statusState = freightInvoiceStatusState;
 	dateText = dateText;
-	itemsCount = activeItemsCount;
 
 	private batchDialog: Dialog;
 

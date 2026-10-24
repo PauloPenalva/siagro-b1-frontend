@@ -6,7 +6,7 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import { odataCollection, odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
-import { freightInvoiceActions, freightInvoiceStatusState, freightInvoiceStatusText } from "siagrob1/helpers/FreightInvoiceHelpers";
+import { dueDateText, freightInvoiceActions, freightInvoiceStatusState, freightInvoiceStatusText } from "siagrob1/helpers/FreightInvoiceHelpers";
 import { dateText } from "siagrob1/helpers/FreightOrderHelpers";
 import { openPdfReport } from "siagrob1/helpers/PdfReportHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
@@ -37,15 +37,20 @@ export default class Detail extends CommonController {
 	}
 
 	private async reload(): Promise<void> {
-		(this.getView().getModel("doc") as JSONModel).setData({});
-		(this.getView().getModel("items") as JSONModel).setData([]);
-		(this.getView().getModel("titles") as JSONModel).setData([]);
-		(this.getView().getModel("act") as JSONModel).setData(freightInvoiceActions(""));
+		// Mesma fatura: mantém o cabeçalho na tela durante o recarregamento (não "pisca" vazio).
+		const doc0 = (this.getView().getModel("doc") as JSONModel).getData() as { Key?: string };
+		if (doc0?.Key !== this.key) {
+			(this.getView().getModel("doc") as JSONModel).setData({});
+			(this.getView().getModel("items") as JSONModel).setData([]);
+			(this.getView().getModel("titles") as JSONModel).setData([]);
+			(this.getView().getModel("act") as JSONModel).setData(freightInvoiceActions(""));
+			(this.getModel("ui") as JSONModel).setProperty("/freightInvoiceDueText", "");
+		}
 		this.setBusy(true);
 		try {
 			const [invoice, titles] = await Promise.all([
 				sendJson("GET", `${ServerRoutes.freightInvoices}(${encodeURIComponent(this.key)})`
-					+ "?$expand=Items($filter=IsActive;$orderby=LineNum;$expand=TransportDocument($select=Key,Number,Series,IssuedAt))"),
+					+ "?$expand=Items($filter=IsActive eq true;$orderby=LineNum;$expand=TransportDocument($select=Key,Number,Series,IssuedAt))"),
 				sendJson("GET", `${ServerRoutes.financialDocuments}?$filter=OriginType eq 'FreightInvoice' and OriginKey eq ${encodeURIComponent(this.key)}`
 					+ "&$select=Key,Code,DueDate,NetAmount,Status&$orderby=DueDate"),
 			]);
@@ -57,10 +62,12 @@ export default class Detail extends CommonController {
 			(this.getView().getModel("doc") as JSONModel).setData(doc);
 			(this.getView().getModel("items") as JSONModel).setData((doc.Items as object[]) ?? []);
 			(this.getView().getModel("act") as JSONModel).setData(freightInvoiceActions(doc.Status as string));
-			if (titles.ok) {
-				(this.getView().getModel("titles") as JSONModel).setData(odataCollection(titles.data));
-			}
+			const titleRows = titles.ok ? odataCollection<{ DueDate: string }>(titles.data) : [];
+			(this.getView().getModel("titles") as JSONModel).setData(titleRows);
 			await this.refreshPaymentConditionName(doc.PaymentConditionCode as number);
+			const ui = this.getModel("ui") as JSONModel;
+			ui.setProperty("/freightInvoiceDueText", dueDateText(titleRows.map((t) => t.DueDate), doc.DueDate as string,
+				ui.getProperty("/paymentConditionName") as string));
 		} finally {
 			this.setBusy(false);
 		}

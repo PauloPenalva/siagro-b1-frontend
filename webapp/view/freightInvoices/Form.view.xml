@@ -41,7 +41,7 @@
 				</f:content>
 			</f:SimpleForm>
 
-			<Table items="{ctes>/}" class="sapUiSizeCompact sapUiSmallMarginTop" noDataText="Nenhum CT-e elegível. Escolha o tomador e o período.">
+			<Table items="{ctes>/}" class="sapUiSizeCompact sapUiSmallMargin" width="auto" noDataText="Nenhum CT-e elegível para este tomador, filial e período.">
 				<headerToolbar>
 					<OverflowToolbar>
 						<Title text="CT-e elegíveis ({sel>/count} selecionado(s) - total { path: 'sel>/total', formatter: 'formatter.formatBrl' })"/>
@@ -56,7 +56,7 @@
 					<Column width="10rem"><Text text="Emissão"/></Column>
 					<Column><Text text="Percurso"/></Column>
 					<Column width="9rem" hAlign="End"><Text text="Peso (t)"/></Column>
-					<Column width="9rem" hAlign="End"><Text text="Valor"/></Column>
+					<Column width="10rem" hAlign="End"><Text text="Valor" class="sapUiSmallMarginEnd"/></Column>
 				</columns>
 				<items>
 					<ColumnListItem>
@@ -66,7 +66,7 @@
 							<Text text="{ path: 'ctes>IssuedAt', formatter: 'formatter.formatDateTime' }"/>
 							<Text text="{ctes>Route}"/>
 							<Text text="{ path: 'ctes>WeightKg', formatter: '.tonsText' }"/>
-							<Text text="{ path: 'ctes>Amount', formatter: 'formatter.formatBrl' }"/>
+							<Text text="{ path: 'ctes>Amount', formatter: 'formatter.formatBrl' }" class="sapUiSmallMarginEnd"/>
 						</cells>
 					</ColumnListItem>
 				</items>

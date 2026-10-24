@@ -184,3 +184,31 @@ export const buildFreightInvoicesFilter = (f: FreightInvoicesFilter): string => 
 /** Fatura não cancelada com item ativo do CT-e (mostrado no detalhe do CT-e). */
 export const invoiceOfCteFilter = (transportDocumentKey: string): string =>
 	`Items/any(i: i/TransportDocumentKey eq ${transportDocumentKey} and i/IsActive) and Status ne 'Cancelled'`;
+
+/** Percurso "Origem/UF → Destino/UF" como o DTO dos elegíveis (nome do município quando conhecido). */
+export const cteRouteText = (names: Record<string, string>, startCode: string, startState: string, endCode: string, endState: string): string => {
+	const place = (code: string, state: string) => {
+		const name = (code && names?.[code]) || code || "";
+		return state ? `${name}/${state}` : name;
+	};
+	return `${place(startCode, startState)} → ${place(endCode, endState)}`;
+};
+
+/**
+ * Vencimento exibido no detalhe: pelos títulos gerados (1 parcela = a data; várias = "1ª dd/MM/yyyy … (N parcelas)"),
+ * senão o DueDate da fatura, senão o nome da condição de pagamento (rascunho).
+ */
+export const dueDateText = (titleDueDates: string[], dueDate: string, conditionName: string): string => {
+	const fmt = (v: string) => str(v).slice(0, 10).split("-").reverse().join("/");
+	const dates = (titleDueDates ?? []).filter((d) => !!d).map((d) => str(d).slice(0, 10)).sort();
+	if (dates.length === 1) {
+		return fmt(dates[0]);
+	}
+	if (dates.length > 1) {
+		return `1ª ${fmt(dates[0])} … ${fmt(dates[dates.length - 1])} (${dates.length} parcelas)`;
+	}
+	if (dueDate) {
+		return fmt(dueDate);
+	}
+	return conditionName ? `Pela condição: ${conditionName}` : "";
+};
