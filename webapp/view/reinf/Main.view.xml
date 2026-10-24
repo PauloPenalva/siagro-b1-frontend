@@ -1,0 +1,116 @@
+<mvc:View
+	controllerName="siagrob1.controller.reinf.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	core:require="{ formatter: 'siagrob1/model/formatter' }">
+
+	<Page title="EFD-Reinf" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0" busy="{ui>/busy}">
+		<subHeader>
+			<OverflowToolbar>
+				<Label text="Contribuinte" required="true" labelFor="reinfContributor"/>
+				<Select id="reinfContributor" width="22rem" forceSelection="false"
+					selectedKey="{reinf>/TaxIdRoot}" change=".onFilterChange" items="{contributors>/items}">
+					<core:Item key="{contributors>TaxIdRoot}" text="{contributors>TaxIdRoot} - {contributors>Name}"/>
+				</Select>
+				<Label text="Mês" required="true" labelFor="reinfPeriod"/>
+				<DatePicker id="reinfPeriod" width="9rem" displayFormat="MM/yyyy" valueFormat="yyyy-MM"
+					value="{reinf>/Period}" change=".onFilterChange"/>
+				<Button type="Emphasized" icon="sap-icon://simulate" text="Apurar" press=".onCalculate"/>
+				<ToolbarSpacer/>
+				<Label text="Período:" visible="{reinf>/Loaded}"/>
+				<ObjectStatus text="{reinf>/PeriodStatusText}" visible="{reinf>/Loaded}"
+					state="{= ${reinf>/PeriodStatus} === 'Closed' ? 'Success' : ${reinf>/PeriodStatus} === 'Open' ? 'Information' : 'Warning' }"/>
+				<Text text="{= ${reinf>/ClosingReceipt} ? 'Recibo ' + ${reinf>/ClosingReceipt} : '' }"/>
+				<Button icon="sap-icon://action-settings" text="Parâmetros" press=".onSettings"/>
+			</OverflowToolbar>
+		</subHeader>
+		<content>
+			<MessageStrip text="{reinf>/IssuesText}" type="Error" showIcon="true" class="sapUiSmallMargin"
+				visible="{= ${reinf>/IssuesText} !== '' }"/>
+			<IconTabBar expandable="false" stretchContentHeight="false">
+				<items>
+					<IconTabFilter text="Apuração" key="overview">
+						<Table items="{reinf>/Rows}" noDataText="Clique em Apurar." sticky="ColumnHeaders" growing="true" growingThreshold="100">
+							<columns>
+								<Column width="6rem"><Text text="Filial"/></Column>
+								<Column><Text text="Produtor"/></Column>
+								<Column width="10rem"><Text text="CPF/CNPJ"/></Column>
+								<Column width="5rem"><Text text="Optante"/></Column>
+								<Column hAlign="End"><Text text="Bruto"/></Column>
+								<Column hAlign="End"><Text text="INSS"/></Column>
+								<Column hAlign="End"><Text text="RAT"/></Column>
+								<Column hAlign="End"><Text text="SENAR"/></Column>
+								<Column width="8rem"><Text text="Situação"/></Column>
+								<Column><Text text="Recibo"/></Column>
+								<Column><Text text="Ocorrências"/></Column>
+							</columns>
+							<items>
+								<ColumnListItem>
+									<cells>
+										<Text text="{reinf>BranchCode}"/>
+										<Text text="{reinf>CardCode} - {reinf>CardName}"/>
+										<Text text="{reinf>ProducerTaxId}"/>
+										<Text text="{= ${reinf>PayrollOption} ? 'Sim' : 'Não' }"/>
+										<ObjectNumber number="{ path: 'reinf>Gross', formatter: 'formatter.formatDecimal2' }"/>
+										<ObjectNumber number="{ path: 'reinf>Inss', formatter: 'formatter.formatDecimal2' }"/>
+										<ObjectNumber number="{ path: 'reinf>Rat', formatter: 'formatter.formatDecimal2' }"/>
+										<ObjectNumber number="{ path: 'reinf>Senar', formatter: 'formatter.formatDecimal2' }"/>
+										<ObjectStatus text="{reinf>Situation}" state="{ path: 'reinf>Situation', formatter: '.formatSituationState' }"/>
+										<Text text="{reinf>Receipt}"/>
+										<Text text="{reinf>Occurrences}" tooltip="{reinf>Occurrences}" maxLines="2" wrapping="true"/>
+									</cells>
+								</ColumnListItem>
+							</items>
+						</Table>
+					</IconTabFilter>
+					<IconTabFilter text="Lotes e eventos" key="events">
+						<Table items="{reinf>/Events}" noDataText="Nenhum evento no período." sticky="ColumnHeaders" growing="true" growingThreshold="100">
+							<columns>
+								<Column width="6rem"><Text text="Evento"/></Column>
+								<Column width="8rem"><Text text="Situação"/></Column>
+								<Column><Text text="ID"/></Column>
+								<Column><Text text="Recibo"/></Column>
+								<Column><Text text="Protocolo do lote"/></Column>
+								<Column width="9rem"><Text text="Lote"/></Column>
+								<Column width="10rem"><Text text="Criado em"/></Column>
+								<Column><Text text="Ocorrências"/></Column>
+								<Column width="12rem"><Text text=""/></Column>
+							</columns>
+							<items>
+								<ColumnListItem>
+									<cells>
+										<Text text="{reinf>Type}"/>
+										<ObjectStatus text="{ path: 'reinf>Status', formatter: '.formatEventStatusText' }"
+											state="{ path: 'reinf>Status', formatter: '.formatEventStatusState' }"/>
+										<Text text="{reinf>EventId}"/>
+										<Text text="{reinf>Receipt}"/>
+										<Text text="{reinf>BatchProtocol}"/>
+										<Text text="{ path: 'reinf>BatchStatus', formatter: '.formatBatchStatusText' }"/>
+										<Text text="{reinf>CreatedAt}"/>
+										<Text text="{reinf>Occurrences}" tooltip="{reinf>Occurrences}" maxLines="2" wrapping="true"/>
+										<HBox>
+											<Button text="Ver XML" type="Transparent" press=".onShowEventXml"/>
+											<Button text="Lote" type="Transparent" press=".onShowBatchXml" visible="{= !!${reinf>BatchKey} }"/>
+										</HBox>
+									</cells>
+								</ColumnListItem>
+							</items>
+						</Table>
+					</IconTabFilter>
+				</items>
+			</IconTabBar>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Consultar lotes" icon="sap-icon://synchronize" press=".onQueryBatches" enabled="{reinf>/Loaded}"/>
+				<Button text="Reabrir período" icon="sap-icon://unlocked" press=".onReopen" enabled="{reinf>/CanReopen}"/>
+				<Button text="Fechar período" icon="sap-icon://locked" press=".onClosePeriod" enabled="{reinf>/CanClose}"/>
+				<Button text="Transmitir" type="Emphasized" icon="sap-icon://paper-plane" press=".onTransmit" enabled="{reinf>/CanTransmit}"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

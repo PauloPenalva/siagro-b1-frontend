@@ -1470,6 +1470,16 @@
           "target": "spedFiscalSettings"
         },
         {
+          "pattern": "reinf",
+          "name": "reinf",
+          "target": "reinf"
+        },
+        {
+          "pattern": "reinf-settings",
+          "name": "reinfSettings",
+          "target": "reinfSettings"
+        },
+        {
           "pattern": "efd-contributions",
           "name": "efdContributions",
           "target": "efdContributions"
@@ -3163,6 +3173,18 @@
           "id": "spedFiscal",
           "level": 1,
           "name": "siagrob1.view.spedFiscal.Main",
+          "clearControlAggregation": true
+        },
+        "reinf": {
+          "id": "reinf",
+          "level": 1,
+          "name": "siagrob1.view.reinf.Main",
+          "clearControlAggregation": true
+        },
+        "reinfSettings": {
+          "id": "reinfSettings",
+          "level": 1,
+          "name": "siagrob1.view.reinfSettings.Main",
           "clearControlAggregation": true
         },
         "efdContributions": {
