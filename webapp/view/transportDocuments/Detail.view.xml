@@ -53,6 +53,10 @@
 					<Label text="MDF-e:" class="sapUiTinyMarginEnd"/>
 					<Link text="{mdfe>/text}" press=".onOpenManifest"/>
 				</HBox>
+				<HBox alignItems="Center" visible="{= !!${freightInvoice>/Key} }">
+					<Label text="Fatura:" class="sapUiTinyMarginEnd"/>
+					<Link text="{freightInvoice>/Code}" press=".onOpenFreightInvoice"/>
+				</HBox>
 				<ObjectStatus text="{doc>/FinancialError}" state="Error" icon="sap-icon://message-error" visible="{= !!${doc>/FinancialError} }"/>
 			</VBox>
 		</uxap:headerContent>

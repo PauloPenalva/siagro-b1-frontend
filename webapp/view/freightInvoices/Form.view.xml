@@ -1,0 +1,84 @@
+<mvc:View
+	controllerName="siagrob1.controller.freightInvoices.Form"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+
+	<Page title="{= ${doc>/Key} ? 'Editar fatura de frete ' + ${doc>/Code} : 'Gerar fatura de frete' }"
+		showNavButton="true" navButtonPress=".onCancel" busy="{ui>/busy}" busyIndicatorDelay="0">
+		<content>
+			<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanL="4" labelSpanM="4" columnsL="2" columnsM="1"
+				singleContainerFullSize="false">
+				<f:content>
+					<core:Title text="CT-e a faturar"/>
+					<Label text="Filial"/>
+					<Text text="{doc>/BranchCode}"/>
+					<Label text="Tomador" required="true"/>
+					<Input value="{doc>/TakerName}" description="{doc>/TakerCardCode}" showValueHelp="true" valueHelpOnly="true"
+						valueHelpRequest=".onPickTaker" editable="{= !${doc>/Key} }"/>
+					<Label text="Emissão do CT-e (de / até)"/>
+					<DatePicker value="{ path: 'doc>/From', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+					<DatePicker value="{ path: 'doc>/To', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+					<Label text=""/>
+					<Button text="Buscar CT-e" icon="sap-icon://search" press=".onSearchCtes" width="10rem"/>
+
+					<core:Title text="Fatura"/>
+					<Label text="Emissão" required="true"/>
+					<DatePicker value="{ path: 'doc>/IssueDate', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"/>
+					<Label text="Vencimento"/>
+					<DatePicker value="{ path: 'doc>/DueDate', type: 'sap.ui.model.type.String' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd"
+						placeholder="Pela condição de pagamento"/>
+					<Label text="Condição de pagamento"/>
+					<Input value="{doc>/PaymentConditionCode}" description="{ui>/paymentConditionName}" showValueHelp="true"
+						valueHelpOnly="true" valueHelpRequest=".openPaymentConditionsValueHelp"/>
+					<Label text="Observação"/>
+					<TextArea value="{doc>/Observation}" rows="3" maxLength="2000" width="100%"/>
+				</f:content>
+			</f:SimpleForm>
+
+			<Table items="{ctes>/}" class="sapUiSizeCompact sapUiSmallMarginTop" noDataText="Nenhum CT-e elegível. Escolha o tomador e o período.">
+				<headerToolbar>
+					<OverflowToolbar>
+						<Title text="CT-e elegíveis ({sel>/count} selecionado(s) - total { path: 'sel>/total', formatter: 'formatter.formatBrl' })"/>
+						<ToolbarSpacer/>
+						<Button text="Marcar todos" type="Transparent" press=".onToggleAll($event, true)"/>
+						<Button text="Desmarcar todos" type="Transparent" press=".onToggleAll($event, false)"/>
+					</OverflowToolbar>
+				</headerToolbar>
+				<columns>
+					<Column width="3rem"><Text text=""/></Column>
+					<Column width="9rem"><Text text="Número/Série"/></Column>
+					<Column width="10rem"><Text text="Emissão"/></Column>
+					<Column><Text text="Percurso"/></Column>
+					<Column width="9rem" hAlign="End"><Text text="Peso (t)"/></Column>
+					<Column width="9rem" hAlign="End"><Text text="Valor"/></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<CheckBox selected="{ctes>selected}" select=".recalc"/>
+							<Text text="{ctes>Number} / {ctes>Series}"/>
+							<Text text="{ path: 'ctes>IssuedAt', formatter: 'formatter.formatDateTime' }"/>
+							<Text text="{ctes>Route}"/>
+							<Text text="{ path: 'ctes>WeightKg', formatter: '.tonsText' }"/>
+							<Text text="{ path: 'ctes>Amount', formatter: 'formatter.formatBrl' }"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Salvar e emitir" type="Success" icon="sap-icon://accept" press=".onSaveAndIssue"/>
+				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave"/>
+				<Button text="Cancelar" press=".onCancel"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>
