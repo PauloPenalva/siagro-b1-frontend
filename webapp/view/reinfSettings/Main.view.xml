@@ -23,6 +23,9 @@
 		</subHeader>
 		<content>
 			<MessageStrip
+				text="R-1000 sem confirmação da Receita: o lote pode ter sido recebido. Confira no portal antes de liberar o reenvio."
+				type="Warning" showIcon="true" class="sapUiSmallMargin" visible="{settings>/RegistrationUnconfirmed}"/>
+			<MessageStrip
 				text="Alterações salvas; envie o R-1000 para atualizar o cadastro na Receita."
 				type="Information" showIcon="true" class="sapUiSmallMargin" visible="{settings>/RegistrationUpdatePending}"/>
 			<f:Form id="reinfSettingsForm" editable="true" visible="{= ${settings>/LoadedFor} !== '' }">
@@ -110,6 +113,8 @@
 		<footer>
 			<OverflowToolbar>
 				<ToolbarSpacer/>
+				<Button text="Liberar reenvio" icon="sap-icon://restart" press=".onReleaseUnconfirmed"
+					visible="{settings>/RegistrationUnconfirmed}"/>
 				<Button text="Enviar R-1000" icon="sap-icon://paper-plane" press=".onSendRegistration"
 					enabled="{= ${settings>/Exists} &amp;&amp; ${settings>/LoadedFor} !== '' }"/>
 				<Button text="Salvar" type="Emphasized" icon="sap-icon://save" press=".onSave"

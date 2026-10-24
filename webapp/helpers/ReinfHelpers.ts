@@ -71,9 +71,12 @@ export function reinfPeriodActions(status: string, hasRows: boolean) {
   };
 }
 
-/** Alguma linha sem confirmação da Receita ("Verificar"): mostra "Liberar reenvio". */
-export function reinfHasUnconfirmed(rows: { Situation?: string }[]): boolean {
-  return rows.some((r) => r.Situation === "Verificar");
+/**
+ * "Liberar reenvio": alguma linha "Verificar" ou, pelo backend (HasUnconfirmed), evento de controle
+ * (R-2099/R-2098/R-1000) sem confirmação da Receita.
+ */
+export function reinfHasUnconfirmed(rows: { Situation?: string }[], hasUnconfirmed = false): boolean {
+  return hasUnconfirmed || rows.some((r) => r.Situation === "Verificar");
 }
 
 /** Lotes ainda pendentes de consulta (Enviado / Em processamento), sem repetição. */

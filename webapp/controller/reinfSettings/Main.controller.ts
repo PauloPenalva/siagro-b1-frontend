@@ -37,6 +37,8 @@ type Settings = {
   Exists: boolean;
   /** Dados do R-1000 alterados depois do aceite (persistido no backend): falta enviar a alteração. */
   RegistrationUpdatePending: boolean;
+  /** R-1000 sem confirmação da Receita. */
+  RegistrationUnconfirmed: boolean;
 };
 
 const TEXT_KEYS = [
@@ -64,7 +66,7 @@ export default class Main extends CommonController {
       ContactName: "", ContactCpf: "", ContactPhone: "", ContactEmail: "", ValidFrom: "",
       ClosingResponsibleName: "", ClosingResponsibleCpf: "", ClosingResponsiblePhone: "", ClosingResponsibleEmail: "",
       RegistrationStatus: 0, RegistrationStatusText: reinfRegistrationText(0), RegistrationStatusState: "None",
-      RegistrationReceipt: "", Exists: false, RegistrationUpdatePending: false,
+      RegistrationReceipt: "", Exists: false, RegistrationUpdatePending: false, RegistrationUnconfirmed: false,
     };
   }
 
@@ -120,6 +122,7 @@ export default class Main extends CommonController {
     s.Exists = Boolean(data.Exists);
     s.LoadedFor = root;
     s.RegistrationUpdatePending = Boolean(data.RegistrationUpdatePending);
+    s.RegistrationUnconfirmed = Boolean(data.RegistrationUnconfirmed);
     this.model().setData(s);
   }
 
@@ -176,6 +179,36 @@ export default class Main extends CommonController {
         if (action === MessageBox.Action.OK.toString()) void this.sendRegistration(data.TaxIdRoot);
       },
     });
+  }
+
+  /** Libera o R-1000 sem confirmação (período nulo = só o cadastro). */
+  onReleaseUnconfirmed(): void {
+    const root = (this.model().getProperty("/TaxIdRoot") as string) ?? "";
+    if (!root) return;
+    MessageBox.confirm(
+      "A Receita pode ter recebido o R-1000 sem confirmar. Confira no portal da EFD-Reinf antes: " +
+        "se já constar lá, reenviar gera duplicidade. Liberar o reenvio?",
+      {
+        onClose: (action: string) => {
+          if (action === MessageBox.Action.OK.toString()) void this.releaseUnconfirmed(root);
+        },
+      },
+    );
+  }
+
+  private async releaseUnconfirmed(root: string): Promise<void> {
+    this.setBusy(true);
+    try {
+      const result = await sendJson("POST", ServerRoutes.reinfReleaseUnconfirmed, { TaxIdRoot: root, Period: null });
+      if (!result.ok) {
+        MessageBox.error(result.message ?? "Erro ao liberar o reenvio.");
+        return;
+      }
+      MessageToast.show("R-1000 liberado para reenvio.");
+    } finally {
+      this.setBusy(false);
+    }
+    await this.load(root);
   }
 
   private async sendRegistration(root: string): Promise<void> {

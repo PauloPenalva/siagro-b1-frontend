@@ -35,7 +35,7 @@ export default class Main extends CommonController {
     const period = reinfPreviousPeriod(new Date());
     this.getView().setModel(new JSONModel({
       TaxIdRoot: "", Period: period, Loaded: false, PeriodStatus: "", PeriodStatusText: "", ClosingReceipt: "",
-      Rows: [], Issues: [], IssuesText: "", Events: [], CanTransmit: false, CanClose: false, CanReopen: false, CanRelease: false,
+      Rows: [], Issues: [], IssuesText: "", Events: [], CanTransmit: false, CanClose: false, CanReopen: false, CanRelease: false, HasUnconfirmed: false,
     }), "reinf");
     this.getView().setModel(new JSONModel({ items: [] }), "contributors");
     this.getRouter().getRoute("reinf")?.attachPatternMatched(() => void this.loadContributors());
@@ -111,6 +111,7 @@ export default class Main extends CommonController {
     m.setProperty("/PeriodStatus", (o.PeriodStatus as string) || "Open");
     m.setProperty("/PeriodStatusText", reinfPeriodStatusText(o.PeriodStatus as string));
     m.setProperty("/ClosingReceipt", (o.ClosingReceipt as string) ?? "");
+    m.setProperty("/HasUnconfirmed", Boolean(o.HasUnconfirmed));
     m.setProperty("/Events", events.ok ? odataCollection<unknown>(events.data).map((e) => pascalKeys<EventRow>(e)) : []);
     if (!events.ok) MessageBox.error(events.message ?? "Erro ao carregar os eventos.");
     m.setProperty("/Loaded", true);
@@ -124,7 +125,7 @@ export default class Main extends CommonController {
     m.setProperty("/CanTransmit", loaded && a.canTransmit);
     m.setProperty("/CanClose", loaded && a.canClose);
     m.setProperty("/CanReopen", loaded && a.canReopen);
-    m.setProperty("/CanRelease", loaded && reinfHasUnconfirmed((m.getProperty("/Rows") as Row[]) ?? []));
+    m.setProperty("/CanRelease", loaded && reinfHasUnconfirmed((m.getProperty("/Rows") as Row[]) ?? [], m.getProperty("/HasUnconfirmed") === true));
   }
 
   private async periodAction(url: string, success: string, failure: string): Promise<void> {

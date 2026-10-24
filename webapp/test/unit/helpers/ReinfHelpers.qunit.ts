@@ -23,6 +23,7 @@ QUnit.test("sem confirmação: Liberar reenvio só com linha Verificar", functio
 	assert.strictEqual(reinfHasUnconfirmed([{ Situation: "Aceito" }, { Situation: "Verificar" }]), true);
 	assert.strictEqual(reinfHasUnconfirmed([{ Situation: "Aceito" }, { Situation: "Sem movimento" }]), false);
 	assert.strictEqual(reinfHasUnconfirmed([]), false);
+	assert.strictEqual(reinfHasUnconfirmed([], true), true, "evento de controle sem confirmação");
 	assert.strictEqual(reinfEventStatusText("Unconfirmed"), "Sem confirmação");
 	assert.strictEqual(reinfEventStatusState("Unconfirmed"), "Warning");
 });
