@@ -64,15 +64,15 @@
 
 								<core:Title text="Participantes"/>
 								<Label text="Tomador"/>
-								<Text text="{doc>/TakerCardCode}"/>
+								<Text text="{doc>/TakerName}"/>
 								<Label text="Remetente"/>
-								<Text text="{doc>/SenderCardCode}"/>
+								<Text text="{doc>/SenderName}"/>
 								<Label text="Destinatário"/>
-								<Text text="{doc>/RecipientCardCode}"/>
+								<Text text="{doc>/RecipientName}"/>
 
 								<core:Title text="Rota e carga"/>
 								<Label text="Origem → destino"/>
-								<Text text="{doc>/StartMunicipalityCode}/{doc>/StartState} → {doc>/EndMunicipalityCode}/{doc>/EndState}"/>
+								<Text text="{doc>/StartMunicipalityName}/{doc>/StartState} → {doc>/EndMunicipalityName}/{doc>/EndState}"/>
 								<Label text="Produto"/>
 								<Text text="{doc>/ItemCode} - {doc>/ItemName}"/>
 
