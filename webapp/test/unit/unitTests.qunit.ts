@@ -48,3 +48,4 @@ import "./view/DistributionRuleFragments.qunit";
 import "./helpers/CteHelpers.qunit";
 import "./helpers/MdfeHelpers.qunit";
 import "./helpers/FreightInvoiceHelpers.qunit";
+import "./helpers/MenuTreeHelpers.qunit";
