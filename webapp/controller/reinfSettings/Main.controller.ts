@@ -35,8 +35,8 @@ type Settings = {
   RegistrationStatusState: string;
   RegistrationReceipt: string;
   Exists: boolean;
-  /** Gravou depois do R-1000 aceito: falta reenviar. */
-  NeedsResend: boolean;
+  /** Dados do R-1000 alterados depois do aceite (persistido no backend): falta enviar a alteração. */
+  RegistrationUpdatePending: boolean;
 };
 
 const TEXT_KEYS = [
@@ -44,9 +44,6 @@ const TEXT_KEYS = [
   "ClosingResponsibleName", "ClosingResponsibleCpf", "ClosingResponsiblePhone", "ClosingResponsibleEmail",
   "RegistrationReceipt",
 ] as const;
-
-/** ReinfRegistrationStatus.Accepted */
-const REGISTRATION_ACCEPTED = 2;
 
 /**
  * Parâmetros da EFD-Reinf por raiz de CNPJ (só STANDALONE) e envio do cadastro do contribuinte (R-1000).
@@ -67,7 +64,7 @@ export default class Main extends CommonController {
       ContactName: "", ContactCpf: "", ContactPhone: "", ContactEmail: "", ValidFrom: "",
       ClosingResponsibleName: "", ClosingResponsibleCpf: "", ClosingResponsiblePhone: "", ClosingResponsibleEmail: "",
       RegistrationStatus: 0, RegistrationStatusText: reinfRegistrationText(0), RegistrationStatusState: "None",
-      RegistrationReceipt: "", Exists: false, NeedsResend: false,
+      RegistrationReceipt: "", Exists: false, RegistrationUpdatePending: false,
     };
   }
 
@@ -103,13 +100,13 @@ export default class Main extends CommonController {
         MessageBox.error(result.message ?? "Erro ao carregar os parâmetros.");
         return;
       }
-      this.apply(root, pascalKeys<Record<string, unknown>>(odataValue<unknown>(result.data)), false);
+      this.apply(root, pascalKeys<Record<string, unknown>>(odataValue<unknown>(result.data)));
     } finally {
       this.setBusy(false);
     }
   }
 
-  private apply(root: string, data: Record<string, unknown>, needsResend: boolean): void {
+  private apply(root: string, data: Record<string, unknown>): void {
     const s = Main.blank(root);
     for (const key of TEXT_KEYS) s[key] = (data[key] as string) ?? "";
     s.Environment = String((data.Environment as number) ?? 2);
@@ -122,7 +119,7 @@ export default class Main extends CommonController {
     s.RegistrationStatusState = reinfRegistrationState(s.RegistrationStatus);
     s.Exists = Boolean(data.Exists);
     s.LoadedFor = root;
-    s.NeedsResend = needsResend;
+    s.RegistrationUpdatePending = Boolean(data.RegistrationUpdatePending);
     this.model().setData(s);
   }
 
@@ -161,7 +158,7 @@ export default class Main extends CommonController {
       }
       const saved = pascalKeys<Record<string, unknown>>(odataValue<unknown>(result.data) ?? {});
       const merged = { ...payload, RegistrationStatus: data.RegistrationStatus, RegistrationReceipt: data.RegistrationReceipt, ...saved, Exists: true };
-      this.apply(data.TaxIdRoot, merged, Number(merged.RegistrationStatus) === REGISTRATION_ACCEPTED);
+      this.apply(data.TaxIdRoot, merged);
       MessageToast.show("Parâmetros da EFD-Reinf gravados.");
     } finally {
       this.setBusy(false);

@@ -10,6 +10,8 @@ const SITUATION_STATES: Record<string, ValueStateName> = {
   "Excluído": "None",
   Novo: "Information",
   Enviado: "Information",
+  "Sem movimento": "None",
+  Verificar: "Warning",
 };
 
 /** Cor (ValueState) da situação de uma linha da visão do período. */
@@ -27,6 +29,7 @@ export function reinfPeriodStatusText(status?: string): string {
 
 const EVENT_TEXTS: Record<string, string> = {
   Pending: "Pendente", Sent: "Enviado", Accepted: "Aceito", Rejected: "Rejeitado", Excluded: "Excluído", Outdated: "Desatualizado",
+  Unconfirmed: "Sem confirmação",
 };
 
 export function reinfEventStatusText(status?: string): string {
@@ -34,7 +37,7 @@ export function reinfEventStatusText(status?: string): string {
 }
 
 const EVENT_STATES: Record<string, ValueStateName> = {
-  Pending: "Information", Sent: "Information", Accepted: "Success", Rejected: "Error", Excluded: "None", Outdated: "Warning",
+  Pending: "Information", Sent: "Information", Accepted: "Success", Rejected: "Error", Excluded: "None", Outdated: "Warning", Unconfirmed: "Warning",
 };
 
 export function reinfEventStatusState(status?: string): ValueStateName {
@@ -66,6 +69,11 @@ export function reinfPeriodActions(status: string, hasRows: boolean) {
     canClose: s === "Open",
     canReopen: s === "Closed",
   };
+}
+
+/** Alguma linha sem confirmação da Receita ("Verificar"): mostra "Liberar reenvio". */
+export function reinfHasUnconfirmed(rows: { Situation?: string }[]): boolean {
+  return rows.some((r) => r.Situation === "Verificar");
 }
 
 /** Lotes ainda pendentes de consulta (Enviado / Em processamento), sem repetição. */

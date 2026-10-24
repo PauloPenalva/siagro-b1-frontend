@@ -9,7 +9,7 @@ import type { Button$PressEvent } from "sap/m/Button";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { odataCollection, odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import {
-  odataString, pascalKeys, reinfBatchStatusText, reinfEventStatusState, reinfEventStatusText, reinfPendingBatchKeys,
+  odataString, pascalKeys, reinfHasUnconfirmed, reinfBatchStatusText, reinfEventStatusState, reinfEventStatusText, reinfPendingBatchKeys,
   reinfPeriodActions, reinfPeriodStatusText, reinfPreviousPeriod, reinfSituationState,
 } from "siagrob1/helpers/ReinfHelpers";
 
@@ -35,7 +35,7 @@ export default class Main extends CommonController {
     const period = reinfPreviousPeriod(new Date());
     this.getView().setModel(new JSONModel({
       TaxIdRoot: "", Period: period, Loaded: false, PeriodStatus: "", PeriodStatusText: "", ClosingReceipt: "",
-      Rows: [], Issues: [], IssuesText: "", Events: [], CanTransmit: false, CanClose: false, CanReopen: false,
+      Rows: [], Issues: [], IssuesText: "", Events: [], CanTransmit: false, CanClose: false, CanReopen: false, CanRelease: false,
     }), "reinf");
     this.getView().setModel(new JSONModel({ items: [] }), "contributors");
     this.getRouter().getRoute("reinf")?.attachPatternMatched(() => void this.loadContributors());
@@ -124,6 +124,7 @@ export default class Main extends CommonController {
     m.setProperty("/CanTransmit", loaded && a.canTransmit);
     m.setProperty("/CanClose", loaded && a.canClose);
     m.setProperty("/CanReopen", loaded && a.canReopen);
+    m.setProperty("/CanRelease", loaded && reinfHasUnconfirmed((m.getProperty("/Rows") as Row[]) ?? []));
   }
 
   private async periodAction(url: string, success: string, failure: string): Promise<void> {
@@ -162,6 +163,20 @@ export default class Main extends CommonController {
         if (action === MessageBox.Action.OK.toString()) void this.periodAction(ServerRoutes.reinfReopen, "Reabertura enviada.", "Erro ao reabrir o período.");
       },
     });
+  }
+
+  /** Devolve ao envio os eventos sem confirmação da Receita (situação "Verificar"). */
+  onReleaseUnconfirmed(): void {
+    MessageBox.confirm(
+      "A Receita pode ter recebido esses eventos sem confirmar. Confira no portal da EFD-Reinf antes: " +
+        "se já constarem lá, reenviar gera duplicidade. Liberar o reenvio?",
+      {
+        onClose: (action: string) => {
+          if (action === MessageBox.Action.OK.toString())
+            void this.periodAction(ServerRoutes.reinfReleaseUnconfirmed, "Eventos liberados para reenvio.", "Erro ao liberar o reenvio.");
+        },
+      },
+    );
   }
 
   /** Consulta cada lote ainda Enviado/Em processamento. */

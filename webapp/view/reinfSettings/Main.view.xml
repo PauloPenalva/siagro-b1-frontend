@@ -24,7 +24,7 @@
 		<content>
 			<MessageStrip
 				text="Alterações salvas; envie o R-1000 para atualizar o cadastro na Receita."
-				type="Information" showIcon="true" class="sapUiSmallMargin" visible="{settings>/NeedsResend}"/>
+				type="Information" showIcon="true" class="sapUiSmallMargin" visible="{settings>/RegistrationUpdatePending}"/>
 			<f:Form id="reinfSettingsForm" editable="true" visible="{= ${settings>/LoadedFor} !== '' }">
 				<f:layout>
 					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="2"/>

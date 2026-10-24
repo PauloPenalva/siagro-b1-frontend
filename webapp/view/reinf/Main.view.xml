@@ -106,6 +106,7 @@
 			<OverflowToolbar>
 				<ToolbarSpacer/>
 				<Button text="Consultar lotes" icon="sap-icon://synchronize" press=".onQueryBatches" enabled="{reinf>/Loaded}"/>
+				<Button text="Liberar reenvio" icon="sap-icon://restart" press=".onReleaseUnconfirmed" visible="{reinf>/CanRelease}"/>
 				<Button text="Reabrir período" icon="sap-icon://unlocked" press=".onReopen" enabled="{reinf>/CanReopen}"/>
 				<Button text="Fechar período" icon="sap-icon://locked" press=".onClosePeriod" enabled="{reinf>/CanClose}"/>
 				<Button text="Transmitir" type="Emphasized" icon="sap-icon://paper-plane" press=".onTransmit" enabled="{reinf>/CanTransmit}"/>

@@ -30,6 +30,7 @@ export default {
   reinfTransmit: '/odata/ReinfTransmit',
   reinfClose: '/odata/ReinfClose',
   reinfReopen: '/odata/ReinfReopen',
+  reinfReleaseUnconfirmed: '/odata/ReinfReleaseUnconfirmed',
   reinfBatchQuery: '/odata/ReinfBatchQuery',
   fiscalKardex: '/reports/FiscalKardex',
   fiscalKardexBook: '/reports/FiscalKardex/Book',

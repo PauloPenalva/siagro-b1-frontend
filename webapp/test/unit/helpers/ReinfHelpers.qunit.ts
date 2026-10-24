@@ -1,5 +1,6 @@
 import {
 	reinfSituationState, reinfPeriodStatusText, reinfPreviousPeriod, reinfPeriodActions, reinfPendingBatchKeys, pascalKeys, reinfRegistrationText,
+	reinfHasUnconfirmed, reinfEventStatusText, reinfEventStatusState,
 } from "siagrob1/helpers/ReinfHelpers";
 
 QUnit.module("ReinfHelpers");
@@ -12,8 +13,18 @@ QUnit.test("situação da linha: cor por situação", function (assert) {
 	assert.strictEqual(reinfSituationState("Excluído"), "None");
 	assert.strictEqual(reinfSituationState("Novo"), "Information");
 	assert.strictEqual(reinfSituationState("Enviado"), "Information");
+	assert.strictEqual(reinfSituationState("Sem movimento"), "None");
+	assert.strictEqual(reinfSituationState("Verificar"), "Warning");
 	assert.strictEqual(reinfSituationState(undefined), "None");
 	assert.strictEqual(reinfSituationState("Outra"), "None");
+});
+
+QUnit.test("sem confirmação: Liberar reenvio só com linha Verificar", function (assert) {
+	assert.strictEqual(reinfHasUnconfirmed([{ Situation: "Aceito" }, { Situation: "Verificar" }]), true);
+	assert.strictEqual(reinfHasUnconfirmed([{ Situation: "Aceito" }, { Situation: "Sem movimento" }]), false);
+	assert.strictEqual(reinfHasUnconfirmed([]), false);
+	assert.strictEqual(reinfEventStatusText("Unconfirmed"), "Sem confirmação");
+	assert.strictEqual(reinfEventStatusState("Unconfirmed"), "Warning");
 });
 
 QUnit.test("situação do período e botões", function (assert) {
