@@ -50,7 +50,7 @@ export default class Detail extends CommonController {
 		try {
 			const [invoice, titles] = await Promise.all([
 				sendJson("GET", `${ServerRoutes.freightInvoices}(${encodeURIComponent(this.key)})`
-					+ "?$expand=Items($filter=IsActive eq true;$orderby=LineNum;$expand=TransportDocument($select=Key,Number,Series,IssuedAt))"),
+					+ "?$expand=Items($orderby=LineNum;$expand=TransportDocument($select=Key,Number,Series,IssuedAt))"),
 				sendJson("GET", `${ServerRoutes.financialDocuments}?$filter=OriginType eq 'FreightInvoice' and OriginKey eq ${encodeURIComponent(this.key)}`
 					+ "&$select=Key,Code,DueDate,NetAmount,Status&$orderby=DueDate"),
 			]);

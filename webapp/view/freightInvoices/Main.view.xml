@@ -66,8 +66,7 @@
 				rows="{
 					path: '/FreightInvoices',
 					parameters: {
-						$select: 'Key,Code,TakerCardCode,TakerName,IssueDate,DueDate,TotalAmount,Status',
-						$expand: 'Items($select=Key;$filter=IsActive eq true)'
+						$select: 'Key,Code,TakerCardCode,TakerName,IssueDate,DueDate,TotalAmount,Status'
 					},
 					sorter: [ { path: 'IssueDate', descending: true }, { path: 'Code', descending: true } ]
 				}">
