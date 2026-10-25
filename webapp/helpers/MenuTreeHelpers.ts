@@ -140,3 +140,80 @@ export function diffMenuTree(tree: MenuNode[], original: MenuRow[]): MenuDiff {
 		.sort((a, b) => depth(b) - depth(a));
 	return diff;
 }
+
+/** Ícones sugeridos para o menu, com descrição em pt-BR para a pesquisa. */
+export const SUGGESTED_MENU_ICONS: [string, string][] = [
+	["folder-blank", "Pasta (padrão de módulo)"],
+	["home", "Início"],
+	["action-settings", "Configurações"],
+	["user-settings", "Configurações de usuário"],
+	["group", "Usuários / grupos"],
+	["locked", "Segurança / permissões"],
+	["building", "Empresa / filial"],
+	["factory", "Indústria / armazém / depósito"],
+	["shipping-status", "Expedição / transporte / carga"],
+	["inbox", "Recebimento / entrada"],
+	["outbox", "Envio / saída"],
+	["car-rental", "Veículo"],
+	["map", "Mapa / região"],
+	["map-2", "Localização"],
+	["measure", "Balança / pesagem / medida"],
+	["lab", "Laboratório / qualidade"],
+	["nutrition-activity", "Grãos / agrícola"],
+	["product", "Produto"],
+	["customer", "Cliente"],
+	["supplier", "Fornecedor"],
+	["business-card", "Parceiro de negócio"],
+	["contacts", "Contatos"],
+	["document", "Documento"],
+	["document-text", "Contrato"],
+	["sales-order", "Venda / pedido de venda"],
+	["sales-document", "Documento de venda"],
+	["cart", "Compra"],
+	["receipt", "Nota fiscal / recibo"],
+	["official-service", "Fiscal / tributos"],
+	["money-bills", "Financeiro"],
+	["wallet", "Contas / carteira"],
+	["lead", "Pagamento / dinheiro"],
+	["capital-projects", "Contabilidade"],
+	["accounting-document-verification", "Conferência contábil"],
+	["batch-payments", "Lote / pagamentos em lote"],
+	["inventory", "Estoque / inventário"],
+	["bar-chart", "Relatório / gráfico"],
+	["line-chart", "Indicadores"],
+	["print", "Impressão"],
+	["email", "E-mail"],
+	["bell", "Notificações"],
+	["calendar", "Calendário / safra"],
+	["history", "Histórico / log"],
+	["approvals", "Aprovações"],
+	["attachment", "Anexos"],
+	["synchronize", "Integração / sincronização"],
+	["database", "Banco de dados"],
+	["menu", "Menu"],
+];
+
+export type IconOption = { name: string; src: string; description: string; group: string };
+
+/** Sugeridos primeiro (com descrição), depois os demais ícones SAP em ordem alfabética, sem repetir. */
+export function buildIconOptions(allIconNames: string[], suggested = SUGGESTED_MENU_ICONS): IconOption[] {
+	const available = new Set(allIconNames);
+	const seen = new Set<string>();
+	const options: IconOption[] = [];
+	suggested.forEach(([name, description]) => {
+		if (!available.has(name) || seen.has(name)) return;
+		seen.add(name);
+		options.push({ name, src: `sap-icon://${name}`, description, group: "Sugeridos" });
+	});
+	[...allIconNames].sort().forEach((name) => {
+		if (seen.has(name)) return;
+		seen.add(name);
+		options.push({ name, src: `sap-icon://${name}`, description: "", group: "Todos os ícones" });
+	});
+	return options;
+}
+
+/** Minúsculas e sem acento, para a pesquisa achar "inicio" em "Início". */
+export function normalizeSearch(text: string): string {
+	return text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+}

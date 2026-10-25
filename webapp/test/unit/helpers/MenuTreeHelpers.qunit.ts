@@ -1,4 +1,4 @@
-import { buildMenuTree, moveNode, diffMenuTree, findNode, MenuRow } from "siagrob1/helpers/MenuTreeHelpers";
+import { buildMenuTree, moveNode, diffMenuTree, findNode, buildIconOptions, normalizeSearch, MenuRow } from "siagrob1/helpers/MenuTreeHelpers";
 
 const rows = (): MenuRow[] => [
 	{ Key: "b", Title: "B", Icon: "", Enabled: true, Expanded: false, StandaloneOnly: false, Order: 2, ParentKey: null },
@@ -66,4 +66,17 @@ QUnit.test("diffMenuTree separa novos e removidos (removidos: filhos primeiro)",
 	assert.deepEqual(diff.creates.map((c) => [c.Key, c.ParentKey, c.Order]), [["n", "b", 10]]);
 	assert.deepEqual(diff.deletes.slice(0, 2).sort(), ["a1", "a2"]);
 	assert.strictEqual(diff.deletes[2], "a");
+});
+
+QUnit.test("buildIconOptions põe sugeridos primeiro, ignora inexistentes e não repete", (assert) => {
+	const options = buildIconOptions(["zeta", "home", "alpha"], [["home", "Início"], ["missing", "X"], ["home", "dup"]]);
+	assert.deepEqual(options.map((o) => [o.name, o.group]), [
+		["home", "Sugeridos"], ["alpha", "Todos os ícones"], ["zeta", "Todos os ícones"],
+	]);
+	assert.strictEqual(options[0].description, "Início");
+	assert.strictEqual(options[0].src, "sap-icon://home");
+});
+
+QUnit.test("normalizeSearch ignora acento e caixa", (assert) => {
+	assert.strictEqual(normalizeSearch("  Início Balança "), "inicio balanca");
 });
