@@ -101,7 +101,8 @@
 									</f:FormElement>
 									<f:FormElement label="Ícone">
 										<f:fields>
-											<Input value="{tree>Icon}" maxLength="100" placeholder="sap-icon://folder-blank" liveChange=".onFieldChange" />
+											<Input value="{tree>Icon}" maxLength="100" placeholder="sap-icon://folder-blank" liveChange=".onFieldChange"
+												showValueHelp="true" valueHelpRequest=".onIconValueHelp" />
 											<core:Icon src="{tree>Icon}" size="1.5rem">
 												<core:layoutData>
 													<f:ColumnElementData cellsSmall="2" cellsLarge="2" />

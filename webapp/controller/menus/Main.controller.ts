@@ -10,8 +10,14 @@ import MessageToast from "sap/m/MessageToast";
 import { DropInfo$DropEvent } from "sap/ui/core/dnd/DropInfo";
 import Control from "sap/ui/core/Control";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
+import SelectDialog, { SelectDialog$ConfirmEvent, SelectDialog$SearchEvent } from "sap/m/SelectDialog";
+import StandardListItem from "sap/m/StandardListItem";
+import IconPool from "sap/ui/core/IconPool";
+import Filter from "sap/ui/model/Filter";
+import Sorter from "sap/ui/model/Sorter";
+import ListBinding from "sap/ui/model/ListBinding";
 import {
-	buildMenuTree, diffMenuTree, findNode, findParent, findSiblings, moveNode,
+	buildMenuTree, diffMenuTree, findNode, findParent, findSiblings, moveNode, buildIconOptions, normalizeSearch,
 	DropPosition, MenuNode, MenuRow,
 } from "siagrob1/helpers/MenuTreeHelpers";
 
@@ -118,6 +124,57 @@ export default class Main extends BaseController {
 		const ctx = this.tree().getContextByIndex(this.tree().getSelectedIndex());
 		const key = ctx ? (ctx.getProperty("Key") as string) : null as string;
 		if (key !== this.selectedKey) this.select(key);
+	}
+
+	private iconDialog: SelectDialog;
+
+	/** Lista pesquisável dos ícones SAP; a escolha preenche o Ícone do item selecionado. */
+	onIconValueHelp(): void {
+		if (!this.iconDialog) {
+			// coleção padrão dos ícones SAP (sap-icon://<nome>)
+			const icons = buildIconOptions(IconPool.getIconNames(undefined) as string[]).map((o) => ({
+				...o,
+				searchText: normalizeSearch(`${o.name} ${o.description}`),
+			}));
+			this.iconDialog = new SelectDialog({
+				title: "Selecionar ícone",
+				noDataText: "Nenhum ícone encontrado",
+				growingThreshold: 100,
+				items: {
+					path: "icons>/",
+					sorter: new Sorter("group", false, true),
+					template: new StandardListItem({
+						title: "{= ${icons>description} || ${icons>name} }",
+						description: "{= ${icons>description} ? ${icons>name} : '' }",
+						icon: "{icons>src}",
+						iconInset: false,
+					}),
+				},
+				search: (ev: SelectDialog$SearchEvent) => {
+					const value = normalizeSearch(ev.getParameter("value") ?? "");
+					(ev.getSource().getBinding("items") as ListBinding).filter(
+						value
+							? [new Filter({ path: "searchText", caseSensitive: true, test: (text: string) => text.includes(value) })]
+							: [],
+					);
+				},
+				confirm: (ev: SelectDialog$ConfirmEvent) => {
+					const item = ev.getParameter("selectedItem");
+					const path = this.uiModel.getProperty("/selectedPath") as string;
+					if (!item || !path) return;
+					this.treeModel.setProperty(`${path}/Icon`, item.getBindingContext("icons").getProperty("src"));
+					this.treeModel.refresh(true);
+					this.uiModel.setProperty("/dirty", true);
+				},
+			});
+			this.iconDialog.addStyleClass("sapUiSizeCompact");
+			const iconsModel = new JSONModel(icons);
+			iconsModel.setSizeLimit(icons.length);
+			this.iconDialog.setModel(iconsModel, "icons");
+			this.getView().addDependent(this.iconDialog);
+		}
+		(this.iconDialog.getBinding("items") as ListBinding).filter([]);
+		this.iconDialog.open("");
 	}
 
 	onFieldChange(): void {
