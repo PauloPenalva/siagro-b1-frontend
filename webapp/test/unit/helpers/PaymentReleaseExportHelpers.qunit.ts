@@ -37,3 +37,18 @@ QUnit.test("Loja em barter usa o valor liberado", function (assert) {
 	assert.strictEqual(row.ReleaseStore, "Sim");
 	assert.strictEqual(mapPaymentReleaseExportRow({ IsBarter: true }).ReleaseStore, "Não");
 });
+
+QUnit.test("PlannedLoads junta as cargas não canceladas e não vaza a coleção", function (assert) {
+	const row = mapPaymentReleaseExportRow({
+		Code: "C1",
+		PlannedShipmentLoads: [
+			{ ShipmentLoad: { Code: "L1", Status: "Planned" } },
+			{ ShipmentLoad: { Code: "L2", Status: "Cancelled" } },
+			{ ShipmentLoad: { Code: "L3", Status: "Shipped" } },
+		],
+	});
+
+	assert.strictEqual(row.PlannedLoads, "L1, L3");
+	assert.strictEqual(row.PlannedShipmentLoads, undefined, "não vaza a coleção");
+	assert.strictEqual(mapPaymentReleaseExportRow({ Code: "C2" }).PlannedLoads, "", "sem cargas fica vazio");
+});

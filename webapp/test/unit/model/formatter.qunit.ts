@@ -173,3 +173,26 @@ QUnit.test("fornecedor e armazém do par de compra em \"(código) nome\"", funct
 	assert.strictEqual(formatter.formatRemovalLegCodeAndName("R1", legs, "Warehouse", "L1", "Lote"), "(A1) Armazém 1");
 	assert.strictEqual(formatter.formatRemovalLegCodeAndName("R2", legs, "Card", "EMP", "Empresa"), "(EMP) Empresa");
 });
+
+QUnit.module("formatter - formatPlannedLoads (cargas planejadas do contrato)");
+
+QUnit.test("carga cancelada não aparece", function (assert) {
+	assert.strictEqual(formatter.formatPlannedLoads([
+		{ ShipmentLoad: { Code: "C1", Status: "Cancelled" } },
+		{ ShipmentLoad: { Code: "C2", Status: "Planned" } },
+	]), "C2");
+});
+
+QUnit.test("sem cargas a célula fica vazia", function (assert) {
+	assert.strictEqual(formatter.formatPlannedLoads([]), "");
+	assert.strictEqual(formatter.formatPlannedLoads(undefined), "");
+	assert.strictEqual(formatter.formatPlannedLoads(null), "");
+	assert.strictEqual(formatter.formatPlannedLoads([{ ShipmentLoad: { Code: "C1", Status: "Cancelled" } }]), "");
+});
+
+QUnit.test("duas cargas são unidas por vírgula", function (assert) {
+	assert.strictEqual(formatter.formatPlannedLoads([
+		{ ShipmentLoad: { Code: "C1", Status: "Planned" } },
+		{ ShipmentLoad: { Code: "C2", Status: "Shipped" } },
+	]), "C1, C2");
+});
