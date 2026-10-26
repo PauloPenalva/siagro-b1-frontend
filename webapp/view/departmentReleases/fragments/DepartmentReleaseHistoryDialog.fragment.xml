@@ -8,6 +8,15 @@
 -->
 <Dialog id="departmentReleaseHistoryDialog" title="{history>/title}" contentWidth="52rem">
   <content>
+    <VBox class="sapUiSmallMargin">
+    <Select
+      selectedKey="{history>/department}"
+      items="{history>/departments}"
+      change=".onHistoryDepartmentChange"
+      width="14rem"
+      class="sapUiTinyMarginBottom">
+      <core:Item key="{history>key}" text="{history>text}"/>
+    </Select>
     <Table
       items="{history>/items}"
       growing="true"
@@ -33,6 +42,7 @@
         </ColumnListItem>
       </items>
     </Table>
+    </VBox>
   </content>
   <footer>
     <OverflowToolbar>

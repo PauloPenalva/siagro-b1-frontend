@@ -1,4 +1,10 @@
 import formatter from "siagrob1/model/formatter";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import ListBinding from "sap/ui/model/ListBinding";
+import Control from "sap/ui/core/Control";
+import Select from "sap/m/Select";
+import Table from "sap/m/Table";
 
 /** Departamentos da liberação (GAC-1188): código no backend, rótulo da tela e permissão exigida. */
 export const DEPARTMENT_RELEASES: { code: string; label: string; permission: string }[] = [
@@ -21,6 +27,7 @@ export type ReleaseHistoryRow = {
 };
 
 export type ReleaseHistoryItem = {
+  code: string;
   department: string;
   released: string;
   state: string;
@@ -38,6 +45,7 @@ export function mapReleaseHistory(rows: ReleaseHistoryRow[], allowed?: string[])
     .filter((r) => !allowed || allowed.includes(r.Department))
     .sort((a, b) => (b.ChangedAt ?? "").localeCompare(a.ChangedAt ?? ""))
     .map((r) => ({
+      code: r.Department,
       department: DEPARTMENT_RELEASES.find((d) => d.code === r.Department)?.label ?? r.Department,
       released: r.Released ? "Sim" : "Não",
       state: r.Released ? "Success" : "Error",
@@ -45,4 +53,34 @@ export function mapReleaseHistory(rows: ReleaseHistoryRow[], allowed?: string[])
       user: r.ChangedBy ?? "",
       when: r.ChangedAt ? formatter.formatDateTime(r.ChangedAt) : "",
     }));
+}
+
+/** Chave da opção "Todos" do filtro de departamento do histórico. */
+export const HISTORY_ALL_DEPARTMENTS = "ALL";
+
+/** Opções do filtro de departamento do histórico: "Todos" + os departamentos informados (todos se não vier). */
+export function historyDepartmentOptions(allowed?: string[]): { key: string; text: string }[] {
+  return [
+    { key: HISTORY_ALL_DEPARTMENTS, text: "Todos" },
+    ...DEPARTMENT_RELEASES
+      .filter((d) => !allowed || allowed.includes(d.code))
+      .map((d) => ({ key: d.code, text: d.label })),
+  ];
+}
+
+function findHistoryTable(root: Control): Table | undefined {
+  return root.findAggregatedObjects(true, (c) => c instanceof Table)[0] as Table | undefined;
+}
+
+/** Aplica ao Table do mesmo container do Select o filtro (client-side) pelo departamento escolhido. */
+export function applyHistoryDepartmentFilter(select: Select): void {
+  const table = findHistoryTable(select.getParent() as Control);
+  const key = select.getSelectedKey();
+  const binding = table?.getBinding("items") as ListBinding | undefined;
+  binding?.filter(key && key !== HISTORY_ALL_DEPARTMENTS ? [new Filter("code", FilterOperator.EQ, key)] : []);
+}
+
+/** Tira o filtro do histórico do diálogo (a chave do Select volta a "Todos" pelo modelo). */
+export function clearHistoryDepartmentFilter(dialog: Control): void {
+  (findHistoryTable(dialog)?.getBinding("items") as ListBinding | undefined)?.filter([]);
 }

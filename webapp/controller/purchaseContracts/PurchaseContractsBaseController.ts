@@ -17,7 +17,10 @@ import { WashoutDialogState, WashoutFixationOption, WashoutReverseState } from "
 import { openAttachmentViewer } from "siagrob1/dialogs/AttachmentViewer";
 import { Link$PressEvent } from "sap/m/Link";
 import formatter from "siagrob1/model/formatter";
-import { mapReleaseHistory, ReleaseHistoryRow } from "siagrob1/helpers/DepartmentReleaseHelpers";
+import {
+  applyHistoryDepartmentFilter, clearHistoryDepartmentFilter, HISTORY_ALL_DEPARTMENTS, historyDepartmentOptions,
+  mapReleaseHistory, ReleaseHistoryRow,
+} from "siagrob1/helpers/DepartmentReleaseHelpers";
 import { Select$ChangeEvent } from "sap/m/Select";
 import { CheckBox$SelectEvent } from "sap/m/CheckBox";
 import { PurchaseContractsTotals } from "siagrob1/types/PurchaseContractsTotal";
@@ -360,6 +363,8 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
       early: !!contract.EarlyPaymentAuthorized,
       departments,
       history: mapReleaseHistory(contract.PaymentReleaseHistory ?? []),
+      historyDepartments: historyDepartmentOptions(),
+      historyDepartment: HISTORY_ALL_DEPARTMENTS,
     });
   }
 
@@ -382,7 +387,12 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
       "siagrob1.view.purchaseContracts.fragments.PurchaseContractPaymentReleaseDialog"
     );
 
+    clearHistoryDepartmentFilter(this._paymentReleaseDialog);
     this._paymentReleaseDialog?.open();
+  }
+
+  onPaymentReleaseHistoryDepartmentChange(ev: Select$ChangeEvent) {
+    applyHistoryDepartmentFilter(ev.getSource());
   }
 
   onClosePaymentReleaseDialog() {

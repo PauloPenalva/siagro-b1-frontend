@@ -30,7 +30,7 @@
         showExceededText="true"
         value="{dlg>/reason}"
         valueState="{dlg>/reasonState}"
-        valueStateText="Informe o motivo da liberação."
+        valueStateText="Informe o motivo."
         liveChange=".onReasonLiveChange"/>
     </VBox>
   </content>

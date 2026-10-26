@@ -14,7 +14,11 @@ import { sendJson } from "siagrob1/helpers/FetchHelpers";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import SessionService from "siagrob1/services/SessionService";
 import CommonController from "../common/CommonController";
-import { DEPARTMENT_RELEASES, mapReleaseHistory, ReleaseHistoryRow } from "siagrob1/helpers/DepartmentReleaseHelpers";
+import { Select$ChangeEvent } from "sap/m/Select";
+import {
+  applyHistoryDepartmentFilter, clearHistoryDepartmentFilter, DEPARTMENT_RELEASES, HISTORY_ALL_DEPARTMENTS,
+  historyDepartmentOptions, mapReleaseHistory, ReleaseHistoryRow,
+} from "siagrob1/helpers/DepartmentReleaseHelpers";
 
 type FilterData = {
   PaymentReleaseStatus?: string[],
@@ -233,13 +237,20 @@ export default class Main extends CommonController {
     (this.getModel("history") as JSONModel).setData({
       title: `Histórico de liberações - ${contract.code}`,
       items: mapReleaseHistory(rows, allowed),
+      departments: historyDepartmentOptions(allowed),
+      department: HISTORY_ALL_DEPARTMENTS,
     });
 
     this.historyDialog ??= await DialogHelper.createDialog(
       this,
       "siagrob1.view.departmentReleases.fragments.DepartmentReleaseHistoryDialog"
     );
+    clearHistoryDepartmentFilter(this.historyDialog);
     this.historyDialog.open();
+  }
+
+  onHistoryDepartmentChange(ev: Select$ChangeEvent): void {
+    applyHistoryDepartmentFilter(ev.getSource());
   }
 
   onCloseDepartmentReleaseHistory(): void {

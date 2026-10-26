@@ -48,6 +48,14 @@
       </VBox>
 
       <Title text="Histórico" class="sapUiSmallMarginTop sapUiTinyMarginBottom"/>
+      <Select
+        selectedKey="{viewModel>/paymentRelease/historyDepartment}"
+        items="{viewModel>/paymentRelease/historyDepartments}"
+        change=".onPaymentReleaseHistoryDepartmentChange"
+        width="14rem"
+        class="sapUiTinyMarginBottom">
+        <core:Item key="{viewModel>key}" text="{viewModel>text}"/>
+      </Select>
       <Table
         items="{viewModel>/paymentRelease/history}"
         growing="true"
