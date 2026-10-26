@@ -35,7 +35,7 @@
               <f:FormElement label="Observação">
                 <f:fields>
                   <TextArea value="{viewModel>/plannedContractDialog/notes}" rows="3" width="100%"
-                    maxLength="500"/>
+                    maxLength="200"/>
                 </f:fields>
               </f:FormElement>
             </f:formElements>

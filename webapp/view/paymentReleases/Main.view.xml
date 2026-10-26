@@ -37,7 +37,10 @@
         rowActionCount="1"
         rows="{
           path: '/PurchaseContracts',
-          parameters: { $expand: { PaymentReleases: { $select: ['Department', 'Released'] } } },
+          parameters: { $expand: {
+            PaymentReleases: { $select: ['Department', 'Released'] },
+            PlannedShipmentLoads: { $expand: { ShipmentLoad: { $select: ['Code', 'Status'] } } }
+          } },
           sorter: [
             { path: 'RowId', descending: true }
           ]
@@ -140,6 +143,14 @@
                 inverted="true"
                 text="{= formatter.formatDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Store', ${path: 'IsBarter', targetType: 'any'}) }"
                 state="{= formatter.stateDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Store', ${path: 'IsBarter', targetType: 'any'}) }"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Cargas planejadas" width="12rem">
+            <t:template>
+              <Text
+                wrapping="false"
+                text="{= formatter.formatPlannedLoads(${path: 'PlannedShipmentLoads', targetType: 'any'}) }"
+                tooltip="{= formatter.formatPlannedLoads(${path: 'PlannedShipmentLoads', targetType: 'any'}) }"/>
             </t:template>
           </t:Column>
           <t:Column label="Antec." hAlign="Center" width="5rem">

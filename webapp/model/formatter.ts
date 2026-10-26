@@ -497,6 +497,15 @@ const formatter = {
     return releases?.some((r) => r.Department === department && r.Released) ? "Sim" : "Não";
   },
 
+  /** Códigos das cargas não canceladas em que o contrato está planejado (GAC-1185), separados por vírgula. */
+  formatPlannedLoads: (planned: { ShipmentLoad?: { Code?: string; Status?: string } }[]) => {
+    return (planned ?? [])
+      .map((p) => p.ShipmentLoad)
+      .filter((l) => l && l.Status !== "Cancelled" && l.Code)
+      .map((l) => l.Code)
+      .join(", ");
+  },
+
   stateDepartmentRelease: (releases: { Department: string; Released: boolean }[], department: string, isBarter?: boolean) => {
     if (department === "Store" && !isBarter) return "None";
 
