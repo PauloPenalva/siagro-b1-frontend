@@ -13,6 +13,7 @@ export const PAYMENT_RELEASE_EXPORT_DEPARTMENTS: [code: string, property: string
 
 type ContractRow = {
   PaymentReleases?: { Department: string; Released: boolean }[];
+  PlannedShipmentLoads?: { ShipmentLoad?: { Code?: string; Status?: string } }[];
   IsBarter?: boolean;
   [property: string]: unknown;
 };
@@ -23,8 +24,10 @@ type ContractRow = {
  * com a mesma regra da lista (`formatDepartmentRelease`).
  */
 export function mapPaymentReleaseExportRow(contract: ContractRow): Record<string, unknown> {
-  const { PaymentReleases, ...rest } = contract;
+  const { PaymentReleases, PlannedShipmentLoads, ...rest } = contract;
   const row: Record<string, unknown> = { ...rest };
+
+  row.PlannedLoads = formatter.formatPlannedLoads(PlannedShipmentLoads);
 
   for (const [code, property] of PAYMENT_RELEASE_EXPORT_DEPARTMENTS) {
     row[property] = formatter.formatDepartmentRelease(PaymentReleases ?? [], code, contract.IsBarter);

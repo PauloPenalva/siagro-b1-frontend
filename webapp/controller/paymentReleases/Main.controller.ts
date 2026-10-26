@@ -121,6 +121,7 @@ export default class Main extends CommonController {
         trueValue: "Sim",
         falseValue: "Não",
       },
+      { label: "Cargas planejadas", property: "PlannedLoads", type: EdmType.String },
       ...PAYMENT_RELEASE_EXPORT_DEPARTMENTS.map(([, property, label]): Column => (
         { label, property, type: EdmType.String })),
     ];
@@ -133,7 +134,7 @@ export default class Main extends CommonController {
   private async loadExportRows(cols: Column[], orderby: string): Promise<Record<string, unknown>[]> {
     const select = new Set<string>(["Key", "IsBarter"]);
     cols.forEach((c) => {
-      if (!PAYMENT_RELEASE_EXPORT_DEPARTMENTS.some(([, property]) => property === c.property)) {
+      if (c.property !== "PlannedLoads" && !PAYMENT_RELEASE_EXPORT_DEPARTMENTS.some(([, property]) => property === c.property)) {
         select.add(c.property as string);
       }
     });
@@ -141,7 +142,7 @@ export default class Main extends CommonController {
     const parameters: Record<string, string> = {
       $orderby: orderby,
       $select: [...select].join(","),
-      $expand: "PaymentReleases($select=Department,Released)",
+      $expand: "PaymentReleases($select=Department,Released),PlannedShipmentLoads($expand=ShipmentLoad($select=Code,Status))",
     };
     if (this.currentFilter) parameters.$filter = this.currentFilter;
 

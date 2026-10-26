@@ -497,6 +497,15 @@ const formatter = {
     return releases?.some((r) => r.Department === department && r.Released) ? "Sim" : "Não";
   },
 
+  /** Códigos das cargas não canceladas em que o contrato está planejado (GAC-1185), separados por vírgula. */
+  formatPlannedLoads: (planned: { ShipmentLoad?: { Code?: string; Status?: string } }[]) => {
+    return (planned ?? [])
+      .map((p) => p.ShipmentLoad)
+      .filter((l) => l && l.Status !== "Cancelled" && l.Code)
+      .map((l) => l.Code)
+      .join(", ");
+  },
+
   stateDepartmentRelease: (releases: { Department: string; Released: boolean }[], department: string, isBarter?: boolean) => {
     if (department === "Store" && !isBarter) return "None";
 
@@ -962,6 +971,8 @@ const formatter = {
     // Singular: e a colecao de comentarios (CommentEntries). Nao confundir com "Comments"
     // abaixo, que e a observacao do cabecalho.
     m.set("Comment", "Comentário");
+    m.set("PlannedPurchaseContract", "Contrato de compra planejado");
+    m.set("PlannedSalesContract", "Contrato de venda planejado");
     m.set("Comments", "Observações");
     m.set("LoadDate", "Data");
     m.set("TruckCode", "Veículo");
@@ -1254,6 +1265,8 @@ const formatter = {
     // Singular: é a coleção de comentários do Detail (CommentEntries). Não confundir com
     // "Comments" abaixo, que é a observação do cabeçalho.
     m.set("Comment", "Comentário");
+    m.set("PlannedPurchaseContract", "Contrato de compra planejado");
+    m.set("PlannedSalesContract", "Contrato de venda planejado");
     // Legado: a observação já foi editável depois de aprovada e deixou linhas gravadas.
     // Hoje ela só muda em rascunho, mas as linhas antigas precisam continuar legíveis.
     m.set("Comments", "Observação");

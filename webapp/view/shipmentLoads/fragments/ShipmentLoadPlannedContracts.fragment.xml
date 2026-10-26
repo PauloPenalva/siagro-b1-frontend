@@ -1,0 +1,149 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table">
+	<!-- Contratos planejados da carga (GAC-1185): vínculo OPCIONAL e informativo entre a carga e
+	     contratos aprovados do mesmo produto. Não consome saldo nem movimenta nada.
+
+	     $$ownRequest é obrigatório: sem ele a coleção vira $expand do GET da carga e o refresh()
+	     depois de incluir/excluir não recarrega nada (mesmo motivo das Descargas). Incluir e
+	     Excluir somem com a carga Cancelada; o servidor também recusa. -->
+	<VBox>
+	<Panel class="sapUiNoContentPadding">
+	<t:Table
+		id="loadPlannedPurchaseTable"
+		class="sapUiSizeCondensed"
+		alternateRowColors="true"
+		enableBusyIndicator="true"
+		enableSelectAll="false"
+		selectionMode="Single"
+		selectionBehavior="Row"
+		busyIndicatorDelay="0"
+		visibleRowCount="4"
+		noData="Nenhum contrato planejado nesta carga."
+		rows="{
+			path: 'PlannedPurchaseContracts',
+			parameters: {
+				'$$ownRequest': true,
+				'$expand': 'Contract($select=Code,CardCode,CardName,ItemCode,TotalVolume,AvaiableVolume)',
+				'$select': 'Key,ContractKey,PlannedQuantity,Notes,CreatedAt,CreatedBy'
+			},
+			sorter: { path: 'CreatedAt' }
+		}">
+		<t:extension>
+			<OverflowToolbar>
+				<content>
+					<Title text="Contratos de compra planejados"/>
+					<ToolbarSpacer/>
+					<Button type="Transparent" text="Incluir" icon="sap-icon://add"
+						id="loadPlannedPurchaseTableAddButton"
+						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' }"
+						press=".onAddPlannedPurchaseContract"/>
+					<Button type="Transparent" text="Excluir" icon="sap-icon://delete"
+						id="loadPlannedPurchaseTableRemoveButton"
+						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' }"
+						press=".onRemovePlannedPurchaseContract"/>
+				</content>
+			</OverflowToolbar>
+		</t:extension>
+		<t:columns>
+			<t:Column label="Contrato" width="9rem">
+				<t:template><Text text="{Contract/Code}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Parceiro" width="18rem">
+				<t:template><Text text="({Contract/CardCode}) {Contract/CardName}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Quantidade prevista" hAlign="End" width="10rem">
+				<t:template>
+					<ObjectNumber textAlign="End" number="{ path: 'PlannedQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Saldo do contrato" hAlign="End" width="10rem">
+				<t:template>
+					<ObjectNumber textAlign="End" number="{ path: 'Contract/AvaiableVolume', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Observação" width="16rem">
+				<t:template><Text text="{Notes}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Incluído por" width="9rem">
+				<t:template><Text text="{CreatedBy}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Incluído em" width="9rem">
+				<t:template>
+					<Text wrapping="false" text="{ path: 'CreatedAt', targetType: 'any', formatter: '.formatter.formatDate' }"/>
+				</t:template>
+			</t:Column>
+		</t:columns>
+	</t:Table>
+	</Panel>
+	<Panel class="sapUiNoContentPadding">
+	<t:Table
+		id="loadPlannedSalesTable"
+		class="sapUiSizeCondensed"
+		alternateRowColors="true"
+		enableBusyIndicator="true"
+		enableSelectAll="false"
+		selectionMode="Single"
+		selectionBehavior="Row"
+		busyIndicatorDelay="0"
+		visibleRowCount="4"
+		noData="Nenhum contrato planejado nesta carga."
+		rows="{
+			path: 'PlannedSalesContracts',
+			parameters: {
+				'$$ownRequest': true,
+				'$expand': 'Contract($select=Code,CardCode,CardName,ItemCode,TotalVolume,AvaiableVolume)',
+				'$select': 'Key,ContractKey,PlannedQuantity,Notes,CreatedAt,CreatedBy'
+			},
+			sorter: { path: 'CreatedAt' }
+		}">
+		<t:extension>
+			<OverflowToolbar>
+				<content>
+					<Title text="Contratos de venda planejados"/>
+					<ToolbarSpacer/>
+					<Button type="Transparent" text="Incluir" icon="sap-icon://add"
+						id="loadPlannedSalesTableAddButton"
+						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' }"
+						press=".onAddPlannedSalesContract"/>
+					<Button type="Transparent" text="Excluir" icon="sap-icon://delete"
+						id="loadPlannedSalesTableRemoveButton"
+						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' }"
+						press=".onRemovePlannedSalesContract"/>
+				</content>
+			</OverflowToolbar>
+		</t:extension>
+		<t:columns>
+			<t:Column label="Contrato" width="9rem">
+				<t:template><Text text="{Contract/Code}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Parceiro" width="18rem">
+				<t:template><Text text="({Contract/CardCode}) {Contract/CardName}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Quantidade prevista" hAlign="End" width="10rem">
+				<t:template>
+					<ObjectNumber textAlign="End" number="{ path: 'PlannedQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Saldo do contrato" hAlign="End" width="10rem">
+				<t:template>
+					<ObjectNumber textAlign="End" number="{ path: 'Contract/AvaiableVolume', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Observação" width="16rem">
+				<t:template><Text text="{Notes}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Incluído por" width="9rem">
+				<t:template><Text text="{CreatedBy}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Incluído em" width="9rem">
+				<t:template>
+					<Text wrapping="false" text="{ path: 'CreatedAt', targetType: 'any', formatter: '.formatter.formatDate' }"/>
+				</t:template>
+			</t:Column>
+		</t:columns>
+	</t:Table>
+	</Panel>
+	</VBox>
+</core:FragmentDefinition>

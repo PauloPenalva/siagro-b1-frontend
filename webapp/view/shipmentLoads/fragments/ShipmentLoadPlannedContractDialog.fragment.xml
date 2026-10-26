@@ -1,0 +1,55 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+<!--
+  Inclusao de contrato planejado na carga (GAC-1185). Escreve num BUFFER JSON
+  (`viewModel>/plannedContractDialog/...`), nunca no contexto OData: two-way binding num Detail
+  deixa PATCH pendente no update group diferido e derruba o batch inteiro.
+-->
+<Dialog id="shipmentLoadPlannedContractDialog" title="{viewModel>/plannedContractDialog/title}">
+  <content>
+    <VBox class="sapUiSmallMargin" width="520px">
+      <f:Form editable="true">
+        <f:layout>
+          <f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/>
+        </f:layout>
+        <f:formContainers>
+          <f:FormContainer>
+            <f:formElements>
+              <f:FormElement label="Contrato">
+                <f:fields>
+                  <Input required="true" editable="true" showValueHelp="true" valueHelpOnly="true"
+                    valueHelpRequest=".openPlannedContractValueHelp"
+                    value="{viewModel>/plannedContractDialog/contractCode}"/>
+                  <Input editable="false" value="{viewModel>/plannedContractDialog/cardName}"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Quantidade prevista">
+                <f:fields>
+                  <Input type="Number" value="{viewModel>/plannedContractDialog/quantity}"
+                    placeholder="Opcional"/>
+                </f:fields>
+              </f:FormElement>
+              <f:FormElement label="Observação">
+                <f:fields>
+                  <TextArea value="{viewModel>/plannedContractDialog/notes}" rows="3" width="100%"
+                    maxLength="200"/>
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+        </f:formContainers>
+      </f:Form>
+    </VBox>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Incluir" type="Emphasized" press=".onConfirmPlannedContract"/>
+      <Button text="Fechar" press=".onClosePlannedContractDialog" />
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>
