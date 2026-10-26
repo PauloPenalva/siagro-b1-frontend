@@ -17,7 +17,7 @@ import { WashoutDialogState, WashoutFixationOption, WashoutReverseState } from "
 import { openAttachmentViewer } from "siagrob1/dialogs/AttachmentViewer";
 import { Link$PressEvent } from "sap/m/Link";
 import formatter from "siagrob1/model/formatter";
-import { Switch$ChangeEvent } from "sap/m/Switch";
+import { mapReleaseHistory, ReleaseHistoryRow } from "siagrob1/helpers/DepartmentReleaseHelpers";
 import { Select$ChangeEvent } from "sap/m/Select";
 import { CheckBox$SelectEvent } from "sap/m/CheckBox";
 import { PurchaseContractsTotals } from "siagrob1/types/PurchaseContractsTotal";
@@ -310,7 +310,7 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
 
     const binding = model.bindContext(`/PurchaseContracts(${key})`, undefined, {
       $select: "Key,PaymentReleaseStatus,EarlyPaymentAuthorized,IsBarter,IsOnWheels,SignatureStatus",
-      $expand: { PaymentReleases: {} },
+      $expand: { PaymentReleases: {}, PaymentReleaseHistory: { $orderby: "ChangedAt desc" } },
     });
     let contract: {
       Key: string;
@@ -319,7 +319,8 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
       IsBarter?: boolean;
       IsOnWheels?: boolean;
       SignatureStatus?: string;
-      PaymentReleases?: { Department: string; Released: boolean; ReleasedAt?: string; ReleasedBy?: string }[];
+      PaymentReleases?: { Department: string; Released: boolean; ReleasedAt?: string; ReleasedBy?: string; Reason?: string }[];
+      PaymentReleaseHistory?: ReleaseHistoryRow[];
     };
     try {
       contract = await binding.requestObject() as typeof contract;
@@ -348,7 +349,8 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
       const signature = code === "Legal" && contract.SignatureStatus
         ? `Assinatura: ${formatter.formatSignatureStatus(contract.SignatureStatus)}`
         : "";
-      return { code, label, released, info, signature, visible: code !== "Store" || isBarter };
+      const reason = released ? (row?.Reason ?? "") : "";
+      return { code, label, released, releasedText: released ? "Sim" : "Não", info, reason, signature, visible: code !== "Store" || isBarter };
     });
 
     (this.getModel("viewModel") as JSONModel).setProperty("/paymentRelease", {
@@ -357,6 +359,7 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
       statusOptions,
       early: !!contract.EarlyPaymentAuthorized,
       departments,
+      history: mapReleaseHistory(contract.PaymentReleaseHistory ?? []),
     });
   }
 
@@ -432,17 +435,6 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
       this.api.purchaseContractsSetEarlyPaymentAuthorized,
       { Key: key, Authorized: ev.getParameter("selected") },
       "Erro ao atualizar a antecipação."
-    );
-  }
-
-  onDepartmentReleaseChange(ev: Switch$ChangeEvent) {
-    const viewModel = this.getModel("viewModel") as JSONModel;
-    const key = viewModel.getProperty("/paymentRelease/key") as string;
-    const dept = ev.getSource().getBindingContext("viewModel").getObject() as { code: string };
-    this.callPaymentReleaseAction(
-      this.api.purchaseContractsSetDepartmentRelease,
-      { Key: key, Department: dept.code, Released: ev.getParameter("state") },
-      "Erro ao atualizar a liberação do departamento."
     );
   }
 

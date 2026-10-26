@@ -3,13 +3,14 @@
     xmlns:core="sap.ui.core"
 >
 <!--
-  Liberação de pagamento (GAC-1188). Cada alteração chama a sua action na hora e recarrega o
-  estado: não há botão Confirmar. Fica fora do formulário do contrato porque vale em qualquer
+  Liberação de pagamento (GAC-1188). Situação e antecipação chamam a action na hora e recarregam
+  o estado: não há botão Confirmar. As liberações por departamento são só leitura aqui (com o
+  histórico); quem marca e desmarca, com motivo, é a tela Liberação por Departamento. Fica fora do formulário do contrato porque vale em qualquer
   status. O estado vem do JSONModel viewModel, em /paymentRelease, montado pelo controller.
 -->
 <Dialog id="purchaseContractPaymentReleaseDialog" title="Liberação de Pagamento">
   <content>
-    <VBox class="sapUiSmallMargin" width="520px">
+    <VBox class="sapUiSmallMargin" width="720px">
       <Label text="Situação" labelFor="purchaseContractPaymentReleaseStatusSelect"/>
       <Select
         id="purchaseContractPaymentReleaseStatusSelect"
@@ -33,18 +34,45 @@
       <VBox items="{viewModel>/paymentRelease/departments}">
         <HBox alignItems="Center" visible="{viewModel>visible}" class="sapUiTinyMarginBottom">
           <Label text="{viewModel>label}" width="9rem"/>
-          <Switch
-            state="{viewModel>released}"
-            customTextOn="Sim"
-            customTextOff="Não"
-            change=".onDepartmentReleaseChange"
-          />
+          <ObjectStatus
+            inverted="true"
+            class="sapUiTinyMarginEnd"
+            text="{viewModel>releasedText}"
+            state="{= ${viewModel>released} ? 'Success' : 'Error' }"/>
           <VBox class="sapUiSmallMarginBegin">
             <Text text="{viewModel>info}" visible="{= !!${viewModel>info} }"/>
+            <Text text="{= 'Motivo: ' + ${viewModel>reason} }" visible="{= !!${viewModel>reason} }"/>
             <Text text="{viewModel>signature}" visible="{= !!${viewModel>signature} }"/>
           </VBox>
         </HBox>
       </VBox>
+
+      <Title text="Histórico" class="sapUiSmallMarginTop sapUiTinyMarginBottom"/>
+      <Table
+        items="{viewModel>/paymentRelease/history}"
+        growing="true"
+        growingThreshold="10"
+        noDataText="Sem histórico de liberações."
+        class="sapUiSizeCondensed">
+        <columns>
+          <Column><Text text="Departamento"/></Column>
+          <Column width="4.5rem"><Text text="Liberado"/></Column>
+          <Column><Text text="Motivo"/></Column>
+          <Column><Text text="Usuário"/></Column>
+          <Column><Text text="Data/Hora"/></Column>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <cells>
+              <Text text="{viewModel>department}"/>
+              <ObjectStatus inverted="true" text="{viewModel>released}" state="{viewModel>state}"/>
+              <Text text="{viewModel>reason}"/>
+              <Text text="{viewModel>user}"/>
+              <Text text="{viewModel>when}"/>
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
     </VBox>
   </content>
   <footer>

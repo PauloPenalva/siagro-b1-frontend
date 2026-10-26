@@ -434,6 +434,11 @@
           "target": "paymentReleases"
         },
         {
+          "pattern": "department-releases",
+          "name": "departmentReleases",
+          "target": "departmentReleases"
+        },
+        {
           "pattern": "purchase-contracts/new",
           "name": "purchaseContractsNew",
           "target": "purchaseContractsNew"
@@ -1939,6 +1944,12 @@
 					"id": "paymentReleases",
           "level": 1,
 					"name": "siagrob1.view.paymentReleases.Main",
+          "clearControlAggregation": true
+				},
+        "departmentReleases": {
+					"id": "departmentReleases",
+          "level": 1,
+					"name": "siagrob1.view.departmentReleases.Main",
           "clearControlAggregation": true
 				},
         "purchaseContractsNew": {

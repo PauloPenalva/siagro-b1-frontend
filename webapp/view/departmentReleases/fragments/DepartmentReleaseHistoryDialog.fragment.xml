@@ -1,0 +1,44 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+<!--
+  Histórico de liberações do contrato (GAC-1188), só dos departamentos que o usuário pode ver.
+  Os itens vêm do JSONModel history, montado pelo controller.
+-->
+<Dialog id="departmentReleaseHistoryDialog" title="{history>/title}" contentWidth="52rem">
+  <content>
+    <Table
+      items="{history>/items}"
+      growing="true"
+      growingThreshold="20"
+      noDataText="Sem histórico de liberações."
+      class="sapUiSizeCondensed">
+      <columns>
+        <Column width="9rem"><Text text="Departamento"/></Column>
+        <Column width="5rem"><Text text="Liberado"/></Column>
+        <Column><Text text="Motivo"/></Column>
+        <Column width="10rem"><Text text="Usuário"/></Column>
+        <Column width="9rem"><Text text="Data/Hora"/></Column>
+      </columns>
+      <items>
+        <ColumnListItem>
+          <cells>
+            <Text text="{history>department}"/>
+            <ObjectStatus inverted="true" text="{history>released}" state="{history>state}"/>
+            <Text text="{history>reason}"/>
+            <Text text="{history>user}"/>
+            <Text text="{history>when}"/>
+          </cells>
+        </ColumnListItem>
+      </items>
+    </Table>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Fechar" press=".onCloseDepartmentReleaseHistory" />
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>
