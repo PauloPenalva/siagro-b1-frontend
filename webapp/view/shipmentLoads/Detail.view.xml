@@ -258,14 +258,14 @@
 								</t:extension>
 								<t:columns>
 									<t:Column label="Código" width="8rem">
-										<t:template><Text text="{Code}" wrapping="false"/></t:template>
+										<t:template><Text text="{ parts: [ { path: 'Key', targetType: 'any' }, { path: 'viewModel>/removalPurchaseLegs', targetType: 'any' }, { value: 'Code' }, { path: 'Code', targetType: 'any' } ], formatter: '.formatter.pickRemovalPurchaseLeg' }" wrapping="false"/></t:template>
 									</t:Column>
 									<t:Column label="Status" hAlign="Center" width="9rem">
 										<t:template>
 											<ObjectStatus
 												inverted="true"
-												state="{ path: 'TransactionStatus', targetType: 'any', formatter: '.formatter.stateStorageTransactionStatus' }"
-												text="{ path: 'TransactionStatus', targetType: 'any', formatter: '.formatter.formatStorageTransactionStatus' }"/>
+												state="{ parts: [ { path: 'Key', targetType: 'any' }, { path: 'viewModel>/removalPurchaseLegs', targetType: 'any' }, { path: 'TransactionStatus', targetType: 'any' } ], formatter: '.formatter.stateRemovalLegStatus' }"
+												text="{ parts: [ { path: 'Key', targetType: 'any' }, { path: 'viewModel>/removalPurchaseLegs', targetType: 'any' }, { path: 'TransactionStatus', targetType: 'any' } ], formatter: '.formatter.formatRemovalLegStatus' }"/>
 										</t:template>
 									</t:Column>
 									<!-- Situação da troca de liberação (GAC-1177 v2): Vigente/Substituída/Estorno
@@ -295,14 +295,14 @@
 									</t:Column>
 									<t:Column label="Emissão" width="8rem">
 										<t:template>
-											<Text wrapping="false" text="{ path: 'TransactionDate', targetType: 'any', formatter: '.formatter.formatDate' }"/>
+											<Text wrapping="false" text="{ parts: [ { path: 'Key', targetType: 'any' }, { path: 'viewModel>/removalPurchaseLegs', targetType: 'any' }, { path: 'TransactionDate', targetType: 'any' } ], formatter: '.formatter.formatRemovalLegDate' }"/>
 										</t:template>
 									</t:Column>
 									<!-- Motorista da EXPEDIÇÃO, que pode divergir do motorista da carga: é
 									     exatamente essa divergência que a coluna existe para mostrar. Vem por
 									     navegação (TruckDriver), porque o romaneio guarda só o código. -->
 									<t:Column label="Motorista" width="16rem">
-										<t:template><Text text="{TruckDriver/Name}" wrapping="false"/></t:template>
+										<t:template><Text text="{ parts: [ { path: 'Key', targetType: 'any' }, { path: 'viewModel>/removalPurchaseLegs', targetType: 'any' }, { value: 'TruckDriverName' }, { path: 'TruckDriver/Name', targetType: 'any' } ], formatter: '.formatter.pickRemovalPurchaseLeg' }" wrapping="false"/></t:template>
 									</t:Column>
 									<t:Column label="Peso Bruto" hAlign="End" width="8rem">
 										<t:template>
@@ -313,7 +313,7 @@
 										</t:template>
 									</t:Column>
 									<t:Column label="Armazém" width="15rem">
-										<t:template><Text text="({WarehouseCode}) {WarehouseName}" wrapping="false"/></t:template>
+										<t:template><Text text="{ parts: [ { path: 'Key', targetType: 'any' }, { path: 'viewModel>/removalPurchaseLegs', targetType: 'any' }, { value: 'Warehouse' }, { path: 'WarehouseCode', targetType: 'any' }, { path: 'WarehouseName', targetType: 'any' } ], formatter: '.formatter.formatRemovalLegCodeAndName' }" wrapping="false"/></t:template>
 									</t:Column>
 									<!-- Etapa (GAC-1181, Task 11): sem ShipmentLoadTransshipmentKey o romaneio é a
 									     saída de ORIGEM; com ele, é a saída de um transbordo — texto pronto
@@ -332,14 +332,17 @@
 										</t:template>
 									</t:Column>
 									<!-- CardCode/CardName do romaneio de expedição são o FORNECEDOR: a perna de
-									     saída é cópia da perna de compra, que nasce do parceiro do contrato. -->
+									     saída é cópia da perna de compra, que nasce do parceiro do contrato.
+									     Na Remoção (GAC-1175) o Recebimento de uma Entrada em Armazenagem traz a
+									     EMPRESA e o armazém do lote: as colunas desta grade leem o par de compra (8)
+									     pelo lookup viewModel>/removalPurchaseLegs; sem par, mostram a própria linha. -->
 									<t:Column label="Fornecedor" width="22rem">
-										<t:template><Text text="({CardCode}) {CardName}" wrapping="false"/></t:template>
+										<t:template><Text text="{ parts: [ { path: 'Key', targetType: 'any' }, { path: 'viewModel>/removalPurchaseLegs', targetType: 'any' }, { value: 'Card' }, { path: 'CardCode', targetType: 'any' }, { path: 'CardName', targetType: 'any' } ], formatter: '.formatter.formatRemovalLegCodeAndName' }" wrapping="false"/></t:template>
 									</t:Column>
 									<!-- Contrato de compra: o romaneio não tem FK para o contrato, chega-se a ele
 									     pela liberação de entrega que a expedição consumiu. -->
 									<t:Column label="Contrato de Compra" width="11rem">
-										<t:template><Text text="{ShipmentRelease/PurchaseContract/Code}" wrapping="false"/></t:template>
+										<t:template><Text text="{ parts: [ { path: 'Key', targetType: 'any' }, { path: 'viewModel>/removalPurchaseLegs', targetType: 'any' }, { value: 'PurchaseContractCode' }, { path: 'ShipmentRelease/PurchaseContract/Code', targetType: 'any' } ], formatter: '.formatter.pickRemovalPurchaseLeg' }" wrapping="false"/></t:template>
 									</t:Column>
 								</t:columns>
 							</t:Table>

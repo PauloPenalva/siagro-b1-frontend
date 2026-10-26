@@ -135,3 +135,35 @@ QUnit.test("traduz os tipos do documento de saída", function (assert) {
 	assert.strictEqual(formatter.formatSalesInvoiceType("Return"), "Retorno");
 	assert.strictEqual(formatter.formatSalesInvoiceType("IcmsComplement"), "Complemento de ICMS");
 });
+
+QUnit.module("formatter - perna de compra na carga de Remoção (GAC-1175)");
+
+const removalLegs = {
+	"R1": { Code: "ROM-COMPRA", TransactionStatus: "Invoiced", TransactionDate: "2026-10-20", CardCode: "F001" }
+};
+
+QUnit.test("com perna de compra, mostra o campo dela e não o do Recebimento", function (assert) {
+	assert.strictEqual(formatter.pickRemovalPurchaseLeg("R1", removalLegs, "Code", "ROM-RECEB"), "ROM-COMPRA");
+	assert.strictEqual(formatter.pickRemovalPurchaseLeg("R1", removalLegs, "CardCode", "EMPRESA"), "F001");
+});
+
+QUnit.test("sem perna de compra (Recebimento avulso ou carga Normal), mantém o valor da linha", function (assert) {
+	assert.strictEqual(formatter.pickRemovalPurchaseLeg("R2", removalLegs, "Code", "ROM-RECEB"), "ROM-RECEB");
+	assert.strictEqual(formatter.pickRemovalPurchaseLeg("R1", undefined, "Code", "ROM-RECEB"), "ROM-RECEB");
+});
+
+QUnit.test("status e emissão saem da perna de compra já formatados", function (assert) {
+	assert.strictEqual(formatter.formatRemovalLegStatus("R1", removalLegs, "Confirmed"),
+		formatter.formatStorageTransactionStatus("Invoiced"));
+	assert.strictEqual(formatter.stateRemovalLegStatus("R1", removalLegs, "Confirmed"),
+		formatter.stateStorageTransactionStatus("Invoiced"));
+	assert.strictEqual(formatter.formatRemovalLegDate("R1", removalLegs, "2026-01-01"),
+		formatter.formatDate("2026-10-20"));
+});
+
+QUnit.test("fornecedor e armazém do par de compra em \"(código) nome\"", function (assert) {
+	const legs = { "R1": { CardCode: "F001", CardName: "Produtor", WarehouseCode: "A1", WarehouseName: "Armazém 1" } };
+	assert.strictEqual(formatter.formatRemovalLegCodeAndName("R1", legs, "Card", "EMP", "Empresa"), "(F001) Produtor");
+	assert.strictEqual(formatter.formatRemovalLegCodeAndName("R1", legs, "Warehouse", "L1", "Lote"), "(A1) Armazém 1");
+	assert.strictEqual(formatter.formatRemovalLegCodeAndName("R2", legs, "Card", "EMP", "Empresa"), "(EMP) Empresa");
+});

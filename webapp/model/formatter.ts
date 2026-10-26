@@ -873,6 +873,36 @@ const formatter = {
   ) => (transshipmentKey ? ((lookup ?? {})[transshipmentKey] ?? "Transbordo") : "Origem"),
 
   /**
+   * Grid de romaneios da carga de Remoção (GAC-1175): o Recebimento vinculado costuma ser a
+   * perna de armazenagem de uma Entrada em Armazenagem, e o romaneio que interessa ao usuário é
+   * o PAR dela — o de compra (8), que baixou o contrato. `legs` é o lookup chave do Recebimento →
+   * perna de compra, montado por `BaseController#refreshRemovalPurchaseLegs`. Sem par (Recebimento
+   * avulso, ou carga Normal, onde o lookup fica vazio) a célula mostra o valor da própria linha.
+   */
+  pickRemovalPurchaseLeg: (
+    key: string, legs: Record<string, Record<string, unknown>>, field: string, own: unknown
+  ): unknown => (legs?.[key]?.[field] ?? own),
+
+  formatRemovalLegStatus: (key: string, legs: Record<string, Record<string, unknown>>, own: string) =>
+    formatter.formatStorageTransactionStatus(formatter.pickRemovalPurchaseLeg(key, legs, "TransactionStatus", own) as string),
+
+  stateRemovalLegStatus: (key: string, legs: Record<string, Record<string, unknown>>, own: string) =>
+    formatter.stateStorageTransactionStatus(formatter.pickRemovalPurchaseLeg(key, legs, "TransactionStatus", own) as string),
+
+  /** "(código) nome" de Armazém (`prefix` "Warehouse") ou Fornecedor ("Card"), do par de compra se houver. */
+  formatRemovalLegCodeAndName: (
+    key: string, legs: Record<string, Record<string, unknown>>, prefix: string, ownCode: string, ownName: string
+  ) => {
+    const leg = legs?.[key];
+    return leg
+      ? formatter.formatCodeAndName(leg[`${prefix}Code`] as string, leg[`${prefix}Name`] as string)
+      : formatter.formatCodeAndName(ownCode, ownName);
+  },
+
+  formatRemovalLegDate:(key: string, legs: Record<string, Record<string, unknown>>, own: string) =>
+    formatter.formatDate(formatter.pickRemovalPurchaseLeg(key, legs, "TransactionDate", own) as string),
+
+  /**
    * Rótulo padrão de um transbordo (GAC-1181, Task 11): "Transbordo N — armazém (X) Nome".
    * Extraído porque o mesmo texto era montado em dois lugares (o Select "Vincular como" da
    * página `Attach` e o `lookup` de `BaseController#refreshTransshipmentLinkage`) — uma mudança
