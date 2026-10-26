@@ -9,7 +9,9 @@ import { Column, EdmType, SpreadsheetSettings } from "sap/ui/export/library";
 import Spreadsheet from "sap/ui/export/Spreadsheet";
 import { SortOrder } from "sap/ui/core/library";
 import { anyOfFilter } from "siagrob1/helpers/FilterHelpers";
+import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import CommonController from "../common/CommonController";
+import { mapPaymentReleaseExportRow, PAYMENT_RELEASE_EXPORT_DEPARTMENTS } from "siagrob1/helpers/PaymentReleaseExportHelpers";
 
 type FilterData = {
   PaymentReleaseStatus?: string[],
@@ -119,7 +121,37 @@ export default class Main extends CommonController {
         trueValue: "Sim",
         falseValue: "Não",
       },
+      ...PAYMENT_RELEASE_EXPORT_DEPARTMENTS.map(([, property, label]): Column => (
+        { label, property, type: EdmType.String })),
     ];
+  }
+
+  /**
+   * Lê os contratos com PaymentReleases expandido (o createExportBinding não expande coleção) e
+   * devolve as linhas já achatadas, na ordem e com o filtro da tela.
+   */
+  private async loadExportRows(cols: Column[], orderby: string): Promise<Record<string, unknown>[]> {
+    const select = new Set<string>(["Key", "IsBarter"]);
+    cols.forEach((c) => {
+      if (!PAYMENT_RELEASE_EXPORT_DEPARTMENTS.some(([, property]) => property === c.property)) {
+        select.add(c.property as string);
+      }
+    });
+
+    const parameters: Record<string, string> = {
+      $orderby: orderby,
+      $select: [...select].join(","),
+      $expand: "PaymentReleases($select=Department,Released)",
+    };
+    if (this.currentFilter) parameters.$filter = this.currentFilter;
+
+    const binding = (this.getModel() as ODataModel).bindList("/PurchaseContracts", undefined, undefined, undefined, parameters);
+    try {
+      const contexts = await binding.requestContexts(0, Number.MAX_SAFE_INTEGER);
+      return contexts.map((ctx) => mapPaymentReleaseExportRow(ctx.getObject() as Record<string, unknown>));
+    } finally {
+      binding.destroy();
+    }
   }
 
   private getExportOrderBy(oTable: Table): string {
@@ -136,12 +168,10 @@ export default class Main extends CommonController {
     const cols = this.orderExportColumns(oTable, this.createColumnConfig());
 
     const setting: SpreadsheetSettings = {
-      dataSource: await this.createExportBinding(
-        "/PurchaseContracts", cols, this.getExportOrderBy(oTable), this.currentFilter),
+      dataSource: await this.loadExportRows(cols, this.getExportOrderBy(oTable)),
       fileName: "Liberação de Pagamento.xlsx",
       workbook: {
         columns: cols,
-        hierarchyLevel: "Level",
         context: { sheetName: "Liberação de Pagamento" },
       },
     };
