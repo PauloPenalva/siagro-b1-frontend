@@ -53,6 +53,8 @@ type StorageEntryForm = {
     ShipmentReleaseKey?: string,
     RoyaltySituation?: string,
     RoyaltyTestCode?: string,
+    /** GAC-1191: Frete/Remoção em R$ por saco; o backend leva para o romaneio de recebimento. */
+    FreightUnitPrice?: number,
     QualityInspections?: { QualityAttribCode?: string, QualityAttribName?: string, Value: number }[],
   },
 }
@@ -144,6 +146,7 @@ export default class Create extends BaseController {
           WarehouseCode: data?.DeliveryLocationCode,
           WarehouseName: data?.DeliveryLocationName,
           ShipmentReleaseKey: key,
+          FreightUnitPrice: 0,
           QualityInspections: qualityAttribs?.value?.map((x) => {
             return { QualityAttribCode: x.Code, QualityAttribName: x.Name, Value: 0 };
           }),

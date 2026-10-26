@@ -218,6 +218,36 @@
               </layoutData>
             </Input>
             <Input value="{viewModel>/StorageAddressDescription}" editable="false" />
+            <!-- GAC-1191: frete/remoção por saco de 60 kg sobre o peso bruto; vira custo do romaneio de recebimento. -->
+            <Label text="Frete/Remoção (por SC)" />
+            <Input
+              editable="{ui>/editable}"
+              value="{
+                path: 'viewModel>/StorageTransaction/FreightUnitPrice',
+                type: 'sap.ui.model.odata.type.Double',
+                formatOptions: {
+                    decimals: 2,
+                    decimalSeparator: ',',
+                    groupingEnabled: true,
+                    groupingSeparator: '.'
+                }
+              }"
+              description="R$/SC">
+              <layoutData>
+                <l:GridData span="XL3 L3 M3 S8" />
+              </layoutData>
+            </Input>
+            <Input
+              editable="false"
+              value="{
+                parts: [
+                  { value: 'PerBag' },
+                  { path: 'viewModel>/StorageTransaction/FreightUnitPrice', targetType: 'any' },
+                  { path: 'viewModel>/StorageTransaction/GrossWeight', targetType: 'any' }
+                ],
+                formatter: 'formatter.formatFreightPrice'
+              }"
+              description="R$ total" />
 
         </f:content>
     </f:SimpleForm>

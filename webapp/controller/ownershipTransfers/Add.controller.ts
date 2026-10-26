@@ -10,6 +10,11 @@ import ObjectPageLayout from "sap/uxap/ObjectPageLayout";
 import MessageToast from "sap/m/MessageToast";
 import Table from "sap/m/Table";
 import MessageBox from "sap/m/MessageBox";
+import { SearchField$SearchEvent } from "sap/m/SearchField";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import ListBinding from "sap/ui/model/ListBinding";
+import Control from "sap/ui/core/Control";
 
 type routeArgs = {
   "?query": { 
@@ -167,6 +172,29 @@ export default class Add extends BaseController {
   navBack(): void {
     const navCon = this.byId("navCon") as NavContainer;
     navCon.back();
+  }
+
+  /**
+   * Pesquisa nas tabelas de lote (origem e destino): filtra a tabela dona do campo.
+   */
+  onFilter(ev: SearchField$SearchEvent) {
+    const query = (ev.getParameter("query") ?? "").trim();
+    let parent = (ev.getSource() as Control).getParent();
+    while (parent && !(parent instanceof Table)) parent = parent.getParent();
+    const binding = (parent as Table | null)?.getBinding("items") as ListBinding | undefined;
+    if (!binding) return;
+
+    if (!query) {
+      binding.filter([]);
+      return;
+    }
+
+    const fields = ["BranchName", "Code", "ItemCode", "ItemName", "Description",
+      "CardCode", "CardName", "WarehouseCode", "WarehouseName"];
+    binding.filter([new Filter({
+      filters: fields.map(path => new Filter({ path, operator: FilterOperator.Contains, value1: query, caseSensitive: false })),
+      and: false,
+    })]);
   }
 
   onSearch() {
