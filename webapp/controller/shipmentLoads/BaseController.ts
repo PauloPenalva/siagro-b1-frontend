@@ -1145,4 +1145,57 @@ export abstract class BaseController extends CommonController {
 
     this.viewModel().setProperty("/transshipmentLinkage", { lookup, linkedKeys });
   }
+
+  /**
+   * Perna de COMPRA de cada Recebimento da carga de Remoção (GAC-1175, reabertura de 26/10).
+   *
+   * A carga de Remoção vincula romaneios de Recebimento (0). Quando o Recebimento nasceu de uma
+   * Entrada em Armazenagem, ele é só a perna de armazenagem — empresa como parceiro, armazém do
+   * lote, sem liberação — e o romaneio que baixou o contrato de compra é o PAR dele, o Purchase
+   * (8), ligado por `StorageEntryTransaction`. O grid continua tendo o Recebimento como linha (é a
+   * chave que desvincular manda ao servidor), mas mostra os dados do par por este lookup:
+   * chave do Recebimento → campos da perna de compra (`formatter.pickRemovalPurchaseLeg`).
+   *
+   * Carga Normal não consulta: lá a linha é a Expedição, e o lookup vazio deixa tudo como está.
+   */
+  protected async refreshRemovalPurchaseLegs(
+    loadKey: string = this.currentLoadKey()
+  ): Promise<void> {
+    this.viewModel().setProperty("/removalPurchaseLegs", {});
+    if (!loadKey) return;
+
+    const model = this.getModel() as ODataModel;
+
+    const loadType = await model.bindContext(`/ShipmentLoads(${loadKey})`, undefined,
+      { $select: "LoadType" }).getBoundContext().requestProperty("LoadType") as string;
+    if (loadType !== "Removal") return;
+
+    const binding = model.bindList("/StorageEntryTransactions", undefined, undefined, undefined, {
+      $filter: `ReceiptStorageTransaction/ShipmentLoadKey eq ${loadKey} and Status ne 'Cancelled'`,
+      $select: "ReceiptStorageTransactionKey",
+      $expand: "PurchaseStorageTransaction($select=Code,TransactionStatus,TransactionDate,CardCode," +
+        "CardName,WarehouseCode,WarehouseName;$expand=TruckDriver($select=Name)),PurchaseContract($select=Code)",
+    });
+
+    const contexts = await binding.requestContexts(0, Infinity);
+    const legs: Record<string, Record<string, unknown>> = {};
+
+    contexts.forEach(context => {
+      const row = context.getObject() as {
+        ReceiptStorageTransactionKey: string;
+        PurchaseStorageTransaction?: Record<string, unknown> & { TruckDriver?: { Name?: string } };
+        PurchaseContract?: { Code?: string };
+      };
+      const purchase = row.PurchaseStorageTransaction;
+      if (!purchase) return;
+
+      legs[row.ReceiptStorageTransactionKey] = {
+        ...purchase,
+        TruckDriverName: purchase.TruckDriver?.Name,
+        PurchaseContractCode: row.PurchaseContract?.Code,
+      };
+    });
+
+    this.viewModel().setProperty("/removalPurchaseLegs", legs);
+  }
 }

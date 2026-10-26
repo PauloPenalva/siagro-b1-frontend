@@ -166,6 +166,8 @@ export default class Detail extends BaseController {
       () => MessageBox.error("Erro ao carregar os anexos da carga."));
     this.refreshTransshipmentLinkage(id).catch(
       () => MessageBox.error("Erro ao carregar a situação dos transbordos."));
+    this.refreshRemovalPurchaseLegs(id).catch(
+      () => MessageBox.error("Erro ao carregar os romaneios de compra da carga."));
     // A view sobrevive à troca de carga: o painel da carga anterior não pode aparecer até a resposta chegar.
     (this.getView().getModel("pendingRefusal") as JSONModel).setData({ visible: false, Rows: [] });
     this.refreshPendingRefusal(id).catch(
@@ -1143,6 +1145,10 @@ export default class Detail extends BaseController {
     // cliente (`BaseController#refreshTransshipmentLinkage`) precisam dos dois lados frescos.
     this.refreshTransshipmentLinkage(loadKey).catch(
       () => MessageBox.error("Erro ao atualizar a situação dos transbordos."));
+
+    // GAC-1175: vincular/desvincular muda quais Recebimentos estão na carga de Remoção.
+    this.refreshRemovalPurchaseLegs(loadKey).catch(
+      () => MessageBox.error("Erro ao atualizar os romaneios de compra da carga."));
 
     // Spec 2026-10-09: emitir a última NF-e conclui a recusa; cancelar a recusa a apaga. O painel
     // é JSONModel e só se atualiza relendo a function.
