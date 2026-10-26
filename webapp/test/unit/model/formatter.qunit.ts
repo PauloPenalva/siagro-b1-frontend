@@ -34,6 +34,12 @@ QUnit.test("formatPartialReturn mostra quanto voltou", function (assert) {
 	assert.strictEqual(formatter.formatPartialReturn("5000.000"), "Devolução parcial: 5.000,000");
 });
 
+QUnit.test("formatQuantityDifference compara com o Peso Efetivo, com sinal", function (assert) {
+	assert.strictEqual(formatter.formatQuantityDifference("39750.000", "40000.000"), "-250,000");
+	assert.strictEqual(formatter.formatQuantityDifference("40100.5", 40000), "100,500");
+	assert.strictEqual(formatter.formatQuantityDifference(40000, "40000.000"), "0,000");
+});
+
 QUnit.module("formatter - tipo da natureza de operação (NF-e STANDALONE)");
 
 QUnit.test("formatUsageDirection traduz o enum e deixa vazio o nulo do SAPB1", function (assert) {

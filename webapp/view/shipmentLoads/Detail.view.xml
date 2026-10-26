@@ -378,6 +378,13 @@
 									<t:Column label="Número" width="9rem">
 										<t:template><Text text="{InvoiceNumber}" wrapping="false"/></t:template>
 									</t:Column>
+									<!-- GAC-1195: número da nota fiscal informado no documento de saída. -->
+									<t:Column label="NF" width="7rem">
+										<t:template>
+											<Text wrapping="false"
+												text="{= ${path: 'WithoutTaxDocument', targetType: 'any'} ? 'Sem NF' : ${path: 'TaxDocumentNumber', targetType: 'any'} }"/>
+										</t:template>
+									</t:Column>
 									<t:Column label="Tipo" width="8rem">
 										<t:template>
 											<Text wrapping="false" text="{ path: 'InvoiceType', targetType: 'any', formatter: '.formatter.formatSalesInvoiceType' }"/>
@@ -429,6 +436,55 @@
 											<ObjectNumber
 												textAlign="End"
 												number="{ path: 'ReturnedQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+										</t:template>
+									</t:Column>
+									<!-- GAC-1195: descarga (ticket da balança do destino) x Conferência de entregas
+									     (relatório da trading). São fontes distintas e ficam em colunas separadas;
+									     as diferenças são contra o Peso Efetivo (faturado − devolvido). Status e diferenças só
+									     nas notas Normais Confirmadas, as mesmas que a carga considera. -->
+									<t:Column label="Peso Efetivo" hAlign="End" width="10rem">
+										<t:template>
+											<ObjectNumber textAlign="End" number="{ path: 'EffectiveQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Peso Ticket" hAlign="End" width="10rem">
+										<t:template>
+											<ObjectNumber textAlign="End" number="{ path: 'TicketDeliveredQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Dif. Ticket" hAlign="End" width="10rem" tooltip="Peso Ticket − Peso Efetivo">
+										<t:template>
+											<ObjectNumber textAlign="End"
+												visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} === 'Confirmed' &amp;&amp; ${path: 'TicketDeliveredQuantity', targetType: 'any'} > 0 }"
+												state="{= Math.abs(${path: 'TicketDeliveredQuantity', targetType: 'any'} - ${path: 'EffectiveQuantity', targetType: 'any'}) > 0.001 ? 'Error' : 'None' }"
+												number="{ parts: [ { path: 'TicketDeliveredQuantity', targetType: 'any' }, { path: 'EffectiveQuantity', targetType: 'any' } ], formatter: '.formatter.formatQuantityDifference' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Qtd. Entregue" hAlign="End" width="10rem">
+										<t:template>
+											<ObjectNumber textAlign="End" number="{ path: 'DeliveredQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Dif. Conferência" hAlign="End" width="10rem" tooltip="Qtd. Entregue (Conferência de entregas) − Peso Efetivo">
+										<t:template>
+											<ObjectNumber textAlign="End"
+												visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} === 'Confirmed' &amp;&amp; ${path: 'DeliveredQuantity', targetType: 'any'} > 0 }"
+												state="{= Math.abs(${path: 'DeliveredQuantity', targetType: 'any'} - ${path: 'EffectiveQuantity', targetType: 'any'}) > 0.001 ? 'Error' : 'None' }"
+												number="{ parts: [ { path: 'DeliveredQuantity', targetType: 'any' }, { path: 'EffectiveQuantity', targetType: 'any' } ], formatter: '.formatter.formatQuantityDifference' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Descarga" hAlign="Center" width="9rem">
+										<t:template>
+											<ObjectStatus inverted="true" state="Success" text="Descarregada"
+												visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} === 'Confirmed' &amp;&amp; ${path: 'IsDischarged', targetType: 'any'} === true }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Conferência" hAlign="Center" width="9rem">
+										<t:template>
+											<ObjectStatus
+												visible="{= ${path: 'InvoiceType', targetType: 'any'} === 'Normal' &amp;&amp; ${path: 'InvoiceStatus', targetType: 'any'} === 'Confirmed' }"
+												state="{= ${path: 'IsDeliveryClosed', targetType: 'any'} ? 'Success' : 'Warning' }"
+												text="{= ${path: 'IsDeliveryClosed', targetType: 'any'} ? 'Encerrado' : 'Aberto' }"/>
 										</t:template>
 									</t:Column>
 									<t:Column label="Tipo Frete" width="8rem">
