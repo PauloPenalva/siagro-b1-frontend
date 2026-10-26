@@ -113,6 +113,7 @@
 						<Button type="Transparent" icon="sap-icon://download" text="Baixar XML" enabled="{dfe>/canDownload}" press=".onDownloadXml"/>
 						<Button type="Emphasized" text="Dar entrada" enabled="{dfe>/canEnter}" press=".onEnter"/>
 						<ToolbarSeparator/>
+						<Button type="Transparent" icon="sap-icon://excel-attachment" text="Exportar Excel" press=".onExcel"/>
 						<Button type="Transparent" text="Atualizar" press=".onRefresh"/>
 					</OverflowToolbar>
 				</t:extension>

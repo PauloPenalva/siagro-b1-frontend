@@ -13,6 +13,8 @@ import { odataValue, readErrorMessage, sendJson } from "siagrob1/helpers/FetchHe
 import formatter from "siagrob1/model/formatter";
 import { openNfeCancelDialog } from "siagrob1/dialogs/NfeCancelDialog";
 import CommonController from "siagrob1/controller/common/CommonController";
+import Spreadsheet from "sap/ui/export/Spreadsheet";
+import { Column as ExportColumn, EdmType } from "sap/ui/export/library";
 
 type ManifestType = "Confirmation" | "Acknowledgement" | "Unknown" | "NotPerformed";
 
@@ -60,6 +62,25 @@ export default class Main extends CommonController {
   };
 
   private scheduleDialog: Dialog;
+
+  /** Exporta a lista como está na tela (mesmos filtros e ordem do binding da tabela). */
+  onExcel(): void {
+    const columns: ExportColumn[] = [
+      { label: "Emissão", property: "IssueDate", type: EdmType.DateTime, format: "dd/mm/yyyy" },
+      { label: "CNPJ", property: "IssuerTaxId", type: EdmType.String },
+      { label: "Emitente", property: "IssuerName", type: EdmType.String },
+      { label: "Chave de acesso", property: "AccessKey", type: EdmType.String },
+      { label: "Valor", property: "TotalValue", type: EdmType.Number, scale: 2, delimiter: true },
+      { label: "Situação", property: "Situation", type: EdmType.Enumeration, valueMap: SITUATION_TEXT },
+      { label: "Manifestação", property: "ManifestationStatus", type: EdmType.Enumeration, valueMap: MANIFESTATION_TEXT },
+    ];
+    const sheet = new Spreadsheet({
+      dataSource: this.itemsBinding(),
+      fileName: "Manifestação do Destinatário.xlsx",
+      workbook: { columns, context: { sheetName: "DF-e" } },
+    });
+    void sheet.build().finally(() => sheet.destroy());
+  }
 
   onInit(): void {
     this.createFilterModel({ BranchCode: "", DateFrom: "", DateTo: "", Issuer: "", ManifestationStatus: "", Situation: "" });
