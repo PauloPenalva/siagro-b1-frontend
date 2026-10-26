@@ -1004,7 +1004,10 @@ export default class Detail extends BaseController {
 
     viewModel.setProperty("/plannedContractDialog/contractKey", selected.getProperty("Key") as string);
     viewModel.setProperty("/plannedContractDialog/contractCode", selected.getProperty("Code") as string);
-    viewModel.setProperty("/plannedContractDialog/cardName", selected.getProperty("CardName") as string);
+    // O fragmento de compra não exibe o parceiro, então CardName pode não ter vindo na lista:
+    // requestProperty busca a propriedade tardia quando falta.
+    const cardName = await selected.requestProperty("CardName") as string;
+    viewModel.setProperty("/plannedContractDialog/cardName", cardName ?? "");
   }
 
   async onConfirmPlannedContract(): Promise<void> {

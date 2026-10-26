@@ -9,7 +9,7 @@
 	     depois de incluir/excluir não recarrega nada (mesmo motivo das Descargas). Incluir e
 	     Excluir somem com a carga Cancelada; o servidor também recusa. -->
 	<VBox>
-	<Panel headerText="Contratos de compra planejados" class="sapUiNoContentPadding">
+	<Panel class="sapUiNoContentPadding">
 	<t:Table
 		id="loadPlannedPurchaseTable"
 		class="sapUiSizeCondensed"
@@ -77,7 +77,7 @@
 		</t:columns>
 	</t:Table>
 	</Panel>
-	<Panel headerText="Contratos de venda planejados" class="sapUiNoContentPadding">
+	<Panel class="sapUiNoContentPadding">
 	<t:Table
 		id="loadPlannedSalesTable"
 		class="sapUiSizeCondensed"
