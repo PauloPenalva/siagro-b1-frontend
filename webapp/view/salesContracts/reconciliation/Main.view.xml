@@ -127,7 +127,7 @@
           busyIndicatorDelay="0"
           selectionMode="Single"
           selectionBehavior="Row"
-          class="sapUiSizeCondensed sapUiSmallMarginTop"
+          class="sapUiSizeCondensed"
           visibleRowCountMode="Auto"
           enableBusyIndicator="true"
           alternateRowColors="true"
