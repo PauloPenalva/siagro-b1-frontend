@@ -9,7 +9,7 @@
 	core:require="{
 		formatter: 'siagrob1/model/formatter'
 	}">
-  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+  <f:DynamicPage fitContent="true" busyIndicatorDelay="0" busy="{ui>/busy}">
     <f:title>
       <f:DynamicPageTitle>
         <f:heading>
@@ -141,6 +141,10 @@
             ]
           }"
         >
+          <t:layoutData>
+            <!-- GAC-1193: grade ocupa todo o espaço abaixo do painel (Auto mede a altura do pai) -->
+            <FlexItemData growFactor="1" baseSize="0%"/>
+          </t:layoutData>
           <t:extension>
             <OverflowToolbar>
               <Title text="Entregas" />
