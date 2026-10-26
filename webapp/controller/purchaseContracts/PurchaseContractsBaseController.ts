@@ -16,6 +16,10 @@ import { ALLOCATION_ORIGINS } from "siagrob1/helpers/AllocationOriginHelpers";
 import { WashoutDialogState, WashoutFixationOption, WashoutReverseState } from "siagrob1/types/PurchaseContractWashout";
 import { openAttachmentViewer } from "siagrob1/dialogs/AttachmentViewer";
 import { Link$PressEvent } from "sap/m/Link";
+import formatter from "siagrob1/model/formatter";
+import { Switch$ChangeEvent } from "sap/m/Switch";
+import { Select$ChangeEvent } from "sap/m/Select";
+import { CheckBox$SelectEvent } from "sap/m/CheckBox";
 import { PurchaseContractsTotals } from "siagrob1/types/PurchaseContractsTotal";
 
 /**
@@ -206,6 +210,7 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
   private _washoutDialog: Dialog;
   private _washoutReverseDialog: Dialog;
   private _signatureStatusDialog: Dialog;
+  private _paymentReleaseDialog: Dialog;
 
   /* ------------------------------------------------------------------ */
   /* Situação da assinatura                                              */
@@ -276,6 +281,155 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
       },
     })
     .done(() => this.setBusy(false));
+  }
+
+
+  /* ------------------------------------------------------------------ */
+  /* Liberação de pagamento (GAC-1188)                                   */
+  /* ------------------------------------------------------------------ */
+
+  private static readonly PAYMENT_RELEASE_DEPARTMENTS: [string, string][] = [
+    ["Stock", "Lib. Estoque"],
+    ["Legal", "Lib. Jurídico"],
+    ["Fiscal", "Lib. Fiscal"],
+    ["Royalties", "Lib. Royalties"],
+    ["Financial", "Lib. Financeiro"],
+    ["Store", "Lib. Loja"],
+    ["Board", "Lib. Diretoria"],
+  ];
+
+  /**
+   * Lê o contrato do servidor (com as liberações por departamento) e monta o estado do diálogo
+   * no viewModel. Lê por um binding próprio com $expand: o contexto da página não carrega
+   * PaymentReleases, e o diálogo precisa do dado fresco depois de cada action.
+   */
+  private async loadPaymentReleaseState(): Promise<void> {
+    const ctx = this.getView().getBindingContext() as Context;
+    const key = await ctx.requestProperty("Key") as string;
+    const model = ctx.getModel() as ODataModel;
+
+    const contract = await model.bindContext(`/PurchaseContracts(${key})`, undefined, {
+      $select: "Key,PaymentReleaseStatus,EarlyPaymentAuthorized,IsBarter,IsOnWheels,SignatureStatus",
+      $expand: { PaymentReleases: {} },
+    }).requestObject() as {
+      Key: string;
+      PaymentReleaseStatus?: string;
+      EarlyPaymentAuthorized?: boolean;
+      IsBarter?: boolean;
+      IsOnWheels?: boolean;
+      SignatureStatus?: string;
+      PaymentReleases?: { Department: string; Released: boolean; ReleasedAt?: string; ReleasedBy?: string }[];
+    };
+
+    const isOnWheels = !!contract.IsOnWheels;
+    const isBarter = !!contract.IsBarter;
+    const releases = contract.PaymentReleases ?? [];
+
+    // Aprovado só para contrato normal; Pré-aprovado só para sobre rodas.
+    const statusOptions = [
+      { key: "Pending", text: "Pendente" },
+      { key: "UnderReview", text: "Em análise" },
+      { key: "IncompleteDocuments", text: "Documentação incompleta" },
+      isOnWheels ? { key: "PreApproved", text: "Pré-aprovado" } : { key: "Approved", text: "Aprovado" },
+    ];
+
+    const departments = PurchaseContractsBaseController.PAYMENT_RELEASE_DEPARTMENTS.map(([code, label]) => {
+      const row = releases.find(r => r.Department === code);
+      const released = !!row?.Released;
+      const when = row?.ReleasedAt ? formatter.formatDateTime(row.ReleasedAt) : "";
+      const info = released && row?.ReleasedBy ? `${row.ReleasedBy}${when ? " em " + when : ""}` : "";
+      const signature = code === "Legal" && contract.SignatureStatus
+        ? `Assinatura: ${formatter.formatSignatureStatus(contract.SignatureStatus)}`
+        : "";
+      return { code, label, released, info, signature, visible: code !== "Store" || isBarter };
+    });
+
+    (this.getModel("viewModel") as JSONModel).setProperty("/paymentRelease", {
+      key: contract.Key ?? key,
+      status: contract.PaymentReleaseStatus ?? "Pending",
+      statusOptions,
+      early: !!contract.EarlyPaymentAuthorized,
+      departments,
+    });
+  }
+
+  async onOpenPaymentReleaseDialog() {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) {
+      MessageBox.alert("Contrato não carregado.");
+      return;
+    }
+
+    await this.loadPaymentReleaseState();
+
+    this._paymentReleaseDialog ??= await DialogHelper.createDialog(
+      this,
+      "siagrob1.view.purchaseContracts.fragments.PurchaseContractPaymentReleaseDialog"
+    );
+
+    this._paymentReleaseDialog?.open();
+  }
+
+  onClosePaymentReleaseDialog() {
+    this._paymentReleaseDialog?.close();
+  }
+
+  /** Chama uma action de liberação; em erro mostra a mensagem do servidor e recarrega o estado. */
+  private callPaymentReleaseAction(url: string, body: object, errorFallback: string) {
+    const oContext = this.getView().getBindingContext() as Context;
+    this.setBusy(true);
+
+    void jQuery.ajax({
+      url,
+      method: "POST",
+      data: JSON.stringify(body),
+      contentType: "application/json",
+      success: () => {
+        oContext.refresh();
+        this.refreshChangeLogs();
+        MessageToast.show("Liberação de pagamento atualizada.");
+      },
+      error: err => {
+        const message = (err.responseJSON as { error?: { message?: string } })?.error?.message;
+        MessageBox.error(message ?? errorFallback);
+      },
+    }).always(() => {
+      this.setBusy(false);
+      // Sucesso ou erro: o diálogo volta a refletir o que o servidor tem de fato.
+      void this.loadPaymentReleaseState();
+    });
+  }
+
+  onPaymentReleaseStatusChange(ev: Select$ChangeEvent) {
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    const key = viewModel.getProperty("/paymentRelease/key") as string;
+    const selected = ev.getParameter("selectedItem")?.getKey();
+    this.callPaymentReleaseAction(
+      this.api.purchaseContractsSetPaymentReleaseStatus,
+      { Key: key, PaymentReleaseStatus: selected === "Pending" ? null : selected },
+      "Erro ao atualizar a situação da liberação de pagamento."
+    );
+  }
+
+  onEarlyPaymentAuthorizedChange(ev: CheckBox$SelectEvent) {
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    const key = viewModel.getProperty("/paymentRelease/key") as string;
+    this.callPaymentReleaseAction(
+      this.api.purchaseContractsSetEarlyPaymentAuthorized,
+      { Key: key, Authorized: ev.getParameter("selected") },
+      "Erro ao atualizar a antecipação."
+    );
+  }
+
+  onDepartmentReleaseChange(ev: Switch$ChangeEvent) {
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    const key = viewModel.getProperty("/paymentRelease/key") as string;
+    const dept = ev.getSource().getBindingContext("viewModel").getObject() as { code: string };
+    this.callPaymentReleaseAction(
+      this.api.purchaseContractsSetDepartmentRelease,
+      { Key: key, Department: dept.code, Released: ev.getParameter("state") },
+      "Erro ao atualizar a liberação do departamento."
+    );
   }
 
   /**

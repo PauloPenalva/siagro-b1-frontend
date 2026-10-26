@@ -1,0 +1,57 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+<!--
+  Liberação de pagamento (GAC-1188). Cada alteração chama a sua action na hora e recarrega o
+  estado: não há botão Confirmar. Fica fora do formulário do contrato porque vale em qualquer
+  status. O estado vem do JSONModel viewModel, em /paymentRelease, montado pelo controller.
+-->
+<Dialog id="purchaseContractPaymentReleaseDialog" title="Liberação de Pagamento">
+  <content>
+    <VBox class="sapUiSmallMargin" width="520px">
+      <Label text="Situação" labelFor="purchaseContractPaymentReleaseStatusSelect"/>
+      <Select
+        id="purchaseContractPaymentReleaseStatusSelect"
+        forceSelection="false"
+        width="100%"
+        selectedKey="{viewModel>/paymentRelease/status}"
+        items="{viewModel>/paymentRelease/statusOptions}"
+        change=".onPaymentReleaseStatusChange"
+        class="sapUiSmallMarginBottom"
+      >
+        <core:Item key="{viewModel>key}" text="{viewModel>text}"/>
+      </Select>
+
+      <CheckBox
+        text="Antecipação Liberada pela Diretoria"
+        selected="{viewModel>/paymentRelease/early}"
+        select=".onEarlyPaymentAuthorizedChange"
+        class="sapUiSmallMarginBottom"
+      />
+
+      <VBox items="{viewModel>/paymentRelease/departments}">
+        <HBox alignItems="Center" visible="{viewModel>visible}" class="sapUiTinyMarginBottom">
+          <Label text="{viewModel>label}" width="9rem"/>
+          <Switch
+            state="{viewModel>released}"
+            customTextOn="Sim"
+            customTextOff="Não"
+            change=".onDepartmentReleaseChange"
+          />
+          <VBox class="sapUiSmallMarginBegin">
+            <Text text="{viewModel>info}" visible="{= !!${viewModel>info} }"/>
+            <Text text="{viewModel>signature}" visible="{= !!${viewModel>signature} }"/>
+          </VBox>
+        </HBox>
+      </VBox>
+    </VBox>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Fechar" press=".onClosePaymentReleaseDialog" />
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>
