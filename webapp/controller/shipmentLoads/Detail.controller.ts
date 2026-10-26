@@ -937,6 +937,160 @@ export default class Detail extends BaseController {
   }
 
   /* ------------------------------------------------------------------ */
+  /* Contratos planejados (GAC-1185)                                      */
+  /* ------------------------------------------------------------------ */
+
+  private _plannedContractDialog: Dialog;
+
+  onAddPlannedPurchaseContract(): Promise<void> {
+    return this.openPlannedContractDialog("Purchase");
+  }
+
+  onAddPlannedSalesContract(): Promise<void> {
+    return this.openPlannedContractDialog("Sales");
+  }
+
+  onRemovePlannedPurchaseContract(): Promise<void> {
+    return this.removePlannedContract("Purchase");
+  }
+
+  onRemovePlannedSalesContract(): Promise<void> {
+    return this.removePlannedContract("Sales");
+  }
+
+  private async openPlannedContractDialog(contractType: "Purchase" | "Sales"): Promise<void> {
+    (this.getModel("viewModel") as JSONModel).setProperty("/plannedContractDialog", {
+      title: contractType === "Purchase"
+        ? "Incluir contrato de compra planejado"
+        : "Incluir contrato de venda planejado",
+      contractType,
+      contractKey: "",
+      contractCode: "",
+      cardName: "",
+      quantity: "",
+      notes: "",
+    });
+
+    this._plannedContractDialog ??= await DialogHelper.createDialog(
+      this,
+      "siagrob1.view.shipmentLoads.fragments.ShipmentLoadPlannedContractDialog"
+    );
+
+    this._plannedContractDialog.open();
+  }
+
+  onClosePlannedContractDialog(): void {
+    this._plannedContractDialog?.close();
+  }
+
+  /**
+   * Só contratos aprovados (Status no $filter estático) e do produto da carga. ItemCode é string,
+   * então entra na mesma string de filtro; o enum Status nunca vira `sap.ui.model.Filter`.
+   */
+  async openPlannedContractValueHelp(): Promise<void> {
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    const contractType = viewModel.getProperty("/plannedContractDialog/contractType") as string;
+    const itemCode = ((this.getView().getBindingContext() as Context)?.getProperty("ItemCode") as string) ?? "";
+    const dialogName = contractType === "Sales"
+      ? "SalesContractsSelectDialog"
+      : "PurchaseContractsApprovedSelectDialog";
+    const staticFilter = "Status eq 'Approved'" +
+      (itemCode ? ` and ItemCode eq '${itemCode.replace(/'/g, "''")}'` : "");
+
+    const selected = await DialogHelper.openTableSelectDialog(
+      this, dialogName, ["Code", "CardName"], [], undefined, staticFilter);
+
+    if (!selected) return;
+
+    viewModel.setProperty("/plannedContractDialog/contractKey", selected.getProperty("Key") as string);
+    viewModel.setProperty("/plannedContractDialog/contractCode", selected.getProperty("Code") as string);
+    viewModel.setProperty("/plannedContractDialog/cardName", selected.getProperty("CardName") as string);
+  }
+
+  async onConfirmPlannedContract(): Promise<void> {
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    const form = viewModel.getProperty("/plannedContractDialog") as {
+      contractType: string; contractKey: string; quantity: string; notes: string;
+    };
+
+    if (!form.contractKey) {
+      MessageBox.alert("Selecione o contrato.");
+      return;
+    }
+
+    const quantityText = `${form.quantity ?? ""}`.trim();
+    const quantity = quantityText === "" ? null : Number(quantityText);
+
+    if (quantity !== null && !(quantity > 0)) {
+      MessageBox.alert("A quantidade prevista deve ser maior que zero.");
+      return;
+    }
+
+    const loadKey = this.currentLoadKey();
+
+    this.onClosePlannedContractDialog();
+    this.setBusy(true);
+
+    try {
+      const action = (this.getModel() as ODataModel)
+        .bindContext("/ShipmentLoadsPlannedContractAdd(...)");
+      action.setParameter("LoadKey", loadKey);
+      action.setParameter("ContractType", form.contractType);
+      action.setParameter("ContractKey", form.contractKey);
+      action.setParameter("Quantity", quantity);
+      action.setParameter("Notes", (form.notes ?? "").trim() || null);
+      await action.invoke();
+
+      MessageToast.show("Contrato planejado incluído.");
+      this.refreshPlannedContracts();
+    } catch (e) {
+      MessageBox.error((e as Error).message || "Erro ao incluir o contrato planejado.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  private async removePlannedContract(contractType: "Purchase" | "Sales"): Promise<void> {
+    const table = this.byId(
+      contractType === "Purchase" ? "loadPlannedPurchaseTable" : "loadPlannedSalesTable") as Table;
+    const selected = table.getSelectedIndex();
+
+    if (selected < 0) {
+      MessageBox.alert("Selecione um contrato planejado.");
+      return;
+    }
+
+    const context = table.getContextByIndex(selected) as Context;
+
+    if (!await DialogHelper.confirmDialog("Excluir o contrato planejado selecionado ?")) return;
+
+    this.setBusy(true);
+
+    try {
+      const action = (this.getModel() as ODataModel)
+        .bindContext("/ShipmentLoadsPlannedContractRemove(...)");
+      action.setParameter("ContractType", contractType);
+      action.setParameter("Key", context.getProperty("Key") as string);
+      await action.invoke();
+
+      MessageToast.show("Contrato planejado excluído.");
+      this.refreshPlannedContracts();
+    } catch (e) {
+      MessageBox.error((e as Error).message || "Erro ao excluir o contrato planejado.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
+
+  /** As duas grids (cache próprio, `$$ownRequest`) e o log, que registra a inclusão/exclusão. */
+  private refreshPlannedContracts(): void {
+    ["loadPlannedPurchaseTable", "loadPlannedSalesTable", "shipmentLoadChangeLogsTable"].forEach(id => {
+      ((this.byId(id) as Table)?.getBinding("rows") as ODataListBinding)?.refresh();
+    });
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------ */
   /* Comentários                                                         */
   /* ------------------------------------------------------------------ */
 
@@ -1125,6 +1279,8 @@ export default class Detail extends BaseController {
       "loadRefusalReturnsTable",
       "loadDischargesTable",
       "loadTransshipmentsTable",
+      "loadPlannedPurchaseTable",
+      "loadPlannedSalesTable",
       "shipmentLoadCommentsTable",
       "shipmentLoadChangeLogsTable",
     ].forEach(id => {

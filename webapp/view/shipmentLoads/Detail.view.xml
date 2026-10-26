@@ -549,6 +549,18 @@
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
 
+			<!-- Contratos planejados (GAC-1185): vínculo opcional e informativo com contratos de compra
+			     e de venda aprovados do mesmo produto. Vale em qualquer tipo de carga. -->
+			<uxap:ObjectPageSection titleUppercase="false" title="Contratos Planejados">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<uxap:blocks>
+							<core:Fragment fragmentName="siagrob1.view.shipmentLoads.fragments.ShipmentLoadPlannedContracts" type="XML"/>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
 			<!-- Anexos (GAC-1171): grid de anexos tipados da carga. Sem `visible` condicional de
 			     propósito: anexo vale em qualquer carga, inclusive de Remoção e cancelada. -->
 			<uxap:ObjectPageSection titleUppercase="false" title="Anexos">
