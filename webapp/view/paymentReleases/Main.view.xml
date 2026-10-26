@@ -1,0 +1,158 @@
+<mvc:View
+  controllerName="siagrob1.controller.paymentReleases.Main"
+  displayBlock="true"
+  xmlns="sap.m"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns:core="sap.ui.core"
+  xmlns:t="sap.ui.table"
+  xmlns:f="sap.f"
+  core:require="{
+    formatter: 'siagrob1/model/formatter'
+  }">
+  <f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Liberação de Pagamento"/>
+        </f:heading>
+      </f:DynamicPageTitle>
+    </f:title>
+    <f:header>
+      <f:DynamicPageHeader>
+        <f:content>
+          <core:Fragment fragmentName="siagrob1.view.paymentReleases.fragments.PaymentReleaseFilterbar" type="XML" />
+        </f:content>
+      </f:DynamicPageHeader>
+    </f:header>
+    <f:content>
+      <t:Table
+        id="tablePaymentReleases"
+        busyIndicatorDelay="0"
+        selectionMode="Single"
+        selectionBehavior="Row"
+        class="sapUiSizeCondensed"
+        visibleRowCountMode="Auto"
+        enableBusyIndicator="true"
+        alternateRowColors="true"
+        rowActionCount="1"
+        rows="{
+          path: '/PurchaseContracts',
+          parameters: { $expand: { PaymentReleases: { $select: ['Department', 'Released'] } } },
+          sorter: [
+            { path: 'RowId', descending: true }
+          ]
+        }">
+        <t:extension>
+          <OverflowToolbar>
+            <Title text="Liberação de Pagamento" />
+            <ToolbarSpacer />
+            <Button type="Transparent" text="Visualizar" press=".onDetail"/>
+            <Button type="Transparent" text="Exportar Excel" icon="sap-icon://excel-attachment" press=".onExcel"/>
+          </OverflowToolbar>
+        </t:extension>
+        <t:rowActionTemplate>
+          <t:RowAction>
+            <t:items>
+              <t:RowActionItem type="Navigation" press=".onRowNavigate"/>
+            </t:items>
+          </t:RowAction>
+        </t:rowActionTemplate>
+        <t:columns>
+          <t:Column label="Contrato" sortProperty="Code" width="10rem">
+            <t:template>
+              <Text text="{Code}" wrapping="false"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Emissão" sortProperty="CreationDate" width="8rem">
+            <t:template>
+              <Text wrapping="false" text="{ path: 'CreationDate', targetType: 'any', formatter: '.formatter.formatDate' }"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Fornecedor" sortProperty="CardName" width="16rem">
+            <t:template>
+              <Text text="{CardName}" wrapping="false"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Cond. Pagto." sortProperty="PaymentTerms" width="15rem">
+            <t:template>
+              <Text text="{PaymentTerms}" tooltip="{PaymentTerms}" wrapping="false"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Status Financeiro" sortProperty="PaymentReleaseStatus" hAlign="Center" width="12rem">
+            <t:template>
+              <ObjectStatus
+                inverted="true"
+                state="{ path: 'PaymentReleaseStatus', targetType: 'any', formatter: '.formatter.statePaymentReleaseStatus' }"
+                text="{ path: 'PaymentReleaseStatus', targetType: 'any', formatter: '.formatter.formatPaymentReleaseStatus' }"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Lib. Estoque" hAlign="Center" width="7rem">
+            <t:template>
+              <ObjectStatus
+                inverted="true"
+                text="{= formatter.formatDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Stock', ${path: 'IsBarter', targetType: 'any'}) }"
+                state="{= formatter.stateDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Stock', ${path: 'IsBarter', targetType: 'any'}) }"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Lib. Jurídico" hAlign="Center" width="7rem">
+            <t:template>
+              <ObjectStatus
+                inverted="true"
+                text="{= formatter.formatDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Legal', ${path: 'IsBarter', targetType: 'any'}) }"
+                state="{= formatter.stateDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Legal', ${path: 'IsBarter', targetType: 'any'}) }"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Lib. Fiscal" hAlign="Center" width="7rem">
+            <t:template>
+              <ObjectStatus
+                inverted="true"
+                text="{= formatter.formatDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Fiscal', ${path: 'IsBarter', targetType: 'any'}) }"
+                state="{= formatter.stateDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Fiscal', ${path: 'IsBarter', targetType: 'any'}) }"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Lib. Royalties" hAlign="Center" width="7rem">
+            <t:template>
+              <ObjectStatus
+                inverted="true"
+                text="{= formatter.formatDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Royalties', ${path: 'IsBarter', targetType: 'any'}) }"
+                state="{= formatter.stateDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Royalties', ${path: 'IsBarter', targetType: 'any'}) }"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Lib. Financeiro" hAlign="Center" width="7rem">
+            <t:template>
+              <ObjectStatus
+                inverted="true"
+                text="{= formatter.formatDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Financial', ${path: 'IsBarter', targetType: 'any'}) }"
+                state="{= formatter.stateDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Financial', ${path: 'IsBarter', targetType: 'any'}) }"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Lib. Loja" hAlign="Center" width="7rem">
+            <t:template>
+              <ObjectStatus
+                inverted="true"
+                text="{= formatter.formatDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Store', ${path: 'IsBarter', targetType: 'any'}) }"
+                state="{= formatter.stateDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Store', ${path: 'IsBarter', targetType: 'any'}) }"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Lib. Diretoria" hAlign="Center" width="7rem">
+            <t:template>
+              <ObjectStatus
+                inverted="true"
+                text="{= formatter.formatDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Board', ${path: 'IsBarter', targetType: 'any'}) }"
+                state="{= formatter.stateDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Board', ${path: 'IsBarter', targetType: 'any'}) }"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Antec." hAlign="Center" width="5rem">
+            <t:template>
+              <core:Icon
+                src="sap-icon://money-bills"
+                color="#107e3e"
+                tooltip="Antecipação Liberada pela Diretoria"
+                visible="{= !!${path: 'EarlyPaymentAuthorized', targetType: 'any'} }"/>
+            </t:template>
+          </t:Column>
+        </t:columns>
+      </t:Table>
+    </f:content>
+  </f:DynamicPage>
+</mvc:View>

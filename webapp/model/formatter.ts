@@ -487,6 +487,22 @@ const formatter = {
     return m.get(value) ?? "None";
   },
 
+  /**
+   * Sim/Não/"—" da liberação de um departamento na lista de liberações (GAC-1188). Departamento sem
+   * linha em PaymentReleases vale Não. A Loja só participa de contrato de barter: fora dele, "—".
+   */
+  formatDepartmentRelease: (releases: { Department: string; Released: boolean }[], department: string, isBarter?: boolean) => {
+    if (department === "Store" && !isBarter) return "—";
+
+    return releases?.some((r) => r.Department === department && r.Released) ? "Sim" : "Não";
+  },
+
+  stateDepartmentRelease: (releases: { Department: string; Released: boolean }[], department: string, isBarter?: boolean) => {
+    if (department === "Store" && !isBarter) return "None";
+
+    return releases?.some((r) => r.Department === department && r.Released) ? "Success" : "Error";
+  },
+
   formatContractType: (value: string) => {
     const m = new Map<string, string>();
     m.set("Fixed", "FIX - Preço Fixo");
