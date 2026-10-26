@@ -1092,6 +1092,16 @@ const formatter = {
   formatPartialReturn: (returnedQuantity: number | string): string =>
     `Devolução parcial: ${Number(returnedQuantity ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 })}`,
 
+  /**
+   * Diferença entre um peso apurado (ticket ou Conferência) e o Peso Efetivo do documento (GAC-1195),
+   * com sinal: negativa quando chegou menos do que seguiu.
+   */
+  formatQuantityDifference: (value: number | string, effective: number | string): string => {
+    const diff = Number(value ?? 0) - Number(effective ?? 0);
+    const text = Math.abs(diff).toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+    return diff < -0.0005 ? `-${text}` : text;
+  },
+
   formatSalesInvoiceType: (value: string) => {
     const m = new Map<string, string>();
     m.set("Normal", "Normal");
