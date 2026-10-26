@@ -304,6 +304,9 @@
 									<t:Column label="Motorista" width="16rem">
 										<t:template><Text text="{ parts: [ { path: 'Key', targetType: 'any' }, { path: 'viewModel>/removalPurchaseLegs', targetType: 'any' }, { value: 'TruckDriverName' }, { path: 'TruckDriver/Name', targetType: 'any' } ], formatter: '.formatter.pickRemovalPurchaseLeg' }" wrapping="false"/></t:template>
 									</t:Column>
+									<t:Column label="Veículo" width="7rem">
+										<t:template><Text text="{TruckCode}" wrapping="false"/></t:template>
+									</t:Column>
 									<t:Column label="Peso Bruto" hAlign="End" width="8rem">
 										<t:template>
 											<ObjectNumber

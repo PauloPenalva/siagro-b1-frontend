@@ -196,7 +196,6 @@ export default class Attach extends BaseController {
       // Montagem para ser vinculada a outra carga — por isso não filtramos por
       // ShippingReleaseChangeKey.
       "ReplacedByShippingReleaseChangeKey eq null",
-      `TruckCode eq '${(target.TruckCode ?? "").replace(/'/g, "''")}'`,
       `ItemCode eq '${(target.ItemCode ?? "").replace(/'/g, "''")}'`,
       `BranchCode eq '${(target.BranchCode ?? "").replace(/'/g, "''")}'`,
     ];
@@ -207,6 +206,11 @@ export default class Attach extends BaseController {
     const role = (target.roles ?? []).find(r => r.Key === target.role);
     if (role?.WarehouseCode) {
       scope.push(`WarehouseCode eq '${role.WarehouseCode.replace(/'/g, "''")}'`);
+    } else {
+      // GAC-1181 (troca de veículo): só a saída do transbordo pode vir noutro caminhão — a
+      // descarga foi total. Origem e complemento seguem na placa da carga, como no servidor
+      // (ShipmentLoadsAttachTransactionsService#ResolveExitTruck).
+      scope.push(`TruckCode eq '${(target.TruckCode ?? "").replace(/'/g, "''")}'`);
     }
 
     this.shipmentsBinding()?.changeParameters({ $filter: scope.join(" and ") });
