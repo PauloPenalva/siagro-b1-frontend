@@ -308,10 +308,11 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
     const key = await ctx.requestProperty("Key") as string;
     const model = ctx.getModel() as ODataModel;
 
-    const contract = await model.bindContext(`/PurchaseContracts(${key})`, undefined, {
+    const binding = model.bindContext(`/PurchaseContracts(${key})`, undefined, {
       $select: "Key,PaymentReleaseStatus,EarlyPaymentAuthorized,IsBarter,IsOnWheels,SignatureStatus",
       $expand: { PaymentReleases: {} },
-    }).requestObject() as {
+    });
+    let contract: {
       Key: string;
       PaymentReleaseStatus?: string;
       EarlyPaymentAuthorized?: boolean;
@@ -320,6 +321,12 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
       SignatureStatus?: string;
       PaymentReleases?: { Department: string; Released: boolean; ReleasedAt?: string; ReleasedBy?: string }[];
     };
+    try {
+      contract = await binding.requestObject() as typeof contract;
+    } finally {
+      // Binding avulso: sem destruir, cada abertura do diálogo deixaria um listener vivo no modelo.
+      binding.destroy();
+    }
 
     const isOnWheels = !!contract.IsOnWheels;
     const isBarter = !!contract.IsBarter;
@@ -360,7 +367,12 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
       return;
     }
 
-    await this.loadPaymentReleaseState();
+    try {
+      await this.loadPaymentReleaseState();
+    } catch {
+      MessageBox.error("Erro ao carregar a liberação de pagamento.");
+      return;
+    }
 
     this._paymentReleaseDialog ??= await DialogHelper.createDialog(
       this,
@@ -396,7 +408,9 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
     }).always(() => {
       this.setBusy(false);
       // Sucesso ou erro: o diálogo volta a refletir o que o servidor tem de fato.
-      void this.loadPaymentReleaseState();
+      this.loadPaymentReleaseState().catch(() => {
+        MessageBox.error("Erro ao carregar a liberação de pagamento.");
+      });
     });
   }
 
