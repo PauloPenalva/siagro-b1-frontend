@@ -15,9 +15,14 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import SessionService from "siagrob1/services/SessionService";
 import CommonController from "../common/CommonController";
 import { Select$ChangeEvent } from "sap/m/Select";
+import { Column, EdmType, SpreadsheetSettings } from "sap/ui/export/library";
+import Spreadsheet from "sap/ui/export/Spreadsheet";
+import { SortOrder } from "sap/ui/core/library";
+import { mapPaymentReleaseExportRow, PAYMENT_RELEASE_EXPORT_DEPARTMENTS } from "siagrob1/helpers/PaymentReleaseExportHelpers";
 import {
   applyHistoryDepartmentFilter, clearHistoryDepartmentFilter, DEPARTMENT_RELEASES, HISTORY_ALL_DEPARTMENTS,
   historyDepartmentOptions, mapReleaseHistory, ReleaseHistoryRow, releasedDepartmentCodes,
+  defaultReleaseFilters, departmentReleaseFilterClauses,
 } from "siagrob1/helpers/DepartmentReleaseHelpers";
 
 type FilterData = {
@@ -25,6 +30,7 @@ type FilterData = {
   CardCode?: string,
   CreationDateFrom?: string,
   CreationDateTo?: string,
+  Release?: Record<string, string>,
 }
 
 type SelectedContract = { key: string; code: string; isBarter: boolean; releasedDepartments: string[] };
@@ -43,8 +49,11 @@ export default class Main extends CommonController {
   private actionDialog: Dialog;
   private historyDialog: Dialog;
 
+  /** `$filter` corrente da filterbar, reaproveitado pelo binding do export. */
+  private currentFilter: string;
+
   onInit(): void {
-    this.createFilterModel({ PaymentReleaseStatus: [] });
+    this.createFilterModel({ PaymentReleaseStatus: [], Release: defaultReleaseFilters() });
     this.getView().setModel(new JSONModel({}), "perm");
     this.getView().setModel(new JSONModel({}), "dlg");
     this.getView().setModel(new JSONModel({}), "history");
@@ -96,7 +105,11 @@ export default class Main extends CommonController {
     if (filterData.CreationDateFrom) filters.push(`CreationDate ge ${filterData.CreationDateFrom}`);
     if (filterData.CreationDateTo) filters.push(`CreationDate le ${filterData.CreationDateTo}`);
 
-    oBinding.changeParameters({ $filter: filters.length > 0 ? filters.join(" and ") : undefined });
+    filters.push(...departmentReleaseFilterClauses(filterData.Release, this.allowedDepartments().map((d) => d.code)));
+
+    const filterParam = filters.length > 0 ? filters.join(" and ") : undefined;
+    this.currentFilter = filterParam;
+    oBinding.changeParameters({ $filter: filterParam });
   }
 
   onRowNavigate(ev: RowActionItem$PressEvent): void {
@@ -267,5 +280,82 @@ export default class Main extends CommonController {
 
   onCloseDepartmentReleaseHistory(): void {
     this.historyDialog?.close();
+  }
+
+  private createColumnConfig(): Column[] {
+    const allowed = this.allowedDepartments().map((d) => d.code);
+    return [
+      { label: "Contrato", property: "Code", type: EdmType.String },
+      { label: "Emissão", property: "CreationDate", type: EdmType.Date },
+      { label: "Fornecedor", property: "CardName", type: EdmType.String },
+      {
+        label: "Status Financeiro",
+        property: "PaymentReleaseStatus",
+        type: EdmType.Enumeration,
+        valueMap: {
+          "Pending": "Pendente",
+          "UnderReview": "Em análise",
+          "IncompleteDocuments": "Documentação incompleta",
+          "Approved": "Aprovado",
+          "PreApproved": "Pré-aprovado",
+        },
+      },
+      ...PAYMENT_RELEASE_EXPORT_DEPARTMENTS
+        .filter(([code]) => allowed.includes(code))
+        .map(([, property, label]): Column => ({ label, property, type: EdmType.String })),
+    ];
+  }
+
+  /** Lê os contratos com PaymentReleases expandido, na ordem e com o filtro da tela. */
+  private async loadExportRows(cols: Column[], orderby: string): Promise<Record<string, unknown>[]> {
+    const select = new Set<string>(["Key", "IsBarter"]);
+    cols.forEach((c) => {
+      if (!PAYMENT_RELEASE_EXPORT_DEPARTMENTS.some(([, property]) => property === c.property)) {
+        select.add(c.property as string);
+      }
+    });
+
+    const parameters: Record<string, string> = {
+      $orderby: orderby,
+      $select: [...select].join(","),
+      $expand: "PaymentReleases($select=Department,Released)",
+    };
+    if (this.currentFilter) parameters.$filter = this.currentFilter;
+
+    const binding = (this.getModel() as ODataModel).bindList("/PurchaseContracts", undefined, undefined, undefined, parameters);
+    try {
+      const contexts = await binding.requestContexts(0, Number.MAX_SAFE_INTEGER);
+      return contexts.map((ctx) => mapPaymentReleaseExportRow(ctx.getObject() as Record<string, unknown>));
+    } finally {
+      binding.destroy();
+    }
+  }
+
+  private getExportOrderBy(oTable: Table): string {
+    const aOrder = oTable.getSortedColumns()
+      .filter((oColumn) => oColumn.getSortOrder() !== SortOrder.None && oColumn.getSortProperty())
+      .map((oColumn) => oColumn.getSortProperty()
+        + (oColumn.getSortOrder() === SortOrder.Descending ? " desc" : ""));
+
+    return aOrder.length > 0 ? aOrder.join(",") : "RowId desc";
+  }
+
+  async onExcel() {
+    const oTable = this.byId("tableDepartmentReleases") as Table;
+    const cols = this.orderExportColumns(oTable, this.createColumnConfig());
+
+    const setting: SpreadsheetSettings = {
+      dataSource: await this.loadExportRows(cols, this.getExportOrderBy(oTable)),
+      fileName: "Liberação por Departamento.xlsx",
+      workbook: {
+        columns: cols,
+        context: { sheetName: "Liberação por Departamento" },
+      },
+    };
+
+    const oSheet = new Spreadsheet(setting);
+    void oSheet.build().finally(function () {
+      oSheet.destroy();
+    });
   }
 }

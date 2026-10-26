@@ -50,6 +50,7 @@
             <Button type="Transparent" text="Retirar liberação" icon="sap-icon://reset" press=".onWithdrawRelease"/>
             <Button type="Transparent" text="Histórico" icon="sap-icon://history" press=".onHistory"/>
             <Button type="Transparent" text="Visualizar" press=".onDetail"/>
+            <Button type="Transparent" text="Exportar Excel" icon="sap-icon://excel-attachment" press=".onExcel"/>
           </OverflowToolbar>
         </t:extension>
         <t:rowActionTemplate>

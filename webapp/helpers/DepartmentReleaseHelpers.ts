@@ -89,3 +89,28 @@ export function applyHistoryDepartmentFilter(select: Select): void {
 export function clearHistoryDepartmentFilter(dialog: Control): void {
   (findHistoryTable(dialog)?.getBinding("items") as ListBinding | undefined)?.filter([]);
 }
+
+/** Opções dos filtros "Lib. <departamento>": Todos (sem filtro), Sim (liberado) e Não. */
+export const RELEASE_FILTER_ALL = "ALL";
+export const RELEASE_FILTER_YES = "YES";
+export const RELEASE_FILTER_NO = "NO";
+
+/** Estado inicial dos filtros por departamento: todos em "Todos". */
+export function defaultReleaseFilters(): Record<string, string> {
+  return Object.fromEntries(DEPARTMENT_RELEASES.map((d) => [d.code, RELEASE_FILTER_ALL]));
+}
+
+/**
+ * Cláusulas `$filter` (texto cru, pois enum não passa pelo sap.ui.model.Filter) dos filtros por
+ * departamento. Só considera os departamentos informados em `allowed`.
+ */
+export function departmentReleaseFilterClauses(selection: Record<string, string>, allowed: string[]): string[] {
+  const clauses: string[] = [];
+  for (const d of DEPARTMENT_RELEASES) {
+    const value = selection?.[d.code];
+    if (!allowed.includes(d.code) || (value !== RELEASE_FILTER_YES && value !== RELEASE_FILTER_NO)) continue;
+    const any = `PaymentReleases/any(r: r/Department eq '${d.code}' and r/Released eq true)`;
+    clauses.push(value === RELEASE_FILTER_YES ? any : `not ${any}`);
+  }
+  return clauses;
+}
