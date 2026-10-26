@@ -89,6 +89,43 @@
                 }"
                 unit="KG"
                 textAlign="Begin"/>
+
+            <!-- GAC-1191: valores (R$) do romaneio, calculados sobre o peso bruto. -->
+            <core:Title text="Valores (R$)"/>
+            <Label text="Secagem"/>
+            <Text text="{
+                path: 'DryingServicePrice',
+                type: 'sap.ui.model.type.Float',
+                formatOptions: { decimals: 2, minFractionDigits: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"/>
+
+            <Label text="Limpeza"/>
+            <Text text="{
+                path: 'CleaningServicePrice',
+                type: 'sap.ui.model.type.Float',
+                formatOptions: { decimals: 2, minFractionDigits: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"/>
+
+            <Label text="Recepção"/>
+            <Text text="{
+                path: 'ReceiptServicePrice',
+                type: 'sap.ui.model.type.Float',
+                formatOptions: { decimals: 2, minFractionDigits: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"/>
+
+            <Label text="Expedição"/>
+            <Text text="{
+                path: 'ShipmentPrice',
+                type: 'sap.ui.model.type.Float',
+                formatOptions: { decimals: 2, minFractionDigits: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"/>
+
+            <Label text="Frete/Remoção"/>
+            <Text text="{
+                path: 'FreightPrice',
+                type: 'sap.ui.model.type.Float',
+                formatOptions: { decimals: 2, minFractionDigits: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+            }"/>
         </f:content>
     </f:SimpleForm>
 </core:FragmentDefinition>
