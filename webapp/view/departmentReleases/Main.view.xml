@@ -84,6 +84,14 @@
                 text="{ path: 'PaymentReleaseStatus', targetType: 'any', formatter: '.formatter.formatPaymentReleaseStatus' }"/>
             </t:template>
           </t:Column>
+          <t:Column label="Lib. Diretoria" visible="{perm>/Board}" hAlign="Center" width="7rem">
+            <t:template>
+              <ObjectStatus
+                inverted="true"
+                text="{= formatter.formatDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Board', ${path: 'IsBarter', targetType: 'any'}) }"
+                state="{= formatter.stateDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Board', ${path: 'IsBarter', targetType: 'any'}) }"/>
+            </t:template>
+          </t:Column>
           <t:Column label="Lib. Estoque" visible="{perm>/Stock}" hAlign="Center" width="7rem">
             <t:template>
               <ObjectStatus
@@ -130,14 +138,6 @@
                 inverted="true"
                 text="{= formatter.formatDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Store', ${path: 'IsBarter', targetType: 'any'}) }"
                 state="{= formatter.stateDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Store', ${path: 'IsBarter', targetType: 'any'}) }"/>
-            </t:template>
-          </t:Column>
-          <t:Column label="Lib. Diretoria" visible="{perm>/Board}" hAlign="Center" width="7rem">
-            <t:template>
-              <ObjectStatus
-                inverted="true"
-                text="{= formatter.formatDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Board', ${path: 'IsBarter', targetType: 'any'}) }"
-                state="{= formatter.stateDepartmentRelease(${path: 'PaymentReleases', targetType: 'any'}, 'Board', ${path: 'IsBarter', targetType: 'any'}) }"/>
             </t:template>
           </t:Column>
         </t:columns>

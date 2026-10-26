@@ -47,6 +47,15 @@
           valueFormat="yyyy-MM-dd"/>
       </fb:control>
     </fb:FilterGroupItem>
+    <fb:FilterGroupItem name="releaseBoard" label="Lib. Diretoria" groupName="GroupReleaseBoard" visibleInFilterBar="true" visible="{perm>/Board}">
+      <fb:control>
+        <Select width="100%" selectedKey="{filter>/Release/Board}">
+          <core:Item key="ALL" text="Todos"/>
+          <core:Item key="YES" text="Sim"/>
+          <core:Item key="NO" text="Não"/>
+        </Select>
+      </fb:control>
+    </fb:FilterGroupItem>
     <fb:FilterGroupItem name="releaseStock" label="Lib. Estoque" groupName="GroupReleaseStock" visibleInFilterBar="true" visible="{perm>/Stock}">
       <fb:control>
         <Select width="100%" selectedKey="{filter>/Release/Stock}">
@@ -95,15 +104,6 @@
     <fb:FilterGroupItem name="releaseStore" label="Lib. Loja" groupName="GroupReleaseStore" visibleInFilterBar="true" visible="{perm>/Store}">
       <fb:control>
         <Select width="100%" selectedKey="{filter>/Release/Store}">
-          <core:Item key="ALL" text="Todos"/>
-          <core:Item key="YES" text="Sim"/>
-          <core:Item key="NO" text="Não"/>
-        </Select>
-      </fb:control>
-    </fb:FilterGroupItem>
-    <fb:FilterGroupItem name="releaseBoard" label="Lib. Diretoria" groupName="GroupReleaseBoard" visibleInFilterBar="true" visible="{perm>/Board}">
-      <fb:control>
-        <Select width="100%" selectedKey="{filter>/Release/Board}">
           <core:Item key="ALL" text="Todos"/>
           <core:Item key="YES" text="Sim"/>
           <core:Item key="NO" text="Não"/>

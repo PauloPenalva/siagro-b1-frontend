@@ -292,13 +292,13 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
   /* ------------------------------------------------------------------ */
 
   private static readonly PAYMENT_RELEASE_DEPARTMENTS: [string, string][] = [
+    ["Board", "Lib. Diretoria"],
     ["Stock", "Lib. Estoque"],
     ["Legal", "Lib. Jurídico"],
     ["Fiscal", "Lib. Fiscal"],
     ["Royalties", "Lib. Royalties"],
     ["Financial", "Lib. Financeiro"],
     ["Store", "Lib. Loja"],
-    ["Board", "Lib. Diretoria"],
   ];
 
   /**

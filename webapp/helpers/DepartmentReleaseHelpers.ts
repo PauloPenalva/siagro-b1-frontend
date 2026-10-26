@@ -8,13 +8,13 @@ import Table from "sap/m/Table";
 
 /** Departamentos da liberação (GAC-1188): código no backend, rótulo da tela e permissão exigida. */
 export const DEPARTMENT_RELEASES: { code: string; label: string; permission: string }[] = [
+  { code: "Board", label: "Lib. Diretoria", permission: "PAYMENT_RELEASE_BOARD" },
   { code: "Stock", label: "Lib. Estoque", permission: "PAYMENT_RELEASE_STOCK" },
   { code: "Legal", label: "Lib. Jurídico", permission: "PAYMENT_RELEASE_LEGAL" },
   { code: "Fiscal", label: "Lib. Fiscal", permission: "PAYMENT_RELEASE_FISCAL" },
   { code: "Royalties", label: "Lib. Royalties", permission: "PAYMENT_RELEASE_ROYALTIES" },
   { code: "Financial", label: "Lib. Financeiro", permission: "PAYMENT_RELEASE_FINANCIAL" },
   { code: "Store", label: "Lib. Loja", permission: "PAYMENT_RELEASE_STORE" },
-  { code: "Board", label: "Lib. Diretoria", permission: "PAYMENT_RELEASE_BOARD" },
 ];
 
 /** Departamentos hoje liberados no contrato, a partir do PaymentReleases carregado pela lista. */

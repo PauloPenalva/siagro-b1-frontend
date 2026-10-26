@@ -2,13 +2,13 @@ import formatter from "siagrob1/model/formatter";
 
 /** Departamentos da liberação: código no backend, propriedade da coluna e cabeçalho do Excel. */
 export const PAYMENT_RELEASE_EXPORT_DEPARTMENTS: [code: string, property: string, label: string][] = [
+  ["Board", "ReleaseBoard", "Lib. Diretoria"],
   ["Stock", "ReleaseStock", "Lib. Estoque"],
   ["Legal", "ReleaseLegal", "Lib. Jurídico"],
   ["Fiscal", "ReleaseFiscal", "Lib. Fiscal"],
   ["Royalties", "ReleaseRoyalties", "Lib. Royalties"],
   ["Financial", "ReleaseFinancial", "Lib. Financeiro"],
   ["Store", "ReleaseStore", "Lib. Loja"],
-  ["Board", "ReleaseBoard", "Lib. Diretoria"],
 ];
 
 type ContractRow = {
