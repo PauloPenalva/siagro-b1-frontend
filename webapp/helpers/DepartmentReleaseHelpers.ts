@@ -17,6 +17,11 @@ export const DEPARTMENT_RELEASES: { code: string; label: string; permission: str
   { code: "Board", label: "Lib. Diretoria", permission: "PAYMENT_RELEASE_BOARD" },
 ];
 
+/** Departamentos hoje liberados no contrato, a partir do PaymentReleases carregado pela lista. */
+export function releasedDepartmentCodes(releases?: { Department: string; Released?: boolean }[]): string[] {
+  return (releases ?? []).filter((r) => r.Released).map((r) => r.Department);
+}
+
 export type ReleaseHistoryRow = {
   Id?: string;
   Department: string;

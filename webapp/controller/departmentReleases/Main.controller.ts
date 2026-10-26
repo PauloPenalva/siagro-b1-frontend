@@ -17,7 +17,7 @@ import CommonController from "../common/CommonController";
 import { Select$ChangeEvent } from "sap/m/Select";
 import {
   applyHistoryDepartmentFilter, clearHistoryDepartmentFilter, DEPARTMENT_RELEASES, HISTORY_ALL_DEPARTMENTS,
-  historyDepartmentOptions, mapReleaseHistory, ReleaseHistoryRow,
+  historyDepartmentOptions, mapReleaseHistory, ReleaseHistoryRow, releasedDepartmentCodes,
 } from "siagrob1/helpers/DepartmentReleaseHelpers";
 
 type FilterData = {
@@ -27,7 +27,7 @@ type FilterData = {
   CreationDateTo?: string,
 }
 
-type SelectedContract = { key: string; code: string; isBarter: boolean };
+type SelectedContract = { key: string; code: string; isBarter: boolean; releasedDepartments: string[] };
 
 /**
  * Liberação por Departamento (GAC-1188): cada usuário vê e altera só os departamentos que as
@@ -119,6 +119,8 @@ export default class Main extends CommonController {
       key: ctx.getProperty("Key") as string,
       code: String(ctx.getProperty("Code") ?? ""),
       isBarter: !!ctx.getProperty("IsBarter"),
+      releasedDepartments: releasedDepartmentCodes(
+        ctx.getObject("PaymentReleases") as { Department: string; Released?: boolean }[]),
     };
   }
 
@@ -140,12 +142,22 @@ export default class Main extends CommonController {
     if (!contract) return;
 
     // A Loja só participa de contrato de barter.
-    const departments = this.allowedDepartments()
-      .filter((d) => d.code !== "Store" || contract.isBarter)
+    const permitted = this.allowedDepartments().filter((d) => d.code !== "Store" || contract.isBarter);
+
+    if (permitted.length === 0) {
+      MessageBox.warning("Você não tem permissão para liberar departamentos deste contrato.");
+      return;
+    }
+
+    // Liberar só oferece quem ainda não está liberado; retirar, só quem está.
+    const departments = permitted
+      .filter((d) => contract.releasedDepartments.includes(d.code) !== released)
       .map(({ code, label }) => ({ code, label }));
 
     if (departments.length === 0) {
-      MessageBox.warning("Você não tem permissão para liberar departamentos deste contrato.");
+      MessageBox.information(released
+        ? "Nenhum departamento disponível para liberar neste contrato."
+        : "Nenhum departamento liberado para retirar neste contrato.");
       return;
     }
 
