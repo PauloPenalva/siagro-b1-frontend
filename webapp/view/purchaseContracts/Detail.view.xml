@@ -36,6 +36,7 @@
           <Button visible="{= ${path: 'Status', targetType: 'any'}==='Finished' &amp;&amp; !${ui>/readonly} }" text="Reabrir" type="Transparent" press=".onReopenContract"/>
           <!-- Sem binding de Status: assinatura vale em qualquer status do contrato. -->
           <Button visible="{= !${ui>/readonly} }" text="Assinatura" type="Transparent" icon="sap-icon://signature" press=".onOpenSignatureStatusDialog"/>
+          <Button visible="{= !${ui>/readonly} }" text="Liberação de Pagamento" type="Transparent" icon="sap-icon://payment-approval" press=".onOpenPaymentReleaseDialog"/>
           <Button text="Extrato" tooltip="Extrato do contrato: movimentação física, fiscal e financeira" type="Transparent" icon="sap-icon://customer-financial-fact-sheet" press=".onPrintContractStatement"/>
           <Button visible="{= !${ui>/readonly} &amp;&amp; ${ui>/preContractPrintVisible} }" text="Imprimir Pré-Contrato" type="Transparent" icon="sap-icon://print" press=".onPrintPreContract"/>
         </uxap:actions>
@@ -69,6 +70,19 @@
             path: 'SignatureStatus',
             targetType: 'any',
             formatter: '.formatter.formatSignatureStatus'
+          }" />
+        <ObjectStatus
+          class="sapUiMediumMarginBegin"
+          title="Liberação de Pagamento"
+          state="{
+            path: 'PaymentReleaseStatus',
+            targetType: 'any',
+            formatter: '.formatter.statePaymentReleaseStatus'
+          }"
+          text="{
+            path: 'PaymentReleaseStatus',
+            targetType: 'any',
+            formatter: '.formatter.formatPaymentReleaseStatus'
           }" />
       </HBox>
       <HBox>

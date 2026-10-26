@@ -166,6 +166,10 @@
               value="{CardName}"
               editable="false"
             />
+            <Label text="Barter" />
+            <CheckBox selected="{IsBarter}" editable="{ui>/editable}" />
+            <Label text="Sobre rodas" />
+            <CheckBox selected="{IsOnWheels}" editable="{ui>/editable}" />
             <Label text="Observações" />
             <TextArea 
               editable="{ui>/editable}"

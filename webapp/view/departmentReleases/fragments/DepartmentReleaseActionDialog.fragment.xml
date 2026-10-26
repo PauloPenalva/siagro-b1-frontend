@@ -1,0 +1,45 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+<!--
+  Liberar ou retirar a liberação de um departamento (GAC-1188). O estado vem do JSONModel dlg,
+  montado pelo controller. O motivo é obrigatório nos dois sentidos.
+-->
+<Dialog id="departmentReleaseActionDialog" title="{dlg>/title}">
+  <content>
+    <VBox class="sapUiSmallMargin" width="26rem">
+      <Label text="Contrato"/>
+      <Text text="{dlg>/contract}" class="sapUiSmallMarginBottom"/>
+      <Label text="Departamento" required="true" labelFor="departmentReleaseDepartmentSelect"/>
+      <Select
+        id="departmentReleaseDepartmentSelect"
+        width="100%"
+        forceSelection="false"
+        selectedKey="{dlg>/department}"
+        items="{dlg>/departments}"
+        class="sapUiSmallMarginBottom">
+        <core:Item key="{dlg>code}" text="{dlg>label}"/>
+      </Select>
+      <Label text="Motivo" required="true" labelFor="departmentReleaseReasonArea"/>
+      <TextArea
+        id="departmentReleaseReasonArea"
+        width="100%"
+        rows="4"
+        maxLength="500"
+        showExceededText="true"
+        value="{dlg>/reason}"
+        valueState="{dlg>/reasonState}"
+        valueStateText="Informe o motivo."
+        liveChange=".onReasonLiveChange"/>
+    </VBox>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Confirmar" type="Emphasized" press=".onConfirmDepartmentRelease" />
+      <Button text="Cancelar" press=".onCancelDepartmentRelease" />
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>

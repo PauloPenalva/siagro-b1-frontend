@@ -429,6 +429,16 @@
           "target": "purchaseContracts"
         },
         {
+          "pattern": "payment-releases",
+          "name": "paymentReleases",
+          "target": "paymentReleases"
+        },
+        {
+          "pattern": "department-releases",
+          "name": "departmentReleases",
+          "target": "departmentReleases"
+        },
+        {
           "pattern": "purchase-contracts/new",
           "name": "purchaseContractsNew",
           "target": "purchaseContractsNew"
@@ -1928,6 +1938,18 @@
 					"id": "purchaseContracts",
           "level": 1,
 					"name": "siagrob1.view.purchaseContracts.Main",
+          "clearControlAggregation": true
+				},
+        "paymentReleases": {
+					"id": "paymentReleases",
+          "level": 1,
+					"name": "siagrob1.view.paymentReleases.Main",
+          "clearControlAggregation": true
+				},
+        "departmentReleases": {
+					"id": "departmentReleases",
+          "level": 1,
+					"name": "siagrob1.view.departmentReleases.Main",
           "clearControlAggregation": true
 				},
         "purchaseContractsNew": {

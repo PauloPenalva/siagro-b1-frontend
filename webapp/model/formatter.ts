@@ -465,6 +465,44 @@ const formatter = {
     return m.get(value) ?? "None";
   },
 
+  /** Situação da liberação de pagamento (GAC-1188). Nulo e Pending valem "Pendente". */
+  formatPaymentReleaseStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("Pending"             , "Pendente");
+    m.set("UnderReview"         , "Em análise");
+    m.set("IncompleteDocuments" , "Documentação incompleta");
+    m.set("Approved"            , "Aprovado");
+    m.set("PreApproved"         , "Pré-aprovado");
+
+    return m.get(value) ?? "Pendente";
+  },
+
+  statePaymentReleaseStatus: (value: string) => {
+    const m = new Map<string, string>();
+    m.set("UnderReview"         , "Information");
+    m.set("IncompleteDocuments" , "Error");
+    m.set("Approved"            , "Success");
+    m.set("PreApproved"         , "Success");
+
+    return m.get(value) ?? "None";
+  },
+
+  /**
+   * Sim/Não/"—" da liberação de um departamento na lista de liberações (GAC-1188). Departamento sem
+   * linha em PaymentReleases vale Não. A Loja só participa de contrato de barter: fora dele, "—".
+   */
+  formatDepartmentRelease: (releases: { Department: string; Released: boolean }[], department: string, isBarter?: boolean) => {
+    if (department === "Store" && !isBarter) return "—";
+
+    return releases?.some((r) => r.Department === department && r.Released) ? "Sim" : "Não";
+  },
+
+  stateDepartmentRelease: (releases: { Department: string; Released: boolean }[], department: string, isBarter?: boolean) => {
+    if (department === "Store" && !isBarter) return "None";
+
+    return releases?.some((r) => r.Department === department && r.Released) ? "Success" : "Error";
+  },
+
   formatContractType: (value: string) => {
     const m = new Map<string, string>();
     m.set("Fixed", "FIX - Preço Fixo");
@@ -1226,6 +1264,11 @@ const formatter = {
     m.set("DeliveryStatus", "Situação da entrega");
 
     m.set("SignatureStatus", "Situação da assinatura");
+    m.set("PaymentReleaseStatus", "Situação da liberação de pagamento");
+    m.set("DepartmentRelease", "Liberação de departamento");
+    m.set("EarlyPaymentAuthorized", "Antecipação Liberada pela Diretoria");
+    m.set("IsBarter", "Barter");
+    m.set("IsOnWheels", "Sobre rodas");
 
     // Documento de saída: operação sem nota fiscal (GAC-1174).
     m.set("WithoutTaxDocument", "Operação sem nota fiscal");
