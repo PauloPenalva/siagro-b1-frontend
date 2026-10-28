@@ -1156,7 +1156,9 @@ export abstract class BaseController extends CommonController {
    * chave que desvincular manda ao servidor), mas mostra os dados do par por este lookup:
    * chave do Recebimento → campos da perna de compra (`formatter.pickRemovalPurchaseLeg`).
    *
-   * Carga Normal não consulta: lá a linha é a Expedição, e o lookup vazio deixa tudo como está.
+   * Carga Normal: a linha é a Saída (7), mas o contrato de compra mostra nas Entregas o par dela, a
+   * Compra (8) gravada junto pela Expedição. O lookup leva só o `Code` da Compra, para a carga e o
+   * contrato exibirem o mesmo romaneio (GAC-1175, HOM 28/10); os demais campos seguem da Saída.
    */
   protected async refreshRemovalPurchaseLegs(
     loadKey: string = this.currentLoadKey()
@@ -1168,7 +1170,22 @@ export abstract class BaseController extends CommonController {
 
     const loadType = await model.bindContext(`/ShipmentLoads(${loadKey})`, undefined,
       { $select: "LoadType" }).getBoundContext().requestProperty("LoadType") as string;
-    if (loadType !== "Removal") return;
+    if (loadType !== "Removal") {
+      // Function de coleção: getObject() devolve o envelope { value: [...] }, não o array.
+      const func = model.bindContext("/ShipmentLoadsGetPurchaseLegs(...)");
+      func.setParameter("Key", loadKey);
+      await func.invoke();
+      const rows = (func.getBoundContext().getObject() as {
+        value?: { SalesStorageTransactionKey: string; PurchaseCode?: string }[];
+      })?.value ?? [];
+      const codes: Record<string, Record<string, unknown>> = {};
+      // A chave vem MAIÚSCULA do SQL Server; a do grid (Edm.Guid) vem minúscula.
+      rows.forEach(row => {
+        if (row.PurchaseCode) codes[row.SalesStorageTransactionKey.toLowerCase()] = { Code: row.PurchaseCode };
+      });
+      this.viewModel().setProperty("/removalPurchaseLegs", codes);
+      return;
+    }
 
     const binding = model.bindList("/StorageEntryTransactions", undefined, undefined, undefined, {
       $filter: `ReceiptStorageTransaction/ShipmentLoadKey eq ${loadKey} and Status ne 'Cancelled'`,

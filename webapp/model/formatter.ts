@@ -941,7 +941,8 @@ const formatter = {
     key: string, legs: Record<string, Record<string, unknown>>, prefix: string, ownCode: string, ownName: string
   ) => {
     const leg = legs?.[key];
-    return leg
+    // Carga Normal só traz o Code da Compra no lookup: sem o campo, fica o da própria linha.
+    return leg && leg[`${prefix}Code`] !== undefined
       ? formatter.formatCodeAndName(leg[`${prefix}Code`] as string, leg[`${prefix}Name`] as string)
       : formatter.formatCodeAndName(ownCode, ownName);
   },
