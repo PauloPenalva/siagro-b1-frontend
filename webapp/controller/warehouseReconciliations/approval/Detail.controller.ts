@@ -74,8 +74,12 @@ export default class Detail extends BaseController {
 
     if (!url) return super.executeDecision(action, text);
 
+    const isGain = Number(this.getView().getBindingContext()?.getProperty("Difference") ?? 0) > 0;
+    const approved = isGain
+      ? "Conferência aprovada. A sobra entrou no saldo do armazém."
+      : "Conferência aprovada. A perda foi baixada das liberações.";
     const ok = await this.runAction(url, { Key: this.currentKey(), Comments: text },
-      action === "Approval" ? "Conferência aprovada. A perda foi baixada das liberações." : "Conferência rejeitada.");
+      action === "Approval" ? approved : "Conferência rejeitada.");
 
     if (ok) {
       this.navTo("warehouseReconciliationsApproval");
