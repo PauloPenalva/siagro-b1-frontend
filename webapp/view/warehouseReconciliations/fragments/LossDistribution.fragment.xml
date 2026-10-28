@@ -5,10 +5,10 @@
   <VBox>
     <MessageStrip
       visible="{= (${ui>/editable} || ${path: 'Status', targetType: 'any'} === 'Draft') &amp;&amp; ${wr>/distributionInfo/isGain} }"
-      type="Error"
+      type="Information"
       showIcon="true"
       class="sapUiSmallMarginBottom"
-      text="A conferência de saldo aceita apenas perda: o saldo informado precisa ser menor que o saldo do sistema."/>
+      text="Sobra: não há distribuição entre liberações. A aprovação gera um romaneio de Sobra, sem contrato, que entra só no saldo do armazém."/>
     <MessageStrip
       visible="{= (${ui>/editable} || ${path: 'Status', targetType: 'any'} === 'Draft') &amp;&amp; !${wr>/distributionInfo/isGain} &amp;&amp; ${wr>/distributionInfo/loss} > 0 }"
       type="{= ${wr>/distributionInfo/closed} ? 'Success' : 'Warning' }"
@@ -24,7 +24,7 @@
 
     <!-- Rascunho em edicao: grade digitavel montada pela previa do saldo -->
     <Table
-      visible="{ui>/editable}"
+      visible="{= ${ui>/editable} &amp;&amp; !${wr>/distributionInfo/isGain} }"
       items="{ path: 'wr>/distribution' }"
       noDataText="Nenhuma liberação com saldo neste armazém e produto na data de referência.">
       <columns>

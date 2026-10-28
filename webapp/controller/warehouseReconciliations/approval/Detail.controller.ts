@@ -55,8 +55,8 @@ export default class Detail extends BaseController {
     const ctx = this.getView().getBindingContext() as Context;
     // `Difference` é Edm.Decimal e chega como string (ver formatter.formatWarehouseReconciliationDirection).
     const raw = ctx?.getProperty("Difference") as unknown;
-    if (raw !== null && raw !== undefined && raw !== "" && !Number.isNaN(Number(raw)) && Number(raw) >= 0) {
-      MessageBox.warning("A conferência de saldo aceita apenas perda.");
+    if (raw !== null && raw !== undefined && raw !== "" && !Number.isNaN(Number(raw)) && Number(raw) === 0) {
+      MessageBox.warning("A conferência de saldo não tem diferença a aprovar.");
       return;
     }
     void this.openDecision("Approval", "Aprovar a conferência ?", "Aprovar", "Comentários (opcional)", false);
