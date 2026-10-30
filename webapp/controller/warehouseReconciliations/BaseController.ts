@@ -91,7 +91,17 @@ export abstract class BaseController extends CommonController {
       "/preview/difference",
       system === null ? null : Math.round((reported - system) * 1000) / 1000
     );
+    // Trocar entre perda e sobra muda quais liberações recebem a diferença: remonta a grade.
+    if (this.wr().getProperty("/distributionMode") !== this.distributionMode()) {
+      this.buildDistributionRows();
+    }
     this.updateDistributionInfo();
+  }
+
+  /** "gain" com diferença positiva (Sobra, GAC-1210), "loss" caso contrário. */
+  private distributionMode(): "gain" | "loss" {
+    const difference = this.wr().getProperty("/preview/difference") as number;
+    return difference !== null && difference > 0 ? "gain" : "loss";
   }
 
   /** Tolerância de arredondamento igual à do backend (0,001). */
@@ -101,32 +111,46 @@ export abstract class BaseController extends CommonController {
    * Monta a grade de distribuição a partir das liberações da prévia, preservando o que o usuário já
    * digitou (ou o que estava gravado, na edição) para a mesma liberação. Com UMA liberação elegível
    * a perda inteira vai para ela sozinha (spec §9.4).
+   *
+   * Na Sobra (GAC-1210) a grade escolhe o CONTRATO onde nasce a liberação Sobra: entram também as
+   * liberações sem saldo (`canReceiveGain`), porque a sobra costuma aparecer com tudo embarcado.
    */
   protected applyDistributionRows(releases: WarehouseReconciliationReleaseBalance[]): void {
+    this.wr().setProperty("/releases", releases);
+    this.buildDistributionRows();
+  }
+
+  private buildDistributionRows(): void {
+    const releases = (this.wr().getProperty("/releases") ?? []) as WarehouseReconciliationReleaseBalance[];
+    const mode = this.distributionMode();
     const typed = new Map<string, number>();
     ((this.wr().getProperty("/savedLines") ?? []) as { shipmentReleaseKey: string; quantity: number }[])
       .forEach((l) => typed.set(l.shipmentReleaseKey, l.quantity));
     ((this.wr().getProperty("/distribution") ?? []) as { shipmentReleaseKey: string; quantity: number }[])
       .forEach((l) => typed.set(l.shipmentReleaseKey, l.quantity));
 
-    const rows = releases.map((r) => ({
-      ...r,
-      quantity: r.canReceiveLoss ? (typed.get(r.shipmentReleaseKey) ?? 0) : 0,
-    }));
+    const rows = releases
+      .filter((r) => (mode === "gain" ? r.canReceiveGain : r.balanceAtReferenceDate > 0))
+      .map((r) => {
+        const editable = mode === "gain" ? r.canReceiveGain : r.canReceiveLoss;
+        return { ...r, editable, quantity: editable ? (typed.get(r.shipmentReleaseKey) ?? 0) : 0 };
+      });
 
+    this.wr().setProperty("/distributionMode", mode);
     this.wr().setProperty("/distribution", rows);
     this.autoFillSingleRelease();
     this.updateDistributionInfo();
   }
 
   private lossOf(): number {
+    // Perda ou sobra: o quanto a distribuição precisa somar.
     const difference = this.wr().getProperty("/preview/difference") as number;
-    return difference !== null && difference < 0 ? Math.round(-difference * 1000) / 1000 : 0;
+    return difference !== null && difference !== 0 ? Math.round(Math.abs(difference) * 1000) / 1000 : 0;
   }
 
   private autoFillSingleRelease(): void {
-    const rows = (this.wr().getProperty("/distribution") ?? []) as { canReceiveLoss: boolean; quantity: number }[];
-    const eligible = rows.filter((r) => r.canReceiveLoss);
+    const rows = (this.wr().getProperty("/distribution") ?? []) as { editable: boolean; quantity: number }[];
+    const eligible = rows.filter((r) => r.editable);
     if (eligible.length === 1 && this.lossOf() > 0) {
       eligible[0].quantity = this.lossOf();
       this.wr().refresh(true);
@@ -174,20 +198,15 @@ export abstract class BaseController extends CommonController {
   /**
    * Grava a distribuição digitada. A conferência precisa já existir (Key).
    *
-   * Diferença positiva (Sobra) não distribui nada — envia as duas listas vazias, o que limpa
-   * qualquer distribuição gravada antes de o usuário corrigir o saldo informado para uma perda.
+   * Vale para perda e sobra (GAC-1210): na sobra cada linha escolhe o contrato da liberação Sobra.
    */
   protected async saveDistribution(key: string): Promise<boolean> {
-    const isGain = this.wr().getProperty("/distributionInfo/isGain") as boolean;
-
-    const rows: { shipmentReleaseKey: string; quantity: number }[] = isGain
-      ? []
-      : ((this.wr().getProperty("/distribution") ?? []) as { shipmentReleaseKey: string; quantity: number }[])
-          // Arredonda para a mesma tolerância do backend (0,001) antes de filtrar e enviar: sem
-          // isto, um resto de ponto flutuante (0.0004999...) tanto escapava do filtro `> 0`
-          // quanto chegava ao servidor com mais casas do que o DECIMAL(18,3) da coluna.
-          .map((r) => ({ ...r, quantity: Math.round(Number(r.quantity) * 1000) / 1000 }))
-          .filter((r) => r.quantity > 0);
+    const rows = ((this.wr().getProperty("/distribution") ?? []) as { shipmentReleaseKey: string; quantity: number }[])
+      // Arredonda para a mesma tolerância do backend (0,001) antes de filtrar e enviar: sem
+      // isto, um resto de ponto flutuante (0.0004999...) tanto escapava do filtro `> 0`
+      // quanto chegava ao servidor com mais casas do que o DECIMAL(18,3) da coluna.
+      .map((r) => ({ ...r, quantity: Math.round(Number(r.quantity) * 1000) / 1000 }))
+      .filter((r) => r.quantity > 0);
 
     const result = await sendJson("POST", this.api.warehouseReconciliationsDistributeLoss, {
       Key: key,

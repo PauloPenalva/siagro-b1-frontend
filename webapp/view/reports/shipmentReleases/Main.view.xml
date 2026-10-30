@@ -69,6 +69,7 @@
 					<core:Item key="1" text="Transferência"/>
 					<core:Item key="2" text="Devolução"/>
 					<core:Item key="3" text="Transbordo"/>
+					<core:Item key="4" text="Sobra"/>
 				</Select>
 			</f:content>
 		</f:SimpleForm>

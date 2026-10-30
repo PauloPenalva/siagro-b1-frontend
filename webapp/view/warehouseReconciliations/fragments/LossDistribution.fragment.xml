@@ -4,29 +4,24 @@
     core:require="{ formatter: 'siagrob1/model/formatter' }">
   <VBox>
     <MessageStrip
-      visible="{= (${ui>/editable} || ${path: 'Status', targetType: 'any'} === 'Draft') &amp;&amp; ${wr>/distributionInfo/isGain} }"
-      type="Information"
-      showIcon="true"
-      class="sapUiSmallMarginBottom"
-      text="Sobra: não há distribuição entre liberações. A aprovação gera um romaneio de Sobra, sem contrato, que entra só no saldo do armazém."/>
-    <MessageStrip
-      visible="{= (${ui>/editable} || ${path: 'Status', targetType: 'any'} === 'Draft') &amp;&amp; !${wr>/distributionInfo/isGain} &amp;&amp; ${wr>/distributionInfo/loss} > 0 }"
+      visible="{= (${ui>/editable} || ${path: 'Status', targetType: 'any'} === 'Draft') &amp;&amp; ${wr>/distributionInfo/loss} > 0 }"
       type="{= ${wr>/distributionInfo/closed} ? 'Success' : 'Warning' }"
       showIcon="true"
       class="sapUiSmallMarginBottom"
       text="{
         parts: [
           { path: 'wr>/distributionInfo/distributed' },
-          { path: 'wr>/distributionInfo/loss' }
+          { path: 'wr>/distributionInfo/loss' },
+          { path: 'wr>/distributionInfo/isGain' }
         ],
         formatter: 'formatter.formatLossDistributionInfo'
       }"/>
 
     <!-- Rascunho em edicao: grade digitavel montada pela previa do saldo -->
     <Table
-      visible="{= ${ui>/editable} &amp;&amp; !${wr>/distributionInfo/isGain} }"
+      visible="{ui>/editable}"
       items="{ path: 'wr>/distribution' }"
-      noDataText="Nenhuma liberação com saldo neste armazém e produto na data de referência.">
+      noDataText="{= ${wr>/distributionInfo/isGain} ? 'Nenhuma liberação de contrato em aberto neste armazém e produto.' : 'Nenhuma liberação com saldo neste armazém e produto na data de referência.' }">
       <columns>
         <Column><Text text="Contrato"/></Column>
         <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Produtor"/></Column>
@@ -34,7 +29,7 @@
         <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Situação"/></Column>
         <Column hAlign="End"><Text text="Saldo na data"/></Column>
         <Column hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="Saldo hoje"/></Column>
-        <Column hAlign="End" width="12rem"><Text text="Quantidade da perda"/></Column>
+        <Column hAlign="End" width="12rem"><Text text="{= ${wr>/distributionInfo/isGain} ? 'Quantidade da sobra' : 'Quantidade da perda' }"/></Column>
       </columns>
       <items>
         <ColumnListItem>
@@ -47,7 +42,7 @@
             <ObjectNumber number="{ path: 'wr>currentBalance', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
             <Input
               textAlign="End"
-              editable="{wr>canReceiveLoss}"
+              editable="{wr>editable}"
               change=".onDistributionQuantityChange"
               value="{ path: 'wr>quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }, constraints: { minimum: 0 } }"/>
           </cells>
@@ -59,14 +54,14 @@
     <Table
       visible="{= !${ui>/editable} }"
       items="{ path: 'wr>/savedLines' }"
-      noDataText="Perda ainda não distribuída entre as liberações.">
+      noDataText="{= ${wr>/distributionInfo/isGain} ? 'Sobra ainda não distribuída entre os contratos.' : 'Perda ainda não distribuída entre as liberações.' }">
       <columns>
         <Column><Text text="Contrato"/></Column>
         <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Produtor"/></Column>
         <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Liberação"/></Column>
-        <Column hAlign="End"><Text text="Quantidade da perda"/></Column>
+        <Column hAlign="End"><Text text="{= ${wr>/distributionInfo/isGain} ? 'Quantidade da sobra' : 'Quantidade da perda' }"/></Column>
         <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Romaneio de compra"/></Column>
-        <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Romaneio de perda"/></Column>
+        <Column minScreenWidth="Tablet" demandPopin="true"><Text text="{= ${wr>/distributionInfo/isGain} ? 'Romaneio de sobra' : 'Romaneio de perda' }"/></Column>
       </columns>
       <items>
         <ColumnListItem>

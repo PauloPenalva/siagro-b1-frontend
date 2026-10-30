@@ -74,6 +74,10 @@ export default class Add extends BaseController {
         return;
       }
 
+      // Gravar a distribuição muda a versão (ETag) da conferência no servidor. Este contexto criado
+      // ainda guarda a versão antiga, e um campo da tela que pedisse um valor dele depois
+      // (ex.: a série, DocNumberKey) recebia "ETag changed" (GAC-1210). O Detail lê o registro de novo.
+      this.getView().setBindingContext(null);
       MessageToast.show("Conferência gravada em rascunho.");
       this.navTo("warehouseReconciliationsDetail", { id: key });
     } catch (err) {
