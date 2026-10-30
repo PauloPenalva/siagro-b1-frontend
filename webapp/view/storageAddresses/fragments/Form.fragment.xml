@@ -70,11 +70,13 @@
               <core:ListItem key="{Code}" text="{ShortName}" additionalText="{Code}"/>
             </Select>
             <Label text="Data" />
+            <!-- GAC-18: com formatter a ligação é só de leitura e a data digitada nunca era gravada. -->
             <DatePicker
                 value="{
                   path: 'CreationDate',
-                  targetType: 'any',
-                  formatter: '.formatter.formatDateISO'
+                  type: 'sap.ui.model.odata.type.DateTimeOffset',
+                  constraints: { precision: 7 },
+                  formatOptions: { pattern: 'dd/MM/yyyy' }
                 }"
                 editable="true"
                 required="true"

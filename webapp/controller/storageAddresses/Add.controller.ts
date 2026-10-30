@@ -54,11 +54,23 @@ export default class Add extends LoteArmazenagemBaseController {
       // deliberada do operador, só depois de escolher um armazém PRÓPRIO.
       "Nature": "Regular",
       "RequiresProcessing": false,
+      // GAC-18: a data precisa existir no create para a alteração do usuário ir ao servidor.
+      // Meio-dia local: meia-noite viraria o dia anterior na conversão de fuso.
+      "CreationDate": Add.todayAtNoonIso(),
     }, false, false, false);
 
     oView.setBindingContext(oContext);
     this.setBusy(false);
 	}
+
+  private static todayAtNoonIso(): string {
+    const d = new Date();
+    const pad = (n: number) => String(Math.abs(n)).padStart(2, "0");
+    const offset = -d.getTimezoneOffset();
+    const sign = offset >= 0 ? "+" : "-";
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T12:00:00` +
+      `${sign}${pad(Math.trunc(offset / 60))}:${pad(offset % 60)}`;
+  }
 
   /**
    * Sobrepõe o value help genérico do armazém (`CommonController#openWarehouseValueHelp`), que
