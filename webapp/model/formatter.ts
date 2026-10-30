@@ -1050,9 +1050,15 @@ const formatter = {
   },
 
   /** Frase da distribuição da perda na tela de Conferência de Saldo, com números em pt-BR (3 casas). */
-  formatLossDistributionInfo: (distributed: number | string, loss: number | string): string => {
+  formatLossDistributionInfo: (distributed: number | string, loss: number | string, isGain?: boolean): string => {
     const fmt = (n: number | string) =>
       Number(n ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+
+    if (isGain) {
+      return `Distribuído ${fmt(distributed)} de ${fmt(loss)}. A soma precisa fechar com a sobra ` +
+        `para enviar à aprovação. A aprovação cria, em cada contrato escolhido, uma liberação de Sobra ` +
+        `que embarca pela Expedição de Grãos sem debitar o contrato.`;
+    }
 
     return `Distribuído ${fmt(distributed)} de ${fmt(loss)}. A soma precisa fechar com a perda ` +
       `para enviar à aprovação. Liberação pausada ou sem saldo hoje não recebe perda.`;
@@ -1702,6 +1708,7 @@ const formatter = {
     m.set(1, "Transferência");
     m.set(2, "Devolução");
     m.set(3, "Transbordo");
+    m.set(4, "Sobra");
 
     return m.get(value) ?? "Compra";
   },
@@ -1718,6 +1725,8 @@ const formatter = {
     m.set(1, "Information");
     m.set(2, "Warning");
     m.set(3, "Information");
+    // Sobra de armazém (GAC-1210): grão da empresa já no armazém, como a transferência.
+    m.set(4, "Information");
 
     return m.get(value) ?? "None";
   },

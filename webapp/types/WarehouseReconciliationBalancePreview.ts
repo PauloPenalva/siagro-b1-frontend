@@ -9,6 +9,8 @@ export type WarehouseReconciliationReleaseBalance = {
   balanceAtReferenceDate: number;
   currentBalance: number;
   canReceiveLoss: boolean;
+  /** Pode receber Sobra (GAC-1210): só escolhe o contrato, vale mesmo sem saldo. */
+  canReceiveGain: boolean;
 };
 
 /** Linha gravada da distribuição da perda, com os romaneios gerados na aprovação. */
@@ -60,6 +62,7 @@ function normalizeReleaseBalance(o: Raw): WarehouseReconciliationReleaseBalance 
     balanceAtReferenceDate: Number(pick("balanceAtReferenceDate", "BalanceAtReferenceDate") ?? 0),
     currentBalance: Number(pick("currentBalance", "CurrentBalance") ?? 0),
     canReceiveLoss: Boolean(pick("canReceiveLoss", "CanReceiveLoss")),
+    canReceiveGain: Boolean(pick("canReceiveGain", "CanReceiveGain")),
   };
 }
 

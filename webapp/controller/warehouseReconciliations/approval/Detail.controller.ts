@@ -76,7 +76,7 @@ export default class Detail extends BaseController {
 
     const isGain = Number(this.getView().getBindingContext()?.getProperty("Difference") ?? 0) > 0;
     const approved = isGain
-      ? "Conferência aprovada. A sobra entrou no saldo do armazém."
+      ? "Conferência aprovada. A sobra virou liberação nos contratos escolhidos e já pode embarcar."
       : "Conferência aprovada. A perda foi baixada das liberações.";
     const ok = await this.runAction(url, { Key: this.currentKey(), Comments: text },
       action === "Approval" ? approved : "Conferência rejeitada.");
