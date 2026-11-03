@@ -53,6 +53,16 @@ export const ALLOCATION_ORIGINS: AllocationOrigin[] = [
     state: "Success",
     icon: "sap-icon://trend-up",
   },
+  {
+    // GAC-1214: carga recusada que voltou para um armazém. Só informativa — o contrato continua
+    // baixado (o grão foi comprado e mudou de lugar); a linha não vem de alocação.
+    key: "LoadRefusal",
+    legend: "Devolução de carga",
+    text: "Devolução",
+    highlight: "Information",
+    state: "Information",
+    icon: "sap-icon://undo",
+  },
 ];
 
 const STANDARD = ALLOCATION_ORIGINS[0];
@@ -94,6 +104,10 @@ export function allocationOriginTooltip(
     return dischargeLoadCode
       ? `Conferência da nota ${dischargeInvoiceNumber} (carga ${dischargeLoadCode})`
       : `Conferência da nota ${dischargeInvoiceNumber}`;
+  }
+
+  if (origin === "LoadRefusal" && dischargeLoadCode) {
+    return `Carga ${dischargeLoadCode} recusada; o grão voltou para o armazém e o contrato continua baixado`;
   }
 
   return "";
