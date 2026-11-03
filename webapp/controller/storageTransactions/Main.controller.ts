@@ -8,6 +8,8 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import CommonController from "../common/CommonController";
 import { anyOfFilter } from "siagrob1/helpers/FilterHelpers";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import { Column, EdmType, SpreadsheetSettings } from "sap/ui/export/library";
+import Spreadsheet from "sap/ui/export/Spreadsheet";
 
 /**
  * @namespace siagrob1.controller.storageTransactions
@@ -141,4 +143,63 @@ export default class Main extends CommonController {
   }
  
    
+  private createColumnConfig(): Column[] {
+    const weight = (label: string, property: string): Column =>
+      ({ label, property, type: EdmType.Number, scale: 3, delimiter: true });
+
+    return [
+      { label: "Filial", property: "Branch/ShortName", type: EdmType.String },
+      {
+        label: "Status", property: "TransactionStatus", type: EdmType.Enumeration,
+        valueMap: {
+          Pending: "Pendente", Confirmed: "Confirmado", Cancelled: "Cancelado",
+          Invoiced: "Faturado", Returned: "Devolvido",
+        },
+      },
+      { label: "Codigo", property: "Code", type: EdmType.String },
+      {
+        label: "Tipo", property: "TransactionType", type: EdmType.Enumeration,
+        valueMap: {
+          Receipt: "Entrada", Shipment: "Saída", TechnicalLoss: "Quebra Técnica",
+          SalesShipment: "Venda", SalesShipmentReturn: "Dev.Venda", Purchase: "Compra",
+          PurchaseReturn: "Dev.Compra", PurchaseQtyComplement: "Compl.Qtd.",
+          PurchasePriceComplement: "Compl.Preço", WarehouseLoss: "Perda Armazém",
+          WarehouseGain: "Sobra Armazém", TransshipmentReceipt: "Entrada em Transbordo",
+          PurchaseDischargeLoss: "Quebra Descarga", PurchaseDischargeGain: "Sobra Descarga",
+        },
+      },
+      { label: "Emissão", property: "TransactionDate", type: EdmType.Date },
+      { label: "Veículo", property: "TruckCode", type: EdmType.String },
+      { label: "Documento", property: "InvoiceNumber", type: EdmType.String },
+      { label: "Lote", property: "StorageAddressCode", type: EdmType.String },
+      weight("Qtd.Documento", "InvoiceQty"),
+      weight("Peso Bruto", "GrossWeight"),
+      weight("Peso Liquido", "NetWeight"),
+      { label: "UM", property: "UnitOfMeasureCode", type: EdmType.String },
+      { label: "Armazem", property: "WarehouseCode", type: EdmType.String },
+      { label: "Cli/For", property: "CardCode", type: EdmType.String },
+      { label: "Nome", property: "CardName", type: EdmType.String },
+      { label: "Cod.Produto", property: "ItemCode", type: EdmType.String },
+      { label: "Produto", property: "ItemName", type: EdmType.String },
+      { label: "Chave NF-e", property: "ChaveNFe", type: EdmType.String },
+    ];
+  }
+
+  /** O botão "Exportar Excel" já existia na tela, mas sem este método o clique não fazia nada. */
+  onExcel(): void {
+    const table = this.byId("storageTransactionsTable") as Table;
+    const binding = table.getBinding("rows") as ODataListBinding;
+
+    const setting: SpreadsheetSettings = {
+      dataSource: binding,
+      fileName: "Romaneios de Movimentação.xlsx",
+      workbook: {
+        columns: this.orderExportColumns(table, this.createColumnConfig()),
+        context: { sheetName: "Romaneios" },
+      },
+    };
+
+    const oSheet = new Spreadsheet(setting);
+    void oSheet.build().finally(() => oSheet.destroy());
+  }
 }

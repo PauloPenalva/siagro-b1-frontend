@@ -682,7 +682,7 @@ export default abstract class CommonController extends BaseController {
 
   /** Todos os lotes, inclusive encerrados — para filtros de relatório, fatura e reprocessamento. */
   openStorageAddressesValueHelp(ev: Input$ValueHelpRequestEvent) {
-    void this.applyValueHelp(ev, "StorageAddressesSelectDialog", ["Description"], "Code");
+    void this.applyValueHelp(ev, "StorageAddressesSelectDialog", ["Code", "Description"], "Code");
   }
 
   /**
@@ -691,7 +691,7 @@ export default abstract class CommonController extends BaseController {
    */
   openOpenStorageAddressesValueHelp(ev: Input$ValueHelpRequestEvent) {
     void this.applyValueHelp(
-      ev, "StorageAddressesSelectDialog", ["Description"], "Code", [], undefined, CommonController.OPEN_STORAGE_ADDRESSES_FILTER);
+      ev, "StorageAddressesSelectDialog", ["Code", "Description"], "Code", [], undefined, CommonController.OPEN_STORAGE_ADDRESSES_FILTER);
   }
 
   openMenuItemsValueHelp(ev: Input$ValueHelpRequestEvent) {
