@@ -75,6 +75,9 @@ export default class Main extends CommonController {
         filters.push(`TransactionDate ge ${value}`)
       } else if (key == "DateTo") {
         filters.push(`TransactionDate le ${value}`)
+      } else if (key == "StorageAddressCode") {
+        // Lote é código exato: `contains` com "44" traria também o 144, o 440...
+        filters.push(`StorageAddressCode eq '${value}'`)
       } else {
         filters.push(`contains(${key},'${value}')`)
       }
