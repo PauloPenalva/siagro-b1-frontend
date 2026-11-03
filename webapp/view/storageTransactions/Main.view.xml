@@ -156,6 +156,15 @@
 						</t:template>
 					</t:Column>
           <t:Column
+						label="Lote"
+						sortProperty="StorageAddressCode"
+            width="7rem"
+						>
+						<t:template>
+            <Text text="{StorageAddressCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
 						label="Qtd.Documento"
 						sortProperty="InvoiceQty"
             hAlign="End"
