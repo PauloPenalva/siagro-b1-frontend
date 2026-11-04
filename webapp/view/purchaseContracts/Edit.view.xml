@@ -32,7 +32,8 @@
 			<ObjectIdentifier title="{Code}"/>
       <HBox class="sapUiTinyMarginBottom" wrap="Wrap">
         <ObjectAttribute class="sapUiMediumMarginEnd" title="Parceiro" text="{CardCode} - {CardName}"/>
-        <ObjectAttribute title="Produto" text="{ItemCode} - {ItemName}"/>
+        <ObjectAttribute class="sapUiMediumMarginEnd" title="Produto" text="{ItemCode} - {ItemName}"/>
+        <ObjectAttribute title="Complemento" text="{Complement}" visible="{= !!${Complement} }"/>
       </HBox>
    	</uxap:headerContent> 
     <uxap:sections>
