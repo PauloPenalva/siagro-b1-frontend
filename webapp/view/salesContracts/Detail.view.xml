@@ -73,7 +73,7 @@
       <HBox class="sapUiTinyMarginBottom" wrap="Wrap">
         <ObjectAttribute class="sapUiMediumMarginEnd" title="Parceiro" text="{CardCode} - {CardName}"/>
         <ObjectAttribute class="sapUiMediumMarginEnd" title="Produto" text="{ItemCode} - {ItemName}"/>
-        <ObjectAttribute title="Complemento" text="{Complement}" visible="{= !!${Complement} }"/>
+        <ObjectAttribute title="Complemento" text="{Complement}" visible="{= !!${path: 'Complement', targetType: 'any'} }"/>
       </HBox>
       <HBox>
         <VBox class="sapUiTinyMarginBottom sapUiMediumMarginEnd">
