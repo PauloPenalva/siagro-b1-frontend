@@ -30,6 +30,10 @@
 		</uxap:headerTitle>
     <uxap:headerContent>
 			<ObjectIdentifier title="{Code}"/>
+      <HBox class="sapUiTinyMarginBottom" wrap="Wrap">
+        <ObjectAttribute class="sapUiMediumMarginEnd" title="Parceiro" text="{CardCode} - {CardName}"/>
+        <ObjectAttribute title="Produto" text="{ItemCode} - {ItemName}"/>
+      </HBox>
    	</uxap:headerContent> 
     <uxap:sections>
       <uxap:ObjectPageSection titleUppercase="false" title="Dados do Contrato">
