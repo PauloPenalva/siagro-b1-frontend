@@ -70,6 +70,10 @@
             formatter: '.formatter.formatSignatureStatus'
           }" />
       </HBox>
+      <HBox class="sapUiTinyMarginBottom" wrap="Wrap">
+        <ObjectAttribute class="sapUiMediumMarginEnd" title="Parceiro" text="{CardCode} - {CardName}"/>
+        <ObjectAttribute title="Produto" text="{ItemCode} - {ItemName}"/>
+      </HBox>
       <HBox>
         <VBox class="sapUiTinyMarginBottom sapUiMediumMarginEnd">
           <HBox class="sapUiTinyMarginBottom">
