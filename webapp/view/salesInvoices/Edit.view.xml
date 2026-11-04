@@ -48,6 +48,10 @@
             targetType: 'any'
           }" />
       </HBox> 
+      <HBox class="sapUiTinyMarginBottom" wrap="Wrap">
+        <ObjectAttribute class="sapUiMediumMarginEnd" title="Número da NF-e" text="{TaxDocumentNumber}"/>
+        <ObjectAttribute title="Série" text="{TaxDocumentSeries}"/>
+      </HBox>
    	</uxap:headerContent> 
     
     <uxap:sections>
