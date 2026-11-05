@@ -53,11 +53,21 @@ export function isManualQuote(source: string | number, manualOverride: boolean):
   return typeof source === "string" && source.toLowerCase() === "manual";
 }
 
+/** Grupo nulo, indefinido ou em branco vira "" (aba "Sem grupo"); o filtro da aba compara com "". */
+export function normalizeGroupName(name: string): string {
+  return (name ?? "").trim();
+}
+
+/** Normaliza o grupo de cada linha num só lugar, antes de ir para o modelo. */
+export function normalizeQuotes<T extends { groupName: string }>(quotes: T[]): T[] {
+  return (quotes ?? []).map((q) => ({ ...q, groupName: normalizeGroupName(q.groupName) }));
+}
+
 /** Abas do terminal: grupos distintos na ordem em que aparecem (o servidor já ordena). */
 export function extractGroups(quotes: Pick<MarketQuote, "groupName">[]): string[] {
   const groups: string[] = [];
   for (const quote of quotes ?? []) {
-    const name = quote.groupName ?? "";
+    const name = normalizeGroupName(quote.groupName);
     if (!groups.includes(name)) groups.push(name);
   }
   return groups;
@@ -89,11 +99,24 @@ export function connectionView(status: string, browserDisconnected: boolean): Co
   }
 }
 
-/** Texto digitado em pt-BR ("1.234,56") para número; vazio vira null, lixo vira NaN. */
+/**
+ * Texto digitado para número. Vazio → null; inválido → NaN (o diálogo marca o campo e não envia).
+ * Com vírgula: pt-BR (pontos são milhar, vírgula é decimal: "1.188,25" → 1188,25).
+ * Sem vírgula e com UM ponto: o ponto é decimal ("4.25" → 4,25) - cotação da CBOT/dólar costuma
+ * vir assim, e tirar o ponto multiplicaria o preço por 100. Sem vírgula e com mais de um ponto
+ * ("1.188.250") é ambíguo: inválido.
+ */
 export function parseDecimalInput(text: string): number {
   const raw = (text ?? "").trim();
   if (!raw) return null;
-  const normalized = raw.replace(/\./g, "").replace(",", ".");
+  let normalized: string;
+  if (raw.includes(",")) {
+    if (!/^-?\d{1,3}(\.\d{3})*,\d+$/.test(raw) && !/^-?\d+,\d+$/.test(raw)) return NaN;
+    normalized = raw.replace(/\./g, "").replace(",", ".");
+  } else {
+    if ((raw.match(/\./g) ?? []).length > 1) return NaN;
+    normalized = raw;
+  }
   return /^-?\d+(\.\d+)?$/.test(normalized) ? Number(normalized) : NaN;
 }
 

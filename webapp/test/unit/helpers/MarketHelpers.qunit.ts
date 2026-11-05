@@ -1,6 +1,6 @@
 import {
   changePercentState, connectionView, extractGroups, formatChangePercent, formatLast, formatQuoteTime,
-  formatQuoteValue, isManualQuote, parseDecimalInput
+  formatQuoteValue, isManualQuote, normalizeQuotes, parseDecimalInput
 } from "siagrob1/helpers/MarketHelpers";
 
 QUnit.module("MarketHelpers - terminal de cotações");
@@ -50,9 +50,20 @@ QUnit.test("status da conexão: queda do navegador vence o status do servidor", 
   assert.deepEqual(connectionView("connected", true), { textKey: "marketStatusNoServer", state: "Error" });
 });
 
-QUnit.test("parseDecimalInput lê vírgula decimal pt-BR", function (assert) {
-  assert.strictEqual(parseDecimalInput("1.234,56"), 1234.56);
+QUnit.test("parseDecimalInput: vírgula é pt-BR, um ponto sozinho é decimal", function (assert) {
+  assert.strictEqual(parseDecimalInput("4.25"), 4.25);
+  assert.strictEqual(parseDecimalInput("1188.25"), 1188.25);
+  assert.strictEqual(parseDecimalInput("1.188,25"), 1188.25);
+  assert.strictEqual(parseDecimalInput("1188,25"), 1188.25);
+  assert.strictEqual(parseDecimalInput("-1,16"), -1.16);
   assert.strictEqual(parseDecimalInput("10"), 10);
   assert.strictEqual(parseDecimalInput(""), null);
+  assert.strictEqual(Number.isNaN(parseDecimalInput("1.188.250")), true);
   assert.strictEqual(Number.isNaN(parseDecimalInput("abc")), true);
+});
+
+QUnit.test("grupo nulo ou em branco vira a aba sem grupo", function (assert) {
+  const rows = normalizeQuotes([{ groupName: null }, { groupName: "  " }, { groupName: "B3" }]);
+  assert.deepEqual(rows.map((r) => r.groupName), ["", "", "B3"]);
+  assert.deepEqual(extractGroups([{ groupName: null }, { groupName: "B3" }]), ["", "B3"]);
 });

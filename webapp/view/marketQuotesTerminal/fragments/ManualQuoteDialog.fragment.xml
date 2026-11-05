@@ -14,22 +14,22 @@
 					<f:FormContainer>
 						<f:formElements>
 							<f:FormElement label="{i18n>marketColLast}">
-								<Input value="{manual>/last}" required="true" textAlign="End" />
+								<Input id="manualLast" value="{manual>/last}" liveChange=".onManualFieldChange" required="true" textAlign="End" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketColBid}">
-								<Input value="{manual>/bid}" textAlign="End" />
+								<Input id="manualBid" value="{manual>/bid}" liveChange=".onManualFieldChange" textAlign="End" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketColAsk}">
-								<Input value="{manual>/ask}" textAlign="End" />
+								<Input id="manualAsk" value="{manual>/ask}" liveChange=".onManualFieldChange" textAlign="End" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketColHigh}">
-								<Input value="{manual>/high}" textAlign="End" />
+								<Input id="manualHigh" value="{manual>/high}" liveChange=".onManualFieldChange" textAlign="End" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketColLow}">
-								<Input value="{manual>/low}" textAlign="End" />
+								<Input id="manualLow" value="{manual>/low}" liveChange=".onManualFieldChange" textAlign="End" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketColOpen}">
-								<Input value="{manual>/open}" textAlign="End" />
+								<Input id="manualOpen" value="{manual>/open}" liveChange=".onManualFieldChange" textAlign="End" />
 							</f:FormElement>
 							<f:FormElement label="">
 								<CheckBox text="{i18n>marketSettlement}" selected="{manual>/isSettlement}" />

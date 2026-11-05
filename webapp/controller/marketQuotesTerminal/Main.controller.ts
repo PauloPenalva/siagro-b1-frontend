@@ -4,6 +4,7 @@ import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import Dialog from "sap/m/Dialog";
 import Table from "sap/m/Table";
+import Input from "sap/m/Input";
 import ListItemBase from "sap/m/ListItemBase";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
@@ -14,7 +15,7 @@ import ServerRoutes from "siagrob1/model/ServerRoutes";
 import SessionService from "siagrob1/services/SessionService";
 import MarketLiveService from "siagrob1/services/MarketLiveService";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
-import { connectionView, extractGroups, marketFetch, MarketResult, parseDecimalInput } from "siagrob1/helpers/MarketHelpers";
+import { connectionView, extractGroups, normalizeQuotes, marketFetch, MarketResult, parseDecimalInput } from "siagrob1/helpers/MarketHelpers";
 import { ManualQuoteInput, MarketQuote, MarketQuotesPayload } from "siagrob1/types/MarketQuote";
 
 const ROUTE = "marketQuotesTerminal";
@@ -41,6 +42,7 @@ export default class Main extends BaseController {
   private lastStatus: string = null;
   private lastMessage: string = null;
   private browserDisconnected = false;
+  private filterPending = true;
 
   onInit(): void {
     this.getView().setModel(new JSONModel({
@@ -78,6 +80,8 @@ export default class Main extends BaseController {
     this.model().setProperty("/isAdmin", SessionService.hasRole("ADMIN"));
     this.model().setProperty("/moduleDisabled", false);
     this.browserDisconnected = false;
+    // Na volta à rota a view é a mesma: reaplica o filtro da aba no primeiro quadro recebido.
+    this.filterPending = true;
 
     // Carga inicial pelo REST: além de mostrar o quadro já, detecta o 404 do módulo desligado
     // (o EventSource não expõe o status HTTP).
@@ -122,19 +126,27 @@ export default class Main extends BaseController {
   }
 
   /** Troca os dados no lugar; as abas só são reescritas quando a lista de grupos mudou. */
-  private applyQuotes(quotes: MarketQuote[]): void {
+  private applyQuotes(rawQuotes: MarketQuote[]): void {
     const model = this.model();
+    const quotes = normalizeQuotes(rawQuotes);
     const groups = extractGroups(quotes);
+    let refilter = this.filterPending;
     const current = (model.getProperty("/groups") as { key: string }[]).map((g) => g.key);
     if (groups.join("\u0001") !== current.join("\u0001")) {
       model.setProperty("/groups", groups.map((g) => ({ key: g, text: g || this.text("marketGroupNone") })));
+      refilter = true;
     }
 
     let selectedGroup = model.getProperty("/selectedGroup") as string;
     if (!groups.includes(selectedGroup)) {
       selectedGroup = groups[0] ?? "";
       model.setProperty("/selectedGroup", selectedGroup);
+      refilter = true;
+    }
+    // Idempotente: reaplicar o mesmo filtro é barato e evita aba mostrando grupo velho.
+    if (refilter) {
       this.applyGroupFilter(selectedGroup);
+      this.filterPending = false;
     }
 
     model.setProperty("/quotes", quotes);
@@ -196,6 +208,31 @@ export default class Main extends BaseController {
     (this.getView().getModel("manual") as JSONModel).setData(form);
     this.manualDialog ??= await this.loadFragment({ name: "siagrob1.view.marketQuotesTerminal.fragments.ManualQuoteDialog" }) as Dialog;
     this.manualDialog.open();
+    this.validateManualFields(form);
+  }
+
+  /** Marca cada campo do diálogo (vazio no Último, número inválido em qualquer um). */
+  onManualFieldChange(): void {
+    this.validateManualFields((this.getView().getModel("manual") as JSONModel).getData() as ManualForm);
+  }
+
+  /** Devolve os números na ordem último, compra, venda, máxima, mínima, abertura; null se algum for inválido. */
+  private validateManualFields(form: ManualForm): number[] {
+    const fields: ("last" | "bid" | "ask" | "high" | "low" | "open")[] = ["last", "bid", "ask", "high", "low", "open"];
+    const ids = ["manualLast", "manualBid", "manualAsk", "manualHigh", "manualLow", "manualOpen"];
+    let valid = true;
+    const values = fields.map((field, i) => {
+      const value = parseDecimalInput(form[field]);
+      const input = this.byId(ids[i]) as Input;
+      let error = "";
+      if (Number.isNaN(value)) error = this.text("marketInvalidNumber");
+      else if (field === "last" && value == null) error = this.text("marketRequiredField");
+      input?.setValueState(error ? "Error" : "None");
+      input?.setValueStateText(error);
+      if (error) valid = false;
+      return value;
+    });
+    return valid ? values : null;
   }
 
   onManualQuoteCancel(): void {
@@ -204,8 +241,8 @@ export default class Main extends BaseController {
 
   async onManualQuoteSave(): Promise<void> {
     const form = (this.getView().getModel("manual") as JSONModel).getData() as ManualForm;
-    const values = [form.last, form.bid, form.ask, form.high, form.low, form.open].map(parseDecimalInput);
-    if (values[0] == null || values.some((v) => Number.isNaN(v))) {
+    const values = this.validateManualFields(form);
+    if (!values) {
       MessageBox.warning(this.text("marketManualQuoteInvalid"));
       return;
     }
