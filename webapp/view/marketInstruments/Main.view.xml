@@ -1,0 +1,63 @@
+<mvc:View
+	controllerName="siagrob1.controller.marketInstruments.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:t="sap.ui.table"
+	xmlns:rowmodes="sap.ui.table.rowmodes">
+
+	<Page title="{i18n>marketInstrumentsTitle}" busy="{ui>/busy}" busyIndicatorDelay="0">
+		<content>
+			<t:Table
+				id="tableMarketInstruments"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				enableBusyIndicator="true"
+				alternateRowColors="true"
+				rows="{ path: '/MarketInstruments', sorter: [{ path: 'GroupName' }, { path: 'SortOrder' }] }">
+				<t:rowMode>
+					<rowmodes:Auto />
+				</t:rowMode>
+				<t:extension>
+					<OverflowToolbar>
+						<ToolbarSpacer />
+						<SearchField placeholder="{i18n>commonSearch}" width="30%" search=".onSearch" />
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="{i18n>marketColCode}" sortProperty="Code" width="10rem">
+						<t:template><Text text="{Code}" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketColDescription}" sortProperty="Description">
+						<t:template><Text text="{Description}" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketFieldGroup}" sortProperty="GroupName" width="10rem">
+						<t:template><Text text="{GroupName}" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketFieldExchange}" width="8rem">
+						<t:template><Text text="{ path: 'Exchange', targetType: 'any', formatter: '.exchangeText' }" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketFieldType}" width="9rem">
+						<t:template><Text text="{ path: 'Type', targetType: 'any', formatter: '.typeText' }" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketFieldActive}" width="6rem" hAlign="Center">
+						<t:template><CheckBox selected="{Active}" editable="false" /></t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<Button text="{i18n>commonRefresh}" icon="sap-icon://refresh" press=".onRefresh" />
+				<Button text="{i18n>marketCreateSamples}" icon="sap-icon://add-product" press=".onCreateSamples"
+					visible="{view>/isAdmin}" />
+				<ToolbarSpacer />
+				<Button text="{i18n>commonAdd}" icon="sap-icon://add" type="Emphasized" press=".onCreate" />
+				<Button text="{i18n>commonEdit}" icon="sap-icon://edit" press=".onEdit" />
+				<Button text="{i18n>commonDelete}" icon="sap-icon://delete" press=".onDelete" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

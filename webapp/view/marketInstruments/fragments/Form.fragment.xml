@@ -1,0 +1,82 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:core="sap.ui.core">
+	<!-- Enums do OData v4: targetType 'any' + forceSelection="false" (sem isso o Select recebe
+	     string formatada e não casa com a chave, ou escreve o primeiro item no modelo sozinho).
+	     Decimais editáveis usam Double: Decimal grava string e o backend recusa. -->
+	<f:Form id="formMarketInstrument" editable="true"
+		core:require="{ Double: 'sap/ui/model/odata/type/Double', Int32: 'sap/ui/model/odata/type/Int32', DateTimeOffset: 'sap/ui/model/odata/type/DateTimeOffset' }">
+		<f:layout>
+			<f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2" />
+		</f:layout>
+		<f:formContainers>
+			<f:FormContainer title="{i18n>marketInstrumentSectionMain}">
+				<f:formElements>
+					<f:FormElement label="{i18n>marketColCode}">
+						<Input value="{Code}" required="true" maxLength="30" editable="{form>/isNew}" />
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketColDescription}">
+						<Input value="{Description}" required="true" maxLength="100" />
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldGroup}">
+						<Input value="{GroupName}" maxLength="40" />
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldSortOrder}">
+						<Input value="{ path: 'SortOrder', type: 'Int32' }" textAlign="End" />
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldActive}">
+						<Switch state="{Active}" />
+					</f:FormElement>
+				</f:formElements>
+			</f:FormContainer>
+			<f:FormContainer title="{i18n>marketInstrumentSectionContract}">
+				<f:formElements>
+					<f:FormElement label="{i18n>marketFieldExchange}">
+						<Select forceSelection="false" required="true" selectedKey="{ path: 'Exchange', targetType: 'any' }">
+							<core:ListItem key="Cbot" text="{i18n>marketExchangeCbot}" />
+							<core:ListItem key="B3" text="{i18n>marketExchangeB3}" />
+							<core:ListItem key="Spot" text="{i18n>marketExchangeSpot}" />
+						</Select>
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldType}">
+						<Select forceSelection="false" required="true" selectedKey="{ path: 'Type', targetType: 'any' }">
+							<core:ListItem key="Future" text="{i18n>marketTypeFuture}" />
+							<core:ListItem key="Spot" text="{i18n>marketTypeSpot}" />
+							<core:ListItem key="CurvePoint" text="{i18n>marketTypeCurvePoint}" />
+						</Select>
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldCommodity}">
+						<Input value="{Commodity}" required="true" maxLength="20" />
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldQuoteUnit}">
+						<Select forceSelection="false" required="true" selectedKey="{ path: 'QuoteUnit', targetType: 'any' }">
+							<core:ListItem key="UsCentsPerBushel" text="{i18n>marketUnitUsCentsPerBushel}" />
+							<core:ListItem key="BrlPerBag" text="{i18n>marketUnitBrlPerBag}" />
+							<core:ListItem key="BrlPerUsd" text="{i18n>marketUnitBrlPerUsd}" />
+							<core:ListItem key="UsdPerTon" text="{i18n>marketUnitUsdPerTon}" />
+						</Select>
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldContractSize}">
+						<Input value="{ path: 'ContractSize', type: 'Double', formatOptions: { maxFractionDigits: 6 } }" textAlign="End" />
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldTonFactor}">
+						<Input value="{ path: 'TonFactor', type: 'Double', formatOptions: { maxFractionDigits: 6 } }" textAlign="End" />
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldCurveDays}">
+						<Input value="{ path: 'CurveDays', type: 'Int32' }" textAlign="End" />
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldExpirationDate}">
+						<DatePicker value="{ path: 'ExpirationDate', type: 'DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy' } }" />
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldCmaSourceId}">
+						<Input value="{ path: 'CmaSourceId', type: 'Int32' }" textAlign="End" />
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldItemCode}">
+						<Input value="{ItemCode}" maxLength="50" />
+					</f:FormElement>
+				</f:formElements>
+			</f:FormContainer>
+		</f:formContainers>
+	</f:Form>
+</core:FragmentDefinition>

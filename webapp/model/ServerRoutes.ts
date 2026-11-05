@@ -124,6 +124,16 @@ export default {
   // Gateway por /scales.
   scaleLive: (code: string): string => `/scales/${encodeURIComponent(code)}/live`,
   scaleCapture: (code: string): string => `/scales/${encodeURIComponent(code)}/capture`,
+  // Módulo Mercado (REST + SSE pelo Gateway em /market; 404 = módulo desligado no servidor).
+  // O código do instrumento tem espaço ("DOL COM"): sempre encodeURIComponent no segmento.
+  marketQuotesLive: '/market/quotes/live',
+  marketQuotes: '/market/quotes',
+  marketManualQuote: (code: string): string => `/market/quotes/${encodeURIComponent(code)}/manual`,
+  marketReleaseQuote: (code: string): string => `/market/quotes/${encodeURIComponent(code)}/release`,
+  marketCmaSettings: '/market/cma-settings',
+  marketCmaReconnect: '/market/cma/reconnect',
+  marketInstrumentSamples: '/market/instruments/samples',
+  marketInstruments: 'odata/MarketInstruments',
   shipmentReleases: 'odata/ShipmentReleases',
   salesShipmentReleases: 'odata/SalesShipmentReleases',
   processingCosts: 'odata/ProcessingCosts',

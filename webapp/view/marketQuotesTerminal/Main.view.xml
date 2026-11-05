@@ -1,0 +1,74 @@
+<mvc:View
+	controllerName="siagrob1.controller.marketQuotesTerminal.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	core:require="{ market: 'siagrob1/helpers/MarketHelpers' }">
+
+	<!-- Quadro alimentado pelo SSE num JSONModel ("quotes"): a tabela é uma só, filtrada pela aba,
+	     e os dados são trocados no lugar a cada evento, sem recriar colunas. -->
+	<Page title="{i18n>marketTerminalTitle}" busy="{ui>/busy}" busyIndicatorDelay="0">
+		<headerContent>
+			<ObjectStatus id="connectionStatus" text="{quotes>/statusText}" state="{quotes>/statusState}" inverted="true" />
+		</headerContent>
+		<content>
+			<MessageStrip text="{i18n>marketModuleDisabled}" type="Warning" showIcon="true"
+				visible="{quotes>/moduleDisabled}" class="sapUiSmallMargin" />
+			<IconTabBar id="groupTabs" selectedKey="{quotes>/selectedGroup}" select=".onGroupSelect"
+				items="{ path: 'quotes>/groups', templateShareable: false }" expandable="false"
+				applyContentPadding="false" visible="{= !${quotes>/moduleDisabled} }">
+				<items>
+					<IconTabFilter key="{quotes>key}" text="{quotes>text}" />
+				</items>
+			</IconTabBar>
+			<Table id="quotesTable" mode="SingleSelectMaster" sticky="ColumnHeaders"
+				items="{ path: 'quotes>/quotes', templateShareable: false }"
+				selectionChange=".onSelectionChange" updateFinished=".onTableUpdateFinished"
+				noDataText="{i18n>marketTerminalNoData}" visible="{= !${quotes>/moduleDisabled} }"
+				class="sapUiSizeCompact">
+				<columns>
+					<Column width="8rem"><Text text="{i18n>marketColCode}" /></Column>
+					<Column><Text text="{i18n>marketColDescription}" /></Column>
+					<Column hAlign="End"><Text text="{i18n>marketColLast}" /></Column>
+					<Column hAlign="End"><Text text="{i18n>marketColBid}" /></Column>
+					<Column hAlign="End"><Text text="{i18n>marketColChange}" /></Column>
+					<Column hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="{i18n>marketColHigh}" /></Column>
+					<Column hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="{i18n>marketColLow}" /></Column>
+					<Column hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="{i18n>marketColOpen}" /></Column>
+					<Column hAlign="Center" width="5rem"><Text text="{i18n>marketColSource}" /></Column>
+					<Column hAlign="End" width="7rem"><Text text="{i18n>marketColUpdated}" /></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Text text="{quotes>code}" wrapping="false" />
+							<Text text="{quotes>description}" />
+							<Text text="{ parts: ['quotes>last', 'quotes>isSettlement'], formatter: 'market.formatLast' }" />
+							<Text text="{ path: 'quotes>bid', formatter: 'market.formatQuoteValue' }" />
+							<ObjectStatus text="{ path: 'quotes>changePercent', formatter: 'market.formatChangePercent' }"
+								state="{ path: 'quotes>changePercent', formatter: 'market.changePercentState' }" />
+							<Text text="{ path: 'quotes>high', formatter: 'market.formatQuoteValue' }" />
+							<Text text="{ path: 'quotes>low', formatter: 'market.formatQuoteValue' }" />
+							<Text text="{ path: 'quotes>open', formatter: 'market.formatQuoteValue' }" />
+							<core:Icon src="sap-icon://user-edit" tooltip="{i18n>marketManualTooltip}"
+								visible="{ parts: ['quotes>source', 'quotes>manualOverride'], formatter: 'market.isManualQuote' }" />
+							<Text text="{ path: 'quotes>quotedAt', formatter: 'market.formatQuoteTime' }" wrapping="false" />
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<Button text="{i18n>marketReconnect}" icon="sap-icon://connected" press=".onReconnect"
+					visible="{quotes>/isAdmin}" />
+				<ToolbarSpacer />
+				<Button text="{i18n>marketManualQuote}" icon="sap-icon://edit" type="Emphasized" press=".onManualQuote"
+					enabled="{= !!${quotes>/selectedCode} }" />
+				<Button text="{i18n>marketReleaseQuote}" icon="sap-icon://undo" press=".onReleaseQuote"
+					enabled="{quotes>/selectedManual}" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

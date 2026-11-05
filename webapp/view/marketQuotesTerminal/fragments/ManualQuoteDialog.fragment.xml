@@ -1,0 +1,49 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<!-- Valores ficam como texto no JSONModel "manual" e o controller converte com
+	     parseDecimalInput (vírgula decimal pt-BR) antes de mandar números no JSON. -->
+	<Dialog id="manualQuoteDialog" title="{manual>/title}" contentWidth="28rem">
+		<content>
+			<f:Form id="manualQuoteForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1" />
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="{i18n>marketColLast}">
+								<Input value="{manual>/last}" required="true" textAlign="End" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColBid}">
+								<Input value="{manual>/bid}" textAlign="End" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColAsk}">
+								<Input value="{manual>/ask}" textAlign="End" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColHigh}">
+								<Input value="{manual>/high}" textAlign="End" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColLow}">
+								<Input value="{manual>/low}" textAlign="End" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColOpen}">
+								<Input value="{manual>/open}" textAlign="End" />
+							</f:FormElement>
+							<f:FormElement label="">
+								<CheckBox text="{i18n>marketSettlement}" selected="{manual>/isSettlement}" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<beginButton>
+			<Button text="{i18n>commonSave}" type="Emphasized" press=".onManualQuoteSave" />
+		</beginButton>
+		<endButton>
+			<Button text="{i18n>commonCancel}" press=".onManualQuoteCancel" />
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>
