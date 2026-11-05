@@ -5,7 +5,7 @@ import MessageToast from "sap/m/MessageToast";
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import SessionService from "siagrob1/services/SessionService";
-import { marketFetch, MarketResult } from "siagrob1/helpers/MarketHelpers";
+import { marketFetch, MarketResult, notFoundTextKey } from "siagrob1/helpers/MarketHelpers";
 import { CmaSettings } from "siagrob1/types/MarketQuote";
 
 /**
@@ -27,7 +27,7 @@ export default class Main extends BaseController {
     return this.getView().getModel("cma") as JSONModel;
   }
 
-  private show(settings?: CmaSettings, moduleDisabled = false): void {
+  private show(settings?: CmaSettings, moduleDisabled = false, moduleMessage = ""): void {
     this.model().setData({
       enabled: settings?.enabled ?? false,
       host: settings?.host ?? "",
@@ -36,6 +36,7 @@ export default class Main extends BaseController {
       passwordPlaceholder: settings?.hasPassword ? this.bundle.getText("marketCmaPasswordKept") : "",
       isAdmin: SessionService.hasRole("ADMIN"),
       moduleDisabled,
+      moduleMessage,
     });
   }
 
@@ -47,7 +48,7 @@ export default class Main extends BaseController {
       const result = await marketFetch<CmaSettings>("GET", ServerRoutes.marketCmaSettings);
       if (!result.ok) {
         if (result.status === 404) {
-          this.show(undefined, true);
+          this.show(undefined, true, this.bundle.getText(notFoundTextKey(result.moduleDisabled)));
           return;
         }
         this.showError(result);
@@ -84,7 +85,7 @@ export default class Main extends BaseController {
 
   private showError(result: MarketResult): void {
     if (result.status === 404) {
-      MessageBox.warning(this.bundle.getText("marketModuleDisabled"));
+      MessageBox.warning(this.bundle.getText(notFoundTextKey(result.moduleDisabled)));
       return;
     }
     MessageBox.error(result.message || this.bundle.getText(result.status === 0 ? "marketNoServer" : "marketGenericError"));

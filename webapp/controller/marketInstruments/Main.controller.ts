@@ -9,9 +9,9 @@ import MessageToast from "sap/m/MessageToast";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Context from "sap/ui/model/odata/v4/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import ResourceModel from "sap/ui/model/resource/ResourceModel";
+import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
-import { marketFetch } from "siagrob1/helpers/MarketHelpers";
+import { marketFetch, notFoundTextKey } from "siagrob1/helpers/MarketHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import SessionService from "siagrob1/services/SessionService";
 
@@ -21,23 +21,25 @@ import SessionService from "siagrob1/services/SessionService";
  * @namespace siagrob1.controller.marketInstruments
  */
 export default class Main extends BaseController {
+  private bundle?: ResourceBundle;
+
   onInit(): void {
     this.getView().setModel(new JSONModel({ isAdmin: false }), "view");
-    this.getRouter().getRoute("marketInstruments").attachPatternMatched(() => this.routeMatched());
+    this.getRouter().getRoute("marketInstruments").attachPatternMatched(() => void this.routeMatched());
   }
 
-  private routeMatched(): void {
+  private async routeMatched(): Promise<void> {
     (this.getView().getModel("view") as JSONModel).setProperty("/isAdmin", SessionService.hasRole("ADMIN"));
+    // O bundle chega antes do refresh: os formatters de Bolsa/Tipo leem dele (sem ele mostravam a chave).
+    this.bundle ??= await this.getResourceBundle();
     this.onRefresh();
   }
 
   private text(key: string, args?: string[]): string {
-    const model = (this.getView().getModel("i18n") ?? this.getOwnerComponent().getModel("i18n")) as ResourceModel;
-    const bundle = model?.getResourceBundle();
-    if (bundle && !(bundle instanceof Promise)) return bundle.getText(key, args) ?? key;
-    return key;
+    return this.bundle?.getText(key, args) ?? key;
   }
 
+  // Formatters chamados com `this` = controller (prefixo "." na view).
   exchangeText(value: string): string {
     return value ? this.text(`marketExchange${value}`) : "";
   }
@@ -109,7 +111,7 @@ export default class Main extends BaseController {
     try {
       const result = await marketFetch<{ created: number }>("POST", ServerRoutes.marketInstrumentSamples);
       if (!result.ok) {
-        if (result.status === 404) MessageBox.warning(this.text("marketModuleDisabled"));
+        if (result.status === 404) MessageBox.warning(this.text(notFoundTextKey(result.moduleDisabled)));
         else MessageBox.error(result.message || this.text("marketGenericError"));
         return;
       }

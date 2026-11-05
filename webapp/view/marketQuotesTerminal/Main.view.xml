@@ -13,7 +13,7 @@
 			<ObjectStatus id="connectionStatus" text="{quotes>/statusText}" state="{quotes>/statusState}" inverted="true" />
 		</headerContent>
 		<content>
-			<MessageStrip text="{i18n>marketModuleDisabled}" type="Warning" showIcon="true"
+			<MessageStrip text="{quotes>/moduleMessage}" type="Warning" showIcon="true"
 				visible="{quotes>/moduleDisabled}" class="sapUiSmallMargin" />
 			<IconTabBar id="groupTabs" selectedKey="{quotes>/selectedGroup}" select=".onGroupSelect"
 				items="{ path: 'quotes>/groups', templateShareable: false }" expandable="false"
@@ -28,7 +28,7 @@
 				noDataText="{i18n>marketTerminalNoData}" visible="{= !${quotes>/moduleDisabled} }"
 				class="sapUiSizeCompact">
 				<columns>
-					<Column width="8rem"><Text text="{i18n>marketColCode}" /></Column>
+					<Column width="13rem"><Text text="{i18n>marketColCode}" /></Column>
 					<Column><Text text="{i18n>marketColDescription}" /></Column>
 					<Column hAlign="End"><Text text="{i18n>marketColLast}" /></Column>
 					<Column hAlign="End"><Text text="{i18n>marketColBid}" /></Column>
@@ -51,7 +51,8 @@
 							<Text text="{ path: 'quotes>high', formatter: 'market.formatQuoteValue' }" />
 							<Text text="{ path: 'quotes>low', formatter: 'market.formatQuoteValue' }" />
 							<Text text="{ path: 'quotes>open', formatter: 'market.formatQuoteValue' }" />
-							<core:Icon src="sap-icon://user-edit" tooltip="{i18n>marketManualTooltip}"
+							<core:Icon src="sap-icon://user-edit"
+								tooltip="{ parts: ['i18n>marketManualTooltip', 'i18n>marketManualByTooltip', 'quotes>userName'], formatter: 'market.manualTooltip' }"
 								visible="{ parts: ['quotes>source', 'quotes>manualOverride'], formatter: 'market.isManualQuote' }" />
 							<Text text="{ path: 'quotes>quotedAt', formatter: 'market.formatQuoteTime' }" wrapping="false" />
 						</cells>

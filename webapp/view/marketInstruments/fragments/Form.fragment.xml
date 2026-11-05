@@ -67,7 +67,8 @@
 						<Input value="{ path: 'CurveDays', type: 'Int32' }" textAlign="End" />
 					</f:FormElement>
 					<f:FormElement label="{i18n>marketFieldExpirationDate}">
-						<DatePicker value="{ path: 'ExpirationDate', type: 'DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy' } }" />
+						<DatePicker core:require="{ EdmDate: 'sap/ui/model/odata/type/Date' }"
+							value="{ path: 'ExpirationDate', type: 'EdmDate', formatOptions: { pattern: 'dd/MM/yyyy' } }" />
 					</f:FormElement>
 					<f:FormElement label="{i18n>marketFieldCmaSourceId}">
 						<Input value="{ path: 'CmaSourceId', type: 'Int32' }" textAlign="End" />

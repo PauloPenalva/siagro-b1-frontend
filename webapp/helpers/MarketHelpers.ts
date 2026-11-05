@@ -38,10 +38,20 @@ export function changePercentState(value: number): "Success" | "Error" | "None" 
   return "None";
 }
 
-/** Hora local de `quotedAt` (ISO do servidor). */
+/**
+ * Instante do servidor (gravado em UTC). Sem sufixo de fuso ("Z" ou "+hh:mm") o texto é tratado como
+ * UTC: `new Date` o leria como hora LOCAL e a tela mostraria 3 h a mais.
+ */
+export function parseServerInstant(iso: string): Date {
+  if (!iso) return null;
+  const text = /(Z|[+-]\d{2}:?\d{2})$/i.test(iso) ? iso : `${iso}Z`;
+  return new Date(text);
+}
+
+/** Hora local de `quotedAt` (ISO do servidor, instante UTC). */
 export function formatQuoteTime(iso: string): string {
   if (!iso) return EMPTY_VALUE;
-  const date = new Date(iso);
+  const date = parseServerInstant(iso);
   if (Number.isNaN(date.getTime())) return EMPTY_VALUE;
   return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
@@ -52,6 +62,39 @@ export function isManualQuote(source: string | number, manualOverride: boolean):
   if (typeof source === "number") return source === 1;
   return typeof source === "string" && source.toLowerCase() === "manual";
 }
+
+/** Tooltip da origem: quem lançou, quando o servidor informa. */
+export function manualTooltip(generic: string, byPattern: string, userName: string): string {
+  return userName && byPattern ? byPattern.replace("{0}", userName) : generic;
+}
+
+/**
+ * Chave da aba "Sem grupo". Não pode ser "": com key vazia o IconTabBar devolve o id gerado do
+ * IconTabFilter como selectedKey e o filtro da tabela não casa com nada.
+ */
+export const NO_GROUP_KEY = "__none__";
+
+/** Grupo → chave da aba. */
+export function groupKey(groupName: string): string {
+  const name = normalizeGroupName(groupName);
+  return name === "" ? NO_GROUP_KEY : name;
+}
+
+/** Chave da aba → valor de `groupName` usado no filtro. */
+export function groupFromKey(key: string): string {
+  return key === NO_GROUP_KEY ? "" : (key ?? "");
+}
+
+/**
+ * Desvio do novo último preço em relação ao anterior, em % (absoluto). Nulo sem anterior utilizável.
+ * Acima de 20 % o diálogo pede confirmação ("1.188" digitado querendo dizer 1188).
+ */
+export function deviationPercent(newValue: number, oldValue: number): number {
+  if (!isNumber(newValue) || !isNumber(oldValue) || oldValue === 0) return null;
+  return Math.abs((newValue - oldValue) / oldValue) * 100;
+}
+
+export const MANUAL_DEVIATION_LIMIT = 20;
 
 /** Grupo nulo, indefinido ou em branco vira "" (aba "Sem grupo"); o filtro da aba compara com "". */
 export function normalizeGroupName(name: string): string {
@@ -120,11 +163,23 @@ export function parseDecimalInput(text: string): number {
   return /^-?\d+(\.\d+)?$/.test(normalized) ? Number(normalized) : NaN;
 }
 
-export type MarketResult<T = unknown> = { ok: boolean; status: number; data?: T; message?: string };
+export type MarketResult<T = unknown> = {
+  ok: boolean; status: number; data?: T; message?: string;
+  /** 404 com `X-Market-Module: disabled`: o Web recusou porque o módulo está desligado. */
+  moduleDisabled?: boolean;
+};
+
+/** Cabeçalho que o Web põe no 404 do módulo desligado (o 404 do Gateway sem rota não tem). */
+export const MODULE_HEADER = "X-Market-Module";
+
+/** Chave do i18n para um 404 do Mercado: módulo desligado ou rota /market ausente no Gateway. */
+export function notFoundTextKey(moduleDisabled: boolean): string {
+  return moduleDisabled ? "marketModuleDisabled" : "marketServiceNotFound";
+}
 
 /**
- * REST do módulo Mercado. Diferente de `sendJson`, devolve o status HTTP: 404 em `/market`
- * significa "módulo desligado neste ambiente", e quem chama mostra isso em vez do erro cru.
+ * REST do módulo Mercado. Diferente de `sendJson`, devolve o status HTTP: um 404 em `/market` é
+ * "módulo desligado" só com o cabeçalho `X-Market-Module: disabled`; sem ele, a rota não existe.
  * Erro de negócio é 400 com o texto puro no corpo.
  */
 export async function marketFetch<T = unknown>(
@@ -139,7 +194,9 @@ export async function marketFetch<T = unknown>(
       body: payload ? JSON.stringify(payload) : undefined,
     });
     if (!response.ok) {
-      return { ok: false, status: response.status, message: await readErrorMessage(response) };
+      const moduleDisabled = response.status === 404
+        && (response.headers.get(MODULE_HEADER) ?? "").toLowerCase() === "disabled";
+      return { ok: false, status: response.status, message: await readErrorMessage(response), moduleDisabled };
     }
     const text = await response.text();
     return { ok: true, status: response.status, data: text ? (JSON.parse(text) as T) : undefined };

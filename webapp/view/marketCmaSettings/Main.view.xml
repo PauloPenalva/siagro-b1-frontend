@@ -7,7 +7,7 @@
 
 	<Page title="{i18n>marketCmaTitle}" busy="{ui>/busy}" busyIndicatorDelay="0">
 		<content>
-			<MessageStrip text="{i18n>marketModuleDisabled}" type="Warning" showIcon="true"
+			<MessageStrip text="{cma>/moduleMessage}" type="Warning" showIcon="true"
 				visible="{cma>/moduleDisabled}" class="sapUiSmallMargin" />
 			<MessageStrip text="{i18n>marketCmaInfo}" type="Information" showIcon="true" class="sapUiSmallMargin"
 				visible="{= !${cma>/moduleDisabled} }" />

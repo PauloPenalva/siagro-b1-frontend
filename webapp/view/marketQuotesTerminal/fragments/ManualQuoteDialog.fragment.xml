@@ -14,22 +14,22 @@
 					<f:FormContainer>
 						<f:formElements>
 							<f:FormElement label="{i18n>marketColLast}">
-								<Input id="manualLast" value="{manual>/last}" liveChange=".onManualFieldChange" required="true" textAlign="End" />
+								<Input id="manualLast" value="{manual>/last}" valueLiveUpdate="true" liveChange=".onManualFieldChange" required="true" textAlign="End" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketColBid}">
-								<Input id="manualBid" value="{manual>/bid}" liveChange=".onManualFieldChange" textAlign="End" />
+								<Input id="manualBid" value="{manual>/bid}" valueLiveUpdate="true" liveChange=".onManualFieldChange" textAlign="End" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketColAsk}">
-								<Input id="manualAsk" value="{manual>/ask}" liveChange=".onManualFieldChange" textAlign="End" />
+								<Input id="manualAsk" value="{manual>/ask}" valueLiveUpdate="true" liveChange=".onManualFieldChange" textAlign="End" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketColHigh}">
-								<Input id="manualHigh" value="{manual>/high}" liveChange=".onManualFieldChange" textAlign="End" />
+								<Input id="manualHigh" value="{manual>/high}" valueLiveUpdate="true" liveChange=".onManualFieldChange" textAlign="End" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketColLow}">
-								<Input id="manualLow" value="{manual>/low}" liveChange=".onManualFieldChange" textAlign="End" />
+								<Input id="manualLow" value="{manual>/low}" valueLiveUpdate="true" liveChange=".onManualFieldChange" textAlign="End" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketColOpen}">
-								<Input id="manualOpen" value="{manual>/open}" liveChange=".onManualFieldChange" textAlign="End" />
+								<Input id="manualOpen" value="{manual>/open}" valueLiveUpdate="true" liveChange=".onManualFieldChange" textAlign="End" />
 							</f:FormElement>
 							<f:FormElement label="">
 								<CheckBox text="{i18n>marketSettlement}" selected="{manual>/isSettlement}" />

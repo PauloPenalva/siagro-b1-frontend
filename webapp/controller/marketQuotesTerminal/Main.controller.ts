@@ -15,7 +15,10 @@ import ServerRoutes from "siagrob1/model/ServerRoutes";
 import SessionService from "siagrob1/services/SessionService";
 import MarketLiveService from "siagrob1/services/MarketLiveService";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
-import { connectionView, extractGroups, normalizeQuotes, marketFetch, MarketResult, parseDecimalInput } from "siagrob1/helpers/MarketHelpers";
+import {
+  connectionView, deviationPercent, extractGroups, groupFromKey, groupKey, MANUAL_DEVIATION_LIMIT, marketFetch,
+  MarketResult, normalizeQuotes, notFoundTextKey, parseDecimalInput
+} from "siagrob1/helpers/MarketHelpers";
 import { ManualQuoteInput, MarketQuote, MarketQuotesPayload } from "siagrob1/types/MarketQuote";
 
 const ROUTE = "marketQuotesTerminal";
@@ -43,10 +46,12 @@ export default class Main extends BaseController {
   private lastMessage: string = null;
   private browserDisconnected = false;
   private filterPending = true;
+  /** O "Último" só acusa obrigatório depois de mexido (ou no salvar), não ao abrir o diálogo vazio. */
+  private manualLastTouched = false;
 
   onInit(): void {
     this.getView().setModel(new JSONModel({
-      quotes: [], groups: [], selectedGroup: "", selectedCode: "", selectedManual: false,
+      quotes: [], groups: [], selectedGroup: "", moduleMessage: "", selectedCode: "", selectedManual: false,
       statusText: "", statusState: "None", isAdmin: false, moduleDisabled: false,
     }), "quotes");
     this.getView().setModel(new JSONModel({}), "manual");
@@ -88,6 +93,7 @@ export default class Main extends BaseController {
     const board = await marketFetch<MarketQuote[]>("GET", ServerRoutes.marketQuotes);
     if (!board.ok) {
       if (board.status === 404) {
+        this.model().setProperty("/moduleMessage", this.text(notFoundTextKey(board.moduleDisabled)));
         this.model().setProperty("/moduleDisabled", true);
         return;
       }
@@ -125,15 +131,18 @@ export default class Main extends BaseController {
     this.model().setProperty("/statusState", view.state);
   }
 
-  /** Troca os dados no lugar; as abas só são reescritas quando a lista de grupos mudou. */
+  /**
+   * Troca os dados no lugar; as abas só são reescritas quando a lista de grupos mudou. As abas seguem a
+   * ordem do servidor (menor SortOrder do grupo) e a aba "Sem grupo" usa a chave sentinela.
+   */
   private applyQuotes(rawQuotes: MarketQuote[]): void {
     const model = this.model();
     const quotes = normalizeQuotes(rawQuotes);
-    const groups = extractGroups(quotes);
+    const groups = extractGroups(quotes).map(groupKey);
     let refilter = this.filterPending;
     const current = (model.getProperty("/groups") as { key: string }[]).map((g) => g.key);
     if (groups.join("\u0001") !== current.join("\u0001")) {
-      model.setProperty("/groups", groups.map((g) => ({ key: g, text: g || this.text("marketGroupNone") })));
+      model.setProperty("/groups", groups.map((key) => ({ key, text: groupFromKey(key) || this.text("marketGroupNone") })));
       refilter = true;
     }
 
@@ -153,9 +162,9 @@ export default class Main extends BaseController {
     this.refreshSelectedManual();
   }
 
-  private applyGroupFilter(group: string): void {
+  private applyGroupFilter(key: string): void {
     const binding = this.byId("quotesTable").getBinding("items") as ListBinding;
-    binding?.filter([new Filter("groupName", FilterOperator.EQ, group)]);
+    binding?.filter([new Filter("groupName", FilterOperator.EQ, groupFromKey(key))]);
   }
 
   onGroupSelect(): void {
@@ -207,17 +216,19 @@ export default class Main extends BaseController {
     };
     (this.getView().getModel("manual") as JSONModel).setData(form);
     this.manualDialog ??= await this.loadFragment({ name: "siagrob1.view.marketQuotesTerminal.fragments.ManualQuoteDialog" }) as Dialog;
+    this.manualLastTouched = false;
     this.manualDialog.open();
-    this.validateManualFields(form);
+    this.validateManualFields(form, false);
   }
 
-  /** Marca cada campo do diálogo (vazio no Último, número inválido em qualquer um). */
-  onManualFieldChange(): void {
-    this.validateManualFields((this.getView().getModel("manual") as JSONModel).getData() as ManualForm);
+  /** Marca cada campo do diálogo enquanto se digita (número inválido; Último vazio só depois de mexido). */
+  onManualFieldChange(ev: { getSource: () => Input }): void {
+    if (ev?.getSource?.() === this.byId("manualLast")) this.manualLastTouched = true;
+    this.validateManualFields((this.getView().getModel("manual") as JSONModel).getData() as ManualForm, this.manualLastTouched);
   }
 
   /** Devolve os números na ordem último, compra, venda, máxima, mínima, abertura; null se algum for inválido. */
-  private validateManualFields(form: ManualForm): number[] {
+  private validateManualFields(form: ManualForm, requireLast = true): number[] {
     const fields: ("last" | "bid" | "ask" | "high" | "low" | "open")[] = ["last", "bid", "ask", "high", "low", "open"];
     const ids = ["manualLast", "manualBid", "manualAsk", "manualHigh", "manualLow", "manualOpen"];
     let valid = true;
@@ -226,7 +237,8 @@ export default class Main extends BaseController {
       const input = this.byId(ids[i]) as Input;
       let error = "";
       if (Number.isNaN(value)) error = this.text("marketInvalidNumber");
-      else if (field === "last" && value == null) error = this.text("marketRequiredField");
+      else if (field === "last" && value == null && requireLast) error = this.text("marketRequiredField");
+      else if (field === "last" && value == null) valid = false;
       input?.setValueState(error ? "Error" : "None");
       input?.setValueStateText(error);
       if (error) valid = false;
@@ -248,6 +260,15 @@ export default class Main extends BaseController {
     }
     const [last, bid, ask, high, low, open] = values;
     const input: ManualQuoteInput = { last, bid, ask, high, low, open, isSettlement: !!form.isSettlement };
+
+    // Protege contra "1.188" querendo dizer 1188: desvio grande do último pede confirmação.
+    const previous = (this.model().getProperty("/quotes") as MarketQuote[]).find((q) => q.code === form.code)?.last;
+    const deviation = deviationPercent(last, previous);
+    if (deviation != null && deviation > MANUAL_DEVIATION_LIMIT) {
+      const fmt = (v: number): string => v.toLocaleString("pt-BR", { maximumFractionDigits: 6 });
+      const message = this.text("marketManualDeviationConfirm", [fmt(last), deviation.toFixed(0), fmt(previous)]);
+      if (!(await confirmDialog(message, this.text("marketManualQuote")))) return;
+    }
 
     this.setBusy(true);
     try {
@@ -287,7 +308,7 @@ export default class Main extends BaseController {
 
   private showError(result: MarketResult): void {
     if (result.status === 404) {
-      MessageBox.warning(this.text("marketModuleDisabled"));
+      MessageBox.warning(this.text(notFoundTextKey(result.moduleDisabled)));
       return;
     }
     MessageBox.error(result.message || this.text(result.status === 0 ? "marketNoServer" : "marketGenericError"));

@@ -27,11 +27,11 @@
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>
-					<t:Column label="{i18n>marketColCode}" sortProperty="Code" width="10rem">
+					<t:Column label="{i18n>marketColCode}" sortProperty="Code" width="13rem">
 						<t:template><Text text="{Code}" wrapping="false" /></t:template>
 					</t:Column>
 					<t:Column label="{i18n>marketColDescription}" sortProperty="Description">
-						<t:template><Text text="{Description}" wrapping="false" /></t:template>
+						<t:template><Text text="{Description}" wrapping="true" /></t:template>
 					</t:Column>
 					<t:Column label="{i18n>marketFieldGroup}" sortProperty="GroupName" width="10rem">
 						<t:template><Text text="{GroupName}" wrapping="false" /></t:template>

@@ -15,6 +15,9 @@ export type MarketQuote = {
   /** O SSE serializa o enum em camelCase ("cma"/"manual"); o REST pode mandar número. */
   source: string | number;
   manualOverride: boolean;
+  ask?: number;
+  /** Quem digitou o lançamento manual (nulo quando veio da CMA). */
+  userName?: string;
 };
 
 /** Evento do SSE `/market/quotes/live`. */

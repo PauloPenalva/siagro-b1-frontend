@@ -1,6 +1,7 @@
 import {
-  changePercentState, connectionView, extractGroups, formatChangePercent, formatLast, formatQuoteTime,
-  formatQuoteValue, isManualQuote, normalizeQuotes, parseDecimalInput
+  changePercentState, connectionView, deviationPercent, extractGroups, formatChangePercent, formatLast, formatQuoteTime,
+  formatQuoteValue, groupFromKey, groupKey, isManualQuote, manualTooltip, normalizeQuotes, notFoundTextKey,
+  NO_GROUP_KEY, parseDecimalInput, parseServerInstant
 } from "siagrob1/helpers/MarketHelpers";
 
 QUnit.module("MarketHelpers - terminal de cotações");
@@ -66,4 +67,37 @@ QUnit.test("grupo nulo ou em branco vira a aba sem grupo", function (assert) {
   const rows = normalizeQuotes([{ groupName: null }, { groupName: "  " }, { groupName: "B3" }]);
   assert.deepEqual(rows.map((r) => r.groupName), ["", "", "B3"]);
   assert.deepEqual(extractGroups([{ groupName: null }, { groupName: "B3" }]), ["", "B3"]);
+});
+
+QUnit.test("instante do servidor sem fuso é UTC", function (assert) {
+  const utc = Date.UTC(2026, 10, 5, 23, 15, 0);
+  assert.strictEqual(parseServerInstant("2026-11-05T23:15:00Z").getTime(), utc);
+  assert.strictEqual(parseServerInstant("2026-11-05T23:15:00").getTime(), utc);
+  assert.strictEqual(parseServerInstant("2026-11-05T20:15:00-03:00").getTime(), utc);
+  assert.strictEqual(parseServerInstant(null), null);
+});
+
+QUnit.test("aba sem grupo usa chave sentinela, não vazia", function (assert) {
+  assert.strictEqual(groupKey(""), NO_GROUP_KEY);
+  assert.strictEqual(groupKey(null), NO_GROUP_KEY);
+  assert.strictEqual(groupKey("Soja CBOT"), "Soja CBOT");
+  assert.strictEqual(groupFromKey(NO_GROUP_KEY), "");
+  assert.strictEqual(groupFromKey("Soja CBOT"), "Soja CBOT");
+});
+
+QUnit.test("404 só é módulo desligado com o cabeçalho", function (assert) {
+  assert.strictEqual(notFoundTextKey(true), "marketModuleDisabled");
+  assert.strictEqual(notFoundTextKey(false), "marketServiceNotFound");
+});
+
+QUnit.test("tooltip da origem mostra quem lançou", function (assert) {
+  assert.strictEqual(manualTooltip("Manual", "Lançada manualmente por {0}", "ana"), "Lançada manualmente por ana");
+  assert.strictEqual(manualTooltip("Manual", "Lançada manualmente por {0}", null), "Manual");
+});
+
+QUnit.test("desvio do último preço em porcentagem", function (assert) {
+  assert.ok(Math.abs(deviationPercent(1.188, 1188) - 99.9) < 1e-9);
+  assert.ok(Math.abs(deviationPercent(110, 100) - 10) < 1e-9);
+  assert.strictEqual(deviationPercent(10, null), null);
+  assert.strictEqual(deviationPercent(10, 0), null);
 });
