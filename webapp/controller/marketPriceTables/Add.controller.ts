@@ -22,7 +22,10 @@ export default class Add extends PriceTableBaseController {
     const model = this.getView().getModel() as ODataModel;
     const context = (this.headerBinding ??= model.bindList("/MarketPriceTables")).create({
       Description: "", ItemCode: "", ItemName: "", HarvestSeasonCode: "", Active: true,
-    }, false, false, false);
+    // bSkipRefresh = true: depois do POST em profundidade a UI5 releria a lista filha para pedir o que faltou na
+    // resposta; como o salvar já navega para a edição, essa lista fica sem contexto e a releitura estoura
+    // ("Cannot read properties of undefined"). A edição recarrega tudo do servidor.
+    }, true, false, false);
     this.getView().setBindingContext(context);
   }
 

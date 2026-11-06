@@ -22,7 +22,10 @@ export default class Add extends CounterpartyBaseController {
     const model = this.getView().getModel() as ODataModel;
     const context = (this.headerBinding ??= model.bindList("/MarketCounterparties")).create({
       Name: "", Type: "Broker", TaxId: "", Active: true,
-    }, false, false, false);
+    // bSkipRefresh = true: depois do POST em profundidade a UI5 releria a lista filha para pedir o que faltou na
+    // resposta; como o salvar já navega para a edição, essa lista fica sem contexto e a releitura estoura
+    // ("Cannot read properties of undefined"). A edição recarrega tudo do servidor.
+    }, true, false, false);
     this.getView().setBindingContext(context);
   }
 
