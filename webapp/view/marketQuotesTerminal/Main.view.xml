@@ -26,18 +26,18 @@
 				items="{ path: 'quotes>/quotes', templateShareable: false }"
 				selectionChange=".onSelectionChange" updateFinished=".onTableUpdateFinished"
 				noDataText="{i18n>marketTerminalNoData}" visible="{= !${quotes>/moduleDisabled} }"
-				class="sapUiSizeCompact">
+				contextualWidth="Auto" class="sapUiSizeCompact">
 				<columns>
-					<Column width="13rem"><Text text="{i18n>marketColCode}" /></Column>
-					<Column><Text text="{i18n>marketColDescription}" /></Column>
-					<Column hAlign="End"><Text text="{i18n>marketColLast}" /></Column>
-					<Column hAlign="End"><Text text="{i18n>marketColBid}" /></Column>
-					<Column hAlign="End"><Text text="{i18n>marketColChange}" /></Column>
-					<Column hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="{i18n>marketColHigh}" /></Column>
-					<Column hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="{i18n>marketColLow}" /></Column>
-					<Column hAlign="End" minScreenWidth="Tablet" demandPopin="true"><Text text="{i18n>marketColOpen}" /></Column>
-					<Column hAlign="Center" width="5rem"><Text text="{i18n>marketColSource}" /></Column>
-					<Column hAlign="End" width="7rem"><Text text="{i18n>marketColUpdated}" /></Column>
+					<Column width="11.5rem"><Text text="{i18n>marketColCode}" wrapping="false" /></Column>
+					<Column><Text text="{i18n>marketColDescription}" wrapping="false" /></Column>
+					<Column hAlign="End" width="6rem"><Text text="{i18n>marketColLast}" wrapping="false" /></Column>
+					<Column hAlign="End" width="5.5rem"><Text text="{i18n>marketColBid}" wrapping="false" /></Column>
+					<Column hAlign="End" width="5.5rem"><Text text="{i18n>marketColChange}" wrapping="false" /></Column>
+					<Column hAlign="End" width="5.5rem" minScreenWidth="1040px" demandPopin="true"><Text text="{i18n>marketColHigh}" wrapping="false" /></Column>
+					<Column hAlign="End" width="5.5rem" minScreenWidth="1040px" demandPopin="true"><Text text="{i18n>marketColLow}" wrapping="false" /></Column>
+					<Column hAlign="End" width="5.5rem" minScreenWidth="1040px" demandPopin="true"><Text text="{i18n>marketColOpen}" wrapping="false" /></Column>
+					<Column hAlign="Center" width="4rem"><Text text="{i18n>marketColSource}" wrapping="false" /></Column>
+					<Column hAlign="End" width="6rem"><Text text="{i18n>marketColUpdated}" wrapping="false" /></Column>
 				</columns>
 				<items>
 					<ColumnListItem>
