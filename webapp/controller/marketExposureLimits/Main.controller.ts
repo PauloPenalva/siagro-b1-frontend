@@ -10,6 +10,7 @@ import Context from "sap/ui/model/odata/v4/Context";
 import Sorter from "sap/ui/model/Sorter";
 import Table from "sap/ui/table/Table";
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
+import { Router$BeforeRouteMatchedEvent } from "sap/ui/core/routing/Router";
 import BaseController from "../BaseController";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import { saveMarketChanges } from "siagrob1/helpers/MarketLookups";
@@ -42,6 +43,8 @@ export default class Main extends BaseController {
   /** Contexto em alteração; nulo = inclusão. */
   private editing: Context | null = null;
   private commodities: MarketCommodity[] = [];
+  /** A rota própria é a ativa: só então a saída dela descarta pendências. */
+  private routeActive = false;
 
   /** Formatters (campos de instância, não getters: o UI5 resolve `.nome` por nome). */
   scopeText = (scope: string): string => (scope ? this.text(`marketLimitScope_${scope}`) : "");
@@ -50,7 +53,32 @@ export default class Main extends BaseController {
   onInit(): void {
     this.getView().setModel(new JSONModel({ canApprove: false }), "view");
     this.getView().setModel(new JSONModel({}), "limit");
-    this.getRouter().getRoute("marketExposureLimits").attachPatternMatched(() => void this.routeMatched());
+    this.getRouter().getRoute("marketExposureLimits").attachPatternMatched(() => {
+      this.routeActive = true;
+      void this.routeMatched();
+    });
+    this.getRouter().attachBeforeRouteMatched(this.onBeforeRouteMatched, this);
+  }
+
+  onExit(): void {
+    this.getRouter().detachBeforeRouteMatched(this.onBeforeRouteMatched, this);
+  }
+
+  /**
+   * O `UpdateGroup` é do app inteiro: sair desta tela com uma alteração de limite pendente a mandaria
+   * no próximo `submitBatch` de QUALQUER tela. Ao ir para outra rota, fecha o diálogo e descarta.
+   */
+  private readonly onBeforeRouteMatched = (ev: Router$BeforeRouteMatchedEvent): void => {
+    if (!this.routeActive || ev.getParameter("name") === "marketExposureLimits") return;
+    this.routeActive = false;
+    this.dialog?.close();
+    this.discardChanges();
+  };
+
+  private discardChanges(): void {
+    const model = this.getView().getModel() as ODataModel;
+    const groupId = model.getUpdateGroupId();
+    if (model.hasPendingChanges(groupId)) model.resetChanges(groupId);
   }
 
   private async routeMatched(): Promise<void> {
@@ -196,6 +224,11 @@ export default class Main extends BaseController {
         MessageToast.show(this.text(this.editing ? "commonUpdated" : "commonSaved"));
         // Atualizado por/em e o nome da commodity vêm do servidor.
         this.onRefresh();
+      } else if (this.editing) {
+        // PATCH recusado: `saveMarketChanges` já desfez o grupo; garante que nada ficou pendente e
+        // relê a linha para a grade mostrar o que está gravado de fato.
+        this.discardChanges();
+        void this.editing.requestRefresh("$auto").catch((): void => undefined);
       }
     } finally {
       this.setBusy(false);

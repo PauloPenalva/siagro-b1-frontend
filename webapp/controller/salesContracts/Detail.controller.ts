@@ -18,6 +18,7 @@ import { Link$PressEvent } from "sap/m/Link";
 import { odataCollection, sendJson } from "siagrob1/helpers/FetchHelpers";
 import { FinancialDocumentByContract } from "siagrob1/types/FinancialDocumentByContract";
 import { contractFinancialSummary, visibleContractFinancialRows } from "siagrob1/helpers/ContractFinancialSummaryHelpers";
+import ContractMarketSection from "siagrob1/helpers/ContractMarketSection";
 
 /** Complemento fiscal do contrato (DTO PascalCase da function; vem nulo quando ainda não existe). */
 type FiscalComplement = {
@@ -32,7 +33,6 @@ type FiscalComplement = {
   UpdatedBy?: string,
   IsComplete?: boolean,
 }
-import ContractMarketSection from "siagrob1/helpers/ContractMarketSection";
 
 type DetailRouteArgs = { id: string; "?query"?: { readonly?: string } };
 
@@ -53,11 +53,11 @@ export default class Detail extends SalesContractsBaseController {
 		this.getView().setModel(new JSONModel({}), "fiscalComplementDialog");
 		this.getView().setModel(new JSONModel({ rows: [], summary: contractFinancialSummary([]) }), "contractFinancial");
 		this.initContractDrafts();
-    this.marketSection = new ContractMarketSection(this.getView());
+    this.marketSection = new ContractMarketSection(this.getView(), this.getRouter(), "salesContractsDetail");
 		this.getRouter().getRoute("salesContractsDetail").attachPatternMatched((ev) => {
       // Os argumentos são lidos já: o evento do roteador é reaproveitado depois do disparo.
       const args = ev.getParameter("arguments") as DetailRouteArgs;
-      void this.marketSection.ensure().then(() => this.detailRouteMatched(args));
+      this.marketSection.whenReady(() => this.detailRouteMatched(args));
     });
 	}
 

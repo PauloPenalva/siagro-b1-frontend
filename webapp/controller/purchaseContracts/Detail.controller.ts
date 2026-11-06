@@ -29,11 +29,11 @@ export default class Detail extends PurchaseContractsBaseController {
 	onInit(): void  {	
 		this.getView().setModel(new JSONModel({ rows: [], summary: contractFinancialSummary([]) }), "contractFinancial");
 		this.initContractDrafts();
-    this.marketSection = new ContractMarketSection(this.getView());
+    this.marketSection = new ContractMarketSection(this.getView(), this.getRouter(), "purchaseContractsDetail");
 		this.getRouter().getRoute("purchaseContractsDetail").attachPatternMatched((ev) => {
       // Os argumentos são lidos já: o evento do roteador é reaproveitado depois do disparo.
       const args = ev.getParameter("arguments") as DetailRouteArgs;
-      void this.marketSection.ensure().then(() => this.detailRouteMatched(args));
+      this.marketSection.whenReady(() => this.detailRouteMatched(args));
     });
 	}
 

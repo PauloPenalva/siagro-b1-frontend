@@ -14,8 +14,8 @@ export default class Add extends BaseController {
   private marketSection: ContractMarketSection;
 
 	onInit(): void  {
-    this.marketSection = new ContractMarketSection(this.getView());
-		this.getRouter().getRoute("salesContractsNew").attachPatternMatched(() => void this.marketSection.ensure().then(() => this.newRouteMatched()));
+    this.marketSection = new ContractMarketSection(this.getView(), this.getRouter(), "salesContractsNew");
+		this.getRouter().getRoute("salesContractsNew").attachPatternMatched(() => this.marketSection.whenReady(() => void this.newRouteMatched()));
 	}
 
 	private async newRouteMatched() {

@@ -2,6 +2,7 @@ import { InputBase$ChangeEvent } from "sap/m/InputBase";
 import { Select$ChangeEvent } from "sap/m/Select";
 import Fragment from "sap/ui/core/Fragment";
 import View from "sap/ui/core/mvc/View";
+import Router, { Router$BeforeRouteMatchedEvent } from "sap/ui/core/routing/Router";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Context from "sap/ui/model/odata/v4/Context";
@@ -14,6 +15,8 @@ import { formatStrictDecimal, numberErrorKey, parseStrictDecimal } from "siagrob
 import { usdPerBagToKg, usdPerKgToBag } from "siagrob1/helpers/MarketSetupHelpers";
 import MarketModuleService from "siagrob1/services/MarketModuleService";
 
+type InstrumentOption = { Code: string; Label: string };
+
 /** Input do fragmento → propriedade do contrato; `perBag` = mostrado por saca, gravado por kg. */
 const NUMBER_FIELDS: Record<string, { property: string; perBag: boolean }> = {
   contractMarketExchangePrice: { property: "MarketExchangePrice", perBag: false },
@@ -24,7 +27,7 @@ const NUMBER_FIELDS: Record<string, { property: string; perBag: boolean }> = {
 
 /**
  * Seção "Mercado" das telas de contrato (compra e venda, formulário e detalhe). Cada tela cria uma
- * instância no `onInit` e espera `ensure()` antes de ligar o contrato:
+ * instância no `onInit` e chama o handler da rota por `whenReady()`:
  *
  * - módulo desligado: só a sonda única e guardada de `/market/module`; nada é inserido, nenhum campo
  *   novo entra em `$select` nem em payload — a tela fica exatamente como era;
@@ -37,27 +40,57 @@ const NUMBER_FIELDS: Record<string, { property: string; perBag: boolean }> = {
 export default class ContractMarketSection {
   private readonly view: View;
   private ready?: Promise<void>;
+  /** Seção já resolvida de vez (resposta definitiva do módulo + seção inserida ou dispensada). */
+  private settled = false;
+  /** Sobe a cada visita da própria rota e a cada saída dela: espera antiga não chama o handler. */
+  private seq = 0;
   private bundle?: ResourceBundle;
 
-  constructor(view: View) {
+  constructor(view: View, router: Router, ownRoute: string) {
     this.view = view;
+    router.attachBeforeRouteMatched((ev: Router$BeforeRouteMatchedEvent) => {
+      if (ev.getParameter("name") !== ownRoute) this.seq++;
+    });
+  }
+
+  /**
+   * Roda o handler da rota. Com a seção já resolvida, roda NA HORA (mesmo tick do evento de rota,
+   * como antes do módulo existir); só a primeira visita espera a sonda/seção, e o handler é
+   * descartado se, nesse meio-tempo, o usuário saiu da rota ou voltou a ela.
+   */
+  whenReady(handler: () => void): void {
+    const seq = ++this.seq;
+    if (this.settled) {
+      handler();
+      return;
+    }
+    void this.ensure().then(() => {
+      if (seq === this.seq) handler();
+    });
   }
 
   /** Insere a seção uma vez por view (só com o módulo ligado). Nunca rejeita. */
-  ensure(): Promise<void> {
-    return (this.ready ??= this.load().catch((error: unknown) => {
+  private ensure(): Promise<void> {
+    return (this.ready ??= this.load().then((settled) => {
+      this.settled = settled;
+      // Sonda sem resposta definitiva (tempo esgotado/rede): a próxima visita tenta de novo.
+      if (!settled) this.ready = undefined;
+    }, (error: unknown) => {
       console.warn("Seção Mercado do contrato não carregada.", error);
+      this.settled = true;
     }));
   }
 
-  private async load(): Promise<void> {
-    if (!(await MarketModuleService.isEnabled())) return;
+  /** Devolve `true` quando o resultado é definitivo para a sessão. */
+  private async load(): Promise<boolean> {
+    const enabled = await MarketModuleService.isEnabled();
+    if (!enabled) return MarketModuleService.knownState() === false;
 
     const layout = this.view.getContent().find((control) => control.isA("sap.uxap.ObjectPageLayout")) as ObjectPageLayout;
-    if (!layout) return;
+    if (!layout) return true;
 
     const model = this.view.getModel() as ODataModel;
-    let instruments: { Code: string; Label: string }[] = [];
+    let instruments: InstrumentOption[] = [];
     try {
       const lookups = await loadMarketLookups(model, true, false);
       instruments = lookups.priceInstruments.map((i) => ({ Code: i.Code, Label: i.Description ? `${i.Code} - ${i.Description}` : i.Code }));
@@ -76,6 +109,7 @@ export default class ContractMarketSection {
       controller: this,
     }) as ObjectPageSection;
     layout.insertSection(section, 1);
+    return true;
   }
 
   private text(key: string): string {
@@ -95,7 +129,16 @@ export default class ContractMarketSection {
    * O Select é só de leitura (formatter): ligação de mão dupla escreveria "" de volta ao renderizar um
    * contrato sem instrumento e geraria PATCH sem o usuário mexer. A troca grava pelo `change`.
    */
-  instrumentKey = (code: unknown): string => (typeof code === "string" ? code : "");
+  instrumentKey = (code: unknown): string => {
+    if (typeof code !== "string" || !code) return "";
+    // Instrumento hoje inativo (fora da lista de ativos): entra na lista para o Select não ficar vazio.
+    const model = this.view.getModel("marketSection") as JSONModel;
+    const list = (model?.getProperty("/instruments") as InstrumentOption[]) ?? [];
+    if (model && !list.some((option) => option.Code === code)) {
+      model.setProperty("/instruments", [...list, { Code: code, Label: code }]);
+    }
+    return code;
+  };
 
   onInstrumentChange = (ev: Select$ChangeEvent): void => {
     const select = ev.getSource();

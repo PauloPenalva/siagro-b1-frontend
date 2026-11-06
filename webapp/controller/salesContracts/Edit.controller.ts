@@ -13,11 +13,11 @@ export default class Edit extends SalesContractsBaseController {
   private marketSection: ContractMarketSection;
 
 	onInit(): void  {	
-    this.marketSection = new ContractMarketSection(this.getView());
+    this.marketSection = new ContractMarketSection(this.getView(), this.getRouter(), "salesContractsEdit");
 		this.getRouter().getRoute("salesContractsEdit").attachPatternMatched((ev) => {
       // Os argumentos são lidos já: o evento do roteador é reaproveitado depois do disparo.
       const args = ev.getParameter("arguments") as { id: string };
-      void this.marketSection.ensure().then(() => this.editRouteMatched(args));
+      this.marketSection.whenReady(() => this.editRouteMatched(args));
     });
 	}
 
