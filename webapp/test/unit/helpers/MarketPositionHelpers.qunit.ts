@@ -1,6 +1,6 @@
 import {
   alertText, buildCard, buildFxLockPayload, currencyLabel, formatCount, formatFxRate, formatSignedAmount, canDrillDown, contractDetailRoute, diffRows, directionTextKey, drillDownQuery, flattenCommodityRows,
-  flattenUsdRows, formatAmount, formatPercent, formatTons, fxLockSide, limitStateTextKey, limitStateValue, maturityLabel, signState,
+  flattenUsdRows, formatAmount, formatPercent, formatTons, formatTonsMagnitude, fxLockSide, limitStateTextKey, limitStateValue, maturityLabel, signState,
   withPositionFlashes
 } from "siagrob1/helpers/MarketPositionHelpers";
 import { MarketPositionBucket, MarketPositionCommodity } from "siagrob1/types/MarketPosition";
@@ -21,6 +21,10 @@ QUnit.test("toneladas com sinal e 3 casas; valores com 2; nulo vira traço", fun
   assert.strictEqual(formatTons(-2), "-2,000");
   assert.strictEqual(formatTons(0), "0,000");
   assert.strictEqual(formatTons(null), "–");
+  // Compras, vendas e travado: grandeza sem sinal.
+  assert.strictEqual(formatTonsMagnitude(3180), "3.180,000");
+  assert.strictEqual(formatTonsMagnitude(-18), "18,000");
+  assert.strictEqual(formatTonsMagnitude(null), "–");
   assert.strictEqual(formatAmount(-1234.567), "-1.234,57");
   assert.strictEqual(formatPercent(50), "50,00%");
   assert.strictEqual(formatPercent(null), "–");

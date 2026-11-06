@@ -25,6 +25,11 @@ export function formatTons(value: number): string {
   return isNumber(value) ? signed3.format(value) : EMPTY_VALUE;
 }
 
+/** Toneladas SEM sinal e 3 casas: compras, vendas e travado são grandezas, não posições. */
+export function formatTonsMagnitude(value: number): string {
+  return isNumber(value) ? fixed3.format(Math.abs(value)) : EMPTY_VALUE;
+}
+
 /** Valor com 2 casas (preços, US$, R$); nulo vira "–". */
 export function formatAmount(value: number): string {
   return isNumber(value) ? fixed2.format(value) : EMPTY_VALUE;

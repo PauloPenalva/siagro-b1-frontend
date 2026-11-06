@@ -90,12 +90,12 @@
 				</t:Column>
 				<t:Column hAlign="End" width="7.5rem" label="{i18n>marketPositionColPurchases}">
 					<t:template>
-						<ObjectNumber number="{ path: 'position>purchaseTons', formatter: 'pos.formatTons' }" state="{ path: 'position>purchaseTons', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+						<ObjectNumber number="{ path: 'position>purchaseTons', formatter: 'pos.formatTonsMagnitude' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
 					</t:template>
 				</t:Column>
 				<t:Column hAlign="End" width="7.5rem" label="{i18n>marketPositionColSales}">
 					<t:template>
-						<ObjectNumber number="{ path: 'position>salesTons', formatter: 'pos.formatTons' }" state="{ path: 'position>salesTons', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+						<ObjectNumber number="{ path: 'position>salesTons', formatter: 'pos.formatTonsMagnitude' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
 					</t:template>
 				</t:Column>
 				<t:Column hAlign="End" width="7.5rem" label="{i18n>marketPositionColFutures}">
@@ -110,7 +110,7 @@
 				</t:Column>
 				<t:Column hAlign="End" width="7.5rem" label="{i18n>marketPositionColCovered}" tooltip="{i18n>marketPositionColCoveredTip}">
 					<t:template>
-						<ObjectNumber number="{ path: 'position>coveredTons', formatter: 'pos.formatTons' }" state="{ path: 'position>coveredTons', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+						<ObjectNumber number="{ path: 'position>coveredTons', formatter: 'pos.formatTonsMagnitude' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
 					</t:template>
 				</t:Column>
 				<t:Column hAlign="End" width="5.5rem" label="{i18n>marketPositionColHedge}" tooltip="{i18n>marketPositionColHedgeTip}">
