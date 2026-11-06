@@ -1,0 +1,61 @@
+/** Boleta como o OData `MarketTradeTickets` entrega (chave `Id`); município e safra vêm no `$expand`. */
+export type MarketTradeTicketEntity = {
+  Id?: number;
+  Status?: string;
+  CreatedAt?: string;
+  CreatedBy?: string;
+  ItemCode?: string;
+  ItemName?: string;
+  HarvestSeasonCode?: string;
+  MunicipalityCode?: string;
+  DestinationName?: string;
+  InstrumentCode?: string;
+  ExchangeQuote?: number | string;
+  Premium?: number | string;
+  NetFx?: number | string;
+  SpotFx?: number | string;
+  FreightPerTon?: number | string;
+  PortPrice?: number | string;
+  CalculatedPrice?: number | string;
+  StepsJson?: string;
+  QuotedAt?: string;
+  QuoteSource?: string;
+  DeliveryStartDate?: string;
+  DeliveryEndDate?: string;
+  ReceiptDate?: string;
+  PaymentDate?: string;
+  CardCode?: string;
+  CardName?: string;
+  VolumeKg?: number | string;
+  NegotiatedPrice?: number | string;
+  WarehouseCode?: string;
+  WarehouseName?: string;
+  AgentCode?: number;
+  AgentName?: string;
+  BranchCode?: string;
+  LogisticRegionCode?: string;
+  Notes?: string;
+  DeviationPercent?: number | string;
+  RequiresBoardApproval?: boolean;
+  BoardApprovalReason?: string;
+  ApprovedBy?: string;
+  ApprovedAt?: string;
+  BoardApprovedBy?: string;
+  BoardApprovedAt?: string;
+  RejectedBy?: string;
+  RejectedAt?: string;
+  RejectionReason?: string;
+  CanceledBy?: string;
+  CanceledAt?: string;
+  PurchaseContractKey?: string;
+  PurchaseContractCode?: string;
+  Municipality?: { Name?: string; StateAbbreviation?: string };
+  HarvestSeason?: { Name?: string };
+};
+
+/** Resposta do REST de aprovar/rejeitar/cancelar (camelCase). */
+export type MarketTradeTicketActionResult = {
+  id?: number;
+  status?: string;
+  purchaseContractCode?: string;
+};

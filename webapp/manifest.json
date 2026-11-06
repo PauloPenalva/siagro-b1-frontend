@@ -969,6 +969,16 @@
           "target": "marketPriceGrid"
         },
         {
+          "pattern": "market/tickets",
+          "name": "marketTradeTickets",
+          "target": "marketTradeTickets"
+        },
+        {
+          "pattern": "market/tickets/{id}",
+          "name": "marketTradeTicketsDetail",
+          "target": "marketTradeTicketsDetail"
+        },
+        {
           "pattern": "payment-conditions",
           "name": "paymentConditions",
           "target": "paymentConditions"
@@ -2647,6 +2657,18 @@
           "id": "marketPriceGrid",
           "level": 1,
           "name": "siagrob1.view.marketPriceGrid.Main",
+          "clearControlAggregation": true
+        },
+        "marketTradeTickets": {
+          "id": "marketTradeTickets",
+          "level": 1,
+          "name": "siagrob1.view.marketTradeTickets.Main",
+          "clearControlAggregation": true
+        },
+        "marketTradeTicketsDetail": {
+          "id": "marketTradeTicketsDetail",
+          "level": 2,
+          "name": "siagrob1.view.marketTradeTickets.Detail",
           "clearControlAggregation": true
         },
         "paymentConditions": {

@@ -276,3 +276,21 @@ export function clearFlashes(rows: MarketQuoteRow[]): MarketQuoteRow[] {
 export function flashAttr(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
+
+/** Permissões do usuário que interessam à boleta (já com o bypass de administrador do SessionService). */
+export type TicketPermissions = { approve: boolean; boardApprove: boolean };
+
+export type TicketActions = { approve: boolean; reject: boolean; cancel: boolean };
+
+/**
+ * Quais botões a boleta mostra. Espelha o servidor (que é quem decide): `pending` pede MARKET_TICKET_APPROVE,
+ * `pendingBoard` pede MARKET_BOARD_APPROVE; cancelar vale para o criador ou para quem aprova no 1º nível.
+ * Aprovada, rejeitada e cancelada são finais. Aceita o status em PascalCase (OData) ou camelCase (REST).
+ */
+export function ticketActions(status: string, permissions: TicketPermissions, isCreator: boolean): TicketActions {
+  const none: TicketActions = { approve: false, reject: false, cancel: false };
+  const key = status ? status.charAt(0).toLowerCase() + status.slice(1) : "";
+  if (key !== "pending" && key !== "pendingBoard") return none;
+  const decide = key === "pending" ? permissions?.approve === true : permissions?.boardApprove === true;
+  return { approve: decide, reject: decide, cancel: isCreator === true || permissions?.approve === true };
+}

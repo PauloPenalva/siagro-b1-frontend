@@ -1,0 +1,194 @@
+<mvc:View
+	controllerName="siagrob1.controller.marketTradeTickets.Detail"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:uxap="sap.uxap">
+	<!-- Detalhe da boleta (somente leitura). Os textos já chegam formatados no modelo "ticket" (montado no
+	     controller a partir do OData); as ações visíveis vêm do modelo "act" (helper ticketActions). A composição
+	     do cálculo reaproveita o diálogo PriceBreakdown da grade de preços (modelo "breakdown"). -->
+	<uxap:ObjectPageLayout showFooter="false" toggleHeaderOnTitleClick="true" preserveHeaderStateOnScroll="false"
+		busy="{ui>/busy}" busyIndicatorDelay="0">
+		<uxap:headerTitle>
+			<uxap:ObjectPageDynamicHeaderTitle>
+				<uxap:navigationActions>
+					<Button icon="sap-icon://decline" type="Transparent" tooltip="{i18n>marketTicketBack}" press=".onBack" />
+				</uxap:navigationActions>
+				<uxap:expandedHeading>
+					<Title text="{ticket>/title}" />
+				</uxap:expandedHeading>
+				<uxap:snappedHeading>
+					<Title text="{ticket>/title}" />
+				</uxap:snappedHeading>
+				<uxap:actions>
+					<Button text="{i18n>marketTicketActionApprove}" type="Accept" icon="sap-icon://accept"
+						visible="{act>/approve}" press=".onApprove" />
+					<Button text="{i18n>marketTicketActionReject}" type="Reject" icon="sap-icon://decline"
+						visible="{act>/reject}" press=".onReject" />
+					<Button text="{i18n>marketTicketActionCancel}" icon="sap-icon://cancel"
+						visible="{act>/cancel}" press=".onCancel" />
+				</uxap:actions>
+			</uxap:ObjectPageDynamicHeaderTitle>
+		</uxap:headerTitle>
+
+		<uxap:headerContent>
+			<VBox>
+				<HBox wrap="Wrap">
+					<ObjectStatus class="sapUiMediumMarginEnd" text="{ticket>/statusText}" state="{ticket>/statusState}"
+						icon="{ticket>/statusIcon}" />
+					<ObjectAttribute class="sapUiMediumMarginEnd" title="{i18n>marketTicketFieldPartner}" text="{ticket>/partnerText}" />
+					<ObjectAttribute class="sapUiMediumMarginEnd" title="{i18n>marketTicketFieldItem}" text="{ticket>/itemText}" />
+					<ObjectAttribute title="{i18n>marketTicketFieldCity}" text="{ticket>/destinationText}" />
+				</HBox>
+				<MessageStrip class="sapUiSmallMarginTop" type="Warning" showIcon="true" text="{ticket>/boardStripText}"
+					visible="{ticket>/requiresBoard}" />
+			</VBox>
+		</uxap:headerContent>
+
+		<uxap:sections>
+			<uxap:ObjectPageSection title="{i18n>marketTicketSectionDeal}">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<f:Form editable="false">
+							<f:layout><f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2" /></f:layout>
+							<f:formContainers>
+								<f:FormContainer>
+									<f:formElements>
+										<f:FormElement label="{i18n>marketTicketFieldPartner}"><Text text="{ticket>/partnerText}" /></f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldItem}"><Text text="{ticket>/itemText}" /></f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldHarvest}"><Text text="{ticket>/harvestText}" /></f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldCity}"><Text text="{ticket>/cityText}" /></f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldDestination}"><Text text="{ticket>/destinationName}" /></f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldSacks}"><Text text="{ticket>/sacksText}" /></f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldTons}"><Text text="{ticket>/tonsText}" /></f:FormElement>
+									</f:formElements>
+								</f:FormContainer>
+								<f:FormContainer>
+									<f:formElements>
+										<f:FormElement label="{i18n>marketTicketFieldNegotiated}"><Text text="{ticket>/negotiatedText}" /></f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldCalculated}"><Text text="{ticket>/calculatedText}" /></f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldDeviation}">
+											<ObjectStatus text="{ticket>/deviationText}" state="{ticket>/deviationState}" />
+										</f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldTotal}"><Text text="{ticket>/totalText}" /></f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldWarehouse}"><Text text="{ticket>/warehouseText}" /></f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldAgent}"><Text text="{ticket>/agentText}" /></f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldBranch}"><Text text="{ticket>/branchCode}" /></f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldLogisticRegion}"><Text text="{ticket>/logisticRegionCode}" /></f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldNotes}"><Text text="{ticket>/notes}" /></f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldCreated}"><Text text="{ticket>/createdText}" /></f:FormElement>
+									</f:formElements>
+								</f:FormContainer>
+							</f:formContainers>
+						</f:Form>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
+			<uxap:ObjectPageSection title="{i18n>marketTicketSectionPrice}">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<uxap:blocks>
+							<VBox>
+								<f:Form editable="false">
+									<f:layout><f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2" /></f:layout>
+									<f:formContainers>
+										<f:FormContainer>
+											<f:formElements>
+												<f:FormElement label="{i18n>marketTicketFieldQuote}"><Text text="{ticket>/quoteText}" /></f:FormElement>
+												<f:FormElement label="{i18n>marketTicketFieldPremium}"><Text text="{ticket>/premiumText}" /></f:FormElement>
+												<f:FormElement label="{i18n>marketTicketFieldNetFx}"><Text text="{ticket>/netFxText}" /></f:FormElement>
+												<f:FormElement label="{i18n>marketTicketFieldSpotFx}"><Text text="{ticket>/spotFxText}" /></f:FormElement>
+											</f:formElements>
+										</f:FormContainer>
+										<f:FormContainer>
+											<f:formElements>
+												<f:FormElement label="{i18n>marketTicketFieldPortPrice}"><Text text="{ticket>/portPriceText}" /></f:FormElement>
+												<f:FormElement label="{i18n>marketTicketFieldFreight}"><Text text="{ticket>/freightText}" /></f:FormElement>
+												<f:FormElement label="{i18n>marketTicketFieldQuotedAt}"><Text text="{ticket>/quotedAtText}" /></f:FormElement>
+												<f:FormElement label="{i18n>marketTicketFieldQuoteSource}"><Text text="{ticket>/quoteSourceText}" /></f:FormElement>
+											</f:formElements>
+										</f:FormContainer>
+									</f:formContainers>
+								</f:Form>
+								<Button class="sapUiSmallMarginBegin" text="{i18n>marketTicketShowSteps}" icon="sap-icon://list"
+									type="Transparent" press=".onShowSteps" />
+							</VBox>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
+			<uxap:ObjectPageSection title="{i18n>marketTicketSectionDelivery}">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<f:Form editable="false">
+							<f:layout><f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2" /></f:layout>
+							<f:formContainers>
+								<f:FormContainer>
+									<f:formElements>
+										<f:FormElement label="{i18n>marketTicketFieldDeliveryPeriod}"><Text text="{ticket>/deliveryText}" /></f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldReceiptDate}"><Text text="{ticket>/receiptText}" /></f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldPaymentDate}"><Text text="{ticket>/paymentText}" /></f:FormElement>
+									</f:formElements>
+								</f:FormContainer>
+							</f:formContainers>
+						</f:Form>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
+			<uxap:ObjectPageSection title="{i18n>marketTicketSectionApproval}">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<f:Form editable="false">
+							<f:layout><f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2" /></f:layout>
+							<f:formContainers>
+								<f:FormContainer>
+									<f:formElements>
+										<f:FormElement label="{i18n>marketTicketFieldApprovedBy}" visible="{ticket>/hasApproval}">
+											<Text text="{ticket>/approvedText}" />
+										</f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldBoardApprovedBy}" visible="{ticket>/hasBoardApproval}">
+											<Text text="{ticket>/boardApprovedText}" />
+										</f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldRejectedBy}" visible="{ticket>/hasRejection}">
+											<Text text="{ticket>/rejectedText}" />
+										</f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldRejectionReason}" visible="{ticket>/hasRejection}">
+											<Text text="{ticket>/rejectionReason}" />
+										</f:FormElement>
+										<f:FormElement label="{i18n>marketTicketFieldCanceledBy}" visible="{ticket>/hasCancellation}">
+											<Text text="{ticket>/canceledText}" />
+										</f:FormElement>
+									</f:formElements>
+								</f:FormContainer>
+							</f:formContainers>
+						</f:Form>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+
+			<uxap:ObjectPageSection title="{i18n>marketTicketSectionContract}" visible="{ticket>/hasContract}">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection>
+						<f:Form editable="false">
+							<f:layout><f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2" /></f:layout>
+							<f:formContainers>
+								<f:FormContainer>
+									<f:formElements>
+										<f:FormElement label="{i18n>marketTicketFieldContract}">
+											<Link text="{ticket>/contractCode}" press=".onOpenContract" wrapping="false" />
+										</f:FormElement>
+									</f:formElements>
+								</f:FormContainer>
+							</f:formContainers>
+						</f:Form>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+		</uxap:sections>
+	</uxap:ObjectPageLayout>
+</mvc:View>

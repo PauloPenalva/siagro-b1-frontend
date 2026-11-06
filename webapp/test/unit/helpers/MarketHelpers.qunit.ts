@@ -1,7 +1,8 @@
 import {
   changePercentState, connectionView, deviationPercent, extractGroups, formatChangePercent, formatLast, formatQuoteTime,
   formatQuoteValue, groupFromKey, groupKey, isManualQuote, manualTooltip, normalizeQuotes, notFoundTextKey,
-  NO_GROUP_KEY, parseDecimalInput, parseServerInstant, withFlashes, clearFlashes, flashAttr, FLASH_DURATION_MS
+  NO_GROUP_KEY, parseDecimalInput, parseServerInstant, withFlashes, clearFlashes, flashAttr, FLASH_DURATION_MS,
+  ticketActions
 } from "siagrob1/helpers/MarketHelpers";
 import { MarketQuote } from "siagrob1/types/MarketQuote";
 import { MarketInstrument } from "siagrob1/types/MarketInstrument";
@@ -269,4 +270,34 @@ QUnit.test("parâmetros: 1.500 nos limiares é recusado com o erro do campo", fu
   const result = buildTradingSettingsPayload({ ...form, boardApprovalVolumeTons: "1.500" });
   assert.strictEqual(result.payload, undefined);
   assert.strictEqual(result.errors.boardApprovalVolumeTons, "ambiguous");
+});
+
+QUnit.module("MarketHelpers - ticketActions");
+
+QUnit.test("pendente: aprovar e rejeitar pedem MARKET_TICKET_APPROVE", function (assert) {
+  const approver = { approve: true, boardApprove: false };
+  assert.deepEqual(ticketActions("Pending", approver, false), { approve: true, reject: true, cancel: true });
+  assert.deepEqual(ticketActions("pending", { approve: false, boardApprove: true }, false),
+    { approve: false, reject: false, cancel: false }, "alçada da diretoria não decide o 1º nível");
+});
+
+QUnit.test("aguardando diretoria: só quem tem MARKET_BOARD_APPROVE decide", function (assert) {
+  assert.deepEqual(ticketActions("PendingBoard", { approve: true, boardApprove: false }, false),
+    { approve: false, reject: false, cancel: true }, "aprovador comum só cancela");
+  assert.deepEqual(ticketActions("pendingBoard", { approve: false, boardApprove: true }, false),
+    { approve: true, reject: true, cancel: false });
+});
+
+QUnit.test("criador cancela a própria boleta em aberto, sem outras permissões", function (assert) {
+  const none = { approve: false, boardApprove: false };
+  assert.deepEqual(ticketActions("Pending", none, true), { approve: false, reject: false, cancel: true });
+  assert.deepEqual(ticketActions("PendingBoard", none, true), { approve: false, reject: false, cancel: true });
+  assert.deepEqual(ticketActions("Pending", none, false), { approve: false, reject: false, cancel: false });
+});
+
+QUnit.test("situações finais não têm ação, nem para administrador criador", function (assert) {
+  const all = { approve: true, boardApprove: true };
+  for (const status of ["Approved", "Rejected", "Canceled", "approved", "", undefined]) {
+    assert.deepEqual(ticketActions(status, all, true), { approve: false, reject: false, cancel: false }, String(status));
+  }
 });

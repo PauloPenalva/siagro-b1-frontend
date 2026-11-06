@@ -144,6 +144,11 @@ export default {
   marketPriceGridLive: (harvest: string, city: string): string =>
     `/market/price-grid/live?harvest=${encodeURIComponent(harvest)}&city=${encodeURIComponent(city)}`,
   marketTickets: '/market/tickets',
+  marketTradeTickets: '/odata/MarketTradeTickets',
+  marketTradeTicket: (id: number): string => `/odata/MarketTradeTickets(${Number(id)})`,
+  marketTicketApprove: (id: number): string => `/market/tickets/${Number(id)}/approve`,
+  marketTicketReject: (id: number): string => `/market/tickets/${Number(id)}/reject`,
+  marketTicketCancel: (id: number): string => `/market/tickets/${Number(id)}/cancel`,
   shipmentReleases: 'odata/ShipmentReleases',
   salesShipmentReleases: 'odata/SalesShipmentReleases',
   processingCosts: 'odata/ProcessingCosts',

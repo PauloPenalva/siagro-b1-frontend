@@ -7,6 +7,7 @@ import "./helpers/AttachmentViewerHelpers.qunit";
 import "./helpers/PlateHelpers.qunit";
 import "./helpers/MarketHelpers.qunit";
 import "./helpers/MarketPriceGridHelpers.qunit";
+import "./helpers/MarketTicketHelpers.qunit";
 import "./helpers/FormValidation.qunit";
 import "./helpers/ContractTemplateFilters.qunit";
 import "./helpers/ContractDraftPlaceholders.qunit";

@@ -1,0 +1,126 @@
+<mvc:View
+	controllerName="siagrob1.controller.marketTradeTickets.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:rowmodes="sap.ui.table.rowmodes"
+	xmlns:f="sap.f"
+	xmlns:fb="sap.ui.comp.filterbar"
+	core:require="{ ticket: 'siagrob1/helpers/MarketTicketHelpers' }">
+	<!-- Lista de boletas: grade de uma linha por registro (sem quebra de texto). As linhas são ligadas por
+	     código (bindRows) no controller para nascerem já com o filtro padrão de boletas em aberto. -->
+	<f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="{i18n>marketTicketsTitle}" />
+				</f:heading>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:header>
+			<f:DynamicPageHeader>
+				<f:content>
+					<fb:FilterBar id="ticketsFilterBar" search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+						<fb:filterGroupItems>
+							<fb:FilterGroupItem name="status" label="{i18n>marketTicketsFilterStatus}" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<MultiComboBox selectedKeys="{filter>/Statuses}" items="{ path: 'statuses>/', templateShareable: false }"
+										placeholder="{i18n>marketTicketsFilterStatusPlaceholder}">
+										<core:Item key="{statuses>key}" text="{statuses>text}" />
+									</MultiComboBox>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="harvest" label="{i18n>marketTicketsFilterHarvest}" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<Input value="{filter>/HarvestSeasonCode}" description="{filter>/HarvestName}" showValueHelp="true"
+										valueHelpOnly="true" valueHelpRequest=".onPickHarvest" showClearIcon="true" />
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="partner" label="{i18n>marketTicketsFilterPartner}" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<Input value="{filter>/CardCode}" description="{filter>/CardName}" showValueHelp="true"
+										valueHelpOnly="true" valueHelpRequest=".onPickPartner" showClearIcon="true" />
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="dateFrom" label="{i18n>marketTicketsFilterFrom}" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<DatePicker value="{ path: 'filter>/DateFrom', type: 'sap.ui.model.type.String' }"
+										displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="dateTo" label="{i18n>marketTicketsFilterTo}" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<DatePicker value="{ path: 'filter>/DateTo', type: 'sap.ui.model.type.String' }"
+										displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+								</fb:control>
+							</fb:FilterGroupItem>
+						</fb:filterGroupItems>
+					</fb:FilterBar>
+				</f:content>
+			</f:DynamicPageHeader>
+		</f:header>
+		<f:content>
+			<t:Table id="ticketsTable" selectionMode="None" alternateRowColors="true" enableBusyIndicator="true"
+				busyIndicatorDelay="0" noData="{i18n>marketTicketsNoData}" class="sapUiSizeCondensed">
+				<t:extension>
+					<OverflowToolbar>
+						<ToolbarSpacer />
+						<Button text="{i18n>marketTicketsShowAll}" icon="sap-icon://list" press=".onShowAll" />
+						<Button icon="sap-icon://refresh" tooltip="{i18n>commonRefresh}" press=".onRefresh" />
+					</OverflowToolbar>
+				</t:extension>
+				<t:rowMode>
+					<rowmodes:Auto minRowCount="8" />
+				</t:rowMode>
+				<t:columns>
+					<t:Column label="{i18n>marketTicketColNumber}" width="6rem" sortProperty="Id">
+						<t:template><Link text="{Id}" press=".onOpen" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketTicketColDate}" width="10rem" sortProperty="CreatedAt">
+						<t:template>
+							<Text text="{ path: 'CreatedAt', targetType: 'any', formatter: 'ticket.formatLocalDateTime' }" wrapping="false" />
+						</t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketTicketColStatus}" width="12rem" sortProperty="Status">
+						<t:template>
+							<ObjectStatus text="{ path: 'Status', targetType: 'any', formatter: '.statusText' }"
+								state="{ path: 'Status', targetType: 'any', formatter: 'ticket.ticketStatusState' }"
+								icon="{ path: 'Status', targetType: 'any', formatter: 'ticket.ticketStatusIcon' }" />
+						</t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketTicketColPartner}" width="16rem" sortProperty="CardName">
+						<t:template><Text text="{CardName}" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketTicketColItem}" width="12rem" sortProperty="ItemName">
+						<t:template><Text text="{ItemName}" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketTicketColCity}" width="13rem">
+						<t:template>
+							<Text wrapping="false" text="{ parts: [ { path: 'Municipality/Name', targetType: 'any' }, { path: 'Municipality/StateAbbreviation', targetType: 'any' } ], formatter: 'ticket.cityLabel' }" />
+						</t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketTicketColSacks}" width="9rem" hAlign="End" sortProperty="VolumeKg">
+						<t:template><Text text="{ path: 'VolumeKg', targetType: 'any', formatter: 'ticket.formatSacks' }" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketTicketColNegotiated}" width="9rem" hAlign="End" sortProperty="NegotiatedPrice">
+						<t:template><Text text="{ path: 'NegotiatedPrice', targetType: 'any', formatter: 'ticket.formatMoneyValue' }" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketTicketColCalculated}" width="9rem" hAlign="End" sortProperty="CalculatedPrice">
+						<t:template><Text text="{ path: 'CalculatedPrice', targetType: 'any', formatter: 'ticket.formatMoneyValue' }" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketTicketColDeviation}" width="7rem" hAlign="End" sortProperty="DeviationPercent">
+						<t:template>
+							<ObjectStatus text="{ path: 'DeviationPercent', targetType: 'any', formatter: 'ticket.formatDeviation' }"
+								state="{ path: 'DeviationPercent', targetType: 'any', formatter: 'ticket.deviationState' }" />
+						</t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketTicketColContract}" width="10rem">
+						<t:template><Text text="{PurchaseContractCode}" wrapping="false" /></t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</f:content>
+	</f:DynamicPage>
+</mvc:View>
