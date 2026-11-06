@@ -41,6 +41,12 @@ export async function loadMarketLookups(model: ODataModel, withInstruments = tru
   };
 }
 
+const SETTLE_MS = 100;
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function safeIsTransient(context: Context): boolean {
   try {
     return context.isTransient() === true;
@@ -57,25 +63,27 @@ function safeIsTransient(context: Context): boolean {
 export async function saveMarketChanges(model: ODataModel, created?: Context): Promise<boolean> {
   const groupId = model.getUpdateGroupId();
   const createdPromise = created?.created();
-  // O erro de criação também chega pelo submitBatch/handler global: aqui só se evita a rejeição solta.
+  // `created()` só rejeita quando a criação é cancelada (delete/resetChanges); POST recusado NÃO a rejeita
+  // nem a resolve - o contexto segue transiente e o POST é repetido no próximo submitBatch.
   void createdPromise?.catch((): void => undefined);
   try {
     await model.submitBatch(groupId);
-    await createdPromise;
   } catch {
     // segue para a checagem de pendências
   }
-  // POST recusado fica transiente e é reenviado no próximo submitBatch (junto com o novo Salvar): cancela a
-  // criação desta tentativa e zera o resto do grupo (PATCHes). O diálogo segue aberto com o que foi digitado.
-  const failedCreate = created && safeIsTransient(created);
-  if (failedCreate || model.hasPendingChanges(groupId)) {
-    if (failedCreate) {
-      try {
-        await created.delete();
-      } catch {
-        // criação cancelada: nada a fazer
-      }
+  if (createdPromise !== undefined) {
+    // Dá uma chance de a resposta do POST ser processada; nunca espera sem limite.
+    await Promise.race([createdPromise.catch((): void => undefined), delay(SETTLE_MS)]);
+  }
+  const failedCreate = !!created && safeIsTransient(created);
+  if (failedCreate) {
+    try {
+      await Promise.race([created.delete(), delay(SETTLE_MS)]);
+    } catch {
+      // rejeição "canceled": criação desfeita
     }
+  }
+  if (failedCreate || model.hasPendingChanges(groupId)) {
     if (model.hasPendingChanges(groupId)) model.resetChanges(groupId);
     return false;
   }
