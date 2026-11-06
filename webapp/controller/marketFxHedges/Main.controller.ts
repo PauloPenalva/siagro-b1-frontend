@@ -257,7 +257,9 @@ export default class Main extends BaseController {
   }
 
   async onReopen(): Promise<void> {
-    await this.postOnSelected((id) => ServerRoutes.marketFxHedgeReopen(id), "marketFxReopened", "marketFxReopenConfirm");
+    // Hedge cancelado não tem liquidação a desfazer: a pergunta diz o que de fato acontece.
+    const confirmKey = this.selectedHedge()?.Status === "Canceled" ? "marketFxReopenCanceledConfirm" : "marketFxReopenConfirm";
+    await this.postOnSelected((id) => ServerRoutes.marketFxHedgeReopen(id), "marketFxReopened", confirmKey);
   }
 
   async onCancelHedge(): Promise<void> {
