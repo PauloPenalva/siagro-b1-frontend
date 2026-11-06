@@ -168,3 +168,10 @@ QUnit.test("taxa de liquidação digitada: vazio é nulo sem erro, ambíguo e ze
   assert.strictEqual(parseSettlementRate("zero").errorKey, "marketInvalidNumber");
   assert.strictEqual(parseSettlementRate("0").errorKey, "marketFxRateInvalid");
 });
+
+QUnit.test("datas malformadas e situação desconhecida não entram no $filter", function (assert) {
+  const now = new Date(2026, 10, 6);
+  assert.strictEqual(buildFxHedgesFilter({ Status: "all", SettleFrom: "2026-11-01' or 1 eq 1", SettleTo: "06/11/2026" }, now), undefined);
+  assert.strictEqual(buildFxHedgesFilter({ Status: "all", SettleFrom: "2026-11-01" }, now), "SettlementDate ge 2026-11-01");
+  assert.strictEqual(buildFxHedgesFilter({ Status: "x' or 1 eq 1" as never }, now), undefined);
+});

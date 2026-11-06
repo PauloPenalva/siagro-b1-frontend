@@ -180,6 +180,26 @@ export type EfpContext = {
   availableToPriceKg: unknown;
 };
 
+/**
+ * Campos do formulário que alimentam o cálculo do EFP: mudar qualquer um invalida o resultado já mostrado.
+ * (Observações não entram no cálculo, mas vão no corpo: também invalidam, para o "Gravar" valer só para o que foi calculado.)
+ */
+export const EFP_PREVIEW_FIELDS: readonly string[] = [
+  "date", "contractSide", "contractKey", "accountId", "instrumentCode", "side", "lots", "price", "premium", "fxRate", "bags",
+  "financialDueDate", "notes",
+];
+
+/** O caminho do modelo (`/price`, `price`) é de um campo que invalida o resultado calculado? */
+export function invalidatesPreview(path: string): boolean {
+  const name = (path ?? "").split("/").pop();
+  return EFP_PREVIEW_FIELDS.includes(name);
+}
+
+/** Assinatura dos valores de entrada: o resultado só vale se a assinatura de hoje for a de quando foi calculado. */
+export function efpInputSignature(form: Partial<EfpForm>): string {
+  return JSON.stringify(EFP_PREVIEW_FIELDS.map((field) => (form as Record<string, unknown>)?.[field] ?? ""));
+}
+
 const blankToNull = (value: string): string => (value ?? "").trim() || null;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 

@@ -1,5 +1,5 @@
 import {
-  EfpForm, bagsToKg, buildEfpPayload, contractRouteName, defaultFuturesSide, efpActions, efpStatusState, efpStatusTextKey,
+  EfpForm, bagsToKg, buildEfpPayload, efpInputSignature, invalidatesPreview, contractRouteName, defaultFuturesSide, efpActions, efpStatusState, efpStatusTextKey,
   exceedsAvailable, formatBagPrice, formatBags, formatFixationPerBag, formatPerKg, fxMode, kgToBags, normalizeCurrency, tonsMismatch
 } from "siagrob1/helpers/MarketEfpHelpers";
 
@@ -152,4 +152,34 @@ QUnit.test("recusa volume ambíguo, zero, acima do saldo e campos vazios", funct
 
 QUnit.test("prêmio negativo é aceito", function (assert) {
   assert.strictEqual(buildEfpPayload(form({ premium: "-0,75" }), usdOnBrl).payload.premium, -0.75);
+});
+
+QUnit.module("MarketEfpHelpers - resultado calculado");
+
+QUnit.test("todo campo de entrada invalida o resultado; campos de tela não", function (assert) {
+  for (const field of ["date", "contractSide", "contractKey", "accountId", "instrumentCode", "side", "lots", "price", "premium", "fxRate", "bags", "financialDueDate", "notes"]) {
+    assert.strictEqual(invalidatesPreview(`/${field}`), true, field);
+    assert.strictEqual(invalidatesPreview(field), true, `${field} sem barra`);
+  }
+  for (const field of ["previewVisible", "previewPerBag", "mismatch", "bagsInfo", "lotsInfo", "fxEnabled", "fxRefused", "availableText", "accounts"]) {
+    assert.strictEqual(invalidatesPreview(`/${field}`), false, field);
+  }
+  assert.strictEqual(invalidatesPreview(undefined), false);
+});
+
+QUnit.test("assinatura muda com qualquer entrada e ignora o que é só da tela", function (assert) {
+  const base = form();
+  const sign = efpInputSignature(base);
+  assert.strictEqual(efpInputSignature({ ...base }), sign);
+  assert.strictEqual(efpInputSignature({ ...base, previewVisible: true } as Partial<EfpForm>), sign);
+  for (const change of [{ price: "1181" }, { premium: "1" }, { lots: "11" }, { fxRate: "5,5" }, { side: "buy" }, { accountId: "9" },
+    { financialDueDate: "2027-01-01" }, { date: "2026-11-07" }, { contractSide: "sales" }, { bags: "10" }]) {
+    assert.notStrictEqual(efpInputSignature({ ...base, ...change }), sign, JSON.stringify(change));
+  }
+});
+
+QUnit.test("moeda do contrato em minúsculas (convenção do REST) é reconhecida", function (assert) {
+  assert.strictEqual(normalizeCurrency("brl"), "brl");
+  assert.strictEqual(fxMode("UsCentsPerBushel", "brl"), "required");
+  assert.strictEqual(fxMode("BrlPerBag", "usd"), "refused");
 });

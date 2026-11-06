@@ -68,13 +68,13 @@
 									description="{efp>/lotsInfo}" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketColPrice}">
-								<Input id="efpPrice" value="{efp>/price}" required="true" textAlign="End" />
+								<Input id="efpPrice" liveChange=".onPreviewInputLiveChange" value="{efp>/price}" required="true" textAlign="End" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketColPremium}">
-								<Input id="efpPremium" value="{efp>/premium}" textAlign="End" />
+								<Input id="efpPremium" liveChange=".onPreviewInputLiveChange" value="{efp>/premium}" textAlign="End" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketColFxRate}">
-								<Input id="efpFx" value="{efp>/fxRate}" textAlign="End" enabled="{efp>/fxEnabled}" required="{efp>/fxEnabled}"
+								<Input id="efpFx" liveChange=".onPreviewInputLiveChange" value="{efp>/fxRate}" textAlign="End" enabled="{efp>/fxEnabled}" required="{efp>/fxEnabled}"
 									description="{efp>/fxInfo}" />
 							</f:FormElement>
 						</f:formElements>
@@ -102,7 +102,7 @@
 		</content>
 		<buttons>
 			<Button text="{i18n>marketEfpCalculate}" icon="sap-icon://simulate" press=".onCalculate" enabled="{= !${ui>/isBusy} }" />
-			<Button text="{i18n>marketEfpSave}" type="Emphasized" press=".onEfpSave" enabled="{= !${ui>/isBusy} &amp;&amp; !${efp>/fxRefused} }" />
+			<Button text="{i18n>marketEfpSave}" type="Emphasized" press=".onEfpSave" enabled="{= !${ui>/isBusy} &amp;&amp; !${efp>/fxRefused} &amp;&amp; ${efp>/previewVisible} }" tooltip="{i18n>marketEfpCalculateFirst}" />
 			<Button text="{i18n>commonCancel}" press=".onEfpCancel" />
 		</buttons>
 	</Dialog>

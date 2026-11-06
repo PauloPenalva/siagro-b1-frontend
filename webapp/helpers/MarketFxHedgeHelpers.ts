@@ -125,6 +125,11 @@ export type FxHedgesFilter = { Status?: FxStatusFilter; AccountId?: string; Sett
 
 export const FX_RECENT_DAYS = 30;
 
+/** Só `yyyy-MM-dd` entra no $filter (Edm.Date vai sem aspas): qualquer outra coisa é ignorada. */
+function isIsoDate(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value ?? "");
+}
+
 /** Filtro padrão da lista: abertos e liquidados recentes. */
 export function defaultFxFilter(): FxHedgesFilter {
   return { Status: "recent", AccountId: "", SettleFrom: "", SettleTo: "" };
@@ -140,12 +145,12 @@ export function buildFxHedgesFilter(filter: FxHedgesFilter, now: Date): string {
   if (status === "recent") {
     const since = new Date(now.getFullYear(), now.getMonth(), now.getDate() - FX_RECENT_DAYS).toISOString();
     parts.push(`(Status eq 'Open' or (Status eq 'Settled' and SettledAt ge ${since}))`);
-  } else if (status !== "all") {
+  } else if (status === "Open" || status === "Settled" || status === "Canceled") {
     parts.push(`Status eq '${status}'`);
   }
   if (filter?.AccountId && Number.isInteger(Number(filter.AccountId))) parts.push(`AccountId eq ${Number(filter.AccountId)}`);
-  if (filter?.SettleFrom) parts.push(`SettlementDate ge ${filter.SettleFrom}`);
-  if (filter?.SettleTo) parts.push(`SettlementDate le ${filter.SettleTo}`);
+  if (isIsoDate(filter?.SettleFrom)) parts.push(`SettlementDate ge ${filter.SettleFrom}`);
+  if (isIsoDate(filter?.SettleTo)) parts.push(`SettlementDate le ${filter.SettleTo}`);
   return parts.length ? parts.join(" and ") : undefined;
 }
 

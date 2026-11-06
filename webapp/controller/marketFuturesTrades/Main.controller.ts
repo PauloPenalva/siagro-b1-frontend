@@ -11,7 +11,7 @@ import Table from "sap/ui/table/Table";
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import { Input$LiveChangeEvent } from "sap/m/Input";
 import BaseController from "../BaseController";
-import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import { pickPurchaseContract, pickSalesContract, syncContractLink } from "siagrob1/helpers/MarketContractLink";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import { localIsoDate } from "siagrob1/helpers/DateHelpers";
 import { MarketResult, marketFetch, notFoundTextKey, parseServerInstant } from "siagrob1/helpers/MarketHelpers";
@@ -453,31 +453,20 @@ export default class Main extends BaseController {
   }
 
   async onPickPurchaseContract(): Promise<void> {
-    const picked = await DialogHelper.openTableSelectDialog(this, "PurchaseContractsApprovedSelectDialog", ["Code", "CardName"]);
-    if (!picked) return;
-    // Compra OU venda: escolher um limpa o outro.
-    this.tradeModel().setProperty("/purchaseContractKey", picked.getProperty("Key") as string);
-    this.tradeModel().setProperty("/purchaseContractCode", picked.getProperty("Code") as string);
-    this.tradeModel().setProperty("/salesContractKey", "");
-    this.tradeModel().setProperty("/salesContractCode", "");
+    await pickPurchaseContract(this, this.tradeModel());
   }
 
   async onPickSalesContract(): Promise<void> {
-    const picked = await DialogHelper.openTableSelectDialog(this, "SalesContractsSelectDialog", ["Code", "CardName"]);
-    if (!picked) return;
-    this.tradeModel().setProperty("/salesContractKey", picked.getProperty("Key") as string);
-    this.tradeModel().setProperty("/salesContractCode", picked.getProperty("Code") as string);
-    this.tradeModel().setProperty("/purchaseContractKey", "");
-    this.tradeModel().setProperty("/purchaseContractCode", "");
+    await pickSalesContract(this, this.tradeModel());
   }
 
   /** Limpar o campo (ícone de limpar) desfaz o vínculo; o campo só aceita escolha pelo value help. */
   onPurchaseContractChange(): void {
-    if (!this.tradeModel().getProperty("/purchaseContractCode")) this.tradeModel().setProperty("/purchaseContractKey", "");
+    syncContractLink(this.tradeModel());
   }
 
   onSalesContractChange(): void {
-    if (!this.tradeModel().getProperty("/salesContractCode")) this.tradeModel().setProperty("/salesContractKey", "");
+    syncContractLink(this.tradeModel());
   }
 
   onTradeCancel(): void {

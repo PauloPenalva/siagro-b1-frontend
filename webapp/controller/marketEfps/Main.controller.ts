@@ -18,7 +18,7 @@ import { localIsoDate } from "siagrob1/helpers/DateHelpers";
 import { EMPTY_VALUE, MarketResult, marketFetch, notFoundTextKey } from "siagrob1/helpers/MarketHelpers";
 import { formatTons, lotEquivalent, parseLots, sideTextKey } from "siagrob1/helpers/MarketHedgeHelpers";
 import {
-  EfpField, EfpForm, EfpFormErrors, buildEfpPayload, contractRouteName, defaultFuturesSide, efpActions, efpStatusTextKey,
+  EfpField, EfpForm, EfpFormErrors, buildEfpPayload, contractRouteName, defaultFuturesSide, efpActions, efpInputSignature, efpStatusTextKey, invalidatesPreview,
   exceedsAvailable, formatBagPrice, formatBags, formatPerKg, fxMode, normalizeCurrency, tonsMismatch
 } from "siagrob1/helpers/MarketEfpHelpers";
 import { loadCounterparties, loadMarketLookups } from "siagrob1/helpers/MarketLookups";
@@ -86,7 +86,12 @@ export default class Main extends BaseController {
     this.getView().setModel(new JSONModel({ canManage: false }), "view");
     this.getView().setModel(new JSONModel({ futures: [] }), "lookup");
     this.getView().setModel(new JSONModel(this.noSelection()), "sel");
-    this.getView().setModel(new JSONModel({}), "efp");
+    const efp = new JSONModel({});
+    // Qualquer campo de entrada que mude (select, data, segmentado, texto) torna o resultado calculado velho.
+    efp.attachPropertyChange((ev) => {
+      if (invalidatesPreview(ev.getParameter("path"))) this.invalidatePreview();
+    });
+    this.getView().setModel(efp, "efp");
     this.getView().setModel(new JSONModel({ busy: false, rows: [] }), "contracts");
     this.getRouter().getRoute("marketEfps").attachPatternMatched(() => void this.routeMatched());
   }
@@ -310,6 +315,11 @@ export default class Main extends BaseController {
     void this.refreshLotsInfo();
   }
 
+  /** Texto digitado em preço, prêmio ou câmbio: o binding só grava no change, então o resultado velho sai já na digitação. */
+  onPreviewInputLiveChange(): void {
+    this.invalidatePreview();
+  }
+
   private quoteUnitOf(code: string): string {
     const futures = (this.getView().getModel("lookup") as JSONModel).getProperty("/futures") as { Code: string; QuoteUnit: string }[];
     return futures.find((instrument) => instrument.Code === code)?.QuoteUnit;
@@ -459,10 +469,13 @@ export default class Main extends BaseController {
 
   async onCalculate(): Promise<void> {
     await this.exclusive(async () => {
+      const signature = efpInputSignature(this.efpModel().getData() as EfpForm);
       this.setBusy(true);
       try {
         const preview = await this.requestPreview();
         if (!preview) return;
+        // O usuário mexeu num campo enquanto o cálculo voltava: o resultado já nasceu velho.
+        if (signature !== efpInputSignature(this.efpModel().getData() as EfpForm)) return;
         const model = this.efpModel();
         model.setProperty("/previewPerBag", formatBagPrice(preview.fixationPricePerBag, preview.currency));
         model.setProperty("/previewPerKg", `${formatPerKg(preview.fixationPricePerKg)} ${this.text("marketEfpPerKgUnit")}`);
@@ -480,6 +493,11 @@ export default class Main extends BaseController {
   async onEfpSave(): Promise<void> {
     await this.exclusive(async () => {
       const data = this.efpModel().getData() as EfpDialogModel;
+      if (!data.previewVisible) {
+        MessageBox.warning(this.text("marketEfpCalculateFirst"));
+        return;
+      }
+      const signature = efpInputSignature(data);
       const built = buildEfpPayload(data, this.context());
       this.markErrors(built.errors);
       if (!built.payload) {
@@ -504,6 +522,10 @@ export default class Main extends BaseController {
         String(built.payload.lots), data.instrumentCode,
       ]);
       if (!(await confirmDialog(summary, this.text("marketEfpSave")))) return;
+      if (signature !== efpInputSignature(this.efpModel().getData() as EfpForm)) {
+        MessageBox.warning(this.text("marketEfpChangedWhileConfirming"));
+        return;
+      }
 
       this.setBusy(true);
       try {
