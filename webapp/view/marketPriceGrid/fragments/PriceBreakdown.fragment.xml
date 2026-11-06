@@ -20,6 +20,15 @@
 							<f:FormElement label="{i18n>marketBreakdownQuotedAt}">
 								<Text text="{ path: 'breakdown>/quotedAt', formatter: 'market.formatQuoteTime' }" />
 							</f:FormElement>
+							<f:FormElement label="{i18n>marketTicketFieldSpotFx}" visible="{= !!${breakdown>/showFx} }">
+								<Text text="{breakdown>/spotFxText}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketTicketFieldCurveFx}" visible="{= !!${breakdown>/showFx} }">
+								<Text text="{breakdown>/curveFxText}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketBreakdownFxQuotedAt}" visible="{= !!${breakdown>/showFx} }">
+								<Text text="{breakdown>/fxQuotedText}" />
+							</f:FormElement>
 						</f:formElements>
 					</f:FormContainer>
 				</f:formContainers>

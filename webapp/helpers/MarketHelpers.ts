@@ -56,6 +56,25 @@ export function formatQuoteTime(iso: string): string {
   return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 
+const two = (n: number): string => String(n).padStart(2, "0");
+
+/** Data e hora locais (`dd/MM/yyyy HH:mm`) de um instante do servidor; ausente ou inválido vira "–". */
+export function formatInstantDateTime(iso: string): string {
+  if (!iso) return EMPTY_VALUE;
+  const d = parseServerInstant(iso);
+  if (Number.isNaN(d.getTime())) return EMPTY_VALUE;
+  return `${two(d.getDate())}/${two(d.getMonth() + 1)}/${d.getFullYear()} ${two(d.getHours())}:${two(d.getMinutes())}`;
+}
+
+/** Como "Atualizado": só a hora quando o instante é de hoje; de outro dia, data e hora. */
+export function formatQuoteMoment(iso: string, now: Date = new Date()): string {
+  if (!iso) return EMPTY_VALUE;
+  const d = parseServerInstant(iso);
+  if (Number.isNaN(d.getTime())) return EMPTY_VALUE;
+  const today = d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+  return today ? formatQuoteTime(iso) : formatInstantDateTime(iso);
+}
+
 /** Cotação lançada à mão: `source` Manual (string em qualquer caixa ou o número 1) ou override ativo. */
 export function isManualQuote(source: string | number, manualOverride: boolean): boolean {
   if (manualOverride) return true;

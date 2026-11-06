@@ -101,6 +101,8 @@
 												<f:FormElement label="{i18n>marketTicketFieldPremium}"><Text text="{ticket>/premiumText}" /></f:FormElement>
 												<f:FormElement label="{i18n>marketTicketFieldNetFx}"><Text text="{ticket>/netFxText}" /></f:FormElement>
 												<f:FormElement label="{i18n>marketTicketFieldSpotFx}"><Text text="{ticket>/spotFxText}" /></f:FormElement>
+												<f:FormElement label="{i18n>marketTicketFieldCurveFx}"><Text text="{ticket>/curveFxText}" /></f:FormElement>
+												<f:FormElement label="{i18n>marketBreakdownFxQuotedAt}"><Text text="{ticket>/fxQuotedText}" /></f:FormElement>
 											</f:formElements>
 										</f:FormContainer>
 										<f:FormContainer>

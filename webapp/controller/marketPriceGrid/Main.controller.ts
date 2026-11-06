@@ -15,11 +15,11 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import SessionService from "siagrob1/services/SessionService";
 import { marketPriceGridLive } from "siagrob1/services/MarketLiveService";
-import { FLASH_DURATION_MS, flashedCells, formatQuoteValue, marketFetch, MarketResult, notFoundTextKey } from "siagrob1/helpers/MarketHelpers";
+import { connectionView, FLASH_DURATION_MS, flashedCells, formatQuoteValue, marketFetch, MarketResult, notFoundTextKey } from "siagrob1/helpers/MarketHelpers";
 import { municipalityLabel, parseStrictDecimal } from "siagrob1/helpers/MarketPricingHelpers";
 import {
   buildTicketPayload, canBuy, clearPriceGridFlashes, PRICE_GRID_FLASH_FIELDS, loadPriceGridPreference, priceDeviationPercent, priceStatusTextKey,
-  formatStepValue, sacksToTons, savePriceGridPreference, stepUnitKey, ticketErrorKey, withPriceGridFlashes
+  formatStepValue, fxBreakdownLines, sacksToTons, savePriceGridPreference, stepUnitKey, ticketErrorKey, withPriceGridFlashes
 } from "siagrob1/helpers/MarketPriceGridHelpers";
 import {
   MarketFreightCity, MarketPriceGrid, MarketPriceGridRow, MarketPriceGridViewRow, MarketTicketForm, MarketTradeTicketCreated
@@ -62,7 +62,7 @@ export default class Main extends BaseController {
   onInit(): void {
     this.getView().setModel(new JSONModel({
       rows: [], cities: [], harvest: "", harvestName: "", city: "", selectedLineId: null, selectedCanBuy: false,
-      moduleMessage: "", moduleDisabled: false, statusText: "", statusState: "None", noDataText: "",
+      moduleMessage: "", moduleDisabled: false, cmaText: "", cmaState: "None", statusText: "", statusState: "None", noDataText: "",
     }), "grid");
     this.getView().setModel(new JSONModel({}), "breakdown");
     this.getView().setModel(new JSONModel({}), "ticket");
@@ -150,6 +150,7 @@ export default class Main extends BaseController {
     this.previousRows = null;
     this.setSelectedLine(null);
     model.setProperty("/rows", []);
+    this.applyCmaStatus(null);
     this.syncTableSelection();
 
     if (!harvest || !city) {
@@ -171,6 +172,7 @@ export default class Main extends BaseController {
       }
       this.showError(grid);
     } else {
+      this.applyCmaStatus(grid.data);
       this.applyRows(grid.data?.rows ?? []);
     }
     // O primeiro quadro do stream é nova linha de base: trocar safra/cidade nunca pisca.
@@ -181,6 +183,7 @@ export default class Main extends BaseController {
         if (seq !== this.loadSeq) return;
         this.browserDisconnected = false;
         this.updateStatus();
+        this.applyCmaStatus(payload);
         this.applyRows(payload?.rows ?? []);
       },
       onConnectionChange: (disconnected) => {
@@ -195,6 +198,19 @@ export default class Main extends BaseController {
     const model = this.model();
     model.setProperty("/statusText", this.text(this.browserDisconnected ? "marketStatusNoServer" : "marketPriceGridLive"));
     model.setProperty("/statusState", this.browserDisconnected ? "Error" : "Success");
+  }
+
+  /** Estado da integração CMA ao lado do indicador do stream; servidor sem o campo não mostra nada. */
+  private applyCmaStatus(payload: Pick<MarketPriceGrid, "connectionStatus" | "connectionMessage">): void {
+    const model = this.model();
+    if (!payload?.connectionStatus) {
+      model.setProperty("/cmaText", "");
+      model.setProperty("/cmaState", "None");
+      return;
+    }
+    const view = connectionView(payload.connectionStatus, false);
+    model.setProperty("/cmaText", this.text(view.textKey, [payload.connectionMessage ?? ""]));
+    model.setProperty("/cmaState", view.state);
   }
 
   private applyRows(rows: MarketPriceGridRow[]): void {
@@ -330,6 +346,7 @@ export default class Main extends BaseController {
       quoteText: formatQuoteValue(row.exchangeQuote),
       quoteSource: row.quoteSource,
       quotedAt: row.quotedAt,
+      ...fxBreakdownLines(row.netFx, row.spotFx, row.curveFx, row.fxQuotedAt, row.fxQuoteSource),
       steps,
     });
     this.breakdownDialog ??= await this.loadFragment({ name: "siagrob1.view.marketPriceGrid.fragments.PriceBreakdown" }) as Dialog;

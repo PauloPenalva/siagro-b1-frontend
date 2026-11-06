@@ -44,8 +44,8 @@
 					<f:FormContainer title="{i18n>marketTradingSectionContract}">
 						<f:formElements>
 							<f:FormElement label="{i18n>marketTradingContractUm}">
-								<Input value="{form>/contractUnitOfMeasureCode}" maxLength="4" editable="{form>/canManage}"
-									showValueHelp="true" valueHelpRequest=".openUnitsOfMeasureValueHelp" />
+								<Input value="KG" editable="false" />
+								<Text text="{i18n>marketTradingContractUmHint}" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketTradingFreightUm}">
 								<Input value="{form>/contractFreightUmCode}" maxLength="4" editable="{form>/canManage}"

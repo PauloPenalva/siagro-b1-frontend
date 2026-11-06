@@ -9,7 +9,7 @@ import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import {
   formatQuoteValue, marketFetch, MarketResult, notFoundTextKey, ticketActions, TicketPermissions
 } from "siagrob1/helpers/MarketHelpers";
-import { formatDeliveryRange, formatFx, formatIsoDate, formatStepValue, quoteSourceText, stepUnitKey } from "siagrob1/helpers/MarketPriceGridHelpers";
+import { formatDeliveryRange, formatFx, formatIsoDate, formatStepValue, fxBreakdownLines, fxQuotedWithSource, quoteSourceText, stepUnitKey } from "siagrob1/helpers/MarketPriceGridHelpers";
 import {
   cityLabel, deviationState, formatDeviation, formatLocalDateTime, formatMoneyValue, formatSacks, formatTons,
   normalizeTicketStatus, parseTicketSteps, ticketStatusIcon, ticketStatusState, ticketStatusTextKey, ticketTotalValue,
@@ -152,6 +152,8 @@ export default class Detail extends BaseController {
       quoteText: `${t.InstrumentCode ?? ""} ${quoteValue(t.ExchangeQuote)}`.trim(),
       premiumText: quoteValue(t.Premium),
       netFxText: t.NetFx == null ? "–" : formatFx(Number(t.NetFx)),
+      curveFxText: t.CurveFx == null ? "–" : formatFx(Number(t.CurveFx)),
+      fxQuotedText: fxQuotedWithSource(t.FxQuotedAt, t.FxQuoteSource),
       spotFxText: t.SpotFx == null ? "–" : formatFx(Number(t.SpotFx)),
       portPriceText: formatMoneyValue(t.PortPrice),
       freightText: formatMoneyValue(t.FreightPerTon),
@@ -173,7 +175,7 @@ export default class Detail extends BaseController {
       contractCode: t.PurchaseContractCode ?? "",
       contractKey: t.PurchaseContractKey ?? "",
       // Dados crus de que as ações precisam (resumo da confirmação, composição do cálculo).
-      raw: { id: t.Id, status: t.Status, stepsJson: t.StepsJson ?? "", instrumentCode: t.InstrumentCode ?? "", quoteText: quoteValue(t.ExchangeQuote), quoteSource: t.QuoteSource ?? "", quotedAt: t.QuotedAt ?? "" },
+      raw: { id: t.Id, status: t.Status, stepsJson: t.StepsJson ?? "", instrumentCode: t.InstrumentCode ?? "", quoteText: quoteValue(t.ExchangeQuote), quoteSource: t.QuoteSource ?? "", quotedAt: t.QuotedAt ?? "", fx: fxBreakdownLines(t.NetFx, t.SpotFx, t.CurveFx, t.FxQuotedAt, t.FxQuoteSource) },
     };
   }
 
@@ -200,6 +202,7 @@ export default class Detail extends BaseController {
       quoteText: model.getProperty("/raw/quoteText") as string,
       quoteSource: model.getProperty("/raw/quoteSource") as string,
       quotedAt: model.getProperty("/raw/quotedAt") as string,
+      ...(model.getProperty("/raw/fx") as object),
       steps,
     });
     this.breakdownDialog ??= await this.loadFragment({ name: "siagrob1.view.marketPriceGrid.fragments.PriceBreakdown" }) as Dialog;

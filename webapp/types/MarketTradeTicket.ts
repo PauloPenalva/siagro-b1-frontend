@@ -14,6 +14,9 @@ export type MarketTradeTicketEntity = {
   Premium?: number | string;
   NetFx?: number | string;
   SpotFx?: number | string;
+  CurveFx?: number | string;
+  FxQuotedAt?: string;
+  FxQuoteSource?: string;
   FreightPerTon?: number | string;
   PortPrice?: number | string;
   CalculatedPrice?: number | string;

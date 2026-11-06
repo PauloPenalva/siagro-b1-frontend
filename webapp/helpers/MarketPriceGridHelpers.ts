@@ -1,4 +1,4 @@
-import { clearRowFlashes, computeFlashes, EMPTY_VALUE, formatQuoteValue } from "siagrob1/helpers/MarketHelpers";
+import { clearRowFlashes, computeFlashes, EMPTY_VALUE, formatInstantDateTime, formatQuoteMoment, formatQuoteValue } from "siagrob1/helpers/MarketHelpers";
 import { parseStrictDecimal } from "siagrob1/helpers/MarketPricingHelpers";
 import {
   MarketPriceGridRow, MarketPriceGridViewRow, MarketTicketForm, MarketTradeTicketInput, PriceGridFlashField
@@ -119,6 +119,42 @@ export function formatStepValue(value: number, unit: string): string {
 export function quoteSourceText(source: string): string {
   if (!source) return EMPTY_VALUE;
   return source.toLowerCase() === "manual" ? "Manual" : source.toUpperCase();
+}
+
+function numberOrNull(value: unknown): number {
+  if (value == null || value === "") return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** Há perna em dólar quando o dólar líquido existe e não é o neutro (1 sem dólar à vista). */
+export function hasDollarLeg(netFx: unknown, spotFx: unknown): boolean {
+  const net = numberOrNull(netFx);
+  return net !== null && !(net === 1 && numberOrNull(spotFx) === null);
+}
+
+/** Coluna "Dólar em" da grade: "–" sem horário ou sem perna em dólar. */
+export function fxQuotedColumn(fxQuotedAt: string, netFx: unknown, spotFx: unknown): string {
+  return hasDollarLeg(netFx, spotFx) ? formatQuoteMoment(fxQuotedAt) : EMPTY_VALUE;
+}
+
+/** "dd/MM/yyyy HH:mm (CMA)"; sem horário "–". */
+export function fxQuotedWithSource(fxQuotedAt: string, source: string): string {
+  const when = formatInstantDateTime(fxQuotedAt);
+  return when === EMPTY_VALUE || !source ? when : `${when} (${quoteSourceText(source)})`;
+}
+
+/** Linhas de dólar da composição do preço (grade e boleta); `showFx` falso esconde as três. */
+export function fxBreakdownLines(
+  netFx: unknown, spotFx: unknown, curveFx: unknown, fxQuotedAt: string, fxQuoteSource: string
+): { showFx: boolean; spotFxText: string; curveFxText: string; fxQuotedText: string } {
+  const spot = numberOrNull(spotFx), curve = numberOrNull(curveFx);
+  return {
+    showFx: hasDollarLeg(netFx, spotFx),
+    spotFxText: spot === null ? EMPTY_VALUE : formatFx(spot),
+    curveFxText: curve === null ? EMPTY_VALUE : formatFx(curve),
+    fxQuotedText: fxQuotedWithSource(fxQuotedAt, fxQuoteSource),
+  };
 }
 
 /** Só uma linha com preço calculado pode virar boleta. */

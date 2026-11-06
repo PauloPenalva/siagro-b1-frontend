@@ -13,6 +13,7 @@
 	     usa o mesmo CSS do terminal (classe siagroMarketTerminal) e o descritor flash/* de cada linha. -->
 	<Page title="{i18n>marketPriceGridTitle}" busy="{ui>/busy}" busyIndicatorDelay="0" enableScrolling="false">
 		<headerContent>
+			<ObjectStatus text="{grid>/cmaText}" state="{grid>/cmaState}" inverted="true" visible="{= !!${grid>/cmaText} }" class="sapUiSmallMarginEnd" />
 			<ObjectStatus text="{grid>/statusText}" state="{grid>/statusState}" inverted="true" />
 		</headerContent>
 		<content>
@@ -93,6 +94,9 @@
 									<customData><core:CustomData key="market-flash" value="{ path: 'grid>flash/netFx', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
 								</Text>
 							</t:template>
+						</t:Column>
+						<t:Column hAlign="End" width="7rem" label="{i18n>marketGridColFxAt}">
+							<t:template><Text text="{ parts: ['grid>fxQuotedAt', 'grid>netFx', 'grid>spotFx'], formatter: 'grid.fxQuotedColumn' }" wrapping="false" /></t:template>
 						</t:Column>
 						<t:Column hAlign="End" width="6rem" label="{i18n>marketGridColFreight}">
 							<t:template><Text text="{ path: 'grid>freightPerTon', formatter: 'grid.formatMoney' }" wrapping="false" /></t:template>

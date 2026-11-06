@@ -25,6 +25,9 @@ export type MarketPriceGridRow = {
   changePercent: number;
   premium: number;
   spotFx: number;
+  curveFx?: number;
+  fxQuotedAt?: string;
+  fxQuoteSource?: string;
   netFx: number;
   portPrice: number;
   freightPerTon: number;
@@ -40,6 +43,9 @@ export type MarketPriceGrid = {
   harvestSeasonCode: string;
   municipalityCode: string;
   generatedAt: string;
+  /** Estado da integração CMA (mesmos valores do terminal); ausente em servidor antigo. */
+  connectionStatus?: string;
+  connectionMessage?: string;
   rows: MarketPriceGridRow[];
 };
 

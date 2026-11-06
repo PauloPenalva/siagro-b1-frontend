@@ -1,7 +1,7 @@
-import { computeFlashes, clearRowFlashes, FLASH_DURATION_MS } from "siagrob1/helpers/MarketHelpers";
+import { computeFlashes, clearRowFlashes, FLASH_DURATION_MS, formatQuoteMoment } from "siagrob1/helpers/MarketHelpers";
 import {
   buildTicketPayload, canBuy, formatDeliveryRange, formatFx, formatIsoDate, formatMoney, loadPriceGridPreference,
-  priceDeviationPercent, priceStatusState, formatStepValue, priceStatusTextKey, sacksToTons, savePriceGridPreference, stepUnitKey,
+  priceDeviationPercent, priceStatusState, formatStepValue, fxBreakdownLines, fxQuotedColumn, fxQuotedWithSource, hasDollarLeg, priceStatusTextKey, sacksToTons, savePriceGridPreference, stepUnitKey,
   withPriceGridFlashes
 } from "siagrob1/helpers/MarketPriceGridHelpers";
 import { MarketPriceGridRow, MarketTicketForm } from "siagrob1/types/MarketPriceGrid";
@@ -117,4 +117,35 @@ QUnit.test("passos da composição: casas fixas pela unidade", function (assert)
   assert.strictEqual(formatStepValue(250, "USD/t"), "250,00");
   assert.strictEqual(formatStepValue(1234.5, "quote"), "1.234,50", "como a cotação na grade");
   assert.strictEqual(formatStepValue(null, "BRL/sc"), "–");
+});
+
+QUnit.test("perna em dólar: líquido ausente, ou 1 sem dólar à vista, não tem", function (assert) {
+  assert.strictEqual(hasDollarLeg(null, null), false);
+  assert.strictEqual(hasDollarLeg(1, null), false);
+  assert.strictEqual(hasDollarLeg(1, 5.2), true);
+  assert.strictEqual(hasDollarLeg("5.4", 5.4), true);
+});
+
+QUnit.test("dólar cotado em: hoje só a hora, outro dia data e hora, e origem", function (assert) {
+  const p = (n: number) => String(n).padStart(2, "0");
+  const old = new Date(2020, 0, 5, 14, 7);
+  assert.strictEqual(formatQuoteMoment(old.toISOString(), new Date(2026, 10, 6)), "05/01/2020 14:07");
+  const now = new Date();
+  assert.notStrictEqual(formatQuoteMoment(now.toISOString(), now), "–");
+  assert.strictEqual(formatQuoteMoment(now.toISOString(), now).includes("/"), false, "hoje não mostra a data");
+  assert.strictEqual(formatQuoteMoment(null), "–");
+  assert.strictEqual(fxQuotedWithSource(old.toISOString(), "cma"), `05/01/2020 ${p(14)}:${p(7)} (CMA)`);
+  assert.strictEqual(fxQuotedWithSource(old.toISOString(), "manual"), `05/01/2020 ${p(14)}:${p(7)} (Manual)`);
+  assert.strictEqual(fxQuotedWithSource(null, "cma"), "–");
+  assert.strictEqual(fxQuotedColumn(old.toISOString(), 1, null), "–", "sem perna em dólar");
+  assert.strictEqual(fxQuotedColumn(null, 5.2, 5.2), "–");
+});
+
+QUnit.test("composição: linhas de dólar escondidas sem perna em dólar", function (assert) {
+  assert.strictEqual(fxBreakdownLines(1, null, null, null, null).showFx, false);
+  const lines = fxBreakdownLines(5.4, "5.3", 5.5, null, null);
+  assert.strictEqual(lines.showFx, true);
+  assert.strictEqual(lines.spotFxText, "5,3000");
+  assert.strictEqual(lines.curveFxText, "5,5000");
+  assert.strictEqual(fxBreakdownLines(5.4, 5.3, null, null, null).curveFxText, "–");
 });

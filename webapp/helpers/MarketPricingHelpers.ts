@@ -94,7 +94,8 @@ export function tradingSettingsToForm(settings?: Partial<MarketTradingSettings>)
     spotFxInstrumentCode: settings?.spotFxInstrumentCode ?? "",
     boardApprovalVolumeTons: text(settings?.boardApprovalVolumeTons),
     boardApprovalDeviationPercent: text(settings?.boardApprovalDeviationPercent),
-    contractUnitOfMeasureCode: settings?.contractUnitOfMeasureCode ?? "",
+    // Nesta versão o contrato da boleta é sempre em KG (o servidor recusa outra unidade).
+    contractUnitOfMeasureCode: "KG",
     contractFreightUmCode: settings?.contractFreightUmCode ?? "",
   };
 }
@@ -133,7 +134,7 @@ export function buildTradingSettingsPayload(
       spotFxInstrumentCode: text(form.spotFxInstrumentCode),
       boardApprovalVolumeTons,
       boardApprovalDeviationPercent,
-      contractUnitOfMeasureCode: text(form.contractUnitOfMeasureCode),
+      contractUnitOfMeasureCode: "KG",
       contractFreightUmCode: text(form.contractFreightUmCode),
     },
   };
