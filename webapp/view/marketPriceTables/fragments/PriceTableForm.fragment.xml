@@ -68,7 +68,7 @@
 			<t:Column label="{i18n>marketLineColCurve}" width="13rem">
 				<t:template>
 					<Select forceSelection="false" width="100%" selectedKey="{FxCurveInstrumentCode}"
-						enabled="{ parts: ['InstrumentCode', 'lookup>/instruments', 'view>/canManage'], formatter: '.curveEnabled' }"
+						enabled="{ parts: [ { path: 'InstrumentCode', targetType: 'any' }, { path: 'lookup>/instruments', targetType: 'any' }, { path: 'view>/canManage', targetType: 'any' } ], formatter: '.curveEnabled' }"
 						items="{ path: 'lookup>/curveInstruments', templateShareable: false }">
 						<core:Item key="{lookup>Code}" text="{lookup>Code}" />
 					</Select>

@@ -41,6 +41,14 @@ export async function loadMarketLookups(model: ODataModel, withInstruments = tru
   };
 }
 
+function safeIsTransient(context: Context): boolean {
+  try {
+    return context.isTransient() === true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Grava o que está pendente no update group. `created` é o contexto transiente de uma inclusão:
  * se o POST falhar (o erro já foi mostrado pelo handler global de mensagens), o pendente é
@@ -57,8 +65,18 @@ export async function saveMarketChanges(model: ODataModel, created?: Context): P
   } catch {
     // segue para a checagem de pendências
   }
-  if (model.hasPendingChanges(groupId)) {
-    model.resetChanges(groupId);
+  // POST recusado fica transiente e é reenviado no próximo submitBatch (junto com o novo Salvar): cancela a
+  // criação desta tentativa e zera o resto do grupo (PATCHes). O diálogo segue aberto com o que foi digitado.
+  const failedCreate = created && safeIsTransient(created);
+  if (failedCreate || model.hasPendingChanges(groupId)) {
+    if (failedCreate) {
+      try {
+        await created.delete();
+      } catch {
+        // criação cancelada: nada a fazer
+      }
+    }
+    if (model.hasPendingChanges(groupId)) model.resetChanges(groupId);
     return false;
   }
   return true;

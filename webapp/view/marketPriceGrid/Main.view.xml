@@ -96,7 +96,7 @@
 							</t:template>
 						</t:Column>
 						<t:Column hAlign="End" width="7rem" label="{i18n>marketGridColFxAt}">
-							<t:template><Text text="{ parts: ['grid>fxQuotedAt', 'grid>netFx', 'grid>spotFx'], formatter: 'grid.fxQuotedColumn' }" wrapping="false" /></t:template>
+							<t:template><Text text="{ parts: [ { path: 'grid>fxQuotedAt', targetType: 'any' }, { path: 'grid>netFx', targetType: 'any' }, { path: 'grid>spotFx', targetType: 'any' } ], formatter: 'grid.fxQuotedColumn' }" wrapping="false" /></t:template>
 						</t:Column>
 						<t:Column hAlign="End" width="6rem" label="{i18n>marketGridColFreight}">
 							<t:template><Text text="{ path: 'grid>freightPerTon', formatter: 'grid.formatMoney' }" wrapping="false" /></t:template>
