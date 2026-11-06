@@ -18,7 +18,7 @@ import MarketLiveService from "siagrob1/services/MarketLiveService";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import {
   connectionView, deviationPercent, extractGroups, groupFromKey, groupKey, MANUAL_DEVIATION_LIMIT, marketFetch,
-  FLASH_DURATION_MS, MarketResult, normalizeQuotes, notFoundTextKey, parseDecimalInput, withFlashes, clearFlashes
+  FLASH_DURATION_MS, FLASH_FIELDS, flashedCells, MarketResult, normalizeQuotes, notFoundTextKey, parseDecimalInput, withFlashes, clearFlashes
 } from "siagrob1/helpers/MarketHelpers";
 import { ManualQuoteInput, MarketQuote, MarketQuoteRow, MarketQuotesPayload } from "siagrob1/types/MarketQuote";
 
@@ -194,7 +194,13 @@ export default class Main extends BaseController {
     this.cancelFlashTimer();
     this.flashTimer = setTimeout(() => {
       this.flashTimer = undefined;
-      this.clearAllFlashes();
+      // Só os descritores, no lugar: o array de cotações não muda e o plugin de seleção não limpa a seleção.
+      const model = this.model();
+      const cells = flashedCells(model.getProperty("/quotes") as MarketQuoteRow[], FLASH_FIELDS);
+      for (const { index, field } of cells) {
+        model.setProperty(`/quotes/${index}/flash/${field}`, "");
+        model.setProperty(`/quotes/${index}/flashAt/${field}`, 0);
+      }
     }, FLASH_DURATION_MS);
   }
 

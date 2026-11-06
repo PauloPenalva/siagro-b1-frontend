@@ -15,10 +15,10 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import SessionService from "siagrob1/services/SessionService";
 import { marketPriceGridLive } from "siagrob1/services/MarketLiveService";
-import { FLASH_DURATION_MS, formatQuoteValue, marketFetch, MarketResult, notFoundTextKey } from "siagrob1/helpers/MarketHelpers";
+import { FLASH_DURATION_MS, flashedCells, formatQuoteValue, marketFetch, MarketResult, notFoundTextKey } from "siagrob1/helpers/MarketHelpers";
 import { municipalityLabel, parseStrictDecimal } from "siagrob1/helpers/MarketPricingHelpers";
 import {
-  buildTicketPayload, canBuy, clearPriceGridFlashes, loadPriceGridPreference, priceDeviationPercent, priceStatusTextKey,
+  buildTicketPayload, canBuy, clearPriceGridFlashes, PRICE_GRID_FLASH_FIELDS, loadPriceGridPreference, priceDeviationPercent, priceStatusTextKey,
   formatStepValue, sacksToTons, savePriceGridPreference, stepUnitKey, ticketErrorKey, withPriceGridFlashes
 } from "siagrob1/helpers/MarketPriceGridHelpers";
 import {
@@ -216,9 +216,13 @@ export default class Main extends BaseController {
     this.cancelFlashTimer();
     this.flashTimer = setTimeout(() => {
       this.flashTimer = undefined;
-      const cleared = clearPriceGridFlashes(this.model().getProperty("/rows") as MarketPriceGridRow[]);
-      this.previousRows = this.previousRows ? cleared : null;
-      this.model().setProperty("/rows", cleared);
+      // Só os descritores, no lugar: o array de linhas não muda e o plugin de seleção não limpa a seleção.
+      const model = this.model();
+      const cells = flashedCells(model.getProperty("/rows") as MarketPriceGridViewRow[], PRICE_GRID_FLASH_FIELDS);
+      for (const { index, field } of cells) {
+        model.setProperty(`/rows/${index}/flash/${field}`, "");
+        model.setProperty(`/rows/${index}/flashAt/${field}`, 0);
+      }
     }, FLASH_DURATION_MS);
   }
 

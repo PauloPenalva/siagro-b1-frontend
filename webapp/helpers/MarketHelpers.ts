@@ -257,6 +257,15 @@ export function computeFlashes<T extends object, F extends string & keyof T, K>(
   });
 }
 
+/** Posições (linha, campo) que ainda carregam um descritor de piscada; vazio = nada a limpar. */
+export function flashedCells<T extends object, F extends string>(rows: FlashedRow<T, F>[], fields: readonly F[]): { index: number; field: F }[] {
+  const cells: { index: number; field: F }[] = [];
+  (rows ?? []).forEach((row, index) => {
+    for (const field of fields) if (row?.flash?.[field]) cells.push({ index, field });
+  });
+  return cells;
+}
+
 /** Troca de filtro/aba/cidade: as linhas recicladas não podem repetir a piscada da linha anterior. */
 export function clearRowFlashes<T extends object, F extends string>(rows: T[], fields: readonly F[]): FlashedRow<T, F>[] {
   return (rows ?? []).map((row) => ({ ...row, flash: emptyFlash(fields, ""), flashAt: emptyFlash(fields, 0) }));

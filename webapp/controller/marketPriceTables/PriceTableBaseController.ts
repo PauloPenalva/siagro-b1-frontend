@@ -5,12 +5,9 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import Context from "sap/ui/model/odata/v4/Context";
-import Message from "sap/ui/core/message/Message";
 import Table from "sap/ui/table/Table";
 import Form from "sap/ui/layout/form/Form";
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
-import Messaging from "sap/ui/core/Messaging";
-import MessageType from "sap/ui/core/message/MessageType";
 import { Router$BeforeRouteMatchedEvent } from "sap/ui/core/routing/Router";
 import BaseController from "../BaseController";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
@@ -32,6 +29,8 @@ import { MarketPriceTableLine } from "siagrob1/types/MarketPricing";
 export default class PriceTableBaseController extends BaseController {
   protected bundle?: ResourceBundle;
   private ownRoute?: string;
+  /** A rota própria é a ativa: só então a saída dela descarta pendências. */
+  private routeActive = false;
   /** Sobe a cada saída da rota: carga assíncrona de uma visita que já acabou não pode mexer no model. */
   protected leaveSeq = 0;
 
@@ -42,6 +41,7 @@ export default class PriceTableBaseController extends BaseController {
    */
   protected watchLeave(ownRoute: string): void {
     this.ownRoute = ownRoute;
+    this.getRouter().getRoute(ownRoute).attachPatternMatched(() => { this.routeActive = true; });
     this.getRouter().attachBeforeRouteMatched(this.onBeforeRouteMatched, this);
   }
 
@@ -50,7 +50,8 @@ export default class PriceTableBaseController extends BaseController {
   }
 
   private readonly onBeforeRouteMatched = (ev: Router$BeforeRouteMatchedEvent): void => {
-    if (ev.getParameter("name") === this.ownRoute) return;
+    if (!this.routeActive || ev.getParameter("name") === this.ownRoute) return;
+    this.routeActive = false;
     this.leaveSeq++;
     this.discardChanges();
   };
@@ -156,14 +157,8 @@ export default class PriceTableBaseController extends BaseController {
     return null;
   }
 
-  /** Mensagens de erro do servidor sobre tabelas de preços ainda ativas (rejeição de campo/linha). */
-  private hasServerErrors(): boolean {
-    return (Messaging.getMessageModel().getData() as Message[]).some((message) =>
-      message.getType() === MessageType.Error && message.getTargets().some((target) => target.includes("MarketPriceTable")));
-  }
-
   /**
-   * Grava cabeçalho + linhas num `$batch`. Só navega quando nada ficou pendente nem há erro do servidor;
+   * Grava cabeçalho + linhas num `$batch`. Só navega quando nada ficou pendente;
    * tabela NOVA abre a edição da própria tabela (em vez de depender dos contextos aninhados da resposta).
    */
   protected async save(successKey: string): Promise<void> {
@@ -189,7 +184,7 @@ export default class PriceTableBaseController extends BaseController {
     } finally {
       this.setBusy(false);
     }
-    if (model.hasPendingChanges(model.getUpdateGroupId()) || this.hasServerErrors()) return;
+    if (model.hasPendingChanges(model.getUpdateGroupId())) return;
 
     MessageToast.show(this.text(successKey), { closeOnBrowserNavigation: false });
     const id = wasTransient ? String(header.getProperty("Id")) : "";
