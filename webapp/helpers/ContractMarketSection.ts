@@ -11,9 +11,19 @@ import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import ObjectPageLayout from "sap/uxap/ObjectPageLayout";
 import ObjectPageSection from "sap/uxap/ObjectPageSection";
 import { loadMarketLookups } from "siagrob1/helpers/MarketLookups";
-import { formatStrictDecimal, numberErrorKey, parseStrictDecimal } from "siagrob1/helpers/MarketPricingHelpers";
+import { MARKET_MANAGE, numberErrorKey, parseStrictDecimal } from "siagrob1/helpers/MarketPricingHelpers";
 import { usdPerBagToKg, usdPerKgToBag } from "siagrob1/helpers/MarketSetupHelpers";
+import {
+  buildContractMarketDataPayload, ContractMarketDataForm, contractMarketDataToForm, formatFixedDecimal, PRICE_DECIMALS, RATE_DECIMALS
+} from "siagrob1/helpers/ContractMarketDataHelpers";
+import { marketFetch, MarketResult, notFoundTextKey } from "siagrob1/helpers/MarketHelpers";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
 import MarketModuleService from "siagrob1/services/MarketModuleService";
+import SessionService from "siagrob1/services/SessionService";
+import Dialog from "sap/m/Dialog";
+import Input from "sap/m/Input";
+import MessageBox from "sap/m/MessageBox";
+import MessageToast from "sap/m/MessageToast";
 
 type InstrumentOption = { Code: string; Label: string };
 
@@ -45,9 +55,18 @@ export default class ContractMarketSection {
   /** Sobe a cada visita da própria rota e a cada saída dela: espera antiga não chama o handler. */
   private seq = 0;
   private bundle?: ResourceBundle;
+  /** Lado do contrato no PUT market-data (pela rota da tela). */
+  private readonly side: "purchase" | "sales";
+  /** Tela de detalhe: só nela aparece "Alterar dados de mercado". */
+  private readonly detail: boolean;
+  private dataDialog?: Dialog;
+  /** Trava do clique até o fim do PUT: clique duplo não manda dois pedidos. */
+  private saving = false;
 
   constructor(view: View, router: Router, ownRoute: string) {
     this.view = view;
+    this.side = ownRoute.startsWith("purchase") ? "purchase" : "sales";
+    this.detail = ownRoute.endsWith("Detail");
     router.attachBeforeRouteMatched((ev: Router$BeforeRouteMatchedEvent) => {
       if (ev.getParameter("name") !== ownRoute) this.seq++;
     });
@@ -98,7 +117,11 @@ export default class ContractMarketSection {
       // sem instrumentos o Select fica vazio; o resto da seção continua utilizável
     }
     // Primeira linha vazia: "sem instrumento de referência".
-    this.view.setModel(new JSONModel({ instruments: [{ Code: "", Label: "" }, ...instruments] }), "marketSection");
+    this.view.setModel(new JSONModel({
+      instruments: [{ Code: "", Label: "" }, ...instruments],
+      detail: this.detail,
+      canManage: this.detail && SessionService.hasPermission(MARKET_MANAGE),
+    }), "marketSection");
 
     const resourceModel = this.view.getModel("i18n") as ResourceModel;
     this.bundle = (await resourceModel?.getResourceBundle());
@@ -116,14 +139,12 @@ export default class ContractMarketSection {
     return this.bundle?.getText(key) ?? key;
   }
 
-  /** Número como o usuário digita (pt-BR, sem milhar): reler nunca é ambíguo. */
-  formatNumber = (value: unknown): string =>
-    value === null || value === undefined || value === "" ? "" : formatStrictDecimal(Number(value));
+  /** Números como o usuário digita (pt-BR, sem milhar, casas fixas): reler nunca é ambíguo. */
+  formatPrice = (value: unknown): string => formatFixedDecimal(value, PRICE_DECIMALS);
 
-  formatUsdPerBag = (perKg: unknown): string => {
-    const perBag = usdPerKgToBag(perKg);
-    return perBag === null ? "" : formatStrictDecimal(perBag);
-  };
+  formatRate = (value: unknown): string => formatFixedDecimal(value, RATE_DECIMALS);
+
+  formatUsdPerBag = (perKg: unknown): string => formatFixedDecimal(usdPerKgToBag(perKg), RATE_DECIMALS);
 
   /**
    * O Select é só de leitura (formatter): ligação de mão dupla escreveria "" de volta ao renderizar um
@@ -174,6 +195,92 @@ export default class ContractMarketSection {
     const stored = field.perBag ? usdPerBagToKg(value) : value;
     this.setIfChanged(context, field.property, stored);
     // Reescreve o texto como foi entendido (o binding é só de leitura por causa do formatter).
-    input.setValue(field.perBag ? this.formatUsdPerBag(stored) : this.formatNumber(stored));
+    input.setValue(field.perBag ? this.formatUsdPerBag(stored)
+      : field.property === "MarketFxRate" ? this.formatRate(stored) : this.formatPrice(stored));
+  };
+
+  // ---- "Alterar dados de mercado" (contrato aprovado; só no detalhe) ----
+
+  private dataModel(): JSONModel {
+    return this.view.getModel("marketData") as JSONModel;
+  }
+
+  /** Abre o diálogo com os cinco campos do contrato mostrado. */
+  onEditMarketData = async (): Promise<void> => {
+    const context = this.view.getBindingContext() as Context;
+    if (!context || this.saving) return;
+    // Instrumento inativo entra na lista (mesma regra do Select da seção).
+    this.instrumentKey(context.getProperty("MarketInstrumentCode"));
+    const form = contractMarketDataToForm((context.getObject() ?? {}) as Record<string, unknown>);
+    if (!this.view.getModel("marketData")) this.view.setModel(new JSONModel(), "marketData");
+    this.dataModel().setData({ ...form, busy: false });
+    if (!this.dataDialog) {
+      this.dataDialog = await Fragment.load({
+        id: this.view.getId(),
+        name: "siagrob1.view.fragments.market.ContractMarketDataDialog",
+        controller: this,
+      }) as Dialog;
+      this.view.addDependent(this.dataDialog);
+    }
+    this.dataDialog.open();
+  };
+
+  /** Ao sair do campo do diálogo: valida e reescreve com casas fixas. */
+  private reformat(ev: InputBase$ChangeEvent, decimals: number): void {
+    const input = ev.getSource();
+    const { value, error } = parseStrictDecimal(input.getValue());
+    if (error) {
+      input.setValueState("Error");
+      input.setValueStateText(this.text(numberErrorKey(error)));
+      return;
+    }
+    input.setValueState("None");
+    input.setValue(formatFixedDecimal(value, decimals));
+  }
+
+  onMarketDataPriceChange = (ev: InputBase$ChangeEvent): void => this.reformat(ev, PRICE_DECIMALS);
+
+  onMarketDataRateChange = (ev: InputBase$ChangeEvent): void => this.reformat(ev, RATE_DECIMALS);
+
+  onCancelMarketData = (): void => {
+    if (!this.saving) this.dataDialog?.close();
+  };
+
+  /** Limpa erros deixados nos campos para a próxima abertura. */
+  onMarketDataDialogClosed = (): void => {
+    for (const control of this.dataDialog?.findAggregatedObjects(true, (c) => c.isA("sap.m.Input")) ?? []) {
+      (control as Input).setValueState("None");
+    }
+  };
+
+  /** PUT market-data (nunca pelo modelo OData: nada fica pendente no update group). */
+  onSaveMarketData = async (): Promise<void> => {
+    const context = this.view.getBindingContext() as Context;
+    const key = /\(([^)]+)\)$/.exec(context?.getPath() ?? "")?.[1];
+    if (!key || this.saving) return;
+    const { payload, error } = buildContractMarketDataPayload(this.dataModel().getData() as ContractMarketDataForm);
+    if (!payload) {
+      MessageBox.warning(this.text(error === "notPositive" ? "marketContractDataNotPositive" : numberErrorKey(error)));
+      return;
+    }
+    this.saving = true;
+    this.dataModel().setProperty("/busy", true);
+    let result: MarketResult;
+    try {
+      result = await marketFetch("PUT", ServerRoutes.marketContractMarketData(this.side, decodeURIComponent(key)), payload);
+    } finally {
+      this.saving = false;
+      this.dataModel().setProperty("/busy", false);
+    }
+    if (!result.ok) {
+      // Erro do servidor (text/plain pt-BR) exatamente como veio.
+      if (result.status === 404 && result.moduleDisabled) MessageBox.warning(this.text(notFoundTextKey(true)));
+      else MessageBox.error(result.message || this.text(result.status === 0 ? "marketNoServer" : "marketGenericError"));
+      return;
+    }
+    this.dataDialog?.close();
+    MessageToast.show(this.text("marketContractDataSaved"));
+    // Recarrega o contrato mostrado: a seção e o log de alterações refletem a mudança.
+    context.refresh();
   };
 }

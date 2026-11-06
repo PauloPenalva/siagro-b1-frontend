@@ -186,6 +186,7 @@ export default {
     `/market/position/contracts?commodity=${encodeURIComponent(commodity)}${year != null && month != null ? `&year=${Number(year)}&month=${Number(month)}` : ""}`,
   marketPositionUsdContracts: '/market/position/usd-contracts',
   marketContractFxLock: (side: "purchase" | "sales", key: string): string => `/market/contracts/${side}/${encodeURIComponent(key)}/fx-lock`,
+  marketContractMarketData: (side: "purchase" | "sales", key: string): string => `/market/contracts/${side}/${encodeURIComponent(key)}/market-data`,
   shipmentReleases: 'odata/ShipmentReleases',
   salesShipmentReleases: 'odata/SalesShipmentReleases',
   processingCosts: 'odata/ProcessingCosts',

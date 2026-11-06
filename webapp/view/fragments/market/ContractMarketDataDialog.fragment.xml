@@ -1,0 +1,47 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<!-- "Alterar dados de mercado" de contrato APROVADO (a tela do contrato só edita rascunho). Modelo JSON
+	     marketData; grava por PUT market/contracts/{lado}/{chave}/market-data, nunca pelo modelo OData. -->
+	<Dialog id="contractMarketDataDialog" title="{i18n>marketContractDataDialogTitle}" contentWidth="28rem"
+		busy="{marketData>/busy}" busyIndicatorDelay="0" afterClose=".onMarketDataDialogClosed">
+		<content>
+			<f:Form editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1" />
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="{i18n>marketContractInstrument}">
+								<Select forceSelection="false" width="100%" selectedKey="{marketData>/instrumentCode}"
+									items="{ path: 'marketSection>/instruments', templateShareable: false }">
+									<core:Item key="{marketSection>Code}" text="{marketSection>Label}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketContractExchangePrice}">
+								<Input textAlign="End" value="{marketData>/exchangePrice}" change=".onMarketDataPriceChange" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketContractPremium}">
+								<Input textAlign="End" value="{marketData>/premium}" change=".onMarketDataPriceChange" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketContractUsdPricePerBag}">
+								<Input textAlign="End" value="{marketData>/usdPerBag}" change=".onMarketDataRateChange" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketContractFxRate}">
+								<Input textAlign="End" value="{marketData>/fxRate}" change=".onMarketDataRateChange" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<beginButton>
+			<Button text="{i18n>marketContractDataSave}" type="Emphasized" press=".onSaveMarketData" />
+		</beginButton>
+		<endButton>
+			<Button text="{i18n>marketContractDataCancel}" press=".onCancelMarketData" />
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

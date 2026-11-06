@@ -13,6 +13,7 @@ import "./helpers/MarketFxHedgeHelpers.qunit";
 import "./helpers/MarketEfpHelpers.qunit";
 import "./helpers/MarketSetupHelpers.qunit";
 import "./helpers/MarketPositionHelpers.qunit";
+import "./helpers/ContractMarketDataHelpers.qunit";
 import "./helpers/FormValidation.qunit";
 import "./helpers/ContractTemplateFilters.qunit";
 import "./helpers/ContractDraftPlaceholders.qunit";

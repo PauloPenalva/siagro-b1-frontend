@@ -10,6 +10,11 @@
 	<uxap:ObjectPageSection id="contractMarketSection" titleUppercase="false" title="{i18n>marketContractSectionTitle}">
 		<uxap:subSections>
 			<uxap:ObjectPageSubSection titleUppercase="false">
+				<!-- Contrato aprovado não se edita pela tela: os dados de mercado mudam por este diálogo (PUT market-data). -->
+				<uxap:actions>
+					<Button text="{i18n>marketContractDataEdit}" type="Transparent" press=".onEditMarketData"
+						visible="{= ${marketSection>/detail} === true &amp;&amp; ${marketSection>/canManage} === true &amp;&amp; ${path: 'Status', targetType: 'any'} === 'Approved' &amp;&amp; !${ui>/readonly} }" />
+				</uxap:actions>
 				<f:Form id="contractMarketForm" editable="true">
 					<f:layout>
 						<f:ColumnLayout columnsM="2" columnsL="3" columnsXL="3" />
@@ -28,12 +33,12 @@
 								<f:FormElement label="{i18n>marketContractExchangePrice}">
 									<Input id="contractMarketExchangePrice" textAlign="End" change=".onNumberChange"
 										editable="{ui>/editable}"
-										value="{ path: 'MarketExchangePrice', targetType: 'any', formatter: '.formatNumber' }" />
+										value="{ path: 'MarketExchangePrice', targetType: 'any', formatter: '.formatPrice' }" />
 								</f:FormElement>
 								<f:FormElement label="{i18n>marketContractPremium}">
 									<Input id="contractMarketPremium" textAlign="End" change=".onNumberChange"
 										editable="{ui>/editable}"
-										value="{ path: 'MarketPremium', targetType: 'any', formatter: '.formatNumber' }" />
+										value="{ path: 'MarketPremium', targetType: 'any', formatter: '.formatPrice' }" />
 								</f:FormElement>
 								<f:FormElement label="{i18n>marketContractUsdPricePerBag}">
 									<Input id="contractMarketUsdPrice" textAlign="End" change=".onNumberChange"
@@ -43,7 +48,7 @@
 								<f:FormElement label="{i18n>marketContractFxRate}">
 									<Input id="contractMarketFxRate" textAlign="End" change=".onNumberChange"
 										editable="{ui>/editable}"
-										value="{ path: 'MarketFxRate', targetType: 'any', formatter: '.formatNumber' }" />
+										value="{ path: 'MarketFxRate', targetType: 'any', formatter: '.formatRate' }" />
 								</f:FormElement>
 								<f:FormElement label="{i18n>marketContractFxLocked}">
 									<CheckBox editable="false" selected="{= ${MarketFxLocked} === true }" />
