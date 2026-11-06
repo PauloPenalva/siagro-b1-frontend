@@ -1,0 +1,75 @@
+<mvc:View
+	controllerName="siagrob1.controller.marketExposureLimits.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:rowmodes="sap.ui.table.rowmodes">
+
+	<Page title="{i18n>marketExposureLimitsTitle}" busy="{ui>/busy}" busyIndicatorDelay="0">
+		<content>
+			<VBox fitContainer="true" renderType="Bare">
+				<MessageStrip text="{i18n>marketLimitHint}" type="Information" showIcon="true" class="sapUiTinyMarginBottom" />
+				<!-- As linhas só são ligadas por código (bindRows) depois de resolver o i18n: os formatters leem o bundle. -->
+				<t:Table
+					id="tableMarketExposureLimits"
+					core:require="{ DateTimeOffset: 'sap/ui/model/odata/type/DateTimeOffset', hedge: 'siagrob1/helpers/MarketHedgeHelpers' }"
+					busyIndicatorDelay="0"
+					selectionMode="Single"
+					selectionBehavior="Row"
+					class="sapUiSizeCondensed"
+					enableBusyIndicator="true"
+					alternateRowColors="true">
+					<t:layoutData><FlexItemData growFactor="1" baseSize="0" /></t:layoutData>
+					<t:rowMode>
+						<rowmodes:Auto />
+					</t:rowMode>
+					<t:columns>
+						<t:Column label="{i18n>marketLimitScope}" width="9rem">
+							<t:template><Text text="{ path: 'Scope', targetType: 'any', formatter: '.scopeText' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketLimitCommodity}" width="14rem">
+							<t:template><Text text="{Commodity/Name}" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketLimitPeriod}" width="8rem">
+							<t:template>
+								<Text wrapping="false"
+									text="{ parts: [ { path: 'Year', targetType: 'any' }, { path: 'Month', targetType: 'any' } ], formatter: '.periodText' }" />
+							</t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketLimitMaxLong}" hAlign="End" width="11rem">
+							<t:template><Text text="{ path: 'MaxLong', targetType: 'any', formatter: 'hedge.formatMoney' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketLimitMaxShort}" hAlign="End" width="11rem">
+							<t:template><Text text="{ path: 'MaxShort', targetType: 'any', formatter: 'hedge.formatMoney' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketFieldActive}" width="6rem" hAlign="Center">
+							<t:template><CheckBox selected="{Active}" editable="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColUpdatedBy}" width="12rem">
+							<t:template><Text text="{UpdatedBy}" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColUpdatedAt}" width="11rem">
+							<t:template>
+								<Text text="{ path: 'UpdatedAt', type: 'DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy HH:mm' } }" wrapping="false" />
+							</t:template>
+						</t:Column>
+					</t:columns>
+				</t:Table>
+			</VBox>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<Button text="{i18n>commonRefresh}" icon="sap-icon://refresh" press=".onRefresh" />
+				<ToolbarSpacer />
+				<Button text="{i18n>commonAdd}" icon="sap-icon://add" type="Emphasized" press=".onCreate"
+					enabled="{view>/canApprove}" tooltip="{= ${view>/canApprove} ? '' : ${i18n>marketLimitNeedsBoardApprove} }" />
+				<Button text="{i18n>commonEdit}" icon="sap-icon://edit" press=".onEdit"
+					enabled="{view>/canApprove}" tooltip="{= ${view>/canApprove} ? '' : ${i18n>marketLimitNeedsBoardApprove} }" />
+				<Button text="{i18n>commonDelete}" icon="sap-icon://delete" press=".onDelete"
+					enabled="{view>/canApprove}" tooltip="{= ${view>/canApprove} ? '' : ${i18n>marketLimitNeedsBoardApprove} }" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

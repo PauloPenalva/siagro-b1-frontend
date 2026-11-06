@@ -1,0 +1,57 @@
+<mvc:View
+	controllerName="siagrob1.controller.marketCommodities.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:t="sap.ui.table"
+	xmlns:rowmodes="sap.ui.table.rowmodes">
+
+	<Page title="{i18n>marketCommoditiesTitle}" busy="{ui>/busy}" busyIndicatorDelay="0">
+		<content>
+			<!-- As linhas só são ligadas por código (bindRows) depois de resolver o i18n: o formatter da bolsa lê o bundle. -->
+			<t:Table
+				id="tableMarketCommodities"
+				busyIndicatorDelay="0"
+				selectionMode="Single"
+				selectionBehavior="Row"
+				class="sapUiSizeCondensed"
+				enableBusyIndicator="true"
+				alternateRowColors="true">
+				<t:rowMode>
+					<rowmodes:Auto />
+				</t:rowMode>
+				<t:extension>
+					<OverflowToolbar>
+						<ToolbarSpacer />
+						<SearchField placeholder="{i18n>commonSearch}" width="30%" search=".onSearch" />
+					</OverflowToolbar>
+				</t:extension>
+				<t:columns>
+					<t:Column label="{i18n>marketCommodityCode}" sortProperty="Code" width="10rem">
+						<t:template><Text text="{Code}" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketFieldName}" sortProperty="Name">
+						<t:template><Text text="{Name}" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketCommodityHedgeExchange}" sortProperty="HedgeExchange" width="12rem">
+						<t:template><Text text="{ path: 'HedgeExchange', targetType: 'any', formatter: '.exchangeText' }" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column label="{i18n>marketFieldActive}" width="6rem" hAlign="Center">
+						<t:template><CheckBox selected="{Active}" editable="false" /></t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<Button text="{i18n>commonRefresh}" icon="sap-icon://refresh" press=".onRefresh" />
+				<Button text="{i18n>marketCommodityCreateSamples}" icon="sap-icon://add-product" press=".onCreateSamples" visible="{view>/canManage}" />
+				<ToolbarSpacer />
+				<Button text="{i18n>commonAdd}" icon="sap-icon://add" type="Emphasized" press=".onCreate" visible="{view>/canManage}" />
+				<Button text="{= ${view>/canManage} ? ${i18n>commonEdit} : ${i18n>marketView} }"
+					icon="{= ${view>/canManage} ? 'sap-icon://edit' : 'sap-icon://display' }" press=".onEdit" />
+				<Button text="{i18n>commonDelete}" icon="sap-icon://delete" press=".onDelete" visible="{view>/canManage}" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

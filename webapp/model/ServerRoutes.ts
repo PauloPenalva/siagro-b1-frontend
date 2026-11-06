@@ -175,6 +175,11 @@ export default {
   marketEfpCancel: (id: number): string => `/market/efps/${Number(id)}/cancel`,
   marketEfpContracts: (side: string, search: string): string =>
     `/market/efps/contracts?side=${encodeURIComponent(side)}&search=${encodeURIComponent(search ?? "")}`,
+  // Parte 4 (Posição): sonda do módulo, commodities e limites.
+  marketModule: '/market/module',
+  marketCommodities: 'odata/MarketCommodities',
+  marketCommoditySamples: '/market/commodities/samples',
+  marketExposureLimits: 'odata/MarketExposureLimits',
   shipmentReleases: 'odata/ShipmentReleases',
   salesShipmentReleases: 'odata/SalesShipmentReleases',
   processingCosts: 'odata/ProcessingCosts',

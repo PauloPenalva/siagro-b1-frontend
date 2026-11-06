@@ -1,0 +1,58 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:uxap="sap.uxap">
+	<!-- Seção "Mercado" dos contratos de compra e venda: só é inserida (por ContractMarketSection.ts) com o módulo
+	     ligado. Números digitados passam por parseStrictDecimal no controlador do fragmento; o preço em US$ é
+	     mostrado por saca de 60 kg e gravado por kg. Editável só no formulário em rascunho; câmbio fechado é
+	     sempre somente leitura aqui (muda na tela de Posição). -->
+	<uxap:ObjectPageSection id="contractMarketSection" titleUppercase="false" title="{i18n>marketContractSectionTitle}">
+		<uxap:subSections>
+			<uxap:ObjectPageSubSection titleUppercase="false">
+				<f:Form id="contractMarketForm" editable="true">
+					<f:layout>
+						<f:ColumnLayout columnsM="2" columnsL="3" columnsXL="3" />
+					</f:layout>
+					<f:formContainers>
+						<f:FormContainer>
+							<f:formElements>
+								<f:FormElement label="{i18n>marketContractInstrument}">
+									<Select forceSelection="false" width="100%"
+										editable="{= ${ui>/editable} === true &amp;&amp; ${Status} === 'Draft' }"
+										selectedKey="{ path: 'MarketInstrumentCode', targetType: 'any', formatter: '.instrumentKey' }" change=".onInstrumentChange"
+										items="{ path: 'marketSection>/instruments', templateShareable: false }">
+										<core:Item key="{marketSection>Code}" text="{marketSection>Label}" />
+									</Select>
+								</f:FormElement>
+								<f:FormElement label="{i18n>marketContractExchangePrice}">
+									<Input id="contractMarketExchangePrice" textAlign="End" change=".onNumberChange"
+										editable="{= ${ui>/editable} === true &amp;&amp; ${Status} === 'Draft' }"
+										value="{ path: 'MarketExchangePrice', targetType: 'any', formatter: '.formatNumber' }" />
+								</f:FormElement>
+								<f:FormElement label="{i18n>marketContractPremium}">
+									<Input id="contractMarketPremium" textAlign="End" change=".onNumberChange"
+										editable="{= ${ui>/editable} === true &amp;&amp; ${Status} === 'Draft' }"
+										value="{ path: 'MarketPremium', targetType: 'any', formatter: '.formatNumber' }" />
+								</f:FormElement>
+								<f:FormElement label="{i18n>marketContractUsdPricePerBag}">
+									<Input id="contractMarketUsdPrice" textAlign="End" change=".onNumberChange"
+										editable="{= ${ui>/editable} === true &amp;&amp; ${Status} === 'Draft' }"
+										value="{ path: 'MarketUsdPrice', targetType: 'any', formatter: '.formatUsdPerBag' }" />
+								</f:FormElement>
+								<f:FormElement label="{i18n>marketContractFxRate}">
+									<Input id="contractMarketFxRate" textAlign="End" change=".onNumberChange"
+										editable="{= ${ui>/editable} === true &amp;&amp; ${Status} === 'Draft' }"
+										value="{ path: 'MarketFxRate', targetType: 'any', formatter: '.formatNumber' }" />
+								</f:FormElement>
+								<f:FormElement label="{i18n>marketContractFxLocked}">
+									<CheckBox editable="false" selected="{= ${MarketFxLocked} === true }" />
+								</f:FormElement>
+							</f:formElements>
+						</f:FormContainer>
+					</f:formContainers>
+				</f:Form>
+			</uxap:ObjectPageSubSection>
+		</uxap:subSections>
+	</uxap:ObjectPageSection>
+</core:FragmentDefinition>

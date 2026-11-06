@@ -1,20 +1,27 @@
-import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import MessageBox from "sap/m/MessageBox";
 import PurchaseContractsBaseController from "./PurchaseContractsBaseController";
 import Context from "sap/ui/model/odata/v4/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import ContractMarketSection from "siagrob1/helpers/ContractMarketSection";
 
 /**
  * @namespace siagrob1.controller.purchaseContracts
  */
 export default class Edit extends PurchaseContractsBaseController {
+  /** Seção "Mercado" (só com o módulo ligado); inserida antes de ligar o contrato. */
+  private marketSection: ContractMarketSection;
 
 	onInit(): void  {	
-		this.getRouter().getRoute("purchaseContractsEdit").attachPatternMatched((ev) => this.editRouteMatched(ev));
+    this.marketSection = new ContractMarketSection(this.getView());
+		this.getRouter().getRoute("purchaseContractsEdit").attachPatternMatched((ev) => {
+      // Os argumentos são lidos já: o evento do roteador é reaproveitado depois do disparo.
+      const args = ev.getParameter("arguments") as { id: string };
+      void this.marketSection.ensure().then(() => this.editRouteMatched(args));
+    });
 	}
 
-	private editRouteMatched(ev: Route$MatchedEvent) {
+	private editRouteMatched(args: { id: string }) {
     this.resetDocNumberMode();
 		void this.refreshStandaloneFlag();
     const uiModel = this.getModel("ui") as JSONModel;
@@ -31,7 +38,7 @@ export default class Edit extends PurchaseContractsBaseController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const {id} = ev.getParameter("arguments") as {id: string };
+		const {id} = args;
 		if (id != null) {
 			const sPath = `/PurchaseContracts(${id})`;
 			this.bindElement(sPath);

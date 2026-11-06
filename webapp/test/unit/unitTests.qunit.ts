@@ -11,6 +11,7 @@ import "./helpers/MarketTicketHelpers.qunit";
 import "./helpers/MarketHedgeHelpers.qunit";
 import "./helpers/MarketFxHedgeHelpers.qunit";
 import "./helpers/MarketEfpHelpers.qunit";
+import "./helpers/MarketSetupHelpers.qunit";
 import "./helpers/FormValidation.qunit";
 import "./helpers/ContractTemplateFilters.qunit";
 import "./helpers/ContractDraftPlaceholders.qunit";
