@@ -151,6 +151,8 @@ export default class ContractMarketSection {
     const instrumentSelect = this.view.byId("contractMarketInstrument") as Select;
     instrumentSelect?.getBinding("selectedKey")?.attachChange(
       () => this.applyInstrumentOptions(instrumentSelect.getBindingContext()?.getProperty("MarketInstrumentCode")));
+    // O contrato pode já estar carregado quando a seção entra: o primeiro "change" teria passado antes do listener.
+    this.applyInstrumentOptions(instrumentSelect?.getBindingContext()?.getProperty("MarketInstrumentCode"));
     return true;
   }
 
