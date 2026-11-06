@@ -1,0 +1,37 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<Dialog id="confirmDayDialog" title="{i18n>marketFuturesConfirmDay}" contentWidth="28rem">
+		<content>
+			<MessageStrip text="{i18n>marketFuturesConfirmDayHint}" type="Information" showIcon="true" class="sapUiTinyMargin" />
+			<f:Form editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1" />
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="{i18n>marketColAccount}">
+								<Select forceSelection="false" required="true" selectedKey="{day>/accountId}" width="100%"
+									items="{ path: 'lookup>/accountsActive', templateShareable: false }">
+									<core:Item key="{lookup>id}" text="{lookup>label}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColDate}">
+								<DatePicker core:require="{ StringType: 'sap/ui/model/type/String' }" value="{ path: 'day>/date', type: 'StringType' }" required="true"
+									displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<beginButton>
+			<Button text="{i18n>marketFuturesConfirmDay}" type="Emphasized" press=".onDaySave" />
+		</beginButton>
+		<endButton>
+			<Button text="{i18n>commonCancel}" press=".onDayCancel" />
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

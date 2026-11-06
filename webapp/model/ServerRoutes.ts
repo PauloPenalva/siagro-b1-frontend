@@ -149,6 +149,18 @@ export default {
   marketTicketApprove: (id: number): string => `/market/tickets/${Number(id)}/approve`,
   marketTicketReject: (id: number): string => `/market/tickets/${Number(id)}/reject`,
   marketTicketCancel: (id: number): string => `/market/tickets/${Number(id)}/cancel`,
+  marketCounterparties: 'odata/MarketCounterparties',
+  marketBrokerStatements: 'odata/MarketBrokerStatements',
+  marketFuturesTrades: '/market/futures-trades',
+  marketFuturesTrade: (id: number): string => `/market/futures-trades/${Number(id)}`,
+  marketFuturesTradeConfirm: (id: number): string => `/market/futures-trades/${Number(id)}/confirm`,
+  marketFuturesTradeUnconfirm: (id: number): string => `/market/futures-trades/${Number(id)}/unconfirm`,
+  marketFuturesConfirmDay: '/market/futures-trades/confirm-day',
+  marketFuturesLotInfo: (instrumentCode: string): string =>
+    `/market/futures-trades/lot-info?instrumentCode=${encodeURIComponent(instrumentCode)}`,
+  marketFuturesPositions: '/market/futures-positions',
+  marketFuturesRealized: (from: string, to: string): string =>
+    `/market/futures-realized?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
   shipmentReleases: 'odata/ShipmentReleases',
   salesShipmentReleases: 'odata/SalesShipmentReleases',
   processingCosts: 'odata/ProcessingCosts',

@@ -4,6 +4,7 @@ import Sorter from "sap/ui/model/Sorter";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import { MarketInstrument } from "siagrob1/types/MarketInstrument";
+import { MarketCounterparty } from "siagrob1/types/MarketHedges";
 import { MarketDestination, MarketLookups } from "siagrob1/types/MarketPricing";
 import { curveInstrumentsOf, fxInstrumentsOf, priceInstrumentsOf } from "siagrob1/helpers/MarketPricingHelpers";
 
@@ -39,6 +40,16 @@ export async function loadMarketLookups(model: ODataModel, withInstruments = tru
     destinations,
     loaded: true,
   };
+}
+
+/** Corretoras e bancos com as contas (ativos e inativos: quem filtra é o helper `accountOptions`). */
+export async function loadCounterparties(model: ODataModel): Promise<MarketCounterparty[]> {
+  const binding = model.bindList("/MarketCounterparties", undefined, [new Sorter("Name")], undefined, {
+    $select: "Id,Name,Type,Active",
+    $expand: "Accounts($select=Id,Code,Description,Active)",
+  });
+  const contexts = await binding.requestContexts(0, 1000);
+  return contexts.map((context) => context.getObject() as MarketCounterparty);
 }
 
 const SETTLE_MS = 100;
