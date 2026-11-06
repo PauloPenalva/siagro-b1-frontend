@@ -28,7 +28,11 @@ export default class Main extends BaseController {
   onInit(): void {
     this.getView().setModel(new JSONModel(this.defaultFilter()), "filter");
     this.getView().setModel(new JSONModel([]), "statuses");
+    this.getRouter().getRoute(ROUTE).attachPatternMatched(() => void this.enter());
+  }
 
+  /** As linhas só são ligadas com o bundle resolvido: `statusText` lê `this.bundle` e mostraria a chave crua. */
+  private bindTickets(): void {
     const table = this.byId("ticketsTable") as GridTable;
     table.bindRows({
       path: "/MarketTradeTickets",
@@ -39,16 +43,19 @@ export default class Main extends BaseController {
       },
       sorter: new Sorter("CreatedAt", true),
     });
-
-    this.getRouter().getRoute(ROUTE).attachPatternMatched(() => void this.enter());
   }
 
   private async enter(): Promise<void> {
     this.bundle ??= await this.getResourceBundle();
+    const firstVisit = !this.binding();
     (this.getView().getModel("statuses") as JSONModel).setData(
       TICKET_STATUSES.map((key) => ({ key, text: this.text(ticketStatusTextKey(key)) })));
+    if (firstVisit) {
+      this.bindTickets();
+      return;
+    }
     // Voltando do detalhe, a situação da boleta pode ter mudado.
-    this.binding()?.refresh();
+    this.binding().refresh();
   }
 
   private text(key: string, args?: unknown[]): string {

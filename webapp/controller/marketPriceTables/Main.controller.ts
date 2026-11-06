@@ -35,6 +35,10 @@ export default class Main extends BaseController {
     return this.bundle?.getText(key) ?? key;
   }
 
+  private model(): JSONModel {
+    return this.getView().getModel("view") as JSONModel;
+  }
+
   private table(): Table {
     return this.byId("tableMarketPriceTables") as Table;
   }
@@ -66,7 +70,7 @@ export default class Main extends BaseController {
   onEdit(): void {
     const context = this.getSelectRowContext(this.table());
     if (!context) {
-      MessageBox.alert(this.text("commonSelectToEdit"));
+      MessageBox.alert(this.text(this.model().getProperty("/canManage") ? "commonSelectToEdit" : "marketSelectToView"));
       return;
     }
     this.navTo("marketPriceTablesEdit", { id: String(context.getProperty("Id")) });

@@ -42,6 +42,7 @@ export default class Main extends BaseController {
   private dialog?: Dialog;
   /** Contexto em alteração; nulo = inclusão. */
   private editing: Context | null = null;
+  private visited = false;
 
   onInit(): void {
     this.getView().setModel(new JSONModel({ canManage: false }), "view");
@@ -56,7 +57,11 @@ export default class Main extends BaseController {
     this.bundle ??= await this.getResourceBundle();
     const lookups = await loadMarketLookups(this.getView().getModel() as ODataModel, false, true);
     (this.getView().getModel("lookup") as JSONModel).setData(lookups);
+    const revisit = this.visited;
+    this.visited = true;
     this.applyFilters();
+    // Na revisita o filtro não muda e o binding não relê sozinho: vigências lançadas noutra sessão não apareceriam.
+    if (revisit) this.binding()?.refresh();
   }
 
   private text(key: string): string {

@@ -5,9 +5,13 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import Context from "sap/ui/model/odata/v4/Context";
+import Message from "sap/ui/core/message/Message";
 import Table from "sap/ui/table/Table";
 import Form from "sap/ui/layout/form/Form";
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
+import Messaging from "sap/ui/core/Messaging";
+import MessageType from "sap/ui/core/message/MessageType";
+import { Router$BeforeRouteMatchedEvent } from "sap/ui/core/routing/Router";
 import BaseController from "../BaseController";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { clearFieldStates, validateRequiredFields } from "siagrob1/helpers/FormValidation";
@@ -27,6 +31,37 @@ import { MarketPriceTableLine } from "siagrob1/types/MarketPricing";
  */
 export default class PriceTableBaseController extends BaseController {
   protected bundle?: ResourceBundle;
+  private ownRoute?: string;
+  /** Sobe a cada saída da rota: carga assíncrona de uma visita que já acabou não pode mexer no model. */
+  protected leaveSeq = 0;
+
+  /**
+   * O `UpdateGroup` é do app inteiro: sair da tela com edição pendente (menu, voltar do navegador) deixaria
+   * cabeçalho transitório, linhas e PATCHes para o próximo `submitBatch` de QUALQUER tela. Ao ir para outra
+   * rota, descarta tudo.
+   */
+  protected watchLeave(ownRoute: string): void {
+    this.ownRoute = ownRoute;
+    this.getRouter().attachBeforeRouteMatched(this.onBeforeRouteMatched, this);
+  }
+
+  onExit(): void {
+    this.getRouter().detachBeforeRouteMatched(this.onBeforeRouteMatched, this);
+  }
+
+  private readonly onBeforeRouteMatched = (ev: Router$BeforeRouteMatchedEvent): void => {
+    if (ev.getParameter("name") === this.ownRoute) return;
+    this.leaveSeq++;
+    this.discardChanges();
+  };
+
+  /** Desfaz o que estiver pendente no grupo (inclui contextos transitórios) e solta o contexto da tela. */
+  protected discardChanges(): void {
+    const model = this.getView().getModel() as ODataModel;
+    const groupId = model.getUpdateGroupId();
+    if (model.hasPendingChanges(groupId)) model.resetChanges(groupId);
+    this.getView().setBindingContext(null);
+  }
 
   protected initModels(): void {
     this.getView().setModel(new JSONModel({ canManage: false }), "view");
@@ -60,8 +95,8 @@ export default class PriceTableBaseController extends BaseController {
   }
 
   /** Formatter do Select de curva (`this` = controller): só habilita para cotação em US$. */
-  curveEnabled(instrumentCode: string, instruments: MarketInstrument[]): boolean {
-    return curveRequired(quoteUnitOf(instrumentCode, instruments));
+  curveEnabled(instrumentCode: string, instruments: MarketInstrument[], canManage: boolean): boolean {
+    return canManage === true && curveRequired(quoteUnitOf(instrumentCode, instruments));
   }
 
   /** Trocou o instrumento: a curva deixa de valer se a cotação não for em US$. */
@@ -121,6 +156,16 @@ export default class PriceTableBaseController extends BaseController {
     return null;
   }
 
+  /** Mensagens de erro do servidor sobre tabelas de preços ainda ativas (rejeição de campo/linha). */
+  private hasServerErrors(): boolean {
+    return (Messaging.getMessageModel().getData() as Message[]).some((message) =>
+      message.getType() === MessageType.Error && message.getTargets().some((target) => target.includes("MarketPriceTable")));
+  }
+
+  /**
+   * Grava cabeçalho + linhas num `$batch`. Só navega quando nada ficou pendente nem há erro do servidor;
+   * tabela NOVA abre a edição da própria tabela (em vez de depender dos contextos aninhados da resposta).
+   */
   protected async save(successKey: string): Promise<void> {
     if (!validateRequiredFields(this.byId("formMarketPriceTable") as Form)) {
       MessageBox.warning(this.text("commonRequiredFields"));
@@ -132,21 +177,28 @@ export default class PriceTableBaseController extends BaseController {
       return;
     }
     const model = this.getView().getModel() as ODataModel;
+    const header = this.getView().getBindingContext() as Context;
+    const wasTransient = header?.isTransient() === true;
     try {
       this.setBusy(true);
       await model.submitBatch(model.getUpdateGroupId());
-      if (!model.hasPendingChanges(model.getUpdateGroupId())) {
-        MessageToast.show(this.text(successKey), { closeOnBrowserNavigation: false });
-        this.navTo("marketPriceTables", {}, true);
-      }
+    } catch {
+      // Falha de rede/servidor: o grupo mantém as pendências e o usuário segue na página para tentar de novo.
+      MessageBox.error(this.text("marketPriceTableSaveFailed"));
+      return;
     } finally {
       this.setBusy(false);
     }
+    if (model.hasPendingChanges(model.getUpdateGroupId()) || this.hasServerErrors()) return;
+
+    MessageToast.show(this.text(successKey), { closeOnBrowserNavigation: false });
+    const id = wasTransient ? String(header.getProperty("Id")) : "";
+    if (/^\d+$/.test(id)) this.navTo("marketPriceTablesEdit", { id }, true);
+    else this.navTo("marketPriceTables", {}, true);
   }
 
   onCancel(): void {
-    const model = this.getView().getModel() as ODataModel;
-    if (model.hasPendingChanges(model.getUpdateGroupId())) model.resetChanges(model.getUpdateGroupId());
+    this.discardChanges();
     this.onNavBack();
   }
 }
