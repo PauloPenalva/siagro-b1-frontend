@@ -9,6 +9,7 @@ import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import Context from "sap/ui/model/odata/v4/Context";
 import Table from "sap/ui/table/Table";
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
+import { Input$LiveChangeEvent } from "sap/m/Input";
 import BaseController from "../BaseController";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
@@ -16,7 +17,7 @@ import { localIsoDate } from "siagrob1/helpers/DateHelpers";
 import { MarketResult, marketFetch, notFoundTextKey, parseServerInstant } from "siagrob1/helpers/MarketHelpers";
 import {
   FuturesTradesFilter, TradeField, TradeForm, TradeFormErrors, accountOptions, buildFuturesTradesFilter,
-  buildTradePayload, defaultRealizedPeriod, defaultTradesFilter, formatMoney, formatTons, lotEquivalent, parseLots,
+  buildTradePayload, defaultRealizedPeriod, defaultTradesFilter, equivalentHint,
   reasonTextKey, sideTextKey, toCamel, totalView, totalsByCurrency, tradeActions
 } from "siagrob1/helpers/MarketHedgeHelpers";
 import { loadCounterparties, loadMarketLookups } from "siagrob1/helpers/MarketLookups";
@@ -63,7 +64,7 @@ export default class Main extends BaseController {
   /** Id da operação em alteração; nulo = inclusão. */
   private editingId: number = null;
   private visited = false;
-  private readonly lotInfoCache = new Map<string, MarketLotInfo>();
+  private readonly lotInfoCache = new Map<string, Promise<MarketLotInfo>>();
   /** Descarta resposta de `lot-info` de uma digitação que já foi superada. */
   private lotInfoSeq = 0;
 
@@ -351,7 +352,7 @@ export default class Main extends BaseController {
     this.tradeDialog ??= await this.loadFragment({ name: "siagrob1.view.marketFuturesTrades.fragments.FuturesTradeDialog" }) as Dialog;
     this.markErrors({});
     this.tradeDialog.open();
-    void this.refreshEquivalent(false);
+    void this.refreshEquivalent(false, form.lots);
   }
 
   onCreate(): void {
@@ -403,18 +404,37 @@ export default class Main extends BaseController {
   }
 
   onInstrumentChange(): void {
-    void this.refreshEquivalent(true);
+    void this.refreshEquivalent(true, this.tradeModel().getProperty("/lots") as string);
   }
 
-  onLotsLiveChange(): void {
-    void this.refreshEquivalent(false);
+  /** `liveChange` não grava no modelo (sem valueLiveUpdate): o texto digitado vem do parâmetro `value` do evento. */
+  onLotsLiveChange(ev: Input$LiveChangeEvent): void {
+    void this.refreshEquivalent(false, ev.getParameter("value"));
+  }
+
+  onLotsChange(): void {
+    void this.refreshEquivalent(false, this.tradeModel().getProperty("/lots") as string);
+  }
+
+  /** `lot-info` do instrumento, uma só requisição por instrumento (a promessa fica no cache); falha não é guardada. */
+  private lotInfo(code: string): Promise<MarketLotInfo> {
+    if (!this.lotInfoCache.has(code)) {
+      const pending = marketFetch<MarketLotInfo>("GET", ServerRoutes.marketFuturesLotInfo(code)).then((result) => {
+        if (result.ok && result.data) return result.data;
+        this.lotInfoCache.delete(code);
+        return null;
+      });
+      this.lotInfoCache.set(code, pending);
+    }
+    return this.lotInfoCache.get(code);
   }
 
   /**
    * Mostra o equivalente dos lotes digitados (toneladas, ou US$ no dólar futuro) pelo `lot-info` do servidor.
-   * Sem lotes válidos mostra o equivalente de 1 lote. `adoptCurrency`: a troca de instrumento sugere a moeda das taxas.
+   * Sem lotes válidos mostra o equivalente de 1 lote. `adoptCurrency`: a troca de instrumento sugere a moeda das
+   * taxas; isso vale para o instrumento escolhido mesmo que uma digitação posterior tenha superado o TEXTO.
    */
-  private async refreshEquivalent(adoptCurrency: boolean): Promise<void> {
+  private async refreshEquivalent(adoptCurrency: boolean, lotsText: string): Promise<void> {
     const seq = ++this.lotInfoSeq;
     const form = this.tradeModel().getData() as TradeDialogModel;
     const code = form.instrumentCode;
@@ -422,29 +442,14 @@ export default class Main extends BaseController {
       this.tradeModel().setProperty("/equivalent", "");
       return;
     }
-    let info = this.lotInfoCache.get(code);
-    if (!info) {
-      const result = await marketFetch<MarketLotInfo>("GET", ServerRoutes.marketFuturesLotInfo(code));
-      if (seq !== this.lotInfoSeq) return;
-      if (!result.ok || !result.data) {
-        this.tradeModel().setProperty("/equivalent", "");
-        return;
-      }
-      info = result.data;
-      this.lotInfoCache.set(code, info);
+    const info = await this.lotInfo(code);
+    if (info && adoptCurrency && form.isNew && info.currency
+      && this.tradeModel().getProperty("/instrumentCode") === code) {
+      this.tradeModel().setProperty("/feesCurrency", toCamel(info.currency));
     }
-    if (adoptCurrency && form.isNew && info.currency) this.tradeModel().setProperty("/feesCurrency", toCamel(info.currency));
-    const lots = parseLots(form.lots);
-    const equivalent = lotEquivalent(info, lots ?? 1);
-    this.tradeModel().setProperty("/equivalent", equivalent ? this.equivalentText(equivalent.kind, equivalent.value, lots !== null) : "");
-  }
-
-  private equivalentText(kind: "tons" | "usd", value: number, forTypedLots: boolean): string {
-    const amount = kind === "tons" ? formatTons(value) : formatMoney(value);
-    const key = kind === "tons"
-      ? (forTypedLots ? "marketFuturesEquivalentTons" : "marketFuturesEquivalentTonsPerLot")
-      : (forTypedLots ? "marketFuturesEquivalentUsd" : "marketFuturesEquivalentUsdPerLot");
-    return this.text(key, [amount]);
+    if (seq !== this.lotInfoSeq) return;
+    const hint = equivalentHint(info, lotsText);
+    this.tradeModel().setProperty("/equivalent", hint ? this.text(hint.key, [hint.amount]) : "");
   }
 
   async onPickPurchaseContract(): Promise<void> {

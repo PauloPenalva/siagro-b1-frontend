@@ -33,7 +33,7 @@
 								</Select>
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketColLots}">
-								<Input id="tradeLots" value="{trade>/lots}" required="true" textAlign="End" liveChange=".onLotsLiveChange"
+								<Input id="tradeLots" value="{trade>/lots}" required="true" textAlign="End" liveChange=".onLotsLiveChange" change=".onLotsChange"
 									description="{trade>/equivalent}" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketColPrice}">

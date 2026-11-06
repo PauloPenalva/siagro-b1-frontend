@@ -1,5 +1,5 @@
 import {
-  accountLabel, accountOptions, formatCurrency, formatTons, buildFuturesTradesFilter, buildStatementsFilter, buildTradePayload, currencySymbol,
+  accountLabel, accountOptions, equivalentHint, formatCurrency, formatTons, buildFuturesTradesFilter, buildStatementsFilter, buildTradePayload, currencySymbol,
   defaultRealizedPeriod, defaultTradesFilter, formatIsoDate, formatMoney, formatPnl, formatPrice, formatSigned,
   formatSignedLots, formatSignedTons, formatTonsOrUsd, formatTradeTons, lotEquivalent, parseLots, pnlState,
   reasonTextKey, sideTextKey, toCamel, tonsPerLot, totalsByCurrency, totalView, tradeActions, TradeForm
@@ -195,4 +195,33 @@ QUnit.test("total por moeda em centavos, R$ antes de US$", function (assert) {
   assert.deepEqual(totalsByCurrency(rows, "pnl"), [{ currency: "brl", total: 0.3 }, { currency: "usd", total: 6000 }]);
   assert.deepEqual(totalsByCurrency([], "pnl"), []);
   assert.deepEqual(totalView({ currency: "usd", total: -10 }), { text: "US$ -10,00", state: "Error" });
+});
+
+QUnit.module("MarketHedgeHelpers - texto de apoio dos lotes");
+
+QUnit.test("equivalente dos lotes digitados e dica de 1 lote", function (assert) {
+  const soy = { tonsPerLot: 136.0729, usdPerLot: null as number };
+  assert.deepEqual(equivalentHint(soy, "10"), { key: "marketFuturesEquivalentTons", amount: "1.360,729" }, "10 lotes de soja");
+  assert.deepEqual(equivalentHint(soy, "1"), { key: "marketFuturesEquivalentTons", amount: "136,073" });
+  assert.deepEqual(equivalentHint(soy, ""), { key: "marketFuturesEquivalentTonsPerLot", amount: "136,073" }, "vazio: 1 lote");
+  assert.deepEqual(equivalentHint(soy, "2,5"), { key: "marketFuturesEquivalentTonsPerLot", amount: "136,073" }, "inválido: 1 lote");
+  assert.deepEqual(equivalentHint(soy, undefined), { key: "marketFuturesEquivalentTonsPerLot", amount: "136,073" });
+  const usd = { tonsPerLot: null as number, usdPerLot: 50000 };
+  assert.deepEqual(equivalentHint(usd, "2"), { key: "marketFuturesEquivalentUsd", amount: "100.000,00" }, "dólar futuro");
+  assert.deepEqual(equivalentHint(usd, "x"), { key: "marketFuturesEquivalentUsdPerLot", amount: "50.000,00" });
+  assert.strictEqual(equivalentHint(null, "10"), null);
+  assert.strictEqual(equivalentHint({}, "10"), null);
+});
+
+QUnit.test("a venda não muda a grandeza do equivalente (o sinal fica na grade)", function (assert) {
+  // O texto de apoio não leva o lado: compra e venda de 10 lotes mostram o mesmo valor.
+  assert.deepEqual(equivalentHint({ tonsPerLot: 27 }, "10"), { key: "marketFuturesEquivalentTons", amount: "270,000" });
+});
+
+QUnit.test("valor que arredonda para zero não leva sinal", function (assert) {
+  assert.strictEqual(formatSigned(-0.004), "0,00");
+  assert.strictEqual(formatSigned(0.004), "0,00");
+  assert.strictEqual(formatSigned(0.005), "+0,01");
+  assert.strictEqual(formatSigned(-0.0004, 3), "0,000");
+  assert.strictEqual(formatSignedTons(-0.0001), "0,000");
 });

@@ -50,8 +50,11 @@ export function formatPrice(value: unknown): string {
 export function formatSigned(value: unknown, decimals = 2): string {
   const n = toNumber(value);
   if (n === null) return EMPTY_VALUE;
-  const text = fixed(n, decimals, decimals);
-  return n > 0 ? `+${text}` : text;
+  // Compara o valor ARREDONDADO: -0,004 imprime "0,00", nunca "-0,00" nem "+0,00".
+  const factor = 10 ** decimals;
+  const rounded = Math.round(n * factor) / factor;
+  const text = fixed(rounded === 0 ? 0 : n, decimals, decimals);
+  return rounded > 0 ? `+${text}` : text;
 }
 
 /** Valor com moeda, sem sinal: "R$ 1.250,00". */
@@ -181,6 +184,21 @@ export function lotEquivalent(info: MarketLotInfo, lots: number): LotEquivalent 
   if (perLot !== null) return { kind: "tons", value: lots * perLot };
   const usd = toNumber(info.usdPerLot);
   return usd !== null ? { kind: "usd", value: lots * usd } : null;
+}
+
+/**
+ * Texto de apoio abaixo dos lotes: equivalente dos lotes digitados (toneladas, ou US$ no dólar futuro) ou, sem lotes
+ * válidos, o de 1 lote. Devolve a chave de i18n e o valor já formatado; `null` sem `lot-info` aproveitável.
+ */
+export function equivalentHint(info: MarketLotInfo, lotsText: string): { key: string; amount: string } {
+  const lots = parseLots(lotsText);
+  const equivalent = lotEquivalent(info, lots ?? 1);
+  if (!equivalent) return null;
+  const typed = lots !== null;
+  if (equivalent.kind === "tons") {
+    return { key: typed ? "marketFuturesEquivalentTons" : "marketFuturesEquivalentTonsPerLot", amount: formatTons(equivalent.value) };
+  }
+  return { key: typed ? "marketFuturesEquivalentUsd" : "marketFuturesEquivalentUsdPerLot", amount: formatMoney(equivalent.value) };
 }
 
 // ---------------------------------------------------------------------------------------------
