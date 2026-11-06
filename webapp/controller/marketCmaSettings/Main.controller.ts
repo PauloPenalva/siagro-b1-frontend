@@ -33,7 +33,10 @@ export default class Main extends BaseController {
       host: settings?.host ?? "",
       userName: settings?.userName ?? "",
       password: "",
-      passwordPlaceholder: settings?.hasPassword ? this.bundle.getText("marketCmaPasswordKept") : "",
+      // Conta sem senha: é uma escolha gravada (o servidor guarda a senha vazia cifrada), não um campo esquecido.
+      blankPassword: settings?.blankPassword ?? false,
+      loadedBlankPassword: settings?.blankPassword ?? false,
+      passwordPlaceholder: settings?.hasPassword && !settings?.blankPassword ? this.bundle.getText("marketCmaPasswordKept") : "",
       isAdmin: SessionService.hasRole("ADMIN"),
       moduleDisabled,
       moduleMessage,
@@ -60,17 +63,29 @@ export default class Main extends BaseController {
     }
   }
 
+  /** Marcar "sem senha" limpa o que estava digitado: o campo de senha fica bloqueado enquanto a marca existir. */
+  onBlankPasswordToggle(): void {
+    if (this.model().getProperty("/blankPassword")) this.model().setProperty("/password", "");
+  }
+
   async onSave(): Promise<void> {
-    const data = this.model().getData() as CmaSettings;
-    const password = data.password ?? "";
+    const data = this.model().getData() as CmaSettings & { loadedBlankPassword?: boolean };
+    const blankPassword = !!data.blankPassword;
+    const password = blankPassword ? "" : data.password ?? "";
+    // Desmarcou "sem senha" e não digitou nada: o servidor manteria a senha vazia e a marca voltaria sozinha.
+    if (data.loadedBlankPassword && !blankPassword && !password) {
+      MessageBox.warning(this.bundle.getText("marketCmaPasswordRequired"));
+      return;
+    }
     this.setBusy(true);
     try {
       const result = await marketFetch<CmaSettings>("PUT", ServerRoutes.marketCmaSettings, {
         enabled: !!data.enabled,
         host: (data.host ?? "").trim(),
         userName: (data.userName ?? "").trim() || null,
-        // Vazio = manter a senha gravada.
+        // Vazio = manter a senha gravada; "sem senha" manda gravar a senha vazia.
         password: password || null,
+        blankPassword,
       });
       if (!result.ok) {
         this.showError(result);
