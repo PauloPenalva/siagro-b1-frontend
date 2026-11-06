@@ -1,0 +1,71 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<Dialog id="fxHedgeDialog" title="{hedge>/title}" contentWidth="36rem">
+		<content>
+			<f:Form id="fxHedgeForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1" />
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="{i18n>marketColDateTime}">
+								<DateTimePicker id="fxTradedAt" dateValue="{hedge>/tradedAt}" required="true" displayFormat="dd/MM/yyyy HH:mm" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColBankAccount}">
+								<Select id="fxAccount" forceSelection="false" required="true" selectedKey="{hedge>/accountId}" width="100%"
+									items="{ path: 'hedge>/accounts', templateShareable: false }">
+									<core:Item key="{hedge>id}" text="{hedge>label}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColKind}">
+								<Select id="fxKind" forceSelection="false" required="true" selectedKey="{hedge>/kind}">
+									<core:Item key="ndf" text="{i18n>marketFxKind_ndf}" />
+									<core:Item key="forward" text="{i18n>marketFxKind_forward}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColSide}">
+								<Select id="fxSide" forceSelection="false" required="true" selectedKey="{hedge>/side}">
+									<core:Item key="buy" text="{i18n>marketFxSide_buy}" />
+									<core:Item key="sell" text="{i18n>marketFxSide_sell}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColAmountUsd}">
+								<Input id="fxAmount" value="{hedge>/amountUsd}" required="true" textAlign="End" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColContractedRate}">
+								<Input id="fxRate" value="{hedge>/contractedRate}" required="true" textAlign="End" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColSettlementDate}">
+								<DatePicker id="fxSettlementDate" core:require="{ StringType: 'sap/ui/model/type/String' }" required="true"
+									value="{ path: 'hedge>/settlementDate', type: 'StringType' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColBankReference}">
+								<Input value="{hedge>/bankReference}" maxLength="50" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketFuturesPurchaseContract}">
+								<Input value="{hedge>/purchaseContractCode}" showValueHelp="true" valueHelpOnly="true" showClearIcon="true"
+									valueHelpRequest=".onPickPurchaseContract" change=".onContractChange" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketFuturesSalesContract}">
+								<Input value="{hedge>/salesContractCode}" showValueHelp="true" valueHelpOnly="true" showClearIcon="true"
+									valueHelpRequest=".onPickSalesContract" change=".onContractChange" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColNotes}">
+								<TextArea value="{hedge>/notes}" rows="2" maxLength="500" width="100%" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<beginButton>
+			<Button text="{i18n>commonSave}" type="Emphasized" press=".onHedgeSave" enabled="{= !${ui>/isBusy} }" />
+		</beginButton>
+		<endButton>
+			<Button text="{i18n>commonCancel}" press=".onHedgeCancel" />
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

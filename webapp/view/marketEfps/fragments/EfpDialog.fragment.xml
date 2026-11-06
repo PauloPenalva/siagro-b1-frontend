@@ -1,0 +1,109 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<Dialog id="efpDialog" title="{i18n>marketEfpDialogTitle}" contentWidth="56rem" resizable="true">
+		<content>
+			<f:Form id="efpForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2" />
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer title="{i18n>marketEfpSectionContract}">
+						<f:formElements>
+							<f:FormElement label="{i18n>marketEfpContractSide}">
+								<SegmentedButton selectedKey="{efp>/contractSide}" selectionChange=".onContractSideChange">
+									<items>
+										<SegmentedButtonItem key="purchase" text="{i18n>marketEfpContractSide_purchase}" />
+										<SegmentedButtonItem key="sales" text="{i18n>marketEfpContractSide_sales}" />
+									</items>
+								</SegmentedButton>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColContract}">
+								<Input id="efpContract" value="{efp>/contractCode}" required="true" showValueHelp="true" valueHelpOnly="true"
+									valueHelpRequest=".onPickContract" description="{efp>/contractInfo}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketEfpAvailable}">
+								<Text text="{efp>/availableText}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColVolumeBags}">
+								<Input id="efpBags" value="{efp>/bags}" required="true" textAlign="End" liveChange=".onBagsLiveChange"
+									description="{efp>/bagsInfo}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColFinancialDue}">
+								<DatePicker id="efpDue" core:require="{ StringType: 'sap/ui/model/type/String' }" required="true"
+									value="{ path: 'efp>/financialDueDate', type: 'StringType' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColDate}">
+								<DatePicker id="efpDate" core:require="{ StringType: 'sap/ui/model/type/String' }" required="true"
+									value="{ path: 'efp>/date', type: 'StringType' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColNotes}">
+								<TextArea value="{efp>/notes}" rows="2" maxLength="500" width="100%" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="{i18n>marketEfpSectionFutures}">
+						<f:formElements>
+							<f:FormElement label="{i18n>marketColAccount}">
+								<Select id="efpAccount" forceSelection="false" required="true" selectedKey="{efp>/accountId}" width="100%"
+									items="{ path: 'efp>/accounts', templateShareable: false }">
+									<core:Item key="{efp>id}" text="{efp>label}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColInstrument}">
+								<Select id="efpInstrument" forceSelection="false" required="true" selectedKey="{efp>/instrumentCode}" width="100%"
+									change=".onInstrumentChange" items="{ path: 'lookup>/futures', templateShareable: false }">
+									<core:Item key="{lookup>Code}" text="{lookup>Code}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColSide}">
+								<Select id="efpSide" forceSelection="false" required="true" selectedKey="{efp>/side}">
+									<core:Item key="buy" text="{i18n>marketHedgeSide_buy}" />
+									<core:Item key="sell" text="{i18n>marketHedgeSide_sell}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColLots}">
+								<Input id="efpLots" value="{efp>/lots}" required="true" textAlign="End" liveChange=".onLotsLiveChange"
+									description="{efp>/lotsInfo}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColPrice}">
+								<Input id="efpPrice" liveChange=".onPreviewInputLiveChange" value="{efp>/price}" required="true" textAlign="End" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColPremium}">
+								<Input id="efpPremium" liveChange=".onPreviewInputLiveChange" value="{efp>/premium}" textAlign="End" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColFxRate}">
+								<Input id="efpFx" liveChange=".onPreviewInputLiveChange" value="{efp>/fxRate}" textAlign="End" enabled="{efp>/fxEnabled}" required="{efp>/fxEnabled}"
+									description="{efp>/fxInfo}" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="{i18n>marketEfpSectionResult}" visible="{efp>/previewVisible}">
+						<f:formElements>
+							<f:FormElement label="{i18n>marketColFixationPerBag}">
+								<ObjectStatus text="{efp>/previewPerBag}" state="Success" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketEfpPerKg}">
+								<Text text="{efp>/previewPerKg}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketEfpTonsFutures}">
+								<Text text="{efp>/previewTonsFutures}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketEfpTonsPhysical}">
+								<Text text="{efp>/previewTonsPhysical}" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+			<MessageStrip text="{i18n>marketEfpFxRefused}" type="Error" showIcon="true" class="sapUiTinyMargin" visible="{efp>/fxRefused}" />
+			<MessageStrip text="{i18n>marketEfpMismatch}" type="Warning" showIcon="true" class="sapUiTinyMargin" visible="{efp>/mismatch}" />
+		</content>
+		<buttons>
+			<Button text="{i18n>marketEfpCalculate}" icon="sap-icon://simulate" press=".onCalculate" enabled="{= !${ui>/isBusy} }" />
+			<Button text="{i18n>marketEfpSave}" type="Emphasized" press=".onEfpSave" enabled="{= !${ui>/isBusy} &amp;&amp; !${efp>/fxRefused} &amp;&amp; ${efp>/previewVisible} }" tooltip="{i18n>marketEfpCalculateFirst}" />
+			<Button text="{i18n>commonCancel}" press=".onEfpCancel" />
+		</buttons>
+	</Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,118 @@
+<mvc:View
+	controllerName="siagrob1.controller.marketBrokerStatements.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:rowmodes="sap.ui.table.rowmodes"
+	xmlns:f="sap.f"
+	xmlns:fb="sap.ui.comp.filterbar">
+
+	<f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="{i18n>marketBrokerStatementsTitle}" />
+				</f:heading>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:header>
+			<f:DynamicPageHeader>
+				<f:content>
+					<fb:FilterBar id="statementsFb" search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+						<fb:filterGroupItems>
+							<fb:FilterGroupItem name="account" label="{i18n>marketColAccount}" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<Select forceSelection="false" selectedKey="{filter>/AccountId}" items="{ path: 'lookup>/accounts', templateShareable: false }">
+										<core:Item key="{lookup>id}" text="{lookup>label}" />
+									</Select>
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="from" label="{i18n>marketFilterFrom}" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<DatePicker core:require="{ StringType: 'sap/ui/model/type/String' }" value="{ path: 'filter>/From', type: 'StringType' }"
+										displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+								</fb:control>
+							</fb:FilterGroupItem>
+							<fb:FilterGroupItem name="to" label="{i18n>marketFilterTo}" groupName="G" visibleInFilterBar="true">
+								<fb:control>
+									<DatePicker core:require="{ StringType: 'sap/ui/model/type/String' }" value="{ path: 'filter>/To', type: 'StringType' }"
+										displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+								</fb:control>
+							</fb:FilterGroupItem>
+						</fb:filterGroupItems>
+					</fb:FilterBar>
+				</f:content>
+			</f:DynamicPageHeader>
+		</f:header>
+		<f:content>
+			<VBox fitContainer="true" renderType="Bare">
+				<MessageStrip text="{i18n>marketStatementHint}" type="Information" showIcon="true" class="sapUiTinyMarginBottom" />
+				<t:Table
+					id="tableMarketBrokerStatements"
+					core:require="{ EdmDate: 'sap/ui/model/odata/type/Date', DateTimeOffset: 'sap/ui/model/odata/type/DateTimeOffset', hedge: 'siagrob1/helpers/MarketHedgeHelpers' }"
+					busyIndicatorDelay="0"
+					selectionMode="Single"
+					selectionBehavior="Row"
+					class="sapUiSizeCondensed"
+					enableBusyIndicator="true"
+					alternateRowColors="true"
+					fixedColumnCount="1"
+					rows="{
+						path: '/MarketBrokerStatements',
+						parameters: { $expand: 'Account($select=Code;$expand=Counterparty($select=Name))' },
+						sorter: [{ path: 'Date', descending: true }, { path: 'Id', descending: true }]
+					}">
+					<t:layoutData><FlexItemData growFactor="1" baseSize="0" /></t:layoutData>
+					<t:rowMode>
+						<rowmodes:Auto />
+					</t:rowMode>
+					<t:columns>
+						<t:Column label="{i18n>marketColDate}" sortProperty="Date" width="8rem">
+							<t:template>
+								<Text text="{ path: 'Date', type: 'EdmDate', formatOptions: { pattern: 'dd/MM/yyyy' } }" wrapping="false" />
+							</t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColAccount}" width="16rem">
+							<t:template>
+								<Text wrapping="false"
+									text="{ parts: [ { path: 'Account/Counterparty/Name', targetType: 'any' }, { path: 'Account/Code', targetType: 'any' } ], formatter: 'hedge.accountLabel' }" />
+							</t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColDailyAdjustment}" hAlign="End" sortProperty="DailyAdjustment" width="11rem">
+							<t:template>
+								<ObjectStatus text="{ path: 'DailyAdjustment', targetType: 'any', formatter: 'hedge.formatSigned' }"
+									state="{ path: 'DailyAdjustment', targetType: 'any', formatter: 'hedge.pnlState' }" />
+							</t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColMarginRequired}" hAlign="End" sortProperty="MarginRequired" width="11rem">
+							<t:template><Text text="{ path: 'MarginRequired', targetType: 'any', formatter: 'hedge.formatMoney' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColMarginDeposited}" hAlign="End" sortProperty="MarginDeposited" width="11rem">
+							<t:template><Text text="{ path: 'MarginDeposited', targetType: 'any', formatter: 'hedge.formatMoney' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColCurrency}" width="6rem" sortProperty="Currency">
+							<t:template><Text text="{ path: 'Currency', targetType: 'any', formatter: 'hedge.currencySymbol' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColNotes}" width="20rem">
+							<t:template><Text text="{Notes}" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColCreatedBy}" sortProperty="CreatedBy" width="12rem">
+							<t:template><Text text="{CreatedBy}" wrapping="false" /></t:template>
+						</t:Column>
+					</t:columns>
+				</t:Table>
+			</VBox>
+		</f:content>
+		<f:footer>
+			<OverflowToolbar>
+				<Button text="{i18n>commonRefresh}" icon="sap-icon://refresh" press=".onRefresh" />
+				<ToolbarSpacer />
+				<Button text="{i18n>commonAdd}" icon="sap-icon://add" type="Emphasized" press=".onCreate" visible="{view>/canManage}" />
+				<Button text="{i18n>commonEdit}" icon="sap-icon://edit" press=".onEdit" visible="{view>/canManage}" />
+				<Button text="{i18n>commonDelete}" icon="sap-icon://delete" press=".onDelete" visible="{view>/canManage}" />
+			</OverflowToolbar>
+		</f:footer>
+	</f:DynamicPage>
+</mvc:View>

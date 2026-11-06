@@ -1,0 +1,54 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<Dialog id="statementDialog" title="{statement>/title}" contentWidth="32rem">
+		<content>
+			<f:Form id="statementForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1" />
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="{i18n>marketColAccount}">
+								<Select forceSelection="false" required="true" selectedKey="{statement>/accountId}" width="100%"
+									items="{ path: 'statement>/accounts', templateShareable: false }">
+									<core:Item key="{statement>id}" text="{statement>label}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColDate}">
+								<DatePicker core:require="{ StringType: 'sap/ui/model/type/String' }" value="{ path: 'statement>/date', type: 'StringType' }" required="true"
+									displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColDailyAdjustment}">
+								<Input id="statementAdjustment" value="{statement>/dailyAdjustment}" textAlign="End" change=".onNumberChange" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColMarginRequired}">
+								<Input id="statementRequired" value="{statement>/marginRequired}" textAlign="End" change=".onNumberChange" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColMarginDeposited}">
+								<Input id="statementDeposited" value="{statement>/marginDeposited}" textAlign="End" change=".onNumberChange" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColCurrency}">
+								<Select forceSelection="false" required="true" selectedKey="{statement>/currency}">
+									<core:Item key="Brl" text="{i18n>marketCurrencyBrl}" />
+									<core:Item key="Usd" text="{i18n>marketCurrencyUsd}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColNotes}">
+								<TextArea value="{statement>/notes}" rows="3" maxLength="500" width="100%" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<beginButton>
+			<Button text="{i18n>commonSave}" type="Emphasized" press=".onDialogSave" />
+		</beginButton>
+		<endButton>
+			<Button text="{i18n>commonCancel}" press=".onDialogCancel" />
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

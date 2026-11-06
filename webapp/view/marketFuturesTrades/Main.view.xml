@@ -1,0 +1,285 @@
+<mvc:View
+	controllerName="siagrob1.controller.marketFuturesTrades.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:rowmodes="sap.ui.table.rowmodes"
+	xmlns:f="sap.f"
+	xmlns:fb="sap.ui.comp.filterbar"
+	core:require="{ hedge: 'siagrob1/helpers/MarketHedgeHelpers' }">
+	<!-- Três abas: Operações (OData, só leitura; gravação por REST), Posição aberta e Resultado realizado (REST).
+	     As linhas de operações são ligadas por código (bindRows) depois de resolver o i18n: os formatters de enum leem o bundle. -->
+	<f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}" fitContent="true">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="{i18n>marketFuturesTitle}" />
+				</f:heading>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:content>
+			<IconTabBar id="futuresTabs" select=".onTabSelect" selectedKey="{view>/tab}" expandable="false"
+				stretchContentHeight="true" applyContentPadding="false">
+				<items>
+					<IconTabFilter key="trades" text="{i18n>marketFuturesTabTrades}">
+						<VBox fitContainer="true" renderType="Bare">
+							<fb:FilterBar id="futuresFb" search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+								<fb:filterGroupItems>
+									<fb:FilterGroupItem name="from" label="{i18n>marketFilterFrom}" groupName="G" visibleInFilterBar="true">
+										<fb:control>
+											<DatePicker core:require="{ StringType: 'sap/ui/model/type/String' }" value="{ path: 'filter>/From', type: 'StringType' }"
+												displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+										</fb:control>
+									</fb:FilterGroupItem>
+									<fb:FilterGroupItem name="to" label="{i18n>marketFilterTo}" groupName="G" visibleInFilterBar="true">
+										<fb:control>
+											<DatePicker core:require="{ StringType: 'sap/ui/model/type/String' }" value="{ path: 'filter>/To', type: 'StringType' }"
+												displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+										</fb:control>
+									</fb:FilterGroupItem>
+									<fb:FilterGroupItem name="account" label="{i18n>marketColAccount}" groupName="G" visibleInFilterBar="true">
+										<fb:control>
+											<Select forceSelection="false" selectedKey="{filter>/AccountId}" items="{ path: 'lookup>/accountsAll', templateShareable: false }">
+												<core:Item key="{lookup>id}" text="{lookup>label}" />
+											</Select>
+										</fb:control>
+									</fb:FilterGroupItem>
+									<fb:FilterGroupItem name="instrument" label="{i18n>marketColInstrument}" groupName="G" visibleInFilterBar="true">
+										<fb:control>
+											<Select forceSelection="false" selectedKey="{filter>/InstrumentCode}" items="{ path: 'lookup>/futures', templateShareable: false }">
+												<core:Item key="{lookup>Code}" text="{lookup>Code}" />
+											</Select>
+										</fb:control>
+									</fb:FilterGroupItem>
+									<fb:FilterGroupItem name="unconfirmed" label="{i18n>marketFilterUnconfirmed}" groupName="G" visibleInFilterBar="true">
+										<fb:control>
+											<CheckBox selected="{filter>/OnlyUnconfirmed}" />
+										</fb:control>
+									</fb:FilterGroupItem>
+								</fb:filterGroupItems>
+							</fb:FilterBar>
+							<t:Table
+								id="tableFuturesTrades"
+								core:require="{ DateTimeOffset: 'sap/ui/model/odata/type/DateTimeOffset' }"
+								busyIndicatorDelay="0"
+								selectionMode="Single"
+								selectionBehavior="Row"
+								class="sapUiSizeCondensed"
+								enableBusyIndicator="true"
+								alternateRowColors="true"
+								enableColumnReordering="false"
+								fixedColumnCount="1"
+								noData="{i18n>marketFuturesNoData}"
+								rowSelectionChange=".onSelectionChange"
+								rowsUpdated=".onSelectionChange">
+								<t:layoutData><FlexItemData growFactor="1" baseSize="0" /></t:layoutData>
+								<t:extension>
+									<OverflowToolbar>
+										<Button icon="sap-icon://refresh" tooltip="{i18n>commonRefresh}" press=".onRefresh" />
+										<ToolbarSpacer />
+										<Button text="{i18n>commonAdd}" icon="sap-icon://add" type="Emphasized" press=".onCreate" visible="{view>/canManage}" />
+										<Button text="{i18n>commonEdit}" icon="sap-icon://edit" press=".onEdit" visible="{view>/canManage}"
+											enabled="{sel>/canEdit}" tooltip="{sel>/editTooltip}" />
+										<Button text="{i18n>commonDelete}" icon="sap-icon://delete" press=".onDelete" visible="{view>/canManage}"
+											enabled="{sel>/canDelete}" tooltip="{sel>/editTooltip}" />
+										<Button text="{i18n>marketFuturesConfirm}" icon="sap-icon://accept" press=".onConfirm" visible="{view>/canManage}"
+											enabled="{sel>/canConfirm}" />
+										<Button text="{i18n>marketFuturesUnconfirm}" icon="sap-icon://undo" press=".onUnconfirm" visible="{view>/canManage}"
+											enabled="{sel>/canUnconfirm}" />
+										<Button text="{i18n>marketFuturesConfirmDay}" icon="sap-icon://appointment-2" press=".onConfirmDay" visible="{view>/canManage}" />
+									</OverflowToolbar>
+								</t:extension>
+								<t:rowMode>
+									<rowmodes:Auto minRowCount="8" />
+								</t:rowMode>
+								<t:columns>
+									<t:Column label="{i18n>marketColDateTime}" sortProperty="TradedAt" width="11rem">
+										<t:template>
+											<Text text="{ path: 'TradedAt', type: 'DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy HH:mm' } }" wrapping="false" />
+										</t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColAccount}" width="16rem">
+										<t:template>
+											<Text wrapping="false"
+												text="{ parts: [ { path: 'Account/Counterparty/Name', targetType: 'any' }, { path: 'Account/Code', targetType: 'any' } ], formatter: 'hedge.accountLabel' }" />
+										</t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColInstrument}" sortProperty="InstrumentCode" width="9rem">
+										<t:template><Text text="{InstrumentCode}" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColSide}" sortProperty="Side" width="6rem">
+										<t:template><Text text="{ path: 'Side', targetType: 'any', formatter: '.sideText' }" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColLots}" hAlign="End" sortProperty="Lots" width="6rem">
+										<t:template><Text text="{ path: 'Lots', targetType: 'any', formatter: 'hedge.formatLots' }" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColPrice}" hAlign="End" sortProperty="Price" width="9rem">
+										<t:template><Text text="{ path: 'Price', targetType: 'any', formatter: 'hedge.formatPrice' }" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColTons}" hAlign="End" width="9rem">
+										<t:template>
+											<Text wrapping="false"
+												text="{ parts: [ { path: 'Lots', targetType: 'any' }, { path: 'Side', targetType: 'any' }, { path: 'Instrument/QuoteUnit', targetType: 'any' }, { path: 'Instrument/ContractSize', targetType: 'any' }, { path: 'Instrument/TonFactor', targetType: 'any' } ], formatter: 'hedge.formatTradeTons' }" />
+										</t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColOpenLots}" hAlign="End" sortProperty="OpenLots" width="7rem">
+										<t:template><Text text="{ path: 'OpenLots', targetType: 'any', formatter: 'hedge.formatLots' }" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColReason}" sortProperty="Reason" width="9rem">
+										<t:template><Text text="{ path: 'Reason', targetType: 'any', formatter: '.reasonText' }" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColFees}" hAlign="End" width="9rem">
+										<t:template>
+											<Text wrapping="false"
+												text="{ parts: [ { path: 'Fees', targetType: 'any' }, { path: 'FeesCurrency', targetType: 'any' } ], formatter: 'hedge.formatCurrency' }" />
+										</t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColBrokerReference}" width="11rem">
+										<t:template><Text text="{BrokerReference}" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColContract}" width="10rem">
+										<t:template><Text text="{ContractCode}" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColConfirmed}" sortProperty="Confirmed" width="7rem" hAlign="Center">
+										<t:template><CheckBox selected="{Confirmed}" editable="false" /></t:template>
+									</t:Column>
+								</t:columns>
+							</t:Table>
+						</VBox>
+					</IconTabFilter>
+
+					<IconTabFilter key="positions" text="{i18n>marketFuturesTabPositions}">
+						<VBox fitContainer="true" renderType="Bare">
+							<t:Table
+								id="tableFuturesPositions"
+								busyIndicatorDelay="0"
+								selectionMode="None"
+								class="sapUiSizeCondensed"
+								alternateRowColors="true"
+								enableColumnReordering="false"
+								fixedColumnCount="1"
+								busy="{positions>/busy}"
+								noData="{i18n>marketFuturesNoPositions}"
+								rows="{ path: 'positions>/rows', templateShareable: false }">
+								<t:layoutData><FlexItemData growFactor="1" baseSize="0" /></t:layoutData>
+								<t:extension>
+									<OverflowToolbar>
+										<Button icon="sap-icon://refresh" tooltip="{i18n>commonRefresh}" press=".onRefreshPositions" />
+										<ToolbarSpacer />
+									</OverflowToolbar>
+								</t:extension>
+								<t:rowMode>
+									<rowmodes:Auto minRowCount="8" />
+								</t:rowMode>
+								<t:columns>
+									<t:Column label="{i18n>marketColAccount}" width="16rem">
+										<t:template><Text text="{positions>accountLabel}" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColInstrument}" width="9rem">
+										<t:template><Text text="{positions>instrumentCode}" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColExpiration}" width="9rem">
+										<t:template><Text text="{ path: 'positions>expirationDate', formatter: 'hedge.formatIsoDate' }" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColNetLots}" hAlign="End" width="8rem">
+										<t:template><Text text="{ path: 'positions>netLots', formatter: 'hedge.formatSignedLots' }" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColAvgPrice}" hAlign="End" width="9rem">
+										<t:template><Text text="{ path: 'positions>avgPrice', formatter: 'hedge.formatPrice' }" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColTonsOrUsd}" hAlign="End" width="13rem">
+										<t:template>
+											<Text wrapping="false" text="{ parts: [ 'positions>tons', 'positions>usd' ], formatter: 'hedge.formatTonsOrUsd' }" />
+										</t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColLastPrice}" hAlign="End" width="9rem">
+										<t:template><Text text="{ path: 'positions>lastPrice', formatter: 'hedge.formatPrice' }" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColUnrealized}" hAlign="End" width="14rem">
+										<t:template>
+											<ObjectStatus text="{ parts: [ 'positions>unrealizedPnl', 'positions>currency' ], formatter: 'hedge.formatPnl' }"
+												state="{ path: 'positions>unrealizedPnl', formatter: 'hedge.pnlState' }" />
+										</t:template>
+									</t:Column>
+								</t:columns>
+							</t:Table>
+							<Toolbar>
+								<Title text="{i18n>marketFuturesTotalUnrealized}" level="H5" />
+								<HBox items="{ path: 'positions>/totals', templateShareable: false }">
+									<ObjectStatus text="{positions>text}" state="{positions>state}" class="sapUiSmallMarginBegin" />
+								</HBox>
+							</Toolbar>
+						</VBox>
+					</IconTabFilter>
+
+					<IconTabFilter key="realized" text="{i18n>marketFuturesTabRealized}">
+						<VBox fitContainer="true" renderType="Bare">
+							<t:Table
+								id="tableFuturesRealized"
+								busyIndicatorDelay="0"
+								selectionMode="None"
+								class="sapUiSizeCondensed"
+								alternateRowColors="true"
+								enableColumnReordering="false"
+								fixedColumnCount="1"
+								busy="{realized>/busy}"
+								noData="{i18n>marketFuturesNoRealized}"
+								rows="{ path: 'realized>/rows', templateShareable: false }">
+								<t:layoutData><FlexItemData growFactor="1" baseSize="0" /></t:layoutData>
+								<t:extension>
+									<OverflowToolbar>
+										<Label text="{i18n>marketFilterFrom}" labelFor="realizedFrom" />
+										<DatePicker id="realizedFrom" core:require="{ StringType: 'sap/ui/model/type/String' }" width="10rem"
+											value="{ path: 'realized>/from', type: 'StringType' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+										<Label text="{i18n>marketFilterTo}" labelFor="realizedTo" />
+										<DatePicker id="realizedTo" core:require="{ StringType: 'sap/ui/model/type/String' }" width="10rem"
+											value="{ path: 'realized>/to', type: 'StringType' }" displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+										<Button text="{i18n>commonSearch}" icon="sap-icon://search" type="Emphasized" press=".onRefreshRealized" />
+										<ToolbarSpacer />
+									</OverflowToolbar>
+								</t:extension>
+								<t:rowMode>
+									<rowmodes:Auto minRowCount="8" />
+								</t:rowMode>
+								<t:columns>
+									<t:Column label="{i18n>marketColCloseDate}" width="9rem">
+										<t:template><Text text="{ path: 'realized>closeDate', formatter: 'hedge.formatIsoDate' }" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColAccount}" width="16rem">
+										<t:template><Text text="{realized>accountLabel}" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColInstrument}" width="9rem">
+										<t:template><Text text="{realized>instrumentCode}" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColLots}" hAlign="End" width="6rem">
+										<t:template><Text text="{ path: 'realized>lots', formatter: 'hedge.formatLots' }" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColOpenPrice}" hAlign="End" width="10rem">
+										<t:template><Text text="{ path: 'realized>openPrice', formatter: 'hedge.formatPrice' }" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColClosePrice}" hAlign="End" width="10rem">
+										<t:template><Text text="{ path: 'realized>closePrice', formatter: 'hedge.formatPrice' }" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column label="{i18n>marketColRealized}" hAlign="End" width="14rem">
+										<t:template>
+											<ObjectStatus text="{ parts: [ 'realized>realizedPnl', 'realized>currency' ], formatter: 'hedge.formatPnl' }"
+												state="{ path: 'realized>realizedPnl', formatter: 'hedge.pnlState' }" />
+										</t:template>
+									</t:Column>
+								</t:columns>
+							</t:Table>
+							<Toolbar>
+								<Title text="{i18n>marketFuturesTotalRealized}" level="H5" />
+								<HBox items="{ path: 'realized>/totals', templateShareable: false }">
+									<ObjectStatus text="{realized>text}" state="{realized>state}" class="sapUiSmallMarginBegin" />
+								</HBox>
+							</Toolbar>
+						</VBox>
+					</IconTabFilter>
+				</items>
+			</IconTabBar>
+		</f:content>
+	</f:DynamicPage>
+</mvc:View>

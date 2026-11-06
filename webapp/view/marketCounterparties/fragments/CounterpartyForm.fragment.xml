@@ -1,0 +1,66 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:t="sap.ui.table"
+	xmlns:rowmodes="sap.ui.table.rowmodes">
+	<!-- Cabeçalho (OData deferido) + grade de contas na navegação Accounts, salvos juntos num único $batch. -->
+	<f:Form id="formMarketCounterparty" editable="{view>/canManage}">
+		<f:layout>
+			<f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2" />
+		</f:layout>
+		<f:formContainers>
+			<f:FormContainer title="{i18n>marketCounterpartySectionMain}">
+				<f:formElements>
+					<f:FormElement label="{i18n>marketFieldName}">
+						<Input editable="{view>/canManage}" value="{Name}" required="true" maxLength="100" />
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldType}">
+						<Select editable="{view>/canManage}" forceSelection="false" required="true" selectedKey="{ path: 'Type', targetType: 'any' }">
+							<core:Item key="Broker" text="{i18n>marketCounterpartyType_broker}" />
+							<core:Item key="Bank" text="{i18n>marketCounterpartyType_bank}" />
+						</Select>
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldTaxId}">
+						<Input editable="{view>/canManage}" value="{TaxId}" maxLength="20" />
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldActive}">
+						<Switch enabled="{view>/canManage}" state="{Active}" />
+					</f:FormElement>
+				</f:formElements>
+			</f:FormContainer>
+		</f:formContainers>
+	</f:Form>
+
+	<t:Table
+		id="tableCounterpartyAccounts"
+		class="sapUiSizeCondensed sapUiSmallMarginTop"
+		selectionMode="Single"
+		selectionBehavior="RowSelector"
+		alternateRowColors="true"
+		enableColumnReordering="false"
+		rows="{Accounts}">
+		<t:extension>
+			<OverflowToolbar>
+				<Title text="{i18n>marketCounterpartySectionAccounts}" />
+				<ToolbarSpacer />
+				<Button text="{i18n>marketAccountAdd}" icon="sap-icon://add" press=".onAddAccount" visible="{view>/canManage}" />
+				<Button text="{i18n>marketAccountRemove}" icon="sap-icon://delete" press=".onRemoveAccount" visible="{view>/canManage}" />
+			</OverflowToolbar>
+		</t:extension>
+		<t:rowMode>
+			<rowmodes:Fixed rowCount="8" />
+		</t:rowMode>
+		<t:columns>
+			<t:Column label="{i18n>marketAccountColCode}" width="14rem">
+				<t:template><Input editable="{view>/canManage}" value="{Code}" maxLength="30" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketFieldDescription}">
+				<t:template><Input editable="{view>/canManage}" value="{Description}" maxLength="100" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketFieldActive}" width="6rem" hAlign="Center">
+				<t:template><CheckBox editable="{view>/canManage}" selected="{Active}" /></t:template>
+			</t:Column>
+		</t:columns>
+	</t:Table>
+</core:FragmentDefinition>

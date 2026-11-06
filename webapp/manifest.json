@@ -959,6 +959,41 @@
           "target": "marketPriceTablesEdit"
         },
         {
+          "pattern": "market/counterparties",
+          "name": "marketCounterparties",
+          "target": "marketCounterparties"
+        },
+        {
+          "pattern": "market/counterparties/new",
+          "name": "marketCounterpartiesNew",
+          "target": "marketCounterpartiesNew"
+        },
+        {
+          "pattern": "market/counterparties/{id}",
+          "name": "marketCounterpartiesEdit",
+          "target": "marketCounterpartiesEdit"
+        },
+        {
+          "pattern": "market/broker-statements",
+          "name": "marketBrokerStatements",
+          "target": "marketBrokerStatements"
+        },
+        {
+          "pattern": "market/futures-trades",
+          "name": "marketFuturesTrades",
+          "target": "marketFuturesTrades"
+        },
+        {
+          "pattern": "market/fx-hedges",
+          "name": "marketFxHedges",
+          "target": "marketFxHedges"
+        },
+        {
+          "pattern": "market/efps",
+          "name": "marketEfps",
+          "target": "marketEfps"
+        },
+        {
           "pattern": "market/trading-settings",
           "name": "marketTradingSettings",
           "target": "marketTradingSettings"
@@ -2645,6 +2680,48 @@
           "id": "marketPriceTablesEdit",
           "level": 2,
           "name": "siagrob1.view.marketPriceTables.Edit",
+          "clearControlAggregation": true
+        },
+        "marketCounterparties": {
+          "id": "marketCounterparties",
+          "level": 1,
+          "name": "siagrob1.view.marketCounterparties.Main",
+          "clearControlAggregation": true
+        },
+        "marketCounterpartiesNew": {
+          "id": "marketCounterpartiesNew",
+          "level": 2,
+          "name": "siagrob1.view.marketCounterparties.Add",
+          "clearControlAggregation": true
+        },
+        "marketCounterpartiesEdit": {
+          "id": "marketCounterpartiesEdit",
+          "level": 2,
+          "name": "siagrob1.view.marketCounterparties.Edit",
+          "clearControlAggregation": true
+        },
+        "marketBrokerStatements": {
+          "id": "marketBrokerStatements",
+          "level": 1,
+          "name": "siagrob1.view.marketBrokerStatements.Main",
+          "clearControlAggregation": true
+        },
+        "marketFuturesTrades": {
+          "id": "marketFuturesTrades",
+          "level": 1,
+          "name": "siagrob1.view.marketFuturesTrades.Main",
+          "clearControlAggregation": true
+        },
+        "marketFxHedges": {
+          "id": "marketFxHedges",
+          "level": 1,
+          "name": "siagrob1.view.marketFxHedges.Main",
+          "clearControlAggregation": true
+        },
+        "marketEfps": {
+          "id": "marketEfps",
+          "level": 1,
+          "name": "siagrob1.view.marketEfps.Main",
           "clearControlAggregation": true
         },
         "marketTradingSettings": {

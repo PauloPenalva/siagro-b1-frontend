@@ -1,0 +1,83 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<Dialog id="futuresTradeDialog" title="{trade>/title}" contentWidth="36rem">
+		<content>
+			<f:Form id="futuresTradeForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1" />
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="{i18n>marketColDateTime}">
+								<DateTimePicker id="tradeDateTime" dateValue="{trade>/tradedAt}" required="true" displayFormat="dd/MM/yyyy HH:mm" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColAccount}">
+								<Select id="tradeAccount" forceSelection="false" required="true" selectedKey="{trade>/accountId}" width="100%"
+									items="{ path: 'trade>/accounts', templateShareable: false }">
+									<core:Item key="{trade>id}" text="{trade>label}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColInstrument}">
+								<Select id="tradeInstrument" forceSelection="false" required="true" selectedKey="{trade>/instrumentCode}" width="100%"
+									change=".onInstrumentChange" items="{ path: 'lookup>/futures', templateShareable: false }">
+									<core:Item key="{lookup>Code}" text="{lookup>Code}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColSide}">
+								<Select id="tradeSide" forceSelection="false" required="true" selectedKey="{trade>/side}">
+									<core:Item key="buy" text="{i18n>marketHedgeSide_buy}" />
+									<core:Item key="sell" text="{i18n>marketHedgeSide_sell}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColLots}">
+								<Input id="tradeLots" value="{trade>/lots}" required="true" textAlign="End" liveChange=".onLotsLiveChange" change=".onLotsChange"
+									description="{trade>/equivalent}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColPrice}">
+								<Input id="tradePrice" value="{trade>/price}" required="true" textAlign="End" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColFees}">
+								<Input id="tradeFees" value="{trade>/fees}" textAlign="End" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColFeesCurrency}">
+								<Select forceSelection="false" selectedKey="{trade>/feesCurrency}">
+									<core:Item key="brl" text="{i18n>marketCurrencyBrl}" />
+									<core:Item key="usd" text="{i18n>marketCurrencyUsd}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColReason}">
+								<Select forceSelection="false" selectedKey="{trade>/reason}">
+									<core:Item key="normal" text="{i18n>marketFuturesReason_normal}" />
+									<core:Item key="rollover" text="{i18n>marketFuturesReason_rollover}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColBrokerReference}">
+								<Input value="{trade>/brokerReference}" maxLength="50" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketFuturesPurchaseContract}">
+								<Input value="{trade>/purchaseContractCode}" showValueHelp="true" valueHelpOnly="true" showClearIcon="true"
+									valueHelpRequest=".onPickPurchaseContract" change=".onPurchaseContractChange" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketFuturesSalesContract}">
+								<Input value="{trade>/salesContractCode}" showValueHelp="true" valueHelpOnly="true" showClearIcon="true"
+									valueHelpRequest=".onPickSalesContract" change=".onSalesContractChange" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColNotes}">
+								<TextArea value="{trade>/notes}" rows="2" maxLength="500" width="100%" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<beginButton>
+			<Button text="{i18n>commonSave}" type="Emphasized" press=".onTradeSave" />
+		</beginButton>
+		<endButton>
+			<Button text="{i18n>commonCancel}" press=".onTradeCancel" />
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>
