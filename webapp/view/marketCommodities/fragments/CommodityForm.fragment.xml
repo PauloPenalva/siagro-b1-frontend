@@ -1,0 +1,121 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:l="sap.ui.layout"
+	xmlns:t="sap.ui.table"
+	xmlns:rowmodes="sap.ui.table.rowmodes">
+	<!-- Cabeçalho (OData deferido) + produtos (Items) + mapa dos 12 meses (Months), salvos juntos num único $batch. -->
+	<f:Form id="formMarketCommodity" editable="{view>/canManage}">
+		<f:layout>
+			<f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2" />
+		</f:layout>
+		<f:formContainers>
+			<f:FormContainer title="{i18n>marketCommoditySectionMain}">
+				<f:formElements>
+					<f:FormElement label="{i18n>marketCommodityCode}">
+						<!-- Chave: só se escolhe na inclusão. -->
+						<Input editable="{= ${view>/canManage} === true &amp;&amp; ${view>/isNew} === true }" value="{Code}" required="true" maxLength="20" />
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldName}">
+						<Input editable="{view>/canManage}" value="{Name}" required="true" maxLength="100" />
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketCommodityHedgeExchange}">
+						<Select editable="{view>/canManage}" forceSelection="false" required="true" selectedKey="{ path: 'HedgeExchange', targetType: 'any' }">
+							<core:Item key="Cbot" text="{i18n>marketHedgeExchange_Cbot}" />
+							<core:Item key="B3" text="{i18n>marketHedgeExchange_B3}" />
+							<core:Item key="Spot" text="{i18n>marketHedgeExchange_Spot}" />
+						</Select>
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldActive}">
+						<Switch enabled="{view>/canManage}" state="{Active}" />
+					</f:FormElement>
+				</f:formElements>
+			</f:FormContainer>
+		</f:formContainers>
+	</f:Form>
+
+	<l:Grid defaultSpan="XL6 L6 M12 S12" class="sapUiSmallMarginTop">
+		<t:Table
+			id="tableCommodityItems"
+			class="sapUiSizeCondensed"
+			selectionMode="Single"
+			selectionBehavior="RowSelector"
+			alternateRowColors="true"
+			enableColumnReordering="false"
+			rows="{Items}">
+			<t:extension>
+				<OverflowToolbar>
+					<Title text="{i18n>marketCommoditySectionItems}" />
+					<ToolbarSpacer />
+					<Button text="{i18n>marketCommodityItemAdd}" icon="sap-icon://add" press=".onAddItem" visible="{view>/canManage}" />
+					<Button text="{i18n>marketCommodityItemRemove}" icon="sap-icon://delete" press=".onRemoveItem" visible="{view>/canManage}" />
+				</OverflowToolbar>
+			</t:extension>
+			<t:rowMode>
+				<rowmodes:Fixed rowCount="12" />
+			</t:rowMode>
+			<t:columns>
+				<t:Column label="{i18n>marketCommodityItemCode}" width="12rem">
+					<t:template>
+						<!-- Botão em vez de Input só-ajuda (valueHelpOnly é obsoleto): o código só muda pelo diálogo, junto com o nome. -->
+						<Button type="Transparent" icon="sap-icon://value-help" enabled="{view>/canManage}" press=".onPickItem"
+							text="{= ${ItemCode} || ${i18n>marketCommodityItemPick} }" />
+					</t:template>
+				</t:Column>
+				<t:Column label="{i18n>marketCommodityItemName}">
+					<t:template><Text text="{ItemName}" wrapping="false" /></t:template>
+				</t:Column>
+			</t:columns>
+		</t:Table>
+
+		<!-- Uma linha por mês de entrega (1-12): mês de bolsa do vencimento + deslocamento de ano. -->
+		<t:Table
+			id="tableCommodityMonths"
+			class="sapUiSizeCondensed"
+			selectionMode="None"
+			alternateRowColors="true"
+			enableColumnReordering="false"
+			rows="{Months}">
+			<t:extension>
+				<OverflowToolbar>
+					<Title text="{i18n>marketCommoditySectionMonths}" />
+				</OverflowToolbar>
+			</t:extension>
+			<t:rowMode>
+				<rowmodes:Fixed rowCount="12" />
+			</t:rowMode>
+			<t:columns>
+				<t:Column label="{i18n>marketCommodityDeliveryMonth}" width="10rem">
+					<t:template><Text text="{ path: 'DeliveryMonth', targetType: 'any', formatter: '.monthName' }" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column label="{i18n>marketCommodityFuturesMonth}">
+					<t:template>
+						<Select editable="{view>/canManage}" forceSelection="false" width="100%" selectedKey="{FuturesMonth}">
+							<core:Item key="1" text="{i18n>marketMonth_1}" />
+							<core:Item key="2" text="{i18n>marketMonth_2}" />
+							<core:Item key="3" text="{i18n>marketMonth_3}" />
+							<core:Item key="4" text="{i18n>marketMonth_4}" />
+							<core:Item key="5" text="{i18n>marketMonth_5}" />
+							<core:Item key="6" text="{i18n>marketMonth_6}" />
+							<core:Item key="7" text="{i18n>marketMonth_7}" />
+							<core:Item key="8" text="{i18n>marketMonth_8}" />
+							<core:Item key="9" text="{i18n>marketMonth_9}" />
+							<core:Item key="10" text="{i18n>marketMonth_10}" />
+							<core:Item key="11" text="{i18n>marketMonth_11}" />
+							<core:Item key="12" text="{i18n>marketMonth_12}" />
+						</Select>
+					</t:template>
+				</t:Column>
+				<t:Column label="{i18n>marketCommodityYearOffset}" width="11rem">
+					<t:template>
+						<Select editable="{view>/canManage}" forceSelection="false" width="100%" selectedKey="{YearOffset}">
+							<core:Item key="0" text="{i18n>marketCommodityYearOffset_0}" />
+							<core:Item key="1" text="{i18n>marketCommodityYearOffset_1}" />
+						</Select>
+					</t:template>
+				</t:Column>
+			</t:columns>
+		</t:Table>
+	</l:Grid>
+</core:FragmentDefinition>

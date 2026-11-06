@@ -40,6 +40,7 @@
           <Select forceSelection="false" selectedKey="{path: 'DocumentType', targetType: 'any'}">
             <core:ListItem key="PurchaseContract" text="Contrato de Compra" />
             <core:ListItem key="SalesContract" text="Contrato de Venda" />
+            <core:ListItem key="MarketPosition" text="Posição de mercado" />
           </Select>
         </t:template>
       </t:Column>
@@ -63,6 +64,7 @@
             <core:ListItem key="WashoutApproved" text="Washout aprovado" />
             <core:ListItem key="WashoutRejected" text="Washout rejeitado" />
             <core:ListItem key="WashoutReversed" text="Washout estornado" />
+            <core:ListItem key="ExposureLimitExceeded" text="Limite de exposição excedido" />
           </Select>
         </t:template>
       </t:Column>

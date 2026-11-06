@@ -4,14 +4,18 @@ import MessageBox from "sap/m/MessageBox";
 import BaseController from "./SalesContractsBaseController";
 import Context from "sap/ui/model/odata/v4/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import ContractMarketSection from "siagrob1/helpers/ContractMarketSection";
 
 /**
  * @namespace siagrob1.controller.salesContracts
  */
 export default class Add extends BaseController {
+  /** Seção "Mercado" (só com o módulo ligado); inserida antes de ligar o contrato. */
+  private marketSection: ContractMarketSection;
 
 	onInit(): void  {
-		this.getRouter().getRoute("salesContractsNew").attachPatternMatched(() => void this.newRouteMatched());
+    this.marketSection = new ContractMarketSection(this.getView(), this.getRouter(), "salesContractsNew");
+		this.getRouter().getRoute("salesContractsNew").attachPatternMatched(() => this.marketSection.whenReady(() => void this.newRouteMatched()));
 	}
 
 	private async newRouteMatched() {

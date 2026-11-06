@@ -974,6 +974,31 @@
           "target": "marketCounterpartiesEdit"
         },
         {
+          "pattern": "market/position",
+          "name": "marketPosition",
+          "target": "marketPosition"
+        },
+        {
+          "pattern": "market/exposure-limits",
+          "name": "marketExposureLimits",
+          "target": "marketExposureLimits"
+        },
+        {
+          "pattern": "market/commodities",
+          "name": "marketCommodities",
+          "target": "marketCommodities"
+        },
+        {
+          "pattern": "market/commodities/new",
+          "name": "marketCommoditiesNew",
+          "target": "marketCommoditiesNew"
+        },
+        {
+          "pattern": "market/commodities/{code}",
+          "name": "marketCommoditiesEdit",
+          "target": "marketCommoditiesEdit"
+        },
+        {
           "pattern": "market/broker-statements",
           "name": "marketBrokerStatements",
           "target": "marketBrokerStatements"
@@ -2698,6 +2723,36 @@
           "id": "marketCounterpartiesEdit",
           "level": 2,
           "name": "siagrob1.view.marketCounterparties.Edit",
+          "clearControlAggregation": true
+        },
+        "marketPosition": {
+          "id": "marketPosition",
+          "level": 1,
+          "name": "siagrob1.view.marketPosition.Main",
+          "clearControlAggregation": true
+        },
+        "marketExposureLimits": {
+          "id": "marketExposureLimits",
+          "level": 1,
+          "name": "siagrob1.view.marketExposureLimits.Main",
+          "clearControlAggregation": true
+        },
+        "marketCommodities": {
+          "id": "marketCommodities",
+          "level": 1,
+          "name": "siagrob1.view.marketCommodities.Main",
+          "clearControlAggregation": true
+        },
+        "marketCommoditiesNew": {
+          "id": "marketCommoditiesNew",
+          "level": 2,
+          "name": "siagrob1.view.marketCommodities.Add",
+          "clearControlAggregation": true
+        },
+        "marketCommoditiesEdit": {
+          "id": "marketCommoditiesEdit",
+          "level": 2,
+          "name": "siagrob1.view.marketCommodities.Edit",
           "clearControlAggregation": true
         },
         "marketBrokerStatements": {

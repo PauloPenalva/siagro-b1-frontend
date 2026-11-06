@@ -1,0 +1,56 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:t="sap.ui.table" xmlns:rowmodes="sap.ui.table.rowmodes"
+	core:require="{ pos: 'siagrob1/helpers/MarketPositionHelpers' }">
+	<Dialog title="{i18n>marketPositionUsdContracts}" contentWidth="84rem" resizable="true" draggable="true">
+		<t:Table rows="{ path: 'usdc>/rows', templateShareable: false }" selectionMode="None" enableColumnReordering="false"
+			noData="{usdc>/noData}" busy="{usdc>/busy}" class="sapUiSizeCondensed">
+			<t:rowMode><rowmodes:Auto minRowCount="5" maxRowCount="15" /></t:rowMode>
+			<t:columns>
+				<t:Column width="5.5rem" label="{i18n>marketPositionColSide}">
+					<t:template><Text text="{ path: 'usdc>side', formatter: '.sideText' }" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column width="8rem" label="{i18n>marketPositionColContract}">
+					<t:template><Link text="{usdc>contractCode}" press=".onOpenContract" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column width="12rem" label="{i18n>marketPositionColPartner}">
+					<t:template><Text text="{usdc>cardName}" tooltip="{usdc>cardName}" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column width="7rem" label="{i18n>marketPositionColItem}">
+					<t:template><Text text="{usdc>itemCode}" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column width="6.5rem" label="{i18n>marketPositionColCashFlow}">
+					<t:template><Text text="{ path: 'usdc>cashFlowDate', formatter: '.dateText' }" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="7.5rem" label="{i18n>marketPositionColFirmOpen}">
+					<t:template>
+						<ObjectNumber number="{ path: 'usdc>firmOpenTons', formatter: 'pos.formatTons' }" state="{ path: 'usdc>firmOpenTons', formatter: 'pos.signState' }" emphasized="false" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="8rem" label="{i18n>marketPositionColUsdAmount}">
+					<t:template>
+						<ObjectNumber number="{ path: 'usdc>usdAmount', formatter: 'pos.formatAmount' }" state="{ path: 'usdc>usdAmount', formatter: 'pos.signState' }" emphasized="false" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="6.5rem" label="{i18n>marketPositionColUsdPricePerBag}">
+					<t:template>
+						<ObjectNumber number="{ path: 'usdc>usdPricePerBag', formatter: 'pos.formatAmount' }" state="{ path: 'usdc>usdPricePerBag', formatter: 'pos.signState' }" emphasized="false" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column width="7rem" label="{i18n>marketPositionColFxState}">
+					<t:template><ObjectStatus text="{= ${usdc>fxLocked} ? ${i18n>marketPositionFxLocked} : ${i18n>marketPositionFxOpen} }" state="{= ${usdc>fxLocked} ? 'Success' : 'Warning' }" /></t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="6rem" label="{i18n>marketPositionColFxRate}">
+					<t:template><Text text="{ path: 'usdc>fxRate', formatter: 'pos.formatFxRate' }" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column width="9rem" label="{i18n>marketPositionColAction}">
+					<t:template>
+						<HBox renderType="Bare">
+							<Button text="{i18n>marketPositionFxLock}" type="Emphasized" press=".onFxLock" visible="{= ${usdc>/canManage} &amp;&amp; !${usdc>fxLocked} }" />
+							<Button text="{i18n>marketPositionFxUnlock}" press=".onFxUnlock" visible="{= ${usdc>/canManage} &amp;&amp; ${usdc>fxLocked} }" />
+						</HBox>
+					</t:template>
+				</t:Column>
+			</t:columns>
+		</t:Table>
+		<endButton><Button text="{i18n>marketPositionClose}" press=".onCloseUsdContracts" /></endButton>
+	</Dialog>
+</core:FragmentDefinition>

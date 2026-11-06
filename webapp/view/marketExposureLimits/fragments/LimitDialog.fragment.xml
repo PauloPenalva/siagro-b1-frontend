@@ -1,0 +1,71 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<Dialog id="limitDialog" title="{limit>/title}" contentWidth="32rem">
+		<content>
+			<f:Form id="limitForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1" />
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="{i18n>marketLimitScope}">
+								<SegmentedButton selectedKey="{limit>/scope}">
+									<items>
+										<SegmentedButtonItem key="Commodity" text="{i18n>marketLimitScope_Commodity}" />
+										<SegmentedButtonItem key="Usd" text="{i18n>marketLimitScope_Usd}" />
+									</items>
+								</SegmentedButton>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketLimitCommodity}" visible="{= ${limit>/scope} === 'Commodity' }">
+								<Select forceSelection="false" required="true" selectedKey="{limit>/commodityCode}" width="100%"
+									items="{ path: 'limit>/commodities', templateShareable: false }">
+									<core:Item key="{limit>Code}" text="{limit>Name}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketLimitTotal}">
+								<Switch state="{limit>/total}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketLimitYear}" visible="{= !${limit>/total} }">
+								<StepInput value="{limit>/year}" min="2000" max="2100" width="10rem" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketLimitMonth}" visible="{= !${limit>/total} }">
+								<Select forceSelection="false" selectedKey="{limit>/month}" width="10rem">
+									<core:Item key="1" text="{i18n>marketMonth_1}" />
+									<core:Item key="2" text="{i18n>marketMonth_2}" />
+									<core:Item key="3" text="{i18n>marketMonth_3}" />
+									<core:Item key="4" text="{i18n>marketMonth_4}" />
+									<core:Item key="5" text="{i18n>marketMonth_5}" />
+									<core:Item key="6" text="{i18n>marketMonth_6}" />
+									<core:Item key="7" text="{i18n>marketMonth_7}" />
+									<core:Item key="8" text="{i18n>marketMonth_8}" />
+									<core:Item key="9" text="{i18n>marketMonth_9}" />
+									<core:Item key="10" text="{i18n>marketMonth_10}" />
+									<core:Item key="11" text="{i18n>marketMonth_11}" />
+									<core:Item key="12" text="{i18n>marketMonth_12}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{= ${limit>/scope} === 'Usd' ? ${i18n>marketLimitMaxLongUsd} : ${i18n>marketLimitMaxLongTons} }">
+								<Input id="limitMaxLong" value="{limit>/maxLong}" textAlign="End" change=".onNumberChange" />
+							</f:FormElement>
+							<f:FormElement label="{= ${limit>/scope} === 'Usd' ? ${i18n>marketLimitMaxShortUsd} : ${i18n>marketLimitMaxShortTons} }">
+								<Input id="limitMaxShort" value="{limit>/maxShort}" textAlign="End" change=".onNumberChange" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketFieldActive}">
+								<Switch state="{limit>/active}" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<beginButton>
+			<Button text="{i18n>commonSave}" type="Emphasized" press=".onDialogSave" />
+		</beginButton>
+		<endButton>
+			<Button text="{i18n>commonCancel}" press=".onDialogCancel" />
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

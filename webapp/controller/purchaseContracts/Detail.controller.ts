@@ -1,4 +1,3 @@
-import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import { openPdfReport } from "siagrob1/helpers/PdfReportHelpers";
 import PurchaseContractsBaseController from "./PurchaseContractsBaseController";
 import Context from "sap/ui/model/odata/v4/Context";
@@ -13,11 +12,16 @@ import { Link$PressEvent } from "sap/m/Link";
 import { odataCollection, sendJson } from "siagrob1/helpers/FetchHelpers";
 import { FinancialDocumentByContract } from "siagrob1/types/FinancialDocumentByContract";
 import { contractFinancialSummary, visibleContractFinancialRows } from "siagrob1/helpers/ContractFinancialSummaryHelpers";
+import ContractMarketSection from "siagrob1/helpers/ContractMarketSection";
+
+type DetailRouteArgs = { id: string; "?query"?: { readonly?: string } };
 
 /**
  * @namespace siagrob1.controller.purchaseContracts
  */
 export default class Detail extends PurchaseContractsBaseController {
+  /** Seção "Mercado" (só com o módulo ligado); inserida antes de ligar o contrato. */
+  private marketSection: ContractMarketSection;
 
   /** Contrato cuja seção Financeiro a tela mostra; descarta resposta atrasada de outro contrato. */
   private _financialContractKey: string;
@@ -25,12 +29,16 @@ export default class Detail extends PurchaseContractsBaseController {
 	onInit(): void  {	
 		this.getView().setModel(new JSONModel({ rows: [], summary: contractFinancialSummary([]) }), "contractFinancial");
 		this.initContractDrafts();
-		this.getRouter().getRoute("purchaseContractsDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
+    this.marketSection = new ContractMarketSection(this.getView(), this.getRouter(), "purchaseContractsDetail");
+		this.getRouter().getRoute("purchaseContractsDetail").attachPatternMatched((ev) => {
+      // Os argumentos são lidos já: o evento do roteador é reaproveitado depois do disparo.
+      const args = ev.getParameter("arguments") as DetailRouteArgs;
+      this.marketSection.whenReady(() => this.detailRouteMatched(args));
+    });
 	}
 
-	private detailRouteMatched(ev: Route$MatchedEvent) {
+	private detailRouteMatched(args: DetailRouteArgs) {
     this.resetDocNumberMode();
-		const args = ev.getParameter("arguments") as { id: string; "?query"?: { readonly?: string } };
 		const id = args.id;
     const uiModel = this.getModel("ui") as JSONModel;
 

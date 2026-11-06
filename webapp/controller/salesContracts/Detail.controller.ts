@@ -1,4 +1,3 @@
-import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import { openPdfReport } from "siagrob1/helpers/PdfReportHelpers";
 import SalesContractsBaseController from "./SalesContractsBaseController";
 import Context from "sap/ui/model/odata/v4/Context";
@@ -19,6 +18,7 @@ import { Link$PressEvent } from "sap/m/Link";
 import { odataCollection, sendJson } from "siagrob1/helpers/FetchHelpers";
 import { FinancialDocumentByContract } from "siagrob1/types/FinancialDocumentByContract";
 import { contractFinancialSummary, visibleContractFinancialRows } from "siagrob1/helpers/ContractFinancialSummaryHelpers";
+import ContractMarketSection from "siagrob1/helpers/ContractMarketSection";
 
 /** Complemento fiscal do contrato (DTO PascalCase da function; vem nulo quando ainda não existe). */
 type FiscalComplement = {
@@ -34,10 +34,14 @@ type FiscalComplement = {
   IsComplete?: boolean,
 }
 
+type DetailRouteArgs = { id: string; "?query"?: { readonly?: string } };
+
 /**
  * @namespace siagrob1.controller.salesContracts
  */
 export default class Detail extends SalesContractsBaseController {
+  /** Seção "Mercado" (só com o módulo ligado); inserida antes de ligar o contrato. */
+  private marketSection: ContractMarketSection;
 
   private _fiscalContractKey: string;
   private _fiscalComplementDialog: Dialog;
@@ -49,12 +53,16 @@ export default class Detail extends SalesContractsBaseController {
 		this.getView().setModel(new JSONModel({}), "fiscalComplementDialog");
 		this.getView().setModel(new JSONModel({ rows: [], summary: contractFinancialSummary([]) }), "contractFinancial");
 		this.initContractDrafts();
-		this.getRouter().getRoute("salesContractsDetail").attachPatternMatched((ev) => this.detailRouteMatched(ev));
+    this.marketSection = new ContractMarketSection(this.getView(), this.getRouter(), "salesContractsDetail");
+		this.getRouter().getRoute("salesContractsDetail").attachPatternMatched((ev) => {
+      // Os argumentos são lidos já: o evento do roteador é reaproveitado depois do disparo.
+      const args = ev.getParameter("arguments") as DetailRouteArgs;
+      this.marketSection.whenReady(() => this.detailRouteMatched(args));
+    });
 	}
 
-	private detailRouteMatched(ev: Route$MatchedEvent) {
+	private detailRouteMatched(args: DetailRouteArgs) {
     this.resetDocNumberMode();
-		const args = ev.getParameter("arguments") as { id: string; "?query"?: { readonly?: string } };
 		const id = args.id;
     const viewModel = this.getModel("viewModel") as JSONModel;
     const uiModel = this.getModel("ui") as JSONModel;
