@@ -1,5 +1,5 @@
 import { readErrorMessage } from "siagrob1/helpers/FetchHelpers";
-import { FlashField, FlashMap, MarketQuote, MarketQuoteRow } from "siagrob1/types/MarketQuote";
+import { FlashField, MarketQuote, MarketQuoteRow } from "siagrob1/types/MarketQuote";
 
 /**
  * Funções puras do módulo Mercado (terminal de cotações) + a chamada REST com status HTTP.
@@ -210,27 +210,40 @@ export const FLASH_FIELDS: FlashField[] = ["last", "bid", "high", "low", "open"]
 /** Duração da piscada em ms: deve ser igual à do `animation: ... 1s` em css/style.css. */
 export const FLASH_DURATION_MS = 1000;
 
-const noFlash = (): FlashMap => ({ last: "", bid: "", high: "", low: "", open: "" });
-const noFlashAt = (): Record<FlashField, number> => ({ last: 0, bid: 0, high: 0, low: 0, open: 0 });
+/** Linha com o descritor de piscada de cada campo (só no JSONModel, nunca vai ao servidor). */
+export type FlashedRow<T, F extends string> = T & { flash: Record<F, string>; flashAt?: Record<F, number> };
+
+function emptyFlash<F extends string, V>(fields: readonly F[], value: V): Record<F, V> {
+  const map = {} as Record<F, V>;
+  for (const field of fields) map[field] = value;
+  return map;
+}
 
 /**
- * Compara o quadro novo com o anterior (pelo código, nunca pela posição) e devolve as linhas com o
- * descritor de piscada de cada preço. `previous` nulo = linha de base (primeiro quadro do stream): nada
- * pisca. Só pisca quando os dois valores são números e diferem. A fase "a"/"b" alterna com `seq` para
- * o CSS trocar de keyframes e a animação reiniciar mesmo em duas altas seguidas. Um descritor ainda mais
- * novo que FLASH_DURATION_MS segue IDÊNTICO (o atributo no DOM não muda e a animação termina); `now`
- * vem de quem chama, para a função seguir pura.
+ * Núcleo genérico das piscadas: compara o quadro novo com o anterior pela CHAVE da linha (nunca pela
+ * posição) e devolve as linhas com o descritor de cada campo de `fields`. `previous` nulo = linha de base
+ * (primeiro quadro do stream): nada pisca. Só pisca quando os dois valores são números e diferem. A fase
+ * "a"/"b" alterna com `seq` para o CSS trocar de keyframes e a animação reiniciar mesmo em duas altas
+ * seguidas. Um descritor ainda mais novo que FLASH_DURATION_MS segue IDÊNTICO (o atributo no DOM não muda
+ * e a animação termina); `now` vem de quem chama, para a função seguir pura.
  */
-export function withFlashes(previous: (MarketQuote | MarketQuoteRow)[], next: MarketQuote[], seq: number, now: number): MarketQuoteRow[] {
-  const before = new Map((previous ?? []).map((p) => [p.code, p as MarketQuoteRow]));
+export function computeFlashes<T extends object, F extends string & keyof T, K>(
+  previous: T[],
+  next: T[],
+  keyOf: (row: T) => K,
+  fields: readonly F[],
+  seq: number,
+  now: number
+): FlashedRow<T, F>[] {
+  const before = new Map((previous ?? []).map((p) => [keyOf(p), p as FlashedRow<T, F>]));
   const phase = seq % 2 === 0 ? "b" : "a";
-  return (next ?? []).map((quote) => {
-    const flash = noFlash();
-    const flashAt = noFlashAt();
-    const old = previous ? before.get(quote.code) : undefined;
+  return (next ?? []).map((row) => {
+    const flash = emptyFlash(fields, "");
+    const flashAt = emptyFlash(fields, 0);
+    const old = previous ? before.get(keyOf(row)) : undefined;
     if (old) {
-      for (const field of FLASH_FIELDS) {
-        const a = old[field], b = quote[field];
+      for (const field of fields) {
+        const a = old[field] as unknown, b = row[field] as unknown;
         if (typeof a === "number" && typeof b === "number" && a !== b) {
           flash[field] = `${b > a ? "up" : "down"}-${phase}-${seq}`;
           flashAt[field] = now;
@@ -240,13 +253,23 @@ export function withFlashes(previous: (MarketQuote | MarketQuoteRow)[], next: Ma
         }
       }
     }
-    return { ...quote, flash, flashAt };
+    return { ...row, flash, flashAt };
   });
 }
 
-/** Troca de aba/refiltro: as linhas recicladas não podem repetir a piscada da linha anterior. */
+/** Troca de filtro/aba/cidade: as linhas recicladas não podem repetir a piscada da linha anterior. */
+export function clearRowFlashes<T extends object, F extends string>(rows: T[], fields: readonly F[]): FlashedRow<T, F>[] {
+  return (rows ?? []).map((row) => ({ ...row, flash: emptyFlash(fields, ""), flashAt: emptyFlash(fields, 0) }));
+}
+
+/** Terminal de cotações: piscadas comparadas pelo `code` nos cinco preços de FLASH_FIELDS. */
+export function withFlashes(previous: (MarketQuote | MarketQuoteRow)[], next: MarketQuote[], seq: number, now: number): MarketQuoteRow[] {
+  return computeFlashes<MarketQuote, FlashField, string>(previous, next, (q) => q.code, FLASH_FIELDS, seq, now);
+}
+
+/** Troca de aba/refiltro do terminal. */
 export function clearFlashes(rows: MarketQuoteRow[]): MarketQuoteRow[] {
-  return (rows ?? []).map((row) => ({ ...row, flash: noFlash(), flashAt: noFlashAt() }));
+  return clearRowFlashes(rows, FLASH_FIELDS);
 }
 
 /** Valor do atributo data-market-flash: sempre string (linha vazia da grade não tem contexto). */

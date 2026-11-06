@@ -139,6 +139,11 @@ export default {
   marketPriceTables: 'odata/MarketPriceTables',
   marketTradingSettings: '/market/trading-settings',
   marketFreightCities: '/market/freight-cities',
+  marketPriceGrid: (harvest: string, city: string): string =>
+    `/market/price-grid?harvest=${encodeURIComponent(harvest)}&city=${encodeURIComponent(city)}`,
+  marketPriceGridLive: (harvest: string, city: string): string =>
+    `/market/price-grid/live?harvest=${encodeURIComponent(harvest)}&city=${encodeURIComponent(city)}`,
+  marketTickets: '/market/tickets',
   shipmentReleases: 'odata/ShipmentReleases',
   salesShipmentReleases: 'odata/SalesShipmentReleases',
   processingCosts: 'odata/ProcessingCosts',

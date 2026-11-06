@@ -1,0 +1,76 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	core:require="{ grid: 'siagrob1/helpers/MarketPriceGridHelpers' }">
+	<!-- Diálogo "Comprar": resumo somente leitura da linha + dados da boleta (modelo "ticket"). -->
+	<Dialog id="tradeTicketDialog" title="{i18n>marketTicketTitle}" contentWidth="40rem" resizable="true" draggable="true">
+		<content>
+			<f:Form editable="true">
+				<f:layout><f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1" /></f:layout>
+				<f:formContainers>
+					<f:FormContainer title="{i18n>marketTicketSummary}">
+						<f:formElements>
+							<f:FormElement label="{i18n>marketGridColContract}">
+								<Text text="{ticket>/row/lineDescription} ({ticket>/row/priceTableDescription})" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketGridColItem}">
+								<Text text="{ticket>/row/itemCode} - {ticket>/row/itemName}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketGridColDestination}">
+								<Text text="{ticket>/row/destinationName} / {ticket>/cityLabel}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketGridColDelivery}">
+								<Text text="{ parts: ['ticket>/row/deliveryStartDate', 'ticket>/row/deliveryEndDate'], formatter: 'grid.formatDeliveryRange' }" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketGridColPrice}">
+								<Text text="{ path: 'ticket>/row/price', formatter: 'grid.formatMoney' }" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="{i18n>marketTicketData}">
+						<f:formElements>
+							<f:FormElement label="{i18n>marketTicketPartner}">
+								<Input id="ticketPartner" value="{ticket>/form/cardCode}" description="{ticket>/form/cardName}" required="true"
+									showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".onPickPartner" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketTicketSacks}">
+								<Input id="ticketSacks" value="{ticket>/form/sacks}" required="true" textAlign="End"
+									description="{ticket>/tonsText}" liveChange=".onTicketChange" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketTicketPrice}">
+								<Input id="ticketPrice" value="{ticket>/form/negotiatedPrice}" required="true" textAlign="End"
+									description="{ticket>/deviationText}" liveChange=".onTicketChange" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketTicketWarehouse}">
+								<Input id="ticketWarehouse" value="{ticket>/form/warehouseCode}" description="{ticket>/form/warehouseName}" required="true"
+									showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".onPickWarehouse" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketTicketAgent}">
+								<Input id="ticketAgent" value="{ticket>/form/agentCode}" description="{ticket>/form/agentName}" required="true"
+									showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".onPickAgent" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketTicketBranch}">
+								<Input id="ticketBranch" value="{ticket>/form/branchCode}" description="{ticket>/form/branchName}" required="true"
+									showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".onPickBranch" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketTicketLogisticRegion}">
+								<Input id="ticketLogisticRegion" value="{ticket>/form/logisticRegionCode}" description="{ticket>/form/logisticRegionName}" required="true"
+									showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".onPickLogisticRegion" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketTicketNotes}">
+								<TextArea value="{ticket>/form/notes}" rows="3" width="100%" maxLength="1000" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<beginButton>
+			<Button text="{i18n>marketTicketSubmit}" type="Emphasized" press=".onTicketSubmit" />
+		</beginButton>
+		<endButton>
+			<Button text="{i18n>commonCancel}" press=".onTicketCancel" />
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

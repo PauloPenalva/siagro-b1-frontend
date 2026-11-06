@@ -1,0 +1,49 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	core:require="{ market: 'siagrob1/helpers/MarketHelpers', grid: 'siagrob1/helpers/MarketPriceGridHelpers' }">
+	<!-- Composição do preço da linha selecionada: os passos vêm prontos do servidor (rastreabilidade). -->
+	<Dialog id="priceBreakdownDialog" title="{breakdown>/title}" contentWidth="32rem" resizable="true" draggable="true">
+		<content>
+			<f:Form editable="false">
+				<f:layout><f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1" /></f:layout>
+				<f:formContainers>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="{i18n>marketBreakdownQuote}">
+								<Text text="{breakdown>/instrumentCode} {breakdown>/quoteText}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketBreakdownSource}">
+								<Text text="{ path: 'breakdown>/quoteSource', formatter: 'grid.quoteSourceText' }" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketBreakdownQuotedAt}">
+								<Text text="{ path: 'breakdown>/quotedAt', formatter: 'market.formatQuoteTime' }" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+			<Table items="{ path: 'breakdown>/steps', templateShareable: false }" class="sapUiSizeCondensed"
+				noDataText="{i18n>marketBreakdownNoSteps}">
+				<columns>
+					<Column><Text text="{i18n>marketBreakdownStep}" /></Column>
+					<Column hAlign="End"><Text text="{i18n>marketBreakdownValue}" /></Column>
+					<Column><Text text="{i18n>marketBreakdownUnit}" /></Column>
+				</columns>
+				<items>
+					<ColumnListItem>
+						<cells>
+							<Text text="{breakdown>label}" wrapping="false" />
+							<Text text="{ path: 'breakdown>value', formatter: 'grid.formatPlain' }" wrapping="false" />
+							<Text text="{breakdown>unitText}" wrapping="false" />
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</content>
+		<endButton>
+			<Button text="{i18n>marketClose}" press=".onCloseBreakdown" />
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

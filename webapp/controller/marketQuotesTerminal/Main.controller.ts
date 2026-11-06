@@ -119,7 +119,7 @@ export default class Main extends BaseController {
     this.updateStatus();
     // Primeiro quadro de cada start() é linha de base: entrar na tela não faz nada piscar.
     this.previousQuotes = null;
-    MarketLiveService.start({
+    MarketLiveService.start<MarketQuotesPayload>(ServerRoutes.marketQuotesLive, {
       onData: (payload) => this.onPayload(payload),
       onConnectionChange: (disconnected) => {
         this.browserDisconnected = disconnected;

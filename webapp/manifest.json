@@ -964,6 +964,11 @@
           "target": "marketTradingSettings"
         },
         {
+          "pattern": "market/price-grid",
+          "name": "marketPriceGrid",
+          "target": "marketPriceGrid"
+        },
+        {
           "pattern": "payment-conditions",
           "name": "paymentConditions",
           "target": "paymentConditions"
@@ -2636,6 +2641,12 @@
           "id": "marketTradingSettings",
           "level": 1,
           "name": "siagrob1.view.marketTradingSettings.Main",
+          "clearControlAggregation": true
+        },
+        "marketPriceGrid": {
+          "id": "marketPriceGrid",
+          "level": 1,
+          "name": "siagrob1.view.marketPriceGrid.Main",
           "clearControlAggregation": true
         },
         "paymentConditions": {
