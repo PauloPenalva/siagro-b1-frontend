@@ -18,7 +18,7 @@ import MarketLiveService from "siagrob1/services/MarketLiveService";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import {
   connectionView, deviationPercent, extractGroups, groupFromKey, groupKey, MANUAL_DEVIATION_LIMIT, marketFetch,
-  MarketResult, normalizeQuotes, notFoundTextKey, parseDecimalInput, withFlashes, clearFlashes
+  FLASH_DURATION_MS, MarketResult, normalizeQuotes, notFoundTextKey, parseDecimalInput, withFlashes, clearFlashes
 } from "siagrob1/helpers/MarketHelpers";
 import { ManualQuoteInput, MarketQuote, MarketQuoteRow, MarketQuotesPayload } from "siagrob1/types/MarketQuote";
 
@@ -56,6 +56,8 @@ export default class Main extends BaseController {
   /** Descarta resultado assíncrono de setSelectedIndex quando uma reposição mais nova já começou. */
   private selectionSyncSeq = 0;
   private flashSeq = 0;
+  /** Timer único que apaga as piscadas vencidas (quadros raros deixariam o atributo no DOM). */
+  private flashTimer?: ReturnType<typeof setTimeout>;
 
   onInit(): void {
     this.getView().setModel(new JSONModel({
@@ -70,12 +72,14 @@ export default class Main extends BaseController {
 
   onExit(): void {
     this.getRouter().detachBeforeRouteMatched(this.onBeforeRouteMatched, this);
+    this.cancelFlashTimer();
     MarketLiveService.stop();
   }
 
   // Campo arrow (não getter): a mesma referência serve para attach e detach.
   private readonly onBeforeRouteMatched = (ev: Router$BeforeRouteMatchedEvent): void => {
     if (ev.getParameter("name") !== ROUTE) {
+      this.cancelFlashTimer();
       MarketLiveService.stop();
     }
   };
@@ -177,6 +181,21 @@ export default class Main extends BaseController {
     model.setProperty("/quotes", rows);
     this.refreshSelectedManual();
     this.syncTableSelection();
+    this.scheduleFlashExpiry();
+  }
+
+  private cancelFlashTimer(): void {
+    clearTimeout(this.flashTimer);
+    this.flashTimer = undefined;
+  }
+
+  /** Passada a duração da animação, limpa o atributo das linhas atuais (limpar não pisca: o atributo vira vazio). */
+  private scheduleFlashExpiry(): void {
+    this.cancelFlashTimer();
+    this.flashTimer = setTimeout(() => {
+      this.flashTimer = undefined;
+      this.clearAllFlashes();
+    }, FLASH_DURATION_MS);
   }
 
   private applyGroupFilter(key: string): void {

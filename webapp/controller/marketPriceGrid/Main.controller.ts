@@ -15,11 +15,11 @@ import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import SessionService from "siagrob1/services/SessionService";
 import { marketPriceGridLive } from "siagrob1/services/MarketLiveService";
-import { formatQuoteValue, marketFetch, MarketResult, notFoundTextKey } from "siagrob1/helpers/MarketHelpers";
+import { FLASH_DURATION_MS, formatQuoteValue, marketFetch, MarketResult, notFoundTextKey } from "siagrob1/helpers/MarketHelpers";
 import { municipalityLabel, parseStrictDecimal } from "siagrob1/helpers/MarketPricingHelpers";
 import {
   buildTicketPayload, canBuy, clearPriceGridFlashes, loadPriceGridPreference, priceDeviationPercent, priceStatusTextKey,
-  sacksToTons, savePriceGridPreference, stepUnitKey, ticketErrorKey, withPriceGridFlashes
+  formatStepValue, sacksToTons, savePriceGridPreference, stepUnitKey, ticketErrorKey, withPriceGridFlashes
 } from "siagrob1/helpers/MarketPriceGridHelpers";
 import {
   MarketFreightCity, MarketPriceGrid, MarketPriceGridRow, MarketPriceGridViewRow, MarketTicketForm, MarketTradeTicketCreated
@@ -51,7 +51,8 @@ export default class Main extends BaseController {
   private browserDisconnected = false;
   /** Quadro anterior; null = próximo quadro é linha de base (nada pisca). */
   private previousRows: MarketPriceGridViewRow[] = null;
-  private restoringSelection = 0;
+  /** Timer único que apaga as piscadas vencidas (os quadros da grade são raros: o atributo ficaria no DOM). */
+  private flashTimer?: ReturnType<typeof setTimeout>;
   private selectionSyncSeq = 0;
   private flashSeq = 0;
   /** Descarta respostas de GET de uma safra/cidade que já foi trocada. */
@@ -72,12 +73,14 @@ export default class Main extends BaseController {
 
   onExit(): void {
     this.getRouter().detachBeforeRouteMatched(this.onBeforeRouteMatched, this);
+    this.cancelFlashTimer();
     marketPriceGridLive.stop();
   }
 
   private readonly onBeforeRouteMatched = (ev: Router$BeforeRouteMatchedEvent): void => {
     if (ev.getParameter("name") !== ROUTE) {
       this.loadSeq++;
+      this.cancelFlashTimer();
       marketPriceGridLive.stop();
     }
   };
@@ -142,6 +145,7 @@ export default class Main extends BaseController {
     const harvest = model.getProperty("/harvest") as string;
     const city = model.getProperty("/city") as string;
     const seq = ++this.loadSeq;
+    this.cancelFlashTimer();
     marketPriceGridLive.stop();
     this.previousRows = null;
     this.setSelectedLine(null);
@@ -199,6 +203,23 @@ export default class Main extends BaseController {
     this.model().setProperty("/rows", viewRows);
     this.refreshSelectedState();
     this.syncTableSelection();
+    this.scheduleFlashExpiry();
+  }
+
+  private cancelFlashTimer(): void {
+    clearTimeout(this.flashTimer);
+    this.flashTimer = undefined;
+  }
+
+  /** Passada a duração da animação, limpa o atributo das linhas atuais (limpar não pisca: o atributo vira vazio). */
+  private scheduleFlashExpiry(): void {
+    this.cancelFlashTimer();
+    this.flashTimer = setTimeout(() => {
+      this.flashTimer = undefined;
+      const cleared = clearPriceGridFlashes(this.model().getProperty("/rows") as MarketPriceGridRow[]);
+      this.previousRows = this.previousRows ? cleared : null;
+      this.model().setProperty("/rows", cleared);
+    }, FLASH_DURATION_MS);
   }
 
   private savePreference(): void {
@@ -241,7 +262,7 @@ export default class Main extends BaseController {
   }
 
   onSelectionChange(ev: MultiSelectionPlugin$SelectionChangeEvent): void {
-    if (this.restoringSelection > 0 || (ev.getParameter("customPayload") as { sync?: boolean })?.sync) return;
+    if ((ev.getParameter("customPayload") as { sync?: boolean })?.sync) return;
     const index = this.selection().getSelectedIndices()[0] ?? -1;
     const lineId = index < 0 ? null : this.table().getContextByIndex(index)?.getProperty("lineId") as number;
     this.setSelectedLine(lineId ?? null);
@@ -295,7 +316,7 @@ export default class Main extends BaseController {
       const unitKey = stepUnitKey(step.unit);
       return {
         label: this.text(`marketStep_${step.key}`),
-        value: step.value,
+        valueText: formatStepValue(step.value, step.unit),
         unitText: unitKey ? this.text(unitKey) : (step.unit ?? ""),
       };
     });
