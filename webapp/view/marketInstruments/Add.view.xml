@@ -13,7 +13,7 @@
 			<Toolbar>
 				<ToolbarSpacer />
 				<Button text="{i18n>commonCancel}" press=".onCancel" />
-				<Button text="{i18n>commonSave}" type="Emphasized" press=".onSave" />
+				<Button text="{i18n>commonSave}" type="Emphasized" press=".onSave" visible="{form>/canManage}" />
 			</Toolbar>
 		</footer>
 	</Page>

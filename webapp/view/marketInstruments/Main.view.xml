@@ -52,11 +52,11 @@
 			<OverflowToolbar>
 				<Button text="{i18n>commonRefresh}" icon="sap-icon://refresh" press=".onRefresh" />
 				<Button text="{i18n>marketCreateSamples}" icon="sap-icon://add-product" press=".onCreateSamples"
-					visible="{view>/isAdmin}" />
+					visible="{= ${view>/isAdmin} &amp;&amp; ${view>/canManage} }" />
 				<ToolbarSpacer />
-				<Button text="{i18n>commonAdd}" icon="sap-icon://add" type="Emphasized" press=".onCreate" />
-				<Button text="{i18n>commonEdit}" icon="sap-icon://edit" press=".onEdit" />
-				<Button text="{i18n>commonDelete}" icon="sap-icon://delete" press=".onDelete" />
+				<Button text="{i18n>commonAdd}" icon="sap-icon://add" type="Emphasized" press=".onCreate" visible="{view>/canManage}" />
+				<Button text="{i18n>commonEdit}" icon="sap-icon://edit" press=".onEdit" visible="{view>/canManage}" />
+				<Button text="{i18n>commonDelete}" icon="sap-icon://delete" press=".onDelete" visible="{view>/canManage}" />
 			</OverflowToolbar>
 		</footer>
 	</Page>

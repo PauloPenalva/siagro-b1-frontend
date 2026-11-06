@@ -183,7 +183,7 @@ export function notFoundTextKey(moduleDisabled: boolean): string {
  * Erro de negócio é 400 com o texto puro no corpo.
  */
 export async function marketFetch<T = unknown>(
-  method: "GET" | "POST" | "PUT",
+  method: "GET" | "POST" | "PUT" | "DELETE",
   url: string,
   payload?: object
 ): Promise<MarketResult<T>> {

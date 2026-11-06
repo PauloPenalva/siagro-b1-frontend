@@ -12,6 +12,7 @@ import ListBinding from "sap/ui/model/ListBinding";
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import { Router$BeforeRouteMatchedEvent } from "sap/ui/core/routing/Router";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
+import { MARKET_MANAGE } from "siagrob1/helpers/MarketPricingHelpers";
 import SessionService from "siagrob1/services/SessionService";
 import MarketLiveService from "siagrob1/services/MarketLiveService";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
@@ -59,7 +60,7 @@ export default class Main extends BaseController {
   onInit(): void {
     this.getView().setModel(new JSONModel({
       quotes: [], groups: [], selectedGroup: "", moduleMessage: "", selectedCode: "", selectedManual: false,
-      statusText: "", statusState: "None", isAdmin: false, moduleDisabled: false,
+      statusText: "", statusState: "None", isAdmin: false, canManage: false, moduleDisabled: false,
     }), "quotes");
     this.getView().setModel(new JSONModel({}), "manual");
 
@@ -90,6 +91,7 @@ export default class Main extends BaseController {
   private async enter(): Promise<void> {
     this.bundle ??= await this.getResourceBundle();
     this.model().setProperty("/isAdmin", SessionService.hasRole("ADMIN"));
+    this.model().setProperty("/canManage", SessionService.hasPermission(MARKET_MANAGE));
     this.model().setProperty("/moduleDisabled", false);
     this.browserDisconnected = false;
     // Na volta à rota a view é a mesma: reaplica o filtro da aba no primeiro quadro recebido.

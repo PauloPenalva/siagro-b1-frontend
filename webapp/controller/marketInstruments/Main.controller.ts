@@ -13,6 +13,7 @@ import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import { marketFetch, notFoundTextKey } from "siagrob1/helpers/MarketHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
+import { MARKET_MANAGE } from "siagrob1/helpers/MarketPricingHelpers";
 import SessionService from "siagrob1/services/SessionService";
 
 /**
@@ -24,12 +25,13 @@ export default class Main extends BaseController {
   private bundle?: ResourceBundle;
 
   onInit(): void {
-    this.getView().setModel(new JSONModel({ isAdmin: false }), "view");
+    this.getView().setModel(new JSONModel({ isAdmin: false, canManage: false }), "view");
     this.getRouter().getRoute("marketInstruments").attachPatternMatched(() => void this.routeMatched());
   }
 
   private async routeMatched(): Promise<void> {
     (this.getView().getModel("view") as JSONModel).setProperty("/isAdmin", SessionService.hasRole("ADMIN"));
+    (this.getView().getModel("view") as JSONModel).setProperty("/canManage", SessionService.hasPermission(MARKET_MANAGE));
     // O bundle chega antes do refresh: os formatters de Bolsa/Tipo leem dele (sem ele mostravam a chave).
     this.bundle ??= await this.getResourceBundle();
     this.onRefresh();

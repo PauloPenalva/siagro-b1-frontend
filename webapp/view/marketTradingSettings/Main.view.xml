@@ -1,0 +1,65 @@
+<mvc:View
+	controllerName="siagrob1.controller.marketTradingSettings.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+
+	<Page title="{i18n>marketTradingSettingsTitle}" busy="{ui>/busy}" busyIndicatorDelay="0">
+		<content>
+			<MessageStrip text="{form>/moduleMessage}" type="Warning" showIcon="true"
+				visible="{form>/moduleDisabled}" class="sapUiSmallMargin" />
+			<MessageStrip text="{i18n>marketTradingSettingsInfo}" type="Information" showIcon="true" class="sapUiSmallMargin"
+				visible="{= !${form>/moduleDisabled} }" />
+			<MessageStrip text="{i18n>marketTradingBoardNoPermission}" type="Warning" showIcon="true" class="sapUiSmallMargin"
+				visible="{= !${form>/moduleDisabled} &amp;&amp; ${form>/canManage} &amp;&amp; !${form>/canBoard} }" />
+			<f:Form id="tradingSettingsForm" editable="{form>/canManage}" visible="{= !${form>/moduleDisabled} }">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2" />
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer title="{i18n>marketTradingSectionFx}">
+						<f:formElements>
+							<f:FormElement label="{i18n>marketTradingSpotFx}">
+								<Select forceSelection="false" selectedKey="{form>/spotFxInstrumentCode}" enabled="{form>/canManage}"
+									items="{ path: 'lookup>/fxInstruments', templateShareable: false }">
+									<core:Item key="{lookup>Code}" text="{lookup>Code} - {lookup>Description}" />
+								</Select>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="{i18n>marketTradingSectionBoard}">
+						<f:formElements>
+							<f:FormElement label="{i18n>marketTradingBoardVolume}">
+								<Input value="{form>/boardApprovalVolumeTons}" textAlign="End" editable="{form>/canBoard}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketTradingBoardDeviation}">
+								<Input value="{form>/boardApprovalDeviationPercent}" textAlign="End" editable="{form>/canBoard}" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="{i18n>marketTradingSectionContract}">
+						<f:formElements>
+							<f:FormElement label="{i18n>marketTradingContractUm}">
+								<Input value="{form>/contractUnitOfMeasureCode}" maxLength="4" editable="{form>/canManage}"
+									showValueHelp="true" valueHelpRequest=".openUnitsOfMeasureValueHelp" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketTradingFreightUm}">
+								<Input value="{form>/contractFreightUmCode}" maxLength="4" editable="{form>/canManage}"
+									showValueHelp="true" valueHelpRequest=".openUnitsOfMeasureValueHelp" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer />
+				<Button text="{i18n>commonSave}" type="Emphasized" icon="sap-icon://save" press=".onSave"
+					visible="{= ${form>/canManage} &amp;&amp; !${form>/moduleDisabled} }" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

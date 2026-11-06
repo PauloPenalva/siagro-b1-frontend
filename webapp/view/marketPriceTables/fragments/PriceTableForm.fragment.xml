@@ -1,0 +1,135 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:t="sap.ui.table"
+	xmlns:rowmodes="sap.ui.table.rowmodes">
+	<!-- Cabeçalho (OData deferido) + grade de linhas na navegação Lines, salvos juntos num único $batch.
+	     Percentuais são digitados como número de percentual (1,5 = 1,5 %). Decimais editáveis usam Double. -->
+	<f:Form id="formMarketPriceTable" editable="{view>/canManage}">
+		<f:layout>
+			<f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2" />
+		</f:layout>
+		<f:formContainers>
+			<f:FormContainer title="{i18n>marketPriceTableSectionMain}">
+				<f:formElements>
+					<f:FormElement label="{i18n>marketFieldDescription}">
+						<Input value="{Description}" required="true" maxLength="100" />
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldItem}">
+						<Input value="{ItemCode}" description="{ItemName}" required="true" showValueHelp="true" valueHelpOnly="true"
+							valueHelpRequest=".onPickItem" />
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldHarvestSeason}">
+						<Input value="{HarvestSeasonCode}" required="true" showValueHelp="true" valueHelpOnly="true"
+							valueHelpRequest=".onPickHarvestSeason" />
+					</f:FormElement>
+					<f:FormElement label="{i18n>marketFieldActive}">
+						<Switch state="{Active}" />
+					</f:FormElement>
+				</f:formElements>
+			</f:FormContainer>
+		</f:formContainers>
+	</f:Form>
+
+	<t:Table
+		id="tablePriceLines"
+		core:require="{ Double: 'sap/ui/model/odata/type/Double', Int32: 'sap/ui/model/odata/type/Int32', EdmDate: 'sap/ui/model/odata/type/Date' }"
+		class="sapUiSizeCondensed sapUiSmallMarginTop"
+		selectionMode="Single"
+		selectionBehavior="RowSelector"
+		alternateRowColors="true"
+		enableColumnReordering="false"
+		fixedColumnCount="1"
+		rows="{ path: 'Lines', sorter: [{ path: 'SortOrder' }] }">
+		<t:extension>
+			<OverflowToolbar>
+				<Title text="{i18n>marketPriceTableSectionLines}" />
+				<ToolbarSpacer />
+				<Button text="{i18n>marketLineAdd}" icon="sap-icon://add" press=".onAddLine" visible="{view>/canManage}" />
+				<Button text="{i18n>marketLineRemove}" icon="sap-icon://delete" press=".onRemoveLine" visible="{view>/canManage}" />
+			</OverflowToolbar>
+		</t:extension>
+		<t:rowMode>
+			<rowmodes:Fixed rowCount="12" />
+		</t:rowMode>
+		<t:columns>
+			<t:Column label="{i18n>marketLineColDescription}" width="14rem">
+				<t:template><Input value="{Description}" maxLength="100" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColInstrument}" width="13rem">
+				<t:template>
+					<Select forceSelection="false" width="100%" selectedKey="{InstrumentCode}" change=".onInstrumentChange"
+						items="{ path: 'lookup>/priceInstruments', templateShareable: false }">
+						<core:Item key="{lookup>Code}" text="{lookup>Code}" />
+					</Select>
+				</t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColCurve}" width="13rem">
+				<t:template>
+					<Select forceSelection="false" width="100%" selectedKey="{FxCurveInstrumentCode}"
+						enabled="{ parts: ['InstrumentCode', 'lookup>/instruments'], formatter: '.curveEnabled' }"
+						items="{ path: 'lookup>/curveInstruments', templateShareable: false }">
+						<core:Item key="{lookup>Code}" text="{lookup>Code}" />
+					</Select>
+				</t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketColDestination}" width="13rem">
+				<t:template>
+					<Select forceSelection="false" width="100%" selectedKey="{ path: 'DestinationId', type: 'Int32' }"
+						items="{ path: 'lookup>/destinations', templateShareable: false }">
+						<core:Item key="{lookup>Id}" text="{lookup>Name}" />
+					</Select>
+				</t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColPremium}" width="10rem" hAlign="End">
+				<t:template><Input textAlign="End" value="{ path: 'Premium', type: 'Double', formatOptions: { maxFractionDigits: 6 } }" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColElevation}" width="12rem" hAlign="End">
+				<t:template><Input textAlign="End" value="{ path: 'ElevationCost', type: 'Double', formatOptions: { maxFractionDigits: 6 } }" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColFxDiscount}" width="11rem" hAlign="End">
+				<t:template><Input textAlign="End" value="{ path: 'FxDiscount', type: 'Double', formatOptions: { maxFractionDigits: 6 } }" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColDeliveryStart}" width="9rem">
+				<t:template><DatePicker value="{ path: 'DeliveryStartDate', type: 'EdmDate', formatOptions: { pattern: 'dd/MM/yyyy' } }" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColDeliveryEnd}" width="9rem">
+				<t:template><DatePicker value="{ path: 'DeliveryEndDate', type: 'EdmDate', formatOptions: { pattern: 'dd/MM/yyyy' } }" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColReceipt}" width="9rem">
+				<t:template><DatePicker value="{ path: 'ReceiptDate', type: 'EdmDate', formatOptions: { pattern: 'dd/MM/yyyy' } }" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColPayment}" width="9rem">
+				<t:template><DatePicker value="{ path: 'PaymentDate', type: 'EdmDate', formatOptions: { pattern: 'dd/MM/yyyy' } }" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColDiscount}" width="8rem" hAlign="End">
+				<t:template><Input textAlign="End" value="{ path: 'DiscountValue', type: 'Double', formatOptions: { maxFractionDigits: 6 } }" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColDiscountIsPercent}" width="7rem" hAlign="Center">
+				<t:template><CheckBox selected="{DiscountIsPercent}" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColMargin}" width="7rem" hAlign="End">
+				<t:template><Input textAlign="End" value="{ path: 'MarginPercent', type: 'Double', formatOptions: { maxFractionDigits: 6 } }" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColInterest}" width="8rem" hAlign="End">
+				<t:template><Input textAlign="End" value="{ path: 'DailyInterestPercent', type: 'Double', formatOptions: { maxFractionDigits: 6 } }" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColLoss}" width="8rem" hAlign="End">
+				<t:template><Input textAlign="End" value="{ path: 'TechnicalLossPercent', type: 'Double', formatOptions: { maxFractionDigits: 6 } }" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColRuralTax}" width="8rem" hAlign="End">
+				<t:template><Input textAlign="End" value="{ path: 'RuralTaxPercent', type: 'Double', formatOptions: { maxFractionDigits: 6 } }" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColFreightCoefficient}" width="10rem" hAlign="End">
+				<t:template><Input textAlign="End" value="{ path: 'FreightCoefficientPercent', type: 'Double', formatOptions: { maxFractionDigits: 8 } }" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColOrder}" width="6rem" hAlign="End">
+				<t:template><Input textAlign="End" value="{ path: 'SortOrder', type: 'Int32' }" /></t:template>
+			</t:Column>
+			<t:Column label="{i18n>marketLineColActive}" width="6rem" hAlign="Center">
+				<t:template><CheckBox selected="{Active}" /></t:template>
+			</t:Column>
+		</t:columns>
+	</t:Table>
+</core:FragmentDefinition>
