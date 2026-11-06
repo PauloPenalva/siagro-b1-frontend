@@ -168,3 +168,9 @@ QUnit.test("atributo da piscada é sempre string", function (assert) {
   assert.strictEqual(flashAttr(null), "");
   assert.strictEqual(flashAttr("up-a-1"), "up-a-1");
 });
+
+QUnit.test("depois de clearFlashes nada é carregado adiante, mesmo dentro da janela", function (assert) {
+  const prev = withFlashes([q("A", 10)], [q("A", 11)], 1, 0);
+  const rows = withFlashes(clearFlashes(prev), [q("A", 11)], 2, 100);
+  assert.deepEqual(rows[0].flash, { last: "", bid: "", high: "", low: "", open: "" });
+});

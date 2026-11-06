@@ -188,9 +188,16 @@ export default class Main extends BaseController {
     }
   }
 
-  onGroupSelect(): void {
+  /** Zera as piscadas no modelo E no quadro anterior: nada limpo pode ser carregado adiante. */
+  private clearAllFlashes(): void {
     const model = this.model();
     model.setProperty("/quotes", clearFlashes(model.getProperty("/quotes") as MarketQuoteRow[]));
+    if (this.previousQuotes) this.previousQuotes = clearFlashes(this.previousQuotes);
+  }
+
+  onGroupSelect(): void {
+    const model = this.model();
+    this.clearAllFlashes();
     this.applyGroupFilter(model.getProperty("/selectedGroup") as string);
     this.setSelectedCode("");
     this.syncTableSelection();
