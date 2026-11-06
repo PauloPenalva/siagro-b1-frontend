@@ -9,7 +9,7 @@ import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import {
   formatQuoteValue, marketFetch, MarketResult, notFoundTextKey, ticketActions, TicketPermissions
 } from "siagrob1/helpers/MarketHelpers";
-import { formatDeliveryRange, formatFx, formatIsoDate, quoteSourceText, stepUnitKey } from "siagrob1/helpers/MarketPriceGridHelpers";
+import { formatDeliveryRange, formatFx, formatIsoDate, formatStepValue, quoteSourceText, stepUnitKey } from "siagrob1/helpers/MarketPriceGridHelpers";
 import {
   cityLabel, deviationState, formatDeviation, formatLocalDateTime, formatMoneyValue, formatSacks, formatTons,
   normalizeTicketStatus, parseTicketSteps, ticketStatusIcon, ticketStatusState, ticketStatusTextKey, ticketTotalValue,
@@ -27,6 +27,11 @@ const PERMISSION_BOARD_APPROVE = "MARKET_BOARD_APPROVE";
 const EXPAND = "$expand=Municipality($select=Name,StateAbbreviation),HarvestSeason($select=Name)";
 
 type TicketAction = "approve" | "reject" | "cancel";
+
+/** Cotação/prêmio do servidor (número ou texto, às vezes ausente): nunca vira "NaN" nem "0,00" por falta de valor. */
+function quoteValue(value: unknown): string {
+  return value == null ? "–" : formatQuoteValue(Number(value));
+}
 
 /**
  * Detalhe da boleta (somente leitura) com aprovar, rejeitar e cancelar. O servidor decide quem pode; a tela só
@@ -66,7 +71,6 @@ export default class Detail extends BaseController {
 
   private async enter(rawId: string): Promise<void> {
     this.bundle ??= await this.getResourceBundle();
-    this.acting = false;
     this.ticketModel().setData({});
     this.applyActions(null);
     const id = /^\d+$/.test(rawId ?? "") ? Number(rawId) : NaN;
@@ -75,7 +79,7 @@ export default class Detail extends BaseController {
       return;
     }
     this.ticketId = id;
-    await this.load();
+    await this.load(id);
   }
 
   private notFound(message: string): void {
@@ -83,9 +87,9 @@ export default class Detail extends BaseController {
   }
 
   /** Lê a boleta no OData. Devolve `false` quando não há o que mostrar (já avisou o usuário). */
-  private async load(): Promise<boolean> {
+  private async load(id: number): Promise<boolean> {
     const seq = ++this.loadSeq;
-    const result = await marketFetch<unknown>("GET", `${ServerRoutes.marketTradeTicket(this.ticketId)}?${EXPAND}`);
+    const result = await marketFetch<unknown>("GET", `${ServerRoutes.marketTradeTicket(id)}?${EXPAND}`);
     if (seq !== this.loadSeq) return false;
     if (!result.ok) {
       if (result.status === 404) {
@@ -145,8 +149,8 @@ export default class Detail extends BaseController {
       logisticRegionCode: t.LogisticRegionCode ?? "",
       notes: t.Notes ?? "",
       createdText: this.byAt(t.CreatedBy, t.CreatedAt),
-      quoteText: `${t.InstrumentCode ?? ""} ${formatQuoteValue(Number(t.ExchangeQuote))}`.trim(),
-      premiumText: formatQuoteValue(Number(t.Premium)),
+      quoteText: `${t.InstrumentCode ?? ""} ${quoteValue(t.ExchangeQuote)}`.trim(),
+      premiumText: quoteValue(t.Premium),
       netFxText: t.NetFx == null ? "–" : formatFx(Number(t.NetFx)),
       spotFxText: t.SpotFx == null ? "–" : formatFx(Number(t.SpotFx)),
       portPriceText: formatMoneyValue(t.PortPrice),
@@ -169,7 +173,7 @@ export default class Detail extends BaseController {
       contractCode: t.PurchaseContractCode ?? "",
       contractKey: t.PurchaseContractKey ?? "",
       // Dados crus de que as ações precisam (resumo da confirmação, composição do cálculo).
-      raw: { id: t.Id, status: t.Status, stepsJson: t.StepsJson ?? "", instrumentCode: t.InstrumentCode ?? "", quoteText: formatQuoteValue(Number(t.ExchangeQuote)), quoteSource: t.QuoteSource ?? "", quotedAt: t.QuotedAt ?? "" },
+      raw: { id: t.Id, status: t.Status, stepsJson: t.StepsJson ?? "", instrumentCode: t.InstrumentCode ?? "", quoteText: quoteValue(t.ExchangeQuote), quoteSource: t.QuoteSource ?? "", quotedAt: t.QuotedAt ?? "" },
     };
   }
 
@@ -188,7 +192,7 @@ export default class Detail extends BaseController {
     const model = this.ticketModel();
     const steps = parseTicketSteps(model.getProperty("/raw/stepsJson") as string).map((step) => {
       const unitKey = stepUnitKey(step.unit);
-      return { label: this.text(`marketStep_${step.key}`), value: step.value, unitText: unitKey ? this.text(unitKey) : (step.unit ?? "") };
+      return { label: this.text(`marketStep_${step.key}`), valueText: formatStepValue(step.value, step.unit), unitText: unitKey ? this.text(unitKey) : (step.unit ?? "") };
     });
     (this.getView().getModel("breakdown") as JSONModel).setData({
       title: model.getProperty("/title") as string,
@@ -209,63 +213,75 @@ export default class Detail extends BaseController {
   // ---- aprovar / rejeitar / cancelar ----
 
   async onApprove(): Promise<void> {
-    if (this.acting) return;
-    const model = this.ticketModel();
-    const confirmed = await confirmDialog(
-      this.text("marketTicketApproveConfirm", [
-        this.ticketId, model.getProperty("/partnerText"), model.getProperty("/sacksText"), model.getProperty("/negotiatedText")]),
-      this.text("marketTicketApproveTitle"));
-    if (!confirmed) return;
-    await this.run("approve", () => marketFetch<MarketTradeTicketActionResult>("POST", ServerRoutes.marketTicketApprove(this.ticketId)));
+    await this.perform("approve", async (id) => {
+      const model = this.ticketModel();
+      const confirmed = await confirmDialog(
+        this.text("marketTicketApproveConfirm", [
+          id, model.getProperty("/partnerText"), model.getProperty("/sacksText"), model.getProperty("/negotiatedText")]),
+        this.text("marketTicketApproveTitle"));
+      return confirmed ? () => marketFetch<MarketTradeTicketActionResult>("POST", ServerRoutes.marketTicketApprove(id)) : null;
+    });
   }
 
   async onReject(): Promise<void> {
-    if (this.acting) return;
-    const reason = (await DialogHelper.promptDialog(this.text("marketTicketRejectTitle"), this.text("marketTicketRejectLabel")))?.trim();
-    if (!reason) return;
-    await this.run("reject", () => marketFetch<MarketTradeTicketActionResult>("POST", ServerRoutes.marketTicketReject(this.ticketId), { reason }));
+    await this.perform("reject", async (id) => {
+      const reason = (await DialogHelper.promptDialog(this.text("marketTicketRejectTitle"), this.text("marketTicketRejectLabel")))?.trim();
+      return reason ? () => marketFetch<MarketTradeTicketActionResult>("POST", ServerRoutes.marketTicketReject(id), { reason }) : null;
+    });
   }
 
   async onCancel(): Promise<void> {
-    if (this.acting) return;
-    const confirmed = await confirmDialog(
-      this.text("marketTicketCancelConfirm", [this.ticketId]), this.text("marketTicketCancelTitle"));
-    if (!confirmed) return;
-    await this.run("cancel", () => marketFetch<MarketTradeTicketActionResult>("POST", ServerRoutes.marketTicketCancel(this.ticketId)));
+    await this.perform("cancel", async (id) => {
+      const confirmed = await confirmDialog(this.text("marketTicketCancelConfirm", [id]), this.text("marketTicketCancelTitle"));
+      return confirmed ? () => marketFetch<MarketTradeTicketActionResult>("POST", ServerRoutes.marketTicketCancel(id)) : null;
+    });
   }
 
-  private async run(action: TicketAction, call: () => Promise<MarketResult<MarketTradeTicketActionResult>>): Promise<void> {
+  /**
+   * Uma ação por vez, do clique (antes mesmo do diálogo de confirmação) até a boleta ser relida. A boleta é
+   * capturada no clique: trocar de boleta durante a ação não redireciona a chamada nem a releitura.
+   */
+  private async perform(
+    action: TicketAction,
+    prepare: (id: number) => Promise<(() => Promise<MarketResult<MarketTradeTicketActionResult>>) | null>
+  ): Promise<void> {
     if (this.acting) return;
     this.acting = true;
-    this.setBusy(true);
+    const id = this.ticketId;
     try {
-      const result = await call();
-      if (!result.ok) {
-        this.showError(result);
-        // Recusa do servidor (ex.: contrato não gerado): a boleta segue aberta, mas pode ter mudado de situação.
-        if (result.status !== 0 && result.status !== 404) await this.load();
-        return;
+      const call = await prepare(id);
+      if (!call) return;
+      this.setBusy(true);
+      try {
+        const result = await call();
+        if (!result.ok) {
+          this.showError(result);
+          // Recusa do servidor (ex.: contrato não gerado): a boleta segue aberta, mas pode ter mudado de situação.
+          if (result.status !== 0 && result.status !== 404 && id === this.ticketId) await this.load(id);
+          return;
+        }
+        if (id === this.ticketId) await this.load(id);
+        this.toast(action, id, result.data);
+      } finally {
+        this.setBusy(false);
       }
-      await this.load();
-      this.toast(action, result.data);
     } finally {
       this.acting = false;
-      this.setBusy(false);
     }
   }
 
-  private toast(action: TicketAction, data: MarketTradeTicketActionResult): void {
+  private toast(action: TicketAction, id: number, data: MarketTradeTicketActionResult): void {
     const options = { closeOnBrowserNavigation: false };
     if (action === "approve") {
       if (normalizeTicketStatus(data?.status) === "approved" && data?.purchaseContractCode) {
-        MessageToast.show(this.text("marketTicketApprovedWithContract", [this.ticketId, data.purchaseContractCode]), options);
+        MessageToast.show(this.text("marketTicketApprovedWithContract", [id, data.purchaseContractCode]), options);
       } else if (normalizeTicketStatus(data?.status) === "approved") {
-        MessageToast.show(this.text("marketTicketApproved", [this.ticketId]), options);
+        MessageToast.show(this.text("marketTicketApproved", [id]), options);
       }
       // Aprovação de 1º nível que segue para a diretoria: a nova situação já aparece no cabeçalho.
       return;
     }
-    MessageToast.show(this.text(action === "reject" ? "marketTicketRejected" : "marketTicketCanceled", [this.ticketId]), options);
+    MessageToast.show(this.text(action === "reject" ? "marketTicketRejected" : "marketTicketCanceled", [id]), options);
   }
 
   private showError(result: MarketResult): void {

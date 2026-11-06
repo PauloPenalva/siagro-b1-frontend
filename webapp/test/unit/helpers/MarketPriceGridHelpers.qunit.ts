@@ -1,7 +1,7 @@
 import { computeFlashes, clearRowFlashes, FLASH_DURATION_MS } from "siagrob1/helpers/MarketHelpers";
 import {
   buildTicketPayload, canBuy, formatDeliveryRange, formatFx, formatIsoDate, formatMoney, loadPriceGridPreference,
-  priceDeviationPercent, priceStatusState, priceStatusTextKey, sacksToTons, savePriceGridPreference, stepUnitKey,
+  priceDeviationPercent, priceStatusState, formatStepValue, priceStatusTextKey, sacksToTons, savePriceGridPreference, stepUnitKey,
   withPriceGridFlashes
 } from "siagrob1/helpers/MarketPriceGridHelpers";
 import { MarketPriceGridRow, MarketTicketForm } from "siagrob1/types/MarketPriceGrid";
@@ -91,6 +91,13 @@ QUnit.test("boleta: obrigatórios, ambíguo e não positivo", function (assert) 
   assert.strictEqual(result.errors.negotiatedPrice, "positive");
 });
 
+QUnit.test("boleta: agente precisa ser código inteiro", function (assert) {
+  assert.strictEqual(buildTicketPayload(form({ agentCode: "1,5" }), 5, "X").errors.agentCode, "invalid");
+  assert.strictEqual(buildTicketPayload(form({ agentCode: "abc" }), 5, "X").errors.agentCode, "invalid");
+  assert.strictEqual(buildTicketPayload(form({ agentCode: "" }), 5, "X").errors.agentCode, "required");
+  assert.strictEqual(buildTicketPayload(form({ agentCode: "12" }), 5, "X").errors.agentCode, undefined);
+});
+
 QUnit.test("preferência: lembra por usuário e sobrevive a storage quebrado", function (assert) {
   const data: Record<string, string> = {};
   const storage = { getItem: (k: string) => data[k] ?? null, setItem: (k: string, v: string) => { data[k] = v; } } as Storage;
@@ -101,4 +108,13 @@ QUnit.test("preferência: lembra por usuário e sobrevive a storage quebrado", f
   savePriceGridPreference(broken, "ana", {});
   assert.deepEqual(loadPriceGridPreference(broken, "ana"), {});
   assert.deepEqual(loadPriceGridPreference(null, "ana"), {});
+});
+
+QUnit.test("passos da composição: casas fixas pela unidade", function (assert) {
+  assert.strictEqual(formatStepValue(138.5, "BRL/sc"), "138,50");
+  assert.strictEqual(formatStepValue(1195, "BRL/t"), "1.195,00");
+  assert.strictEqual(formatStepValue(5.5, "BRL/USD"), "5,5000");
+  assert.strictEqual(formatStepValue(250, "USD/t"), "250,00");
+  assert.strictEqual(formatStepValue(1234.5, "quote"), "1.234,50", "como a cotação na grade");
+  assert.strictEqual(formatStepValue(null, "BRL/sc"), "–");
 });

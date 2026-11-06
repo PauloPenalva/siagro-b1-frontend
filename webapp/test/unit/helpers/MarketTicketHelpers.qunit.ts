@@ -35,7 +35,8 @@ QUnit.test("quilos viram sacas e toneladas; decimal em texto também", function 
 
 QUnit.test("valor total = sacas x preço negociado, em centavos", function (assert) {
   assert.strictEqual(ticketTotalValue(60000, 137.67), 137670);
-  assert.strictEqual(ticketTotalValue(1000, 100.005), 100.01, "arredonda ao centavo");
+  assert.strictEqual(ticketTotalValue(1000, 100.005), 1666.75, "1000 kg = 16,667 sc x 100,005");
+  assert.strictEqual(ticketTotalValue(60, 1.005), 1.01, "meio centavo sobe mesmo com erro binário (1,005 x 100 = 100,4999...)");
   assert.strictEqual(ticketTotalValue(null, 10), null);
 });
 

@@ -46,7 +46,7 @@
 					</t:Column>
 					<t:Column label="{i18n>marketColUpdatedAt}" sortProperty="UpdatedAt" width="11rem">
 						<t:template>
-							<Text text="{ path: 'UpdatedAt', type: 'DateTimeOffset', formatOptions: { pattern: 'dd/MM/yyyy HH:mm' } }" wrapping="false" />
+							<Text text="{ path: 'UpdatedAt', type: 'DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy HH:mm' } }" wrapping="false" />
 						</t:template>
 					</t:Column>
 				</t:columns>
@@ -57,7 +57,8 @@
 				<Button text="{i18n>commonRefresh}" icon="sap-icon://refresh" press=".onRefresh" />
 				<ToolbarSpacer />
 				<Button text="{i18n>commonAdd}" icon="sap-icon://add" type="Emphasized" press=".onCreate" visible="{view>/canManage}" />
-				<Button text="{i18n>commonEdit}" icon="sap-icon://edit" press=".onEdit" />
+				<Button text="{= ${view>/canManage} ? ${i18n>commonEdit} : ${i18n>marketView} }"
+					icon="{= ${view>/canManage} ? 'sap-icon://edit' : 'sap-icon://display' }" press=".onEdit" />
 				<Button text="{i18n>commonDelete}" icon="sap-icon://delete" press=".onDelete" visible="{view>/canManage}" />
 			</OverflowToolbar>
 		</footer>

@@ -35,7 +35,7 @@
 					<ColumnListItem>
 						<cells>
 							<Text text="{breakdown>label}" wrapping="false" />
-							<Text text="{ path: 'breakdown>value', formatter: 'grid.formatPlain' }" wrapping="false" />
+							<Text text="{breakdown>valueText}" wrapping="false" />
 							<Text text="{breakdown>unitText}" wrapping="false" />
 						</cells>
 					</ColumnListItem>

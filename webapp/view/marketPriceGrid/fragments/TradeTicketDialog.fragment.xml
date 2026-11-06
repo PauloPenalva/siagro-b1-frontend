@@ -59,7 +59,7 @@
 									showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".onPickLogisticRegion" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketTicketNotes}">
-								<TextArea value="{ticket>/form/notes}" rows="3" width="100%" maxLength="1000" />
+								<TextArea value="{ticket>/form/notes}" rows="3" width="100%" maxLength="500" />
 							</f:FormElement>
 						</f:formElements>
 					</f:FormContainer>

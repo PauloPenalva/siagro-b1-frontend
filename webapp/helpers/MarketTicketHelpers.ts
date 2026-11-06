@@ -70,10 +70,10 @@ export function formatMoneyValue(value: unknown): string {
   return n === null ? EMPTY_VALUE : decimal2.format(n);
 }
 
-/** Valor total do negócio: sacas × preço negociado (R$/sc), em centavos. */
+/** Valor total do negócio: sacas × preço negociado (R$/sc), em centavos (meio centavo sobe, estável contra erro binário). */
 export function ticketTotalValue(kg: unknown, negotiatedPrice: unknown): number {
   const sacks = kgToSacks(kg), price = toNumber(negotiatedPrice);
-  return sacks === null || price === null ? null : Math.round(sacks * price * 100) / 100;
+  return sacks === null || price === null ? null : Math.round((sacks * price + Number.EPSILON) * 100) / 100;
 }
 
 /** Desvio em % com sinal e 2 casas ("+1,50%"); ausente vira "–". */

@@ -1,4 +1,4 @@
-import { clearRowFlashes, computeFlashes, EMPTY_VALUE } from "siagrob1/helpers/MarketHelpers";
+import { clearRowFlashes, computeFlashes, EMPTY_VALUE, formatQuoteValue } from "siagrob1/helpers/MarketHelpers";
 import { parseStrictDecimal } from "siagrob1/helpers/MarketPricingHelpers";
 import {
   MarketPriceGridRow, MarketPriceGridViewRow, MarketTicketForm, MarketTradeTicketInput, PriceGridFlashField
@@ -103,6 +103,18 @@ export function stepUnitKey(unit: string): string {
   }
 }
 
+/** Valor de um passo da composição, com as casas da unidade: R$/sc, R$/t e USD/t 2; R$/USD 4; cotação como na grade. */
+export function formatStepValue(value: number, unit: string): string {
+  switch (unit) {
+    case "BRL/USD": return formatFx(value);
+    case "quote": return formatQuoteValue(value);
+    case "BRL/sc":
+    case "BRL/t":
+    case "USD/t": return formatMoney(value);
+    default: return formatPlain(value);
+  }
+}
+
 /** Origem da cotação: "CMA" ou "Manual" (enum camelCase do servidor). */
 export function quoteSourceText(source: string): string {
   if (!source) return EMPTY_VALUE;
@@ -143,6 +155,8 @@ export function buildTicketPayload(form: MarketTicketForm, lineId: number, munic
   for (const field of required) {
     if (!String(form?.[field] ?? "").trim()) errors[field] = "required";
   }
+  // O agente é um código inteiro (Number("1,5") ou "abc" viraria NaN no corpo do POST).
+  if (!errors.agentCode && !/^\d+$/.test(String(form.agentCode).trim())) errors.agentCode = "invalid";
   const positive = (field: "sacks" | "negotiatedPrice"): number => {
     const { value, error } = parseStrictDecimal(form?.[field] ?? "");
     if (error) errors[field] = error;
