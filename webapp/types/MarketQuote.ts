@@ -48,3 +48,12 @@ export type CmaSettings = {
   hasPassword?: boolean;
   password?: string;
 };
+
+/** Campos de preço que piscam no terminal quando sobem ou descem. */
+export type FlashField = "last" | "bid" | "high" | "low" | "open";
+
+/** Descritor por campo: "" (parado), "up-a-7", "down-b-8"... (direção, fase alternada, sequência). */
+export type FlashMap = Record<FlashField, string>;
+
+/** Linha do terminal no cliente: o `flash` só existe no JSONModel, nunca vai ao servidor. */
+export type MarketQuoteRow = MarketQuote & { flash: FlashMap };

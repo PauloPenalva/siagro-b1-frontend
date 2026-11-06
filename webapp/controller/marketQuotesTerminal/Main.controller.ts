@@ -3,9 +3,9 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import Dialog from "sap/m/Dialog";
-import Table from "sap/m/Table";
+import Table from "sap/ui/table/Table";
+import MultiSelectionPlugin, { MultiSelectionPlugin$SelectionChangeEvent } from "sap/ui/table/plugins/MultiSelectionPlugin";
 import Input from "sap/m/Input";
-import ListItemBase from "sap/m/ListItemBase";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import ListBinding from "sap/ui/model/ListBinding";
@@ -17,9 +17,9 @@ import MarketLiveService from "siagrob1/services/MarketLiveService";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import {
   connectionView, deviationPercent, extractGroups, groupFromKey, groupKey, MANUAL_DEVIATION_LIMIT, marketFetch,
-  MarketResult, normalizeQuotes, notFoundTextKey, parseDecimalInput
+  MarketResult, normalizeQuotes, notFoundTextKey, parseDecimalInput, withFlashes, clearFlashes
 } from "siagrob1/helpers/MarketHelpers";
-import { ManualQuoteInput, MarketQuote, MarketQuotesPayload } from "siagrob1/types/MarketQuote";
+import { ManualQuoteInput, MarketQuote, MarketQuoteRow, MarketQuotesPayload } from "siagrob1/types/MarketQuote";
 
 const ROUTE = "marketQuotesTerminal";
 
@@ -48,6 +48,9 @@ export default class Main extends BaseController {
   private filterPending = true;
   /** O "Último" só acusa obrigatório depois de mexido (ou no salvar), não ao abrir o diálogo vazio. */
   private manualLastTouched = false;
+  /** Quadro anterior para comparar os preços; null = próximo quadro é linha de base (nada pisca). */
+  private previousQuotes: MarketQuote[] = null;
+  private flashSeq = 0;
 
   onInit(): void {
     this.getView().setModel(new JSONModel({
@@ -108,10 +111,14 @@ export default class Main extends BaseController {
     }
 
     this.updateStatus();
+    // Primeiro quadro de cada start() é linha de base: entrar na tela não faz nada piscar.
+    this.previousQuotes = null;
     MarketLiveService.start({
       onData: (payload) => this.onPayload(payload),
       onConnectionChange: (disconnected) => {
         this.browserDisconnected = disconnected;
+        // Queda do lado do navegador: o quadro da reconexão é nova linha de base.
+        if (disconnected) this.previousQuotes = null;
         this.updateStatus();
       },
     });
@@ -137,8 +144,8 @@ export default class Main extends BaseController {
    */
   private applyQuotes(rawQuotes: MarketQuote[]): void {
     const model = this.model();
-    const quotes = normalizeQuotes(rawQuotes);
-    const groups = extractGroups(quotes).map(groupKey);
+    const normalized = normalizeQuotes(rawQuotes);
+    const groups = extractGroups(normalized).map(groupKey);
     let refilter = this.filterPending;
     const current = (model.getProperty("/groups") as { key: string }[]).map((g) => g.key);
     if (groups.join("\u0001") !== current.join("\u0001")) {
@@ -158,35 +165,56 @@ export default class Main extends BaseController {
       this.filterPending = false;
     }
 
-    model.setProperty("/quotes", quotes);
+    // Refiltro (aba nova/volta à rota) não pisca: as linhas recicladas mostrariam outra cotação.
+    const rows = withFlashes(refilter ? null : this.previousQuotes, normalized, ++this.flashSeq);
+    this.previousQuotes = normalized;
+    model.setProperty("/quotes", rows);
     this.refreshSelectedManual();
+    this.syncTableSelection();
   }
 
   private applyGroupFilter(key: string): void {
-    const binding = this.byId("quotesTable").getBinding("items") as ListBinding;
+    const binding = this.byId("quotesTable").getBinding("rows") as ListBinding;
     binding?.filter([new Filter("groupName", FilterOperator.EQ, groupFromKey(key))]);
   }
 
   onGroupSelect(): void {
-    this.applyGroupFilter(this.model().getProperty("/selectedGroup") as string);
+    const model = this.model();
+    model.setProperty("/quotes", clearFlashes(model.getProperty("/quotes") as MarketQuoteRow[]));
+    this.applyGroupFilter(model.getProperty("/selectedGroup") as string);
     this.setSelectedCode("");
+    this.syncTableSelection();
   }
 
-  onSelectionChange(): void {
-    const item = (this.byId("quotesTable") as Table).getSelectedItem();
-    const code = item?.getBindingContext("quotes")?.getProperty("code") as string ;
+  onSelectionChange(ev: MultiSelectionPlugin$SelectionChangeEvent): void {
+    // Seleção feita pelo próprio código (reposição após quadro/refiltro) não é escolha do usuário.
+    if ((ev.getParameter("customPayload") as { sync?: boolean })?.sync) return;
+    const index = this.selection().getSelectedIndices()[0] ?? -1;
+    const code = index < 0 ? "" : (this.byId("quotesTable") as Table).getContextByIndex(index)?.getProperty("code") as string;
     this.setSelectedCode(code ?? "");
   }
 
-  /** Os itens são religados a cada evento; reaplica a seleção pela chave, não pela posição. */
-  onTableUpdateFinished(): void {
-    const table = this.byId("quotesTable") as Table;
+  private selection(): MultiSelectionPlugin {
+    return this.byId("quotesSelection") as MultiSelectionPlugin;
+  }
+
+  /**
+   * A grade seleciona por ÍNDICE: depois de cada quadro ou refiltro, reencontra a linha do código
+   * selecionado; se ele não está na aba atual, limpa a seleção. O payload `sync` evita o laço.
+   */
+  private syncTableSelection(): void {
+    const binding = this.byId("quotesTable")?.getBinding("rows") as ListBinding;
+    const selection = this.selection();
+    if (!binding || !selection) return;
     const code = this.model().getProperty("/selectedCode") as string;
-    const match = table.getItems().find((i: ListItemBase) => i.getBindingContext("quotes")?.getProperty("code") === code);
-    if (match) {
-      table.setSelectedItem(match, true);
-    } else {
-      table.removeSelections(true);
+    const contexts = code ? binding.getContexts(0, binding.getLength()) : [];
+    const index = contexts.findIndex((c) => c?.getProperty("code") === code);
+    const current = selection.getSelectedIndices()[0] ?? -1;
+    if (index < 0) {
+      if (current >= 0) selection.clearSelection({ sync: true });
+      if (code) this.setSelectedCode("");
+    } else if (current !== index) {
+      void selection.setSelectedIndex(index, { sync: true });
     }
   }
 

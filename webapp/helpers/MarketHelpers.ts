@@ -1,5 +1,5 @@
 import { readErrorMessage } from "siagrob1/helpers/FetchHelpers";
-import { MarketQuote } from "siagrob1/types/MarketQuote";
+import { FlashField, FlashMap, MarketQuote, MarketQuoteRow } from "siagrob1/types/MarketQuote";
 
 /**
  * Funções puras do módulo Mercado (terminal de cotações) + a chamada REST com status HTTP.
@@ -203,4 +203,37 @@ export async function marketFetch<T = unknown>(
   } catch {
     return { ok: false, status: 0 };
   }
+}
+
+export const FLASH_FIELDS: FlashField[] = ["last", "bid", "high", "low", "open"];
+
+const noFlash = (): FlashMap => ({ last: "", bid: "", high: "", low: "", open: "" });
+
+/**
+ * Compara o quadro novo com o anterior (pelo código, nunca pela posição) e devolve as linhas com o
+ * descritor de piscada de cada preço. `previous` nulo = linha de base (primeiro quadro do stream): nada
+ * pisca. Só pisca quando os dois valores são números e diferem. A fase "a"/"b" alterna com `seq` para
+ * o CSS trocar de keyframes e a animação reiniciar mesmo em duas altas seguidas.
+ */
+export function withFlashes(previous: MarketQuote[], next: MarketQuote[], seq: number): MarketQuoteRow[] {
+  const before = new Map((previous ?? []).map((p) => [p.code, p]));
+  const phase = seq % 2 === 0 ? "b" : "a";
+  return (next ?? []).map((quote) => {
+    const flash = noFlash();
+    const old = previous ? before.get(quote.code) : undefined;
+    if (old) {
+      for (const field of FLASH_FIELDS) {
+        const a = old[field], b = quote[field];
+        if (typeof a === "number" && typeof b === "number" && a !== b) {
+          flash[field] = `${b > a ? "up" : "down"}-${phase}-${seq}`;
+        }
+      }
+    }
+    return { ...quote, flash };
+  });
+}
+
+/** Troca de aba/refiltro: as linhas recicladas não podem repetir a piscada da linha anterior. */
+export function clearFlashes(rows: MarketQuoteRow[]): MarketQuoteRow[] {
+  return (rows ?? []).map((row) => ({ ...row, flash: noFlash() }));
 }

@@ -32,3 +32,35 @@
   color: var(--sapContent_LabelColor);
   font-size: 0.875rem;
 }
+
+/*
+ * Terminal de cotações: a célula inteira (td da grade) pisca verde na alta e vermelha na baixa.
+ * O descritor vem do modelo (flash/<campo> = "up-a-7", "down-b-8"...) via CustomData writeToDom.
+ * As fases "a"/"b" usam keyframes de nomes diferentes: trocar só a sequência num mesmo sentido
+ * troca o nome da animação e ela reinicia. O box-shadow inset fica por cima do fundo da linha,
+ * então a piscada aparece também em linha selecionada ou zebrada.
+ */
+.siagroMarketTerminal {
+  --siagroFlashUp: rgba(16, 126, 62, 0.35);
+  --siagroFlashDown: rgba(187, 0, 0, 0.35);
+}
+@supports (color: color-mix(in srgb, red 35%, transparent)) {
+  .siagroMarketTerminal {
+    --siagroFlashUp: color-mix(in srgb, var(--sapPositiveColor, #107e3e) 35%, transparent);
+    --siagroFlashDown: color-mix(in srgb, var(--sapNegativeColor, #bb0000) 35%, transparent);
+  }
+}
+.siagroMarketTerminal td:has([data-market-flash^="up-a"]) { animation: siagroFlashUpA 1s ease-out; }
+.siagroMarketTerminal td:has([data-market-flash^="up-b"]) { animation: siagroFlashUpB 1s ease-out; }
+.siagroMarketTerminal td:has([data-market-flash^="down-a"]) { animation: siagroFlashDownA 1s ease-out; }
+.siagroMarketTerminal td:has([data-market-flash^="down-b"]) { animation: siagroFlashDownB 1s ease-out; }
+@keyframes siagroFlashUpA { from { box-shadow: inset 0 0 0 100rem var(--siagroFlashUp); } to { box-shadow: inset 0 0 0 100rem transparent; } }
+@keyframes siagroFlashUpB { from { box-shadow: inset 0 0 0 100rem var(--siagroFlashUp); } to { box-shadow: inset 0 0 0 100rem transparent; } }
+@keyframes siagroFlashDownA { from { box-shadow: inset 0 0 0 100rem var(--siagroFlashDown); } to { box-shadow: inset 0 0 0 100rem transparent; } }
+@keyframes siagroFlashDownB { from { box-shadow: inset 0 0 0 100rem var(--siagroFlashDown); } to { box-shadow: inset 0 0 0 100rem transparent; } }
+/* Sem animação para quem pede menos movimento: só uma borda estática na cor do sentido. */
+@media (prefers-reduced-motion: reduce) {
+  .siagroMarketTerminal td:has([data-market-flash]) { animation: none; }
+  .siagroMarketTerminal td:has([data-market-flash^="up"]) { box-shadow: inset 3px 0 0 var(--sapPositiveColor, #107e3e); }
+  .siagroMarketTerminal td:has([data-market-flash^="down"]) { box-shadow: inset 3px 0 0 var(--sapNegativeColor, #bb0000); }
+}

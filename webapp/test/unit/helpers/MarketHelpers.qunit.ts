@@ -1,8 +1,9 @@
 import {
   changePercentState, connectionView, deviationPercent, extractGroups, formatChangePercent, formatLast, formatQuoteTime,
   formatQuoteValue, groupFromKey, groupKey, isManualQuote, manualTooltip, normalizeQuotes, notFoundTextKey,
-  NO_GROUP_KEY, parseDecimalInput, parseServerInstant
+  NO_GROUP_KEY, parseDecimalInput, parseServerInstant, withFlashes, clearFlashes
 } from "siagrob1/helpers/MarketHelpers";
+import { MarketQuote } from "siagrob1/types/MarketQuote";
 
 QUnit.module("MarketHelpers - terminal de cotações");
 
@@ -100,4 +101,48 @@ QUnit.test("desvio do último preço em porcentagem", function (assert) {
   assert.ok(Math.abs(deviationPercent(110, 100) - 10) < 1e-9);
   assert.strictEqual(deviationPercent(10, null), null);
   assert.strictEqual(deviationPercent(10, 0), null);
+});
+
+QUnit.module("MarketHelpers - célula piscando na alta e na baixa");
+
+const q = (code: string, last: number, extra: Partial<MarketQuote> = {}): MarketQuote => ({
+  code, description: code, groupName: "", sortOrder: 0, last, bid: null, changePercent: null, high: null, low: null,
+  open: null, isSettlement: false, quotedAt: null, source: "cma", manualOverride: false, ...extra,
+});
+
+QUnit.test("primeiro quadro é linha de base: nada pisca", function (assert) {
+  const rows = withFlashes(null, [q("A", 10)], 1);
+  assert.deepEqual(rows[0].flash, { last: "", bid: "", high: "", low: "", open: "" });
+});
+
+QUnit.test("alta pisca up, baixa pisca down, só no campo que mudou", function (assert) {
+  const rows = withFlashes([q("A", 10, { bid: 5 }), q("B", 10)], [q("A", 11, { bid: 5 }), q("B", 9)], 1);
+  assert.ok(rows[0].flash.last.startsWith("up"));
+  assert.strictEqual(rows[0].flash.bid, "");
+  assert.strictEqual(rows[0].flash.high, "");
+  assert.ok(rows[1].flash.last.startsWith("down"));
+});
+
+QUnit.test("sem mudança, nulo para número, número para nulo e instrumento novo não piscam", function (assert) {
+  const rows = withFlashes([q("A", 10), q("B", null), q("C", 7)], [q("A", 10), q("B", 3), q("C", null), q("D", 1)], 1);
+  for (const row of rows) assert.strictEqual(row.flash.last, "", row.code);
+});
+
+QUnit.test("duas altas seguidas geram descritores diferentes (a animação reinicia)", function (assert) {
+  const first = withFlashes([q("A", 10)], [q("A", 11)], 1);
+  const second = withFlashes(first, [q("A", 12)], 2);
+  assert.ok(second[0].flash.last.startsWith("up"));
+  assert.notStrictEqual(first[0].flash.last, second[0].flash.last);
+});
+
+QUnit.test("compara pelo código, não pela posição", function (assert) {
+  const rows = withFlashes([q("A", 10), q("B", 20)], [q("B", 20), q("A", 9)], 1);
+  assert.strictEqual(rows[0].flash.last, "");
+  assert.ok(rows[1].flash.last.startsWith("down"));
+});
+
+QUnit.test("clearFlashes zera tudo sem perder os dados", function (assert) {
+  const rows = clearFlashes(withFlashes([q("A", 10)], [q("A", 11)], 1));
+  assert.strictEqual(rows[0].flash.last, "");
+  assert.strictEqual(rows[0].last, 11);
 });
