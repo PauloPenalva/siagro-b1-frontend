@@ -38,7 +38,8 @@
  * O descritor vem do modelo (flash/<campo> = "up-a-7", "down-b-8"...) via CustomData writeToDom.
  * As fases "a"/"b" usam keyframes de nomes diferentes: trocar só a sequência num mesmo sentido
  * troca o nome da animação e ela reinicia. O box-shadow inset fica por cima do fundo da linha,
- * então a piscada aparece também em linha selecionada ou zebrada.
+ * então a piscada aparece também em linha selecionada ou zebrada. A duração (1s) é a mesma de
+ * FLASH_DURATION_MS em helpers/MarketHelpers.ts: mudar uma exige mudar a outra.
  */
 .siagroMarketTerminal {
   --siagroFlashUp: rgba(16, 126, 62, 0.35);

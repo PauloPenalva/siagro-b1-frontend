@@ -207,33 +207,49 @@ export async function marketFetch<T = unknown>(
 
 export const FLASH_FIELDS: FlashField[] = ["last", "bid", "high", "low", "open"];
 
+/** Duração da piscada em ms: deve ser igual à do `animation: ... 1s` em css/style.css. */
+export const FLASH_DURATION_MS = 1000;
+
 const noFlash = (): FlashMap => ({ last: "", bid: "", high: "", low: "", open: "" });
+const noFlashAt = (): Record<FlashField, number> => ({ last: 0, bid: 0, high: 0, low: 0, open: 0 });
 
 /**
  * Compara o quadro novo com o anterior (pelo código, nunca pela posição) e devolve as linhas com o
  * descritor de piscada de cada preço. `previous` nulo = linha de base (primeiro quadro do stream): nada
  * pisca. Só pisca quando os dois valores são números e diferem. A fase "a"/"b" alterna com `seq` para
- * o CSS trocar de keyframes e a animação reiniciar mesmo em duas altas seguidas.
+ * o CSS trocar de keyframes e a animação reiniciar mesmo em duas altas seguidas. Um descritor ainda mais
+ * novo que FLASH_DURATION_MS segue IDÊNTICO (o atributo no DOM não muda e a animação termina); `now`
+ * vem de quem chama, para a função seguir pura.
  */
-export function withFlashes(previous: MarketQuote[], next: MarketQuote[], seq: number): MarketQuoteRow[] {
-  const before = new Map((previous ?? []).map((p) => [p.code, p]));
+export function withFlashes(previous: (MarketQuote | MarketQuoteRow)[], next: MarketQuote[], seq: number, now: number): MarketQuoteRow[] {
+  const before = new Map((previous ?? []).map((p) => [p.code, p as MarketQuoteRow]));
   const phase = seq % 2 === 0 ? "b" : "a";
   return (next ?? []).map((quote) => {
     const flash = noFlash();
+    const flashAt = noFlashAt();
     const old = previous ? before.get(quote.code) : undefined;
     if (old) {
       for (const field of FLASH_FIELDS) {
         const a = old[field], b = quote[field];
         if (typeof a === "number" && typeof b === "number" && a !== b) {
           flash[field] = `${b > a ? "up" : "down"}-${phase}-${seq}`;
+          flashAt[field] = now;
+        } else if (old.flash?.[field] && now - (old.flashAt?.[field] ?? 0) < FLASH_DURATION_MS) {
+          flash[field] = old.flash[field];
+          flashAt[field] = old.flashAt[field];
         }
       }
     }
-    return { ...quote, flash };
+    return { ...quote, flash, flashAt };
   });
 }
 
 /** Troca de aba/refiltro: as linhas recicladas não podem repetir a piscada da linha anterior. */
 export function clearFlashes(rows: MarketQuoteRow[]): MarketQuoteRow[] {
-  return (rows ?? []).map((row) => ({ ...row, flash: noFlash() }));
+  return (rows ?? []).map((row) => ({ ...row, flash: noFlash(), flashAt: noFlashAt() }));
+}
+
+/** Valor do atributo data-market-flash: sempre string (linha vazia da grade não tem contexto). */
+export function flashAttr(value: unknown): string {
+  return typeof value === "string" ? value : "";
 }

@@ -1,7 +1,7 @@
 import {
   changePercentState, connectionView, deviationPercent, extractGroups, formatChangePercent, formatLast, formatQuoteTime,
   formatQuoteValue, groupFromKey, groupKey, isManualQuote, manualTooltip, normalizeQuotes, notFoundTextKey,
-  NO_GROUP_KEY, parseDecimalInput, parseServerInstant, withFlashes, clearFlashes
+  NO_GROUP_KEY, parseDecimalInput, parseServerInstant, withFlashes, clearFlashes, flashAttr, FLASH_DURATION_MS
 } from "siagrob1/helpers/MarketHelpers";
 import { MarketQuote } from "siagrob1/types/MarketQuote";
 
@@ -111,12 +111,12 @@ const q = (code: string, last: number, extra: Partial<MarketQuote> = {}): Market
 });
 
 QUnit.test("primeiro quadro é linha de base: nada pisca", function (assert) {
-  const rows = withFlashes(null, [q("A", 10)], 1);
+  const rows = withFlashes(null, [q("A", 10)], 1, 0);
   assert.deepEqual(rows[0].flash, { last: "", bid: "", high: "", low: "", open: "" });
 });
 
 QUnit.test("alta pisca up, baixa pisca down, só no campo que mudou", function (assert) {
-  const rows = withFlashes([q("A", 10, { bid: 5 }), q("B", 10)], [q("A", 11, { bid: 5 }), q("B", 9)], 1);
+  const rows = withFlashes([q("A", 10, { bid: 5 }), q("B", 10)], [q("A", 11, { bid: 5 }), q("B", 9)], 1, 0);
   assert.ok(rows[0].flash.last.startsWith("up"));
   assert.strictEqual(rows[0].flash.bid, "");
   assert.strictEqual(rows[0].flash.high, "");
@@ -124,25 +124,47 @@ QUnit.test("alta pisca up, baixa pisca down, só no campo que mudou", function (
 });
 
 QUnit.test("sem mudança, nulo para número, número para nulo e instrumento novo não piscam", function (assert) {
-  const rows = withFlashes([q("A", 10), q("B", null), q("C", 7)], [q("A", 10), q("B", 3), q("C", null), q("D", 1)], 1);
+  const rows = withFlashes([q("A", 10), q("B", null), q("C", 7)], [q("A", 10), q("B", 3), q("C", null), q("D", 1)], 1, 0);
   for (const row of rows) assert.strictEqual(row.flash.last, "", row.code);
 });
 
 QUnit.test("duas altas seguidas geram descritores diferentes (a animação reinicia)", function (assert) {
-  const first = withFlashes([q("A", 10)], [q("A", 11)], 1);
-  const second = withFlashes(first, [q("A", 12)], 2);
+  const first = withFlashes([q("A", 10)], [q("A", 11)], 1, 0);
+  const second = withFlashes(first, [q("A", 12)], 2, 10);
   assert.ok(second[0].flash.last.startsWith("up"));
   assert.notStrictEqual(first[0].flash.last, second[0].flash.last);
 });
 
 QUnit.test("compara pelo código, não pela posição", function (assert) {
-  const rows = withFlashes([q("A", 10), q("B", 20)], [q("B", 20), q("A", 9)], 1);
+  const rows = withFlashes([q("A", 10), q("B", 20)], [q("B", 20), q("A", 9)], 1, 0);
   assert.strictEqual(rows[0].flash.last, "");
   assert.ok(rows[1].flash.last.startsWith("down"));
 });
 
 QUnit.test("clearFlashes zera tudo sem perder os dados", function (assert) {
-  const rows = clearFlashes(withFlashes([q("A", 10)], [q("A", 11)], 1));
+  const rows = clearFlashes(withFlashes([q("A", 10)], [q("A", 11)], 1, 0));
   assert.strictEqual(rows[0].flash.last, "");
   assert.strictEqual(rows[0].last, 11);
+});
+
+QUnit.test("piscada segue idêntica dentro da janela e cai depois dela", function (assert) {
+  const first = withFlashes([q("A", 10, { bid: 1 })], [q("A", 11, { bid: 1 })], 1, 1000);
+  const within = withFlashes(first, [q("A", 11, { bid: 1 })], 2, 1000 + FLASH_DURATION_MS - 1);
+  assert.strictEqual(within[0].flash.last, first[0].flash.last);
+  assert.strictEqual(within[0].flash.bid, "");
+  const after = withFlashes(within, [q("A", 11, { bid: 1 })], 3, 1000 + FLASH_DURATION_MS);
+  assert.strictEqual(after[0].flash.last, "");
+});
+
+QUnit.test("novo movimento dentro da janela troca o descritor", function (assert) {
+  const first = withFlashes([q("A", 10)], [q("A", 11)], 1, 0);
+  const second = withFlashes(first, [q("A", 10)], 2, 100);
+  assert.ok(second[0].flash.last.startsWith("down"));
+  assert.notStrictEqual(second[0].flash.last, first[0].flash.last);
+});
+
+QUnit.test("atributo da piscada é sempre string", function (assert) {
+  assert.strictEqual(flashAttr(undefined), "");
+  assert.strictEqual(flashAttr(null), "");
+  assert.strictEqual(flashAttr("up-a-1"), "up-a-1");
 });

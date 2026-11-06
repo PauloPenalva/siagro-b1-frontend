@@ -29,7 +29,7 @@
 				</items>
 			</IconTabBar>
 			<t:Table id="quotesTable" rows="{ path: 'quotes>/quotes', templateShareable: false }"
-				selectionBehavior="Row"
+				selectionBehavior="RowOnly"
 				alternateRowColors="true" enableColumnReordering="false" fixedColumnCount="1"
 				noData="{i18n>marketTerminalNoData}" visible="{= !${quotes>/moduleDisabled} }"
 				class="sapUiSizeCondensed siagroMarketTerminal">
@@ -43,61 +43,61 @@
 					<rowmodes:Auto minRowCount="8" />
 				</t:rowMode>
 				<t:columns>
-					<t:Column width="11.5rem" label="{i18n>marketColCode}">
+					<t:Column width="11rem" label="{i18n>marketColCode}">
 						<t:template><Text text="{quotes>code}" wrapping="false" /></t:template>
 					</t:Column>
-					<t:Column minWidth="128" label="{i18n>marketColDescription}">
+					<t:Column minWidth="144" label="{i18n>marketColDescription}">
 						<t:template><Text text="{quotes>description}" tooltip="{quotes>description}" wrapping="false" /></t:template>
 					</t:Column>
-					<t:Column hAlign="End" width="6.5rem" label="{i18n>marketColLast}">
+					<t:Column hAlign="End" width="5.5rem" label="{i18n>marketColLast}">
 						<t:template>
 							<Text text="{ parts: ['quotes>last', 'quotes>isSettlement'], formatter: 'market.formatLast' }" wrapping="false">
-								<customData><core:CustomData key="market-flash" value="{quotes>flash/last}" writeToDom="true" /></customData>
+								<customData><core:CustomData key="market-flash" value="{ path: 'quotes>flash/last', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
 							</Text>
 						</t:template>
 					</t:Column>
-					<t:Column hAlign="End" width="6rem" label="{i18n>marketColBid}">
+					<t:Column hAlign="End" width="5.5rem" label="{i18n>marketColBid}">
 						<t:template>
 							<Text text="{ path: 'quotes>bid', formatter: 'market.formatQuoteValue' }" wrapping="false">
-								<customData><core:CustomData key="market-flash" value="{quotes>flash/bid}" writeToDom="true" /></customData>
+								<customData><core:CustomData key="market-flash" value="{ path: 'quotes>flash/bid', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
 							</Text>
 						</t:template>
 					</t:Column>
-					<t:Column hAlign="End" width="6rem" label="{i18n>marketColChange}">
+					<t:Column hAlign="End" width="5.5rem" label="{i18n>marketColChange}">
 						<t:template>
 							<ObjectStatus text="{ path: 'quotes>changePercent', formatter: 'market.formatChangePercent' }"
 								state="{ path: 'quotes>changePercent', formatter: 'market.changePercentState' }" />
 						</t:template>
 					</t:Column>
-					<t:Column hAlign="End" width="6rem" label="{i18n>marketColHigh}">
+					<t:Column hAlign="End" width="5.5rem" label="{i18n>marketColHigh}">
 						<t:template>
 							<Text text="{ path: 'quotes>high', formatter: 'market.formatQuoteValue' }" wrapping="false">
-								<customData><core:CustomData key="market-flash" value="{quotes>flash/high}" writeToDom="true" /></customData>
+								<customData><core:CustomData key="market-flash" value="{ path: 'quotes>flash/high', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
 							</Text>
 						</t:template>
 					</t:Column>
-					<t:Column hAlign="End" width="6rem" label="{i18n>marketColLow}">
+					<t:Column hAlign="End" width="5.5rem" label="{i18n>marketColLow}">
 						<t:template>
 							<Text text="{ path: 'quotes>low', formatter: 'market.formatQuoteValue' }" wrapping="false">
-								<customData><core:CustomData key="market-flash" value="{quotes>flash/low}" writeToDom="true" /></customData>
+								<customData><core:CustomData key="market-flash" value="{ path: 'quotes>flash/low', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
 							</Text>
 						</t:template>
 					</t:Column>
-					<t:Column hAlign="End" width="6rem" label="{i18n>marketColOpen}">
+					<t:Column hAlign="End" width="5.5rem" label="{i18n>marketColOpen}">
 						<t:template>
 							<Text text="{ path: 'quotes>open', formatter: 'market.formatQuoteValue' }" wrapping="false">
-								<customData><core:CustomData key="market-flash" value="{quotes>flash/open}" writeToDom="true" /></customData>
+								<customData><core:CustomData key="market-flash" value="{ path: 'quotes>flash/open', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
 							</Text>
 						</t:template>
 					</t:Column>
-					<t:Column hAlign="Center" width="4rem" label="{i18n>marketColSource}">
+					<t:Column hAlign="Center" width="3.5rem" label="{i18n>marketColSource}">
 						<t:template>
 							<core:Icon src="sap-icon://user-edit"
 								tooltip="{ parts: ['i18n>marketManualTooltip', 'i18n>marketManualByTooltip', 'quotes>userName'], formatter: 'market.manualTooltip' }"
 								visible="{ parts: ['quotes>source', 'quotes>manualOverride'], formatter: 'market.isManualQuote' }" />
 						</t:template>
 					</t:Column>
-					<t:Column hAlign="End" width="6rem" label="{i18n>marketColUpdated}">
+					<t:Column hAlign="End" width="5.5rem" label="{i18n>marketColUpdated}">
 						<t:template><Text text="{ path: 'quotes>quotedAt', formatter: 'market.formatQuoteTime' }" wrapping="false" /></t:template>
 					</t:Column>
 				</t:columns>

@@ -56,4 +56,4 @@ export type FlashField = "last" | "bid" | "high" | "low" | "open";
 export type FlashMap = Record<FlashField, string>;
 
 /** Linha do terminal no cliente: o `flash` só existe no JSONModel, nunca vai ao servidor. */
-export type MarketQuoteRow = MarketQuote & { flash: FlashMap };
+export type MarketQuoteRow = MarketQuote & { flash: FlashMap; flashAt?: Record<FlashField, number> };

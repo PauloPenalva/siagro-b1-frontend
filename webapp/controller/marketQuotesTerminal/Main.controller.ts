@@ -49,7 +49,11 @@ export default class Main extends BaseController {
   /** O "Último" só acusa obrigatório depois de mexido (ou no salvar), não ao abrir o diálogo vazio. */
   private manualLastTouched = false;
   /** Quadro anterior para comparar os preços; null = próximo quadro é linha de base (nada pisca). */
-  private previousQuotes: MarketQuote[] = null;
+  private previousQuotes: MarketQuoteRow[] = null;
+  /** >0 enquanto filtro/reposição mexem na seleção: eventos do plugin nesse intervalo não são do usuário. */
+  private restoringSelection = 0;
+  /** Descarta resultado assíncrono de setSelectedIndex quando uma reposição mais nova já começou. */
+  private selectionSyncSeq = 0;
   private flashSeq = 0;
 
   onInit(): void {
@@ -166,8 +170,8 @@ export default class Main extends BaseController {
     }
 
     // Refiltro (aba nova/volta à rota) não pisca: as linhas recicladas mostrariam outra cotação.
-    const rows = withFlashes(refilter ? null : this.previousQuotes, normalized, ++this.flashSeq);
-    this.previousQuotes = normalized;
+    const rows = withFlashes(refilter ? null : this.previousQuotes, normalized, ++this.flashSeq, Date.now());
+    this.previousQuotes = rows;
     model.setProperty("/quotes", rows);
     this.refreshSelectedManual();
     this.syncTableSelection();
@@ -175,7 +179,13 @@ export default class Main extends BaseController {
 
   private applyGroupFilter(key: string): void {
     const binding = this.byId("quotesTable").getBinding("rows") as ListBinding;
-    binding?.filter([new Filter("groupName", FilterOperator.EQ, groupFromKey(key))]);
+    // O filtro faz o plugin limpar a seleção e disparar selectionChange sem payload: não é o usuário.
+    this.restoringSelection++;
+    try {
+      binding?.filter([new Filter("groupName", FilterOperator.EQ, groupFromKey(key))]);
+    } finally {
+      this.restoringSelection--;
+    }
   }
 
   onGroupSelect(): void {
@@ -188,7 +198,7 @@ export default class Main extends BaseController {
 
   onSelectionChange(ev: MultiSelectionPlugin$SelectionChangeEvent): void {
     // Seleção feita pelo próprio código (reposição após quadro/refiltro) não é escolha do usuário.
-    if ((ev.getParameter("customPayload") as { sync?: boolean })?.sync) return;
+    if (this.restoringSelection > 0 || (ev.getParameter("customPayload") as { sync?: boolean })?.sync) return;
     const index = this.selection().getSelectedIndices()[0] ?? -1;
     const code = index < 0 ? "" : (this.byId("quotesTable") as Table).getContextByIndex(index)?.getProperty("code") as string;
     this.setSelectedCode(code ?? "");
@@ -210,11 +220,21 @@ export default class Main extends BaseController {
     const contexts = code ? binding.getContexts(0, binding.getLength()) : [];
     const index = contexts.findIndex((c) => c?.getProperty("code") === code);
     const current = selection.getSelectedIndices()[0] ?? -1;
+    const seq = ++this.selectionSyncSeq;
     if (index < 0) {
       if (current >= 0) selection.clearSelection({ sync: true });
       if (code) this.setSelectedCode("");
     } else if (current !== index) {
-      void selection.setSelectedIndex(index, { sync: true });
+      selection.setSelectedIndex(index, { sync: true })
+        .then(() => {
+          // Uma reposição mais nova pode ter começado enquanto esta esperava o contexto: descarta.
+          if (seq !== this.selectionSyncSeq) return;
+          const selected = selection.getSelectedIndices()[0] ?? -1;
+          const table = this.byId("quotesTable") as Table;
+          const selectedCode = selected < 0 ? "" : table.getContextByIndex(selected)?.getProperty("code") as string;
+          if (selectedCode !== this.model().getProperty("/selectedCode")) this.syncTableSelection();
+        })
+        .catch(() => { /* contexto indisponível: a próxima atualização tenta de novo */ });
     }
   }
 
