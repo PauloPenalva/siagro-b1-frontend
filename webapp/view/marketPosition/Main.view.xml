@@ -1,0 +1,281 @@
+<mvc:View
+	controllerName="siagrob1.controller.marketPosition.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.f"
+	xmlns:card="sap.f.cards"
+	xmlns:l="sap.ui.layout"
+	xmlns:t="sap.ui.table"
+	xmlns:rowmodes="sap.ui.table.rowmodes"
+	xmlns:plugins="sap.ui.table.plugins"
+	core:require="{ market: 'siagrob1/helpers/MarketHelpers', pos: 'siagrob1/helpers/MarketPositionHelpers' }">
+
+	<!-- Painel de posição: o snapshot do SSE (/market/position/live) alimenta o JSONModel "position", atualizado
+	     no lugar (aba, seleção e rolagem ficam). A piscada usa o CSS do terminal (classe siagroMarketTerminal). -->
+	<Page title="{i18n>marketPositionTitle}" busy="{ui>/busy}" busyIndicatorDelay="0">
+		<headerContent>
+			<Text text="{position>/generatedText}" visible="{= !!${position>/generatedText} }" class="sapUiSmallMarginEnd" />
+			<ObjectStatus text="{position>/cmaText}" state="{position>/cmaState}" inverted="true" visible="{= !!${position>/cmaText} }" class="sapUiSmallMarginEnd" />
+			<ObjectStatus text="{position>/statusText}" state="{position>/statusState}" inverted="true" />
+		</headerContent>
+		<content>
+			<MessageStrip text="{position>/moduleMessage}" type="Warning" showIcon="true" visible="{position>/moduleDisabled}" class="sapUiSmallMargin" />
+			<VBox visible="{= !${position>/moduleDisabled} }" renderType="Bare">
+				<MessageStrip text="{i18n>marketPositionOffline}" type="Warning" showIcon="true" visible="{position>/offline}" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop">
+					<link><Link text="{i18n>marketPositionRetry}" press=".onRetry" /></link>
+				</MessageStrip>
+				<VBox items="{ path: 'position>/alerts', templateShareable: false }" renderType="Bare" class="sapUiSmallMarginBeginEnd">
+					<MessageStrip text="{position>text}" type="Error" showIcon="true" class="sapUiTinyMarginTop" />
+				</VBox>
+
+				<!-- Cartões-resumo: um por commodity e um do dólar -->
+				<l:Grid content="{ path: 'position>/cards', templateShareable: false }" defaultSpan="XL3 L3 M6 S12" hSpacing="1" vSpacing="1" containerQuery="true" class="sapUiSmallMarginTop">
+					<f:Card class="sapUiTinyMargin">
+						<f:header><card:Header title="{position>title}" subtitle="{position>directionText}" /></f:header>
+						<f:content>
+							<VBox class="sapUiSmallMargin" renderType="Bare">
+								<Label text="{i18n>marketPositionCardExposed}" />
+								<ObjectNumber number="{position>exposedText}" state="{position>exposedState}" emphasized="true" class="siagroKpiNumber" />
+								<HBox alignItems="Center" class="sapUiTinyMarginTop">
+									<Label text="{i18n>marketPositionCardCovered}" class="sapUiTinyMarginEnd" />
+									<Text text="{position>coveredText}" wrapping="false" />
+								</HBox>
+								<ProgressIndicator percentValue="{position>hedgeValue}" displayValue="{position>hedgeLabel}"
+									visible="{position>hedgeVisible}" state="Information" displayOnly="true" class="sapUiTinyMarginTop" />
+								<Text text="{i18n>marketPositionCardNoHedge}" visible="{= !${position>hedgeVisible} }" class="sapUiTinyMarginTop" />
+								<Text text="{position>mtmText}" class="siagroKpiFooter sapUiTinyMarginTop" />
+								<ObjectStatus text="{position>limitText}" state="{position>limitState}" class="sapUiTinyMarginTop" />
+							</VBox>
+						</f:content>
+					</f:Card>
+				</l:Grid>
+
+				<IconTabBar id="positionTabs" selectedKey="{position>/tab}" expandable="false" stretchContentHeight="false" class="sapUiResponsiveContentPadding">
+					<items>
+						<IconTabFilter key="commodities" text="{i18n>marketPositionTabCommodities}">
+							<t:Table id="positionTable" rows="{ path: 'position>/rows', templateShareable: false }"
+								selectionBehavior="RowOnly" alternateRowColors="false" enableColumnReordering="false" fixedColumnCount="2"
+								noData="{i18n>marketPositionNoData}" class="sapUiSizeCondensed siagroMarketTerminal">
+								<t:dependents>
+									<plugins:MultiSelectionPlugin id="positionSelection" selectionMode="Single" selectionChange=".onSelectionChange" />
+								</t:dependents>
+								<t:rowMode><rowmodes:Auto minRowCount="4" maxRowCount="20" /></t:rowMode>
+								<t:extension>
+									<OverflowToolbar>
+										<Title text="{i18n>marketPositionCommoditiesHeader}" />
+										<ToolbarSpacer />
+										<Button text="{i18n>marketPositionShowContracts}" icon="sap-icon://documents" press=".onShowBucketContracts"
+											enabled="{position>/selectedCanDrill}" />
+									</OverflowToolbar>
+								</t:extension>
+								<t:rowActionTemplate>
+									<t:RowAction>
+										<t:items>
+											<t:RowActionItem type="Navigation" press=".onRowContracts" visible="{= ${position>isTotal} || !${position>noMaturity} }"
+												text="{i18n>marketPositionShowContracts}" />
+										</t:items>
+									</t:RowAction>
+								</t:rowActionTemplate>
+								<t:columns>
+				<t:Column width="9rem" label="{i18n>marketPositionColCommodity}">
+					<t:template><Label text="{position>commodityName}" tooltip="{position>commodityCode}" design="{= ${position>isTotal} ? 'Bold' : 'Standard' }" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column width="8rem" label="{i18n>marketPositionColMaturity}">
+					<t:template><Label text="{ parts: ['position>year', 'position>month', 'position>isTotal'], formatter: '.maturityText' }" design="{= ${position>isTotal} ? 'Bold' : 'Standard' }" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column width="7rem" label="{i18n>marketPositionColInstrument}">
+					<t:template><Text text="{position>instrumentCode}" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="7.5rem" label="{i18n>marketPositionColPurchases}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>purchaseTons', formatter: 'pos.formatTons' }" state="{ path: 'position>purchaseTons', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="7.5rem" label="{i18n>marketPositionColSales}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>salesTons', formatter: 'pos.formatTons' }" state="{ path: 'position>salesTons', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="7.5rem" label="{i18n>marketPositionColFutures}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>futuresTons', formatter: 'pos.formatTons' }" state="{ path: 'position>futuresTons', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="7.5rem" label="{i18n>marketPositionColNet}" tooltip="{i18n>marketPositionColNetTip}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>netTons', formatter: 'pos.formatTons' }" state="{ path: 'position>netTons', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="7.5rem" label="{i18n>marketPositionColCovered}" tooltip="{i18n>marketPositionColCoveredTip}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>coveredTons', formatter: 'pos.formatTons' }" state="{ path: 'position>coveredTons', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="5.5rem" label="{i18n>marketPositionColHedge}" tooltip="{i18n>marketPositionColHedgeTip}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>hedgePercent', formatter: 'pos.formatPercent' }" state="{ path: 'position>hedgePercent', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="6.5rem" label="{i18n>marketPositionColLastPrice}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>lastPrice', formatter: 'pos.formatAmount' }" state="{ path: 'position>lastPrice', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End">
+							<customData><core:CustomData key="market-flash" value="{ path: 'position>flash/lastPrice', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
+						</ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="6.5rem" label="{i18n>marketPositionColPreviousClose}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>previousClose', formatter: 'pos.formatAmount' }" state="{ path: 'position>previousClose', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="8rem" label="{i18n>marketPositionColFuturesMtm}" tooltip="{i18n>marketPositionColFuturesMtmTip}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>futuresUnrealized', formatter: 'pos.formatAmount' }" state="{ path: 'position>futuresUnrealized', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End">
+							<customData><core:CustomData key="market-flash" value="{ path: 'position>flash/futuresUnrealized', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
+						</ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="8rem" label="{i18n>marketPositionColFuturesMtmClose}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>futuresUnrealizedAtClose', formatter: 'pos.formatAmount' }" state="{ path: 'position>futuresUnrealizedAtClose', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="8rem" label="{i18n>marketPositionColPhysicalMtm}" tooltip="{i18n>marketPositionColPhysicalMtmTip}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>physicalExchangeMtm', formatter: 'pos.formatAmount' }" state="{ path: 'position>physicalExchangeMtm', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End">
+							<customData><core:CustomData key="market-flash" value="{ path: 'position>flash/physicalExchangeMtm', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
+						</ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="7.5rem" label="{i18n>marketPositionColWithoutReference}" tooltip="{i18n>marketPositionColWithoutReferenceTip}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>physicalWithoutReference', formatter: 'pos.formatTons' }" state="{ path: 'position>physicalWithoutReference', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column width="4rem" label="{i18n>marketPositionColCurrency}">
+					<t:template><Text text="{ path: 'position>currency', formatter: 'pos.currencyLabel' }" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column width="11rem" label="{i18n>marketPositionColLimit}">
+					<t:template>
+						<ObjectStatus text="{ path: 'position>limitState', formatter: '.limitText' }" state="{ path: 'position>limitState', formatter: 'pos.limitStateValue' }"
+							tooltip="{ parts: ['position>maxLong', 'position>maxShort'], formatter: '.limitTooltip' }" />
+					</t:template>
+				</t:Column>
+								</t:columns>
+							</t:Table>
+						</IconTabFilter>
+
+						<IconTabFilter key="usd" text="{i18n>marketPositionTabUsd}">
+							<t:Table id="positionUsdTable" rows="{ path: 'position>/usdRows', templateShareable: false }"
+								selectionMode="None" enableColumnReordering="false" fixedColumnCount="1"
+								noData="{i18n>marketPositionNoData}" class="sapUiSizeCondensed">
+								<t:rowMode><rowmodes:Auto minRowCount="3" maxRowCount="15" /></t:rowMode>
+								<t:extension>
+									<OverflowToolbar>
+										<Text text="{position>/openValueText}" wrapping="false" />
+										<ToolbarSpacer />
+										<Text text="{position>/spotText}" wrapping="false" />
+										<Button text="{i18n>marketPositionUsdContracts}" icon="sap-icon://lead" press=".onShowUsdContracts" />
+									</OverflowToolbar>
+								</t:extension>
+								<t:columns>
+				<t:Column width="8rem" label="{i18n>marketPositionColMaturity}">
+					<t:template><Label text="{ parts: ['position>year', 'position>month', 'position>isTotal'], formatter: '.maturityText' }" design="{= ${position>isTotal} ? 'Bold' : 'Standard' }" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="8rem" label="{i18n>marketPositionColReceivable}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>receivableUsd', formatter: 'pos.formatAmount' }" state="{ path: 'position>receivableUsd', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="8rem" label="{i18n>marketPositionColPayable}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>payableUsd', formatter: 'pos.formatAmount' }" state="{ path: 'position>payableUsd', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="8rem" label="{i18n>marketPositionColFxHedge}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>fxHedgeUsd', formatter: 'pos.formatSignedAmount' }" state="{ path: 'position>fxHedgeUsd', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="8rem" label="{i18n>marketPositionColUsdFutures}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>usdFuturesUsd', formatter: 'pos.formatSignedAmount' }" state="{ path: 'position>usdFuturesUsd', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="8rem" label="{i18n>marketPositionColNetUsd}" tooltip="{i18n>marketPositionColNetUsdTip}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>netUsd', formatter: 'pos.formatSignedAmount' }" state="{ path: 'position>netUsd', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="8rem" label="{i18n>marketPositionColCoveredUsd}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>coveredUsd', formatter: 'pos.formatAmount' }" state="{ path: 'position>coveredUsd', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="5.5rem" label="{i18n>marketPositionColHedge}" tooltip="{i18n>marketPositionColHedgeTip}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>hedgePercent', formatter: 'pos.formatPercent' }" state="{ path: 'position>hedgePercent', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="8rem" label="{i18n>marketPositionColNdfMtm}">
+					<t:template>
+						<ObjectNumber number="{ path: 'position>fxHedgeUnrealizedBrl', formatter: 'pos.formatAmount' }" state="{ path: 'position>fxHedgeUnrealizedBrl', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column width="11rem" label="{i18n>marketPositionColLimit}">
+					<t:template>
+						<ObjectStatus text="{ path: 'position>limitState', formatter: '.limitText' }" state="{ path: 'position>limitState', formatter: 'pos.limitStateValue' }"
+							tooltip="{ parts: ['position>maxLong', 'position>maxShort'], formatter: '.limitTooltip' }" />
+					</t:template>
+				</t:Column>
+								</t:columns>
+							</t:Table>
+						</IconTabFilter>
+
+						<IconTabFilter key="results" text="{i18n>marketPositionTabResults}">
+							<t:Table rows="{ path: 'position>/resultRows', templateShareable: false }" selectionMode="None" enableColumnReordering="false"
+								width="32rem" class="sapUiSizeCondensed">
+								<t:rowMode><rowmodes:Fixed rowCount="2" /></t:rowMode>
+								<t:columns>
+									<t:Column width="12rem" label="{i18n>marketPositionColResult}">
+										<t:template><Text text="{position>label}" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column hAlign="End" width="9rem" label="{i18n>marketPositionColUsd}">
+										<t:template><ObjectNumber number="{ path: 'position>usd', formatter: 'pos.formatAmount' }" state="{ path: 'position>usd', formatter: 'pos.signState' }" emphasized="false" /></t:template>
+									</t:Column>
+									<t:Column hAlign="End" width="9rem" label="{i18n>marketPositionColBrl}">
+										<t:template><ObjectNumber number="{ path: 'position>brl', formatter: 'pos.formatAmount' }" state="{ path: 'position>brl', formatter: 'pos.signState' }" emphasized="false" /></t:template>
+									</t:Column>
+								</t:columns>
+							</t:Table>
+							<Text text="{i18n>marketPositionResultsNote}" class="sapUiSmallMarginTop" />
+						</IconTabFilter>
+
+						<IconTabFilter key="ignored" text="{i18n>marketPositionTabIgnored}" count="{position>/ignoredCount}">
+							<t:Table rows="{ path: 'position>/ignored', templateShareable: false }" selectionMode="None" enableColumnReordering="false"
+								noData="{i18n>marketPositionIgnoredNoData}" class="sapUiSizeCondensed">
+								<t:rowMode><rowmodes:Auto minRowCount="3" maxRowCount="15" /></t:rowMode>
+								<t:columns>
+									<t:Column width="6rem" label="{i18n>marketPositionColSide}">
+										<t:template><Text text="{ path: 'position>side', formatter: '.sideText' }" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column width="9rem" label="{i18n>marketPositionColContract}">
+										<t:template><Link text="{position>contractCode}" press=".onOpenContract" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column width="9rem" label="{i18n>marketPositionColItem}">
+										<t:template><Text text="{position>itemCode}" wrapping="false" /></t:template>
+									</t:Column>
+									<t:Column minWidth="240" label="{i18n>marketPositionColReason}">
+										<t:template><Text text="{position>reason}" tooltip="{position>reason}" wrapping="false" /></t:template>
+									</t:Column>
+								</t:columns>
+							</t:Table>
+						</IconTabFilter>
+					</items>
+				</IconTabBar>
+			</VBox>
+		</content>
+	</Page>
+</mvc:View>

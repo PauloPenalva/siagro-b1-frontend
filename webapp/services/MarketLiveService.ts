@@ -47,3 +47,6 @@ export default new MarketLiveService();
 
 /** Instância da grade "Ordem de Compra". */
 export const marketPriceGridLive = new MarketLiveService();
+
+/** Instância do painel de posição. */
+export const marketPositionLive = new MarketLiveService();

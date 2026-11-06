@@ -1,0 +1,59 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:t="sap.ui.table" xmlns:rowmodes="sap.ui.table.rowmodes"
+	core:require="{ pos: 'siagrob1/helpers/MarketPositionHelpers' }">
+	<Dialog title="{drill>/title}" contentWidth="80rem" resizable="true" draggable="true">
+		<t:Table rows="{ path: 'drill>/rows', templateShareable: false }" selectionMode="None" enableColumnReordering="false"
+			noData="{drill>/noData}" busy="{drill>/busy}" class="sapUiSizeCondensed">
+			<t:rowMode><rowmodes:Auto minRowCount="5" maxRowCount="15" /></t:rowMode>
+			<t:columns>
+				<t:Column width="5.5rem" label="{i18n>marketPositionColSide}">
+					<t:template><Text text="{ path: 'drill>side', formatter: '.sideText' }" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column width="8rem" label="{i18n>marketPositionColContract}">
+					<t:template><Link text="{drill>contractCode}" press=".onOpenContract" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column width="12rem" label="{i18n>marketPositionColPartner}">
+					<t:template><Text text="{drill>cardName}" tooltip="{drill>cardName}" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column width="7rem" label="{i18n>marketPositionColItem}">
+					<t:template><Text text="{drill>itemCode}" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column width="6.5rem" label="{i18n>marketPositionColDeliveryEnd}">
+					<t:template><Text text="{ path: 'drill>deliveryEndDate', formatter: '.dateText' }" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="7.5rem" label="{i18n>marketPositionColFirmOpen}">
+					<t:template>
+						<ObjectNumber number="{ path: 'drill>firmOpenTons', formatter: 'pos.formatTons' }" state="{ path: 'drill>firmOpenTons', formatter: 'pos.signState' }" emphasized="false" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="6.5rem" label="{i18n>marketPositionColPricePerBag}">
+					<t:template>
+						<ObjectNumber number="{ path: 'drill>pricePerBag', formatter: 'pos.formatAmount' }" state="{ path: 'drill>pricePerBag', formatter: 'pos.signState' }" emphasized="false" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column width="4rem" label="{i18n>marketPositionColCurrency}">
+					<t:template><Text text="{ path: 'drill>currency', formatter: 'pos.currencyLabel' }" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column width="7rem" label="{i18n>marketPositionColInstrument}">
+					<t:template><Text text="{drill>marketInstrumentCode}" wrapping="false" /></t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="6.5rem" label="{i18n>marketPositionColExchangePrice}">
+					<t:template>
+						<ObjectNumber number="{ path: 'drill>marketExchangePrice', formatter: 'pos.formatAmount' }" state="{ path: 'drill>marketExchangePrice', formatter: 'pos.signState' }" emphasized="false" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column hAlign="End" width="6rem" label="{i18n>marketPositionColPremium}">
+					<t:template>
+						<ObjectNumber number="{ path: 'drill>marketPremium', formatter: 'pos.formatAmount' }" state="{ path: 'drill>marketPremium', formatter: 'pos.signState' }" emphasized="false" textAlign="End"></ObjectNumber>
+					</t:template>
+				</t:Column>
+				<t:Column width="5rem" hAlign="Center" label="{i18n>marketPositionColUsdLinked}">
+					<t:template><CheckBox selected="{drill>usdLinked}" displayOnly="true" /></t:template>
+				</t:Column>
+				<t:Column width="5.5rem" hAlign="Center" label="{i18n>marketPositionColFxLocked}">
+					<t:template><CheckBox selected="{drill>fxLocked}" displayOnly="true" /></t:template>
+				</t:Column>
+			</t:columns>
+		</t:Table>
+		<endButton><Button text="{i18n>marketPositionClose}" press=".onCloseBucketContracts" /></endButton>
+	</Dialog>
+</core:FragmentDefinition>

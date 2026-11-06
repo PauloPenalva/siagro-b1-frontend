@@ -974,6 +974,11 @@
           "target": "marketCounterpartiesEdit"
         },
         {
+          "pattern": "market/position",
+          "name": "marketPosition",
+          "target": "marketPosition"
+        },
+        {
           "pattern": "market/exposure-limits",
           "name": "marketExposureLimits",
           "target": "marketExposureLimits"
@@ -2718,6 +2723,12 @@
           "id": "marketCounterpartiesEdit",
           "level": 2,
           "name": "siagrob1.view.marketCounterparties.Edit",
+          "clearControlAggregation": true
+        },
+        "marketPosition": {
+          "id": "marketPosition",
+          "level": 1,
+          "name": "siagrob1.view.marketPosition.Main",
           "clearControlAggregation": true
         },
         "marketExposureLimits": {

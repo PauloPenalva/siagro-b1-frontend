@@ -180,6 +180,12 @@ export default {
   marketCommodities: 'odata/MarketCommodities',
   marketCommoditySamples: '/market/commodities/samples',
   marketExposureLimits: 'odata/MarketExposureLimits',
+  marketPosition: '/market/position',
+  marketPositionLive: '/market/position/live',
+  marketPositionContracts: (commodity: string, year?: number, month?: number): string =>
+    `/market/position/contracts?commodity=${encodeURIComponent(commodity)}${year != null && month != null ? `&year=${Number(year)}&month=${Number(month)}` : ""}`,
+  marketPositionUsdContracts: '/market/position/usd-contracts',
+  marketContractFxLock: (side: "purchase" | "sales", key: string): string => `/market/contracts/${side}/${encodeURIComponent(key)}/fx-lock`,
   shipmentReleases: 'odata/ShipmentReleases',
   salesShipmentReleases: 'odata/SalesShipmentReleases',
   processingCosts: 'odata/ProcessingCosts',
