@@ -1,4 +1,6 @@
 import MessageBox from "sap/m/MessageBox";
+import Input from "sap/m/Input";
+import { InputBase$ChangeEvent } from "sap/m/InputBase";
 import MessageToast from "sap/m/MessageToast";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
@@ -9,7 +11,8 @@ import SessionService from "siagrob1/services/SessionService";
 import { marketFetch, MarketResult, notFoundTextKey } from "siagrob1/helpers/MarketHelpers";
 import { EMPTY_LOOKUPS, loadMarketLookups } from "siagrob1/helpers/MarketLookups";
 import {
-  buildTradingSettingsPayload, MARKET_BOARD_APPROVE, MARKET_MANAGE, tradingSettingsToForm
+  buildTradingSettingsPayload, formatStrictDecimal, MARKET_BOARD_APPROVE, MARKET_MANAGE, numberErrorKey,
+  parseStrictDecimal, tradingSettingsToForm
 } from "siagrob1/helpers/MarketPricingHelpers";
 import { MarketTradingSettings, MarketTradingSettingsForm } from "siagrob1/types/MarketPricing";
 
@@ -71,8 +74,24 @@ export default class Main extends CommonController {
     }
   }
 
+  private markNumber(field: string, error?: "invalid" | "ambiguous"): void {
+    const input = this.byId(field) as Input;
+    input.setValueState(error ? "Error" : "None");
+    if (error) input.setValueStateText(this.text(numberErrorKey(error)));
+  }
+
+  /** Ao sair do campo: mostra o erro ou reescreve o valor como foi entendido. */
+  onNumberChange(ev: InputBase$ChangeEvent): void {
+    const input = ev.getSource();
+    const { value, error } = parseStrictDecimal(input.getValue());
+    this.markNumber(input.getId().split("--").pop(), error ?? (value !== null && value < 0 ? "invalid" : undefined));
+    if (!error && value !== null) input.setValue(formatStrictDecimal(value));
+  }
+
   async onSave(): Promise<void> {
-    const { payload } = buildTradingSettingsPayload(this.model().getData() as MarketTradingSettingsForm);
+    const { payload, errors } = buildTradingSettingsPayload(this.model().getData() as MarketTradingSettingsForm);
+    this.markNumber("boardApprovalVolumeTons", errors.boardApprovalVolumeTons);
+    this.markNumber("boardApprovalDeviationPercent", errors.boardApprovalDeviationPercent);
     if (!payload) {
       MessageBox.warning(this.text("marketTradingInvalid"));
       return;

@@ -1,6 +1,7 @@
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import Dialog from "sap/m/Dialog";
+import Input from "sap/m/Input";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
@@ -11,9 +12,10 @@ import BaseController from "../BaseController";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import { localIsoDate } from "siagrob1/helpers/DateHelpers";
-import { parseDecimalInput } from "siagrob1/helpers/MarketHelpers";
 import { EMPTY_LOOKUPS, loadMarketLookups, saveMarketChanges } from "siagrob1/helpers/MarketLookups";
-import { buildFreightRatesFilter, MARKET_MANAGE, municipalityLabel } from "siagrob1/helpers/MarketPricingHelpers";
+import {
+  buildFreightRatesFilter, formatStrictDecimal, MARKET_MANAGE, municipalityLabel, numberErrorKey, parseStrictDecimal
+} from "siagrob1/helpers/MarketPricingHelpers";
 import SessionService from "siagrob1/services/SessionService";
 import { MarketFreightRate, MarketFreightRatesFilter } from "siagrob1/types/MarketPricing";
 
@@ -98,6 +100,7 @@ export default class Main extends BaseController {
     this.editing = editing;
     this.rateModel().setData(form);
     this.dialog ??= await this.loadFragment({ name: "siagrob1.view.marketFreightRates.fragments.FreightRateDialog" }) as Dialog;
+    this.markRate();
     this.dialog.open();
   }
 
@@ -134,13 +137,30 @@ export default class Main extends BaseController {
       municipalityLabel(context.getProperty("Name") as string, context.getProperty("StateAbbreviation") as string));
   }
 
+  private markRate(error?: "invalid" | "ambiguous"): void {
+    const input = this.byId("freightRateValue") as Input;
+    input.setValueState(error ? "Error" : "None");
+    if (error) input.setValueStateText(this.text(numberErrorKey(error)));
+  }
+
+  /** Ao sair do campo: mostra o erro ou reescreve o valor como foi entendido (ex.: "1500.5" vira "1500,5"). */
+  onRateChange(): void {
+    const { value, error } = parseStrictDecimal(this.rateModel().getProperty("/ratePerTon") as string);
+    this.markRate(error);
+    if (!error && value !== null) this.rateModel().setProperty("/ratePerTon", formatStrictDecimal(value));
+  }
+
   onDialogCancel(): void {
     this.dialog?.close();
   }
 
   async onDialogSave(): Promise<void> {
     const form = this.rateModel().getData() as RateForm;
-    const rate = parseDecimalInput(form.ratePerTon);
+    const { value: rate, error } = parseStrictDecimal(form.ratePerTon);
+    if (error) {
+      this.markRate(error);
+      return;
+    }
     if (!form.municipalityCode || !form.destinationId || !(rate > 0) || !form.validFrom) {
       MessageBox.warning(this.text("marketFreightRateInvalid"));
       return;

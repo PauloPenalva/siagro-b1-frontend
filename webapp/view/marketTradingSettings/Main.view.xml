@@ -32,10 +32,12 @@
 					<f:FormContainer title="{i18n>marketTradingSectionBoard}">
 						<f:formElements>
 							<f:FormElement label="{i18n>marketTradingBoardVolume}">
-								<Input value="{form>/boardApprovalVolumeTons}" textAlign="End" editable="{form>/canBoard}" />
+								<Input id="boardApprovalVolumeTons" value="{form>/boardApprovalVolumeTons}" textAlign="End" editable="{form>/canBoard}"
+									change=".onNumberChange" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketTradingBoardDeviation}">
-								<Input value="{form>/boardApprovalDeviationPercent}" textAlign="End" editable="{form>/canBoard}" />
+								<Input id="boardApprovalDeviationPercent" value="{form>/boardApprovalDeviationPercent}" textAlign="End" editable="{form>/canBoard}"
+									change=".onNumberChange" />
 							</f:FormElement>
 						</f:formElements>
 					</f:FormContainer>

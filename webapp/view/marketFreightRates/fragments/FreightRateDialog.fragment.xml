@@ -24,7 +24,7 @@
 								</Select>
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketColRatePerTon}">
-								<Input value="{rate>/ratePerTon}" required="true" textAlign="End" />
+								<Input id="freightRateValue" value="{rate>/ratePerTon}" required="true" textAlign="End" change=".onRateChange" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketColValidFrom}">
 								<DatePicker core:require="{ StringType: 'sap/ui/model/type/String' }" value="{ path: 'rate>/validFrom', type: 'StringType' }" required="true"

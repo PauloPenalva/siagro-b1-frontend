@@ -62,6 +62,32 @@ export function priceLineError(line: MarketPriceTableLine, instruments: MarketIn
   return null;
 }
 
+export type StrictNumber = { value: number; error?: "invalid" | "ambiguous" };
+
+/**
+ * Leitura de número digitado nas telas de preço (pt-BR). Diferente de `parseDecimalInput` (terminal),
+ * recusa "1.500": sem vírgula e com um único ponto seguido de exatamente 3 dígitos não dá para saber
+ * se é milhar ou decimal (erro de 1000x em volume/dinheiro). Com vírgula, pontos são milhar
+ * ("1.500,25" = 1500,25); "1500", "1500.5" e "1,5" continuam válidos. Vazio = `null` sem erro.
+ */
+export function parseStrictDecimal(text: string): StrictNumber {
+  const raw = (text ?? "").trim();
+  if (!raw) return { value: null };
+  if (!raw.includes(",") && /^-?\d+\.\d{3}$/.test(raw)) return { value: null, error: "ambiguous" };
+  const value = parseDecimalInput(raw);
+  return Number.isNaN(value) ? { value: null, error: "invalid" } : { value };
+}
+
+/** Número no formato digitado pt-BR, sem separador de milhar (reler "1500,25" nunca é ambíguo). */
+export function formatStrictDecimal(value: number): string {
+  return value == null ? "" : value.toLocaleString("pt-BR", { useGrouping: false, maximumFractionDigits: 6 });
+}
+
+/** Chave de i18n do texto de erro de um número recusado. */
+export function numberErrorKey(error: "invalid" | "ambiguous"): string {
+  return error === "ambiguous" ? "marketNumberAmbiguous" : "marketInvalidNumber";
+}
+
 export function tradingSettingsToForm(settings?: Partial<MarketTradingSettings>): MarketTradingSettingsForm {
   const text = (value?: number): string => (value == null ? "" : String(value).replace(".", ","));
   return {
@@ -79,12 +105,18 @@ export function tradingSettingsToForm(settings?: Partial<MarketTradingSettings>)
  */
 export function buildTradingSettingsPayload(
   form: MarketTradingSettingsForm
-): { payload?: MarketTradingSettings; invalid: (keyof MarketTradingSettingsForm)[] } {
+): {
+  payload?: MarketTradingSettings;
+  invalid: (keyof MarketTradingSettingsForm)[];
+  errors: Partial<Record<keyof MarketTradingSettingsForm, "invalid" | "ambiguous">>;
+} {
   const invalid: (keyof MarketTradingSettingsForm)[] = [];
+  const errors: Partial<Record<keyof MarketTradingSettingsForm, "invalid" | "ambiguous">> = {};
   const number = (field: "boardApprovalVolumeTons" | "boardApprovalDeviationPercent"): number => {
-    const value = parseDecimalInput(form[field] ?? "");
-    if (value !== null && (Number.isNaN(value) || value < 0)) {
+    const { value, error } = parseStrictDecimal(form[field] ?? "");
+    if (error || (value !== null && value < 0)) {
       invalid.push(field);
+      errors[field] = error ?? "invalid";
       return null;
     }
     return value;
@@ -93,9 +125,10 @@ export function buildTradingSettingsPayload(
 
   const boardApprovalVolumeTons = number("boardApprovalVolumeTons");
   const boardApprovalDeviationPercent = number("boardApprovalDeviationPercent");
-  if (invalid.length) return { invalid };
+  if (invalid.length) return { invalid, errors };
   return {
     invalid,
+    errors,
     payload: {
       spotFxInstrumentCode: text(form.spotFxInstrumentCode),
       boardApprovalVolumeTons,

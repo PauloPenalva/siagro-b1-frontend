@@ -7,7 +7,7 @@ import { MarketQuote } from "siagrob1/types/MarketQuote";
 import { MarketInstrument } from "siagrob1/types/MarketInstrument";
 import {
   buildFreightRatesFilter, buildTradingSettingsPayload, curveInstrumentsOf, curveRequired, fxInstrumentsOf, municipalityLabel,
-  nextSortOrder, priceInstrumentsOf, priceLineError, quoteUnitOf, tradingSettingsToForm
+  formatStrictDecimal, nextSortOrder, parseStrictDecimal, priceInstrumentsOf, priceLineError, quoteUnitOf, tradingSettingsToForm
 } from "siagrob1/helpers/MarketPricingHelpers";
 
 QUnit.module("MarketHelpers - terminal de cotações");
@@ -249,4 +249,24 @@ QUnit.test("filtro de fretes monta $filter cru e escapa apóstrofo", function (a
   assert.strictEqual(
     buildFreightRatesFilter({ DestinationId: "3", ValidFrom: "2026-01-01", ValidTo: "2026-12-31" }),
     "DestinationId eq 3 and ValidFrom ge 2026-01-01 and ValidFrom le 2026-12-31");
+});
+
+QUnit.test("número digitado: 1.500 é ambíguo, vírgula manda, vazio e lixo", function (assert) {
+  assert.deepEqual(parseStrictDecimal("1.500"), { value: null, error: "ambiguous" });
+  assert.deepEqual(parseStrictDecimal("12.345"), { value: null, error: "ambiguous" });
+  assert.deepEqual(parseStrictDecimal("1.500,25"), { value: 1500.25 });
+  assert.deepEqual(parseStrictDecimal("1500.5"), { value: 1500.5 });
+  assert.deepEqual(parseStrictDecimal("1,5"), { value: 1.5 });
+  assert.deepEqual(parseStrictDecimal("1500"), { value: 1500 });
+  assert.deepEqual(parseStrictDecimal(""), { value: null });
+  assert.deepEqual(parseStrictDecimal("abc"), { value: null, error: "invalid" });
+  assert.strictEqual(formatStrictDecimal(1500.25), "1500,25");
+  assert.strictEqual(parseStrictDecimal(formatStrictDecimal(1500)).error, undefined);
+});
+
+QUnit.test("parâmetros: 1.500 nos limiares é recusado com o erro do campo", function (assert) {
+  const form = tradingSettingsToForm({});
+  const result = buildTradingSettingsPayload({ ...form, boardApprovalVolumeTons: "1.500" });
+  assert.strictEqual(result.payload, undefined);
+  assert.strictEqual(result.errors.boardApprovalVolumeTons, "ambiguous");
 });
