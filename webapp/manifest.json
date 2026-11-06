@@ -909,6 +909,31 @@
           "target": "logisticRegionsEdit"
         },
         {
+          "pattern": "market/quotes",
+          "name": "marketQuotesTerminal",
+          "target": "marketQuotesTerminal"
+        },
+        {
+          "pattern": "market/instruments",
+          "name": "marketInstruments",
+          "target": "marketInstruments"
+        },
+        {
+          "pattern": "market/instruments/new",
+          "name": "marketInstrumentsNew",
+          "target": "marketInstrumentsNew"
+        },
+        {
+          "pattern": "market/instruments/{id}/edit",
+          "name": "marketInstrumentsEdit",
+          "target": "marketInstrumentsEdit"
+        },
+        {
+          "pattern": "market/cma-settings",
+          "name": "marketCmaSettings",
+          "target": "marketCmaSettings"
+        },
+        {
           "pattern": "payment-conditions",
           "name": "paymentConditions",
           "target": "paymentConditions"
@@ -2517,6 +2542,36 @@
 					"name": "siagrob1.view.logisticRegions.Edit",
           "clearControlAggregation": true
 				},
+        "marketQuotesTerminal": {
+          "id": "marketQuotesTerminal",
+          "level": 1,
+          "name": "siagrob1.view.marketQuotesTerminal.Main",
+          "clearControlAggregation": true
+        },
+        "marketInstruments": {
+          "id": "marketInstruments",
+          "level": 1,
+          "name": "siagrob1.view.marketInstruments.Main",
+          "clearControlAggregation": true
+        },
+        "marketInstrumentsNew": {
+          "id": "marketInstrumentsNew",
+          "level": 2,
+          "name": "siagrob1.view.marketInstruments.Add",
+          "clearControlAggregation": true
+        },
+        "marketInstrumentsEdit": {
+          "id": "marketInstrumentsEdit",
+          "level": 2,
+          "name": "siagrob1.view.marketInstruments.Edit",
+          "clearControlAggregation": true
+        },
+        "marketCmaSettings": {
+          "id": "marketCmaSettings",
+          "level": 1,
+          "name": "siagrob1.view.marketCmaSettings.Main",
+          "clearControlAggregation": true
+        },
         "paymentConditions": {
           "id": "paymentConditions",
           "level": 1,

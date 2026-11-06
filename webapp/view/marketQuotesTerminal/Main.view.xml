@@ -1,0 +1,119 @@
+<mvc:View
+	controllerName="siagrob1.controller.marketQuotesTerminal.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:rowmodes="sap.ui.table.rowmodes"
+	xmlns:plugins="sap.ui.table.plugins"
+	core:require="{ market: 'siagrob1/helpers/MarketHelpers' }">
+
+	<!-- Quadro alimentado pelo SSE num JSONModel ("quotes"): a grade (sap.ui.table) é uma só,
+	     filtrada pela aba; os dados são trocados no lugar e cada preço carrega no modelo o descritor
+	     de piscada (flash/*), escrito no DOM por CustomData e animado pelo style.css. -->
+	<Page title="{i18n>marketTerminalTitle}" busy="{ui>/busy}" busyIndicatorDelay="0" enableScrolling="false">
+		<headerContent>
+			<ObjectStatus id="connectionStatus" text="{quotes>/statusText}" state="{quotes>/statusState}" inverted="true" />
+		</headerContent>
+		<content>
+			<!-- Coluna flexível: a grade ocupa a altura que sobra abaixo das abas (rowMode Auto). -->
+			<VBox fitContainer="true" renderType="Bare">
+			<MessageStrip text="{quotes>/moduleMessage}" type="Warning" showIcon="true"
+				visible="{quotes>/moduleDisabled}" class="sapUiSmallMargin" />
+			<IconTabBar id="groupTabs" selectedKey="{quotes>/selectedGroup}" select=".onGroupSelect"
+				items="{ path: 'quotes>/groups', templateShareable: false }" expandable="false"
+				applyContentPadding="false" visible="{= !${quotes>/moduleDisabled} }">
+				<items>
+					<IconTabFilter key="{quotes>key}" text="{quotes>text}" />
+				</items>
+			</IconTabBar>
+			<t:Table id="quotesTable" rows="{ path: 'quotes>/quotes', templateShareable: false }"
+				selectionBehavior="RowOnly"
+				alternateRowColors="true" enableColumnReordering="false" fixedColumnCount="1"
+				noData="{i18n>marketTerminalNoData}" visible="{= !${quotes>/moduleDisabled} }"
+				class="sapUiSizeCondensed siagroMarketTerminal">
+				<t:layoutData><FlexItemData growFactor="1" baseSize="0" /></t:layoutData>
+				<!-- Seleção pelo plugin (os métodos de seleção da Table são obsoletos no 1.141). -->
+				<t:dependents>
+					<plugins:MultiSelectionPlugin id="quotesSelection" selectionMode="Single"
+						selectionChange=".onSelectionChange" />
+				</t:dependents>
+				<t:rowMode>
+					<rowmodes:Auto minRowCount="8" />
+				</t:rowMode>
+				<t:columns>
+					<t:Column width="11rem" label="{i18n>marketColCode}">
+						<t:template><Text text="{quotes>code}" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column minWidth="144" label="{i18n>marketColDescription}">
+						<t:template><Text text="{quotes>description}" tooltip="{quotes>description}" wrapping="false" /></t:template>
+					</t:Column>
+					<t:Column hAlign="End" width="5.5rem" label="{i18n>marketColLast}">
+						<t:template>
+							<Text text="{ parts: ['quotes>last', 'quotes>isSettlement'], formatter: 'market.formatLast' }" wrapping="false">
+								<customData><core:CustomData key="market-flash" value="{ path: 'quotes>flash/last', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
+							</Text>
+						</t:template>
+					</t:Column>
+					<t:Column hAlign="End" width="5.5rem" label="{i18n>marketColBid}">
+						<t:template>
+							<Text text="{ path: 'quotes>bid', formatter: 'market.formatQuoteValue' }" wrapping="false">
+								<customData><core:CustomData key="market-flash" value="{ path: 'quotes>flash/bid', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
+							</Text>
+						</t:template>
+					</t:Column>
+					<t:Column hAlign="End" width="5.5rem" label="{i18n>marketColChange}">
+						<t:template>
+							<ObjectStatus text="{ path: 'quotes>changePercent', formatter: 'market.formatChangePercent' }"
+								state="{ path: 'quotes>changePercent', formatter: 'market.changePercentState' }" />
+						</t:template>
+					</t:Column>
+					<t:Column hAlign="End" width="5.5rem" label="{i18n>marketColHigh}">
+						<t:template>
+							<Text text="{ path: 'quotes>high', formatter: 'market.formatQuoteValue' }" wrapping="false">
+								<customData><core:CustomData key="market-flash" value="{ path: 'quotes>flash/high', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
+							</Text>
+						</t:template>
+					</t:Column>
+					<t:Column hAlign="End" width="5.5rem" label="{i18n>marketColLow}">
+						<t:template>
+							<Text text="{ path: 'quotes>low', formatter: 'market.formatQuoteValue' }" wrapping="false">
+								<customData><core:CustomData key="market-flash" value="{ path: 'quotes>flash/low', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
+							</Text>
+						</t:template>
+					</t:Column>
+					<t:Column hAlign="End" width="5.5rem" label="{i18n>marketColOpen}">
+						<t:template>
+							<Text text="{ path: 'quotes>open', formatter: 'market.formatQuoteValue' }" wrapping="false">
+								<customData><core:CustomData key="market-flash" value="{ path: 'quotes>flash/open', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
+							</Text>
+						</t:template>
+					</t:Column>
+					<t:Column hAlign="Center" width="3.5rem" label="{i18n>marketColSource}">
+						<t:template>
+							<core:Icon src="sap-icon://user-edit"
+								tooltip="{ parts: ['i18n>marketManualTooltip', 'i18n>marketManualByTooltip', 'quotes>userName'], formatter: 'market.manualTooltip' }"
+								visible="{ parts: ['quotes>source', 'quotes>manualOverride'], formatter: 'market.isManualQuote' }" />
+						</t:template>
+					</t:Column>
+					<t:Column hAlign="End" width="5.5rem" label="{i18n>marketColUpdated}">
+						<t:template><Text text="{ path: 'quotes>quotedAt', formatter: 'market.formatQuoteTime' }" wrapping="false" /></t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
+			</VBox>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<Button text="{i18n>marketReconnect}" icon="sap-icon://connected" press=".onReconnect"
+					visible="{quotes>/isAdmin}" />
+				<ToolbarSpacer />
+				<Button text="{i18n>marketManualQuote}" icon="sap-icon://edit" type="Emphasized" press=".onManualQuote"
+					enabled="{= !!${quotes>/selectedCode} }" />
+				<Button text="{i18n>marketReleaseQuote}" icon="sap-icon://undo" press=".onReleaseQuote"
+					enabled="{quotes>/selectedManual}" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

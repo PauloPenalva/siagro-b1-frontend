@@ -1,0 +1,47 @@
+<mvc:View
+	controllerName="siagrob1.controller.marketCmaSettings.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:f="sap.ui.layout.form">
+
+	<Page title="{i18n>marketCmaTitle}" busy="{ui>/busy}" busyIndicatorDelay="0">
+		<content>
+			<MessageStrip text="{cma>/moduleMessage}" type="Warning" showIcon="true"
+				visible="{cma>/moduleDisabled}" class="sapUiSmallMargin" />
+			<MessageStrip text="{i18n>marketCmaInfo}" type="Information" showIcon="true" class="sapUiSmallMargin"
+				visible="{= !${cma>/moduleDisabled} }" />
+			<f:Form id="cmaSettingsForm" editable="{cma>/isAdmin}" visible="{= !${cma>/moduleDisabled} }">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="2" />
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="{i18n>marketFieldActive}">
+								<Switch state="{cma>/enabled}" enabled="{cma>/isAdmin}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketCmaHost}">
+								<Input value="{cma>/host}" maxLength="200" editable="{cma>/isAdmin}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketCmaUser}">
+								<Input value="{cma>/userName}" maxLength="200" autocomplete="off" editable="{cma>/isAdmin}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketCmaPassword}">
+								<Input value="{cma>/password}" type="Password" maxLength="200" autocomplete="new-password"
+									editable="{cma>/isAdmin}" placeholder="{cma>/passwordPlaceholder}" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer />
+				<Button text="{i18n>commonSave}" type="Emphasized" icon="sap-icon://save" press=".onSave"
+					visible="{= ${cma>/isAdmin} &amp;&amp; !${cma>/moduleDisabled} }" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

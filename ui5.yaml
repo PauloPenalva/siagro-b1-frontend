@@ -71,6 +71,12 @@ server:
       mountPath: /scales
       configuration:
         baseUri: "http://localhost:5246/scales"
+    # /market também carrega SSE (cotações ao vivo): mesmo proxy de streaming do /scales.
+    - name: scales-sse-proxy
+      afterMiddleware: compression
+      mountPath: /market
+      configuration:
+        baseUri: "http://localhost:5246/market"
     - name: ui5-middleware-simpleproxy
       afterMiddleware: compression
       mountPath: /hangfire
