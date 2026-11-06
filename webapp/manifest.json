@@ -934,6 +934,51 @@
           "target": "marketCmaSettings"
         },
         {
+          "pattern": "market/destinations",
+          "name": "marketDestinations",
+          "target": "marketDestinations"
+        },
+        {
+          "pattern": "market/freight-rates",
+          "name": "marketFreightRates",
+          "target": "marketFreightRates"
+        },
+        {
+          "pattern": "market/price-tables",
+          "name": "marketPriceTables",
+          "target": "marketPriceTables"
+        },
+        {
+          "pattern": "market/price-tables/new",
+          "name": "marketPriceTablesNew",
+          "target": "marketPriceTablesNew"
+        },
+        {
+          "pattern": "market/price-tables/{id}",
+          "name": "marketPriceTablesEdit",
+          "target": "marketPriceTablesEdit"
+        },
+        {
+          "pattern": "market/trading-settings",
+          "name": "marketTradingSettings",
+          "target": "marketTradingSettings"
+        },
+        {
+          "pattern": "market/price-grid",
+          "name": "marketPriceGrid",
+          "target": "marketPriceGrid"
+        },
+        {
+          "pattern": "market/tickets",
+          "name": "marketTradeTickets",
+          "target": "marketTradeTickets"
+        },
+        {
+          "pattern": "market/tickets/{id}",
+          "name": "marketTradeTicketsDetail",
+          "target": "marketTradeTicketsDetail"
+        },
+        {
           "pattern": "payment-conditions",
           "name": "paymentConditions",
           "target": "paymentConditions"
@@ -2570,6 +2615,60 @@
           "id": "marketCmaSettings",
           "level": 1,
           "name": "siagrob1.view.marketCmaSettings.Main",
+          "clearControlAggregation": true
+        },
+        "marketDestinations": {
+          "id": "marketDestinations",
+          "level": 1,
+          "name": "siagrob1.view.marketDestinations.Main",
+          "clearControlAggregation": true
+        },
+        "marketFreightRates": {
+          "id": "marketFreightRates",
+          "level": 1,
+          "name": "siagrob1.view.marketFreightRates.Main",
+          "clearControlAggregation": true
+        },
+        "marketPriceTables": {
+          "id": "marketPriceTables",
+          "level": 1,
+          "name": "siagrob1.view.marketPriceTables.Main",
+          "clearControlAggregation": true
+        },
+        "marketPriceTablesNew": {
+          "id": "marketPriceTablesNew",
+          "level": 2,
+          "name": "siagrob1.view.marketPriceTables.Add",
+          "clearControlAggregation": true
+        },
+        "marketPriceTablesEdit": {
+          "id": "marketPriceTablesEdit",
+          "level": 2,
+          "name": "siagrob1.view.marketPriceTables.Edit",
+          "clearControlAggregation": true
+        },
+        "marketTradingSettings": {
+          "id": "marketTradingSettings",
+          "level": 1,
+          "name": "siagrob1.view.marketTradingSettings.Main",
+          "clearControlAggregation": true
+        },
+        "marketPriceGrid": {
+          "id": "marketPriceGrid",
+          "level": 1,
+          "name": "siagrob1.view.marketPriceGrid.Main",
+          "clearControlAggregation": true
+        },
+        "marketTradeTickets": {
+          "id": "marketTradeTickets",
+          "level": 1,
+          "name": "siagrob1.view.marketTradeTickets.Main",
+          "clearControlAggregation": true
+        },
+        "marketTradeTicketsDetail": {
+          "id": "marketTradeTicketsDetail",
+          "level": 2,
+          "name": "siagrob1.view.marketTradeTickets.Detail",
           "clearControlAggregation": true
         },
         "paymentConditions": {

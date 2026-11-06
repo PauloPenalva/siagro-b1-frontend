@@ -1,9 +1,15 @@
 import {
   changePercentState, connectionView, deviationPercent, extractGroups, formatChangePercent, formatLast, formatQuoteTime,
   formatQuoteValue, groupFromKey, groupKey, isManualQuote, manualTooltip, normalizeQuotes, notFoundTextKey,
-  NO_GROUP_KEY, parseDecimalInput, parseServerInstant, withFlashes, clearFlashes, flashAttr, FLASH_DURATION_MS
+  NO_GROUP_KEY, parseDecimalInput, parseServerInstant, withFlashes, clearFlashes, flashAttr, FLASH_DURATION_MS,
+  ticketActions
 } from "siagrob1/helpers/MarketHelpers";
 import { MarketQuote } from "siagrob1/types/MarketQuote";
+import { MarketInstrument } from "siagrob1/types/MarketInstrument";
+import {
+  buildFreightRatesFilter, buildTradingSettingsPayload, curveInstrumentsOf, curveRequired, fxInstrumentsOf, municipalityLabel,
+  formatStrictDecimal, nextSortOrder, parseStrictDecimal, priceInstrumentsOf, priceLineError, quoteUnitOf, tradingSettingsToForm
+} from "siagrob1/helpers/MarketPricingHelpers";
 
 QUnit.module("MarketHelpers - terminal de cotações");
 
@@ -173,4 +179,125 @@ QUnit.test("depois de clearFlashes nada é carregado adiante, mesmo dentro da ja
   const prev = withFlashes([q("A", 10)], [q("A", 11)], 1, 0);
   const rows = withFlashes(clearFlashes(prev), [q("A", 11)], 2, 100);
   assert.deepEqual(rows[0].flash, { last: "", bid: "", high: "", low: "", open: "" });
+});
+
+QUnit.module("MarketPricingHelpers - preço por cidade");
+
+QUnit.test("curva de dólar só é exigida para cotação em US$", function (assert) {
+  assert.strictEqual(curveRequired("UsCentsPerBushel"), true);
+  assert.strictEqual(curveRequired("UsdPerTon"), true);
+  assert.strictEqual(curveRequired("BrlPerBag"), false);
+  assert.strictEqual(curveRequired("BrlPerUsd"), false);
+  assert.strictEqual(curveRequired(undefined), false);
+});
+
+QUnit.test("listas de instrumentos separam preço, curva e dólar e ignoram inativos", function (assert) {
+  const all: MarketInstrument[] = [
+    { Code: "ZS", Type: "Future", QuoteUnit: "UsCentsPerBushel", Active: true },
+    { Code: "SOJA", Type: "Spot", QuoteUnit: "BrlPerBag", Active: true },
+    { Code: "OLD", Type: "Future", QuoteUnit: "BrlPerBag", Active: false },
+    { Code: "C30", Type: "CurvePoint", QuoteUnit: "BrlPerUsd", Active: true },
+    { Code: "DOL", Type: "Spot", QuoteUnit: "BrlPerUsd", Active: true },
+  ];
+  assert.deepEqual(priceInstrumentsOf(all).map((i) => i.Code), ["ZS", "SOJA", "DOL"]);
+  assert.deepEqual(curveInstrumentsOf(all).map((i) => i.Code), ["C30"]);
+  assert.deepEqual(fxInstrumentsOf(all).map((i) => i.Code), ["DOL"]);
+  assert.strictEqual(quoteUnitOf("ZS", all), "UsCentsPerBushel");
+  assert.strictEqual(quoteUnitOf("XX", all), undefined);
+});
+
+QUnit.test("rótulo do município e próxima ordem", function (assert) {
+  assert.strictEqual(municipalityLabel("Sorriso", "MT"), "Sorriso – MT");
+  assert.strictEqual(municipalityLabel("Sorriso", undefined), "Sorriso");
+  assert.strictEqual(municipalityLabel(undefined, "MT"), "");
+  assert.strictEqual(nextSortOrder([]), 10);
+  assert.strictEqual(nextSortOrder([{ SortOrder: 30 }, { SortOrder: 10 }]), 40);
+});
+
+QUnit.test("linha da tabela de preços: curva obrigatória só em US$", function (assert) {
+  const instruments: MarketInstrument[] = [
+    { Code: "ZS", QuoteUnit: "UsCentsPerBushel" }, { Code: "SOJA", QuoteUnit: "BrlPerBag" },
+  ];
+  const base = { Description: "Maio", InstrumentCode: "ZS", DestinationId: 1 };
+  assert.strictEqual(priceLineError({ ...base, Description: " " }, instruments), "marketLineDescriptionRequired");
+  assert.strictEqual(priceLineError({ ...base, InstrumentCode: "" }, instruments), "marketLineInstrumentRequired");
+  assert.strictEqual(priceLineError({ ...base, DestinationId: 0 }, instruments), "marketLineDestinationRequired");
+  assert.strictEqual(priceLineError(base, instruments), "marketLineCurveRequired");
+  assert.strictEqual(priceLineError({ ...base, FxCurveInstrumentCode: "C30" }, instruments), null);
+  assert.strictEqual(priceLineError({ ...base, InstrumentCode: "SOJA" }, instruments), null);
+});
+
+QUnit.test("parâmetros: vazio desliga, vírgula decimal vale, inválido bloqueia", function (assert) {
+  const form = tradingSettingsToForm({
+    spotFxInstrumentCode: "DOL", boardApprovalVolumeTons: 1500.5, boardApprovalDeviationPercent: null,
+    contractUnitOfMeasureCode: "KG", contractFreightUmCode: null,
+  });
+  assert.strictEqual(form.boardApprovalVolumeTons, "1500,5");
+  assert.strictEqual(form.boardApprovalDeviationPercent, "");
+  const ok = buildTradingSettingsPayload({ ...form, contractFreightUmCode: "  " });
+  assert.deepEqual(ok.payload, {
+    spotFxInstrumentCode: "DOL", boardApprovalVolumeTons: 1500.5, boardApprovalDeviationPercent: null,
+    contractUnitOfMeasureCode: "KG", contractFreightUmCode: null,
+  });
+  const bad = buildTradingSettingsPayload({ ...form, boardApprovalVolumeTons: "abc", boardApprovalDeviationPercent: "-1" });
+  assert.strictEqual(bad.payload, undefined);
+  assert.deepEqual(bad.invalid, ["boardApprovalVolumeTons", "boardApprovalDeviationPercent"]);
+});
+
+QUnit.test("filtro de fretes monta $filter cru e escapa apóstrofo", function (assert) {
+  assert.strictEqual(buildFreightRatesFilter({}), undefined);
+  assert.strictEqual(buildFreightRatesFilter({ MunicipalityName: " D'Oeste " }), "contains(Municipality/Name,'D''Oeste')");
+  assert.strictEqual(
+    buildFreightRatesFilter({ DestinationId: "3", ValidFrom: "2026-01-01", ValidTo: "2026-12-31" }),
+    "DestinationId eq 3 and ValidFrom ge 2026-01-01 and ValidFrom le 2026-12-31");
+});
+
+QUnit.test("número digitado: 1.500 é ambíguo, vírgula manda, vazio e lixo", function (assert) {
+  assert.deepEqual(parseStrictDecimal("1.500"), { value: null, error: "ambiguous" });
+  assert.deepEqual(parseStrictDecimal("12.345"), { value: null, error: "ambiguous" });
+  assert.deepEqual(parseStrictDecimal("1.500,25"), { value: 1500.25 });
+  assert.deepEqual(parseStrictDecimal("1500.5"), { value: 1500.5 });
+  assert.deepEqual(parseStrictDecimal("1,5"), { value: 1.5 });
+  assert.deepEqual(parseStrictDecimal("1500"), { value: 1500 });
+  assert.deepEqual(parseStrictDecimal(""), { value: null });
+  assert.deepEqual(parseStrictDecimal("abc"), { value: null, error: "invalid" });
+  assert.strictEqual(formatStrictDecimal(1500.25), "1500,25");
+  assert.strictEqual(parseStrictDecimal(formatStrictDecimal(1500)).error, undefined);
+});
+
+QUnit.test("parâmetros: 1.500 nos limiares é recusado com o erro do campo", function (assert) {
+  const form = tradingSettingsToForm({});
+  const result = buildTradingSettingsPayload({ ...form, boardApprovalVolumeTons: "1.500" });
+  assert.strictEqual(result.payload, undefined);
+  assert.strictEqual(result.errors.boardApprovalVolumeTons, "ambiguous");
+});
+
+QUnit.module("MarketHelpers - ticketActions");
+
+QUnit.test("pendente: aprovar e rejeitar pedem MARKET_TICKET_APPROVE", function (assert) {
+  const approver = { approve: true, boardApprove: false };
+  assert.deepEqual(ticketActions("Pending", approver, false), { approve: true, reject: true, cancel: true });
+  assert.deepEqual(ticketActions("pending", { approve: false, boardApprove: true }, false),
+    { approve: false, reject: false, cancel: false }, "alçada da diretoria não decide o 1º nível");
+});
+
+QUnit.test("aguardando diretoria: só quem tem MARKET_BOARD_APPROVE decide", function (assert) {
+  assert.deepEqual(ticketActions("PendingBoard", { approve: true, boardApprove: false }, false),
+    { approve: false, reject: false, cancel: true }, "aprovador comum só cancela");
+  assert.deepEqual(ticketActions("pendingBoard", { approve: false, boardApprove: true }, false),
+    { approve: true, reject: true, cancel: false });
+});
+
+QUnit.test("criador cancela a própria boleta em aberto, sem outras permissões", function (assert) {
+  const none = { approve: false, boardApprove: false };
+  assert.deepEqual(ticketActions("Pending", none, true), { approve: false, reject: false, cancel: true });
+  assert.deepEqual(ticketActions("PendingBoard", none, true), { approve: false, reject: false, cancel: true });
+  assert.deepEqual(ticketActions("Pending", none, false), { approve: false, reject: false, cancel: false });
+});
+
+QUnit.test("situações finais não têm ação, nem para administrador criador", function (assert) {
+  const all = { approve: true, boardApprove: true };
+  for (const status of ["Approved", "Rejected", "Canceled", "approved", "", undefined]) {
+    assert.deepEqual(ticketActions(status, all, true), { approve: false, reject: false, cancel: false }, String(status));
+  }
 });

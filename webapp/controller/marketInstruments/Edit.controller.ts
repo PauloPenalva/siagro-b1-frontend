@@ -5,6 +5,8 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Form from "sap/ui/layout/form/Form";
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
+import { MARKET_MANAGE } from "siagrob1/helpers/MarketPricingHelpers";
+import SessionService from "siagrob1/services/SessionService";
 import BaseController from "../BaseController";
 import { clearFieldStates, validateRequiredFields } from "siagrob1/helpers/FormValidation";
 
@@ -16,12 +18,13 @@ export default class Edit extends BaseController {
 
   onInit(): void {
     // O código é a chave: não se altera depois de gravado.
-    this.getView().setModel(new JSONModel({ isNew: false }), "form");
+    this.getView().setModel(new JSONModel({ isNew: false, canManage: false }), "form");
     this.getRouter().getRoute("marketInstrumentsEdit").attachPatternMatched((ev) => void this.editRouteMatched(ev));
   }
 
   private async editRouteMatched(ev: Route$MatchedEvent): Promise<void> {
     this.bundle ??= await this.getResourceBundle();
+    (this.getView().getModel("form") as JSONModel).setProperty("/canManage", SessionService.hasPermission(MARKET_MANAGE));
     clearFieldStates(this.byId("formMarketInstrument") as Form);
 
     const model = this.getView().getModel() as ODataModel;

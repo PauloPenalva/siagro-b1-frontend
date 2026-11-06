@@ -1,0 +1,127 @@
+<mvc:View
+	controllerName="siagrob1.controller.marketPriceGrid.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:rowmodes="sap.ui.table.rowmodes"
+	xmlns:plugins="sap.ui.table.plugins"
+	core:require="{ market: 'siagrob1/helpers/MarketHelpers', grid: 'siagrob1/helpers/MarketPriceGridHelpers' }">
+
+	<!-- Grade "Ordem de Compra": preço por cidade alimentado pelo SSE num JSONModel ("grid"). A piscada
+	     usa o mesmo CSS do terminal (classe siagroMarketTerminal) e o descritor flash/* de cada linha. -->
+	<Page title="{i18n>marketPriceGridTitle}" busy="{ui>/busy}" busyIndicatorDelay="0" enableScrolling="false">
+		<headerContent>
+			<ObjectStatus text="{grid>/cmaText}" state="{grid>/cmaState}" inverted="true" visible="{= !!${grid>/cmaText} }" class="sapUiSmallMarginEnd" />
+			<ObjectStatus text="{grid>/statusText}" state="{grid>/statusState}" inverted="true" />
+		</headerContent>
+		<content>
+			<VBox fitContainer="true" renderType="Bare">
+				<MessageStrip text="{grid>/moduleMessage}" type="Warning" showIcon="true"
+					visible="{grid>/moduleDisabled}" class="sapUiSmallMargin" />
+				<OverflowToolbar visible="{= !${grid>/moduleDisabled} }">
+					<Label text="{i18n>marketPriceGridHarvest}" labelFor="harvestInput" />
+					<Input id="harvestInput" width="14rem" value="{grid>/harvest}" description="{grid>/harvestName}"
+						showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".onPickHarvest" />
+					<Label text="{i18n>marketPriceGridCity}" labelFor="citySelect" />
+					<Select id="citySelect" width="16rem" forceSelection="false" selectedKey="{grid>/city}" change=".onCityChange"
+						items="{ path: 'grid>/cities', templateShareable: false }">
+						<core:Item key="{grid>code}" text="{grid>label}" />
+					</Select>
+				</OverflowToolbar>
+				<t:Table id="priceGridTable" rows="{ path: 'grid>/rows', templateShareable: false }"
+					selectionBehavior="RowOnly" alternateRowColors="true" enableColumnReordering="false" fixedColumnCount="1"
+					noData="{grid>/noDataText}" visible="{= !${grid>/moduleDisabled} }"
+					class="sapUiSizeCondensed siagroMarketTerminal">
+					<t:layoutData><FlexItemData growFactor="1" baseSize="0" /></t:layoutData>
+					<t:dependents>
+						<plugins:MultiSelectionPlugin id="priceGridSelection" selectionMode="Single"
+							selectionChange=".onSelectionChange" />
+					</t:dependents>
+					<t:rowMode>
+						<rowmodes:Auto minRowCount="8" />
+					</t:rowMode>
+					<t:columns>
+						<t:Column width="12rem" label="{i18n>marketGridColContract}">
+							<t:template><Text text="{grid>lineDescription}" tooltip="{grid>priceTableDescription}" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column width="10rem" label="{i18n>marketGridColItem}">
+							<t:template><Text text="{grid>itemName}" tooltip="{grid>itemCode}" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column width="9rem" label="{i18n>marketGridColDestination}">
+							<t:template><Text text="{grid>destinationName}" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column width="9rem" label="{i18n>marketGridColDelivery}">
+							<t:template><Text text="{ parts: ['grid>deliveryStartDate', 'grid>deliveryEndDate'], formatter: 'grid.formatDeliveryRange' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column width="6rem" label="{i18n>marketGridColPayment}">
+							<t:template><Text text="{ path: 'grid>paymentDate', formatter: 'grid.formatIsoDate' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column hAlign="End" width="6.5rem" label="{i18n>marketGridColPrice}">
+							<t:template>
+								<Text text="{ path: 'grid>price', formatter: 'grid.formatMoney' }" wrapping="false">
+									<customData><core:CustomData key="market-flash" value="{ path: 'grid>flash/price', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
+								</Text>
+							</t:template>
+						</t:Column>
+						<t:Column hAlign="End" width="6rem" label="{i18n>marketGridColPortPrice}">
+							<t:template>
+								<Text text="{ path: 'grid>portPrice', formatter: 'grid.formatMoney' }" wrapping="false">
+									<customData><core:CustomData key="market-flash" value="{ path: 'grid>flash/portPrice', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
+								</Text>
+							</t:template>
+						</t:Column>
+						<t:Column hAlign="End" width="6rem" label="{i18n>marketGridColExchange}">
+							<t:template>
+								<Text text="{ path: 'grid>exchangeQuote', formatter: 'market.formatQuoteValue' }" tooltip="{grid>instrumentCode}" wrapping="false">
+									<customData><core:CustomData key="market-flash" value="{ path: 'grid>flash/exchangeQuote', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
+								</Text>
+							</t:template>
+						</t:Column>
+						<t:Column hAlign="End" width="5rem" label="{i18n>marketColChange}">
+							<t:template>
+								<ObjectStatus text="{ path: 'grid>changePercent', formatter: 'market.formatChangePercent' }"
+									state="{ path: 'grid>changePercent', formatter: 'market.changePercentState' }" />
+							</t:template>
+						</t:Column>
+						<t:Column hAlign="End" width="5rem" label="{i18n>marketGridColPremium}">
+							<t:template><Text text="{ path: 'grid>premium', formatter: 'grid.formatPlain' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column hAlign="End" width="5.5rem" label="{i18n>marketGridColFx}">
+							<t:template>
+								<Text text="{ path: 'grid>netFx', formatter: 'grid.formatFx' }" wrapping="false">
+									<customData><core:CustomData key="market-flash" value="{ path: 'grid>flash/netFx', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
+								</Text>
+							</t:template>
+						</t:Column>
+						<t:Column hAlign="End" width="7rem" label="{i18n>marketGridColFxAt}">
+							<t:template><Text text="{ parts: [ { path: 'grid>fxQuotedAt', targetType: 'any' }, { path: 'grid>netFx', targetType: 'any' }, { path: 'grid>spotFx', targetType: 'any' } ], formatter: 'grid.fxQuotedColumn' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column hAlign="End" width="6rem" label="{i18n>marketGridColFreight}">
+							<t:template><Text text="{ path: 'grid>freightPerTon', formatter: 'grid.formatMoney' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column width="8rem" label="{i18n>marketGridColStatus}">
+							<t:template>
+								<ObjectStatus text="{ path: 'grid>status', formatter: '.statusText' }"
+									state="{ path: 'grid>status', formatter: 'grid.priceStatusState' }" />
+							</t:template>
+						</t:Column>
+						<t:Column hAlign="End" width="5.5rem" label="{i18n>marketColUpdated}">
+							<t:template><Text text="{ path: 'grid>quotedAt', formatter: 'market.formatQuoteTime' }" wrapping="false" /></t:template>
+						</t:Column>
+					</t:columns>
+				</t:Table>
+			</VBox>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer />
+				<Button text="{i18n>marketPriceBreakdown}" icon="sap-icon://list" press=".onShowBreakdown"
+					enabled="{= !!${grid>/selectedLineId} }" />
+				<Button text="{i18n>marketBuy}" icon="sap-icon://cart" type="Emphasized" press=".onBuy"
+					enabled="{grid>/selectedCanBuy}" />
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

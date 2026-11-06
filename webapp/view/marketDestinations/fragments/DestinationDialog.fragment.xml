@@ -1,0 +1,32 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<Dialog id="destinationDialog" title="{i18n>marketDestinationTitle}" contentWidth="26rem">
+		<content>
+			<f:Form id="destinationForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1" />
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="{i18n>marketFieldDestinationName}">
+								<Input id="destinationName" value="{dest>/Name}" required="true" maxLength="100" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketFieldActive}">
+								<Switch state="{dest>/Active}" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<beginButton>
+			<Button text="{i18n>commonSave}" type="Emphasized" press=".onDialogSave" />
+		</beginButton>
+		<endButton>
+			<Button text="{i18n>commonCancel}" press=".onDialogCancel" />
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

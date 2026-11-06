@@ -51,7 +51,7 @@
 					</t:Column>
 					<t:Column hAlign="End" width="5.5rem" label="{i18n>marketColLast}">
 						<t:template>
-							<Text text="{ parts: ['quotes>last', 'quotes>isSettlement'], formatter: 'market.formatLast' }" wrapping="false">
+							<Text text="{ parts: [ { path: 'quotes>last', targetType: 'any' }, { path: 'quotes>isSettlement', targetType: 'any' } ], formatter: 'market.formatLast' }" wrapping="false">
 								<customData><core:CustomData key="market-flash" value="{ path: 'quotes>flash/last', formatter: 'market.flashAttr' }" writeToDom="true" /></customData>
 							</Text>
 						</t:template>
@@ -94,7 +94,7 @@
 						<t:template>
 							<core:Icon src="sap-icon://user-edit"
 								tooltip="{ parts: ['i18n>marketManualTooltip', 'i18n>marketManualByTooltip', 'quotes>userName'], formatter: 'market.manualTooltip' }"
-								visible="{ parts: ['quotes>source', 'quotes>manualOverride'], formatter: 'market.isManualQuote' }" />
+								visible="{ parts: [ { path: 'quotes>source', targetType: 'any' }, { path: 'quotes>manualOverride', targetType: 'any' } ], formatter: 'market.isManualQuote' }" />
 						</t:template>
 					</t:Column>
 					<t:Column hAlign="End" width="5.5rem" label="{i18n>marketColUpdated}">
@@ -110,9 +110,9 @@
 					visible="{quotes>/isAdmin}" />
 				<ToolbarSpacer />
 				<Button text="{i18n>marketManualQuote}" icon="sap-icon://edit" type="Emphasized" press=".onManualQuote"
-					enabled="{= !!${quotes>/selectedCode} }" />
+					enabled="{= !!${quotes>/selectedCode} }" visible="{quotes>/canManage}" />
 				<Button text="{i18n>marketReleaseQuote}" icon="sap-icon://undo" press=".onReleaseQuote"
-					enabled="{quotes>/selectedManual}" />
+					enabled="{quotes>/selectedManual}" visible="{quotes>/canManage}" />
 			</OverflowToolbar>
 		</footer>
 	</Page>

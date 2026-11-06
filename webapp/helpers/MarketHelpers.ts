@@ -1,5 +1,5 @@
 import { readErrorMessage } from "siagrob1/helpers/FetchHelpers";
-import { FlashField, FlashMap, MarketQuote, MarketQuoteRow } from "siagrob1/types/MarketQuote";
+import { FlashField, MarketQuote, MarketQuoteRow } from "siagrob1/types/MarketQuote";
 
 /**
  * Funções puras do módulo Mercado (terminal de cotações) + a chamada REST com status HTTP.
@@ -54,6 +54,25 @@ export function formatQuoteTime(iso: string): string {
   const date = parseServerInstant(iso);
   if (Number.isNaN(date.getTime())) return EMPTY_VALUE;
   return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+const two = (n: number): string => String(n).padStart(2, "0");
+
+/** Data e hora locais (`dd/MM/yyyy HH:mm`) de um instante do servidor; ausente ou inválido vira "–". */
+export function formatInstantDateTime(iso: string): string {
+  if (!iso) return EMPTY_VALUE;
+  const d = parseServerInstant(iso);
+  if (Number.isNaN(d.getTime())) return EMPTY_VALUE;
+  return `${two(d.getDate())}/${two(d.getMonth() + 1)}/${d.getFullYear()} ${two(d.getHours())}:${two(d.getMinutes())}`;
+}
+
+/** Como "Atualizado": só a hora quando o instante é de hoje; de outro dia, data e hora. */
+export function formatQuoteMoment(iso: string, now: Date = new Date()): string {
+  if (!iso) return EMPTY_VALUE;
+  const d = parseServerInstant(iso);
+  if (Number.isNaN(d.getTime())) return EMPTY_VALUE;
+  const today = d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+  return today ? formatQuoteTime(iso) : formatInstantDateTime(iso);
 }
 
 /** Cotação lançada à mão: `source` Manual (string em qualquer caixa ou o número 1) ou override ativo. */
@@ -183,7 +202,7 @@ export function notFoundTextKey(moduleDisabled: boolean): string {
  * Erro de negócio é 400 com o texto puro no corpo.
  */
 export async function marketFetch<T = unknown>(
-  method: "GET" | "POST" | "PUT",
+  method: "GET" | "POST" | "PUT" | "DELETE",
   url: string,
   payload?: object
 ): Promise<MarketResult<T>> {
@@ -210,27 +229,40 @@ export const FLASH_FIELDS: FlashField[] = ["last", "bid", "high", "low", "open"]
 /** Duração da piscada em ms: deve ser igual à do `animation: ... 1s` em css/style.css. */
 export const FLASH_DURATION_MS = 1000;
 
-const noFlash = (): FlashMap => ({ last: "", bid: "", high: "", low: "", open: "" });
-const noFlashAt = (): Record<FlashField, number> => ({ last: 0, bid: 0, high: 0, low: 0, open: 0 });
+/** Linha com o descritor de piscada de cada campo (só no JSONModel, nunca vai ao servidor). */
+export type FlashedRow<T, F extends string> = T & { flash: Record<F, string>; flashAt?: Record<F, number> };
+
+function emptyFlash<F extends string, V>(fields: readonly F[], value: V): Record<F, V> {
+  const map = {} as Record<F, V>;
+  for (const field of fields) map[field] = value;
+  return map;
+}
 
 /**
- * Compara o quadro novo com o anterior (pelo código, nunca pela posição) e devolve as linhas com o
- * descritor de piscada de cada preço. `previous` nulo = linha de base (primeiro quadro do stream): nada
- * pisca. Só pisca quando os dois valores são números e diferem. A fase "a"/"b" alterna com `seq` para
- * o CSS trocar de keyframes e a animação reiniciar mesmo em duas altas seguidas. Um descritor ainda mais
- * novo que FLASH_DURATION_MS segue IDÊNTICO (o atributo no DOM não muda e a animação termina); `now`
- * vem de quem chama, para a função seguir pura.
+ * Núcleo genérico das piscadas: compara o quadro novo com o anterior pela CHAVE da linha (nunca pela
+ * posição) e devolve as linhas com o descritor de cada campo de `fields`. `previous` nulo = linha de base
+ * (primeiro quadro do stream): nada pisca. Só pisca quando os dois valores são números e diferem. A fase
+ * "a"/"b" alterna com `seq` para o CSS trocar de keyframes e a animação reiniciar mesmo em duas altas
+ * seguidas. Um descritor ainda mais novo que FLASH_DURATION_MS segue IDÊNTICO (o atributo no DOM não muda
+ * e a animação termina); `now` vem de quem chama, para a função seguir pura.
  */
-export function withFlashes(previous: (MarketQuote | MarketQuoteRow)[], next: MarketQuote[], seq: number, now: number): MarketQuoteRow[] {
-  const before = new Map((previous ?? []).map((p) => [p.code, p as MarketQuoteRow]));
+export function computeFlashes<T extends object, F extends string & keyof T, K>(
+  previous: T[],
+  next: T[],
+  keyOf: (row: T) => K,
+  fields: readonly F[],
+  seq: number,
+  now: number
+): FlashedRow<T, F>[] {
+  const before = new Map((previous ?? []).map((p) => [keyOf(p), p as FlashedRow<T, F>]));
   const phase = seq % 2 === 0 ? "b" : "a";
-  return (next ?? []).map((quote) => {
-    const flash = noFlash();
-    const flashAt = noFlashAt();
-    const old = previous ? before.get(quote.code) : undefined;
+  return (next ?? []).map((row) => {
+    const flash = emptyFlash(fields, "");
+    const flashAt = emptyFlash(fields, 0);
+    const old = previous ? before.get(keyOf(row)) : undefined;
     if (old) {
-      for (const field of FLASH_FIELDS) {
-        const a = old[field], b = quote[field];
+      for (const field of fields) {
+        const a = old[field] as unknown, b = row[field] as unknown;
         if (typeof a === "number" && typeof b === "number" && a !== b) {
           flash[field] = `${b > a ? "up" : "down"}-${phase}-${seq}`;
           flashAt[field] = now;
@@ -240,16 +272,53 @@ export function withFlashes(previous: (MarketQuote | MarketQuoteRow)[], next: Ma
         }
       }
     }
-    return { ...quote, flash, flashAt };
+    return { ...row, flash, flashAt };
   });
 }
 
-/** Troca de aba/refiltro: as linhas recicladas não podem repetir a piscada da linha anterior. */
+/** Posições (linha, campo) que ainda carregam um descritor de piscada; vazio = nada a limpar. */
+export function flashedCells<T extends object, F extends string>(rows: FlashedRow<T, F>[], fields: readonly F[]): { index: number; field: F }[] {
+  const cells: { index: number; field: F }[] = [];
+  (rows ?? []).forEach((row, index) => {
+    for (const field of fields) if (row?.flash?.[field]) cells.push({ index, field });
+  });
+  return cells;
+}
+
+/** Troca de filtro/aba/cidade: as linhas recicladas não podem repetir a piscada da linha anterior. */
+export function clearRowFlashes<T extends object, F extends string>(rows: T[], fields: readonly F[]): FlashedRow<T, F>[] {
+  return (rows ?? []).map((row) => ({ ...row, flash: emptyFlash(fields, ""), flashAt: emptyFlash(fields, 0) }));
+}
+
+/** Terminal de cotações: piscadas comparadas pelo `code` nos cinco preços de FLASH_FIELDS. */
+export function withFlashes(previous: (MarketQuote | MarketQuoteRow)[], next: MarketQuote[], seq: number, now: number): MarketQuoteRow[] {
+  return computeFlashes<MarketQuote, FlashField, string>(previous, next, (q) => q.code, FLASH_FIELDS, seq, now);
+}
+
+/** Troca de aba/refiltro do terminal. */
 export function clearFlashes(rows: MarketQuoteRow[]): MarketQuoteRow[] {
-  return (rows ?? []).map((row) => ({ ...row, flash: noFlash(), flashAt: noFlashAt() }));
+  return clearRowFlashes(rows, FLASH_FIELDS);
 }
 
 /** Valor do atributo data-market-flash: sempre string (linha vazia da grade não tem contexto). */
 export function flashAttr(value: unknown): string {
   return typeof value === "string" ? value : "";
+}
+
+/** Permissões do usuário que interessam à boleta (já com o bypass de administrador do SessionService). */
+export type TicketPermissions = { approve: boolean; boardApprove: boolean };
+
+export type TicketActions = { approve: boolean; reject: boolean; cancel: boolean };
+
+/**
+ * Quais botões a boleta mostra. Espelha o servidor (que é quem decide): `pending` pede MARKET_TICKET_APPROVE,
+ * `pendingBoard` pede MARKET_BOARD_APPROVE; cancelar vale para o criador ou para quem aprova no 1º nível.
+ * Aprovada, rejeitada e cancelada são finais. Aceita o status em PascalCase (OData) ou camelCase (REST).
+ */
+export function ticketActions(status: string, permissions: TicketPermissions, isCreator: boolean): TicketActions {
+  const none: TicketActions = { approve: false, reject: false, cancel: false };
+  const key = status ? status.charAt(0).toLowerCase() + status.slice(1) : "";
+  if (key !== "pending" && key !== "pendingBoard") return none;
+  const decide = key === "pending" ? permissions?.approve === true : permissions?.boardApprove === true;
+  return { approve: decide, reject: decide, cancel: isCreator === true || permissions?.approve === true };
 }

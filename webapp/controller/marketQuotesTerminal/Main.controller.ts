@@ -12,12 +12,13 @@ import ListBinding from "sap/ui/model/ListBinding";
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import { Router$BeforeRouteMatchedEvent } from "sap/ui/core/routing/Router";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
+import { MARKET_MANAGE } from "siagrob1/helpers/MarketPricingHelpers";
 import SessionService from "siagrob1/services/SessionService";
 import MarketLiveService from "siagrob1/services/MarketLiveService";
 import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import {
   connectionView, deviationPercent, extractGroups, groupFromKey, groupKey, MANUAL_DEVIATION_LIMIT, marketFetch,
-  MarketResult, normalizeQuotes, notFoundTextKey, parseDecimalInput, withFlashes, clearFlashes
+  FLASH_DURATION_MS, FLASH_FIELDS, flashedCells, MarketResult, normalizeQuotes, notFoundTextKey, parseDecimalInput, withFlashes, clearFlashes
 } from "siagrob1/helpers/MarketHelpers";
 import { ManualQuoteInput, MarketQuote, MarketQuoteRow, MarketQuotesPayload } from "siagrob1/types/MarketQuote";
 
@@ -55,11 +56,13 @@ export default class Main extends BaseController {
   /** Descarta resultado assíncrono de setSelectedIndex quando uma reposição mais nova já começou. */
   private selectionSyncSeq = 0;
   private flashSeq = 0;
+  /** Timer único que apaga as piscadas vencidas (quadros raros deixariam o atributo no DOM). */
+  private flashTimer?: ReturnType<typeof setTimeout>;
 
   onInit(): void {
     this.getView().setModel(new JSONModel({
       quotes: [], groups: [], selectedGroup: "", moduleMessage: "", selectedCode: "", selectedManual: false,
-      statusText: "", statusState: "None", isAdmin: false, moduleDisabled: false,
+      statusText: "", statusState: "None", isAdmin: false, canManage: false, moduleDisabled: false,
     }), "quotes");
     this.getView().setModel(new JSONModel({}), "manual");
 
@@ -69,12 +72,14 @@ export default class Main extends BaseController {
 
   onExit(): void {
     this.getRouter().detachBeforeRouteMatched(this.onBeforeRouteMatched, this);
+    this.cancelFlashTimer();
     MarketLiveService.stop();
   }
 
   // Campo arrow (não getter): a mesma referência serve para attach e detach.
   private readonly onBeforeRouteMatched = (ev: Router$BeforeRouteMatchedEvent): void => {
     if (ev.getParameter("name") !== ROUTE) {
+      this.cancelFlashTimer();
       MarketLiveService.stop();
     }
   };
@@ -90,6 +95,7 @@ export default class Main extends BaseController {
   private async enter(): Promise<void> {
     this.bundle ??= await this.getResourceBundle();
     this.model().setProperty("/isAdmin", SessionService.hasRole("ADMIN"));
+    this.model().setProperty("/canManage", SessionService.hasPermission(MARKET_MANAGE));
     this.model().setProperty("/moduleDisabled", false);
     this.browserDisconnected = false;
     // Na volta à rota a view é a mesma: reaplica o filtro da aba no primeiro quadro recebido.
@@ -117,7 +123,7 @@ export default class Main extends BaseController {
     this.updateStatus();
     // Primeiro quadro de cada start() é linha de base: entrar na tela não faz nada piscar.
     this.previousQuotes = null;
-    MarketLiveService.start({
+    MarketLiveService.start<MarketQuotesPayload>(ServerRoutes.marketQuotesLive, {
       onData: (payload) => this.onPayload(payload),
       onConnectionChange: (disconnected) => {
         this.browserDisconnected = disconnected;
@@ -175,6 +181,27 @@ export default class Main extends BaseController {
     model.setProperty("/quotes", rows);
     this.refreshSelectedManual();
     this.syncTableSelection();
+    this.scheduleFlashExpiry();
+  }
+
+  private cancelFlashTimer(): void {
+    clearTimeout(this.flashTimer);
+    this.flashTimer = undefined;
+  }
+
+  /** Passada a duração da animação, limpa o atributo das linhas atuais (limpar não pisca: o atributo vira vazio). */
+  private scheduleFlashExpiry(): void {
+    this.cancelFlashTimer();
+    this.flashTimer = setTimeout(() => {
+      this.flashTimer = undefined;
+      // Só os descritores, no lugar: o array de cotações não muda e o plugin de seleção não limpa a seleção.
+      const model = this.model();
+      const cells = flashedCells(model.getProperty("/quotes") as MarketQuoteRow[], FLASH_FIELDS);
+      for (const { index, field } of cells) {
+        model.setProperty(`/quotes/${index}/flash/${field}`, "");
+        model.setProperty(`/quotes/${index}/flashAt/${field}`, 0);
+      }
+    }, FLASH_DURATION_MS);
   }
 
   private applyGroupFilter(key: string): void {

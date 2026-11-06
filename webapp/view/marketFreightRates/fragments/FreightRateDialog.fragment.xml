@@ -1,0 +1,45 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+	<Dialog id="freightRateDialog" title="{rate>/title}" contentWidth="30rem">
+		<content>
+			<MessageStrip text="{i18n>marketFreightRateEditHint}" type="Information" showIcon="true"
+				visible="{= !${rate>/isNew} }" class="sapUiTinyMargin" />
+			<f:Form id="freightRateForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1" />
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer>
+						<f:formElements>
+							<f:FormElement label="{i18n>marketFilterMunicipality}">
+								<Input value="{rate>/municipalityLabel}" required="true" showValueHelp="true" valueHelpOnly="true"
+									valueHelpRequest=".onPickMunicipality" editable="{rate>/isNew}" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColDestination}">
+								<Select forceSelection="false" required="true" selectedKey="{rate>/destinationId}" editable="{rate>/isNew}"
+									items="{ path: 'lookup>/destinations', templateShareable: false }">
+									<core:Item key="{lookup>Id}" text="{lookup>Name}" />
+								</Select>
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColRatePerTon}">
+								<Input id="freightRateValue" value="{rate>/ratePerTon}" required="true" textAlign="End" change=".onRateChange" />
+							</f:FormElement>
+							<f:FormElement label="{i18n>marketColValidFrom}">
+								<DatePicker core:require="{ StringType: 'sap/ui/model/type/String' }" value="{ path: 'rate>/validFrom', type: 'StringType' }" required="true"
+									displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+		</content>
+		<beginButton>
+			<Button text="{i18n>commonSave}" type="Emphasized" press=".onDialogSave" />
+		</beginButton>
+		<endButton>
+			<Button text="{i18n>commonCancel}" press=".onDialogCancel" />
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>
