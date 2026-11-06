@@ -94,11 +94,18 @@ export default class CommodityBaseController extends BaseController {
   }
 
   /** Completa o mapa com os meses de entrega que faltam (cadastro novo: os 12). */
-  protected fillMissingMonths(): void {
+  protected fillMissingMonths(atStart = false): void {
     const binding = this.monthsBinding();
     if (!binding) return;
     const rows = binding.getAllCurrentContexts().map((context) => context.getObject() as CommodityMonthRow);
-    for (const month of missingDeliveryMonths(rows)) binding.create(defaultCommodityMonth(month), false, true, false);
+    const missing = missingDeliveryMonths(rows);
+    if (atStart) {
+      // Cadastro NOVO: a lista ainda não tem comprimento conhecido e criar "no fim" estoura na UI5 ("Must know the
+      // final length to create at the end"). Criar no início, do último mês para o primeiro, deixa janeiro no topo.
+      for (const month of [...missing].reverse()) binding.create(defaultCommodityMonth(month), false, false, false);
+      return;
+    }
+    for (const month of missing) binding.create(defaultCommodityMonth(month), false, true, false);
   }
 
   onAddItem(): void {

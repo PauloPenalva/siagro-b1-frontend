@@ -27,7 +27,7 @@ export default class Add extends CommodityBaseController {
     }, true, false, false);
     this.getView().setBindingContext(context);
     // Cadastro novo já nasce com os 12 meses de entrega (entrega no mês M → vencimento M, mesmo ano).
-    this.fillMissingMonths();
+    this.fillMissingMonths(true);
   }
 
   onExit(): void {
