@@ -29,7 +29,11 @@
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketCmaPassword}">
 								<Input value="{cma>/password}" type="Password" maxLength="200" autocomplete="new-password"
-									editable="{cma>/isAdmin}" placeholder="{cma>/passwordPlaceholder}" />
+									editable="{= ${cma>/isAdmin} &amp;&amp; !${cma>/blankPassword} }" placeholder="{cma>/passwordPlaceholder}" />
+							</f:FormElement>
+							<f:FormElement label="">
+								<CheckBox text="{i18n>marketCmaBlankPassword}" selected="{cma>/blankPassword}"
+									editable="{cma>/isAdmin}" select=".onBlankPasswordToggle" />
 							</f:FormElement>
 						</f:formElements>
 					</f:FormContainer>

@@ -42,6 +42,8 @@ export type ManualQuoteInput = {
 
 /** `CmaSettingsView` / `CmaSettingsInput`. */
 export type CmaSettings = {
+  /** A conta da CMA não tem senha (senha em branco gravada de propósito). */
+  blankPassword?: boolean;
   enabled: boolean;
   host: string;
   userName: string;
