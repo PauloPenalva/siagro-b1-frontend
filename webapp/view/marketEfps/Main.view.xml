@@ -1,0 +1,106 @@
+<mvc:View
+	controllerName="siagrob1.controller.marketEfps.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:rowmodes="sap.ui.table.rowmodes"
+	xmlns:f="sap.f"
+	core:require="{ hedge: 'siagrob1/helpers/MarketHedgeHelpers', efp: 'siagrob1/helpers/MarketEfpHelpers' }">
+	<!-- EFP (troca de futuro por físico): grade OData só leitura, gravação por REST. As linhas são ligadas por código (bindRows)
+	     depois de resolver o i18n: os formatters de enum leem o bundle. O EFP fixa o preço do contrato e registra a perna de bolsa. -->
+	<f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}" fitContent="true">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="{i18n>marketEfpTitle}" />
+				</f:heading>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:content>
+			<VBox fitContainer="true" renderType="Bare">
+				<t:Table
+					id="tableEfps"
+					core:require="{ EdmDate: 'sap/ui/model/odata/type/Date' }"
+					busyIndicatorDelay="0"
+					selectionMode="Single"
+					selectionBehavior="Row"
+					class="sapUiSizeCondensed"
+					enableBusyIndicator="true"
+					alternateRowColors="true"
+					enableColumnReordering="false"
+					fixedColumnCount="1"
+					noData="{i18n>marketEfpNoData}"
+					rowSelectionChange=".onSelectionChange"
+					rowsUpdated=".onSelectionChange">
+					<t:layoutData><FlexItemData growFactor="1" baseSize="0" /></t:layoutData>
+					<t:extension>
+						<OverflowToolbar>
+							<Button icon="sap-icon://refresh" tooltip="{i18n>commonRefresh}" press=".onRefresh" />
+							<ToolbarSpacer />
+							<Button text="{i18n>marketEfpNew}" icon="sap-icon://add" type="Emphasized" press=".onCreate" visible="{view>/canManage}" />
+							<Button text="{i18n>marketEfpResume}" icon="sap-icon://process" press=".onResume" visible="{view>/canManage}"
+								enabled="{sel>/canResume}" tooltip="{i18n>marketEfpResumeHint}" />
+							<Button text="{i18n>marketEfpCancel}" icon="sap-icon://undo" press=".onCancelEfp" visible="{view>/canManage}"
+								enabled="{sel>/canCancel}" />
+							<Button text="{i18n>marketEfpOpenContract}" icon="sap-icon://navigation-right-arrow" press=".onOpenContract"
+								enabled="{sel>/hasContract}" />
+						</OverflowToolbar>
+					</t:extension>
+					<t:rowMode>
+						<rowmodes:Auto minRowCount="8" />
+					</t:rowMode>
+					<t:columns>
+						<t:Column label="{i18n>marketColNumber}" hAlign="End" sortProperty="Id" width="6rem">
+							<t:template><Text text="{Id}" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColDate}" sortProperty="Date" width="8rem">
+							<t:template>
+								<Text text="{ path: 'Date', type: 'EdmDate', formatOptions: { pattern: 'dd/MM/yyyy' } }" wrapping="false" />
+							</t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColContract}" sortProperty="ContractCode" width="11rem">
+							<t:template><Text text="{ContractCode}" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColVolumeBags}" hAlign="End" sortProperty="VolumeKg" width="9rem">
+							<t:template><Text text="{ path: 'VolumeKg', targetType: 'any', formatter: 'efp.formatBags' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColInstrument}" sortProperty="InstrumentCode" width="9rem">
+							<t:template><Text text="{InstrumentCode}" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColSide}" sortProperty="Side" width="6rem">
+							<t:template><Text text="{ path: 'Side', targetType: 'any', formatter: '.sideText' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColLots}" hAlign="End" sortProperty="Lots" width="6rem">
+							<t:template><Text text="{ path: 'Lots', targetType: 'any', formatter: 'hedge.formatLots' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColPrice}" hAlign="End" sortProperty="Price" width="9rem">
+							<t:template><Text text="{ path: 'Price', targetType: 'any', formatter: 'hedge.formatPrice' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColFixationPerBag}" hAlign="End" sortProperty="FixationPrice" width="11rem">
+							<t:template><Text text="{ path: 'FixationPrice', targetType: 'any', formatter: 'efp.formatFixationPerBag' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColStatus}" sortProperty="Status" width="9rem">
+							<t:template>
+								<ObjectStatus text="{ path: 'Status', targetType: 'any', formatter: '.statusText' }"
+									state="{ path: 'Status', targetType: 'any', formatter: 'efp.efpStatusState' }" />
+							</t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColAccount}" width="16rem">
+							<t:template>
+								<Text wrapping="false"
+									text="{ parts: [ { path: 'Account/Counterparty/Name', targetType: 'any' }, { path: 'Account/Code', targetType: 'any' } ], formatter: 'hedge.accountLabel' }" />
+							</t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColFinancialDue}" sortProperty="FinancialDueDate" width="9rem">
+							<t:template>
+								<Text text="{ path: 'FinancialDueDate', type: 'EdmDate', formatOptions: { pattern: 'dd/MM/yyyy' } }" wrapping="false" />
+							</t:template>
+						</t:Column>
+					</t:columns>
+				</t:Table>
+			</VBox>
+		</f:content>
+	</f:DynamicPage>
+</mvc:View>

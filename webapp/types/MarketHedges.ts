@@ -120,3 +120,111 @@ export type MarketFuturesRealized = {
   realizedPnl?: number;
   currency?: string;
 };
+
+/** Entidade OData `MarketFxHedges` (chave `Id`), só leitura; `TradeDate`/`SettlementDate` são `Edm.Date`. */
+export type MarketFxHedge = {
+  Id?: number;
+  TradedAt?: string;
+  TradeDate?: string;
+  AccountId?: number;
+  Kind?: string;
+  Side?: string;
+  AmountUsd?: number | string;
+  ContractedRate?: number | string;
+  SettlementDate?: string;
+  Status?: string;
+  SettlementRate?: number | string;
+  SettledAt?: string;
+  RealizedPnlBrl?: number | string;
+  BankReference?: string;
+  Confirmed?: boolean;
+  PurchaseContractKey?: string;
+  SalesContractKey?: string;
+  ContractCode?: string;
+  Notes?: string;
+  Account?: MarketCounterpartyAccount;
+};
+
+/** Corpo do POST/PUT `/market/fx-hedges` (enums em camelCase, data em UTC com `Z`, liquidação `yyyy-MM-dd`). */
+export type MarketFxHedgePayload = {
+  tradedAt: string;
+  accountId: number;
+  kind: string;
+  side: string;
+  amountUsd: number;
+  contractedRate: number;
+  settlementDate: string;
+  bankReference: string;
+  purchaseContractKey: string;
+  salesContractKey: string;
+  notes: string;
+};
+
+/** Resposta de `GET /market/fx-hedges/{id}/suggested-rate`. */
+export type MarketSuggestedRate = {
+  rate?: number;
+  source?: "dailyClose" | "lastQuote";
+  date?: string;
+};
+
+/** Entidade OData `MarketEfps` (chave `Id`), só leitura. */
+export type MarketEfp = {
+  Id?: number;
+  Date?: string;
+  AccountId?: number;
+  InstrumentCode?: string;
+  Side?: string;
+  Lots?: number;
+  Price?: number | string;
+  Premium?: number | string;
+  FxRate?: number | string;
+  ContractSide?: string;
+  ContractKey?: string;
+  ContractCode?: string;
+  VolumeKg?: number | string;
+  FixationPrice?: number | string;
+  FinancialDueDate?: string;
+  FuturesTradeId?: number;
+  FixationKey?: string;
+  Status?: string;
+  Notes?: string;
+  Account?: MarketCounterpartyAccount;
+  Instrument?: { Code?: string; QuoteUnit?: string };
+};
+
+/** Contrato a fixar de `GET /market/efps/contracts`. */
+export type MarketEfpContract = {
+  key?: string;
+  code?: string;
+  cardName?: string;
+  itemName?: string;
+  currency?: string;
+  availableToPriceKg?: number;
+  standardCashFlowDate?: string;
+};
+
+/** Corpo do POST `/market/efps/preview` e `/market/efps`. */
+export type MarketEfpPayload = {
+  date: string;
+  accountId: number;
+  instrumentCode: string;
+  side: string;
+  lots: number;
+  price: number;
+  premium: number;
+  fxRate: number;
+  contractSide: string;
+  contractKey: string;
+  volumeKg: number;
+  financialDueDate: string;
+  notes: string;
+};
+
+/** Resposta de `POST /market/efps/preview`. */
+export type MarketEfpPreview = {
+  fixationPricePerKg?: number;
+  fixationPricePerBag?: number;
+  currency?: string;
+  tonsFutures?: number;
+  tonsPhysical?: number;
+};

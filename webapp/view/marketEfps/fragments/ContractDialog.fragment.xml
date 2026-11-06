@@ -1,0 +1,35 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+	<!-- Contratos aprovados a fixar com saldo (REST): a busca vai ao servidor, não filtra a lista local. -->
+	<TableSelectDialog
+		id="efpContractDialog"
+		core:require="{ efp: 'siagrob1/helpers/MarketEfpHelpers', hedge: 'siagrob1/helpers/MarketHedgeHelpers' }"
+		title="{i18n>marketEfpContractsTitle}"
+		noDataText="{i18n>marketEfpContractsNoData}"
+		busy="{contracts>/busy}"
+		busyIndicatorDelay="0"
+		items="{ path: 'contracts>/rows', templateShareable: false }"
+		search=".onContractSearch"
+		confirm=".onContractConfirm"
+		cancel=".onContractCancel">
+		<columns>
+			<Column><header><Text text="{i18n>marketColContract}" /></header></Column>
+			<Column><header><Text text="{i18n>marketColPartner}" /></header></Column>
+			<Column><header><Text text="{i18n>marketColProduct}" /></header></Column>
+			<Column hAlign="Center"><header><Text text="{i18n>marketColCurrency}" /></header></Column>
+			<Column hAlign="End"><header><Text text="{i18n>marketColBagsToPrice}" /></header></Column>
+			<Column><header><Text text="{i18n>marketColPaymentForecast}" /></header></Column>
+		</columns>
+		<ColumnListItem>
+			<cells>
+				<Text text="{contracts>code}" wrapping="false" />
+				<Text text="{contracts>cardName}" wrapping="false" />
+				<Text text="{contracts>itemName}" wrapping="false" />
+				<Text text="{contracts>currency}" wrapping="false" />
+				<Text text="{ path: 'contracts>availableToPriceKg', formatter: 'efp.formatBags' }" wrapping="false" />
+				<Text text="{ path: 'contracts>standardCashFlowDate', formatter: 'hedge.formatIsoDate' }" wrapping="false" />
+			</cells>
+		</ColumnListItem>
+	</TableSelectDialog>
+</core:FragmentDefinition>

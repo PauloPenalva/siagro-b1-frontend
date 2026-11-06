@@ -1,0 +1,161 @@
+<mvc:View
+	controllerName="siagrob1.controller.marketFxHedges.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
+	xmlns:rowmodes="sap.ui.table.rowmodes"
+	xmlns:f="sap.f"
+	xmlns:fb="sap.ui.comp.filterbar"
+	core:require="{ hedge: 'siagrob1/helpers/MarketHedgeHelpers', fx: 'siagrob1/helpers/MarketFxHedgeHelpers' }">
+	<!-- Hedge de moeda (NDF/termo): grade OData só leitura, gravação por REST. As linhas são ligadas por código (bindRows)
+	     depois de resolver o i18n: os formatters de enum leem o bundle. O sistema só REGISTRA: nada aqui fala com o banco. -->
+	<f:DynamicPage busyIndicatorDelay="0" busy="{ui>/busy}" fitContent="true">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="{i18n>marketFxTitle}" />
+				</f:heading>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:content>
+			<VBox fitContainer="true" renderType="Bare">
+				<fb:FilterBar id="fxFb" search=".onSearch" showClearOnFB="true" clear=".onClearFilters">
+					<fb:filterGroupItems>
+						<fb:FilterGroupItem name="status" label="{i18n>marketColStatus}" groupName="G" visibleInFilterBar="true">
+							<fb:control>
+								<Select selectedKey="{filter>/Status}">
+									<core:Item key="recent" text="{i18n>marketFxFilterRecent}" />
+									<core:Item key="Open" text="{i18n>marketFxStatus_open}" />
+									<core:Item key="Settled" text="{i18n>marketFxStatus_settled}" />
+									<core:Item key="Canceled" text="{i18n>marketFxStatus_canceled}" />
+									<core:Item key="all" text="{i18n>marketFxFilterAll}" />
+								</Select>
+							</fb:control>
+						</fb:FilterGroupItem>
+						<fb:FilterGroupItem name="account" label="{i18n>marketColBankAccount}" groupName="G" visibleInFilterBar="true">
+							<fb:control>
+								<Select forceSelection="false" selectedKey="{filter>/AccountId}" items="{ path: 'lookup>/accountsAll', templateShareable: false }">
+									<core:Item key="{lookup>id}" text="{lookup>label}" />
+								</Select>
+							</fb:control>
+						</fb:FilterGroupItem>
+						<fb:FilterGroupItem name="from" label="{i18n>marketFxFilterSettleFrom}" groupName="G" visibleInFilterBar="true">
+							<fb:control>
+								<DatePicker core:require="{ StringType: 'sap/ui/model/type/String' }" value="{ path: 'filter>/SettleFrom', type: 'StringType' }"
+									displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+							</fb:control>
+						</fb:FilterGroupItem>
+						<fb:FilterGroupItem name="to" label="{i18n>marketFxFilterSettleTo}" groupName="G" visibleInFilterBar="true">
+							<fb:control>
+								<DatePicker core:require="{ StringType: 'sap/ui/model/type/String' }" value="{ path: 'filter>/SettleTo', type: 'StringType' }"
+									displayFormat="dd/MM/yyyy" valueFormat="yyyy-MM-dd" />
+							</fb:control>
+						</fb:FilterGroupItem>
+					</fb:filterGroupItems>
+				</fb:FilterBar>
+				<t:Table
+					id="tableFxHedges"
+					core:require="{ DateTimeOffset: 'sap/ui/model/odata/type/DateTimeOffset', EdmDate: 'sap/ui/model/odata/type/Date' }"
+					busyIndicatorDelay="0"
+					selectionMode="Single"
+					selectionBehavior="Row"
+					class="sapUiSizeCondensed"
+					enableBusyIndicator="true"
+					alternateRowColors="true"
+					enableColumnReordering="false"
+					fixedColumnCount="1"
+					noData="{i18n>marketFxNoData}"
+					rowSelectionChange=".onSelectionChange"
+					rowsUpdated=".onSelectionChange">
+					<t:layoutData><FlexItemData growFactor="1" baseSize="0" /></t:layoutData>
+					<t:extension>
+						<OverflowToolbar>
+							<Button icon="sap-icon://refresh" tooltip="{i18n>commonRefresh}" press=".onRefresh" />
+							<ToolbarSpacer />
+							<Button text="{i18n>commonAdd}" icon="sap-icon://add" type="Emphasized" press=".onCreate" visible="{view>/canManage}" />
+							<Button text="{i18n>commonEdit}" icon="sap-icon://edit" press=".onEdit" visible="{view>/canManage}"
+								enabled="{sel>/canEdit}" tooltip="{sel>/editTooltip}" />
+							<Button text="{i18n>commonDelete}" icon="sap-icon://delete" press=".onDelete" visible="{view>/canManage}"
+								enabled="{sel>/canDelete}" tooltip="{sel>/editTooltip}" />
+							<Button text="{i18n>marketFxSettle}" icon="sap-icon://money-bills" press=".onSettle" visible="{view>/canManage}"
+								enabled="{sel>/canSettle}" />
+							<Button text="{i18n>marketFxReopen}" icon="sap-icon://undo" press=".onReopen" visible="{view>/canManage}"
+								enabled="{sel>/canReopen}" />
+							<Button text="{i18n>marketFxCancel}" icon="sap-icon://cancel" press=".onCancelHedge" visible="{view>/canManage}"
+								enabled="{sel>/canCancel}" />
+							<Button text="{i18n>marketFuturesConfirm}" icon="sap-icon://accept" press=".onConfirm" visible="{view>/canManage}"
+								enabled="{sel>/canConfirm}" />
+							<Button text="{i18n>marketFuturesUnconfirm}" icon="sap-icon://undo" press=".onUnconfirm" visible="{view>/canManage}"
+								enabled="{sel>/canUnconfirm}" />
+						</OverflowToolbar>
+					</t:extension>
+					<t:rowMode>
+						<rowmodes:Auto minRowCount="8" />
+					</t:rowMode>
+					<t:columns>
+						<t:Column label="{i18n>marketColDateTime}" sortProperty="TradedAt" width="11rem">
+							<t:template>
+								<Text text="{ path: 'TradedAt', type: 'DateTimeOffset', constraints: { precision: 7 }, formatOptions: { pattern: 'dd/MM/yyyy HH:mm' } }" wrapping="false" />
+							</t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColBankAccount}" width="16rem">
+							<t:template>
+								<Text wrapping="false"
+									text="{ parts: [ { path: 'Account/Counterparty/Name', targetType: 'any' }, { path: 'Account/Code', targetType: 'any' } ], formatter: 'hedge.accountLabel' }" />
+							</t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColKind}" sortProperty="Kind" width="7rem">
+							<t:template><Text text="{ path: 'Kind', targetType: 'any', formatter: '.kindText' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColSide}" sortProperty="Side" width="6rem">
+							<t:template><Text text="{ path: 'Side', targetType: 'any', formatter: '.sideText' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColAmountUsd}" hAlign="End" sortProperty="AmountUsd" width="10rem">
+							<t:template><Text text="{ path: 'AmountUsd', targetType: 'any', formatter: 'fx.formatUsd' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColContractedRate}" hAlign="End" sortProperty="ContractedRate" width="8rem">
+							<t:template><Text text="{ path: 'ContractedRate', targetType: 'any', formatter: 'fx.formatRate' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColSettlementDate}" sortProperty="SettlementDate" width="8rem">
+							<t:template>
+								<Text text="{ path: 'SettlementDate', type: 'EdmDate', formatOptions: { pattern: 'dd/MM/yyyy' } }" wrapping="false" />
+							</t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColStatus}" sortProperty="Status" width="8rem">
+							<t:template>
+								<ObjectStatus text="{ path: 'Status', targetType: 'any', formatter: '.statusText' }"
+									state="{ path: 'Status', targetType: 'any', formatter: 'fx.fxStatusState' }" />
+							</t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColSettlementRate}" hAlign="End" sortProperty="SettlementRate" width="9rem">
+							<t:template><Text text="{ path: 'SettlementRate', targetType: 'any', formatter: 'fx.formatRate' }" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColResultBrl}" hAlign="End" sortProperty="RealizedPnlBrl" width="12rem">
+							<t:template>
+								<ObjectStatus text="{ path: 'RealizedPnlBrl', targetType: 'any', formatter: 'fx.formatFxResult' }"
+									state="{ path: 'RealizedPnlBrl', targetType: 'any', formatter: 'fx.fxResultState' }" />
+							</t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColBankReference}" width="11rem">
+							<t:template><Text text="{BankReference}" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColContract}" width="10rem">
+							<t:template><Text text="{ContractCode}" wrapping="false" /></t:template>
+						</t:Column>
+						<t:Column label="{i18n>marketColConfirmed}" sortProperty="Confirmed" width="7rem" hAlign="Center">
+							<t:template><CheckBox selected="{Confirmed}" editable="false" /></t:template>
+						</t:Column>
+					</t:columns>
+				</t:Table>
+				<Toolbar>
+					<Title text="{i18n>marketFxTotals}" level="H5" />
+					<ObjectStatus text="{totals>/bought}" class="sapUiSmallMarginBegin" />
+					<ObjectStatus text="{totals>/sold}" class="sapUiSmallMarginBegin" />
+					<ObjectStatus text="{totals>/realized}" state="{totals>/realizedState}" class="sapUiSmallMarginBegin" />
+				</Toolbar>
+			</VBox>
+		</f:content>
+	</f:DynamicPage>
+</mvc:View>

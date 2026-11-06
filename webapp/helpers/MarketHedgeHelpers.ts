@@ -10,7 +10,7 @@ import { MarketCounterparty, MarketFuturesTradePayload, MarketLotInfo } from "si
  */
 
 /** Decimal do OData pode chegar como texto: converte sem inventar zero para valor ausente. */
-function toNumber(value: unknown): number {
+export function toNumber(value: unknown): number {
   if (value === null || value === undefined || value === "") return null;
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
@@ -30,7 +30,7 @@ export function toPascal(value: string): string {
 // Formatação
 // ---------------------------------------------------------------------------------------------
 
-function fixed(value: number, min: number, max: number): string {
+export function fixed(value: number, min: number, max: number): string {
   return value.toLocaleString("pt-BR", { minimumFractionDigits: min, maximumFractionDigits: max });
 }
 

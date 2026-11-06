@@ -984,6 +984,16 @@
           "target": "marketFuturesTrades"
         },
         {
+          "pattern": "market/fx-hedges",
+          "name": "marketFxHedges",
+          "target": "marketFxHedges"
+        },
+        {
+          "pattern": "market/efps",
+          "name": "marketEfps",
+          "target": "marketEfps"
+        },
+        {
           "pattern": "market/trading-settings",
           "name": "marketTradingSettings",
           "target": "marketTradingSettings"
@@ -2700,6 +2710,18 @@
           "id": "marketFuturesTrades",
           "level": 1,
           "name": "siagrob1.view.marketFuturesTrades.Main",
+          "clearControlAggregation": true
+        },
+        "marketFxHedges": {
+          "id": "marketFxHedges",
+          "level": 1,
+          "name": "siagrob1.view.marketFxHedges.Main",
+          "clearControlAggregation": true
+        },
+        "marketEfps": {
+          "id": "marketEfps",
+          "level": 1,
+          "name": "siagrob1.view.marketEfps.Main",
           "clearControlAggregation": true
         },
         "marketTradingSettings": {
