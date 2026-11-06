@@ -47,7 +47,7 @@ export type MarketPositionUsdBucket = {
   maxShort: number;
 };
 
-export type MarketPositionAlert = { limitId: number; description: string; value: number; limitValue: number; state: MarketLimitState };
+export type MarketPositionAlert = { limitId: number; scope: "commodity" | "usd"; description: string; value: number; limitValue: number; state: MarketLimitState };
 
 export type MarketPositionIgnored = { side: string; contractKey: string; contractCode: string; itemCode: string; reason: string };
 

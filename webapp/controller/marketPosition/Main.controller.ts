@@ -25,8 +25,8 @@ import {
 import { MARKET_MANAGE, numberErrorKey } from "siagrob1/helpers/MarketPricingHelpers";
 import { formatIsoDate } from "siagrob1/helpers/MarketPriceGridHelpers";
 import {
-  buildCard, buildFxLockPayload, canDrillDown, commodityMtmText, contractDetailRoute, diffRows, drillDownQuery, flattenCommodityRows,
-  flattenUsdRows, formatAmount, formatFxRate, formatSignedAmount, fxLockSide, limitStateTextKey, maturityLabel,
+  alertText, buildCard, buildFxLockPayload, canDrillDown, commodityMtmText, contractDetailRoute, diffRows, drillDownQuery, flattenCommodityRows,
+  flattenUsdRows, formatAmount, formatFxRate, fxLockSide, limitStateTextKey, maturityLabel,
   POSITION_FLASH_FIELDS, sideTextKey, usdMtmText, withPositionFlashes
 } from "siagrob1/helpers/MarketPositionHelpers";
 import {
@@ -216,7 +216,7 @@ export default class Main extends BaseController {
     }
     this.setIfChanged("/cards", cards);
     this.setIfChanged("/alerts", (snapshot.alerts ?? []).map((a) => ({
-      text: this.text("marketPositionAlert", [a.description ?? "", formatSignedAmount(a.value), formatAmount(a.limitValue)]),
+      text: alertText(a, text),
     })));
     this.setIfChanged("/resultRows", [
       { label: this.text("marketPositionRealized"), usd: snapshot.results?.realizedUsd, brl: snapshot.results?.realizedBrl },
@@ -371,23 +371,36 @@ export default class Main extends BaseController {
     this.usdDialog?.close();
   }
 
+  /** Trava do clique até o fim do POST: clique duplo não abre dois diálogos nem manda dois pedidos. */
+  private fxBusy = false;
+
   async onFxLock(ev: Event): Promise<void> {
     const contract = this.usdContractOf(ev);
-    if (!contract) return;
-    const rateText = await this.askFxRate(contract);
-    if (rateText === null) return;
-    const { payload, error } = buildFxLockPayload(true, rateText);
-    if (!payload) {
-      MessageBox.warning(this.text(numberErrorKey(error)));
-      return;
+    if (!contract || this.fxBusy) return;
+    this.fxBusy = true;
+    try {
+      const rateText = await this.askFxRate(contract);
+      if (rateText === null) return;
+      const { payload, error } = buildFxLockPayload(true, rateText);
+      if (!payload) {
+        MessageBox.warning(this.text(numberErrorKey(error)));
+        return;
+      }
+      await this.sendFxLock(contract, payload);
+    } finally {
+      this.fxBusy = false;
     }
-    await this.sendFxLock(contract, payload);
   }
 
   async onFxUnlock(ev: Event): Promise<void> {
     const contract = this.usdContractOf(ev);
-    if (!contract) return;
-    await this.sendFxLock(contract, buildFxLockPayload(false, "").payload);
+    if (!contract || this.fxBusy) return;
+    this.fxBusy = true;
+    try {
+      await this.sendFxLock(contract, buildFxLockPayload(false, "").payload);
+    } finally {
+      this.fxBusy = false;
+    }
   }
 
   private usdContractOf(ev: Event): MarketPositionUsdContract {

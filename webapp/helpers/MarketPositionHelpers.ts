@@ -1,7 +1,7 @@
 import { computeFlashes, EMPTY_VALUE } from "siagrob1/helpers/MarketHelpers";
 import { parseStrictDecimal } from "siagrob1/helpers/MarketPricingHelpers";
 import {
-  MarketPositionBucket, MarketPositionCard, MarketPositionCommodity, MarketPositionRow, MarketPositionSnapshot,
+  MarketPositionAlert, MarketPositionBucket, MarketPositionCard, MarketPositionCommodity, MarketPositionRow, MarketPositionSnapshot,
   MarketPositionUsdBucket, MarketPositionUsdRow, PositionFlashField
 } from "siagrob1/types/MarketPosition";
 
@@ -17,6 +17,7 @@ function isNumber(value: unknown): value is number {
 const signed3 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3, signDisplay: "exceptZero" });
 const fixed2 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const signed2 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: "exceptZero" });
+const fixed3 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 const fixed4 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
 
 /** Toneladas com sinal e 3 casas (+ comprado, − vendido). */
@@ -36,6 +37,26 @@ export function formatSignedAmount(value: number): string {
 
 export function formatFxRate(value: number): string {
   return isNumber(value) ? fixed4.format(value) : EMPTY_VALUE;
+}
+
+/** Quantidade inteira sem sinal (contratos sem referência); zero ou nulo vira "–". */
+export function formatCount(value: number): string {
+  return isNumber(value) && value !== 0 ? Math.abs(Math.round(value)).toLocaleString("pt-BR") : EMPTY_VALUE;
+}
+
+/**
+ * Texto do alerta de limite: "Soja — 07/2027: posição comprada de 1.234,500 t acima do limite de 1.000,000 t".
+ * Valor em módulo (o sentido vai na palavra); commodity em t, dólar em US$.
+ */
+export function alertText(alert: Pick<MarketPositionAlert, "scope" | "description" | "value" | "limitValue" | "state">, text: TextFn): string {
+  const usd = alert.scope === "usd";
+  const amount = (v: number): string => {
+    if (!isNumber(v)) return EMPTY_VALUE;
+    const abs = Math.abs(v);
+    return usd ? `US$ ${fixed2.format(abs)}` : `${fixed3.format(abs)} t`;
+  };
+  const direction = text(alert.state === "shortExceeded" ? "marketPositionAlertShort" : "marketPositionAlertLong");
+  return text("marketPositionAlert", [alert.description ?? "", direction, amount(alert.value), amount(alert.limitValue)]);
 }
 
 export function formatPercent(value: number): string {

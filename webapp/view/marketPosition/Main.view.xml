@@ -149,9 +149,9 @@
 						</ObjectNumber>
 					</t:template>
 				</t:Column>
-				<t:Column hAlign="End" width="7.5rem" label="{i18n>marketPositionColWithoutReference}" tooltip="{i18n>marketPositionColWithoutReferenceTip}">
+				<t:Column hAlign="End" width="8.5rem" label="{i18n>marketPositionColWithoutReference}" tooltip="{i18n>marketPositionColWithoutReferenceTip}">
 					<t:template>
-						<ObjectNumber number="{ path: 'position>physicalWithoutReference', formatter: 'pos.formatTons' }" state="{ path: 'position>physicalWithoutReference', formatter: 'pos.signState' }" emphasized="{position>isTotal}" textAlign="End"></ObjectNumber>
+						<ObjectNumber number="{ path: 'position>physicalWithoutReference', formatter: 'pos.formatCount' }" emphasized="{position>isTotal}" textAlign="End" />
 					</t:template>
 				</t:Column>
 				<t:Column width="4rem" label="{i18n>marketPositionColCurrency}">
