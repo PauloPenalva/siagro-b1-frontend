@@ -117,6 +117,12 @@ export function formatTonsOrUsd(tons: unknown, usd: unknown): string {
   return toNumber(usd) !== null ? `US$ ${formatSigned(usd)}` : EMPTY_VALUE;
 }
 
+/** Data de negócio de uma resposta REST (`yyyy-MM-dd` ou `yyyy-MM-ddT00:00:00`): os 10 primeiros caracteres, sem fuso; inválida = vazio. */
+export function toIsoDate(value: string): string {
+  const match = /^(\d{4}-\d{2}-\d{2})/.exec(value ?? "");
+  return match ? match[1] : "";
+}
+
 /** `yyyy-MM-dd` (com ou sem hora) para `dd/MM/yyyy`; ausente vira "–". */
 export function formatIsoDate(iso: string): string {
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso ?? "");

@@ -1,7 +1,7 @@
 import {
   buildFxHedgePayload, buildFxHedgesFilter, defaultFxFilter, formatDayMonth, formatFxResult, formatRate, formatUsd,
   fxHedgeActions, fxKindTextKey, fxSettlementResult, fxStatusState, fxStatusTextKey, fxTotals, FxHedgeForm,
-  parseSettlementRate, suggestedRateSourceKey
+  formatRateInput, parseSettlementRate, suggestedRateSourceKey
 } from "siagrob1/helpers/MarketFxHedgeHelpers";
 
 QUnit.module("MarketFxHedgeHelpers - resultado da liquidação");
@@ -77,7 +77,8 @@ QUnit.test("editar/excluir só em aberto e não conferido; liquidar/cancelar em 
   assert.deepEqual([settled.canEdit, settled.canSettle, settled.canCancel, settled.canReopen], [false, false, false, true]);
   assert.strictEqual(settled.blockedKey, "marketFxBlockedNotOpen");
   const canceled = fxHedgeActions({ Status: "Canceled" }, true);
-  assert.deepEqual([canceled.canEdit, canceled.canSettle, canceled.canReopen], [false, false, false]);
+  assert.deepEqual([canceled.canEdit, canceled.canSettle, canceled.canReopen], [false, false, true], "cancelado também reabre");
+  assert.strictEqual(fxHedgeActions({ Status: "Open" }, true).canReopen, false, "aberto não reabre");
 });
 
 QUnit.test("sem permissão ou sem linha nada é habilitado", function (assert) {
@@ -174,4 +175,12 @@ QUnit.test("datas malformadas e situação desconhecida não entram no $filter",
   assert.strictEqual(buildFxHedgesFilter({ Status: "all", SettleFrom: "2026-11-01' or 1 eq 1", SettleTo: "06/11/2026" }, now), undefined);
   assert.strictEqual(buildFxHedgesFilter({ Status: "all", SettleFrom: "2026-11-01" }, now), "SettlementDate ge 2026-11-01");
   assert.strictEqual(buildFxHedgesFilter({ Status: "x' or 1 eq 1" as never }, now), undefined);
+});
+
+QUnit.test("taxa sugerida no campo: 4 casas pt-BR, relida por parseSettlementRate; ambíguo continua recusado", function (assert) {
+  assert.strictEqual(formatRateInput(5.4), "5,4000");
+  assert.strictEqual(formatRateInput("5.45678"), "5,4568");
+  assert.strictEqual(formatRateInput(null), "");
+  assert.deepEqual(parseSettlementRate(formatRateInput(5.4)), { value: 5.4 });
+  assert.strictEqual(parseSettlementRate("5.400").errorKey, "marketNumberAmbiguous");
 });

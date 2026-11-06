@@ -126,9 +126,13 @@ export default class Main extends BaseController {
   }
 
   onCreate(): void {
+    const accounts = accountOptions(this.counterparties, "Broker", true);
+    const filterAccount = (this.filterModel().getProperty("/AccountId") as string) ?? "";
+    // Conta do filtro se for elegível; senão a única conta elegível, quando só há uma.
+    const accountId = accounts.some((a) => a.id === filterAccount) ? filterAccount : accounts.length === 1 ? accounts[0].id : "";
     void this.openDialog({
-      title: this.text("marketStatementTitleNew"), isNew: true, accounts: accountOptions(this.counterparties, "Broker", true),
-      accountId: (this.filterModel().getProperty("/AccountId") as string) ?? "", date: localIsoDate(new Date()),
+      title: this.text("marketStatementTitleNew"), isNew: true, accounts,
+      accountId, date: localIsoDate(new Date()),
       dailyAdjustment: "", marginRequired: "", marginDeposited: "", currency: "Brl", notes: "",
     }, null);
   }

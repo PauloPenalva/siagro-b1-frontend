@@ -1,5 +1,5 @@
 import {
-  accountLabel, accountOptions, equivalentHint, formatCurrency, formatTons, buildFuturesTradesFilter, buildStatementsFilter, buildTradePayload, currencySymbol,
+  toIsoDate, accountLabel, accountOptions, equivalentHint, formatCurrency, formatTons, buildFuturesTradesFilter, buildStatementsFilter, buildTradePayload, currencySymbol,
   defaultRealizedPeriod, defaultTradesFilter, formatIsoDate, formatMoney, formatPnl, formatPrice, formatSigned,
   formatSignedLots, formatSignedTons, formatTonsOrUsd, formatTradeTons, lotEquivalent, parseLots, pnlState,
   reasonTextKey, sideTextKey, toCamel, tonsPerLot, totalsByCurrency, totalView, tradeActions, TradeForm
@@ -224,4 +224,14 @@ QUnit.test("valor que arredonda para zero não leva sinal", function (assert) {
   assert.strictEqual(formatSigned(0.005), "+0,01");
   assert.strictEqual(formatSigned(-0.0004, 3), "0,000");
   assert.strictEqual(formatSignedTons(-0.0001), "0,000");
+});
+
+QUnit.test("data de negócio do REST: yyyy-MM-dd ou com hora, sempre os 10 primeiros caracteres, sem fuso", function (assert) {
+  assert.strictEqual(toIsoDate("2026-11-06"), "2026-11-06");
+  assert.strictEqual(toIsoDate("2026-11-06T00:00:00"), "2026-11-06");
+  assert.strictEqual(toIsoDate("2026-11-06T23:59:59Z"), "2026-11-06");
+  assert.strictEqual(toIsoDate(""), "");
+  assert.strictEqual(toIsoDate(null), "");
+  assert.strictEqual(toIsoDate("06/11/2026"), "");
+  assert.strictEqual(formatIsoDate("2026-11-06T00:00:00"), "06/11/2026");
 });

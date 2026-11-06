@@ -63,6 +63,13 @@ export function normalizeCurrency(currency: string): "brl" | "usd" | "" {
   return key === "usd" || key === "us$" || key === "dolar" ? "usd" : "";
 }
 
+/** Moeda do contrato para exibir: "R$" / "US$"; moeda desconhecida aparece como veio, em maiúsculas; ausente = vazio. */
+export function currencySymbol(currency: string): string {
+  const key = normalizeCurrency(currency);
+  if (key === "brl") return "R$";
+  return key === "usd" ? "US$" : (currency ?? "").trim().toUpperCase();
+}
+
 export function efpStatusTextKey(status: string): string {
   const key = toCamel(status ?? "");
   return ["processing", "active", "canceled"].includes(key) ? `marketEfpStatus_${key}` : "marketEfpStatus_unknown";
@@ -182,11 +189,11 @@ export type EfpContext = {
 
 /**
  * Campos do formulário que alimentam o cálculo do EFP: mudar qualquer um invalida o resultado já mostrado.
- * (Observações não entram no cálculo, mas vão no corpo: também invalidam, para o "Gravar" valer só para o que foi calculado.)
+ * Observações não entram: não mudam o preço, e editá-las não deve exigir "Calcular" de novo.
  */
 export const EFP_PREVIEW_FIELDS: readonly string[] = [
   "date", "contractSide", "contractKey", "accountId", "instrumentCode", "side", "lots", "price", "premium", "fxRate", "bags",
-  "financialDueDate", "notes",
+  "financialDueDate",
 ];
 
 /** O caminho do modelo (`/price`, `price`) é de um campo que invalida o resultado calculado? */

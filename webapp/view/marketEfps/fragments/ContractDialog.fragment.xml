@@ -26,7 +26,7 @@
 				<Text text="{contracts>code}" wrapping="false" />
 				<Text text="{contracts>cardName}" wrapping="false" />
 				<Text text="{contracts>itemName}" wrapping="false" />
-				<Text text="{contracts>currency}" wrapping="false" />
+				<Text text="{ path: 'contracts>currency', formatter: 'efp.currencySymbol' }" wrapping="false" />
 				<Text text="{ path: 'contracts>availableToPriceKg', formatter: 'efp.formatBags' }" wrapping="false" />
 				<Text text="{ path: 'contracts>standardCashFlowDate', formatter: 'hedge.formatIsoDate' }" wrapping="false" />
 			</cells>

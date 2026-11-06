@@ -18,11 +18,11 @@ import { localIsoDate } from "siagrob1/helpers/DateHelpers";
 import { EMPTY_VALUE, MarketResult, marketFetch, notFoundTextKey } from "siagrob1/helpers/MarketHelpers";
 import { formatTons, lotEquivalent, parseLots, sideTextKey } from "siagrob1/helpers/MarketHedgeHelpers";
 import {
-  EfpField, EfpForm, EfpFormErrors, buildEfpPayload, contractRouteName, defaultFuturesSide, efpActions, efpInputSignature, efpStatusTextKey, invalidatesPreview,
-  exceedsAvailable, formatBagPrice, formatBags, formatPerKg, fxMode, normalizeCurrency, tonsMismatch
+  EfpField, EfpForm, EfpFormErrors, buildEfpPayload, contractRouteName, currencySymbol, defaultFuturesSide, efpActions, efpInputSignature, efpStatusTextKey, invalidatesPreview,
+  exceedsAvailable, formatBagPrice, formatBags, formatPerKg, fxMode, tonsMismatch
 } from "siagrob1/helpers/MarketEfpHelpers";
 import { loadCounterparties, loadMarketLookups } from "siagrob1/helpers/MarketLookups";
-import { accountOptions } from "siagrob1/helpers/MarketHedgeHelpers";
+import { accountOptions, toIsoDate } from "siagrob1/helpers/MarketHedgeHelpers";
 import { MARKET_MANAGE, parseStrictDecimal } from "siagrob1/helpers/MarketPricingHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import SessionService from "siagrob1/services/SessionService";
@@ -428,16 +428,15 @@ export default class Main extends BaseController {
     const contract = ev.getParameter("selectedItem")?.getBindingContext("contracts")?.getObject() as MarketEfpContract;
     if (!contract) return;
     const model = this.efpModel();
-    const currency = normalizeCurrency(contract.currency);
     model.setProperty("/contractKey", contract.key);
     model.setProperty("/contractCode", contract.code);
     model.setProperty("/contractCurrency", contract.currency ?? "");
     model.setProperty("/availableKg", contract.availableToPriceKg);
     model.setProperty("/availableText", this.text("marketEfpAvailableText", [formatBags(contract.availableToPriceKg)]));
-    model.setProperty("/contractInfo", [contract.cardName, contract.itemName, currency === "usd" ? "US$" : currency === "brl" ? "R$" : contract.currency]
+    model.setProperty("/contractInfo", [contract.cardName, contract.itemName, currencySymbol(contract.currency)]
       .filter((part) => !!part).join(" · "));
     // Vencimento financeiro: a previsão de pagamento do contrato (o usuário pode trocar).
-    model.setProperty("/financialDueDate", (contract.standardCashFlowDate ?? "").slice(0, 10));
+    model.setProperty("/financialDueDate", toIsoDate(contract.standardCashFlowDate));
     this.markErrors({});
     this.recompute();
   }

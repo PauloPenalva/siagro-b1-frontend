@@ -1,5 +1,5 @@
 import {
-  EfpForm, bagsToKg, buildEfpPayload, efpInputSignature, invalidatesPreview, contractRouteName, defaultFuturesSide, efpActions, efpStatusState, efpStatusTextKey,
+  EfpForm, currencySymbol, bagsToKg, buildEfpPayload, efpInputSignature, invalidatesPreview, contractRouteName, defaultFuturesSide, efpActions, efpStatusState, efpStatusTextKey,
   exceedsAvailable, formatBagPrice, formatBags, formatFixationPerBag, formatPerKg, fxMode, kgToBags, normalizeCurrency, tonsMismatch
 } from "siagrob1/helpers/MarketEfpHelpers";
 
@@ -157,13 +157,14 @@ QUnit.test("prêmio negativo é aceito", function (assert) {
 QUnit.module("MarketEfpHelpers - resultado calculado");
 
 QUnit.test("todo campo de entrada invalida o resultado; campos de tela não", function (assert) {
-  for (const field of ["date", "contractSide", "contractKey", "accountId", "instrumentCode", "side", "lots", "price", "premium", "fxRate", "bags", "financialDueDate", "notes"]) {
+  for (const field of ["date", "contractSide", "contractKey", "accountId", "instrumentCode", "side", "lots", "price", "premium", "fxRate", "bags", "financialDueDate"]) {
     assert.strictEqual(invalidatesPreview(`/${field}`), true, field);
     assert.strictEqual(invalidatesPreview(field), true, `${field} sem barra`);
   }
   for (const field of ["previewVisible", "previewPerBag", "mismatch", "bagsInfo", "lotsInfo", "fxEnabled", "fxRefused", "availableText", "accounts"]) {
     assert.strictEqual(invalidatesPreview(`/${field}`), false, field);
   }
+  assert.strictEqual(invalidatesPreview("/notes"), false, "observações não invalidam");
   assert.strictEqual(invalidatesPreview(undefined), false);
 });
 
@@ -182,4 +183,12 @@ QUnit.test("moeda do contrato em minúsculas (convenção do REST) é reconhecid
   assert.strictEqual(normalizeCurrency("brl"), "brl");
   assert.strictEqual(fxMode("UsCentsPerBushel", "brl"), "required");
   assert.strictEqual(fxMode("BrlPerBag", "usd"), "refused");
+});
+
+QUnit.test("moeda para exibição: símbolo, desconhecida em maiúsculas, ausente vazio", function (assert) {
+  assert.strictEqual(currencySymbol("brl"), "R$");
+  assert.strictEqual(currencySymbol("BRL"), "R$");
+  assert.strictEqual(currencySymbol("usd"), "US$");
+  assert.strictEqual(currencySymbol("eur"), "EUR");
+  assert.strictEqual(currencySymbol(undefined), "");
 });

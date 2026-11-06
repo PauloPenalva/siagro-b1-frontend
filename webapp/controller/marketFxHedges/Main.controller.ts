@@ -14,10 +14,10 @@ import { confirmDialog } from "siagrob1/helpers/DialogHelpers";
 import { localIsoDate } from "siagrob1/helpers/DateHelpers";
 import { pickPurchaseContract, pickSalesContract, syncContractLink } from "siagrob1/helpers/MarketContractLink";
 import { EMPTY_VALUE, MarketResult, marketFetch, notFoundTextKey, parseServerInstant } from "siagrob1/helpers/MarketHelpers";
-import { accountOptions, formatPnl, pnlState, sideTextKey, toCamel } from "siagrob1/helpers/MarketHedgeHelpers";
+import { accountOptions, formatPnl, pnlState, sideTextKey, toCamel, toIsoDate } from "siagrob1/helpers/MarketHedgeHelpers";
 import {
   FxHedgeField, FxHedgeForm, FxHedgeFormErrors, FxHedgesFilter, buildFxHedgePayload, buildFxHedgesFilter, defaultFxFilter,
-  formatDayMonth, formatRate, formatUsd, fxHedgeActions, fxKindTextKey, fxSettlementResult, fxStatusTextKey, fxTotals,
+  formatDayMonth, formatRate, formatRateInput, formatUsd, fxHedgeActions, fxKindTextKey, fxSettlementResult, fxStatusTextKey, fxTotals,
   parseSettlementRate, suggestedRateSourceKey
 } from "siagrob1/helpers/MarketFxHedgeHelpers";
 import { loadCounterparties } from "siagrob1/helpers/MarketLookups";
@@ -369,7 +369,7 @@ export default class Main extends BaseController {
     const sourceText = this.text(suggestedRateSourceKey(suggestion.source), [formatDayMonth(suggestion.date)]);
     this.settleModel().setProperty("/sourceText", sourceText);
     if (!(this.settleModel().getProperty("/rate") as string)) {
-      this.settleModel().setProperty("/rate", formatStrictDecimal(rate));
+      this.settleModel().setProperty("/rate", formatRateInput(rate));
       this.updateSettleResult();
     }
   }
@@ -469,7 +469,7 @@ export default class Main extends BaseController {
       tradedAt: parseServerInstant(hedge.TradedAt), accountId: String(hedge.AccountId ?? ""),
       kind: toCamel(hedge.Kind) || "ndf", side: toCamel(hedge.Side) || "sell",
       amountUsd: formatStrictDecimal(Number(hedge.AmountUsd)), contractedRate: formatStrictDecimal(Number(hedge.ContractedRate)),
-      settlementDate: (hedge.SettlementDate ?? "").slice(0, 10), bankReference: hedge.BankReference ?? "",
+      settlementDate: toIsoDate(hedge.SettlementDate), bankReference: hedge.BankReference ?? "",
       purchaseContractKey: hedge.PurchaseContractKey ?? "", salesContractKey: hedge.SalesContractKey ?? "",
       purchaseContractCode: hedge.PurchaseContractKey ? hedge.ContractCode ?? "" : "",
       salesContractCode: hedge.SalesContractKey ? hedge.ContractCode ?? "" : "",

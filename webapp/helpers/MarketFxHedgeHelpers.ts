@@ -54,6 +54,12 @@ export function suggestedRateSourceKey(source: string): string {
   return source === "lastQuote" ? "marketFxSuggestedLastQuote" : "marketFxSuggestedNone";
 }
 
+/** Taxa de liquidação no campo de digitação: 4 casas pt-BR sem milhar ("5,4000"), que `parseSettlementRate` lê de volta. */
+export function formatRateInput(value: unknown): string {
+  const n = toNumber(value);
+  return n === null ? "" : n.toLocaleString("pt-BR", { useGrouping: false, minimumFractionDigits: 4, maximumFractionDigits: 4 });
+}
+
 /** "dd/MM" de um `yyyy-MM-dd`; ausente vira "–". */
 export function formatDayMonth(iso: string): string {
   const full = formatIsoDate(iso);
@@ -94,7 +100,7 @@ export type FxHedgeActions = {
 
 /**
  * Quais botões o hedge selecionado aceita. Editar/Excluir só em aberto e não conferido; Liquidar e Cancelar
- * só em aberto; Reabrir só em liquidado. Sem permissão de gravação nada é habilitado.
+ * só em aberto; Reabrir em liquidado ou cancelado (o servidor reabre qualquer situação que não seja aberta). Sem permissão de gravação nada é habilitado.
  */
 export function fxHedgeActions(hedge: { Status?: string; Confirmed?: boolean }, canManage: boolean): FxHedgeActions {
   const none: FxHedgeActions = {
@@ -109,7 +115,7 @@ export function fxHedgeActions(hedge: { Status?: string; Confirmed?: boolean }, 
   else if (confirmed) blockedKey = "marketFxBlockedConfirmed";
   const free = blockedKey === "";
   return {
-    canEdit: free, canDelete: free, canSettle: status === "open", canReopen: status === "settled",
+    canEdit: free, canDelete: free, canSettle: status === "open", canReopen: status === "settled" || status === "canceled",
     canCancel: status === "open", canConfirm: !confirmed, canUnconfirm: confirmed, blockedKey,
   };
 }

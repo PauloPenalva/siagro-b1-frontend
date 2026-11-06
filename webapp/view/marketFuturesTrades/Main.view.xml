@@ -21,7 +21,7 @@
 		</f:title>
 		<f:content>
 			<IconTabBar id="futuresTabs" select=".onTabSelect" selectedKey="{view>/tab}" expandable="false"
-				stretchContentHeight="true" applyContentPadding="false" height="100%">
+				stretchContentHeight="true" applyContentPadding="false">
 				<items>
 					<IconTabFilter key="trades" text="{i18n>marketFuturesTabTrades}">
 						<VBox fitContainer="true" renderType="Bare">
