@@ -1,6 +1,6 @@
 import {
   alertText, buildCard, buildFxLockPayload, currencyLabel, formatCount, formatFxRate, formatSignedAmount, canDrillDown, contractDetailRoute, diffRows, directionTextKey, drillDownQuery, flattenCommodityRows,
-  flattenUsdRows, formatAmount, formatPercent, formatTons, formatTonsMagnitude, fxLockSide, limitStateTextKey, limitStateValue, maturityLabel, signState,
+  flattenUsdRows, formatAmount, formatPercent, formatTons, formatTonsMagnitude, fxLockSide, limitStateTextKey, limitStateValue, maturityLabel, positionMaturityText, signState,
   withPositionFlashes
 } from "siagrob1/helpers/MarketPositionHelpers";
 import { MarketPositionBucket, MarketPositionCommodity } from "siagrob1/types/MarketPosition";
@@ -158,4 +158,26 @@ QUnit.test("total do dólar vira a última linha, sem ano e mês", function (ass
   assert.strictEqual(total.year, null);
   assert.strictEqual(total.month, null);
   assert.strictEqual(flattenUsdRows({ buckets: [], total: null, spotFx: null, openCommodityValueUsd: null }).length, 0, "sem total não cria linha");
+});
+
+QUnit.module("MarketPositionHelpers - linha vazia da grade (sem contexto)");
+
+QUnit.test("números: undefined (linha sem contexto) vira vazio; null do servidor continua traço", function (assert) {
+  for (const format of [formatTons, formatTonsMagnitude, formatAmount, formatSignedAmount, formatFxRate, formatPercent, formatCount]) {
+    assert.strictEqual(format(undefined), "", format.name);
+    assert.strictEqual(format(null), "–", format.name);
+  }
+});
+
+QUnit.test("vencimento: linha sem contexto vazia; sem vencimento e total como antes", function (assert) {
+  assert.strictEqual(positionMaturityText(undefined, undefined, undefined, "Total", "Sem vencimento"), "");
+  assert.strictEqual(positionMaturityText(null, null, false, "Total", "Sem vencimento"), "Sem vencimento");
+  assert.strictEqual(positionMaturityText(null, null, true, "Total", "Sem vencimento"), "Total");
+  assert.strictEqual(positionMaturityText(2027, 7, false, "Total", "Sem vencimento"), "07/2027");
+});
+
+QUnit.test("limite: linha sem contexto não tem texto; null continua 'sem limite'", function (assert) {
+  assert.strictEqual(limitStateTextKey(undefined), "");
+  assert.strictEqual(limitStateTextKey(null), "marketPositionLimitNone");
+  assert.strictEqual(limitStateValue(undefined), "None");
 });

@@ -26,7 +26,7 @@ import { MARKET_MANAGE, numberErrorKey } from "siagrob1/helpers/MarketPricingHel
 import { formatIsoDate } from "siagrob1/helpers/MarketPriceGridHelpers";
 import {
   alertText, buildCard, buildFxLockPayload, canDrillDown, commodityMtmText, contractDetailRoute, diffRows, drillDownQuery, flattenCommodityRows,
-  flattenUsdRows, formatAmount, formatFxRate, fxLockSide, limitStateTextKey, maturityLabel,
+  flattenUsdRows, formatAmount, formatFxRate, fxLockSide, limitStateTextKey, maturityLabel, positionMaturityText,
   POSITION_FLASH_FIELDS, sideTextKey, usdMtmText, withPositionFlashes
 } from "siagrob1/helpers/MarketPositionHelpers";
 import {
@@ -65,7 +65,7 @@ export default class Main extends BaseController {
       openValueText: "", spotText: "", generatedText: "", tab: "commodities",
       selectedRowKey: null, selectedCanDrill: false,
       statusText: "", statusState: "None", cmaText: "", cmaState: "None", offline: false,
-      moduleDisabled: false, moduleMessage: "",
+      moduleDisabled: false, moduleMessage: "", refreshing: false,
     }), "position");
     this.getView().setModel(new JSONModel({ rows: [], title: "", noData: "", busy: false }), "drill");
     this.getView().setModel(new JSONModel({ rows: [], canManage: false, noData: "", busy: false }), "usdc");
@@ -101,10 +101,14 @@ export default class Main extends BaseController {
 
   // ---- formatters da view ----
 
+  // Linha sem contexto (abaixo dos dados, pelo minRowCount) recebe tudo `undefined` e fica vazia.
   maturityText = (year: number, month: number, isTotal: boolean): string =>
-    (isTotal ? this.text("marketPositionTotal") : maturityLabel(year, month, this.text("marketPositionNoMaturity")));
+    positionMaturityText(year, month, isTotal, this.text("marketPositionTotal"), this.text("marketPositionNoMaturity"));
 
-  limitText = (state: string): string => this.text(limitStateTextKey(state));
+  limitText = (state: string): string => {
+    const key = limitStateTextKey(state);
+    return key ? this.text(key) : "";
+  };
 
   limitTooltip = (maxLong: number, maxShort: number): string =>
     (maxLong == null && maxShort == null ? "" : this.text("marketPositionLimitTooltip", [formatAmount(maxLong), formatAmount(maxShort)]));
@@ -441,6 +445,18 @@ export default class Main extends BaseController {
     MessageToast.show(this.text(payload.locked ? "marketPositionFxLocked" : "marketPositionFxReopened"));
     await this.loadUsdContracts();
     await this.refreshSnapshot();
+  }
+
+  /** Botão "Atualizar": refaz o snapshot sem derrubar o SSE (alteração de contrato em outra tela). Clique repetido não empilha pedidos. */
+  async onRefresh(): Promise<void> {
+    const model = this.model();
+    if (model.getProperty("/refreshing")) return;
+    model.setProperty("/refreshing", true);
+    try {
+      await this.refreshSnapshot();
+    } finally {
+      model.setProperty("/refreshing", false);
+    }
   }
 
   /** Recarrega o snapshot já (o SSE só emite quando as cotações mudam). */

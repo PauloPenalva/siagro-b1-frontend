@@ -14,6 +14,14 @@ function isNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
 
+/**
+ * Linha da grade SEM contexto (as que o `rowmodes:Auto minRowCount` desenha abaixo dos dados): o binding
+ * entrega `undefined` e a célula fica vazia. `null` vem do servidor (valor ausente numa linha real) e vira "–".
+ */
+function emptyOr(value: unknown, text: string): string {
+  return value === undefined ? "" : text;
+}
+
 const signed3 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3, signDisplay: "exceptZero" });
 const fixed2 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const signed2 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: "exceptZero" });
@@ -22,31 +30,31 @@ const fixed4 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 4, maximu
 
 /** Toneladas com sinal e 3 casas (+ comprado, − vendido). */
 export function formatTons(value: number): string {
-  return isNumber(value) ? signed3.format(value) : EMPTY_VALUE;
+  return isNumber(value) ? signed3.format(value) : emptyOr(value, EMPTY_VALUE);
 }
 
 /** Toneladas SEM sinal e 3 casas: compras, vendas e travado são grandezas, não posições. */
 export function formatTonsMagnitude(value: number): string {
-  return isNumber(value) ? fixed3.format(Math.abs(value)) : EMPTY_VALUE;
+  return isNumber(value) ? fixed3.format(Math.abs(value)) : emptyOr(value, EMPTY_VALUE);
 }
 
 /** Valor com 2 casas (preços, US$, R$); nulo vira "–". */
 export function formatAmount(value: number): string {
-  return isNumber(value) ? fixed2.format(value) : EMPTY_VALUE;
+  return isNumber(value) ? fixed2.format(value) : emptyOr(value, EMPTY_VALUE);
 }
 
 /** Valor com sinal e 2 casas (líquido em US$). */
 export function formatSignedAmount(value: number): string {
-  return isNumber(value) ? signed2.format(value) : EMPTY_VALUE;
+  return isNumber(value) ? signed2.format(value) : emptyOr(value, EMPTY_VALUE);
 }
 
 export function formatFxRate(value: number): string {
-  return isNumber(value) ? fixed4.format(value) : EMPTY_VALUE;
+  return isNumber(value) ? fixed4.format(value) : emptyOr(value, EMPTY_VALUE);
 }
 
 /** Quantidade inteira sem sinal (contratos sem referência); zero ou nulo vira "–". */
 export function formatCount(value: number): string {
-  return isNumber(value) && value !== 0 ? Math.abs(Math.round(value)).toLocaleString("pt-BR") : EMPTY_VALUE;
+  return isNumber(value) && value !== 0 ? Math.abs(Math.round(value)).toLocaleString("pt-BR") : emptyOr(value, EMPTY_VALUE);
 }
 
 /**
@@ -65,7 +73,7 @@ export function alertText(alert: Pick<MarketPositionAlert, "scope" | "descriptio
 }
 
 export function formatPercent(value: number): string {
-  return isNumber(value) ? `${fixed2.format(value)}%` : EMPTY_VALUE;
+  return isNumber(value) ? `${fixed2.format(value)}%` : emptyOr(value, EMPTY_VALUE);
 }
 
 /** Negativo em vermelho; o resto neutro. */
@@ -89,7 +97,16 @@ export function maturityLabel(year: number, month: number, noMaturityText: strin
   return `${String(month).padStart(2, "0")}/${year}`;
 }
 
+/** Coluna de vencimento das grades: total, "07/2026" ou "sem vencimento"; linha sem contexto (tudo `undefined`) vazia. */
+export function positionMaturityText(year: number, month: number, isTotal: boolean, totalText: string, noMaturityText: string): string {
+  // Linha real sempre traz isTotal (flatten*Rows); só a linha sem contexto chega sem ele.
+  if (isTotal === undefined) return "";
+  return isTotal ? totalText : maturityLabel(year, month, noMaturityText);
+}
+
+/** Chave do texto do estado do limite; "" na linha sem contexto (`undefined`). */
 export function limitStateTextKey(state: string): string {
+  if (state === undefined) return "";
   switch (state) {
     case "ok": return "marketPositionLimitOk";
     case "longExceeded": return "marketPositionLimitLong";

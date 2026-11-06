@@ -17,6 +17,9 @@
 	<Page title="{i18n>marketPositionTitle}" busy="{ui>/busy}" busyIndicatorDelay="0">
 		<headerContent>
 			<Text text="{position>/generatedText}" visible="{= !!${position>/generatedText} }" class="sapUiSmallMarginEnd" />
+			<!-- O SSE só emite quando uma cotação muda: "Atualizar" refaz o snapshot (GET /market/position) sem derrubar o fluxo. -->
+			<Button icon="sap-icon://refresh" text="{i18n>marketPositionRefresh}" tooltip="{i18n>marketPositionRefresh}" type="Transparent" press=".onRefresh"
+				enabled="{= !${position>/refreshing} }" visible="{= !${position>/moduleDisabled} }" class="sapUiSmallMarginEnd" />
 			<ObjectStatus text="{position>/cmaText}" state="{position>/cmaState}" inverted="true" visible="{= !!${position>/cmaText} }" class="sapUiSmallMarginEnd" />
 			<ObjectStatus text="{position>/statusText}" state="{position>/statusState}" inverted="true" />
 		</headerContent>

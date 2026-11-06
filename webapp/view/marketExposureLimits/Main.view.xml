@@ -14,7 +14,7 @@
 				<!-- As linhas só são ligadas por código (bindRows) depois de resolver o i18n: os formatters leem o bundle. -->
 				<t:Table
 					id="tableMarketExposureLimits"
-					core:require="{ DateTimeOffset: 'sap/ui/model/odata/type/DateTimeOffset', hedge: 'siagrob1/helpers/MarketHedgeHelpers' }"
+					core:require="{ DateTimeOffset: 'sap/ui/model/odata/type/DateTimeOffset', setup: 'siagrob1/helpers/MarketSetupHelpers' }"
 					busyIndicatorDelay="0"
 					selectionMode="Single"
 					selectionBehavior="Row"
@@ -39,10 +39,10 @@
 							</t:template>
 						</t:Column>
 						<t:Column label="{i18n>marketLimitMaxLong}" hAlign="End" width="11rem">
-							<t:template><Text text="{ path: 'MaxLong', targetType: 'any', formatter: 'hedge.formatMoney' }" wrapping="false" /></t:template>
+							<t:template><Text text="{ parts: [ { path: 'MaxLong', targetType: 'any' }, { path: 'Scope', targetType: 'any' } ], formatter: 'setup.formatLimitValue' }" wrapping="false" /></t:template>
 						</t:Column>
 						<t:Column label="{i18n>marketLimitMaxShort}" hAlign="End" width="11rem">
-							<t:template><Text text="{ path: 'MaxShort', targetType: 'any', formatter: 'hedge.formatMoney' }" wrapping="false" /></t:template>
+							<t:template><Text text="{ parts: [ { path: 'MaxShort', targetType: 'any' }, { path: 'Scope', targetType: 'any' } ], formatter: 'setup.formatLimitValue' }" wrapping="false" /></t:template>
 						</t:Column>
 						<t:Column label="{i18n>marketFieldActive}" width="6rem" hAlign="Center">
 							<t:template><CheckBox selected="{Active}" editable="false" /></t:template>

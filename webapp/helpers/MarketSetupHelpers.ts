@@ -1,3 +1,4 @@
+import { EMPTY_VALUE } from "siagrob1/helpers/MarketHelpers";
 import { parseStrictDecimal } from "siagrob1/helpers/MarketPricingHelpers";
 
 /** Quilos numa saca: o preço em US$ do contrato é guardado por kg e mostrado por saca de 60 kg. */
@@ -56,10 +57,26 @@ export function commodityItemsProblem(items: { ItemCode?: string }[]): string {
   return null;
 }
 
-/** Período do limite: "Total" (sem ano/mês) ou MM/yyyy. */
+/** Período do limite: "Total" (sem ano/mês) ou MM/yyyy; linha sem contexto (ambos `undefined`) vazia. */
 export function limitPeriodText(year: unknown, month: unknown, totalText: string): string {
+  if (year === undefined && month === undefined) return "";
   if (year === null || year === undefined || month === null || month === undefined) return totalText;
   return `${String(Number(month)).padStart(2, "0")}/${Number(year)}`;
+}
+
+const tons3 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+const usd2 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/**
+ * Máximo comprado/vendido na grade de limites: toneladas com 3 casas no escopo commodity (como o alerta),
+ * US$ com 2 no dólar. `null` = sem máximo ("–"); linha sem contexto (`undefined`) vazia.
+ */
+export function formatLimitValue(value: unknown, scope: unknown): string {
+  if (value === undefined) return "";
+  if (value === null || value === "") return EMPTY_VALUE;
+  const number = Number(value);
+  if (!Number.isFinite(number)) return EMPTY_VALUE;
+  return scope === "Usd" ? usd2.format(number) : tons3.format(number);
 }
 
 export type ExposureLimitForm = {

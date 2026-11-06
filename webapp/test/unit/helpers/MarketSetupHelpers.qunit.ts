@@ -1,6 +1,6 @@
 import {
   ExposureLimitForm, buildExposureLimitPayload, commodityItemsProblem, commodityMonthsProblem, defaultCommodityMonth,
-  limitPeriodText, missingDeliveryMonths, usdPerBagToKg, usdPerKgToBag
+  formatLimitValue, limitPeriodText, missingDeliveryMonths, usdPerBagToKg, usdPerKgToBag
 } from "siagrob1/helpers/MarketSetupHelpers";
 
 QUnit.module("MarketSetupHelpers - preço em US$ por saca");
@@ -89,4 +89,18 @@ QUnit.test("recusas", function (assert) {
   assert.strictEqual(ambiguous.field, "maxLong");
   assert.strictEqual(buildExposureLimitPayload(form({ maxLong: "abc" })).error, "marketInvalidNumber");
   assert.strictEqual(buildExposureLimitPayload(form({ scope: "", maxLong: "1" })).error, "marketLimitScopeRequired");
+});
+
+QUnit.module("MarketSetupHelpers - grade de limites");
+
+QUnit.test("período: linha sem contexto vazia; null continua Total", function (assert) {
+  assert.strictEqual(limitPeriodText(undefined, undefined, "Total"), "");
+  assert.strictEqual(limitPeriodText(null, null, "Total"), "Total");
+});
+
+QUnit.test("máximos: t com 3 casas na commodity, US$ com 2 no dólar; null traço, sem contexto vazio", function (assert) {
+  assert.strictEqual(formatLimitValue(1500.5, "Commodity"), "1.500,500");
+  assert.strictEqual(formatLimitValue(1500.5, "Usd"), "1.500,50");
+  assert.strictEqual(formatLimitValue(null, "Usd"), "–");
+  assert.strictEqual(formatLimitValue(undefined, undefined), "");
 });
