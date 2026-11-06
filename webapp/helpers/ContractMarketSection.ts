@@ -14,7 +14,8 @@ import { loadMarketLookups } from "siagrob1/helpers/MarketLookups";
 import { MARKET_MANAGE, numberErrorKey, parseStrictDecimal } from "siagrob1/helpers/MarketPricingHelpers";
 import { usdPerBagToKg, usdPerKgToBag } from "siagrob1/helpers/MarketSetupHelpers";
 import {
-  buildContractMarketDataPayload, ContractMarketDataForm, contractMarketDataToForm, formatFixedDecimal, PRICE_DECIMALS, RATE_DECIMALS
+  buildContractMarketDataPayload, ContractMarketDataForm, ContractMarketDataInitial, contractMarketDataInitial, formatFixedDecimal,
+  instrumentOptionsFor, PRICE_DECIMALS, RATE_DECIMALS, roundToDecimals
 } from "siagrob1/helpers/ContractMarketDataHelpers";
 import { marketFetch, MarketResult, notFoundTextKey } from "siagrob1/helpers/MarketHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
@@ -22,10 +23,19 @@ import MarketModuleService from "siagrob1/services/MarketModuleService";
 import SessionService from "siagrob1/services/SessionService";
 import Dialog from "sap/m/Dialog";
 import Input from "sap/m/Input";
+import Select from "sap/m/Select";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 
 type InstrumentOption = { Code: string; Label: string };
+
+/** Campo do diálogo "Alterar dados de mercado" → id do Input (para marcar o erro de validação). */
+const DIALOG_INPUTS: Record<string, string> = {
+  exchangePrice: "contractMarketDataExchangePrice",
+  premium: "contractMarketDataPremium",
+  usdPerBag: "contractMarketDataUsdPerBag",
+  fxRate: "contractMarketDataFxRate",
+};
 
 /** Input do fragmento → propriedade do contrato; `perBag` = mostrado por saca, gravado por kg. */
 const NUMBER_FIELDS: Record<string, { property: string; perBag: boolean }> = {
@@ -62,6 +72,10 @@ export default class ContractMarketSection {
   private dataDialog?: Dialog;
   /** Trava do clique até o fim do PUT: clique duplo não manda dois pedidos. */
   private saving = false;
+  /** Instrumentos ativos (com a linha vazia); a lista do Select = estes + o código do contrato mostrado. */
+  private activeInstruments: InstrumentOption[] = [];
+  /** Texto inicial e números originais do diálogo aberto (campo não tocado volta exato no PUT). */
+  private dataInitial?: ContractMarketDataInitial;
 
   constructor(view: View, router: Router, ownRoute: string) {
     this.view = view;
@@ -117,8 +131,9 @@ export default class ContractMarketSection {
       // sem instrumentos o Select fica vazio; o resto da seção continua utilizável
     }
     // Primeira linha vazia: "sem instrumento de referência".
+    this.activeInstruments = [{ Code: "", Label: "" }, ...instruments];
     this.view.setModel(new JSONModel({
-      instruments: [{ Code: "", Label: "" }, ...instruments],
+      instruments: this.activeInstruments,
       detail: this.detail,
       canManage: this.detail && SessionService.hasPermission(MARKET_MANAGE),
     }), "marketSection");
@@ -132,6 +147,10 @@ export default class ContractMarketSection {
       controller: this,
     }) as ObjectPageSection;
     layout.insertSection(section, 1);
+    // Lista do Select montada por contrato (fora do formatter): a cada valor/contrato novo, ativos + o código atual.
+    const instrumentSelect = this.view.byId("contractMarketInstrument") as Select;
+    instrumentSelect?.getBinding("selectedKey")?.attachChange(
+      () => this.applyInstrumentOptions(instrumentSelect.getBindingContext()?.getProperty("MarketInstrumentCode")));
     return true;
   }
 
@@ -150,16 +169,14 @@ export default class ContractMarketSection {
    * O Select é só de leitura (formatter): ligação de mão dupla escreveria "" de volta ao renderizar um
    * contrato sem instrumento e geraria PATCH sem o usuário mexer. A troca grava pelo `change`.
    */
-  instrumentKey = (code: unknown): string => {
-    if (typeof code !== "string" || !code) return "";
-    // Instrumento hoje inativo (fora da lista de ativos): entra na lista para o Select não ficar vazio.
+  instrumentKey = (code: unknown): string => (typeof code === "string" ? code : "");
+
+  /** Instrumento hoje inativo do contrato mostrado entra na lista (só dele: a lista é refeita a cada contrato). */
+  private applyInstrumentOptions(code: unknown): void {
     const model = this.view.getModel("marketSection") as JSONModel;
-    const list = (model?.getProperty("/instruments") as InstrumentOption[]) ?? [];
-    if (model && !list.some((option) => option.Code === code)) {
-      model.setProperty("/instruments", [...list, { Code: code, Label: code }]);
-    }
-    return code;
-  };
+    const next = instrumentOptionsFor(this.activeInstruments, code);
+    if (model && model.getProperty("/instruments") !== next) model.setProperty("/instruments", next);
+  }
 
   onInstrumentChange = (ev: Select$ChangeEvent): void => {
     const select = ev.getSource();
@@ -192,7 +209,10 @@ export default class ContractMarketSection {
       return;
     }
     input.setValueState("None");
-    const stored = field.perBag ? usdPerBagToKg(value) : value;
+    // Arredonda para as casas mostradas ANTES de gravar: a tela nunca guarda mais precisão do que mostra.
+    const decimals = field.perBag || field.property === "MarketFxRate" ? RATE_DECIMALS : PRICE_DECIMALS;
+    const rounded = roundToDecimals(value, decimals);
+    const stored = field.perBag ? usdPerBagToKg(rounded) : rounded;
     this.setIfChanged(context, field.property, stored);
     // Reescreve o texto como foi entendido (o binding é só de leitura por causa do formatter).
     input.setValue(field.perBag ? this.formatUsdPerBag(stored)
@@ -210,10 +230,10 @@ export default class ContractMarketSection {
     const context = this.view.getBindingContext() as Context;
     if (!context || this.saving) return;
     // Instrumento inativo entra na lista (mesma regra do Select da seção).
-    this.instrumentKey(context.getProperty("MarketInstrumentCode"));
-    const form = contractMarketDataToForm((context.getObject() ?? {}) as Record<string, unknown>);
+    this.applyInstrumentOptions(context.getProperty("MarketInstrumentCode"));
+    this.dataInitial = contractMarketDataInitial((context.getObject() ?? {}) as Record<string, unknown>);
     if (!this.view.getModel("marketData")) this.view.setModel(new JSONModel(), "marketData");
-    this.dataModel().setData({ ...form, busy: false });
+    this.dataModel().setData({ ...this.dataInitial.form, busy: false });
     if (!this.dataDialog) {
       this.dataDialog = await Fragment.load({
         id: this.view.getId(),
@@ -258,9 +278,14 @@ export default class ContractMarketSection {
     const context = this.view.getBindingContext() as Context;
     const key = /\(([^)]+)\)$/.exec(context?.getPath() ?? "")?.[1];
     if (!key || this.saving) return;
-    const { payload, error } = buildContractMarketDataPayload(this.dataModel().getData() as ContractMarketDataForm);
+    const { payload, field, error } = buildContractMarketDataPayload(this.dataModel().getData() as ContractMarketDataForm, this.dataInitial);
     if (!payload) {
-      MessageBox.warning(this.text(error === "notPositive" ? "marketContractDataNotPositive" : numberErrorKey(error)));
+      const message = this.text(error === "notPositive" ? "marketContractDataNotPositive" : numberErrorKey(error));
+      // Marca o campo recusado; o `change` do campo limpa quando o valor fica válido.
+      const input = field ? this.view.byId(DIALOG_INPUTS[field]) as Input : undefined;
+      input?.setValueState("Error");
+      input?.setValueStateText(message);
+      MessageBox.warning(message);
       return;
     }
     this.saving = true;
@@ -281,6 +306,25 @@ export default class ContractMarketSection {
     this.dataDialog?.close();
     MessageToast.show(this.text("marketContractDataSaved"));
     // Recarrega o contrato mostrado: a seção e o log de alterações refletem a mudança.
-    context.refresh();
+    this.reloadContract(context);
   };
+
+  /** `refresh` lança com pendência no update group: tenta recarregar só o contrato; senão, avisa. */
+  private reloadContract(context: Context): void {
+    try {
+      context.refresh();
+      return;
+    } catch (error) {
+      console.warn("Contrato não recarregado por refresh.", error);
+    }
+    const warn = (error: unknown): void => {
+      console.warn("Contrato não recarregado por requestSideEffects.", error);
+      MessageBox.information(this.text("marketContractDataReopen"));
+    };
+    try {
+      context.requestSideEffects([{ $PropertyPath: "*" }]).catch(warn);
+    } catch (error) {
+      warn(error);
+    }
+  }
 }

@@ -21,16 +21,16 @@
 								</Select>
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketContractExchangePrice}">
-								<Input textAlign="End" value="{marketData>/exchangePrice}" change=".onMarketDataPriceChange" />
+								<Input id="contractMarketDataExchangePrice" textAlign="End" value="{marketData>/exchangePrice}" change=".onMarketDataPriceChange" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketContractPremium}">
-								<Input textAlign="End" value="{marketData>/premium}" change=".onMarketDataPriceChange" />
+								<Input id="contractMarketDataPremium" textAlign="End" value="{marketData>/premium}" change=".onMarketDataPriceChange" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketContractUsdPricePerBag}">
-								<Input textAlign="End" value="{marketData>/usdPerBag}" change=".onMarketDataRateChange" />
+								<Input id="contractMarketDataUsdPerBag" textAlign="End" value="{marketData>/usdPerBag}" change=".onMarketDataRateChange" />
 							</f:FormElement>
 							<f:FormElement label="{i18n>marketContractFxRate}">
-								<Input textAlign="End" value="{marketData>/fxRate}" change=".onMarketDataRateChange" />
+								<Input id="contractMarketDataFxRate" textAlign="End" value="{marketData>/fxRate}" change=".onMarketDataRateChange" />
 							</f:FormElement>
 						</f:formElements>
 					</f:FormContainer>

@@ -23,7 +23,7 @@
 						<f:FormContainer>
 							<f:formElements>
 								<f:FormElement label="{i18n>marketContractInstrument}">
-									<Select forceSelection="false" width="100%"
+									<Select id="contractMarketInstrument" forceSelection="false" width="100%"
 										editable="{ui>/editable}"
 										selectedKey="{ path: 'MarketInstrumentCode', targetType: 'any', formatter: '.instrumentKey' }" change=".onInstrumentChange"
 										items="{ path: 'marketSection>/instruments', templateShareable: false }">
