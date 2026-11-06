@@ -147,7 +147,8 @@ export default class Main extends BaseController {
     const text = (value: number | string): string => formatStrictDecimal(Number(value));
     void this.openDialog({
       title: this.text("marketStatementTitleEdit"), isNew: false, accounts: accountOptions(this.counterparties, "Broker", false),
-      accountId: String(row.AccountId ?? ""), date: row.Date,
+      // A lista não traz AccountId (auto-$select só pede o que as colunas usam): a chave vem do Account expandido.
+      accountId: String(row.AccountId ?? row.Account?.Id ?? ""), date: row.Date,
       dailyAdjustment: text(row.DailyAdjustment), marginRequired: text(row.MarginRequired), marginDeposited: text(row.MarginDeposited),
       currency: row.Currency, notes: row.Notes ?? "",
     }, context);
