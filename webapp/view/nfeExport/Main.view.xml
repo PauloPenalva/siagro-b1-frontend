@@ -6,7 +6,7 @@
 	xmlns:core="sap.ui.core"
 	xmlns:f="sap.ui.layout.form">
 
-	<Page title="Exportar XML/DANFE para o Contador" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0" busy="{ui>/busy}">
+	<Page title="Exportar XML/DANFE" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0" busy="{ui>/busy}">
 		<content>
 			<f:Form id="nfeExportForm" editable="true">
 				<f:layout>
