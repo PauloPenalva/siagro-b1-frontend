@@ -1,0 +1,71 @@
+<mvc:View
+	controllerName="siagrob1.controller.nfeExport.Main"
+	displayBlock="true"
+	xmlns="sap.m"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:f="sap.ui.layout.form">
+
+	<Page title="Exportar XML/DANFE para o Contador" showNavButton="true" navButtonPress=".onNavBack" busyIndicatorDelay="0" busy="{ui>/busy}">
+		<content>
+			<f:Form id="nfeExportForm" editable="true">
+				<f:layout>
+					<f:ColumnLayout columnsM="1" columnsL="2" columnsXL="2"/>
+				</f:layout>
+				<f:formContainers>
+					<f:FormContainer title="Período">
+						<f:formElements>
+							<f:FormElement label="Data inicial">
+								<DatePicker id="startDatePicker" required="true" value="{params>/StartDate}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy"/>
+							</f:FormElement>
+							<f:FormElement label="Data final">
+								<DatePicker id="endDatePicker" required="true" value="{params>/EndDate}" valueFormat="yyyy-MM-dd" displayFormat="dd/MM/yyyy"/>
+							</f:FormElement>
+							<f:FormElement label="Filial">
+								<f:fields>
+									<Input id="branchInput" showValueHelp="true" valueHelpOnly="true" valueHelpRequest=".openBranchsValueHelp" value="{params>/BranchCode}" placeholder="Todas">
+										<layoutData>
+											<f:ColumnElementData cellsLarge="4" cellsSmall="4"/>
+										</layoutData>
+										<customData>
+											<core:CustomData key="descriptionProperty" value="BranchName:ShortName"/>
+										</customData>
+									</Input>
+									<Input value="{params>/BranchName}" editable="false"/>
+									<Button icon="sap-icon://decline" tooltip="Todas as filiais" press=".onClearBranch" enabled="{= !!${params>/BranchCode} }">
+										<layoutData>
+											<f:ColumnElementData cellsLarge="1" cellsSmall="2"/>
+										</layoutData>
+									</Button>
+								</f:fields>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+					<f:FormContainer title="Conteúdo">
+						<f:formElements>
+							<f:FormElement label="Incluir DANFE (PDF)">
+								<Switch state="{params>/IncludeDanfe}" customTextOn="Sim" customTextOff="Não"/>
+							</f:FormElement>
+							<f:FormElement label="Incluir XMLs de terceiros recebidos">
+								<Switch state="{params>/IncludeReceived}" customTextOn="Sim" customTextOff="Não"/>
+							</f:FormElement>
+						</f:formElements>
+					</f:FormContainer>
+				</f:formContainers>
+			</f:Form>
+
+			<MessageStrip
+				class="sapUiSmallMarginBeginEnd"
+				showIcon="true"
+				type="Information"
+				text="O arquivo ZIP traz, por pasta (Saídas, Entradas próprias e Terceiros), o XML autorizado de cada NF-e, os eventos de cancelamento, as cartas de correção, as inutilizações e, se marcado, o DANFE. O resumo.csv lista tudo para conferência. O período considera a data de autorização da NF-e. Com DANFE, períodos longos podem levar alguns minutos."/>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button text="Gerar arquivo" type="Emphasized" icon="sap-icon://download" press=".onGenerate"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+
+</mvc:View>

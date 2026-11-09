@@ -1620,6 +1620,11 @@
           "target": "spedFiscal"
         },
         {
+          "pattern": "nfe-export",
+          "name": "nfeExport",
+          "target": "nfeExport"
+        },
+        {
           "pattern": "ecd",
           "name": "ecd",
           "target": "ecd"
@@ -3557,6 +3562,12 @@
           "id": "spedFiscal",
           "level": 1,
           "name": "siagrob1.view.spedFiscal.Main",
+          "clearControlAggregation": true
+        },
+        "nfeExport": {
+          "id": "nfeExport",
+          "level": 1,
+          "name": "siagrob1.view.nfeExport.Main",
           "clearControlAggregation": true
         },
         "reinf": {
