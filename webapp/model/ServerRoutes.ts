@@ -7,6 +7,8 @@ export default {
   fiscalConference: '/reports/FiscalConference',
   // SPED Fiscal (só STANDALONE): POST baixa o TXT; POST /Check devolve as inconsistências.
   spedFiscal: '/reports/SpedFiscal',
+  // Exportação para o contador (só STANDALONE): POST baixa o ZIP com XMLs e DANFEs do período.
+  nfeExport: '/reports/NfeExport',
   // EFD Contribuições (só STANDALONE): POST baixa o TXT; POST /Check devolve inconsistências e totais.
   efdContributions: '/reports/EfdContributions',
   // ECD / SPED Contábil (só STANDALONE): POST baixa o TXT; POST /Check devolve inconsistências e totais.
