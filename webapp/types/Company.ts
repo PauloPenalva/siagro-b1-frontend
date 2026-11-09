@@ -10,6 +10,7 @@ export type Company = {
   CompanyName: string;
   ConnectionString: string;
   SapCompanyDb?: string;
+  ShowHomeDashboard: boolean;
 };
 
 /** Retorno da action `CompaniesTestConnection`. */
@@ -19,4 +20,10 @@ export type CompanyTestConnectionResult = {
   Server: string;
   Database: string;
   PendingMigrations: string[];
+};
+
+/** GET /api/companies/current/home: como a home da empresa da sessão deve abrir. */
+export type CompanyHome = {
+  showHomeDashboard: boolean;
+  hasLogo: boolean;
 };

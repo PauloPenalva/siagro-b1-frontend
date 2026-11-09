@@ -48,6 +48,8 @@
             />
             <Label text="Banco no SAP B1" visible="{= ${sessionModel>/erp} === 'SAPB1' }" />
             <Input value="{SapCompanyDb}" maxLength="100" visible="{= ${sessionModel>/erp} === 'SAPB1' }" />
+            <Label text="Exibir painel na home" />
+            <CheckBox selected="{ShowHomeDashboard}" />
             <Label text="" />
             <Text text="O banco precisa existir e estar com as migrations aplicadas (dotnet ef database update --context AppDbContext --connection &quot;...&quot;) antes do cadastro. A senha volta mascarada (*****) na edição: deixe assim para mantê-la." class="sapUiTinyMarginTop" />
         </f:content>

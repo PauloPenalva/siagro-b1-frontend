@@ -65,3 +65,16 @@
   .siagroMarketTerminal td:has([data-market-flash^="up"]) { box-shadow: inset 3px 0 0 var(--sapPositiveColor, #107e3e); }
   .siagroMarketTerminal td:has([data-market-flash^="down"]) { box-shadow: inset 3px 0 0 var(--sapNegativeColor, #bb0000); }
 }
+
+/* Home sem painel: logo da empresa centralizado, sem distorcer */
+.siagroHomeLogo img {
+	max-width: 60vw;
+	max-height: 50vh;
+	object-fit: contain;
+}
+
+/* Prévia do logo no cadastro de Empresas */
+.siagroCompanyLogoPreview img {
+	max-height: 6rem;
+	object-fit: contain;
+}
