@@ -9,10 +9,10 @@
 	<Page showHeader="true" title="Editar Empresa" busy="{ui>/busy}" busyIndicatorDelay="0">
 		<content>
 			<core:Fragment fragmentName="siagrob1.view.companies.fragments.Form" type="XML" />
-			<!-- Logo mostrado na home quando "Exibir painel na home" está desmarcado. Grava na hora, fora do Salvar. -->
+			<!-- Logo da empresa: relatórios/documentos fiscais e home sem painel. Grava na hora, fora do Salvar. -->
 			<VBox class="sapUiSmallMargin">
 				<Title text="Logo da empresa" level="H3" class="sapUiTinyMarginBottom"/>
-				<Text text="Aparece na home quando o painel está desligado. Sem logo, a home mostra o do Siagro. PNG ou JPG, até 1 MB." class="sapUiTinyMarginBottom"/>
+				<Text text="Sai nos relatórios, DANFE, DACTE e DAMDFE (em até 1 minuto) e na home quando o painel está desligado. Sem logo, os relatórios usam o arquivo configurado no servidor e a home mostra o do Siagro. PNG ou JPG, até 1 MB." class="sapUiTinyMarginBottom"/>
 				<Image src="{logo>/url}" visible="{logo>/hasLogo}" alt="Logo da empresa" densityAware="false" class="siagroCompanyLogoPreview sapUiTinyMarginBottom"/>
 				<HBox alignItems="Center" wrap="Wrap">
 					<u:FileUploader
