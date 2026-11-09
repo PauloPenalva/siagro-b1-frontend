@@ -3,11 +3,32 @@
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
-	xmlns:core="sap.ui.core">
+	xmlns:core="sap.ui.core"
+	xmlns:u="sap.ui.unified">
 
 	<Page showHeader="true" title="Editar Empresa" busy="{ui>/busy}" busyIndicatorDelay="0">
 		<content>
 			<core:Fragment fragmentName="siagrob1.view.companies.fragments.Form" type="XML" />
+			<!-- Logo da empresa: relatórios/documentos fiscais e home sem painel. Grava na hora, fora do Salvar. -->
+			<VBox class="sapUiSmallMargin">
+				<Title text="Logo da empresa" level="H3" class="sapUiTinyMarginBottom"/>
+				<Text text="Sai nos relatórios, DANFE, DACTE e DAMDFE (em até 1 minuto) e na home quando o painel está desligado. Sem logo, os relatórios usam o arquivo configurado no servidor e a home mostra o do Siagro. PNG ou JPG, até 1 MB." class="sapUiTinyMarginBottom"/>
+				<Image src="{logo>/url}" visible="{logo>/hasLogo}" alt="Logo da empresa" densityAware="false" class="siagroCompanyLogoPreview sapUiTinyMarginBottom"/>
+				<HBox alignItems="Center" wrap="Wrap">
+					<u:FileUploader
+						id="logoUploader"
+						name="logo"
+						buttonText="Escolher imagem..."
+						placeholder="Nenhuma imagem selecionada"
+						fileType="png,jpg,jpeg"
+						maximumFileSize="1"
+						typeMissmatch=".onLogoTypeMismatch"
+						fileSizeExceed=".onLogoTooLarge"
+						change=".onLogoSelected"/>
+					<Button text="Enviar logo" type="Emphasized" press=".onUploadLogo" class="sapUiTinyMarginBegin"/>
+					<Button text="Remover logo" press=".onRemoveLogo" enabled="{logo>/hasLogo}" class="sapUiTinyMarginBegin"/>
+				</HBox>
+			</VBox>
 		</content>
 		<footer>
 			<Toolbar>

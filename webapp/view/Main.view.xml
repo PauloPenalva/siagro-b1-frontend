@@ -11,6 +11,11 @@
 		formatter: 'siagrob1/model/formatter'
 	}">
 
+	<!-- Empresa com o painel desligado (cadastro de Empresas): só o logo, centralizado. -->
+	<FlexBox visible="{= !!${dashboard>/logoUrl}}" height="100%" alignItems="Center" justifyContent="Center">
+		<Image src="{dashboard>/logoUrl}" alt="Logo da empresa" width="20rem" densityAware="false" class="siagroHomeLogo"/>
+	</FlexBox>
+
 	<!-- Painel da home (spec 2026-10-16-home-dashboard-design). Em SAPB1 o painel fica oculto: a home volta a ser vazia. -->
 	<f:DynamicPage busyIndicatorDelay="0" busy="{dashboard>/loading}" visible="{= !${dashboard>/hidden}}">
 		<f:title>

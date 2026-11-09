@@ -2,6 +2,8 @@ export default {
   login: '/security/auth/login',
   // Painel da home (só STANDALONE; 404 em SAPB1).
   dashboard: '/reports/Dashboard',
+  currentCompanyHome: '/api/companies/current/home',
+  currentCompanyLogo: '/api/companies/current/logo',
   fiscalConference: '/reports/FiscalConference',
   // SPED Fiscal (só STANDALONE): POST baixa o TXT; POST /Check devolve as inconsistências.
   spedFiscal: '/reports/SpedFiscal',
@@ -196,6 +198,7 @@ export default {
   // Cadastro de empresas (bancos do deploy) e teste da string de conexão (action via bindContext).
   companies: '/odata/Companies',
   companiesTestConnection: '/CompaniesTestConnection(...)',
+  companyLogo: (code: string) => `/api/companies/${encodeURIComponent(code)}/logo`,
   roles: 'odata/Roles',
   profiles: 'odata/Profiles',
   
