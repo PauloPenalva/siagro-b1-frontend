@@ -3,7 +3,8 @@
 	displayBlock="true"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
-	xmlns:core="sap.ui.core">
+	xmlns:core="sap.ui.core"
+	xmlns:u="sap.ui.unified">
 
 	<Page showHeader="true" title="Editar Empresa" busy="{ui>/busy}" busyIndicatorDelay="0">
 		<content>
