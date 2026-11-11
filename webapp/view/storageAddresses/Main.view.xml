@@ -45,6 +45,7 @@
 						<ToolbarSpacer />
 						<Button type="Transparent" text="Atualizar" icon="sap-icon://refresh" press=".onRefresh"/>
 						<Button type="Transparent" text="Incluir" icon="sap-icon://add" press=".onCreate"/>
+						<Button type="Transparent" text="Visualizar" icon="sap-icon://detail-view" press=".onDetail"/>
 						<Button type="Transparent" text="Editar" icon="sap-icon://edit" press=".onEdit"/>
 						<Button type="Transparent" text="Encerrar" icon="sap-icon://locked" press=".onCloseLot"/>
 						<Button type="Transparent" text="Reabrir" icon="sap-icon://unlocked" press=".onReopenLot"/>

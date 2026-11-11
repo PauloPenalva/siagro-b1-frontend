@@ -218,4 +218,24 @@ export default class Detail extends PurchaseContractsBaseController {
       this.setBusy(false);
     }
   }
+
+  /**
+   * Extrato com Lotes (GAC-1198): o extrato do contrato precedido do detalhado dos lotes de
+   * armazenagem que chegaram ao contrato por transferência de titularidade.
+   */
+  async onPrintContractLotStatement() {
+    const oContext = this.getView().getBindingContext() as Context;
+    if (!oContext) {
+      return;
+    }
+
+    try {
+      this.setBusy(true);
+      await openPdfReport(`${this.api.contractStatementReport}/purchase/${oContext.getProperty("Key") as string}/lots/print`, {});
+    } catch (error) {
+      MessageBox.error((error as Error)?.message ?? "Falha ao gerar o extrato do contrato com lotes.");
+    } finally {
+      this.setBusy(false);
+    }
+  }
 }

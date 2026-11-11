@@ -38,6 +38,7 @@
           <Button visible="{= !${ui>/readonly} }" text="Assinatura" type="Transparent" icon="sap-icon://signature" press=".onOpenSignatureStatusDialog"/>
           <Button visible="{= !${ui>/readonly} }" text="Liberação de Pagamento" type="Transparent" icon="sap-icon://payment-approval" press=".onOpenPaymentReleaseDialog"/>
           <Button text="Extrato" tooltip="Extrato do contrato: movimentação física, fiscal e financeira" type="Transparent" icon="sap-icon://customer-financial-fact-sheet" press=".onPrintContractStatement"/>
+          <Button text="Extrato com Lotes" tooltip="Extrato do contrato com o detalhado dos lotes de armazenagem de origem: romaneios, classificação, descontos e despesas" type="Transparent" icon="sap-icon://customer-financial-fact-sheet" press=".onPrintContractLotStatement"/>
           <Button visible="{= !${ui>/readonly} &amp;&amp; ${ui>/preContractPrintVisible} }" text="Imprimir Pré-Contrato" type="Transparent" icon="sap-icon://print" press=".onPrintPreContract"/>
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>

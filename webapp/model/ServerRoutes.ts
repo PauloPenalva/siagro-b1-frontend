@@ -275,6 +275,8 @@ export default {
   priceFixationReport: '/reports/PriceFixation',
   // Extrato do contrato (conferência físico/fiscal/financeiro): + `/purchase|sales/{key}/print`.
   contractStatementReport: '/reports/ContractStatement',
+  // Posição do Lote de Armazenagem, o papel entregue ao produtor: + `/{code}/print`.
+  storageLotStatementReport: '/reports/StorageLotStatement',
 
   // Contratos para alocar o romaneio; perna de Expedição recebe só o contrato da liberação.
   purchaseContractsGetAvaiablesListForTransaction: '/PurchaseContractsGetAvaiablesListForTransaction(...)',
