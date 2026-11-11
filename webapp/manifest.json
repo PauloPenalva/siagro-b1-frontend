@@ -239,6 +239,11 @@
           "target": "storageAddressesEdit"
         },
         {
+          "pattern": "storage-addresses/{id}/detail",
+          "name": "storageAddressesDetail",
+          "target": "storageAddressesDetail"
+        },
+        {
           "pattern": "storage-addresses/reprocessing",
           "name": "storageAddressesReprocessing",
           "target": "storageAddressesReprocessing"
@@ -1887,6 +1892,12 @@
 					"id": "storageAddressesEdit",
           "level": 2,
 					"name": "siagrob1.view.storageAddresses.Edit",
+          "clearControlAggregation": true
+				},
+        "storageAddressesDetail": {
+					"id": "storageAddressesDetail",
+          "level": 2,
+					"name": "siagrob1.view.storageAddresses.Detail",
           "clearControlAggregation": true
 				},
         "storageAddressesReprocessing": {

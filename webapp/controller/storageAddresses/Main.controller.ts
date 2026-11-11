@@ -87,6 +87,14 @@ export default class Main extends CommonController {
 			this.navTo("storageAddressesNew");
 	}
 
+  /** Abre o detalhe do lote: romaneios e classificação (GAC-1198). */
+  onDetail(): void {
+    const oContext = this.selectedLot();
+    if (!oContext) return;
+
+    this.navTo("storageAddressesDetail", { id: oContext.getProperty("Code") as string });
+  }
+
 	onEdit(): void {
 		const oTable = this.byId("tableLoteArmazenagem") as Table;
     const i = oTable.getSelectedIndex()
