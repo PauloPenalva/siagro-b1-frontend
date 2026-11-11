@@ -68,6 +68,45 @@ export function pivotLotTransactions(
   return { rows, attribs };
 }
 
+/** Filtros da tabela de romaneios do lote. Lista vazia = sem restrição naquele filtro. */
+export type LotTransactionFilter = { statuses: string[]; types: string[]; search: string };
+
+/** A tela abre sem os cancelados: eles não formam saldo e só poluem a conferência. */
+export const DEFAULT_LOT_STATUSES = ["Pending", "Confirmed", "Invoiced", "Returned"];
+
+export const defaultLotFilter = (): LotTransactionFilter =>
+  ({ statuses: [...DEFAULT_LOT_STATUSES], types: [], search: "" });
+
+const SEARCH_FIELDS = ["Code", "TruckCode", "InvoiceNumber"];
+
+/**
+ * Aplica os filtros da barra da tabela. A busca olha código do romaneio, placa e documento, sem
+ * diferenciar maiúsculas. Os totais do rodapé NÃO passam por aqui: o saldo do lote é sempre o da
+ * lista inteira.
+ */
+export function filterLotTransactions(
+  rows: LotTransaction[], filter: LotTransactionFilter
+): LotTransaction[] {
+  const search = (filter.search ?? "").trim().toLowerCase();
+  const statuses = filter.statuses ?? [];
+  const types = filter.types ?? [];
+
+  return rows.filter((row) => {
+    if (statuses.length && !statuses.includes(row.TransactionStatus)) return false;
+    if (types.length && !types.includes(row.TransactionType)) return false;
+    if (!search) return true;
+    return SEARCH_FIELDS.some((field) => {
+      const value = row[field];
+      return typeof value === "string" && value.toLowerCase().includes(search);
+    });
+  });
+}
+
+/** Tipos de romaneio presentes no lote, sem repetir, na ordem em que aparecem. */
+export function lotTransactionTypes(rows: LotTransaction[]): string[] {
+  return [...new Set(rows.map((row) => row.TransactionType))];
+}
+
 const COUNTED_STATUSES = ["Confirmed", "Invoiced"];
 const RECEIPT_TYPES = ["Receipt", "ShipmentReleased", "SalesShipmentReturn"];
 const SHIPMENT_TYPES = ["Shipment", "SalesShipment"];

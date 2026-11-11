@@ -1,4 +1,7 @@
 import {
+	defaultLotFilter,
+	filterLotTransactions,
+	lotTransactionTypes,
 	lotTotals,
 	pivotLotTransactions,
 	LotTransaction,
@@ -99,6 +102,44 @@ QUnit.test("romaneio sem classificação e lista vazia não quebram", function (
 	]);
 	assert.strictEqual(rows.length, 1);
 	assert.deepEqual(attribs, []);
+});
+
+QUnit.module("StorageAddressDetailHelpers - filterLotTransactions (filtros da tabela)");
+
+const filterSample = () => [
+	transaction({ Key: "a", TransactionStatus: "Confirmed", TransactionType: "Receipt", Code: "00001581", TruckCode: "ABC1D23" }),
+	transaction({ Key: "b", TransactionStatus: "Cancelled", TransactionType: "Receipt", Code: "00001582" }),
+	transaction({ Key: "c", TransactionStatus: "Pending", TransactionType: "Shipment", Code: "00001590", InvoiceNumber: "7788" }),
+	transaction({ Key: "d", TransactionStatus: "Returned", TransactionType: "SalesShipment", Code: "00001601" }),
+];
+
+QUnit.test("o filtro padrão esconde só os cancelados", function (assert) {
+	const rows = filterLotTransactions(filterSample(), defaultLotFilter());
+
+	assert.deepEqual(rows.map((row) => row.Key), ["a", "c", "d"]);
+});
+
+QUnit.test("sem status marcado mostra tudo, inclusive cancelado", function (assert) {
+	const rows = filterLotTransactions(filterSample(), { statuses: [], types: [], search: "" });
+
+	assert.strictEqual(rows.length, 4);
+});
+
+QUnit.test("status, tipo e busca se combinam", function (assert) {
+	const keys = (filter: Parameters<typeof filterLotTransactions>[1]) =>
+		filterLotTransactions(filterSample(), filter).map((row) => row.Key);
+
+	assert.deepEqual(keys({ statuses: ["Cancelled"], types: [], search: "" }), ["b"]);
+	assert.deepEqual(keys({ statuses: [], types: ["Receipt"], search: "" }), ["a", "b"]);
+	assert.deepEqual(keys({ statuses: ["Confirmed"], types: ["Shipment"], search: "" }), []);
+	assert.deepEqual(keys({ statuses: [], types: [], search: " abc1d " }), ["a"], "placa, sem diferenciar maiúsculas");
+	assert.deepEqual(keys({ statuses: [], types: [], search: "7788" }), ["c"], "documento");
+	assert.deepEqual(keys({ statuses: [], types: [], search: "0000159" }), ["c"], "código do romaneio");
+});
+
+QUnit.test("lista os tipos presentes sem repetir", function (assert) {
+	assert.deepEqual(lotTransactionTypes(filterSample()), ["Receipt", "Shipment", "SalesShipment"]);
+	assert.deepEqual(lotTransactionTypes([]), []);
 });
 
 QUnit.module("StorageAddressDetailHelpers - lotTotals (rodapé do lote)");

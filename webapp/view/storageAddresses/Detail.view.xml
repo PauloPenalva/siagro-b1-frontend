@@ -118,8 +118,44 @@
 			>
 				<t:extension>
 					<OverflowToolbar>
-						<Title text="Romaneios do Lote ({lot>/count})"/>
+						<Title text="Romaneios do Lote ({= ${lot>/rows}.length } de {lot>/count})"/>
 						<ToolbarSpacer/>
+						<!-- Filtros no navegador: a lista inteira já está carregada para o saldo do rodapé. -->
+						<MultiComboBox
+							id="filterLotTransactionStatus"
+							width="16rem"
+							placeholder="Status"
+							tooltip="Status do romaneio. Sem nenhum marcado, mostra todos."
+							selectedKeys="{lot>/filter/statuses}"
+							selectionFinish=".onFilterTransactions">
+							<core:Item key="Pending" text="Pendente"/>
+							<core:Item key="Confirmed" text="Confirmado"/>
+							<core:Item key="Invoiced" text="Faturado"/>
+							<core:Item key="Returned" text="Devolvido"/>
+							<core:Item key="Cancelled" text="Cancelado"/>
+						</MultiComboBox>
+						<MultiComboBox
+							id="filterLotTransactionType"
+							width="14rem"
+							placeholder="Tipo"
+							tooltip="Tipo do romaneio. Sem nenhum marcado, mostra todos."
+							selectedKeys="{lot>/filter/types}"
+							selectionFinish=".onFilterTransactions"
+							items="{lot>/types}">
+							<core:Item key="{lot>key}" text="{lot>text}"/>
+						</MultiComboBox>
+						<SearchField
+							id="filterLotTransactionSearch"
+							width="14rem"
+							placeholder="Romaneio, placa ou documento"
+							value="{lot>/filter/search}"
+							liveChange=".onFilterTransactions"
+							search=".onFilterTransactions"/>
+						<Button
+							type="Transparent"
+							icon="sap-icon://clear-filter"
+							tooltip="Voltar ao filtro padrão (sem os cancelados)"
+							press=".onResetTransactionFilter"/>
 						<Button type="Transparent" text="Atualizar" icon="sap-icon://refresh" press=".onRefresh"/>
 						<Button type="Transparent" text="Exportar Excel" icon="sap-icon://excel-attachment" press=".onExcel"/>
 					</OverflowToolbar>
