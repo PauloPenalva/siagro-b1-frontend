@@ -10,7 +10,7 @@
 		formatter: 'siagrob1/model/formatter'
 	}">
 
-	<f:DynamicPage id="pageStorageAddressDetail" busyIndicatorDelay="0">
+	<f:DynamicPage id="pageStorageAddressDetail" busyIndicatorDelay="0" fitContent="true">
 		<f:title>
 			<f:DynamicPageTitle>
 				<f:heading>
@@ -24,6 +24,12 @@
 				</f:snappedContent>
 				<f:actions>
 					<Button text="Voltar para Lista de Lotes" type="Transparent" press=".navToStorageAddressesList"/>
+					<Button
+						text="Posição do Lote"
+						tooltip="Posição do lote para enviar ao produtor: romaneios, classificação, descontos, saldo e despesas"
+						type="Transparent"
+						icon="sap-icon://print"
+						press=".onPrintLotStatement"/>
 					<Button text="Editar" type="Transparent" icon="sap-icon://edit" press=".onEdit"/>
 				</f:actions>
 			</f:DynamicPageTitle>
@@ -91,6 +97,10 @@
 			</f:DynamicPageHeader>
 		</f:header>
 		<f:content>
+			<!-- `f:content` aceita um controle só: as três listas do lote ficam em abas. -->
+			<IconTabBar id="tabsStorageAddressDetail" expandable="false" stretchContentHeight="true" applyContentPadding="false">
+				<items>
+					<IconTabFilter key="transactions" text="Romaneios" count="{lot>/count}">
 			<!-- A tabela lê o JSONModel `lot`, e não o OData direto: a classificação é uma lista por
 			     romaneio, e para virar coluna precisa ser reorganizada no controller. As colunas de
 			     classificação são criadas lá, depois das fixas. -->
@@ -265,6 +275,203 @@
 					</OverflowToolbar>
 				</t:footer>
 			</t:Table>
+					</IconTabFilter>
+					<IconTabFilter key="transfers" text="Transferências de Titularidade" count="{= ${lot>/transfers}.length }">
+						<t:Table
+							id="tableStorageAddressTransfers"
+							busyIndicatorDelay="0"
+							selectionMode="Single"
+							selectionBehavior="Row"
+							class="sapUiSizeCondensed"
+							visibleRowCountMode="Auto"
+							alternateRowColors="true"
+							rowActionCount="1"
+							noData="Nenhuma transferência de titularidade neste lote."
+							rows="{lot>/transfers}"
+						>
+							<t:rowActionTemplate>
+								<t:RowAction>
+									<t:items>
+										<t:RowActionItem type="Navigation" press=".onTransferNavigate"/>
+									</t:items>
+								</t:RowAction>
+							</t:rowActionTemplate>
+							<t:columns>
+								<t:Column label="Status" sortProperty="TransferStatus" hAlign="Center" width="8rem">
+									<t:template>
+										<ObjectStatus
+											inverted="true"
+											state="{
+												path: 'lot>TransferStatus',
+												formatter: '.formatter.stateOwnershipTransferStatus'
+											}"
+											text="{
+												path: 'lot>TransferStatus',
+												formatter: '.formatter.formatOwnershipTransferStatus'
+											}"/>
+									</t:template>
+								</t:Column>
+								<t:Column label="Codigo" sortProperty="TransferCode" width="8rem">
+									<t:template>
+										<Text text="{lot>TransferCode}" wrapping="false"/>
+									</t:template>
+								</t:Column>
+								<t:Column label="Data" sortProperty="Date" width="7rem">
+									<t:template>
+										<Text
+											wrapping="false"
+											text="{
+												path: 'lot>Date',
+												formatter: '.formatter.formatDate'
+											}"/>
+									</t:template>
+								</t:Column>
+								<t:Column label="Sentido" sortProperty="DirectionText" width="7rem">
+									<t:template>
+										<Text text="{lot>DirectionText}" wrapping="false"/>
+									</t:template>
+								</t:Column>
+								<t:Column label="Lote Origem" sortProperty="StorageAddressOriginCode" width="8rem">
+									<t:template>
+										<Text text="{lot>StorageAddressOriginCode}" wrapping="false"/>
+									</t:template>
+								</t:Column>
+								<t:Column label="Lote Destino" sortProperty="StorageAddressDestinationCode" width="8rem">
+									<t:template>
+										<Text text="{lot>StorageAddressDestinationCode}" wrapping="false"/>
+									</t:template>
+								</t:Column>
+								<t:Column label="Quantidade" sortProperty="Quantity" hAlign="End" width="9rem">
+									<t:template>
+										<Text
+											wrapping="false"
+											text="{
+												path: 'lot>Quantity',
+												type: 'sap.ui.model.type.Float',
+												formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+											}"/>
+									</t:template>
+								</t:Column>
+								<t:Column label="UM" sortProperty="UomCode" width="4rem">
+									<t:template>
+										<Text text="{lot>UomCode}" wrapping="false"/>
+									</t:template>
+								</t:Column>
+								<t:Column label="Contrato de Compra" sortProperty="PurchaseContractCode" width="10rem">
+									<t:template>
+										<Text text="{lot>PurchaseContractCode}" wrapping="false"/>
+									</t:template>
+								</t:Column>
+								<t:Column label="Observações" sortProperty="Comments" width="20rem">
+									<t:template>
+										<Text text="{lot>Comments}" wrapping="false"/>
+									</t:template>
+								</t:Column>
+							</t:columns>
+						</t:Table>
+					</IconTabFilter>
+					<IconTabFilter key="invoices" text="Faturas de Armazenagem" count="{= ${lot>/invoices}.length }">
+						<t:Table
+							id="tableStorageAddressInvoices"
+							busyIndicatorDelay="0"
+							selectionMode="Single"
+							selectionBehavior="Row"
+							class="sapUiSizeCondensed"
+							visibleRowCountMode="Auto"
+							alternateRowColors="true"
+							rowActionCount="1"
+							noData="Nenhuma fatura de armazenagem neste lote."
+							rows="{lot>/invoices}"
+						>
+							<t:rowActionTemplate>
+								<t:RowAction>
+									<t:items>
+										<t:RowActionItem type="Navigation" press=".onInvoiceNavigate"/>
+									</t:items>
+								</t:RowAction>
+							</t:rowActionTemplate>
+							<t:columns>
+								<t:Column label="Status" sortProperty="Status" hAlign="Center" width="10rem">
+									<t:template>
+										<ObjectStatus
+											inverted="true"
+											state="{
+												path: 'lot>Status',
+												formatter: '.formatter.stateStorageInvoiceStatus'
+											}"
+											text="{
+												path: 'lot>Status',
+												formatter: '.formatter.formatStorageInvoiceStatus'
+											}"/>
+									</t:template>
+								</t:Column>
+								<t:Column label="Codigo" sortProperty="Code" width="8rem">
+									<t:template>
+										<Text text="{lot>Code}" wrapping="false"/>
+									</t:template>
+								</t:Column>
+								<t:Column label="Emissão" sortProperty="ClosingDate" width="7rem">
+									<t:template>
+										<Text
+											wrapping="false"
+											text="{
+												path: 'lot>ClosingDate',
+												formatter: '.formatter.formatDate'
+											}"/>
+									</t:template>
+								</t:Column>
+								<t:Column label="Início" sortProperty="PeriodStart" width="7rem">
+									<t:template>
+										<Text
+											wrapping="false"
+											text="{
+												path: 'lot>PeriodStart',
+												formatter: '.formatter.formatDate'
+											}"/>
+									</t:template>
+								</t:Column>
+								<t:Column label="Fim" sortProperty="PeriodEnd" width="7rem">
+									<t:template>
+										<Text
+											wrapping="false"
+											text="{
+												path: 'lot>PeriodEnd',
+												formatter: '.formatter.formatDate'
+											}"/>
+									</t:template>
+								</t:Column>
+								<t:Column label="Valor" sortProperty="TotalAmount" hAlign="End" width="9rem">
+									<t:template>
+										<Text
+											wrapping="false"
+											text="{
+												path: 'lot>TotalAmount',
+												type: 'sap.ui.model.type.Float',
+												formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+											}"/>
+									</t:template>
+								</t:Column>
+								<t:Column label="Quebra" sortProperty="TotalQuantityLoss" hAlign="End" width="9rem">
+									<t:template>
+										<Text
+											wrapping="false"
+											text="{
+												path: 'lot>TotalQuantityLoss',
+												type: 'sap.ui.model.type.Float',
+												formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+											}"/>
+									</t:template>
+								</t:Column>
+								<t:Column label="Observações" sortProperty="Notes" width="20rem">
+									<t:template>
+										<Text text="{lot>Notes}" wrapping="false"/>
+									</t:template>
+								</t:Column>
+							</t:columns>
+						</t:Table>
+					</IconTabFilter>
+				</items>
+			</IconTabBar>
 		</f:content>
 	</f:DynamicPage>
 

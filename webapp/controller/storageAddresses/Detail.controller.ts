@@ -1,6 +1,8 @@
+import IconTabBar from "sap/m/IconTabBar";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import Text from "sap/m/Text";
+import Control from "sap/ui/core/Control";
 import { HorizontalAlign } from "sap/ui/core/library";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import { Column as ExportColumn, EdmType, SpreadsheetSettings } from "sap/ui/export/library";
@@ -18,6 +20,7 @@ import {
   LotTransaction,
   pivotLotTransactions,
 } from "siagrob1/helpers/StorageAddressDetailHelpers";
+import { openPdfReport } from "siagrob1/helpers/PdfReportHelpers";
 import CommonController from "../common/CommonController";
 
 /** Texto do usuário dentro de literal OData: aspa simples se escreve dobrada. */
@@ -33,12 +36,26 @@ const MOVEMENT_DETAIL_TYPES = [
   "Receipt", "Shipment", "TechnicalLoss", "SalesShipmentReturn", "WarehouseLoss", "WarehouseGain",
 ];
 
+/** Linha de uma lista ligada ao lote (transferência de titularidade, fatura de armazenagem). */
+type LotRelatedRow = { Key: string; [property: string]: unknown };
+
 const emptyLot = () => ({
   rows: [] as LotTransaction[],
   attribs: [] as LotQualityAttrib[],
   count: 0,
   totals: lotTotals([]),
+  transfers: [] as LotRelatedRow[],
+  invoices: [] as LotRelatedRow[],
 });
+
+/** Edm.Decimal chega como texto: vira número para a coluna ordenar por valor. */
+const withNumbers = (row: LotRelatedRow, fields: string[]): LotRelatedRow => {
+  const copy: LotRelatedRow = { ...row };
+  for (const field of fields) {
+    if (copy[field] != null) copy[field] = Number(copy[field]);
+  }
+  return copy;
+};
 
 /**
  * Detalhe do Lote de Armazenagem (GAC-1198): os romaneios do lote e a classificação de cada um
@@ -67,6 +84,7 @@ export default class Detail extends CommonController {
     this.code = id;
 
     this.getView().bindElement({ path: `/StorageAddresses('${quote(id)}')` });
+    (this.byId("tabsStorageAddressDetail") as IconTabBar).setSelectedKey("transactions");
     void this.loadTransactions();
   }
 
@@ -90,12 +108,16 @@ export default class Detail extends CommonController {
     table.setBusy(true);
 
     try {
-      const transactions = await this.requestAllTransactions();
+      const [transactions, transfers, invoices] = await Promise.all([
+        this.requestAllTransactions(),
+        this.requestTransfers(),
+        this.requestInvoices(),
+      ]);
       if (token !== this.loadToken) return;
 
       const { rows, attribs } = pivotLotTransactions(transactions);
       this.rebuildQualityColumns(attribs);
-      lotModel.setData({ rows, attribs, count: rows.length, totals: lotTotals(rows) });
+      lotModel.setData({ rows, attribs, count: rows.length, totals: lotTotals(rows), transfers, invoices });
     } catch (err) {
       if (token !== this.loadToken) return;
       // Erro técnico de OData já foi mostrado pelo handler de mensagens do Component.
@@ -107,16 +129,12 @@ export default class Detail extends CommonController {
     }
   }
 
-  private async requestAllTransactions(): Promise<LotTransaction[]> {
-    const binding = (this.getModel() as ODataModel).bindList(
+  private requestAllTransactions(): Promise<LotTransaction[]> {
+    return this.requestAll<LotTransaction>(
       "/StorageTransactions",
-      undefined,
-      // `$orderby` explícito: com `$skip`/`$top` o servidor reordena por chave e a ordem do
-      // service se perde. RowId desempata os romaneios do mesmo dia.
+      // RowId desempata os romaneios do mesmo dia.
       [new Sorter("TransactionDate"), new Sorter("RowId")],
-      undefined,
       {
-        $count: true,
         // Código exato: `contains` com "44" traria também o lote 144, o 440...
         $filter: `StorageAddressCode eq '${quote(this.code)}'`,
         $select: [
@@ -132,21 +150,68 @@ export default class Detail extends CommonController {
         },
       }
     );
+  }
 
-    const transactions: LotTransaction[] = [];
+  /** Transferências de titularidade em que o lote é a origem (saída) ou o destino (entrada). */
+  private async requestTransfers(): Promise<LotRelatedRow[]> {
+    const code = quote(this.code);
+    const transfers = await this.requestAll<LotRelatedRow>(
+      "/OwnershipTransfers",
+      [new Sorter("Date"), new Sorter("RowId")],
+      {
+        $filter: `StorageAddressOriginCode eq '${code}' or StorageAddressDestinationCode eq '${code}'`,
+        $select: [
+          "Key", "TransferCode", "Date", "TransferStatus", "StorageAddressOriginCode",
+          "StorageAddressDestinationCode", "Quantity", "UomCode", "PurchaseContractCode", "Comments",
+        ],
+      }
+    );
+
+    return transfers.map((transfer) => ({
+      ...withNumbers(transfer, ["Quantity"]),
+      DirectionText: transfer.StorageAddressOriginCode === this.code ? "Saída" : "Entrada",
+    }));
+  }
+
+  private async requestInvoices(): Promise<LotRelatedRow[]> {
+    const invoices = await this.requestAll<LotRelatedRow>(
+      "/StorageInvoices",
+      [new Sorter("PeriodStart"), new Sorter("RowId")],
+      {
+        $filter: `StorageAddressCode eq '${quote(this.code)}'`,
+        $select: [
+          "Key", "Code", "Status", "ClosingDate", "PeriodStart", "PeriodEnd", "TotalAmount",
+          "TotalQuantityLoss", "Notes",
+        ],
+      }
+    );
+
+    return invoices.map((invoice) => withNumbers(invoice, ["TotalAmount", "TotalQuantityLoss"]));
+  }
+
+  /**
+   * Lê a lista inteira, por páginas. `$orderby` vai sempre explícito: com `$skip`/`$top` o
+   * servidor reordena por chave e a ordem do service se perde.
+   */
+  private async requestAll<T>(path: string, sorters: Sorter[], parameters: object): Promise<T[]> {
+    const binding = (this.getModel() as ODataModel).bindList(
+      path, undefined, sorters, undefined, { $count: true, ...parameters }
+    );
+
+    const rows: T[] = [];
 
     for (;;) {
-      const contexts = await binding.requestContexts(transactions.length, PAGE_SIZE);
-      transactions.push(...contexts.map((context) => context.getObject() as LotTransaction));
+      const contexts = await binding.requestContexts(rows.length, PAGE_SIZE);
+      rows.push(...contexts.map((context) => context.getObject() as T));
 
       // Pelo total, e não por "veio página curta": se o servidor limitar o tamanho da página,
       // uma página curta não significa fim da lista.
       const count = binding.getCount();
       if (contexts.length === 0) break;
-      if (count === undefined ? contexts.length < PAGE_SIZE : transactions.length >= count) break;
+      if (count === undefined ? contexts.length < PAGE_SIZE : rows.length >= count) break;
     }
 
-    return transactions;
+    return rows;
   }
 
   /** Uma coluna por atributo de classificação que aparece nos romaneios deste lote. */
@@ -189,6 +254,30 @@ export default class Detail extends CommonController {
     }
 
     this.navTo("storageTransactionsDetail", { id: transaction.Key });
+  }
+
+  onTransferNavigate(ev: RowActionItem$PressEvent): void {
+    const transfer = ev.getParameter("row").getBindingContext("lot").getObject() as LotRelatedRow;
+    this.navTo("ownershipTransfersDetail", { id: transfer.Key });
+  }
+
+  onInvoiceNavigate(ev: RowActionItem$PressEvent): void {
+    const invoice = ev.getParameter("row").getBindingContext("lot").getObject() as LotRelatedRow;
+    this.navTo("storageInvoicesDetail", { id: invoice.Key });
+  }
+
+  /** Posição do Lote (GAC-1198): o PDF que o armazém envia ao produtor que pede o saldo. */
+  async onPrintLotStatement(): Promise<void> {
+    const page = this.byId("pageStorageAddressDetail") as Control;
+
+    try {
+      page.setBusy(true);
+      await openPdfReport(`${this.api.storageLotStatementReport}/${encodeURIComponent(this.code)}/print`, {});
+    } catch (error) {
+      MessageBox.error((error as Error)?.message ?? "Falha ao gerar a posição do lote.");
+    } finally {
+      page.setBusy(false);
+    }
   }
 
   onEdit(): void {
