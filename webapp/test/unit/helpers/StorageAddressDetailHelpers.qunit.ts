@@ -63,6 +63,26 @@ QUnit.test("o percentual de cada romaneio cai na coluna do seu atributo", functi
 	assert.strictEqual(rows[1].Key, "b", "os campos do romaneio são preservados");
 });
 
+QUnit.test("pesos e percentuais que o OData entrega como texto viram número", function (assert) {
+	// Edm.Decimal chega como "50000.000": em texto a coluna ordenaria "9" depois de "10".
+	const { rows } = pivotLotTransactions([
+		transaction({
+			GrossWeight: "50000.000", DryingDiscount: "120.500", CleaningDiscount: "0.000",
+			OthersDicount: "10.000", NetWeight: "49869.500" as unknown as number,
+			QualityInspections: [
+				{ QualityAttribCode: "UMI", Value: "14.5" as unknown as number },
+			],
+		}),
+	]);
+
+	assert.strictEqual(rows[0].GrossWeight, 50000);
+	assert.strictEqual(rows[0].DryingDiscount, 120.5);
+	assert.strictEqual(rows[0].CleaningDiscount, 0);
+	assert.strictEqual(rows[0].OthersDicount, 10);
+	assert.strictEqual(rows[0].NetWeight, 49869.5);
+	assert.strictEqual(rows[0].Quality0, 14.5);
+});
+
 QUnit.test("atributo sem cadastro expandido usa o próprio código como título", function (assert) {
 	const { attribs } = pivotLotTransactions([
 		transaction({ QualityInspections: [{ QualityAttribCode: "ARD", Value: 3 }] }),

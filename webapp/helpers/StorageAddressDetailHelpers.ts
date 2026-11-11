@@ -24,6 +24,12 @@ export type LotQualityAttrib = { code: string; name: string; property: string };
 export type LotTotals = { receipts: number; shipments: number; technicalLoss: number; balance: number };
 
 /**
+ * O OData v4 entrega Edm.Decimal como TEXTO ("50000.000"). Convertido aqui porque a tabela ordena
+ * pelo valor do modelo (em texto, "9" viria depois de "10") e o Excel precisa de número.
+ */
+const WEIGHT_FIELDS = ["GrossWeight", "DryingDiscount", "CleaningDiscount", "OthersDicount", "NetWeight"];
+
+/**
  * Vira a classificação em colunas. O percentual vai para um campo `Quality<n>` da própria linha,
  * e não para um campo com o código do atributo: o código é digitado no cadastro e pode ter
  * caractere que quebra o caminho do binding ("/", ">", espaço).
@@ -50,8 +56,11 @@ export function pivotLotTransactions(
 
   const rows = transactions.map((transaction) => {
     const row: LotTransaction = { ...transaction };
+    for (const field of WEIGHT_FIELDS) {
+      if (row[field] != null) row[field] = Number(row[field]);
+    }
     for (const inspection of transaction.QualityInspections ?? []) {
-      row[propertyByCode.get(inspection.QualityAttribCode)] = inspection.Value;
+      row[propertyByCode.get(inspection.QualityAttribCode)] = Number(inspection.Value);
     }
     return row;
   });

@@ -159,7 +159,8 @@ export default class Detail extends CommonController {
     });
 
     this.qualityColumns = attribs.map((attrib) => new Column({
-      label: `${attrib.name} %`,
+      // O nome do cadastro já diz a unidade ("% UMIDADE", "PH", "FN"): não acrescenta "%".
+      label: attrib.name,
       tooltip: `Classificação: ${attrib.name} (${attrib.code})`,
       sortProperty: attrib.property,
       hAlign: HorizontalAlign.End,
@@ -223,7 +224,7 @@ export default class Detail extends CommonController {
       number("Outros Desc.", "OthersDicount", 3),
       number("Peso Liquido", "NetWeight", 3),
       { label: "UM", property: "UnitOfMeasureCode", type: EdmType.String },
-      ...attribs.map((attrib) => number(`${attrib.name} %`, attrib.property, 1)),
+      ...attribs.map((attrib) => number(attrib.name, attrib.property, 1)),
     ];
   }
 

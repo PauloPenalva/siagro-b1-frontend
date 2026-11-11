@@ -33,7 +33,10 @@
 				<f:content>
 					<HBox wrap="Wrap">
 						<VBox class="sapUiLargeMarginEnd sapUiTinyMarginBottom">
-							<ObjectStatus title="Filial" text="{Branch/ShortName}"/>
+							<ObjectStatus
+								title="Filial"
+								visible="{= !!${path: 'Branch/ShortName', targetType: 'any'} }"
+								text="{Branch/ShortName}"/>
 							<ObjectStatus
 								title="Situação"
 								text="{
