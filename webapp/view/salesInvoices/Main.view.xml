@@ -221,6 +221,25 @@
             />
 						</t:template>
 					</t:Column>
+          <!-- GAC-1195: os mesmos pesos do grid de Documentos de Saída da carga. Peso Efetivo é o
+               faturado menos o devolvido; Peso Ticket vem dos tickets de descarga da carga; Qtd.
+               Entregue vem da Conferência de entregas. São fontes distintas, em colunas separadas.
+               Derivadas das linhas no backend: sem sortProperty, não há coluna no banco para ordenar. -->
+          <t:Column label="Peso Efetivo" hAlign="End" width="9rem">
+            <t:template>
+              <ObjectNumber textAlign="End" number="{ path: 'EffectiveQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Peso Ticket" hAlign="End" width="9rem" tooltip="Peso descarregado segundo os tickets de descarga da carga">
+            <t:template>
+              <ObjectNumber textAlign="End" number="{ path: 'TicketDeliveredQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+            </t:template>
+          </t:Column>
+          <t:Column label="Qtd. Entregue" hAlign="End" width="9rem" tooltip="Quantidade registrada na Conferência de entregas">
+            <t:template>
+              <ObjectNumber textAlign="End" number="{ path: 'DeliveredQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+            </t:template>
+          </t:Column>
           <t:Column
 						label="Nota Fiscal"
 						sortProperty="TaxDocumentNumber"

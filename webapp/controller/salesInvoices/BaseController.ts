@@ -502,6 +502,30 @@ export abstract class BaseController extends CommonController {
         delimiter: true,
       });
 
+      // GAC-1195: pesos de descarga e conferência, os mesmos da lista na tela.
+      aCols.push({
+        label: "Peso Efetivo",
+        property: "EffectiveQuantity",
+        type: EdmType.Number,
+        scale: 3,
+        delimiter: true,
+      });
+
+      aCols.push({
+        label: "Peso Ticket",
+        property: "TicketDeliveredQuantity",
+        type: EdmType.Number,
+        scale: 3,
+        delimiter: true,
+      });
+
+      aCols.push({
+        label: "Qtd. Entregue",
+        property: "DeliveredQuantity",
+        type: EdmType.Number,
+        scale: 3,
+        delimiter: true,
+      });
 
       aCols.push({
         label: "Nota Fiscal",
