@@ -57,12 +57,16 @@ export default class Main extends CommonController {
     //
     // 3. WarehouseLoss/WarehouseGain (Conferência de Saldo de Armazém, GAC-1164) entram no escopo
     //    para CONSULTA. Cancelar/estornar por esta tela é recusado pelo backend (origem 13).
+    //
+    // 4. TransitLoss (quebra de trajeto, GAC-1213) entra no escopo: não tem tela própria, e
+    //    sem isto o romaneio gerado pela recusa não apareceria em lugar nenhum.
     filters.push(
       filterData.TransactionType
         ? `TransactionType eq '${filterData.TransactionType}'`
         : `(TransactionType eq 'Receipt' or TransactionType eq 'Shipment' ` +
           `or TransactionType eq 'TechnicalLoss' or TransactionType eq 'SalesShipmentReturn' ` +
-          `or TransactionType eq 'WarehouseLoss' or TransactionType eq 'WarehouseGain')`
+          `or TransactionType eq 'WarehouseLoss' or TransactionType eq 'WarehouseGain' ` +
+          `or TransactionType eq 'TransitLoss')`
     );
     
     Object.keys(filterData).forEach((key: string) => {
@@ -166,6 +170,7 @@ export default class Main extends CommonController {
           PurchasePriceComplement: "Compl.Preço", WarehouseLoss: "Perda Armazém",
           WarehouseGain: "Sobra Armazém", TransshipmentReceipt: "Entrada em Transbordo",
           PurchaseDischargeLoss: "Quebra Descarga", PurchaseDischargeGain: "Sobra Descarga",
+          TransitLoss: "Quebra de trajeto",
         },
       },
       { label: "Emissão", property: "TransactionDate", type: EdmType.Date },

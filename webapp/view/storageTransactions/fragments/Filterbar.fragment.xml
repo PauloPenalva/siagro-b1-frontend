@@ -60,6 +60,7 @@
               <core:ListItem key="WarehouseGain" text="Sobra Armazém"/>
               <core:ListItem key="PurchaseDischargeLoss" text="Quebra Descarga"/>
               <core:ListItem key="PurchaseDischargeGain" text="Sobra Descarga"/>
+              <core:ListItem key="TransitLoss" text="Quebra de trajeto"/>
             </Select>
         </fb:control>
       </fb:FilterGroupItem>

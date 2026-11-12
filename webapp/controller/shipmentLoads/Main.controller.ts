@@ -31,6 +31,8 @@ const SHIPMENT_LOAD_STATUSES = [
   { key: "Returned", text: "Devolvida" },
   // Spec 2026-10-09: recusa com NF-e de entrada própria ainda não concluída.
   { key: "RefusalPending", text: "Recusa aguardando NF-e" },
+  // GAC-1213: mercadoria perdida no trajeto (avaria, sinistro, roubo).
+  { key: "TransitLoss", text: "Quebra de trajeto" },
   { key: "Completed", text: "Concluída" },
   { key: "Cancelled", text: "Cancelada" },
 ];

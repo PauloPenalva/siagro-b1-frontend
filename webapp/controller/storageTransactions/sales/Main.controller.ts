@@ -35,6 +35,8 @@ const SHIPMENT_LOAD_STATUSES = [
   { key: "Returned", text: "Devolvida" },
   // Spec 2026-10-09: recusa registrada aguardando as NF-e de entrada das devoluções.
   { key: "RefusalPending", text: "Recusa aguardando NF-e" },
+  // GAC-1213: mercadoria perdida no trajeto (avaria, sinistro, roubo).
+  { key: "TransitLoss", text: "Quebra de trajeto" },
   { key: "Completed", text: "Concluída" },
   { key: "Cancelled", text: "Cancelada" },
 ];
@@ -349,6 +351,7 @@ export default class Main extends CommonController {
         Discharged: "Descarregada",
         Returned: "Devolvida",
         RefusalPending: "Recusa aguardando NF-e",
+        TransitLoss: "Quebra de trajeto",
         Completed: "Concluída",
         Cancelled: "Cancelada",
       },
