@@ -172,6 +172,15 @@
 						</t:template>
 					</t:Column>
           <t:Column
+						label="Cód. Origem"
+						sortProperty="StorageAddressOrigin/CardCode"
+						width="7rem"
+						>
+						<t:template>
+							<Text text="{StorageAddressOrigin/CardCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
 						label="Cliente Origem"
 						width="25rem"
 						>
@@ -188,11 +197,29 @@
 						</t:template>
 					</t:Column>
           <t:Column
+						label="Cód. Destino"
+						sortProperty="StorageAddressDestination/CardCode"
+						width="7rem"
+						>
+						<t:template>
+							<Text text="{StorageAddressDestination/CardCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
 						label="Cliente Destino"
 						width="25rem"
 						>
 						<t:template>
 							<Text text="{StorageAddressDestination/CardName}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <t:Column
+						label="Contrato de Compra"
+						sortProperty="PurchaseContractCode"
+						width="9rem"
+						>
+						<t:template>
+							<Text text="{PurchaseContractCode}" wrapping="false"/>
 						</t:template>
 					</t:Column>
           <t:Column
