@@ -52,6 +52,12 @@ export class BaseController extends CommonController {
 			});
 
 			aCols.push({
+				label: "Carga",
+				property: "StorageTransaction/LoadLink/LoadCode",
+				type: EdmType.String,
+			});
+
+			aCols.push({
 				label: "Emissão",
 				property: "StorageTransaction/TransactionDate",
 				type: EdmType.Date,

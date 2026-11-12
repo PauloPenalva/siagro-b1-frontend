@@ -107,6 +107,16 @@
 							<Text text="{Code}" wrapping="false"/>
 						</t:template>
 					</t:Column>
+          <!-- GAC-1216: a carga em que o romaneio viajou (view do backend, navegação LoadLink). -->
+          <t:Column
+						label="Carga"
+						sortProperty="LoadLink/LoadCode"
+            width="8rem"
+						>
+						<t:template>
+							<Text text="{LoadLink/LoadCode}" wrapping="false"/>
+						</t:template>
+					</t:Column>
           <t:Column
 						label="Tipo"
 						width="10rem"

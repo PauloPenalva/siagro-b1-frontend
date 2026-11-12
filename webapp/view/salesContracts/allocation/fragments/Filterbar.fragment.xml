@@ -64,6 +64,11 @@
             <Input showClearIcon="true" value="{filter>/TaxDocumentNumber}" />
         </fb:control>
       </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="loadCode" label="Carga" groupName="GroupLoadCode" visibleInFilterBar="true">
+        <fb:control>
+            <Input showClearIcon="true" value="{filter>/LoadCode}" />
+        </fb:control>
+      </fb:FilterGroupItem>
       <fb:FilterGroupItem name="origin" label="Origem" groupName="GroupOrigin" visibleInFilterBar="true">
         <fb:control>
             <Select forceSelection="false" selectedKey="{filter>/Origin}">

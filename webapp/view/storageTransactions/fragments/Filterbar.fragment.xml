@@ -38,6 +38,11 @@
             </Input>
         </fb:control>
       </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="loadCode" label="Carga" groupName="GroupLoadCode" visibleInFilterBar="true">
+        <fb:control>
+            <Input showClearIcon="true" value="{filter>/LoadCode}"/>
+        </fb:control>
+      </fb:FilterGroupItem>
       <fb:FilterGroupItem name="type" label="Tipo" groupName="GroupType" visibleInFilterBar="true">
         <fb:control>
             <Select 
