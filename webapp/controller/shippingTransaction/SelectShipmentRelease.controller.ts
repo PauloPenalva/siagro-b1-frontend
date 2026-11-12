@@ -7,11 +7,16 @@ import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import MessageBox from "sap/m/MessageBox";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
+import { filterReleasesBySupplier, ReleaseRow } from "siagrob1/helpers/ShippingSupplierSummaryHelpers";
 
 type routeArgs = {
   "?query": { 
     itemCode: string ,
     warehouseCode: string,
+    // GAC-1224: grupo escolhido na Seleção de Fornecedor. Sem cardCode (link antigo) a tela
+    // lista tudo; com cardCode e sem cashFlowDate, lista as liberações SEM previsão.
+    cardCode?: string,
+    cashFlowDate?: string,
   }
 }
 
@@ -21,6 +26,9 @@ type routeArgs = {
 export default class SelectShipmentRelease extends BaseController {
 
   private _itemCode: string;
+  private _warehouseCode: string;
+  private _cardCode: string;
+  private _cashFlowDate: string;
   
 	onInit(): void  {
 
@@ -42,6 +50,13 @@ export default class SelectShipmentRelease extends BaseController {
       const warehouseCode = query?.warehouseCode;
       
       this._itemCode = itemCode;
+      this._warehouseCode = warehouseCode;
+      this._cardCode = query?.cardCode;
+      this._cashFlowDate = query?.cashFlowDate;
+
+      // A view sobrevive entre visitas: limpa a seleção e as linhas do grupo anterior.
+      (this.byId("tableSelectShipmentRelease") as List).removeSelections(true);
+      (this.getModel("contracts") as JSONModel).setData([]);
       
       if (itemCode) {
         void this.getPurchaseContracts(itemCode, warehouseCode)	
@@ -68,6 +83,14 @@ export default class SelectShipmentRelease extends BaseController {
   }
 
   onCancel() {
+    // Veio da Seleção de Fornecedor: volta para ela, e não direto para a lista de armazéns.
+    if (this._itemCode && this._cardCode) {
+      this.navTo("selectShippingSupplier",{
+        "?query":{ itemCode: this._itemCode, warehouseCode: this._warehouseCode }
+      })
+      return;
+    }
+
     if (this._itemCode) {
       this.navTo("shippingTransaction",{
         "?query":{ itemCode: this._itemCode }
@@ -86,11 +109,14 @@ export default class SelectShipmentRelease extends BaseController {
   
       this.setBusy(true);
       
-      await func.invoke();
-      const resultContext = func.getBoundContext();
-      const viewModel = this.getModel("contracts") as JSONModel
-      viewModel.setData(resultContext.getObject() as object);
-  
-      this.setBusy(false);   
+      try {
+        await func.invoke();
+        const result = func.getBoundContext().getObject() as { value?: ReleaseRow[] } | ReleaseRow[];
+        const rows = Array.isArray(result) ? result : result?.value;
+        const viewModel = this.getModel("contracts") as JSONModel
+        viewModel.setData(filterReleasesBySupplier(rows, this._cardCode, this._cashFlowDate));
+      } finally {
+        this.setBusy(false);
+      }
     }
 }

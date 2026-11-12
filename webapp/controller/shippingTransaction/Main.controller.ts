@@ -95,7 +95,8 @@ export default class Main extends BaseController {
 		const itemCode = oContext.getProperty("ItemCode") as string;
 		const warehouseCode = oContext.getProperty("DeliveryLocationCode") as string;
 		
-		this.navTo("selectShipmentRelease", {
+		// GAC-1224: antes das liberações vem o resumo por fornecedor + previsão de pagamento.
+		this.navTo("selectShippingSupplier", {
       "?query": {
         itemCode,
         warehouseCode,
