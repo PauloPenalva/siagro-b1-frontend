@@ -196,3 +196,21 @@ QUnit.test("duas cargas são unidas por vírgula", function (assert) {
 		{ ShipmentLoad: { Code: "C2", Status: "Shipped" } },
 	]), "C1, C2");
 });
+
+QUnit.test("quebra de trajeto: rótulos", function (assert) {
+	assert.strictEqual(formatter.formatShipmentLoadStatus("TransitLoss"), "Quebra de trajeto");
+	assert.strictEqual(formatter.stateShipmentLoadStatus("TransitLoss"), "Error");
+	assert.strictEqual(formatter.formatShipmentLoadMovementType("TransitLoss"), "Quebra de trajeto");
+	assert.strictEqual(formatter.formatStorageTransactionType("TransitLoss"), "Quebra de trajeto");
+	assert.strictEqual(formatter.formatTransitLossReason("Damage"), "Avaria / mercadoria derrubada");
+	assert.strictEqual(formatter.formatTransitLossReason("Accident"), "Sinistro");
+	assert.strictEqual(formatter.formatTransitLossReason("Theft"), "Roubo de carga");
+	assert.strictEqual(formatter.formatTransitLossReason("Other"), "Outros");
+	assert.strictEqual(formatter.formatTransitLossReason(null), "");
+	assert.strictEqual(formatter.formatTransitLossReason(""), "");
+});
+
+QUnit.test("formatRefusalReturnWarehouse: romaneio de quebra nao exibe armazem", (assert) => {
+	assert.strictEqual(formatter.formatRefusalReturnWarehouse("TransitLoss", "A1", "Matriz"), "");
+	assert.strictEqual(formatter.formatRefusalReturnWarehouse("SalesReturn", "A1", "Matriz"), "(A1) Matriz");
+});

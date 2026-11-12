@@ -16,6 +16,9 @@ import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 import ShipmentBillingDialog, { BillingLoad } from "siagrob1/helpers/ShipmentBillingDialog";
 import { sendJson, odataCollection } from "siagrob1/helpers/FetchHelpers";
+import {
+  destinationParameters, RefusalSuccessKind, refusalSuccessKind, transitLossConfirmText, validateRefusalForm,
+} from "siagrob1/helpers/refusalPayload";
 import { runNfeAction } from "siagrob1/helpers/NfeActionRunner";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { Button$PressEvent } from "sap/m/Button";
@@ -33,6 +36,7 @@ type RefusalForm = {
   DestinationIndex: number;
   DestinationWarehouseCode?: string;
   DestinationWarehouseName?: string;
+  TransitLossReason?: string;
   Reason?: string;
   busy: boolean;
 };
@@ -43,6 +47,7 @@ type PendingRefusalRow = {
   Destination: string;
   DestinationWarehouseCode?: string;
   DestinationWarehouseName?: string;
+  TransitLossReason?: string;
   Reason: string;
   SalesInvoiceKey: string;
   InvoiceNumber?: string;
@@ -60,6 +65,7 @@ const REFUSAL_DESTINATION_TEXT: Record<string, string> = {
   Rebilling: "Caminhão segue viagem (refaturamento)",
   Warehouse: "Devolução ao armazém",
   Transshipment: "Transbordo",
+  TransitLoss: "Quebra de trajeto",
 };
 
 /** Romaneio selecionado no grid, lido do contexto (getObject + acesso opcional). */
@@ -531,7 +537,7 @@ export default class Detail extends BaseController {
         return;
       }
       // A UI decide pelo status da carga; o backend, pela existência de documento de saída vivo.
-      if (["PartiallyInvoiced", "Invoiced", "Discharged", "Completed"].includes(loadStatus)) {
+      if (["PartiallyInvoiced", "Invoiced", "Discharged", "Completed", "TransitLoss"].includes(loadStatus)) {
         MessageBox.warning(
           `A carga ${loadCode} já tem faturamento (${formatter.formatShipmentLoadStatus(loadStatus)}). `
           + "Cancele os documentos de saída da carga antes de estornar este romaneio.");
@@ -767,6 +773,7 @@ export default class Detail extends BaseController {
         DestinationIndex: 0,
         DestinationWarehouseCode: "",
         DestinationWarehouseName: "",
+        TransitLossReason: "",
         Reason: "",
         busy: false,
       } as RefusalForm), "refusal");
@@ -828,6 +835,11 @@ export default class Detail extends BaseController {
       refusal.setProperty("/DestinationWarehouseCode", "");
       refusal.setProperty("/DestinationWarehouseName", "");
     }
+
+    // O tipo da quebra só vale para o quarto destino.
+    if (index !== 3) {
+      refusal.setProperty("/TransitLossReason", "");
+    }
   }
 
   onCloseRefusal(): void {
@@ -862,20 +874,16 @@ export default class Detail extends BaseController {
         return;
       }
 
-      if (!form.Reason?.trim()) {
-        MessageBox.warning("Informe o motivo da recusa.");
+      const validationError = validateRefusalForm(form);
+      if (validationError) {
+        MessageBox.warning(validationError);
         return;
       }
 
-      const toWarehouse = form.DestinationIndex === 1;
-      // GAC-1181, Task 11: terceiro destino — mesma exigência de armazém do índice 1.
-      const toTransshipment = form.DestinationIndex === 2;
-      const needsWarehouse = toWarehouse || toTransshipment;
-
-      if (needsWarehouse && !form.DestinationWarehouseCode?.trim()) {
-        MessageBox.warning("Informe o armazém de destino da mercadoria devolvida.");
-        return;
-      }
+      const params = destinationParameters(form);
+      const toWarehouse = params.Destination === "Warehouse";
+      const toTransshipment = params.Destination === "Transshipment";
+      const toTransitLoss = params.Destination === "TransitLoss";
 
       // Spec 2026-10-09: na filial que emite NF-e pelo Siagro a recusa nasce pendente, aguardando as
       // NF-e de entrada das devoluções. Falha na consulta = false, como no faturamento.
@@ -883,7 +891,9 @@ export default class Detail extends BaseController {
       const branchCode = (await ctx?.requestProperty("BranchCode")) as string;
       const withNfe = await this.isTaxCalculationActive(branchCode);
 
-      const confirmed = await DialogHelper.confirmDialog(
+      const confirmed = toTransitLoss
+        ? await this.confirmTransitLoss(withNfe)
+        : await DialogHelper.confirmDialog(
         withNfe
           ? "Confirma a recusa ? Serão criadas as devoluções com NF-e de entrada; a recusa só é concluída depois que todas forem autorizadas."
           : toTransshipment
@@ -898,14 +908,13 @@ export default class Detail extends BaseController {
       action.setParameter("Key", this._loadKey);
       action.setParameter("SalesInvoiceKeys", lines.map(l => l.SalesInvoiceKey));
       action.setParameter("Quantities", lines.map(l => Number(l.ReturnQuantity)));
-      action.setParameter(
-        "Destination", toTransshipment ? "Transshipment" : toWarehouse ? "Warehouse" : "Rebilling");
+      action.setParameter("Destination", params.Destination);
       action.setParameter("Reason", form.Reason.trim());
       // SEMPRE definido, nunca undefined: JSON.stringify omite chave undefined e o OData
-      // rejeita o corpo inteiro por parâmetro faltando, sem dizer qual. O terceiro destino segue
-      // a mesma regra do armazém comum.
-      action.setParameter(
-        "DestinationWarehouseCode", needsWarehouse ? form.DestinationWarehouseCode.trim() : "");
+      // rejeita o corpo inteiro por parâmetro faltando, sem dizer qual. O que não se aplica ao
+      // destino vai null (armazém fora de 1/2, tipo da quebra fora de 3).
+      action.setParameter("DestinationWarehouseCode", params.DestinationWarehouseCode);
+      action.setParameter("TransitLossReason", params.TransitLossReason);
 
       refusalModel.setProperty("/busy", true);
       try {
@@ -917,19 +926,32 @@ export default class Detail extends BaseController {
       this._refusalDialog.close();
       this.refreshAll();
 
-      MessageToast.show(
-        withNfe
-          ? "Recusa registrada. Emita as NF-e de entrada no painel \"Recusa aguardando NF-e\"."
-          : toTransshipment
-          ? "Recusa registrada. Mercadoria seguirá para transbordo no armazém informado."
-          : toWarehouse
-            ? "Recusa registrada. Mercadoria devolvida ao armazém."
-            : "Recusa registrada. Carga disponível para novo faturamento.");
+      const successMessages: Record<RefusalSuccessKind, string> = {
+        PendingNfe: "Recusa registrada. Emita as NF-e de entrada no painel \"Recusa aguardando NF-e\".",
+        TransitLoss: "Recusa registrada. Quebra de trajeto lançada.",
+        Transshipment: "Recusa registrada. Mercadoria seguirá para transbordo no armazém informado.",
+        Warehouse: "Recusa registrada. Mercadoria devolvida ao armazém.",
+        Rebilling: "Recusa registrada. Carga disponível para novo faturamento.",
+      };
+      MessageToast.show(successMessages[refusalSuccessKind(params.Destination, withNfe)]);
     } catch (e) {
       MessageBox.error((e as Error).message);
     } finally {
       this._refusalInFlight = false;
     }
+  }
+
+  /** Confirmação exclusiva do destino quebra de trajeto: a perda é definitiva para o estoque. */
+  private confirmTransitLoss(withNfe: boolean): Promise<boolean> {
+    return new Promise(resolve => {
+      MessageBox.confirm(
+        transitLossConfirmText(withNfe),
+        {
+          actions: ["Confirmar Quebra", MessageBox.Action.CANCEL],
+          emphasizedAction: "Confirmar Quebra",
+          onClose: (action: string) => resolve(action === "Confirmar Quebra"),
+        });
+    });
   }
 
   onNavBack(): void {
@@ -1336,6 +1358,7 @@ export default class Detail extends BaseController {
       DestinationText: first ? REFUSAL_DESTINATION_TEXT[first.Destination] ?? first.Destination : "",
       DestinationWarehouseCode: first?.DestinationWarehouseCode ?? "",
       DestinationWarehouseName: first?.DestinationWarehouseName ?? "",
+      TransitLossReasonText: formatter.formatTransitLossReason(first?.TransitLossReason),
       Reason: first?.Reason ?? "",
       Rows: rows.map(r => ({
         ...r,

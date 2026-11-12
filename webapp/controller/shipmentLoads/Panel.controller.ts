@@ -24,6 +24,8 @@ const LANES = [
   // Spec 2026-10-09: recusa registrada aguardando as NF-e de entrada; a carga fica travada até concluir ou cancelar.
   { id: "listRefusalPending", status: "RefusalPending", count: "countRefusalPending" },
   { id: "listReturned", status: "Returned", count: "countReturned" },
+  // GAC-1213: logo após Devolvida — também é um encerramento sem faturar, com a mercadoria perdida.
+  { id: "listTransitLoss", status: "TransitLoss", count: "countTransitLoss" },
   { id: "listCompleted", status: "Completed", count: "countCompleted" },
 ];
 

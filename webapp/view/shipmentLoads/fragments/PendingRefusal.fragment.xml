@@ -28,6 +28,9 @@
 						<f:FormElement label="Armazém" visible="{= !!${pendingRefusal>/DestinationWarehouseCode} }">
 							<f:fields><Text text="{pendingRefusal>/DestinationWarehouseCode} - {pendingRefusal>/DestinationWarehouseName}"/></f:fields>
 						</f:FormElement>
+						<f:FormElement label="Tipo de Quebra" visible="{= !!${pendingRefusal>/TransitLossReasonText} }">
+							<f:fields><Text text="{pendingRefusal>/TransitLossReasonText}"/></f:fields>
+						</f:FormElement>
 						<f:FormElement label="Motivo">
 							<f:fields><Text text="{pendingRefusal>/Reason}"/></f:fields>
 						</f:FormElement>

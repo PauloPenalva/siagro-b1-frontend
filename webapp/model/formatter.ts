@@ -731,6 +731,8 @@ const formatter = {
     m.set("TransshipmentReceipt", "Entrada em Transbordo");
     m.set("PurchaseDischargeLoss", "Quebra Descarga");
     m.set("PurchaseDischargeGain", "Sobra Descarga");
+    // GAC-1213: mercadoria perdida no trajeto, baixada do armazém de origem sem NF-e de entrada.
+    m.set("TransitLoss", "Quebra de trajeto");
 
     return m.get(value);
   },
@@ -794,6 +796,8 @@ const formatter = {
     m.set("Discharged", "Descarregada");
     // Spec 2026-10-09: recusa registrada na filial com NF-e, aguardando as NF-e de entrada.
     m.set("RefusalPending", "Recusa aguardando NF-e");
+    // GAC-1213: mercadoria perdida no trajeto (avaria, sinistro, roubo); encerra a carga.
+    m.set("TransitLoss", "Quebra de trajeto");
 
     return m.get(value);
   },
@@ -830,8 +834,25 @@ const formatter = {
     m.set("Discharged", "Information");
     // Error: a carga está travada até emitir as NF-e ou cancelar a recusa.
     m.set("RefusalPending", "Error");
+    // GAC-1213: perda de mercadoria — Error, não Warning, porque é prejuízo e não só mudança de lugar.
+    m.set("TransitLoss", "Error");
 
     return m.get(value);
+  },
+
+  /** Tipo de quebra de trajeto (GAC-1213); vazio quando a carga/romaneio não é uma quebra. */
+  /** Romaneio de quebra guarda só o armazém de origem da carga: não é destino, então fica em branco. */
+  formatRefusalReturnWarehouse: (transactionType: string, code: string, name: string): string =>
+    transactionType === "TransitLoss" ? "" : `(${code}) ${name}`,
+
+  formatTransitLossReason: (value: string): string => {
+    const m = new Map<string, string>();
+    m.set("Damage", "Avaria / mercadoria derrubada");
+    m.set("Accident", "Sinistro");
+    m.set("Theft", "Roubo de carga");
+    m.set("Other", "Outros");
+
+    return m.get(value) ?? "";
   },
 
   formatShipmentLoadMovementType: (value: string) => {
@@ -861,6 +882,7 @@ const formatter = {
     m.set("Discharged", "Carga Descarregada");
     m.set("DischargeUndone", "Descarregada Desfeita");
     m.set("RefusalCancelled", "Recusa Cancelada");
+    m.set("TransitLoss", "Quebra de trajeto");
 
     return m.get(value);
   },

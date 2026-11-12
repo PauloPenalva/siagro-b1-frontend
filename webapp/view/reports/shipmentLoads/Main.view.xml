@@ -38,6 +38,7 @@
 					<core:Item key="8" text="Descarregada"/>
 					<core:Item key="6" text="Concluída"/>
 					<core:Item key="5" text="Devolvida"/>
+					<core:Item key="10" text="Quebra de trajeto"/>
 					<core:Item key="3" text="Cancelada"/>
 				</MultiComboBox>
 				<core:Title text="Filtros" emphasized="true"/>
