@@ -209,3 +209,8 @@ QUnit.test("quebra de trajeto: rótulos", function (assert) {
 	assert.strictEqual(formatter.formatTransitLossReason(null), "");
 	assert.strictEqual(formatter.formatTransitLossReason(""), "");
 });
+
+QUnit.test("formatRefusalReturnWarehouse: romaneio de quebra nao exibe armazem", (assert) => {
+	assert.strictEqual(formatter.formatRefusalReturnWarehouse("TransitLoss", "A1", "Matriz"), "");
+	assert.strictEqual(formatter.formatRefusalReturnWarehouse("SalesReturn", "A1", "Matriz"), "(A1) Matriz");
+});

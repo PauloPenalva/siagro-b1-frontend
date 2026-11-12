@@ -841,6 +841,10 @@ const formatter = {
   },
 
   /** Tipo de quebra de trajeto (GAC-1213); vazio quando a carga/romaneio não é uma quebra. */
+  /** Romaneio de quebra guarda só o armazém de origem da carga: não é destino, então fica em branco. */
+  formatRefusalReturnWarehouse: (transactionType: string, code: string, name: string): string =>
+    transactionType === "TransitLoss" ? "" : `(${code}) ${name}`,
+
   formatTransitLossReason: (value: string): string => {
     const m = new Map<string, string>();
     m.set("Damage", "Avaria / mercadoria derrubada");

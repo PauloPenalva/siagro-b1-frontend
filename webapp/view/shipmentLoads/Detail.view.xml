@@ -47,7 +47,7 @@
 						text="Registrar Recusa"
 						type="Transparent"
 						press=".onRefuse"
-						visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' &amp;&amp; (${path: 'Status', targetType: 'any'} === 'PartiallyInvoiced' || ${path: 'Status', targetType: 'any'} === 'Invoiced') }"/>
+						visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' &amp;&amp; (${path: 'Status', targetType: 'any'} === 'PartiallyInvoiced' || ${path: 'Status', targetType: 'any'} === 'Invoiced' || ${path: 'Status', targetType: 'any'} === 'TransitLoss') }"/>
 					<!-- Spec 2026-10-09: só com recusa aguardando NF-e. O servidor recusa se alguma NF-e já saiu. -->
 					<Button
 						text="Cancelar Recusa"
@@ -636,7 +636,7 @@
 										</t:template>
 									</t:Column>
 									<t:Column label="Armazém de Destino" width="18rem">
-										<t:template><Text text="({WarehouseCode}) {WarehouseName}" wrapping="false"/></t:template>
+										<t:template><Text text="{ parts: [ { path: 'TransactionType', targetType: 'any' }, { path: 'WarehouseCode', targetType: 'any' }, { path: 'WarehouseName', targetType: 'any' } ], formatter: '.formatter.formatRefusalReturnWarehouse' }" wrapping="false"/></t:template>
 									</t:Column>
 									<t:Column label="Observações" width="30rem">
 										<t:template><Text text="{Comments}" wrapping="false"/></t:template>

@@ -242,7 +242,7 @@ export default class Main extends CommonController {
     }
 
     // Descarregada e Concluída vêm depois de Faturada (GAC-1171): o mesmo aviso vale.
-    if (["PartiallyInvoiced", "Invoiced", "Discharged", "Completed"].includes(shipment.LoadStatus)) {
+    if (["PartiallyInvoiced", "Invoiced", "Discharged", "Completed", "TransitLoss"].includes(shipment.LoadStatus)) {
       MessageBox.warning(
         `A carga ${shipment.LoadCode} já tem faturamento `
         + `(${formatter.formatShipmentLoadStatus(shipment.LoadStatus)}). `

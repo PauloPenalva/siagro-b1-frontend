@@ -537,7 +537,7 @@ export default class Detail extends BaseController {
         return;
       }
       // A UI decide pelo status da carga; o backend, pela existência de documento de saída vivo.
-      if (["PartiallyInvoiced", "Invoiced", "Discharged", "Completed"].includes(loadStatus)) {
+      if (["PartiallyInvoiced", "Invoiced", "Discharged", "Completed", "TransitLoss"].includes(loadStatus)) {
         MessageBox.warning(
           `A carga ${loadCode} já tem faturamento (${formatter.formatShipmentLoadStatus(loadStatus)}). `
           + "Cancele os documentos de saída da carga antes de estornar este romaneio.");
@@ -947,9 +947,9 @@ export default class Detail extends BaseController {
       MessageBox.confirm(
         transitLossConfirmText(withNfe),
         {
-          actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
-          emphasizedAction: MessageBox.Action.OK,
-          onClose: (action: string) => resolve(action === String(MessageBox.Action.OK)),
+          actions: ["Confirmar Quebra", MessageBox.Action.CANCEL],
+          emphasizedAction: "Confirmar Quebra",
+          onClose: (action: string) => resolve(action === "Confirmar Quebra"),
         });
     });
   }
