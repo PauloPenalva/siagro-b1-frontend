@@ -5,6 +5,7 @@
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:core="sap.ui.core"
     xmlns:t="sap.ui.table"
+    xmlns:rowmodes="sap.ui.table.rowmodes"
     xmlns:f="sap.f"
     xmlns:mdc="sap.ui.mdc"
     xmlns:fb="sap.ui.comp.filterbar"
@@ -66,19 +67,26 @@
                 title="Seleção de Armazém"
             >
                 <uxap:subSections>
-                    <uxap:ObjectPageSubSection>
+                    <uxap:ObjectPageSubSection class="sapUxAPObjectPageSubSectionFitContainer">
                         <uxap:blocks>
-                            <Table
+                            <!-- GAC-1225: sap.ui.table.Table para o usuário redimensionar e reordenar as
+                                 colunas (o Saldo ficava atrás da barra de rolagem). Largura e ordem são
+                                 gravadas por usuário pelo TableLayoutService, sem código nesta tela. -->
+                            <t:Table
                                 id="tableShipmentReleasesBalance"
                                 class="sapUiSizeCondensed"
                                 alternateRowColors="true"
-                                inset="false"
-                                items="{
+                                selectionMode="Single"
+                                selectionBehavior="Row"
+                                enableSelectAll="false"
+                                rows="{
                                   path: 'balance>/'
                                 }"
-                                mode="SingleSelect"
                             >
-                                <headerToolbar>
+                                <t:rowMode>
+                                    <rowmodes:Auto minRowCount="8" />
+                                </t:rowMode>
+                                <t:extension>
                                     <OverflowToolbar>
                                         <content>
                                             <Title
@@ -93,84 +101,62 @@
                                             />
                                         </content>
                                     </OverflowToolbar>
-                                </headerToolbar>
-                                <columns>
-                                    <Column width="3rem">
-                                        <Text />
-                                    </Column>
-                                    <Column width="20rem">
-                                        <Text text="Armazem" />
-                                    </Column>
-                                    <Column width="20rem">
-                                        <Text text="Nome Fantasia" />
-                                    </Column>
-                                    <Column>
-                                        <Text text="Codigo" />
-                                    </Column>
-                                    <Column>
-                                        <Text text="CNPJ" />
-                                    </Column>
-                                    <Column>
-                                        <Text text="Municipio" />
-                                    </Column>
-                                    <Column>
-                                        <Text text="Estado" />
-                                    </Column>
-                                    <Column>
-                                        <Text
-                                            text="Cod.Variedade"
-                                            visible="false"
+                                </t:extension>
+                                <t:columns>
+                                <t:Column label="Obs." width="3rem">
+                                    <t:template>
+                                        <core:Icon tooltip="{balance>Notes}" src="sap-icon://information" />
+                                    </t:template>
+                                </t:Column>
+                                <t:Column label="Armazem" minWidth="160" sortProperty="DeliveryLocationName" filterProperty="DeliveryLocationName">
+                                    <t:template>
+                                        <ObjectIdentifier title="{balance>DeliveryLocationName}" />
+                                    </t:template>
+                                </t:Column>
+                                <t:Column label="Nome Fantasia" minWidth="160" sortProperty="FName" filterProperty="FName">
+                                    <t:template>
+                                        <Text text="{balance>FName}" wrapping="false" />
+                                    </t:template>
+                                </t:Column>
+                                <t:Column label="Codigo" width="6rem" sortProperty="DeliveryLocationCode" filterProperty="DeliveryLocationCode">
+                                    <t:template>
+                                        <Text text="{balance>DeliveryLocationCode}" wrapping="false" />
+                                    </t:template>
+                                </t:Column>
+                                <t:Column label="CNPJ" width="9.5rem" sortProperty="TaxId" filterProperty="TaxId">
+                                    <t:template>
+                                        <Text text="{balance>TaxId}" wrapping="false" />
+                                    </t:template>
+                                </t:Column>
+                                <t:Column label="Municipio" width="9rem" sortProperty="City" filterProperty="City">
+                                    <t:template>
+                                        <Text text="{balance>City}" wrapping="false" />
+                                    </t:template>
+                                </t:Column>
+                                <t:Column label="Estado" width="4rem" sortProperty="State" filterProperty="State">
+                                    <t:template>
+                                        <Text text="{balance>State}" wrapping="false" />
+                                    </t:template>
+                                </t:Column>
+                                <t:Column label="Saldo" width="10rem" sortProperty="AvailableQuantity" filterProperty="AvailableQuantity" hAlign="End">
+                                    <t:template>
+                                        <ObjectNumber
+                                            number="{
+                                              path: 'balance>AvailableQuantity',
+                                              type: 'sap.ui.model.type.Float',
+                                              formatOptions: {
+                                                decimals: 3,
+                                                decimalSeparator: ',',
+                                                groupingEnabled: true,
+                                                groupingSeparator: '.'
+                                              }
+                                            }"
+                                            unit="{balance>UnitOfMeasureCode}"
                                         />
-                                    </Column>
-                                    <!-- <Column>
-                                        <Text text="Variedade" />
-                                    </Column> -->
-                                    <Column hAlign="End">
-                                        <Text text="Saldo" />
-                                    </Column>
-                                </columns>
-                                <items>
-                                    <ColumnListItem>
-                                        <cells>
-                                            <core:Icon tooltip="{balance>Notes}" src="sap-icon://information" />
-                                            <ObjectIdentifier
-                                                title="{balance>DeliveryLocationName}"
-                                            />
-                                            <Text
-                                                text="{balance>FName}"
-                                            />
-                                            <Text
-                                                text="{balance>DeliveryLocationCode}"
-                                            />
-                                             <Text
-                                                text="{balance>TaxId}"
-                                            />
-                                            <Text text="{balance>City}" />
-                                            <Text text="{balance>State}" />
-                                            <Text
-                                                text="{balance>codigoVariedade}"
-                                                visible="false"
-                                            />
-                                            <!-- <Text
-                                                text="{balance>descricaoVariedade}"
-                                            /> -->
-                                            <ObjectNumber
-                                                number="{
-                                                  path: 'balance>AvailableQuantity',
-                                                  type: 'sap.ui.model.type.Float',
-                                                  formatOptions: {
-                                                    decimals: 3,
-                                                    decimalSeparator: ',',
-                                                    groupingEnabled: true,
-                                                    groupingSeparator: '.'
-                                                  }
-                                                }"
-                                                unit="{balance>UnitOfMeasureCode}"
-                                            />
-                                        </cells>
-                                    </ColumnListItem>
-                                </items>
-                            </Table>
+                                    </t:template>
+                                </t:Column>
+                                </t:columns>
+                            </t:Table>
                         </uxap:blocks>
                     </uxap:ObjectPageSubSection>
                 </uxap:subSections>

@@ -1,6 +1,5 @@
 import { BaseController } from "./BaseController";
 
-import List from "sap/m/List";
 import MessageBox from "sap/m/MessageBox";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import JSONModel from "sap/ui/model/json/JSONModel";
@@ -47,7 +46,7 @@ export default class SelectSupplier extends BaseController {
 
     // A view sobrevive entre visitas: sem limpar, a seleção e as linhas do armazém anterior
     // apareceriam enquanto a consulta nova não volta.
-    (this.byId("tableSelectShippingSupplier") as List).removeSelections(true);
+    this.clearRowSelection("tableSelectShippingSupplier");
     (this.getModel("suppliers") as JSONModel).setData([]);
 
     if (this._itemCode) {
@@ -56,8 +55,7 @@ export default class SelectSupplier extends BaseController {
   }
 
   onSelectSupplier() {
-    const table = this.byId("tableSelectShippingSupplier") as List;
-    const context = table.getSelectedItem()?.getBindingContext("suppliers");
+    const context = this.getSelectedRowContext("tableSelectShippingSupplier");
 
     if (!context) {
       MessageBox.warning("Selecione um item na tabela.");

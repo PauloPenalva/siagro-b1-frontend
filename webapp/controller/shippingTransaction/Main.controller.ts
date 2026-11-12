@@ -4,7 +4,7 @@ import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { BaseController } from "./BaseController";
 
-import List from 'sap/m/List';
+import Table from "sap/ui/table/Table";
 import { SearchField$SearchEvent } from 'sap/m/SearchField';
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import Filter from 'sap/ui/model/Filter';
@@ -55,8 +55,8 @@ export default class Main extends BaseController {
 
 	onFilter(ev: SearchField$SearchEvent) {
 		const query = ev.getParameter("query");
-    const table = this.byId("tableShipmentReleasesBalance") as List;
-    const bindingList = table.getBinding("items") as ODataListBinding
+    const table = this.byId("tableShipmentReleasesBalance") as Table;
+    const bindingList = table.getBinding("rows") as ODataListBinding
 		
 		const filter = new Filter({
 			filters: [
@@ -66,6 +66,9 @@ export default class Main extends BaseController {
 		})
 
 		bindingList.filter([filter]);
+
+    // A seleção do grid é por índice: depois do filtro ela apontaria para outro armazém.
+    table.clearSelection();
 	}
 
 	onSearch() {
@@ -84,8 +87,7 @@ export default class Main extends BaseController {
 	}
 
 	selectShipmentRelease() {
-		const oTable = this.byId("tableShipmentReleasesBalance") as List;
-		const oContext = oTable.getSelectedItem()?.getBindingContext("balance");
+		const oContext = this.getSelectedRowContext("tableShipmentReleasesBalance");
     
     if (!oContext) {
       MessageBox.warning("Selecione um item na tabela.");
