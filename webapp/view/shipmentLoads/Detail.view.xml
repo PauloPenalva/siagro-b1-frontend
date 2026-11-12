@@ -205,6 +205,17 @@
 														unit="{UnitOfMeasureCode}"/>
 												</f:fields>
 											</f:FormElement>
+											<!-- GAC-1213: mercadoria perdida no trajeto (avaria, sinistro, roubo); não volta ao armazém. -->
+											<f:FormElement
+												label="Qtd. Quebra de Trajeto"
+												visible="{= ${path: 'TransitLossQuantity', targetType: 'any'} > 0 }">
+												<f:fields>
+													<ObjectNumber
+														state="Error"
+														number="{ path: 'TransitLossQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+														unit="{UnitOfMeasureCode}"/>
+												</f:fields>
+											</f:FormElement>
 											<f:FormElement label="Observações">
 												<f:fields><Text text="{Comments}"/></f:fields>
 											</f:FormElement>
@@ -252,7 +263,7 @@
 											text="Trocar Liberação"
 											icon="sap-icon://switch-views"
 											tooltip="Troca o contrato de compra baixado (1 romaneio) ou inverte os contratos de 2 romaneios"
-											visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Discharged' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Completed' }"
+											visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'TransitLoss' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Discharged' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Completed' }"
 											press=".onChangeRelease"/>
 									</OverflowToolbar>
 								</t:extension>
@@ -576,7 +587,7 @@
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
 
-			<uxap:ObjectPageSection titleUppercase="false" title="Devoluções ao Armazém"
+			<uxap:ObjectPageSection titleUppercase="false" title="Devoluções e Quebras da Recusa"
 				visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' }">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection>
@@ -596,6 +607,16 @@
 									<t:Column label="Data" width="8rem">
 										<t:template>
 											<Text wrapping="false" text="{ path: 'TransactionDate', targetType: 'any', formatter: '.formatter.formatDate' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Tipo" width="12rem">
+										<t:template>
+											<Text wrapping="false" text="{ path: 'TransactionType', targetType: 'any', formatter: '.formatter.formatStorageTransactionType' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column label="Tipo de Quebra" width="14rem">
+										<t:template>
+											<Text wrapping="false" text="{ path: 'TransitLossReason', targetType: 'any', formatter: '.formatter.formatTransitLossReason' }"/>
 										</t:template>
 									</t:Column>
 									<t:Column label="Status" hAlign="Center" width="9rem">
