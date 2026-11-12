@@ -245,6 +245,9 @@ export default class Main extends BaseController {
         filters.push(`contains(SalesInvoiceItem/SalesInvoice/InvoiceNumber, '${value}')`);
       } else if (key === "TaxDocumentNumber") {
         filters.push(`contains(SalesInvoiceItem/SalesInvoice/TaxDocumentNumber, '${value}')`);
+      } else if (key === "LoadCode") {
+        // GAC-1216: a carga é a do documento de saída.
+        filters.push(`contains(SalesInvoiceItem/SalesInvoice/ShipmentLoad/Code, '${value.replace(/'/g, "''")}')`);
       } else {
         filters.push(`contains(${key},'${value}')`);
       }

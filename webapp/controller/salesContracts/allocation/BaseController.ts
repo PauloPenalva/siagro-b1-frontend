@@ -16,6 +16,7 @@ export class BaseController extends CommonController {
     aCols.push({ label: "Produto", property: "SalesContract/ItemName", type: EdmType.String });
     aCols.push({ label: "Nota Fiscal", property: "SalesInvoiceItem/SalesInvoice/TaxDocumentNumber", type: EdmType.String });
     aCols.push({ label: "Documento", property: "SalesInvoiceItem/SalesInvoice/InvoiceNumber", type: EdmType.String });
+    aCols.push({ label: "Carga", property: "SalesInvoiceItem/SalesInvoice/ShipmentLoad/Code", type: EdmType.String });
     aCols.push({ label: "Emissão", property: "SalesInvoiceItem/SalesInvoice/InvoiceDate", type: EdmType.Date });
     aCols.push({
       label: "Origem",

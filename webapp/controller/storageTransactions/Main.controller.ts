@@ -81,6 +81,9 @@ export default class Main extends CommonController {
         filters.push(`TransactionDate ge ${value}`)
       } else if (key == "DateTo") {
         filters.push(`TransactionDate le ${value}`)
+      } else if (key == "LoadCode") {
+        // GAC-1216: a carga do romaneio vem da navegação LoadLink (view no backend).
+        filters.push(`contains(LoadLink/LoadCode,'${value.replace(/'/g, "''")}')`)
       } else if (key == "StorageAddressCode") {
         // Lote é código exato: `contains` com "44" traria também o 144, o 440...
         filters.push(`StorageAddressCode eq '${value}'`)
@@ -161,6 +164,7 @@ export default class Main extends CommonController {
         },
       },
       { label: "Codigo", property: "Code", type: EdmType.String },
+      { label: "Carga", property: "LoadLink/LoadCode", type: EdmType.String },
       {
         label: "Tipo", property: "TransactionType", type: EdmType.Enumeration,
         valueMap: {

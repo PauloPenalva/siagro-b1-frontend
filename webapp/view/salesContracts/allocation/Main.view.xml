@@ -37,7 +37,7 @@
         rows="{
 					path: '/SalesContractsAllocations',
           parameters: {
-            $expand: 'SalesContract($expand=Branch),SalesInvoiceItem($expand=SalesInvoice),SalesShipmentRelease'
+            $expand: 'SalesContract($expand=Branch),SalesInvoiceItem($expand=SalesInvoice($expand=ShipmentLoad)),SalesShipmentRelease'
           },
           sorter: [
             { path: 'SalesContract/RowId' }
@@ -97,6 +97,12 @@
           <t:Column label="Documento" sortProperty="SalesInvoiceItem/SalesInvoice/InvoiceNumber" width="9rem">
 						<t:template>
 							<Text text="{SalesInvoiceItem/SalesInvoice/InvoiceNumber}" wrapping="false"/>
+						</t:template>
+					</t:Column>
+          <!-- GAC-1216: a carga do documento de saída. -->
+          <t:Column label="Carga" sortProperty="SalesInvoiceItem/SalesInvoice/ShipmentLoad/Code" width="8rem">
+						<t:template>
+							<Text text="{SalesInvoiceItem/SalesInvoice/ShipmentLoad/Code}" wrapping="false"/>
 						</t:template>
 					</t:Column>
           <t:Column label="Emissão" sortProperty="SalesInvoiceItem/SalesInvoice/InvoiceDate" width="8rem">

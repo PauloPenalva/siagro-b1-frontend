@@ -64,6 +64,9 @@ export default class Main extends BaseController {
         filters.push(`contains(StorageTransaction/BranchCode, '${value}')`)
       } else if (filterKey == "StorageTransactionCode") {
         filters.push(`contains(StorageTransaction/Code, '${value}')`)
+      } else if (filterKey == "LoadCode") {
+        // GAC-1216: a carga do romaneio vem da navegação LoadLink (view no backend).
+        filters.push(`contains(StorageTransaction/LoadLink/LoadCode, '${value.replace(/'/g, "''")}')`)
       } else if (filterKey == "WarehouseCode") {
         filters.push(`contains(StorageTransaction/WarehouseCode, '${value}')`)
       } else if (filterKey == "TruckCode") {
