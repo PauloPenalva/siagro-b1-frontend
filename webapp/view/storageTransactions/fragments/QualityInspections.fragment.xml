@@ -81,6 +81,22 @@
           />
         </t:template>
       </t:Column>
+      <!-- GAC-1197: tolerância da Tabela de Custos gravada na confirmação. Em branco na umidade,
+           em atributo fora da tabela e em romaneio confirmado antes do campo existir. -->
+      <t:Column label="Tolerância %" width="10rem">
+        <t:template>
+          <Text text="{
+            path: 'ToleranceRate',
+            type: 'sap.ui.model.odata.type.Double',
+            formatOptions: {
+                decimals: 1,
+                decimalSeparator: ',',
+                groupingEnabled: true,
+                groupingSeparator: '.'
+            }
+          }" />
+        </t:template>
+      </t:Column>
     </t:columns>
   </t:Table>
 </core:FragmentDefinition>

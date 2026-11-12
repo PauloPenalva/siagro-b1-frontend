@@ -21,6 +21,7 @@ import {
   FreightCalculationMethod,
   freightUnitDescription,
 } from "siagrob1/helpers/FreightHelpers";
+import { discountDescription, pricePerBagDescription } from "siagrob1/helpers/StorageExpenseHelpers";
 
 // O objeto tem nome para que um formatter possa chamar outro (ver
 // `formatDischargedAgainstLoaded`, que reusa `formatDecimal`); a exportação default continua
@@ -1822,6 +1823,9 @@ const formatter = {
   ): string => formatter.formatDecimal(calculateFreightPrice(method, unitPrice, grossWeight), 2),
 
   freightUnitDescription,
+  /** GAC-1197: desconto em % e valor por saca ao lado da unidade, no romaneio. */
+  discountDescription,
+  pricePerBagDescription,
   truckKindText,
   truckWheelTypeText,
   truckBodyTypeText,

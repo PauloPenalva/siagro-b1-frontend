@@ -355,7 +355,14 @@
                   groupingSeparator: '.'
               } 
             }"
-            description="{UnitOfMeasureCode}"
+            description="{
+              parts: [
+                { path: 'UnitOfMeasureCode', targetType: 'any' },
+                { path: 'DryingDiscount', targetType: 'any' },
+                { path: 'GrossWeight', targetType: 'any' }
+              ],
+              formatter: 'formatter.discountDescription'
+            }"
           />
           <Label text="Limpeza"/>
           <Input 
@@ -370,7 +377,14 @@
                   groupingSeparator: '.'
               } 
             }"
-            description="{UnitOfMeasureCode}"
+            description="{
+              parts: [
+                { path: 'UnitOfMeasureCode', targetType: 'any' },
+                { path: 'CleaningDiscount', targetType: 'any' },
+                { path: 'GrossWeight', targetType: 'any' }
+              ],
+              formatter: 'formatter.discountDescription'
+            }"
           />
           <Label text="Outros"/>
           <Input 
@@ -385,7 +399,14 @@
                   groupingSeparator: '.'
               } 
             }"
-            description="{UnitOfMeasureCode}"
+            description="{
+              parts: [
+                { path: 'UnitOfMeasureCode', targetType: 'any' },
+                { path: 'OthersDicount', targetType: 'any' },
+                { path: 'GrossWeight', targetType: 'any' }
+              ],
+              formatter: 'formatter.discountDescription'
+            }"
           />
          
           <core:Title text="Valores"/>
@@ -402,7 +423,14 @@
                   groupingSeparator: '.'
               } 
             }"
-            description="{ui>/currency}"
+            description="{
+              parts: [
+                { path: 'ui>/currency', targetType: 'any' },
+                { path: 'DryingServicePrice', targetType: 'any' },
+                { path: 'GrossWeight', targetType: 'any' }
+              ],
+              formatter: 'formatter.pricePerBagDescription'
+            }"
           />
           <Label text="Limpeza"/>
           <Input 
@@ -417,7 +445,14 @@
                   groupingSeparator: '.'
               } 
             }"
-            description="{ui>/currency}"
+            description="{
+              parts: [
+                { path: 'ui>/currency', targetType: 'any' },
+                { path: 'CleaningServicePrice', targetType: 'any' },
+                { path: 'GrossWeight', targetType: 'any' }
+              ],
+              formatter: 'formatter.pricePerBagDescription'
+            }"
           />
           <Label text="Recepção"/>
           <Input 
@@ -432,7 +467,14 @@
                   groupingSeparator: '.'
               } 
             }"
-            description="{ui>/currency}"
+            description="{
+              parts: [
+                { path: 'ui>/currency', targetType: 'any' },
+                { path: 'ReceiptServicePrice', targetType: 'any' },
+                { path: 'GrossWeight', targetType: 'any' }
+              ],
+              formatter: 'formatter.pricePerBagDescription'
+            }"
           />
           <Label text="Expedição"/>
           <Input 
@@ -447,7 +489,14 @@
                   groupingSeparator: '.'
               }
             }"
-            description="{ui>/currency}"
+            description="{
+              parts: [
+                { path: 'ui>/currency', targetType: 'any' },
+                { path: 'ShipmentPrice', targetType: 'any' },
+                { path: 'GrossWeight', targetType: 'any' }
+              ],
+              formatter: 'formatter.pricePerBagDescription'
+            }"
           />
           <Label text="Frete/Remoção"/>
           <Input
