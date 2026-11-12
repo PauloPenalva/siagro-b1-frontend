@@ -61,3 +61,4 @@ import "./helpers/MdfeHelpers.qunit";
 import "./helpers/FreightInvoiceHelpers.qunit";
 import "./helpers/MenuTreeHelpers.qunit";
 import "./helpers/StorageAddressDetailHelpers.qunit";
+import "./helpers/refusalPayload.qunit";

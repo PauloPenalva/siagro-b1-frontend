@@ -28,6 +28,7 @@
 										<RadioButton text="Caminhão segue para novo destino (mercadoria fica na carga)"/>
 										<RadioButton text="Mercadoria retorna a um armazém"/>
 										<RadioButton text="Mercadoria segue para transbordo em outro armazém"/>
+										<RadioButton text="Mercadoria perdida no trajeto (quebra)"/>
 									</RadioButtonGroup>
 								</f:fields>
 							</f:FormElement>
@@ -46,6 +47,20 @@
 										valueHelpRequest=".openRefusalWarehouseValueHelp"
 										value="{refusal>/DestinationWarehouseCode}"/>
 									<Input value="{refusal>/DestinationWarehouseName}" editable="false"/>
+								</f:fields>
+							</f:FormElement>
+							<f:FormElement label="Tipo de Quebra" visible="{= ${refusal>/DestinationIndex} === 3 }">
+								<f:fields>
+									<Select
+										required="true"
+										forceSelection="false"
+										selectedKey="{refusal>/TransitLossReason}">
+										<core:Item key="" text=""/>
+										<core:Item key="Damage" text="Avaria / mercadoria derrubada"/>
+										<core:Item key="Accident" text="Sinistro"/>
+										<core:Item key="Theft" text="Roubo de carga"/>
+										<core:Item key="Other" text="Outros"/>
+									</Select>
 								</f:fields>
 							</f:FormElement>
 							<f:FormElement label="Motivo da Recusa">
