@@ -181,7 +181,7 @@
 						</t:template>
 					</t:Column>
           <t:Column
-						label="Cliente Origem"
+						label="Depositante Origem"
 						width="25rem"
 						>
 						<t:template>
@@ -206,7 +206,7 @@
 						</t:template>
 					</t:Column>
           <t:Column
-						label="Cliente Destino"
+						label="Depositante Destino"
 						width="25rem"
 						>
 						<t:template>

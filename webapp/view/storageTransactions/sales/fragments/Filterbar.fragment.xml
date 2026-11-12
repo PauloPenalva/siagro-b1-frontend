@@ -129,7 +129,7 @@
             <Input
               showClearIcon="true"
               showValueHelp="true"
-              valueHelpRequest=".openCostumersValueHelp"
+              valueHelpRequest=".openBusinessPartnersValueHelp"
               value="{filter>/CardCode}"
               >
             </Input>

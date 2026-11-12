@@ -121,7 +121,7 @@
 						</t:template>
 					</t:Column>
           <t:Column
-						label="Cliente"
+						label="Depositante"
 						sortProperty="CardCode"
             width="10rem"
 						>

@@ -133,13 +133,13 @@
               </customData>
             </Input>
             <Input visible="true" value="{StorageAddress/Description}" editable="false" />
-            <Label text="Cliente" />
+            <Label text="Depositante" />
             <Input
               editable="false"
               visible="{= ${ui>/editable} ? false : true }"
               showValueHelp="true"
               valueHelpOnly="true"
-              valueHelpRequest=".openCostumersValueHelp"
+              valueHelpRequest=".openBusinessPartnersValueHelp"
               value="{CardCode}"
               >
               <layoutData>

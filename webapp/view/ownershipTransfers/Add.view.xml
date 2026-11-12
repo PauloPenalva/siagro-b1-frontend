@@ -114,7 +114,7 @@
                                         <Text text="Descrição" />
                                     </Column>
                                     <Column >
-                                        <Text text="Cliente" />
+                                        <Text text="Depositante" />
                                     </Column>
                                     <Column >
                                         <Text text="Armazém" />
@@ -266,7 +266,7 @@
                                         <Text text="Descrição" />
                                     </Column>
                                     <Column >
-                                        <Text text="Cliente" />
+                                        <Text text="Depositante" />
                                     </Column>
                                     <Column >
                                         <Text text="Armazém" />
