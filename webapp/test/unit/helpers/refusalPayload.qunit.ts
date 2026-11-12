@@ -1,4 +1,6 @@
-import { destinationFromIndex, destinationParameters, validateRefusalForm } from "siagrob1/helpers/refusalPayload";
+import {
+	destinationFromIndex, destinationParameters, refusalSuccessKind, transitLossConfirmText, validateRefusalForm,
+} from "siagrob1/helpers/refusalPayload";
 
 QUnit.module("refusalPayload - destino e validação da recusa de carga");
 
@@ -42,4 +44,31 @@ QUnit.test("parâmetros do refaturamento: ambos null", function (assert) {
 	assert.deepEqual(
 		destinationParameters({ DestinationIndex: 0, DestinationWarehouseCode: "A1", TransitLossReason: "Other" }),
 		{ Destination: "Rebilling", DestinationWarehouseCode: null, TransitLossReason: null });
+});
+
+QUnit.test("índice fora da faixa cai em Rebilling", function (assert) {
+	assert.strictEqual(destinationFromIndex(9), "Rebilling");
+	assert.strictEqual(destinationFromIndex(-1), "Rebilling");
+});
+
+QUnit.test("quebra sem motivo da recusa devolve a mensagem do motivo", function (assert) {
+	assert.strictEqual(
+		validateRefusalForm({ DestinationIndex: 3, TransitLossReason: "Theft" }), "Informe o motivo da recusa.");
+});
+
+QUnit.test("confirmação da quebra: texto base sem NF-e, com sentença extra com NF-e", function (assert) {
+	const base = "A quebra de trajeto devolve os documentos selecionados e retira o volume da carga. " +
+		"A mercadoria não retorna a nenhum armazém e não fica disponível para faturamento. Confirmar?";
+	assert.strictEqual(transitLossConfirmText(false), base);
+	assert.strictEqual(
+		transitLossConfirmText(true),
+		base + " A quebra só é lançada depois que as NF-e de entrada das devoluções forem autorizadas.");
+});
+
+QUnit.test("mensagem de sucesso: quebra x NF-e", function (assert) {
+	assert.strictEqual(refusalSuccessKind("TransitLoss", false), "TransitLoss");
+	assert.strictEqual(refusalSuccessKind("TransitLoss", true), "PendingNfe");
+	assert.strictEqual(refusalSuccessKind("Warehouse", true), "PendingNfe");
+	assert.strictEqual(refusalSuccessKind("Transshipment", false), "Transshipment");
+	assert.strictEqual(refusalSuccessKind("Rebilling", false), "Rebilling");
 });

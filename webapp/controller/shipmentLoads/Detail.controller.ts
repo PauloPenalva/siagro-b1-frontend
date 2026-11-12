@@ -16,7 +16,9 @@ import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 import ShipmentBillingDialog, { BillingLoad } from "siagrob1/helpers/ShipmentBillingDialog";
 import { sendJson, odataCollection } from "siagrob1/helpers/FetchHelpers";
-import { destinationParameters, validateRefusalForm } from "siagrob1/helpers/refusalPayload";
+import {
+  destinationParameters, RefusalSuccessKind, refusalSuccessKind, transitLossConfirmText, validateRefusalForm,
+} from "siagrob1/helpers/refusalPayload";
 import { runNfeAction } from "siagrob1/helpers/NfeActionRunner";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { Button$PressEvent } from "sap/m/Button";
@@ -890,7 +892,7 @@ export default class Detail extends BaseController {
       const withNfe = await this.isTaxCalculationActive(branchCode);
 
       const confirmed = toTransitLoss
-        ? await this.confirmTransitLoss()
+        ? await this.confirmTransitLoss(withNfe)
         : await DialogHelper.confirmDialog(
         withNfe
           ? "Confirma a recusa ? Serão criadas as devoluções com NF-e de entrada; a recusa só é concluída depois que todas forem autorizadas."
@@ -924,16 +926,14 @@ export default class Detail extends BaseController {
       this._refusalDialog.close();
       this.refreshAll();
 
-      MessageToast.show(
-        toTransitLoss
-          ? "Recusa registrada. Quebra de trajeto lançada."
-          : withNfe
-          ? "Recusa registrada. Emita as NF-e de entrada no painel \"Recusa aguardando NF-e\"."
-          : toTransshipment
-          ? "Recusa registrada. Mercadoria seguirá para transbordo no armazém informado."
-          : toWarehouse
-            ? "Recusa registrada. Mercadoria devolvida ao armazém."
-            : "Recusa registrada. Carga disponível para novo faturamento.");
+      const successMessages: Record<RefusalSuccessKind, string> = {
+        PendingNfe: "Recusa registrada. Emita as NF-e de entrada no painel \"Recusa aguardando NF-e\".",
+        TransitLoss: "Recusa registrada. Quebra de trajeto lançada.",
+        Transshipment: "Recusa registrada. Mercadoria seguirá para transbordo no armazém informado.",
+        Warehouse: "Recusa registrada. Mercadoria devolvida ao armazém.",
+        Rebilling: "Recusa registrada. Carga disponível para novo faturamento.",
+      };
+      MessageToast.show(successMessages[refusalSuccessKind(params.Destination, withNfe)]);
     } catch (e) {
       MessageBox.error((e as Error).message);
     } finally {
@@ -942,11 +942,10 @@ export default class Detail extends BaseController {
   }
 
   /** Confirmação exclusiva do destino quebra de trajeto: a perda é definitiva para o estoque. */
-  private confirmTransitLoss(): Promise<boolean> {
+  private confirmTransitLoss(withNfe: boolean): Promise<boolean> {
     return new Promise(resolve => {
       MessageBox.confirm(
-        "A quebra de trajeto devolve os documentos selecionados e retira o volume da carga. " +
-        "A mercadoria não retorna a nenhum armazém e não fica disponível para faturamento. Confirmar?",
+        transitLossConfirmText(withNfe),
         {
           actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
           emphasizedAction: MessageBox.Action.OK,
