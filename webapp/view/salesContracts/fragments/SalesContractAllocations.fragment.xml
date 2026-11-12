@@ -41,6 +41,11 @@
           <Text text="{invoicesModel>NotaFiscal}" wrapping="false" />
         </t:template>
       </t:Column>
+      <t:Column label="Carga" width="8rem">
+        <t:template>
+          <Text text="{invoicesModel>LoadCode}" wrapping="false" />
+        </t:template>
+      </t:Column>
       <t:Column label="Diferença" hAlign="End" width="8rem">
         <t:template>
           <ObjectNumber

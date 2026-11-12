@@ -51,6 +51,11 @@
           <Text text="{allocationModel>StorageTransactionCode}" tooltip="{allocationModel>StorageTransactionCode}" wrapping="false" />
         </t:template>
       </t:Column>
+      <t:Column label="Carga" tooltip="Carga">
+        <t:template>
+          <Text text="{allocationModel>LoadCode}" tooltip="{allocationModel>LoadCode}" wrapping="false" />
+        </t:template>
+      </t:Column>
       <t:Column label="Data" tooltip="Data">
         <t:template>
           <Text wrapping="false" text="{
