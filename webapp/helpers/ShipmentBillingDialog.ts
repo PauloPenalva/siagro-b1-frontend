@@ -9,8 +9,10 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Sorter from "sap/ui/model/Sorter";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Table from "sap/ui/table/Table";
+import SearchField from "sap/m/SearchField";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
+import { filterBillingReleases } from "siagrob1/helpers/BillingReleaseSearch";
 
 /** Carga a faturar — os campos que o diálogo usa. */
 export type BillingLoad = {
@@ -126,6 +128,8 @@ export default class ShipmentBillingDialog {
   private _billingInFlight = false;
   /** Descarta resposta atrasada do complemento fiscal quando a seleção já mudou. */
   private _fiscalRequestId = 0;
+  /** Todas as liberações disponíveis da carga aberta; o model "billingReleases" mostra só as que passam na busca. */
+  private _allReleases: BilledRelease[] = [];
 
   constructor(private readonly host: BillingDialogHost) {
     // Liberações de venda disponíveis do dialog de faturamento: resultado da function
@@ -190,6 +194,8 @@ export default class ShipmentBillingDialog {
     billingModel.setProperty("/TaxLocked", await this.host.isTaxCalculationActive(load.BranchCode));
 
     contractsTable.clearSelection();
+    // Cada abertura começa sem busca: o texto da carga anterior esconderia liberações desta.
+    (this.host.view.byId("billingReleaseSearch") as SearchField)?.setValue("");
     await this.loadAvailableReleases(load.ItemCode ?? "");
 
     this._billingDialog?.open();
@@ -363,6 +369,34 @@ export default class ShipmentBillingDialog {
     billingModel.setProperty("/FiscalLoading", false);
   }
 
+  /**
+   * Busca digitada acima da tabela de liberações (GAC-1217): filtra as linhas no cliente.
+   * A seleção da sap.ui.table é por ÍNDICE — sem o cuidado abaixo, filtrar deixaria marcada
+   * outra liberação, na mesma posição, e o faturamento sairia no contrato errado.
+   */
+  onReleaseSearch(query: string): void {
+    const contractsTable = this.host.view.byId("shipmentBillingSalesContractsTable") as Table;
+    const releasesModel = this.host.view.getModel("billingReleases") as JSONModel;
+
+    const selectedIndex = contractsTable.getSelectedIndex();
+    const selected = selectedIndex >= 0
+      ? contractsTable.getContextByIndex(selectedIndex)?.getObject() as BilledRelease
+      : undefined;
+
+    const filtered = filterBillingReleases(this._allReleases, query);
+    const newIndex = selected ? filtered.indexOf(selected) : -1;
+
+    // Mesma liberação na mesma posição: nada a refazer (evita reconsultar o complemento fiscal).
+    if (newIndex !== selectedIndex) {
+      contractsTable.clearSelection();
+    }
+    releasesModel.setData(filtered);
+    contractsTable.setFirstVisibleRow(0);
+    if (newIndex >= 0 && newIndex !== selectedIndex) {
+      contractsTable.setSelectedIndex(newIndex);
+    }
+  }
+
   close(): void {
     this._fiscalRequestId++;
     const contractsTable = this.host.view.byId("shipmentBillingSalesContractsTable") as Table;
@@ -416,7 +450,9 @@ export default class ShipmentBillingDialog {
     try {
       await func.invoke();
       const releasesModel = this.host.view.getModel("billingReleases") as JSONModel;
-      releasesModel.setData(func.getBoundContext().getObject() as object);
+      const data = func.getBoundContext().getObject() as unknown;
+      this._allReleases = Array.isArray(data) ? data as BilledRelease[] : [];
+      releasesModel.setData(this._allReleases);
     } finally {
       this.host.setBusy(false);
     }

@@ -23,6 +23,7 @@ import { runNfeAction } from "siagrob1/helpers/NfeActionRunner";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { Button$PressEvent } from "sap/m/Button";
 import { Link$PressEvent } from "sap/m/Link";
+import { SearchField$LiveChangeEvent, SearchField$SearchEvent } from "sap/m/SearchField";
 
 /** Linha do diálogo de recusa — o DTO da function, mais a quantidade digitada. */
 type RefusableDocument = {
@@ -346,6 +347,10 @@ export default class Detail extends BaseController {
 
   onBillingReleaseSelect() {
     return this._billing.onReleaseSelect();
+  }
+
+  onBillingReleaseSearch(event: SearchField$LiveChangeEvent | SearchField$SearchEvent) {
+    this._billing.onReleaseSearch(event.getSource().getValue());
   }
 
   async onRecalculate(): Promise<void> {

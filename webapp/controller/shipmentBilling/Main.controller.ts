@@ -4,7 +4,7 @@ import formatter from "siagrob1/model/formatter";
 import { BaseController } from "./BaseController";
 import MessageBox from "sap/m/MessageBox";
 import Context from "sap/ui/model/odata/v4/Context";
-import { SearchField$SearchEvent } from "sap/m/SearchField";
+import { SearchField$LiveChangeEvent, SearchField$SearchEvent } from "sap/m/SearchField";
 import ShipmentBillingDialog, { BillingLoad } from "siagrob1/helpers/ShipmentBillingDialog";
 
 /**
@@ -98,6 +98,10 @@ export default class Main extends BaseController {
 
   onBillingReleaseSelect() {
     return this._billing.onReleaseSelect();
+  }
+
+  onBillingReleaseSearch(event: SearchField$LiveChangeEvent | SearchField$SearchEvent) {
+    this._billing.onReleaseSearch(event.getSource().getValue());
   }
 
   private refreshData() {

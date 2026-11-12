@@ -345,6 +345,14 @@
 				<Toolbar>
 					<Title text="Liberações de Entrega de Venda Disponíveis" />
 					<ToolbarSpacer />
+					<!-- GAC-1217: busca por contrato, complemento, cliente ou armazém, no lugar de ordenar e rolar. -->
+					<SearchField
+						id="billingReleaseSearch"
+						width="24rem"
+						placeholder="Buscar contrato, complemento, cliente ou armazém"
+						liveChange=".onBillingReleaseSearch"
+						search=".onBillingReleaseSearch"
+					/>
 				</Toolbar>
 			</t:toolbar>
 			<t:columns>
