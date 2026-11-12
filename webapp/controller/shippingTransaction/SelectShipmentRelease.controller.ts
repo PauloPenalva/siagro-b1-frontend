@@ -2,7 +2,6 @@
 
 import { BaseController } from "./BaseController";
 
-import List from 'sap/m/List';
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import MessageBox from "sap/m/MessageBox";
 import JSONModel from "sap/ui/model/json/JSONModel";
@@ -55,7 +54,7 @@ export default class SelectShipmentRelease extends BaseController {
       this._cashFlowDate = query?.cashFlowDate;
 
       // A view sobrevive entre visitas: limpa a seleção e as linhas do grupo anterior.
-      (this.byId("tableSelectShipmentRelease") as List).removeSelections(true);
+      this.clearRowSelection("tableSelectShipmentRelease");
       (this.getModel("contracts") as JSONModel).setData([]);
       
       if (itemCode) {
@@ -67,8 +66,7 @@ export default class SelectShipmentRelease extends BaseController {
 	}
 
   onCreateShippingTransaction() {
-    const oTable = this.byId("tableSelectShipmentRelease") as List;
-		const oContext = oTable.getSelectedItem()?.getBindingContext("contracts");
+    const oContext = this.getSelectedRowContext("tableSelectShipmentRelease");
     
     if (!oContext) {
       MessageBox.warning("Selecione um item na tabela.");
