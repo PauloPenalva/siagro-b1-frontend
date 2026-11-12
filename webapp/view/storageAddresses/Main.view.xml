@@ -142,7 +142,7 @@
 						</t:template>
 					</t:Column>
           <t:Column
-						label="Cliente"
+						label="Depositante"
             sortProperty="CardCode"
 						filterProperty="CardCode"
             width="7rem"

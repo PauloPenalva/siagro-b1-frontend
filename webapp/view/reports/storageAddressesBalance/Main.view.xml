@@ -63,10 +63,10 @@
                 }"
                 liveChange=".validateField"
             />
-          <Label text="Cliente" />
+          <Label text="Depositante" />
           <Input
             showValueHelp="true"
-            valueHelpRequest=".openCostumersValueHelp"
+            valueHelpRequest=".openBusinessPartnersValueHelp"
             value="{params>/CardCode}"
             >
           </Input>

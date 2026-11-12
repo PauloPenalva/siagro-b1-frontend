@@ -138,13 +138,13 @@
                   <l:GridData span="XL3 L3 M3 S4" />
               </layoutData>
             </Input>
-            <Label text="Cliente" />
+            <Label text="Depositante" />
             <Input 
 								required="true"
                 value="{CardCode}" 
 								showValueHelp="true" 
 								valueHelpOnly="true" 
-								valueHelpRequest=".openBusinessPartnersValueHelp">
+								valueHelpRequest=".openSuppliersValueHelp">
               <customData>
                 <core:CustomData key="descriptionProperty" value="CardName" />
               </customData>

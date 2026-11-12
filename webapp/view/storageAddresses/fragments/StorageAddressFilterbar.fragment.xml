@@ -37,7 +37,7 @@
         <Input showClearIcon="true" value="{filter>/Description}"/>
       </fb:control>
     </fb:FilterGroupItem>
-    <fb:FilterGroupItem name="card" label="Cliente" groupName="GroupCard" visibleInFilterBar="true">
+    <fb:FilterGroupItem name="card" label="Depositante" groupName="GroupCard" visibleInFilterBar="true">
       <fb:control>
         <Input
           showClearIcon="true"

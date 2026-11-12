@@ -60,7 +60,7 @@
            />
         </fb:control>
       </fb:FilterGroupItem>
-      <fb:FilterGroupItem name="customerOrigin" label="Cliente Origem" groupName="GroupCustomerOrigin" visibleInFilterBar="true">
+      <fb:FilterGroupItem name="customerOrigin" label="Depositante Origem" groupName="GroupCustomerOrigin" visibleInFilterBar="true">
         <fb:control>
             <Input
               showClearIcon="true"
@@ -71,7 +71,7 @@
             </Input>
         </fb:control>
       </fb:FilterGroupItem>
-      <fb:FilterGroupItem name="customerDestination" label="Cliente Destino" groupName="GroupCustomerDestination" visibleInFilterBar="true">
+      <fb:FilterGroupItem name="customerDestination" label="Depositante Destino" groupName="GroupCustomerDestination" visibleInFilterBar="true">
         <fb:control>
             <Input
               showClearIcon="true"
