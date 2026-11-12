@@ -1,0 +1,144 @@
+<mvc:View
+    controllerName="siagrob1.controller.shippingTransaction.SelectSupplier"
+    displayBlock="true"
+    height="100%"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:uxap="sap.uxap"
+    core:require="{
+      formatter: 'siagrob1/model/formatter'
+    }">
+    <uxap:ObjectPageLayout
+        showFooter="true"
+        toggleHeaderOnTitleClick="true"
+        preserveHeaderStateOnScroll="false"
+        busy="{ui>/busy}"
+        busyIndicatorDelay="0"
+    >
+        <uxap:headerTitle>
+            <uxap:ObjectPageDynamicHeaderTitle>
+              <uxap:breadcrumbs>
+                <Breadcrumbs separatorStyle="GreaterThan" currentLocationText="Seleção de Fornecedor">
+                  <Link text="Expedição de Grãos" press=".onCancel" />
+                </Breadcrumbs>
+              </uxap:breadcrumbs>
+              <uxap:expandedHeading>
+                  <Title text="Expedição de Grãos" />
+              </uxap:expandedHeading>
+              <uxap:snappedHeading>
+                  <Title text="Expedição de Grãos" />
+              </uxap:snappedHeading>
+            </uxap:ObjectPageDynamicHeaderTitle>
+        </uxap:headerTitle>
+        <uxap:sections>
+            <uxap:ObjectPageSection
+                titleUppercase="false"
+                title="Selecionar Fornecedor"
+            >
+                <uxap:subSections>
+                    <uxap:ObjectPageSubSection>
+                        <uxap:blocks>
+                           <!-- GAC-1224: uma linha por fornecedor + previsão de pagamento, somando as
+                                liberações com saldo do armazém. A liberação em si é escolhida na tela
+                                seguinte, já filtrada pelo grupo marcado aqui. -->
+                           <ScrollContainer
+                            width="100%"
+                            horizontal="true"
+                            vertical="false">
+                           <Table
+                              id="tableSelectShippingSupplier"
+                              class="sapUiSizeCondensed"
+                              alternateRowColors="true"
+                              inset="false"
+                              mode="SingleSelect"
+                              noDataText="Nenhuma liberação com saldo neste armazém."
+                              items="{
+                                  path: 'suppliers>/'
+                                }"
+                             >
+                              <headerToolbar>
+                                  <OverflowToolbar>
+                                      <content>
+                                          <Title
+                                              text="Fornecedores"
+                                              level="H2"
+                                          />
+                                          <ToolbarSpacer />
+                                      </content>
+                                  </OverflowToolbar>
+                              </headerToolbar>
+                              <columns>
+                                  <Column width="25rem">
+                                      <Text text="Fornecedor" wrapping="false"/>
+                                  </Column>
+                                  <Column width="10rem">
+                                      <Text text="CNPJ" wrapping="false"/>
+                                  </Column>
+                                  <Column width="12rem">
+                                      <Text text="Municipio" wrapping="false"/>
+                                  </Column>
+                                  <Column width="3rem">
+                                      <Text text="Uf" wrapping="false"/>
+                                  </Column>
+                                  <Column width="9rem">
+                                      <Text text="Prev. Pagto." wrapping="false"/>
+                                  </Column>
+                                  <Column hAlign="End" width="7rem">
+                                      <Text text="Liberações" wrapping="false"/>
+                                  </Column>
+                                  <Column hAlign="End" width="12rem">
+                                      <Text text="Saldo" />
+                                  </Column>
+                              </columns>
+                              <items>
+                                  <ColumnListItem>
+                                      <cells>
+                                          <ObjectIdentifier title="{suppliers>FName}" />
+                                          <Text text="{suppliers>TaxId}" wrapping="false"/>
+                                          <Text text="{suppliers>City}" wrapping="false"/>
+                                          <Text text="{suppliers>State}" wrapping="false"/>
+                                          <Text
+                                              text="{ path: 'suppliers>StandardCashFlowDate', formatter: 'formatter.formatDate' }"
+                                              wrapping="false"
+                                          />
+                                          <Text text="{suppliers>ReleaseCount}" wrapping="false"/>
+                                          <ObjectNumber
+                                              number="{
+                                                path: 'suppliers>AvailableQuantity',
+                                                type: 'sap.ui.model.type.Float',
+                                                formatOptions: {
+                                                    decimals: 3,
+                                                    decimalSeparator: ',',
+                                                    groupingEnabled: true,
+                                                    groupingSeparator: '.'
+                                                  }
+                                              }"
+                                              unit="{suppliers>UnitOfMeasureCode}"
+                                          />
+                                      </cells>
+                                  </ColumnListItem>
+                              </items>
+                          </Table>
+                          </ScrollContainer>
+                        </uxap:blocks>
+                    </uxap:ObjectPageSubSection>
+                </uxap:subSections>
+            </uxap:ObjectPageSection>
+        </uxap:sections>
+        <uxap:footer>
+            <OverflowToolbar>
+                <ToolbarSpacer />
+                <Button
+                    text="Voltar"
+                    press=".onCancel"
+                />
+                <Button
+                    text="Selecionar"
+                    press=".onSelectSupplier"
+                    type="Emphasized"
+                />
+            </OverflowToolbar>
+        </uxap:footer>
+    </uxap:ObjectPageLayout>
+</mvc:View>

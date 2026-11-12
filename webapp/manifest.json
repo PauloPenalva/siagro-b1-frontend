@@ -699,6 +699,11 @@
           "target": "shippingTransaction"
         },
         {
+          "pattern": "shipping-transaction/select-supplier:?query:",
+          "name": "selectShippingSupplier",
+          "target": "selectShippingSupplier"
+        },
+        {
           "pattern": "shipping-transaction/select-shipment-release:?query:",
           "name": "selectShipmentRelease",
           "target": "selectShipmentRelease"
@@ -2405,6 +2410,12 @@
 					"name": "siagrob1.view.shippingTransaction.Main",
           "clearControlAggregation": true
 				},
+        "selectShippingSupplier": {
+          "id": "selectShippingSupplier",
+          "level": 2,
+          "name": "siagrob1.view.shippingTransaction.SelectSupplier",
+          "clearControlAggregation": true
+        },
         "selectShipmentRelease": {
 					"id": "selectShipmentRelease",
           "level": 2,
