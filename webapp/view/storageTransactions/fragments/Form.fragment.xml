@@ -116,7 +116,7 @@
               editable="{ui>/editable}"
               showValueHelp="true"
               valueHelpOnly="true"
-              valueHelpRequest=".openBusinessPartnersValueHelp"
+              valueHelpRequest=".openTransactionPartnerValueHelp"
               required="true"
               value="{CardCode}"
               >

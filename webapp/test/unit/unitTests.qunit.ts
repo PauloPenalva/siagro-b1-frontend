@@ -4,6 +4,7 @@ import "./services/TableLayoutService.qunit";
 import "./services/MarketModuleService.qunit";
 import "./helpers/FilterHelpers.qunit";
 import "./helpers/ActiveRecordsValueHelp.qunit";
+import "./helpers/StoragePartnerHelpers.qunit";
 import "./helpers/AllocationOriginHelpers.qunit";
 import "./helpers/AttachmentViewerHelpers.qunit";
 import "./helpers/PlateHelpers.qunit";
