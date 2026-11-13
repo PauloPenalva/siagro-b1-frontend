@@ -30,24 +30,32 @@ function normalize(value: string): string {
 }
 
 /**
- * Filtra as liberações de venda do diálogo de faturamento pelo texto digitado (GAC-1217).
- * Cada palavra precisa aparecer em alguma das colunas de texto da linha — "cargill 763" acha
- * o contrato 763 da Cargill. Busca vazia devolve a própria lista.
+ * Filtra linhas pelo texto digitado: cada palavra precisa aparecer em alguma das colunas
+ * informadas — "cargill 763" acha o contrato 763 da Cargill. Busca vazia devolve a própria
+ * lista (mesma referência), e lista ausente vira lista vazia.
  */
-export function filterBillingReleases<T extends SearchableBillingRelease>(releases: T[], query: string): T[] {
-  if (!Array.isArray(releases)) {
+export function filterRowsByWords<T>(rows: T[], query: string, fields: (keyof T)[]): T[] {
+  if (!Array.isArray(rows)) {
     return [];
   }
 
   const words = normalize(query).split(/\s+/).filter(Boolean);
 
   if (!words.length) {
-    return releases;
+    return rows;
   }
 
-  return releases.filter((release) => {
-    const text = normalize(SEARCHED_FIELDS.map((field) => release?.[field] ?? "").join(" "));
+  return rows.filter((row) => {
+    const text = normalize(fields.map((field) => {
+      const value = row?.[field];
+      return typeof value === "string" ? value : "";
+    }).join(" "));
 
     return words.every((word) => text.includes(word));
   });
+}
+
+/** Filtra as liberações de venda do diálogo de faturamento pelo texto digitado (GAC-1217). */
+export function filterBillingReleases<T extends SearchableBillingRelease>(releases: T[], query: string): T[] {
+  return filterRowsByWords(releases, query, SEARCHED_FIELDS);
 }

@@ -22,6 +22,7 @@ import "./helpers/ContractDraftPlaceholders.qunit";
 import "./helpers/ContractDraftActions.qunit";
 import "./helpers/FetchHelpers.qunit";
 import "./helpers/PlaceholderSearch.qunit";
+import "./helpers/PlannedReleaseHelpers.qunit";
 import "./model/contractDrafts.qunit";
 import "./helpers/DischargeDistributionHelpers.qunit";
 import "./helpers/FreightHelpers.qunit";
