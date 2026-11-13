@@ -518,7 +518,7 @@ export default abstract class SalesContractsBaseController extends ContractDraft
     }
     if (fixedVolume + unfixedVolume > state.availableToRelease) {
       MessageBox.error(
-        `Volume do washout excede o saldo não liberado do contrato (${formatNumberPtBr(state.availableToRelease, 3)}).`
+        `Volume do washout excede o saldo não liberado do contrato (${formatNumberPtBr(state.availableToRelease, 3)}). Cancele a liberação de entrega antes (reabra primeiro, se estiver finalizada): finalizar não devolve o saldo ao contrato.`
       );
       return;
     }
