@@ -4,6 +4,7 @@
     xmlns:l="sap.ui.layout"
     xmlns:t="sap.ui.table"
     xmlns:core="sap.ui.core"
+    core:require="{ IntegerType: 'sap/ui/model/type/Integer' }"
 >
     <f:SimpleForm
       id="formTruckScales"
@@ -52,15 +53,59 @@
           />
 
           <core:Title text="Conexão" emphasized="true" />
-          <Label text="Endereço IP" />
-          <Input value="{IpAddress}" editable="true" maxLength="50" />
-          <Label text="Porta" />
+          <Label text="Tipo de conexão" />
+          <Select
+            selectedKey="{
+              path: 'ConnectionType',
+              targetType: 'any'
+            }"
+            forceSelection="false">
+            <core:ListItem key="Tcp" text="TCP/IP" />
+            <core:ListItem key="Serial" text="Serial" />
+          </Select>
+          <Label text="Endereço IP" visible="{= ${path: 'ConnectionType', targetType: 'any'} !== 'Serial' }" />
+          <Input value="{IpAddress}" editable="true" maxLength="50" visible="{= ${path: 'ConnectionType', targetType: 'any'} !== 'Serial' }" />
+          <Label text="Porta" visible="{= ${path: 'ConnectionType', targetType: 'any'} !== 'Serial' }" />
           <Input
             value="{
               path: 'Port',
-              type: 'sap.ui.model.type.Integer'
+              type: 'IntegerType'
             }"
-            editable="true" />
+            editable="true"
+            visible="{= ${path: 'ConnectionType', targetType: 'any'} !== 'Serial' }" />
+          <Label text="Porta serial" visible="{= ${path: 'ConnectionType', targetType: 'any'} === 'Serial' }" />
+          <Input
+            value="{SerialPortName}"
+            maxLength="50"
+            placeholder="COM3"
+            visible="{= ${path: 'ConnectionType', targetType: 'any'} === 'Serial' }" />
+          <Label text="Baud rate" visible="{= ${path: 'ConnectionType', targetType: 'any'} === 'Serial' }" />
+          <Input
+            value="{ path: 'BaudRate', type: 'IntegerType' }"
+            placeholder="9600"
+            visible="{= ${path: 'ConnectionType', targetType: 'any'} === 'Serial' }" />
+          <Label text="Bits de dados" visible="{= ${path: 'ConnectionType', targetType: 'any'} === 'Serial' }" />
+          <Input
+            value="{ path: 'DataBits', type: 'IntegerType' }"
+            placeholder="8"
+            visible="{= ${path: 'ConnectionType', targetType: 'any'} === 'Serial' }" />
+          <Label text="Paridade" visible="{= ${path: 'ConnectionType', targetType: 'any'} === 'Serial' }" />
+          <Select
+            selectedKey="{
+              path: 'Parity',
+              targetType: 'any'
+            }"
+            forceSelection="false"
+            visible="{= ${path: 'ConnectionType', targetType: 'any'} === 'Serial' }">
+            <core:ListItem key="None" text="Nenhuma" />
+            <core:ListItem key="Odd" text="Ímpar" />
+            <core:ListItem key="Even" text="Par" />
+          </Select>
+          <Label text="Bits de parada" visible="{= ${path: 'ConnectionType', targetType: 'any'} === 'Serial' }" />
+          <Input
+            value="{ path: 'StopBits', type: 'IntegerType' }"
+            placeholder="1"
+            visible="{= ${path: 'ConnectionType', targetType: 'any'} === 'Serial' }" />
           <Label text="Protocolo" />
           <Select
             selectedKey="{
@@ -83,17 +128,17 @@
           <Input
             value="{
               path: 'TareToleranceKg',
-              type: 'sap.ui.model.type.Integer'
+              type: 'IntegerType'
             }"
             editable="true" />
 
           <core:Title text="Avançado (parsing do frame)" emphasized="true" />
           <Label text="Caracteres antes do peso" />
-          <Input value="{ path: 'FramePrefixLength', type: 'sap.ui.model.type.Integer' }" />
+          <Input value="{ path: 'FramePrefixLength', type: 'IntegerType' }" />
           <Label text="Dígitos do peso" />
-          <Input value="{ path: 'WeightLength', type: 'sap.ui.model.type.Integer' }" />
+          <Input value="{ path: 'WeightLength', type: 'IntegerType' }" />
           <Label text="Casas decimais" />
-          <Input value="{ path: 'DecimalPlaces', type: 'sap.ui.model.type.Integer' }" />
+          <Input value="{ path: 'DecimalPlaces', type: 'IntegerType' }" />
           <Label text="Expressão regular (protocolo genérico)" />
           <Input value="{FramePattern}" maxLength="200" />
           <Label text="Registrar frames no log" />
