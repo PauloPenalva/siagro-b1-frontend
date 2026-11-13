@@ -11,6 +11,7 @@ import CommonController from "siagrob1/controller/common/CommonController";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { anyOfFilter } from "siagrob1/helpers/FilterHelpers";
 import formatter from "siagrob1/model/formatter";
+import { closedLoadWarning } from "siagrob1/helpers/TransshipmentHelpers";
 
 /** Romaneio selecionado, com o vínculo de carga que decide o que a tela pode fazer com ele. */
 type SelectedShipment = {
@@ -242,11 +243,12 @@ export default class Main extends CommonController {
     }
 
     // Descarregada e Concluída vêm depois de Faturada (GAC-1171): o mesmo aviso vale.
-    if (["PartiallyInvoiced", "Invoiced", "Discharged", "Completed", "TransitLoss"].includes(shipment.LoadStatus)) {
-      MessageBox.warning(
-        `A carga ${shipment.LoadCode} já tem faturamento `
-        + `(${formatter.formatShipmentLoadStatus(shipment.LoadStatus)}). `
-        + "Cancele os documentos de saída da carga antes de desvincular este romaneio.");
+    const closedWarning = closedLoadWarning(
+      shipment.LoadCode, shipment.LoadStatus,
+      formatter.formatShipmentLoadStatus(shipment.LoadStatus), "desvincular este romaneio");
+
+    if (closedWarning) {
+      MessageBox.warning(closedWarning);
       return false;
     }
 

@@ -83,8 +83,10 @@
 						formatter: '.formatter.stateShipmentLoadStatus'
 					}"
 					text="{
-						path: 'Status',
-						targetType: 'any',
+						parts: [
+							{ path: 'Status', targetType: 'any' },
+							{ path: 'IsInTransfer', targetType: 'any' }
+						],
 						formatter: '.formatter.formatShipmentLoadStatus'
 					}"/>
 				<ObjectNumber
@@ -213,6 +215,20 @@
 													<ObjectNumber
 														state="Error"
 														number="{ path: 'TransitLossQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+														unit="{UnitOfMeasureCode}"/>
+												</f:fields>
+											</f:FormElement>
+											<!-- GAC-1176: quebra de TRANSPORTE — o que saiu da carga menos o que foi pesado
+											     na entrada dos transbordos/transferências. Informativa (não é a quebra de
+											     trajeto acima, que nasce de recusa de nota). Somada no cliente por
+											     BaseController#refreshTransshipmentLinkage, a partir das linhas. -->
+											<f:FormElement
+												label="Quebra de Transporte"
+												visible="{= ${viewModel>/transshipmentLinkage/shrinkageTotal} > 0 }">
+												<f:fields>
+													<ObjectNumber
+														state="Warning"
+														number="{ path: 'viewModel>/transshipmentLinkage/shrinkageTotal', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
 														unit="{UnitOfMeasureCode}"/>
 												</f:fields>
 											</f:FormElement>
@@ -552,7 +568,7 @@
 			<!-- Transbordos (GAC-1181): descarregar num armazém intermediário e recarregar, sem que
 			     a viagem vire duas cargas. Carga de Remoção não passa por transbordo
 			     (ShipmentLoadTransshipmentRules.EnsureLoadAcceptsTransshipment). -->
-			<uxap:ObjectPageSection titleUppercase="false" title="Transbordos"
+			<uxap:ObjectPageSection titleUppercase="false" title="Transbordos e Transferências"
 				visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' }">
 				<uxap:subSections>
 					<uxap:ObjectPageSubSection>

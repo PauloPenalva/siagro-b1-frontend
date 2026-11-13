@@ -13,6 +13,7 @@ import RoyaltyFieldsHelper from "siagrob1/controller/royalties/RoyaltyFieldsHelp
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { openNfeIssueDialog } from "siagrob1/dialogs/NfeIssueDialog";
 import formatter from "siagrob1/model/formatter";
+import { closedLoadWarning } from "siagrob1/helpers/TransshipmentHelpers";
 import { BaseController } from "./BaseController";
 import ShipmentBillingDialog, { BillingLoad } from "siagrob1/helpers/ShipmentBillingDialog";
 import { sendJson, odataCollection } from "siagrob1/helpers/FetchHelpers";
@@ -542,10 +543,11 @@ export default class Detail extends BaseController {
         return;
       }
       // A UI decide pelo status da carga; o backend, pela existência de documento de saída vivo.
-      if (["PartiallyInvoiced", "Invoiced", "Discharged", "Completed", "TransitLoss"].includes(loadStatus)) {
-        MessageBox.warning(
-          `A carga ${loadCode} já tem faturamento (${formatter.formatShipmentLoadStatus(loadStatus)}). `
-          + "Cancele os documentos de saída da carga antes de estornar este romaneio.");
+      const closedWarning = closedLoadWarning(
+        loadCode, loadStatus, formatter.formatShipmentLoadStatus(loadStatus), "estornar este romaneio");
+
+      if (closedWarning) {
+        MessageBox.warning(closedWarning);
         return;
       }
 

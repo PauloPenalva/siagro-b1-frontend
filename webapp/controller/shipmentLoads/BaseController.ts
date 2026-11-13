@@ -28,6 +28,10 @@ import {
   summarizeDistribution
 } from "siagrob1/helpers/DischargeDistributionHelpers";
 import CommonController from "siagrob1/controller/common/CommonController";
+import {
+  completeTransferRefusal, reopenTransferRefusal, summarizeTransshipments, transshipmentTexts,
+  TransshipmentRow, TransshipmentType,
+} from "siagrob1/helpers/TransshipmentHelpers";
 
 /** Arquivo do anexo já em base64, no formato que as actions da carga esperam. */
 type AttachmentPayload = { File: string; FileName: string; ContentType: string };
@@ -62,7 +66,11 @@ type TransshipmentReceiptOption = { Key: string; Text: string };
  */
 type TransshipmentDialogForm = {
   mode: "start" | "entry";
+  /** GAC-1176: Transbordo ou Transferência entre armazéns de terceiros — decide os textos e o `Type` da action. */
+  type: TransshipmentType;
   title: string;
+  warehouseLabel: string;
+  startDateLabel: string;
   key?: string;
   warehouseCode?: string;
   warehouseName?: string;
@@ -720,14 +728,31 @@ export abstract class BaseController extends CommonController {
   }
 
   async onStartTransshipment(): Promise<void> {
+    await this.startTransshipment("Transshipment");
+  }
+
+  /**
+   * Iniciar Transferência (GAC-1176): o mesmo diálogo e a mesma action do transbordo, com
+   * `Type = Transfer` — a mercadoria termina no armazém de terceiro informado.
+   */
+  async onStartTransfer(): Promise<void> {
+    await this.startTransshipment("Transfer");
+  }
+
+  private async startTransshipment(type: TransshipmentType): Promise<void> {
     if (!this.getView().getBindingContext()) {
       MessageBox.alert("Carga não carregada.");
       return;
     }
 
+    const texts = transshipmentTexts(type);
+
     this.viewModel().setProperty("/transshipmentDialog", {
       mode: "start",
-      title: "Iniciar Transbordo",
+      type,
+      title: texts.startTitle,
+      warehouseLabel: texts.warehouseLabel,
+      startDateLabel: texts.startDateLabel,
       key: null,
       warehouseCode: "",
       warehouseName: "",
@@ -878,6 +903,11 @@ export abstract class BaseController extends CommonController {
       return;
     }
 
+    // `Type` está no $select da tabela (ShipmentLoadTransshipments.fragment), então getProperty
+    // o entrega; linha anterior ao GAC-1176 vem como Transshipment.
+    const type = ((context.getProperty("Type") as string) ?? "Transshipment") as TransshipmentType;
+    const texts = transshipmentTexts(type);
+
     const key = context.getProperty("Key") as string;
     const warehouseCode = context.getProperty("WarehouseCode") as string;
     const warehouseName = context.getProperty("WarehouseName") as string;
@@ -906,7 +936,10 @@ export abstract class BaseController extends CommonController {
 
       this.viewModel().setProperty("/transshipmentDialog", {
         mode: "entry",
-        title: "Registrar Entrada do Transbordo",
+        type,
+        title: texts.entryTitle,
+        warehouseLabel: texts.warehouseLabel,
+        startDateLabel: texts.startDateLabel,
         key,
         warehouseCode,
         warehouseName,
@@ -954,16 +987,17 @@ export abstract class BaseController extends CommonController {
 
     const form = this.viewModel().getProperty("/transshipmentDialog") as TransshipmentDialogForm;
     const date = (form.date ?? "").trim();
+    const texts = transshipmentTexts(form.type);
 
     if (date === "") {
       MessageBox.alert(
-        form.mode === "start" ? "Informe a data do transbordo." : "Informe a data da entrada.");
+        form.mode === "start" ? texts.missingDate : "Informe a data da entrada.");
       return;
     }
 
     if (form.mode === "start") {
       if (!(form.warehouseCode ?? "").trim()) {
-        MessageBox.alert("Informe o armazém do transbordo.");
+        MessageBox.alert(texts.missingWarehouse);
         return;
       }
     } else if (form.isOwn) {
@@ -972,7 +1006,7 @@ export abstract class BaseController extends CommonController {
         return;
       }
     } else if (!(Number(form.grossWeight ?? 0) > 0)) {
-      MessageBox.alert("Informe o peso pesado na entrada do transbordo.");
+      MessageBox.alert(texts.missingWeight);
       return;
     }
 
@@ -989,8 +1023,11 @@ export abstract class BaseController extends CommonController {
         action.setParameter("WarehouseCode", form.warehouseCode.trim());
         action.setParameter("TransshipmentDate", date);
         action.setParameter("Comments", (form.comments ?? "").trim());
+        // GAC-1176: "Transshipment" | "Transfer". Parâmetro opcional no EDM — sempre enviado
+        // daqui, para o tipo nunca depender do padrão do servidor.
+        action.setParameter("Type", form.type ?? "Transshipment");
         await action.invoke();
-        MessageToast.show("Transbordo iniciado.");
+        MessageToast.show(texts.started);
       } else {
         const action = model.bindContext("/ShipmentLoadsTransshipmentRegisterEntry(...)");
         action.setParameter("Key", form.key);
@@ -1005,7 +1042,7 @@ export abstract class BaseController extends CommonController {
         }
 
         await action.invoke();
-        MessageToast.show("Entrada do transbordo registrada.");
+        MessageToast.show(texts.entered);
       }
 
       // O diálogo só fecha DEPOIS do resolve: fechar antes descartaria o que foi digitado se a
@@ -1026,7 +1063,9 @@ export abstract class BaseController extends CommonController {
 
     if (!context) return;
 
-    if (!await DialogHelper.confirmDialog("Estornar o transbordo selecionado ?")) return;
+    const texts = transshipmentTexts(context.getProperty("Type") as string);
+
+    if (!await DialogHelper.confirmDialog(texts.reverseQuestion)) return;
 
     this.setBusy(true);
 
@@ -1036,11 +1075,87 @@ export abstract class BaseController extends CommonController {
       action.setParameter("Key", context.getProperty("Key") as string);
       await action.invoke();
 
-      MessageToast.show("Transbordo estornado.");
+      MessageToast.show(texts.reversed);
       this.refreshTransshipments();
     } catch (e) {
       MessageBox.error((e as Error).message || "Erro ao estornar o transbordo.");
     } finally {
+      this.setBusy(false);
+    }
+  }
+
+  /**
+   * Concluir Transferência (GAC-1176): a carga descarregou num armazém de terceiro e termina ali —
+   * encerra SEM faturamento. A checagem da linha aqui só poupa a ida ao servidor com uma frase
+   * clara; a regra de verdade (último transbordo, armazém de terceiro, recusa pendente) é de
+   * `ShipmentLoadsTransshipmentCompleteService`.
+   */
+  async onCompleteTransfer(): Promise<void> {
+    const context = this.selectedTransshipmentContext();
+
+    if (!context) return;
+
+    const row = context.getObject() as TransshipmentRow;
+    const linkedKeys = this.viewModel().getProperty("/transshipmentLinkage/linkedKeys") as string[];
+    const refusal = completeTransferRefusal(row, linkedKeys);
+
+    if (refusal) {
+      MessageBox.alert(refusal);
+      return;
+    }
+
+    const confirmed = await DialogHelper.confirmDialog(
+      `Concluir a transferência no armazém (${row.WarehouseCode ?? ""}) ${row.WarehouseName ?? ""} ? ` +
+      "A carga será encerrada sem faturamento e a mercadoria ficará disponível no armazém de destino.");
+
+    if (!confirmed) return;
+
+    await this.invokeTransferAction(
+      "/ShipmentLoadsTransferComplete(...)", row.Key, "Transferência concluída.",
+      "Erro ao concluir a transferência.");
+  }
+
+  /** Reabrir Transferência (GAC-1176): desfaz a conclusão; a carga volta a "em transferência". */
+  async onReopenTransfer(): Promise<void> {
+    const context = this.selectedTransshipmentContext();
+
+    if (!context) return;
+
+    const row = context.getObject() as TransshipmentRow;
+    const refusal = reopenTransferRefusal(row);
+
+    if (refusal) {
+      MessageBox.alert(refusal);
+      return;
+    }
+
+    if (!await DialogHelper.confirmDialog("Reabrir a transferência selecionada ?")) return;
+
+    await this.invokeTransferAction(
+      "/ShipmentLoadsTransferReopen(...)", row.Key, "Transferência reaberta.",
+      "Erro ao reabrir a transferência.");
+  }
+
+  private async invokeTransferAction(
+    actionPath: string, transshipmentKey: string, successMessage: string, errorMessage: string
+  ): Promise<void> {
+    // Trava ANTES do primeiro await: duplo clique dispararia duas actions.
+    if (this._transshipmentInFlight) return;
+
+    this._transshipmentInFlight = true;
+    this.setBusy(true);
+
+    try {
+      const action = (this.getModel() as ODataModel).bindContext(actionPath);
+      action.setParameter("Key", transshipmentKey);
+      await action.invoke();
+
+      MessageToast.show(successMessage);
+      this.refreshTransshipments();
+    } catch (e) {
+      MessageBox.error((e as Error).message || errorMessage);
+    } finally {
+      this._transshipmentInFlight = false;
       this.setBusy(false);
     }
   }
@@ -1053,14 +1168,23 @@ export abstract class BaseController extends CommonController {
    * Descargas, que gravam no Log de Alterações.
    */
   protected refreshTransshipments(): void {
+    // ⚠️ Lida ANTES do `refresh()` abaixo, como em `refreshDischarges()`: o refresh invalida o
+    // cache da entidade e, no mesmo tick, `getProperty("Key")` devolve `undefined`. Sem isto o
+    // `refreshTransshipmentLinkage()` saía cedo (chave vazia) e a situação/quebra derivadas só
+    // se atualizavam recarregando a página — visto no navegador no GAC-1176, onde é esse resumo
+    // que mostra o botão "Reabrir Transferência" depois de concluir.
+    const loadKey = this.currentLoadKey();
+
     (this.getView().getBindingContext() as Context)?.refresh();
 
-    ["loadTransshipmentsTable", "loadMovementsTable"].forEach(id => {
+    // Log de Alterações e Romaneios entram por causa do GAC-1176: concluir/reabrir a transferência
+    // grava a mudança de situação no log e muda o status projetado nos romaneios de origem.
+    ["loadTransshipmentsTable", "loadMovementsTable", "shipmentLoadChangeLogsTable", "loadTransactionsTable"].forEach(id => {
       const binding = (this.byId(id) as Table)?.getBinding("rows") as ODataListBinding;
       binding?.refresh();
     });
 
-    this.refreshTransshipmentLinkage().catch(
+    this.refreshTransshipmentLinkage(loadKey).catch(
       () => MessageBox.error("Erro ao atualizar a situação dos transbordos."));
   }
 
@@ -1104,7 +1228,7 @@ export abstract class BaseController extends CommonController {
       undefined,
       undefined,
       undefined,
-      { $select: "Key,Sequence,WarehouseCode,WarehouseName" }
+      { $select: "Key,Sequence,Type,WarehouseCode,WarehouseName,ShrinkageQuantity,FinalDestinationAt" }
     );
 
     const transactionsBinding = model.bindList(
@@ -1131,19 +1255,16 @@ export abstract class BaseController extends CommonController {
       transactionsBinding.requestContexts(0, Infinity),
     ]);
 
-    const lookup: Record<string, string> = {};
-
-    transshipmentContexts.forEach(context => {
-      const row = context.getObject() as {
-        Key: string; Sequence?: number; WarehouseCode?: string; WarehouseName?: string;
-      };
-      lookup[row.Key] = formatter.formatTransshipmentLabel(row);
-    });
+    // GAC-1176: além do rótulo por linha, o resumo traz a quebra de transporte somada (campo do
+    // cabeçalho) e se a carga terminou numa transferência (botão Reabrir Transferência).
+    const { lookup, shrinkageTotal, hasFinal } = summarizeTransshipments(
+      transshipmentContexts.map(context => context.getObject() as TransshipmentRow));
 
     const linkedKeys = transactionContexts.map(
       context => context.getProperty("ShipmentLoadTransshipmentKey") as string);
 
-    this.viewModel().setProperty("/transshipmentLinkage", { lookup, linkedKeys });
+    this.viewModel().setProperty(
+      "/transshipmentLinkage", { lookup, linkedKeys, shrinkageTotal, hasFinal });
   }
 
   /**

@@ -75,7 +75,7 @@
 
 				<!-- GAC-1181, Task 11: carga descarregada num armazém intermediário, aguardando a
 				     saída do transbordo — entre Carregada e Faturada Parcial, como a carga anda. -->
-				<Panel headerText="Em Transbordo ({panel>/countInTransshipment})" expandable="false">
+				<Panel headerText="Em Transbordo / Transferência ({panel>/countInTransshipment})" expandable="false">
 					<List
 						id="listInTransshipment"
 						updateFinished=".onLaneUpdated"

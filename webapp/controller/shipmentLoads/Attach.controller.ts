@@ -138,7 +138,10 @@ export default class Attach extends BaseController {
       undefined,
       undefined,
       {
-        $filter: "EntryStorageTransactionKey ne null",
+        // GAC-1176: a transferência entre armazéns de terceiros TERMINA no armazém e não aceita
+        // Expedição de saída (mesma recusa de ValidateTransshipmentRoleAsync) — nem a iniciada
+        // como Transferência, nem o transbordo já concluído como destino final.
+        $filter: "EntryStorageTransactionKey ne null and FinalDestinationAt eq null and Type ne 'Transfer'",
         $select: "Key,Sequence,WarehouseCode,WarehouseName",
         $orderby: "Sequence",
       }

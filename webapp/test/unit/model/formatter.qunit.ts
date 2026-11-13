@@ -197,6 +197,43 @@ QUnit.test("duas cargas são unidas por vírgula", function (assert) {
 	]), "C1, C2");
 });
 
+QUnit.test("transferência entre armazéns de terceiros (GAC-1176): rótulos", function (assert) {
+	// A situação da carga é a mesma (InTransshipment); o que muda é a parada em aberto.
+	assert.strictEqual(formatter.formatShipmentLoadStatus("InTransshipment"), "Em Transbordo");
+	assert.strictEqual(formatter.formatShipmentLoadStatus("InTransshipment", false), "Em Transbordo");
+	assert.strictEqual(formatter.formatShipmentLoadStatus("InTransshipment", true), "Em Transferência");
+	// O sinalizador só vale em trânsito: carga concluída não lê "em transferência".
+	assert.strictEqual(formatter.formatShipmentLoadStatus("Completed", true), "Concluída");
+
+	assert.strictEqual(formatter.formatTransshipmentType("Transshipment"), "Transbordo");
+	assert.strictEqual(formatter.formatTransshipmentType("Transfer"), "Transferência");
+	assert.strictEqual(formatter.formatTransshipmentType(undefined), "Transbordo");
+
+	assert.strictEqual(formatter.formatShipmentLoadMovementType("TransferCompleted"), "Transferência Concluída");
+	assert.strictEqual(formatter.formatShipmentLoadMovementType("TransferReopened"), "Transferência Reaberta");
+
+	assert.strictEqual(
+		formatter.formatTransshipmentLabel({ Sequence: 2, WarehouseCode: "B2", WarehouseName: "Dois", Type: "Transfer" }),
+		"Transferência 2 — armazém (B2) Dois");
+	assert.strictEqual(
+		formatter.formatTransshipmentLabel({ Sequence: 1, WarehouseCode: "A1", WarehouseName: "Um" }),
+		"Transbordo 1 — armazém (A1) Um");
+});
+
+QUnit.test("transferência entre armazéns de terceiros (GAC-1176): situação da linha", function (assert) {
+	const final = "2026-11-12T10:00:00Z";
+
+	assert.strictEqual(formatter.formatTransshipmentStatus(null, null, "k1", [], null, "Transfer"), "Aguardando entrada");
+	// Transferência não tem saída: depois da entrada, o que falta é concluir.
+	assert.strictEqual(formatter.formatTransshipmentStatus("e1", null, "k1", [], null, "Transfer"), "Aguardando conclusão");
+	assert.strictEqual(formatter.formatTransshipmentStatus("e1", null, "k1", [], final, "Transfer"), "Transferência concluída");
+	// O transbordo comum segue como antes, com ou sem os parâmetros novos.
+	assert.strictEqual(formatter.formatTransshipmentStatus("e1", null, "k1", []), "Aguardando saída");
+	assert.strictEqual(formatter.formatTransshipmentStatus("e1", null, "k1", [], null, "Transshipment"), "Aguardando saída");
+	assert.strictEqual(formatter.formatTransshipmentStatus("e1", "x1", "k1", [], null, "Transshipment"), "Aguardando expedição");
+	assert.strictEqual(formatter.formatTransshipmentStatus("e1", null, "k1", ["k1"], null, "Transshipment"), "Concluído");
+});
+
 QUnit.test("quebra de trajeto: rótulos", function (assert) {
 	assert.strictEqual(formatter.formatShipmentLoadStatus("TransitLoss"), "Quebra de trajeto");
 	assert.strictEqual(formatter.stateShipmentLoadStatus("TransitLoss"), "Error");
