@@ -23,7 +23,8 @@ export default class Add extends BaseController {
 			oModel.resetChanges(oModel.getUpdateGroupId())
 		}
 
-		const oContext = oBinding.create({}, false, false, false);
+		// Balança nova nasce em TCP/IP, o padrão do backend; sem isso o seletor abriria vazio.
+		const oContext = oBinding.create({ ConnectionType: "Tcp", Parity: "None" }, false, false, false);
 
 		oView.setBindingContext(oContext);
 	}
