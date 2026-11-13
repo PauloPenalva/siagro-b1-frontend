@@ -54,14 +54,23 @@ export const ALLOCATION_ORIGINS: AllocationOrigin[] = [
     icon: "sap-icon://trend-up",
   },
   {
-    // GAC-1214: carga recusada que voltou para um armazém. Só informativa — o contrato continua
-    // baixado (o grão foi comprado e mudou de lugar); a linha não vem de alocação.
+    // GAC-1214: carga recusada que voltou para um armazém. A devolução tem volume NEGATIVO e devolve
+    // o saldo ao contrato; a linha não vem de alocação.
     key: "LoadRefusal",
     legend: "Devolução de carga",
     text: "Devolução",
     highlight: "Information",
     state: "Information",
     icon: "sap-icon://undo",
+  },
+  {
+    // GAC-1214: saída pela liberação de devolução (reentrega). Volume positivo: baixa o contrato de novo.
+    key: "ReturnRedelivery",
+    legend: "Reentrega de devolução",
+    text: "Reentrega",
+    highlight: "Information",
+    state: "Information",
+    icon: "sap-icon://redo",
   },
 ];
 
@@ -106,8 +115,15 @@ export function allocationOriginTooltip(
       : `Conferência da nota ${dischargeInvoiceNumber}`;
   }
 
-  if (origin === "LoadRefusal" && dischargeLoadCode) {
-    return `Carga ${dischargeLoadCode} recusada; o grão voltou para o armazém e o contrato continua baixado`;
+  if (origin === "LoadRefusal") {
+    // Devolução por nota (sem carga) chega sem código de carga.
+    return dischargeLoadCode
+      ? `Carga ${dischargeLoadCode} recusada: a devolução ao armazém devolveu o saldo ao contrato.`
+      : "Devolução ao armazém: devolveu o saldo ao contrato.";
+  }
+
+  if (origin === "ReturnRedelivery") {
+    return "Saída pela liberação de devolução: o contrato foi baixado de novo.";
   }
 
   return "";
