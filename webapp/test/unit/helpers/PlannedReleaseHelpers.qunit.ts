@@ -1,5 +1,6 @@
 import {
 	filterPlannedPurchaseReleases,
+	findRowIndex,
 	parsePlannedQuantity,
 	plannedReleaseKey,
 } from "siagrob1/helpers/PlannedReleaseHelpers";
@@ -70,4 +71,17 @@ QUnit.test("parsePlannedQuantity: vazio é opcional, positivo vale, o resto é i
 	assert.deepEqual(parsePlannedQuantity("0"), { valid: false, value: null });
 	assert.deepEqual(parsePlannedQuantity("-1"), { valid: false, value: null });
 	assert.deepEqual(parsePlannedQuantity("abc"), { valid: false, value: null });
+});
+
+QUnit.test("findRowIndex acha a linha pela ordem EXIBIDA, não pela ordem dos dados", function (assert) {
+	const [a, b, c] = releases;
+	// A tabela está ordenada ao contrário dos dados: exibe [c, b, a].
+	const displayed = [c, b, a];
+	const rowAt = (index: number) => displayed[index];
+
+	assert.strictEqual(findRowIndex(displayed.length, rowAt, a), 2, "a é a última linha exibida, embora seja a primeira dos dados");
+	assert.strictEqual(findRowIndex(displayed.length, rowAt, c), 0);
+	assert.strictEqual(findRowIndex(2, rowAt, a), -1, "fora das linhas exibidas");
+	assert.strictEqual(findRowIndex(displayed.length, rowAt, undefined), -1, "sem linha selecionada");
+	assert.strictEqual(findRowIndex(0, rowAt, a), -1, "lista vazia");
 });

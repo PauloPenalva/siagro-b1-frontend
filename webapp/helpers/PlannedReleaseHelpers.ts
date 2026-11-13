@@ -68,6 +68,26 @@ export function plannedReleaseKey(
 }
 
 /**
+ * Posição de uma linha na ordem EXIBIDA pela tabela (`rowAt` lê a linha de cada índice, já com a
+ * ordenação e o filtro de coluna do usuário). A seleção da sap.ui.table é por esse índice, que só
+ * coincide com a posição no array de dados enquanto ninguém ordena uma coluna. Devolve -1 quando
+ * não há linha procurada ou ela não está entre as exibidas.
+ */
+export function findRowIndex<T>(length: number, rowAt: (index: number) => T, target: T): number {
+  if (!target) {
+    return -1;
+  }
+
+  for (let index = 0; index < length; index++) {
+    if (rowAt(index) === target) {
+      return index;
+    }
+  }
+
+  return -1;
+}
+
+/**
  * Quantidade prevista digitada no diálogo. É opcional: vazio vale (`null`); preenchida, precisa
  * ser um número maior que zero.
  */

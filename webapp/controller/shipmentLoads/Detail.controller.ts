@@ -3,6 +3,7 @@ import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import Fragment from "sap/ui/core/Fragment";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import JSONListBinding from "sap/ui/model/json/JSONListBinding";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
@@ -27,7 +28,7 @@ import { Link$PressEvent } from "sap/m/Link";
 import SearchField, { SearchField$LiveChangeEvent, SearchField$SearchEvent } from "sap/m/SearchField";
 import { filterBillingReleases } from "siagrob1/helpers/BillingReleaseSearch";
 import {
-  filterPlannedPurchaseReleases, parsePlannedQuantity, PlannedContractType, PlannedPurchaseRelease,
+  filterPlannedPurchaseReleases, findRowIndex, parsePlannedQuantity, PlannedContractType, PlannedPurchaseRelease,
   PlannedSalesRelease, plannedReleaseKey,
 } from "siagrob1/helpers/PlannedReleaseHelpers";
 
@@ -1112,7 +1113,11 @@ export default class Detail extends BaseController {
   /**
    * Busca digitada acima da lista de liberações. A seleção da sap.ui.table é por ÍNDICE — sem o
    * cuidado abaixo, filtrar deixaria marcada outra liberação, na mesma posição, e o planejamento
-   * sairia na liberação errada (mesma armadilha do diálogo de faturamento).
+   * sairia na liberação errada.
+   *
+   * O índice é o da ordem EXIBIDA: com uma coluna ordenada pelo usuário ele não coincide com a
+   * posição no array filtrado. Por isso a linha é procurada de volta pela própria tabela, depois
+   * de trocar os dados, e nunca por `indexOf` no array.
    */
   onPlannedReleaseSearch(event: SearchField$LiveChangeEvent | SearchField$SearchEvent): void {
     const contractType = (this.getModel("viewModel") as JSONModel)
@@ -1128,14 +1133,17 @@ export default class Detail extends BaseController {
     const filtered = contractType === "Purchase"
       ? filterPlannedPurchaseReleases(this._plannedReleases, query)
       : filterBillingReleases(this._plannedReleases, query);
-    const newIndex = selected ? filtered.indexOf(selected) : -1;
 
-    if (newIndex !== selectedIndex) {
-      table.clearSelection();
-    }
+    table.clearSelection();
     (this.getModel("plannedReleases") as JSONModel).setData(filtered);
     table.setFirstVisibleRow(0);
-    if (newIndex >= 0 && newIndex !== selectedIndex) {
+
+    const newIndex = findRowIndex(
+      (table.getBinding("rows") as JSONListBinding)?.getLength() ?? 0,
+      (index) => table.getContextByIndex(index)?.getObject() as PlannedRelease,
+      selected);
+
+    if (newIndex >= 0) {
       table.setSelectedIndex(newIndex);
     }
   }
