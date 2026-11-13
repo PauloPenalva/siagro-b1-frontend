@@ -11,6 +11,8 @@
   As colunas são as mesmas da Seleção de Liberação da Expedição de Grãos
   (view/shippingTransaction/SelectShipmentRelease.view.xml): mudou lá, mude aqui. As linhas vêm da
   mesma function (ShipmentReleasesGetPurchaseContracts) para o JSONModel "plannedReleases".
+  Só este diálogo tem "Nome Armazém" e "Região Logística", pedidas pela Yokotobi para o
+  planejamento (GAC-1185, rodada 3); a região é a do contrato de compra.
 
   Largura e ordem das colunas são gravadas por usuário pelo TableLayoutService, que registra a
   tabela quando o DialogHelper.createDialog carrega o fragmento. O id da tabela faz parte da chave
@@ -52,7 +54,7 @@
               <SearchField
                   id="plannedPurchaseReleaseSearch"
                   width="24rem"
-                  placeholder="Buscar contrato, fornecedor, CNPJ, município ou armazém"
+                  placeholder="Buscar contrato, fornecedor, CNPJ, município, armazém ou região"
                   liveChange=".onPlannedReleaseSearch"
                   search=".onPlannedReleaseSearch"
               />
@@ -119,6 +121,22 @@
           <t:Column label="Armazem" width="6rem" sortProperty="DeliveryLocationCode" filterProperty="DeliveryLocationCode">
             <t:template>
               <Text text="{plannedReleases>DeliveryLocationCode}" wrapping="false" />
+            </t:template>
+          </t:Column>
+          <t:Column label="Nome Armazém" width="14rem" sortProperty="WarehouseFName" filterProperty="WarehouseFName">
+            <t:template>
+              <Text text="{plannedReleases>WarehouseFName}" wrapping="false" />
+            </t:template>
+          </t:Column>
+          <t:Column label="Região Logística" width="12rem" sortProperty="LogisticRegionCode" filterProperty="LogisticRegionName">
+            <t:template>
+              <Text
+                  text="{
+                    parts: ['plannedReleases>LogisticRegionCode', 'plannedReleases>LogisticRegionName'],
+                    formatter: '.formatter.formatCodeAndName'
+                  }"
+                  wrapping="false"
+              />
             </t:template>
           </t:Column>
           <t:Column label="Produto" width="8rem" sortProperty="ItemName" filterProperty="ItemName">
