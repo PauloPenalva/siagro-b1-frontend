@@ -27,7 +27,7 @@
           <Title text="Ticket de Pesagem - Criar Romaneio"/>
         </uxap:snappedHeading>
         <uxap:actions>
-          <Button text="Cancelar Ticket" type="Transparent" press=".onCancel" visible="{ path: 'Status', formatter: '.canCancelTicket' }"/>
+          <Button text="Cancelar Ticket" type="Transparent" press=".onCancel" visible="{ path: 'Status', targetType: 'any', formatter: '.canCancelTicket' }"/>
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>

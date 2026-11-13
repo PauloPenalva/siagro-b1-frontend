@@ -31,7 +31,7 @@
           <Button enabled="{= ${path: 'Status', targetType: 'any'}==='Complete' ? true : false }" text="Reabrir Ticket" type="Emphasized" press=".onReopen"/>
           <Button enabled="{= ${path: 'Status', targetType: 'any'}==='Processing' ? true : false }" text="Editar" type="Transparent" press=".onEdit"/>
           <Button enabled="{= ${path: 'Status', targetType: 'any'}==='Processing' ? true : false }" text="Criar Romaneio" type="Transparent" press=".onConfirm"/>
-          <Button text="Cancelar" type="Transparent" press=".onCancel"/>
+          <Button text="Cancelar" type="Transparent" press=".onCancel" visible="{ path: 'Status', targetType: 'any', formatter: '.canCancelTicket' }"/>
         </uxap:actions>
       </uxap:ObjectPageDynamicHeaderTitle>
 		</uxap:headerTitle>

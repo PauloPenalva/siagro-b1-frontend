@@ -55,6 +55,11 @@ export default class GenericController extends CommonController {
     const context = this.getView().getBindingContext();
     if (context) {
       const model = this.getModel() as ODataModel;
+      // As telas de pesagem deixam um PATCH de Stage pendente no grupo; sem descartá-lo, um
+      // submit posterior tentaria alterar o ticket já cancelado.
+      if (model.hasPendingChanges(model.getUpdateGroupId())) {
+        model.resetChanges(model.getUpdateGroupId());
+      }
       const action = model.bindContext("/WeighingTicketsCancel(...)");
       action.setParameter("Key", context.getProperty("Key"));
 

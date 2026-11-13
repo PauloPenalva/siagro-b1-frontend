@@ -6,8 +6,16 @@ import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Table from "sap/ui/table/Table";
 import CommonController from "siagrob1/controller/common/CommonController";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
+import SessionService from "siagrob1/services/SessionService";
 
 export abstract class BaseController extends CommonController {
+
+  /** Mesma regra do GenericController.canCancelTicket (espelha o WeighingTicketsCancelService). */
+  canCancelTicket(status?: string): boolean {
+    if (status === "Cancelled") return false;
+    if (status === "Complete") return true;
+    return SessionService.hasRole("ADMIN");
+  }
 
    async onCancel() {
      if(!await DialogHelper.confirmDialog("Confirma cancelar ticket ?"))
