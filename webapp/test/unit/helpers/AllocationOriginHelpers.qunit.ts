@@ -76,7 +76,8 @@ QUnit.test("devolução ao armazém devolve o saldo ao contrato (GAC-1214)", fun
 
 QUnit.test("reentrega de devolução baixa o contrato de novo (GAC-1214)", function (assert) {
 	const origin = ALLOCATION_ORIGINS.find((o) => o.key === "ReturnRedelivery");
-	assert.strictEqual(origin.legend, "Reentrega de devolução");
+	assert.ok(origin, "origem ReturnRedelivery encontrada na lista");
+	assert.strictEqual(origin?.legend, "Reentrega de devolução");
 	assert.strictEqual(allocationOriginText("ReturnRedelivery"), "Reentrega");
 	assert.ok(allocationOriginIcon("ReturnRedelivery").startsWith("sap-icon://"));
 	assert.strictEqual(

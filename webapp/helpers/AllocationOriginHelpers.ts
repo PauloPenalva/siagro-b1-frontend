@@ -55,7 +55,7 @@ export const ALLOCATION_ORIGINS: AllocationOrigin[] = [
   },
   {
     // GAC-1214: carga recusada que voltou para um armazém. A devolução tem volume NEGATIVO e devolve
-    // o saldo ao contrato; a linha não vem de alocação.
+    // o saldo ao contrato; a linha vem de uma alocação (linha negativa do razão do contrato).
     key: "LoadRefusal",
     legend: "Devolução de carga",
     text: "Devolução",
