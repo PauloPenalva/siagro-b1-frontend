@@ -10,6 +10,7 @@ const releases = [
 		ShipmentReleaseKey: "k1", BranchShortName: "Filial Pilar", PurchaseContractCode: "00000522",
 		FName: "JOÃO DA SILVA", TaxId: "111.222.333-44", City: "Pilar do Sul", State: "SP",
 		DeliveryLocationCode: "ARM01", DeliveryLocationName: "ARMAZÉM CENTRAL", ItemName: "SOJA EM GRAOS",
+		WarehouseFName: "COOPERATIVA PILAR", LogisticRegionCode: "009", LogisticRegionName: "SANTOS / GUARUJA",
 	},
 	{
 		ShipmentReleaseKey: "k2", BranchShortName: "Filial Pilar", PurchaseContractCode: "00000763",
@@ -41,6 +42,12 @@ QUnit.test("procura em contrato, fornecedor, CNPJ, município, UF e armazém", f
 	assert.deepEqual(keys("mt"), ["k3"], "UF");
 	assert.deepEqual(keys("silo norte"), ["k2", "k3"], "armazém pelo nome");
 	assert.deepEqual(keys("arm01"), ["k1"], "armazém pelo código");
+});
+
+QUnit.test("procura no nome fantasia do armazém e na região logística", function (assert) {
+	assert.deepEqual(keys("cooperativa"), ["k1"], "nome fantasia do armazém");
+	assert.deepEqual(keys("guaruja"), ["k1"], "nome da região");
+	assert.deepEqual(keys("009"), ["k1"], "código da região");
 });
 
 QUnit.test("ignora acento e caixa, e exige todas as palavras", function (assert) {

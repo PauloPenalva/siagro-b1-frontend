@@ -18,6 +18,11 @@ export type PlannedPurchaseRelease = {
   State?: string,
   DeliveryLocationCode?: string,
   DeliveryLocationName?: string,
+  /** Nome fantasia do armazém (AliasName do cadastro), com a razão social como reserva. */
+  WarehouseFName?: string,
+  /** Região logística do CONTRATO de compra; vazia quando o contrato não tem. */
+  LogisticRegionCode?: string,
+  LogisticRegionName?: string,
   ItemName?: string,
 }
 
@@ -46,6 +51,9 @@ const PURCHASE_SEARCHED_FIELDS: (keyof PlannedPurchaseRelease)[] = [
   "State",
   "DeliveryLocationCode",
   "DeliveryLocationName",
+  "WarehouseFName",
+  "LogisticRegionCode",
+  "LogisticRegionName",
   "ItemName",
 ];
 
