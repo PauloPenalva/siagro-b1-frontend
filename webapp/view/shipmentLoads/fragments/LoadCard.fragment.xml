@@ -11,8 +11,10 @@
 			<Title text="{TruckCode}" level="H3"/>
 			<ObjectStatus
 				text="{
-					path: 'Status',
-					targetType: 'any',
+					parts: [
+						{ path: 'Status', targetType: 'any' },
+						{ path: 'IsInTransfer', targetType: 'any' }
+					],
 					formatter: '.formatter.formatShipmentLoadStatus'
 				}"
 				state="{

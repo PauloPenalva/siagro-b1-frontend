@@ -36,19 +36,19 @@
 		selectionBehavior="Row"
 		busyIndicatorDelay="0"
 		visibleRowCount="5"
-		noData="Nenhum transbordo registrado nesta carga."
+		noData="Nenhum transbordo ou transferência registrado nesta carga."
 		rows="{
 			path: 'Transshipments',
 			parameters: {
 				'$$ownRequest': true,
-				'$select': 'Key,Sequence,Origin,WarehouseCode,WarehouseName,TransshipmentDate,OutgoingQuantity,EntryQuantity,ShrinkageQuantity,EntryStorageTransactionKey,LotExitStorageTransactionKey,Comments'
+				'$select': 'Key,Sequence,Origin,WarehouseCode,WarehouseName,TransshipmentDate,OutgoingQuantity,EntryQuantity,ShrinkageQuantity,EntryStorageTransactionKey,LotExitStorageTransactionKey,Comments,Type,FinalDestinationAt'
 			},
 			sorter: { path: 'Sequence' }
 		}">
 		<t:extension>
 			<OverflowToolbar>
 				<content>
-					<Title text="Transbordos"/>
+					<Title text="Transbordos e Transferências"/>
 					<ToolbarSpacer/>
 					<!-- Espelha EnsureLoadAcceptsTransshipment + EnsureIsLastAsync: carga encerrada não
 					     aceita transbordo, e um transbordo já aberto (Status InTransshipment) bloqueia
@@ -61,6 +61,16 @@
 						icon="sap-icon://add"
 						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Completed' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'InTransshipment' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Discharged' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'RefusalPending' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'TransitLoss' }"
 						press=".onStartTransshipment"/>
+					<!-- GAC-1176 — transferência entre armazéns de terceiros: o MESMO processo do
+					     transbordo (mesma action, parâmetro Type), mas a mercadoria termina no armazém
+					     e a carga é concluída sem faturamento. Mesma visibilidade do vizinho acima:
+					     as travas do servidor são as mesmas (EnsureLoadAcceptsTransshipment). -->
+					<Button
+						type="Transparent"
+						text="Iniciar Transferência"
+						icon="sap-icon://shipping-status"
+						visible="{= ${path: 'Status', targetType: 'any'} !== 'Cancelled' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Returned' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Completed' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'InTransshipment' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Discharged' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'RefusalPending' &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'TransitLoss' }"
+						press=".onStartTransfer"/>
 					<!-- Registrar Entrada/Estornar só fazem sentido enquanto HÁ transbordo aberto —
 					     exatamente quando a carga está InTransshipment. Mesma convenção do vizinho: o
 					     botão fica visível pelo Status da CARGA (não há como amarrar visibilidade ao
@@ -82,12 +92,38 @@
 						icon="sap-icon://undo"
 						visible="{= ${path: 'Status', targetType: 'any'} === 'InTransshipment' }"
 						press=".onReverseTransshipment"/>
+					<!-- Concluir Transferência (GAC-1176): a carga terminou no armazém de terceiro e
+					     encerra SEM faturamento. Visível com a carga em transbordo, como os vizinhos;
+					     quem valida a linha escolhida (entrada registrada, sem saída vinculada) é o
+					     handler, e por último o servidor. Vale também para a linha iniciada como
+					     Transbordo: o plano pode mudar no meio do caminho. -->
+					<Button
+						type="Emphasized"
+						text="Concluir Transferência"
+						icon="sap-icon://complete"
+						visible="{= ${path: 'Status', targetType: 'any'} === 'InTransshipment' }"
+						press=".onCompleteTransfer"/>
+					<!-- Reabrir: só existe o que reabrir quando o ÚLTIMO transbordo é destino final
+					     (`hasFinal`, de BaseController#refreshTransshipmentLinkage). Não amarra ao
+					     Status 'Completed': a carga parcialmente faturada que terminou numa
+					     transferência lê Faturada/Descarregada e também precisa do caminho de volta. -->
+					<Button
+						type="Transparent"
+						text="Reabrir Transferência"
+						icon="sap-icon://reset"
+						visible="{= ${viewModel>/transshipmentLinkage/hasFinal} === true &amp;&amp; ${path: 'Status', targetType: 'any'} !== 'Cancelled' }"
+						press=".onReopenTransfer"/>
 				</content>
 			</OverflowToolbar>
 		</t:extension>
 		<t:columns>
 			<t:Column label="Seq." hAlign="Center" width="5rem">
 				<t:template><Text text="{Sequence}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Tipo" width="9rem">
+				<t:template>
+					<Text wrapping="false" text="{ path: 'Type', targetType: 'any', formatter: '.formatter.formatTransshipmentType' }"/>
+				</t:template>
 			</t:Column>
 			<t:Column label="Origem" width="9rem">
 				<t:template>
@@ -123,14 +159,16 @@
 						number="{ path: 'ShrinkageQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
 				</t:template>
 			</t:Column>
-			<t:Column label="Situação" width="11rem">
+			<t:Column label="Situação" width="13rem">
 				<t:template>
 					<Text wrapping="false" text="{
 						parts: [
 							{ path: 'EntryStorageTransactionKey', targetType: 'any' },
 							{ path: 'LotExitStorageTransactionKey', targetType: 'any' },
 							{ path: 'Key', targetType: 'any' },
-							{ path: 'viewModel>/transshipmentLinkage/linkedKeys', targetType: 'any' }
+							{ path: 'viewModel>/transshipmentLinkage/linkedKeys', targetType: 'any' },
+							{ path: 'FinalDestinationAt', targetType: 'any' },
+							{ path: 'Type', targetType: 'any' }
 						],
 						formatter: '.formatter.formatTransshipmentStatus'
 					}"/>

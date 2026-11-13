@@ -782,7 +782,14 @@ const formatter = {
     return m.get(value);
   },
 
-  formatShipmentLoadStatus: (value: string) => {
+  /**
+   * `isInTransfer` (GAC-1176, `ShipmentLoad.IsInTransfer`): a parada em aberto é uma TRANSFERÊNCIA
+   * entre armazéns de terceiros. A situação é a mesma do transbordo (InTransshipment) — só o
+   * rótulo muda, para o usuário ler o processo que ele está fazendo.
+   */
+  formatShipmentLoadStatus: (value: string, isInTransfer?: boolean) => {
+    if (value === "InTransshipment" && isInTransfer === true) return "Em Transferência";
+
     const m = new Map<string, string>();
     m.set("Planned", "Planejada");
     m.set("Open", "Carregada");
@@ -884,9 +891,18 @@ const formatter = {
     m.set("DischargeUndone", "Descarregada Desfeita");
     m.set("RefusalCancelled", "Recusa Cancelada");
     m.set("TransitLoss", "Quebra de trajeto");
+    // GAC-1176: transferência entre armazéns de terceiros — a carga encerra sem faturamento.
+    m.set("TransferCompleted", "Transferência Concluída");
+    m.set("TransferReopened", "Transferência Reaberta");
 
     return m.get(value);
   },
+
+  /**
+   * Tipo da parada (GAC-1176): Transbordo recarrega e segue viagem; Transferência termina no
+   * armazém de terceiro. Linha anterior ao chamado não tem o campo e é Transbordo.
+   */
+  formatTransshipmentType: (value: string) => (value === "Transfer" ? "Transferência" : "Transbordo"),
 
   /**
    * De onde o transbordo (GAC-1181) nasceu: Planejado sai da origem já sabendo que vai passar
@@ -919,15 +935,23 @@ const formatter = {
    *    faturável neste estado, por desenho. Em armazém de TERCEIRO este campo nunca é
    *    preenchido: lá a "saída" É a própria Expedição, vinculada direto pelo item 1.
    * 3. Senão, "Aguardando saída".
+   *
+   * GAC-1176 — transferência entre armazéns de terceiros: `finalDestinationAt` preenchido é
+   * "Transferência concluída" (a carga terminou aqui, sem saída). E a linha do tipo `Transfer`
+   * com entrada registrada lê "Aguardando conclusão", não "Aguardando saída": ela não tem saída.
    */
   formatTransshipmentStatus: (
     entryStorageTransactionKey: string,
     lotExitStorageTransactionKey: string,
     key: string,
-    linkedTransshipmentKeys: string[]
+    linkedTransshipmentKeys: string[],
+    finalDestinationAt?: string,
+    type?: string
   ) => {
     if (!entryStorageTransactionKey) return "Aguardando entrada";
+    if (finalDestinationAt) return "Transferência concluída";
     if ((linkedTransshipmentKeys ?? []).includes(key)) return "Concluído";
+    if (type === "Transfer") return "Aguardando conclusão";
     if (lotExitStorageTransactionKey) return "Aguardando expedição";
     return "Aguardando saída";
   },
@@ -980,9 +1004,9 @@ const formatter = {
    * futura de formato só precisa mexer aqui.
    */
   formatTransshipmentLabel: (
-    transshipment: { Sequence?: number; WarehouseCode?: string; WarehouseName?: string }
+    transshipment: { Sequence?: number; WarehouseCode?: string; WarehouseName?: string; Type?: string }
   ) => (
-    `Transbordo ${transshipment.Sequence ?? ""} — armazém (${transshipment.WarehouseCode ?? ""}) ${transshipment.WarehouseName ?? ""}`
+    `${formatter.formatTransshipmentType(transshipment.Type)} ${transshipment.Sequence ?? ""} — armazém (${transshipment.WarehouseCode ?? ""}) ${transshipment.WarehouseName ?? ""}`
   ),
 
   /**

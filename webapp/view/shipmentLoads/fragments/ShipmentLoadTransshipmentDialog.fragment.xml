@@ -29,7 +29,7 @@
 							<f:formElements>
 								<!-- Só no início: em Registrar Entrada o armazém já é o do transbordo
 								     selecionado, e o registro de entrada não o troca. -->
-								<f:FormElement label="Armazém do Transbordo"
+								<f:FormElement label="{viewModel>/transshipmentDialog/warehouseLabel}"
 									visible="{= ${viewModel>/transshipmentDialog/mode} === 'start' }">
 									<f:fields>
 										<!-- editable="true" é obrigatório mesmo com valueHelpOnly: com
@@ -49,7 +49,7 @@
 									</f:fields>
 								</f:FormElement>
 								<f:FormElement
-									label="{= ${viewModel>/transshipmentDialog/mode} === 'start' ? 'Data do Transbordo' : 'Data da Entrada' }">
+									label="{= ${viewModel>/transshipmentDialog/mode} === 'start' ? ${viewModel>/transshipmentDialog/startDateLabel} : 'Data da Entrada' }">
 									<f:fields>
 										<!-- O buffer guarda a data no formato que as actions exigem
 										     (yyyy-MM-dd); o usuário vê dd/MM/yyyy. -->
