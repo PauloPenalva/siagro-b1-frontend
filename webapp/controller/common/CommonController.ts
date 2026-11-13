@@ -21,6 +21,7 @@ import { Column as ExportColumn } from "sap/ui/export/library";
 import { Select$ChangeEvent } from "sap/m/Select";
 import CustomData from "sap/ui/core/CustomData";
 import { lineProductDefaults } from "siagrob1/helpers/InvoiceLineProductDefaults";
+import { isQueryField } from "siagrob1/helpers/ActiveRecordsValueHelp";
 
 /**
  * @namespace siagrob1.controller
@@ -289,20 +290,34 @@ export default abstract class CommonController extends BaseController {
     staticFilter?: string,
     onSelected?: (oInput: Input) => void
   ) {
+    const oInput = ev.getSource();
+
+    // GAC-1196: num documento só entram cadastros ativos no SAP; num campo de filtro (lista,
+    // relatório) o inativo continua disponível para consultar o histórico.
     const oContext = await DialogHelper.openTableSelectDialog(
-      this, name, filters, defaultFilters, elementPath, staticFilter);
+      this, name, filters, defaultFilters, elementPath, staticFilter, this.isQueryInput(oInput));
 
     if (!oContext) {
       return;
     }
 
-    const oInput = ev.getSource();
     // Roda antes de gravar o código: quem limpa campos mutuamente exclusivos precisa fazê-lo antes,
     // senão um update group que envia PATCH na hora manda os dois juntos e o servidor recusa.
     onSelected?.(oInput);
     oInput.setValue(oContext.getProperty(property) as string);
 
     await this.applyValueHelpDescription(oInput, oContext);
+  }
+
+  /** O Input é um campo de consulta (filtro de lista ou parâmetro de relatório)? */
+  private isQueryInput(oInput: Input): boolean {
+    const ancestorTypes: string[] = [];
+
+    for (let oParent = oInput.getParent(); oParent; oParent = oParent.getParent()) {
+      ancestorTypes.push(oParent.getMetadata().getName());
+    }
+
+    return isQueryField(this.getView().getViewName(), ancestorTypes);
   }
 
   /**

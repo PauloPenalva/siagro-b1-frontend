@@ -15,6 +15,7 @@ import Context from "sap/ui/model/odata/v4/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import formatter from "siagrob1/model/formatter";
 import TableLayoutService from "siagrob1/services/TableLayoutService";
+import { activeRecordsStaticFilter, isActiveOnlyDialog } from "siagrob1/helpers/ActiveRecordsValueHelp";
 
 /**
  * Um TableSelectDialog por (view, fragmento).
@@ -154,13 +155,25 @@ export default {
     filters: string[],
     defaultFilters: Filter[] = [],
     elementPath?: string,
-    staticFilter?: string
+    staticFilter?: string,
+    includeInactive = false
   ): Promise<Context | undefined> => {
     const oDlg = await getSelectDialog(oController, name, filters, defaultFilters);
     // o mesmo fragmento pode ter sido aberto em múltipla seleção nesta view
     oDlg.setMultiSelect(false);
 
-    applyStaticFilter(oDlg.getBinding("items") as ODataListBinding, staticFilter);
+    if (isActiveOnlyDialog(name)) {
+      // GAC-1196: parceiro, armazém e produto inativos no SAP não entram num documento. Vai no
+      // $filter (e não em sap.ui.model.Filter) porque a busca do diálogo substitui os filtros
+      // de aplicação a cada tecla. Sempre aplicado, inclusive `undefined`: o diálogo é
+      // reaproveitado por (view, fragmento) e precisa largar o filtro da abertura anterior —
+      // nenhum destes fragmentos declara $filter no XML.
+      (oDlg.getBinding("items") as ODataListBinding).changeParameters({
+        $filter: activeRecordsStaticFilter(name, staticFilter, includeInactive)
+      });
+    } else {
+      applyStaticFilter(oDlg.getBinding("items") as ODataListBinding, staticFilter);
+    }
 
     if (elementPath) {
       oDlg.bindElement(elementPath);
