@@ -197,6 +197,14 @@ QUnit.test("duas cargas são unidas por vírgula", function (assert) {
 	]), "C1, C2");
 });
 
+QUnit.test("carga com duas liberações do mesmo contrato aparece uma vez só", function (assert) {
+	assert.strictEqual(formatter.formatPlannedLoads([
+		{ ShipmentLoad: { Code: "C1", Status: "Planned" } },
+		{ ShipmentLoad: { Code: "C1", Status: "Planned" } },
+		{ ShipmentLoad: { Code: "C2", Status: "Planned" } },
+	]), "C1, C2");
+});
+
 QUnit.test("transferência entre armazéns de terceiros (GAC-1176): rótulos", function (assert) {
 	// A situação da carga é a mesma (InTransshipment); o que muda é a parada em aberto.
 	assert.strictEqual(formatter.formatShipmentLoadStatus("InTransshipment"), "Em Transbordo");

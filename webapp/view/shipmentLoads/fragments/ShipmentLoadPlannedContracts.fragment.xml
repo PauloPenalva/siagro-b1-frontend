@@ -5,6 +5,10 @@
 	<!-- Contratos planejados da carga (GAC-1185): vínculo OPCIONAL e informativo entre a carga e
 	     contratos aprovados do mesmo produto. Não consome saldo nem movimenta nada.
 
+	     Rodada 2: o contrato entra pela LIBERAÇÃO (de embarque na compra, de entrega na venda), e as
+	     colunas Item, Armazém e Saldo da liberação vêm dela. Linha anterior à rodada 2 não tem
+	     liberação: essas três colunas ficam vazias.
+
 	     $$ownRequest é obrigatório: sem ele a coleção vira $expand do GET da carga e o refresh()
 	     depois de incluir/excluir não recarrega nada (mesmo motivo das Descargas). Incluir e
 	     Excluir somem com a carga Cancelada; o servidor também recusa. -->
@@ -25,8 +29,8 @@
 			path: 'PlannedPurchaseContracts',
 			parameters: {
 				'$$ownRequest': true,
-				'$expand': 'Contract($select=Code,CardCode,CardName,ItemCode,TotalVolume,AvaiableVolume)',
-				'$select': 'Key,ContractKey,PlannedQuantity,Notes,CreatedAt,CreatedBy'
+				'$expand': 'Contract($select=Code,CardCode,CardName,ItemCode,TotalVolume,AvaiableVolume),ShipmentRelease($select=Key,RowId,DeliveryLocationCode,DeliveryLocationName,AvailableQuantity)',
+				'$select': 'Key,ContractKey,ShipmentReleaseKey,PlannedQuantity,Notes,CreatedAt,CreatedBy'
 			},
 			sorter: { path: 'CreatedAt' }
 		}">
@@ -50,8 +54,21 @@
 			<t:Column label="Contrato" width="9rem">
 				<t:template><Text text="{Contract/Code}" wrapping="false"/></t:template>
 			</t:Column>
+			<t:Column label="Item" width="4rem">
+				<t:template><Text text="{ShipmentRelease/RowId}" wrapping="false"/></t:template>
+			</t:Column>
 			<t:Column label="Parceiro" width="18rem">
 				<t:template><Text text="({Contract/CardCode}) {Contract/CardName}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Armazém" width="14rem">
+				<t:template>
+					<Text wrapping="false" text="{= ${ShipmentRelease/DeliveryLocationCode} ? '(' + ${ShipmentRelease/DeliveryLocationCode} + ') ' + (${ShipmentRelease/DeliveryLocationName} || '') : '' }"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Saldo da liberação" hAlign="End" width="10rem">
+				<t:template>
+					<ObjectNumber textAlign="End" number="{ path: 'ShipmentRelease/AvailableQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+				</t:template>
 			</t:Column>
 			<t:Column label="Quantidade prevista" hAlign="End" width="10rem">
 				<t:template>
@@ -93,8 +110,8 @@
 			path: 'PlannedSalesContracts',
 			parameters: {
 				'$$ownRequest': true,
-				'$expand': 'Contract($select=Code,CardCode,CardName,ItemCode,TotalVolume,AvaiableVolume)',
-				'$select': 'Key,ContractKey,PlannedQuantity,Notes,CreatedAt,CreatedBy'
+				'$expand': 'Contract($select=Code,CardCode,CardName,ItemCode,TotalVolume,AvaiableVolume),SalesShipmentRelease($select=Key,RowId,DeliveryLocationCode,DeliveryLocationName,AvailableQuantity)',
+				'$select': 'Key,ContractKey,SalesShipmentReleaseKey,PlannedQuantity,Notes,CreatedAt,CreatedBy'
 			},
 			sorter: { path: 'CreatedAt' }
 		}">
@@ -118,8 +135,21 @@
 			<t:Column label="Contrato" width="9rem">
 				<t:template><Text text="{Contract/Code}" wrapping="false"/></t:template>
 			</t:Column>
+			<t:Column label="Item" width="4rem">
+				<t:template><Text text="{SalesShipmentRelease/RowId}" wrapping="false"/></t:template>
+			</t:Column>
 			<t:Column label="Parceiro" width="18rem">
 				<t:template><Text text="({Contract/CardCode}) {Contract/CardName}" wrapping="false"/></t:template>
+			</t:Column>
+			<t:Column label="Armazém" width="14rem">
+				<t:template>
+					<Text wrapping="false" text="{= ${SalesShipmentRelease/DeliveryLocationCode} ? '(' + ${SalesShipmentRelease/DeliveryLocationCode} + ') ' + (${SalesShipmentRelease/DeliveryLocationName} || '') : '' }"/>
+				</t:template>
+			</t:Column>
+			<t:Column label="Saldo da liberação" hAlign="End" width="10rem">
+				<t:template>
+					<ObjectNumber textAlign="End" number="{ path: 'SalesShipmentRelease/AvailableQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+				</t:template>
 			</t:Column>
 			<t:Column label="Quantidade prevista" hAlign="End" width="10rem">
 				<t:template>

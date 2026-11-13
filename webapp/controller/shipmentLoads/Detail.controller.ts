@@ -3,6 +3,7 @@ import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import Fragment from "sap/ui/core/Fragment";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import JSONListBinding from "sap/ui/model/json/JSONListBinding";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
@@ -24,7 +25,34 @@ import { runNfeAction } from "siagrob1/helpers/NfeActionRunner";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import { Button$PressEvent } from "sap/m/Button";
 import { Link$PressEvent } from "sap/m/Link";
-import { SearchField$LiveChangeEvent, SearchField$SearchEvent } from "sap/m/SearchField";
+import SearchField, { SearchField$LiveChangeEvent, SearchField$SearchEvent } from "sap/m/SearchField";
+import { filterBillingReleases } from "siagrob1/helpers/BillingReleaseSearch";
+import {
+  filterPlannedPurchaseReleases, findRowIndex, parsePlannedQuantity, PlannedContractType, PlannedPurchaseRelease,
+  PlannedSalesRelease, plannedReleaseKey,
+} from "siagrob1/helpers/PlannedReleaseHelpers";
+
+/** Linha do diálogo de seleção de liberação do planejamento: de compra ou de venda, conforme o tipo. */
+type PlannedRelease = PlannedPurchaseRelease & PlannedSalesRelease;
+
+/**
+ * Diálogo de seleção de liberação de cada tipo de contrato planejado (GAC-1185). Os ids locais
+ * da tabela fazem parte da chave do layout de colunas gravado por usuário.
+ */
+const PLANNED_RELEASE_DIALOGS: Record<PlannedContractType, { title: string; fragment: string; table: string; search: string }> = {
+  Purchase: {
+    title: "Incluir contrato de compra planejado",
+    fragment: "siagrob1.view.shipmentLoads.fragments.ShipmentLoadPlannedPurchaseReleaseDialog",
+    table: "plannedPurchaseReleasesTable",
+    search: "plannedPurchaseReleaseSearch",
+  },
+  Sales: {
+    title: "Incluir contrato de venda planejado",
+    fragment: "siagrob1.view.shipmentLoads.fragments.ShipmentLoadPlannedSalesReleaseDialog",
+    table: "plannedSalesReleasesTable",
+    search: "plannedSalesReleaseSearch",
+  },
+};
 
 /** Linha do diálogo de recusa — o DTO da function, mais a quantidade digitada. */
 type RefusableDocument = {
@@ -969,7 +997,11 @@ export default class Detail extends BaseController {
   /* Contratos planejados (GAC-1185)                                      */
   /* ------------------------------------------------------------------ */
 
-  private _plannedContractDialog: Dialog;
+  /** Um diálogo por tipo: as colunas da liberação de compra e da de venda são diferentes. */
+  private _plannedContractDialogs: Partial<Record<PlannedContractType, Dialog>> = {};
+
+  /** Todas as liberações carregadas; o model "plannedReleases" mostra só as que passam na busca. */
+  private _plannedReleases: PlannedRelease[] = [];
 
   onAddPlannedPurchaseContract(): Promise<void> {
     return this.openPlannedContractDialog("Purchase");
@@ -987,73 +1019,156 @@ export default class Detail extends BaseController {
     return this.removePlannedContract("Sales");
   }
 
-  private async openPlannedContractDialog(contractType: "Purchase" | "Sales"): Promise<void> {
-    (this.getModel("viewModel") as JSONModel).setProperty("/plannedContractDialog", {
-      title: contractType === "Purchase"
-        ? "Incluir contrato de compra planejado"
-        : "Incluir contrato de venda planejado",
+  /**
+   * O planejamento é feito pela LIBERAÇÃO (rodada 2 do GAC-1185): o diálogo lista as liberações
+   * disponíveis do produto da carga — as mesmas da Expedição de Grãos (compra) e do Faturamento
+   * (venda) — e o servidor deriva o contrato da liberação escolhida.
+   */
+  private async openPlannedContractDialog(contractType: PlannedContractType): Promise<void> {
+    const viewModel = this.getModel("viewModel") as JSONModel;
+    const itemCode = ((this.getView().getBindingContext() as Context)?.getProperty("ItemCode") as string) ?? "";
+
+    if (!itemCode) {
+      MessageBox.alert("A carga não tem produto: não há liberações a planejar.");
+      return;
+    }
+
+    viewModel.setProperty("/plannedContractDialog", {
+      title: PLANNED_RELEASE_DIALOGS[contractType].title,
       contractType,
-      contractKey: "",
-      contractCode: "",
-      cardName: "",
       quantity: "",
       notes: "",
     });
 
-    this._plannedContractDialog ??= await DialogHelper.createDialog(
-      this,
-      "siagrob1.view.shipmentLoads.fragments.ShipmentLoadPlannedContractDialog"
-    );
+    if (!this.getModel("plannedReleases")) {
+      this.getView().setModel(new JSONModel([]), "plannedReleases");
+    }
 
-    this._plannedContractDialog.open();
+    let dialog: Dialog;
+
+    this.setBusy(true);
+
+    try {
+      this._plannedReleases = await this.loadPlannedReleases(contractType, itemCode);
+
+      dialog = this._plannedContractDialogs[contractType] ??= await DialogHelper.createDialog(
+        this, PLANNED_RELEASE_DIALOGS[contractType].fragment);
+    } catch (e) {
+      MessageBox.error((e as Error).message || "Erro ao consultar as liberações.");
+      return;
+    } finally {
+      this.setBusy(false);
+    }
+
+    // O diálogo é reaproveitado: busca, seleção e rolagem da abertura anterior não podem sobrar.
+    const table = this.plannedReleaseControl<Table>(contractType, "table");
+
+    table.clearSelection();
+    (this.getModel("plannedReleases") as JSONModel).setData(this._plannedReleases);
+    table.setFirstVisibleRow(0);
+    this.plannedReleaseControl<SearchField>(contractType, "search").setValue("");
+
+    dialog.open();
   }
 
-  onClosePlannedContractDialog(): void {
-    this._plannedContractDialog?.close();
+  /** Liberações disponíveis do produto, pela mesma function da tela de referência de cada tipo. */
+  private async loadPlannedReleases(contractType: PlannedContractType, itemCode: string): Promise<PlannedRelease[]> {
+    const model = this.getModel() as ODataModel;
+    let func;
+
+    if (contractType === "Purchase") {
+      func = model.bindContext("/ShipmentReleasesGetPurchaseContracts(...)");
+      func.setParameter("ItemCode", itemCode);
+      // "" = todos os armazéns: o planejamento não fica preso ao armazém da carga, e a function
+      // exige o parâmetro explícito (não aceita omiti-lo).
+      func.setParameter("WarehouseCode", "");
+    } else {
+      func = model.bindContext("/SalesShipmentReleasesGetAvailable(...)");
+      func.setParameter("ItemCode", itemCode);
+    }
+
+    await func.invoke();
+
+    // As duas functions devolvem array cru; o envelope `value` fica coberto por garantia.
+    const result = func.getBoundContext().getObject() as { value?: PlannedRelease[] } | PlannedRelease[];
+    const rows = Array.isArray(result) ? result : result?.value;
+
+    return Array.isArray(rows) ? rows : [];
   }
 
   /**
-   * Só contratos aprovados (Status no $filter estático) e do produto da carga. ItemCode é string,
-   * então entra na mesma string de filtro; o enum Status nunca vira `sap.ui.model.Filter`.
+   * Controles do diálogo de seleção. O `DialogHelper.createDialog` carrega o fragmento com o id
+   * `<view>_<fragmento>`, então os ids locais ficam sob esse prefixo.
    */
-  async openPlannedContractValueHelp(): Promise<void> {
-    const viewModel = this.getModel("viewModel") as JSONModel;
-    const contractType = viewModel.getProperty("/plannedContractDialog/contractType") as string;
-    const itemCode = ((this.getView().getBindingContext() as Context)?.getProperty("ItemCode") as string) ?? "";
-    const dialogName = contractType === "Sales"
-      ? "SalesContractsSelectDialog"
-      : "PurchaseContractsApprovedSelectDialog";
-    const staticFilter = "Status eq 'Approved'" +
-      (itemCode ? ` and ItemCode eq '${itemCode.replace(/'/g, "''")}'` : "");
+  private plannedReleaseControl<T>(contractType: PlannedContractType, control: "table" | "search"): T {
+    const config = PLANNED_RELEASE_DIALOGS[contractType];
 
-    const selected = await DialogHelper.openTableSelectDialog(
-      this, dialogName, ["Code", "CardName"], [], undefined, staticFilter);
+    return Fragment.byId(`${this.getView().getId()}_${config.fragment}`, config[control]) as unknown as T;
+  }
 
-    if (!selected) return;
+  onClosePlannedContractDialog(): void {
+    Object.values(this._plannedContractDialogs).forEach(dialog => dialog?.close());
+  }
 
-    viewModel.setProperty("/plannedContractDialog/contractKey", selected.getProperty("Key") as string);
-    viewModel.setProperty("/plannedContractDialog/contractCode", selected.getProperty("Code") as string);
-    // O fragmento de compra não exibe o parceiro, então CardName pode não ter vindo na lista:
-    // requestProperty busca a propriedade tardia quando falta.
-    const cardName = await selected.requestProperty("CardName") as string;
-    viewModel.setProperty("/plannedContractDialog/cardName", cardName ?? "");
+  /**
+   * Busca digitada acima da lista de liberações. A seleção da sap.ui.table é por ÍNDICE — sem o
+   * cuidado abaixo, filtrar deixaria marcada outra liberação, na mesma posição, e o planejamento
+   * sairia na liberação errada.
+   *
+   * O índice é o da ordem EXIBIDA: com uma coluna ordenada pelo usuário ele não coincide com a
+   * posição no array filtrado. Por isso a linha é procurada de volta pela própria tabela, depois
+   * de trocar os dados, e nunca por `indexOf` no array.
+   */
+  onPlannedReleaseSearch(event: SearchField$LiveChangeEvent | SearchField$SearchEvent): void {
+    const contractType = (this.getModel("viewModel") as JSONModel)
+      .getProperty("/plannedContractDialog/contractType") as PlannedContractType;
+    const table = this.plannedReleaseControl<Table>(contractType, "table");
+    const query = event.getSource().getValue();
+
+    const selectedIndex = table.getSelectedIndex();
+    const selected = selectedIndex >= 0
+      ? table.getContextByIndex(selectedIndex)?.getObject() as PlannedRelease
+      : undefined;
+
+    const filtered = contractType === "Purchase"
+      ? filterPlannedPurchaseReleases(this._plannedReleases, query)
+      : filterBillingReleases(this._plannedReleases, query);
+
+    table.clearSelection();
+    (this.getModel("plannedReleases") as JSONModel).setData(filtered);
+    table.setFirstVisibleRow(0);
+
+    const newIndex = findRowIndex(
+      (table.getBinding("rows") as JSONListBinding)?.getLength() ?? 0,
+      (index) => table.getContextByIndex(index)?.getObject() as PlannedRelease,
+      selected);
+
+    if (newIndex >= 0) {
+      table.setSelectedIndex(newIndex);
+    }
   }
 
   async onConfirmPlannedContract(): Promise<void> {
     const viewModel = this.getModel("viewModel") as JSONModel;
     const form = viewModel.getProperty("/plannedContractDialog") as {
-      contractType: string; contractKey: string; quantity: string; notes: string;
+      contractType: PlannedContractType; quantity: string; notes: string;
     };
 
-    if (!form.contractKey) {
-      MessageBox.alert("Selecione o contrato.");
+    const table = this.plannedReleaseControl<Table>(form.contractType, "table");
+    const selectedIndex = table.getSelectedIndex();
+    const release = selectedIndex >= 0
+      ? table.getContextByIndex(selectedIndex)?.getObject() as PlannedRelease
+      : undefined;
+    const releaseKey = plannedReleaseKey(form.contractType, release);
+
+    if (!releaseKey) {
+      MessageBox.alert("Selecione a liberação.");
       return;
     }
 
-    const quantityText = `${form.quantity ?? ""}`.trim();
-    const quantity = quantityText === "" ? null : Number(quantityText);
+    const quantity = parsePlannedQuantity(form.quantity);
 
-    if (quantity !== null && !(quantity > 0)) {
+    if (!quantity.valid) {
       MessageBox.alert("A quantidade prevista deve ser maior que zero.");
       return;
     }
@@ -1068,8 +1183,8 @@ export default class Detail extends BaseController {
         .bindContext("/ShipmentLoadsPlannedContractAdd(...)");
       action.setParameter("LoadKey", loadKey);
       action.setParameter("ContractType", form.contractType);
-      action.setParameter("ContractKey", form.contractKey);
-      action.setParameter("Quantity", quantity);
+      action.setParameter("ReleaseKey", releaseKey);
+      action.setParameter("Quantity", quantity.value);
       action.setParameter("Notes", (form.notes ?? "").trim() || null);
       await action.invoke();
 

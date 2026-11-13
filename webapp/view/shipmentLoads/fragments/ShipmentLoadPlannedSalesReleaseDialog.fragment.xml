@@ -1,0 +1,228 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:t="sap.ui.table"
+    xmlns:rowmodes="sap.ui.table.rowmodes"
+>
+<!--
+  Inclusão de contrato de VENDA planejado na carga, escolhido pela liberação de entrega (GAC-1185).
+
+  As colunas são as mesmas da tabela do diálogo de Faturamento
+  (view/shipmentBilling/fragments/Billing.fragment.xml): mudou lá, mude aqui. As linhas vêm da
+  mesma function (SalesShipmentReleasesGetAvailable) para o JSONModel "plannedReleases".
+
+  Largura e ordem das colunas são gravadas por usuário pelo TableLayoutService, que registra a
+  tabela quando o DialogHelper.createDialog carrega o fragmento. O id da tabela faz parte da chave
+  do layout gravado: não renomear.
+
+  Quantidade e observação escrevem num BUFFER JSON (viewModel>/plannedContractDialog), nunca no
+  contexto OData: two-way binding num Detail deixa PATCH pendente no update group diferido e
+  derruba o batch inteiro.
+-->
+<Dialog
+    id="shipmentLoadPlannedSalesReleaseDialog"
+    title="{viewModel>/plannedContractDialog/title}"
+    contentWidth="90%"
+    resizable="true"
+    draggable="true"
+>
+  <content>
+    <VBox>
+      <t:Table
+          id="plannedSalesReleasesTable"
+          class="sapUiSizeCondensed"
+          alternateRowColors="true"
+          selectionMode="Single"
+          selectionBehavior="Row"
+          enableSelectAll="false"
+          noData="Nenhuma liberação de entrega disponível para o produto da carga."
+          rows="{
+            path: 'plannedReleases>/'
+          }"
+      >
+        <t:rowMode>
+          <rowmodes:Fixed rowCount="10" />
+        </t:rowMode>
+        <t:extension>
+          <OverflowToolbar>
+            <content>
+              <Title text="Liberações de Entrega de Venda Disponíveis" level="H2" />
+              <ToolbarSpacer />
+              <SearchField
+                  id="plannedSalesReleaseSearch"
+                  width="24rem"
+                  placeholder="Buscar contrato, complemento, cliente ou armazém"
+                  liveChange=".onPlannedReleaseSearch"
+                  search=".onPlannedReleaseSearch"
+              />
+            </content>
+          </OverflowToolbar>
+        </t:extension>
+        <t:columns>
+          <t:Column width="6rem" sortProperty="BranchShortName">
+            <Label text="Filial" />
+            <t:template>
+              <Text text="{plannedReleases>BranchShortName}" wrapping="false" />
+            </t:template>
+          </t:Column>
+          <t:Column width="6rem" sortProperty="SalesContractCode">
+            <Label text="Contrato" />
+            <t:template>
+              <Text text="{plannedReleases>SalesContractCode}" wrapping="false" />
+            </t:template>
+          </t:Column>
+          <t:Column width="10rem" sortProperty="Complement">
+            <Label text="Compl." />
+            <t:template>
+              <Text text="{plannedReleases>Complement}" wrapping="false" />
+            </t:template>
+          </t:Column>
+          <t:Column width="8rem" sortProperty="StandardCashFlowDate">
+            <Label text="Prev. Pagto." />
+            <t:template>
+              <Text
+                  text="{
+                    path: 'plannedReleases>StandardCashFlowDate',
+                    formatter: '.formatter.formatDate'
+                  }"
+                  wrapping="false"
+              />
+            </t:template>
+          </t:Column>
+          <t:Column width="9rem" hAlign="End" sortProperty="SalesContractFreightCostStandard">
+            <Label text="Frete Standard" />
+            <t:template>
+              <ObjectNumber
+                  textAlign="End"
+                  number="{
+                    path: 'plannedReleases>SalesContractFreightCostStandard',
+                    type: 'sap.ui.model.type.Float',
+                    formatOptions: { decimals: 8, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }"
+                  unit="{plannedReleases>SalesContractFreightUmCode}"
+              />
+            </t:template>
+          </t:Column>
+          <t:Column sortProperty="CardCode" width="5rem">
+            <Label text="Cliente" />
+            <t:template>
+              <Text text="{plannedReleases>CardCode}" wrapping="false" />
+            </t:template>
+          </t:Column>
+          <t:Column sortProperty="CardName" width="25rem">
+            <Label text="Razao Social" />
+            <t:template>
+              <Text text="{plannedReleases>CardName}" wrapping="false" />
+            </t:template>
+          </t:Column>
+          <t:Column width="25rem">
+            <Label text="Nome Fantasia" />
+            <t:template>
+              <Text text="{plannedReleases>CardFName}" wrapping="false" />
+            </t:template>
+          </t:Column>
+          <t:Column width="15rem">
+            <Label text="Armazém" />
+            <t:template>
+              <Text text="({plannedReleases>DeliveryLocationCode}) {plannedReleases>DeliveryLocationName}" wrapping="false" />
+            </t:template>
+          </t:Column>
+          <t:Column width="8rem" hAlign="End" sortProperty="Price">
+            <Label text="Preço Unit." />
+            <t:template>
+              <ObjectNumber
+                  number="{
+                    parts: [{path: 'plannedReleases>CommercialPrice'}, {path: 'plannedReleases>Price'}],
+                    formatter: '.formatter.formatCommercialOrKgPrice'
+                  }"
+                  unit="{
+                    parts: [{path: 'plannedReleases>CommercialUnitOfMeasureCode'}, {path: 'plannedReleases>UnitOfMeasureCode'}],
+                    formatter: '.formatter.formatCommercialOrKgUnit'
+                  }"
+              />
+            </t:template>
+          </t:Column>
+          <t:Column width="8rem" hAlign="End" sortProperty="AvailableQuantity">
+            <Label text="Saldo" />
+            <t:template>
+              <Text
+                  text="{
+                    path: 'plannedReleases>AvailableQuantity',
+                    type: 'sap.ui.model.type.Float',
+                    formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }}"
+                  wrapping="false"
+              />
+            </t:template>
+          </t:Column>
+          <t:Column width="3rem">
+            <Label text="Um" />
+            <t:template>
+              <Text text="{plannedReleases>UnitOfMeasureCode}" wrapping="false" />
+            </t:template>
+          </t:Column>
+          <t:Column width="10rem" hAlign="End" sortProperty="SalesContractAvailableVolume">
+            <Label text="Saldo Contrato" />
+            <t:template>
+              <ObjectNumber
+                  textAlign="End"
+                  state="{= ${plannedReleases>SalesContractAvailableVolume} &lt; 0 ? 'Error' : 'None' }"
+                  number="{
+                    path: 'plannedReleases>SalesContractAvailableVolume',
+                    type: 'sap.ui.model.type.Float',
+                    formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' }
+                  }" />
+            </t:template>
+          </t:Column>
+          <t:Column width="9rem">
+            <Label text="Situação Contrato" />
+            <t:template>
+              <Text
+                  wrapping="false"
+                  text="{
+                    path: 'plannedReleases>SalesContractStatus',
+                    targetType: 'any',
+                    formatter: '.formatter.formatContractStatus'
+                  }" />
+            </t:template>
+          </t:Column>
+        </t:columns>
+      </t:Table>
+      <f:Form editable="true" class="sapUiSmallMarginTop">
+        <f:layout>
+          <f:ColumnLayout columnsM="2" columnsL="2" columnsXL="2" />
+        </f:layout>
+        <f:formContainers>
+          <f:FormContainer>
+            <f:formElements>
+              <f:FormElement label="Quantidade prevista">
+                <f:fields>
+                  <Input type="Number" value="{viewModel>/plannedContractDialog/quantity}"
+                      placeholder="Opcional" />
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+          <f:FormContainer>
+            <f:formElements>
+              <f:FormElement label="Observação">
+                <f:fields>
+                  <TextArea value="{viewModel>/plannedContractDialog/notes}" rows="2" width="100%"
+                      maxLength="200" />
+                </f:fields>
+              </f:FormElement>
+            </f:formElements>
+          </f:FormContainer>
+        </f:formContainers>
+      </f:Form>
+    </VBox>
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <ToolbarSpacer />
+      <Button text="Incluir" type="Emphasized" press=".onConfirmPlannedContract" />
+      <Button text="Fechar" press=".onClosePlannedContractDialog" />
+    </OverflowToolbar>
+  </footer>
+</Dialog>
+</core:FragmentDefinition>
