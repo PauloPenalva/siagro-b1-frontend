@@ -11,6 +11,8 @@ import Spreadsheet from "sap/ui/export/Spreadsheet";
 import formatter from "siagrob1/model/formatter";
 import RoyaltyFieldsHelper from "siagrob1/controller/royalties/RoyaltyFieldsHelper";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import { Input$ValueHelpRequestEvent } from "sap/m/Input";
+import { isSupplierOnlyTransaction } from "siagrob1/helpers/StoragePartnerHelpers";
 
 
 /**
@@ -45,6 +47,19 @@ export abstract class BaseController extends CommonController {
     const ui = this.getModel("ui") as JSONModel;
     void RoyaltyFieldsHelper.apply(this, ctx?.getProperty("ItemCode") as string,
       ui.getProperty("/royaltyEditable") as boolean, ctx?.getProperty("TransactionType") !== "Purchase");
+  }
+
+  /**
+   * GAC-1223: no romaneio de armazenagem (entrada, saída e quebra técnica) o parceiro é o
+   * depositante e só pode ser fornecedor. Compra e venda seguem com todos os parceiros.
+   */
+  openTransactionPartnerValueHelp(ev: Input$ValueHelpRequestEvent) {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (isSupplierOnlyTransaction(ctx?.getProperty("TransactionType") as string)) {
+      this.openSuppliersValueHelp(ev);
+    } else {
+      this.openBusinessPartnersValueHelp(ev);
+    }
   }
 
   onAddQualityInspection() {

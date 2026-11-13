@@ -141,7 +141,7 @@
               value="{CardCode}"
               showValueHelp="true"
               valueHelpOnly="true"
-              valueHelpRequest=".openBusinessPartnersValueHelp">
+              valueHelpRequest=".openSuppliersValueHelp">
               <customData>
                 <core:CustomData key="descriptionProperty" value="CardName" />
               </customData>
