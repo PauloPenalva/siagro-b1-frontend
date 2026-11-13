@@ -38,6 +38,16 @@ export default class GenericController extends CommonController {
   /** Etapa do peso ao vivo em curso; a escolha de balança é lembrada por etapa. */
   private captureScalePurpose: "Opening" | "Closing";
 
+  /**
+   * Espelha o WeighingTicketsCancelService: ticket em andamento só é cancelado pelo papel ADMIN;
+   * o concluído (romaneio pendente) segue liberado; o já cancelado não tem o que cancelar.
+   */
+  canCancelTicket(status?: string): boolean {
+    if (status === "Cancelled") return false;
+    if (status === "Complete") return true;
+    return SessionService.hasRole("ADMIN");
+  }
+
   async onCancel() {
      if(!await DialogHelper.confirmDialog("Confirma cancelar ticket ?"))
       return;
@@ -51,7 +61,7 @@ export default class GenericController extends CommonController {
       this.setBusy(true);
       void action.invoke()
         .then(() => {
-          MessageToast.show("Romaneio criado com sucesso.");
+          MessageToast.show("Ticket cancelado com sucesso.");
           this.navToTicketsList();
         })
         .finally(() => this.setBusy(false));

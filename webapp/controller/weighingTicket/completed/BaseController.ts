@@ -22,7 +22,7 @@ export abstract class BaseController extends CommonController {
       this.setBusy(true);
       void action.invoke()
         .then(() => {
-          MessageToast.show("Romaneio criado com sucesso.");
+          MessageToast.show("Ticket cancelado com sucesso.");
           this.navToTicketsList();
         })
         .finally(() => this.setBusy(false));
