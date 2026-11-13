@@ -40,7 +40,7 @@ QUnit.test("tooltip cita o número da conferência só na perda", function (asse
 
 QUnit.test("a legenda lista cada origem uma vez, começando pela normal", function (assert) {
 	const keys = ALLOCATION_ORIGINS.map((o) => o.key);
-	assert.deepEqual(keys, ["Standard", "WarehouseLoss", "DischargeLoss", "DischargeGain"]);
+	assert.deepEqual(keys, ["Standard", "WarehouseLoss", "DischargeLoss", "DischargeGain", "LoadRefusal", "ReturnRedelivery"]);
 	assert.strictEqual(ALLOCATION_ORIGINS[0].legend, "Normal");
 });
 
@@ -62,4 +62,25 @@ QUnit.test("tooltip da descarga cita a nota de venda e a carga", function (asser
 		"Conferência da nota 000002376 (carga CG000009)");
 	assert.strictEqual(allocationOriginTooltip("DischargeGain", null, "000002376", null), "Conferência da nota 000002376");
 	assert.strictEqual(allocationOriginTooltip("DischargeLoss", null, null, null), "");
+});
+
+QUnit.test("devolução ao armazém devolve o saldo ao contrato (GAC-1214)", function (assert) {
+	assert.strictEqual(allocationOriginText("LoadRefusal"), "Devolução");
+	assert.strictEqual(
+		allocationOriginTooltip("LoadRefusal", null, null, "CG000009"),
+		"Carga CG000009 recusada: a devolução ao armazém devolveu o saldo ao contrato.");
+	assert.strictEqual(
+		allocationOriginTooltip("LoadRefusal", null, null, null),
+		"Devolução ao armazém: devolveu o saldo ao contrato.");
+});
+
+QUnit.test("reentrega de devolução baixa o contrato de novo (GAC-1214)", function (assert) {
+	const origin = ALLOCATION_ORIGINS.find((o) => o.key === "ReturnRedelivery");
+	assert.ok(origin, "origem ReturnRedelivery encontrada na lista");
+	assert.strictEqual(origin?.legend, "Reentrega de devolução");
+	assert.strictEqual(allocationOriginText("ReturnRedelivery"), "Reentrega");
+	assert.ok(allocationOriginIcon("ReturnRedelivery").startsWith("sap-icon://"));
+	assert.strictEqual(
+		allocationOriginTooltip("ReturnRedelivery", null, null, null),
+		"Saída pela liberação de devolução: o contrato foi baixado de novo.");
 });
