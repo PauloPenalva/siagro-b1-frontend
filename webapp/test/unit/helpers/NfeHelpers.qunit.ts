@@ -1,5 +1,5 @@
 import {
-	PAYMENT_MEANS, PAYMENT_START_RULES, paymentPreviewUrl, certificateDaysToExpire, certificateState, environmentCode, readFileAsBase64, nfeOutcomeMessage, isManualTaxDocumentBlocked,
+	PAYMENT_MEANS, PAYMENT_START_RULES, paymentPreviewUrl, certificateDaysToExpire, certificateState, environmentCode, readFileAsBase64, nfeOutcomeMessage,
 	danfeViewerOptions, isValidNfeCancelJustification, canCancelNfe, needsNfeCancellationCompletion, isReversibleNfeStatus,
 	normalizeNfeCorrectionText, invalidNfeCorrectionChars, isValidNfeCorrectionText, canSendNfeCorrection, correctionViewerOptions, pickNfeCorrectionPrefill, canVoidNfeNumber,
 } from "siagrob1/helpers/NfeHelpers";
@@ -111,26 +111,6 @@ QUnit.test("autorizada com 100 ou 150 segue como sucesso", function (assert) {
 		{ type: "success", text: "NF-e autorizada e documento confirmado." });
 	assert.deepEqual(nfeOutcomeMessage({ NfeStatus: "Authorized", StatusCode: "150", Reason: "Autorizado o uso da NF-e, autorização fora de prazo" }),
 		{ type: "success", text: "NF-e autorizada." });
-});
-
-QUnit.module("NfeHelpers - Informar Nota Fiscal manual");
-
-QUnit.test("regra de bloqueio por situação, trava e tipo", function (assert) {
-	assert.strictEqual(isManualTaxDocumentBlocked("None", false, "Normal"), false, "SAPB1/None");
-	assert.strictEqual(isManualTaxDocumentBlocked("None", false, "Normal"), false, "MH Agro, sem trava");
-	assert.strictEqual(isManualTaxDocumentBlocked("None", true, "Normal"), true, "CEAGUI Normal");
-	assert.strictEqual(isManualTaxDocumentBlocked("None", true, "Return"), false, "CEAGUI devolução");
-	assert.strictEqual(isManualTaxDocumentBlocked("None", true, "Return", true), true, "CEAGUI devolução própria");
-	assert.strictEqual(isManualTaxDocumentBlocked("None", false, "Return", true), true, "devolução própria vem da emissão");
-	assert.strictEqual(isManualTaxDocumentBlocked("Authorized", false, "Normal"), true, "já emitida");
-	assert.strictEqual(isManualTaxDocumentBlocked(undefined, false, "Normal"), false, "status indefinido");
-	assert.strictEqual(isManualTaxDocumentBlocked(null, false, "Normal"), false, "status nulo");
-});
-
-QUnit.test("documento do tipo Outro aceita número digitado na filial que emite", function (assert) {
-	assert.strictEqual(isManualTaxDocumentBlocked("None", true, "Normal", false, "Other"), false, "CEAGUI Normal tipo Outro");
-	assert.strictEqual(isManualTaxDocumentBlocked("None", true, "Normal", false, "Nfe"), true, "CEAGUI Normal tipo NF-e");
-	assert.strictEqual(isManualTaxDocumentBlocked("Rejected", true, "Normal", false, "Other"), true, "já foi à SEFAZ");
 });
 
 QUnit.module("NfeHelpers - visualizador do DANFE");

@@ -12,6 +12,7 @@ import Table from "sap/ui/table/Table";
 import SearchField from "sap/m/SearchField";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
+import SessionService from "siagrob1/services/SessionService";
 import { filterBillingReleases } from "siagrob1/helpers/BillingReleaseSearch";
 
 /** Carga a faturar — os campos que o diálogo usa. */
@@ -73,6 +74,11 @@ type BillingForm = {
   TaxDocumentKind?: string,
   /** Só exibição — a filial da carga emite NF-e pelo Siagro (TaxCalculationGate). */
   TaxLocked?: boolean,
+  /**
+   * Só exibição — integração SAP Business One: o Faturar gera sempre documento "Sem NF" (tipo Other) e a nota
+   * fiscal vem do vínculo com a NF do SAP (GAC-1226). Esconde o Select de tipo e mostra o aviso.
+   */
+  SapMode?: boolean,
   /** Chave da carga faturada — substitui `SalesTransactions` no payload. */
   ShipmentLoadKey?: string,
   ShipmentLoadCode?: string,
@@ -161,6 +167,9 @@ export default class ShipmentBillingDialog {
     const contractsTable = this.host.view.byId("shipmentBillingSalesContractsTable") as Table;
     const billingModel = this.host.view.getModel("billing") as JSONModel;
 
+    // Em SAPB1 o Faturar só gera documento "Sem NF" (tipo Other); em STANDALONE nada muda.
+    const sapMode = SessionService.isSapMode();
+
     billingModel.setData({
       // Emissão sugerida = hoje (a NF-e recusa outra data). ISO completo: o campo é DateTimeOffset,
       // mesmo padrão de salesInvoices/Add.
@@ -181,8 +190,9 @@ export default class ShipmentBillingDialog {
       TruckingCompanyName: load.CarrierName,
       FreightTerms: "",
       BranchCode: load.BranchCode,
-      TaxDocumentKind: "Nfe",
+      TaxDocumentKind: sapMode ? "Other" : "Nfe",
       TaxLocked: false,
+      SapMode: sapMode,
       FiscalComplement: null,
       FiscalContractKey: "",
       FiscalContractCode: "",

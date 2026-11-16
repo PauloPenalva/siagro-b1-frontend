@@ -31,10 +31,9 @@
 		<f:content>
       <!-- O $select traz ShipmentLoadKey, que nenhuma coluna exibe: é o guard de "Retornar" no
            controller que a lê. Com autoExpandSelect, o que não é ligado por um controle não é
-           pedido, e sem ela o guard passaria batido. WithoutTaxDocument entra pelo mesmo motivo:
-           o diálogo "Informar Nota Fiscal" o lê do contexto da linha, e a coluna que o exibe pode
-           estar oculta. IsNfeReturn é lido pelo "Informar Nota Fiscal" (a devolução própria vem da
-           emissão). -->
+           pedido, e sem ela o guard passaria batido. SapDocNum, SapCancelPending e
+           SapCancelPendingReason (GAC-1226) são ligados pelas colunas SAP, que ficam ocultas fora
+           do SAPB1: entram no $select para não dependerem da coluna estar visível. -->
       <t:Table
 				id="tableSalesInvoices"
 				busyIndicatorDelay="0"
@@ -46,7 +45,7 @@
 				alternateRowColors="true"
         rows="{
 					path: '/SalesInvoices',
-          parameters: { $select: 'ShipmentLoadKey,WithoutTaxDocument,NfeStatus,NfeCancelledAt,InvoiceStatus,BranchCode,InvoiceType,IsNfeReturn,TotalInvoiceItems,TaxDocumentKind' },
+          parameters: { $select: 'ShipmentLoadKey,NfeStatus,NfeCancelledAt,InvoiceStatus,InvoiceType,TotalInvoiceItems,TaxDocumentKind,SapDocNum,SapCancelPending,SapCancelPendingReason' },
           sorter: [
             { path: 'RowId', descending: true }
           ]
@@ -59,7 +58,6 @@
 						<Button type="Transparent" text="Exportar Excel" press=".onExcel"/>
 						<Button type="Emphasized" icon="sap-icon://add" text="Incluir" press=".onCreate"/>
 						<Button type="Transparent" text="Visualizar" press=".onDetail"/>
-            <Button type="Transparent" text="Informar Nota Fiscal" press=".onNotaFiscal"/>
             <Button type="Transparent" text="Retornar" press=".onReturn"/>
             <ToolbarSeparator />
           	<Button type="Transparent" text="Cancelar Doc." press=".onCancel"/>
@@ -120,6 +118,11 @@
 							<Text text="{ path: 'TaxDocumentKind', targetType: 'any', formatter: '.formatter.formatTaxDocumentKind' }" wrapping="false" />
 						</t:template>
 					</t:Column>
+          <t:Column label="Doc. SAP" sortProperty="SapDocNum" hAlign="Center" width="7rem" visible="{= ${path: 'ui>/sapMode', targetType: 'any'} === true }">
+						<t:template>
+							<Text text="{SapDocNum}" wrapping="false" />
+						</t:template>
+					</t:Column>
           <t:Column
 						label="Emissão"
 						sortProperty="InvoiceDate"
@@ -156,6 +159,14 @@
 									state="Warning"
 									text="Dev. parcial"
 									visible="{ parts: [ { path: 'InvoiceStatus', targetType: 'any' }, { path: 'ReturnedQuantity', targetType: 'any' } ], formatter: '.formatter.isPartiallyReturned' }"/>
+								<!-- GAC-1226: o SAP cancelou a NF vinculada; o cancelamento aqui é do usuário.
+								     targetType any: o Boolean OData chegaria como texto localizado, sempre truthy. -->
+								<ObjectStatus
+									class="sapUiTinyMarginBegin"
+									state="Error"
+									text="Canc. SAP pendente"
+									tooltip="{SapCancelPendingReason}"
+									visible="{= ${path: 'ui>/sapMode', targetType: 'any'} === true &amp;&amp; ${path: 'SapCancelPending', targetType: 'any'} === true }"/>
 							</HBox>
 						</t:template>
 					</t:Column>
