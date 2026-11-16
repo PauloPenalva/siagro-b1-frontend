@@ -1,4 +1,5 @@
-import { normalizeSapIntegrationSettings, isValidSyncInterval } from "siagrob1/helpers/SapIntegrationSettingsHelpers";
+import { normalizeSapIntegrationSettings, isValidSyncInterval, formatLastRunText } from "siagrob1/helpers/SapIntegrationSettingsHelpers";
+import formatter from "siagrob1/model/formatter";
 
 QUnit.module("SapIntegrationSettingsHelpers");
 
@@ -25,4 +26,13 @@ QUnit.test("intervalo válido vai de 1 a 1440, inteiro", function (assert) {
 	assert.strictEqual(isValidSyncInterval(1.5), false);
 	assert.strictEqual(isValidSyncInterval(""), false);
 	assert.strictEqual(isValidSyncInterval(undefined), false);
+});
+
+QUnit.test("última execução: Nunca sem data, data e hora formatadas com data", function (assert) {
+	assert.strictEqual(formatLastRunText(null), "Nunca");
+	assert.strictEqual(formatLastRunText(undefined), "Nunca");
+	assert.strictEqual(formatLastRunText(""), "Nunca");
+	const value = "2026-11-16T10:05:00";
+	assert.strictEqual(formatLastRunText(value), formatter.formatDateTime(value));
+	assert.ok(/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/.test(formatLastRunText(value)), "dd/MM/yyyy HH:mm");
 });

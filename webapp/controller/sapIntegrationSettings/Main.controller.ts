@@ -6,11 +6,12 @@ import ServerRoutes from "siagrob1/model/ServerRoutes";
 import SessionService from "siagrob1/services/SessionService";
 import { sendJson, odataValue } from "siagrob1/helpers/FetchHelpers";
 import {
-  INVALID_INTERVAL_MESSAGE, SapIntegrationSettings, isValidSyncInterval, normalizeSapIntegrationSettings,
+  INVALID_INTERVAL_MESSAGE, SapIntegrationSettings, formatLastRunText, isValidSyncInterval,
+  normalizeSapIntegrationSettings,
 } from "siagrob1/helpers/SapIntegrationSettingsHelpers";
 
 /** Estado da tela: a configuração do servidor mais a flag que desabilita tudo fora do SAPB1. */
-type ScreenState = SapIntegrationSettings & { SapMode: boolean };
+type ScreenState = SapIntegrationSettings & { SapMode: boolean; LastRunText: string };
 
 /**
  * Integração SAP da empresa (só SAPB1; o servidor exige ADMIN): liga/desliga e intervalo da
@@ -29,14 +30,16 @@ export default class Main extends CommonController {
   }
 
   private buildState(sapMode: boolean, raw?: unknown): ScreenState {
-    return { ...normalizeSapIntegrationSettings(raw), SapMode: sapMode };
+    const settings = normalizeSapIntegrationSettings(raw);
+    return { ...settings, SapMode: sapMode, LastRunText: formatLastRunText(settings.InvoiceSyncLastRunAt) };
   }
 
   private async load(): Promise<void> {
     const sapMode = SessionService.isSapMode();
     this.model().setData(this.buildState(sapMode));
 
-    // O menu aparece nos dois modos; fora do SAPB1 a tela só avisa e não chama o servidor (ele recusaria com 400).
+    // O menu só lista o item em SAPB1 (MenuService); por URL direta, fora do SAPB1 a tela só avisa e não chama o
+    // servidor (ele recusaria com 400).
     if (!sapMode) {
       return;
     }
@@ -89,6 +92,7 @@ export default class Main extends CommonController {
       // Atualiza só a última execução: o que o usuário digitou e ainda não salvou não é sobrescrito.
       const updated = normalizeSapIntegrationSettings(odataValue<unknown>(result.data));
       this.model().setProperty("/InvoiceSyncLastRunAt", updated.InvoiceSyncLastRunAt);
+      this.model().setProperty("/LastRunText", formatLastRunText(updated.InvoiceSyncLastRunAt));
       MessageToast.show("Sincronização executada.");
     } finally {
       this.setBusy(false);

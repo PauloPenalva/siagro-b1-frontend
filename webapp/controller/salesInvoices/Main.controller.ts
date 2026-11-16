@@ -69,6 +69,7 @@ export default class Main extends BaseController {
     // Status em múltipla seleção: abre com todos menos Cancelado (nenhum marcado = todos).
     this.createFilterModel({ InvoiceStatus: ["Pending", "Confirmed", "Returned"] });
     this.getView().setModel(new JSONModel([]), "branches");
+    this.initSapModeFlag();
 
     this.getRouter().getRoute("salesInvoices")
       .attachPatternMatched(() => {
@@ -85,12 +86,20 @@ export default class Main extends BaseController {
 
   /**
    * As colunas de vínculo com o SAP (Doc. SAP, Canc. SAP pendente) só fazem sentido em SAPB1.
-   * Inicializar `ui>/sapMode` como `false` evita a armadilha do `visible` com binding indefinido,
-   * que valeria true e exibiria as colunas até a resposta chegar.
+   * `ui>/sapMode` nasce `false` UMA vez (no init), o que evita a armadilha do `visible` com binding
+   * indefinido (valeria true e exibiria as colunas até a resposta chegar). O route matched só grava o valor
+   * resolvido, sem voltar a `false` antes: zerar a cada entrada fazia as colunas piscarem.
+   * O modelo `ui` é do Component: no onInit a view ainda não o herdou, daí o fallback.
    */
+  private initSapModeFlag(): void {
+    const uiModel = (this.getView()?.getModel("ui") ?? this.getOwnerComponent()?.getModel("ui")) as JSONModel;
+    if (uiModel && uiModel.getProperty("/sapMode") === undefined) {
+      uiModel.setProperty("/sapMode", false);
+    }
+  }
+
   private async applySapModeVisibility(): Promise<void> {
     const uiModel = this.getModel("ui") as JSONModel;
-    uiModel.setProperty("/sapMode", false);
 
     const systemInfo = await this.getSystemInfo();
     uiModel.setProperty("/sapMode", systemInfo?.erp === "SAPB1");

@@ -162,6 +162,7 @@ export default class Detail extends BaseController {
     this.getView().setModel(new JSONModel({}), "ship");
     this.getView().setModel(new JSONModel([]), "shipReleases");
     this.getView().setModel(new JSONModel({ visible: false, Rows: [] }), "pendingRefusal");
+    this.initSapLinkFlags();
 
     // O value help do armazém grava com setValue, que não dispara `change` no Input: a lista de
     // liberações acompanha o modelo.
@@ -202,13 +203,25 @@ export default class Detail extends BaseController {
   }
 
   /**
-   * "Vincular NF do SAP" e as colunas de vínculo só existem em SAPB1. Inicializar as flags como `false`
-   * evita a armadilha do `visible` com binding indefinido, que valeria true até a resposta chegar.
+   * "Vincular NF do SAP" e as colunas de vínculo só existem em SAPB1. As flags nascem `false` UMA vez (no
+   * init), o que evita a armadilha do `visible` com binding indefinido (valeria true até a resposta chegar). O
+   * route matched só grava o valor resolvido, sem zerar antes: zerar a cada entrada fazia botão e colunas piscarem.
+   * O modelo `ui` é do Component: no onInit a view ainda não o herdou, daí o fallback.
    */
+  private initSapLinkFlags(): void {
+    const uiModel = (this.getView()?.getModel("ui") ?? this.getOwnerComponent()?.getModel("ui")) as JSONModel;
+    if (!uiModel) {
+      return;
+    }
+    for (const flag of ["/sapInvoiceLinkVisible", "/sapMode"]) {
+      if (uiModel.getProperty(flag) === undefined) {
+        uiModel.setProperty(flag, false);
+      }
+    }
+  }
+
   private async applySapLinkVisibility(): Promise<void> {
     const uiModel = this.getModel("ui") as JSONModel;
-    uiModel.setProperty("/sapInvoiceLinkVisible", false);
-    uiModel.setProperty("/sapMode", false);
 
     const systemInfo = await this.getSystemInfo();
     const sapMode = systemInfo?.erp === "SAPB1";

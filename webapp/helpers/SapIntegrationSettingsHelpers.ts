@@ -1,3 +1,5 @@
+import formatter from "siagrob1/model/formatter";
+
 /** Configuração da integração SAP da empresa (modelo devolvido pelos três endpoints). */
 export type SapIntegrationSettings = {
   InvoiceSyncEnabled: boolean;
@@ -30,4 +32,14 @@ export function normalizeSapIntegrationSettings(raw: unknown): SapIntegrationSet
 export function isValidSyncInterval(value: unknown): boolean {
   const minutes = Number(value);
   return Number.isInteger(minutes) && minutes >= MIN_SYNC_INTERVAL_MINUTES && minutes <= MAX_SYNC_INTERVAL_MINUTES;
+}
+
+export const NEVER_RUN_TEXT = "Nunca";
+
+/**
+ * Texto da "Última execução". Calculado no controller, e não num formatter dentro de expression binding,
+ * onde `.formatter.formatDateTime` pode não resolver e deixar o campo em branco.
+ */
+export function formatLastRunText(value?: string): string {
+  return value ? formatter.formatDateTime(value) : NEVER_RUN_TEXT;
 }

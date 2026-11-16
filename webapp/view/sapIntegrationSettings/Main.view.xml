@@ -4,10 +4,7 @@
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:core="sap.ui.core"
-	xmlns:f="sap.ui.layout.form"
-	core:require="{
-		formatter: 'siagrob1/model/formatter'
-	}">
+	xmlns:f="sap.ui.layout.form">
 
 	<Page title="Integração SAP" busy="{ui>/busy}" busyIndicatorDelay="0">
 		<content>
@@ -16,7 +13,7 @@
 				type="Warning" showIcon="true" class="sapUiSmallMargin"
 				visible="{= ${sap>/SapMode} !== true }" />
 			<MessageStrip
-				text="O SAP é quem cancela as notas fiscais vinculadas. A sincronização marca os documentos de saída cuja nota foi cancelada no SAP como Canc. SAP pendente, para o usuário cancelar no Siagro."
+				text="Quando uma nota fiscal é cancelada no SAP, o documento de saída vinculado é cancelado automaticamente no Siagro. Se uma regra impedir o cancelamento, o documento fica marcado como “Canc. SAP pendente” até ser regularizado."
 				type="Information" showIcon="true" class="sapUiSmallMargin"
 				visible="{= ${sap>/SapMode} === true }" />
 			<f:Form id="sapIntegrationSettingsForm" editable="true">
@@ -34,7 +31,7 @@
 									enabled="{= ${sap>/SapMode} === true }" />
 							</f:FormElement>
 							<f:FormElement label="Última execução">
-								<Text text="{= ${sap>/InvoiceSyncLastRunAt} ? ${path: 'sap>/InvoiceSyncLastRunAt', formatter: '.formatter.formatDateTime'} : 'Nunca' }" />
+								<Text text="{sap>/LastRunText}" />
 							</f:FormElement>
 						</f:formElements>
 					</f:FormContainer>
