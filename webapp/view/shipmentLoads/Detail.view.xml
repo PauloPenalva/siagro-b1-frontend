@@ -408,7 +408,7 @@
 								selectionMode="None"
 								class="sapUiSizeCondensed"
 								visibleRowCount="6"
-								rows="{ path: 'Invoices', parameters: { '$$ownRequest': true } }">
+								rows="{ path: 'Invoices', parameters: { '$$ownRequest': true, '$select': 'SapDocNum,SapCancelPending,SapCancelPendingReason' } }">
 								<t:columns>
 									<t:Column label="Número" width="9rem">
 										<t:template><Text text="{InvoiceNumber}" wrapping="false"/></t:template>
@@ -426,7 +426,7 @@
 										</t:template>
 									</t:Column>
 									<t:Column label="Doc. SAP" hAlign="Center" width="7rem" visible="{= ${path: 'ui>/sapMode', targetType: 'any'} === true }">
-										<t:template><Text text="{SapDocNum}" wrapping="false"/></t:template>
+										<t:template><Text text="{path: 'SapDocNum', targetType: 'any'}" wrapping="false"/></t:template>
 									</t:Column>
 									<t:Column label="Status" hAlign="Center" width="14rem">
 										<t:template>
