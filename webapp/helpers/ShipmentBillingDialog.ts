@@ -107,11 +107,15 @@ type FiscalComplement = {
 }
 
 /** Liberação de entrega de venda selecionada, usada na montagem do documento de saída. */
-type BilledRelease = {
+export type BilledRelease = {
   SalesShipmentReleaseKey?: string,
   SalesContractKey?: string,
   SalesContractCode?: string,
+  Complement?: string,
   CardCode?: string,
+  CardName?: string,
+  DeliveryLocationCode?: string,
+  DeliveryLocationName?: string,
   Price?: string | number,
   UnitOfMeasureCode?: string,
   AvailableQuantity?: string | number,
@@ -119,6 +123,18 @@ type BilledRelease = {
   CommercialPrice?: string | number,
   /** Só exibição — acompanha CommercialPrice. */
   CommercialUnitOfMeasureCode?: string,
+}
+
+/**
+ * Liberações de venda disponíveis do item (function OData, resposta é array cru sem envelope). Compartilhada com o
+ * diálogo de vínculo da NF do SAP, que oferece as mesmas liberações do faturamento.
+ */
+export async function requestAvailableSalesReleases(model: ODataModel, itemCode: string): Promise<BilledRelease[]> {
+  const func = model.bindContext("/SalesShipmentReleasesGetAvailable(...)");
+  func.setParameter("ItemCode", itemCode);
+  await func.invoke();
+  const data = func.getBoundContext().getObject() as unknown;
+  return Array.isArray(data) ? data as BilledRelease[] : [];
 }
 
 /**
@@ -453,15 +469,11 @@ export default class ShipmentBillingDialog {
 
   private async loadAvailableReleases(itemCode: string): Promise<void> {
     const model = this.host.view.getModel() as ODataModel;
-    const func = model.bindContext("/SalesShipmentReleasesGetAvailable(...)");
-    func.setParameter("ItemCode", itemCode);
 
     this.host.setBusy(true);
     try {
-      await func.invoke();
       const releasesModel = this.host.view.getModel("billingReleases") as JSONModel;
-      const data = func.getBoundContext().getObject() as unknown;
-      this._allReleases = Array.isArray(data) ? data as BilledRelease[] : [];
+      this._allReleases = await requestAvailableSalesReleases(model, itemCode);
       releasesModel.setData(this._allReleases);
     } finally {
       this.host.setBusy(false);

@@ -17,6 +17,7 @@ import formatter from "siagrob1/model/formatter";
 import { closedLoadWarning } from "siagrob1/helpers/TransshipmentHelpers";
 import { BaseController } from "./BaseController";
 import ShipmentBillingDialog, { BillingLoad } from "siagrob1/helpers/ShipmentBillingDialog";
+import SapInvoiceLinkDialog, { SapLinkLoad } from "siagrob1/helpers/SapInvoiceLinkDialog";
 import { sendJson, odataCollection } from "siagrob1/helpers/FetchHelpers";
 import {
   destinationParameters, RefusalSuccessKind, refusalSuccessKind, transitLossConfirmText, validateRefusalForm,
@@ -155,6 +156,8 @@ export default class Detail extends BaseController {
 
   private _billing: ShipmentBillingDialog;
 
+  private _sapLink: SapInvoiceLinkDialog;
+
   onInit(): void {
     this.getView().setModel(new JSONModel({}), "ship");
     this.getView().setModel(new JSONModel([]), "shipReleases");
@@ -183,8 +186,34 @@ export default class Detail extends BaseController {
       },
     });
 
+    // Vínculo da NF do SAP (GAC-1226): o documento de saída nasce da NF; leva o usuário direto a ele.
+    this._sapLink = new SapInvoiceLinkDialog({
+      view: this.getView(),
+      onLinked: (created) => {
+        this.refreshAll();
+        if (created?.key) {
+          this.navTo("salesInvoicesDetail", { id: created.key });
+        }
+      },
+    });
+
     this.getRouter().getRoute("shipmentLoadsDetail")
       .attachPatternMatched((ev) => this.detailRouteMatched(ev));
+  }
+
+  /**
+   * "Vincular NF do SAP" e as colunas de vínculo só existem em SAPB1. Inicializar as flags como `false`
+   * evita a armadilha do `visible` com binding indefinido, que valeria true até a resposta chegar.
+   */
+  private async applySapLinkVisibility(): Promise<void> {
+    const uiModel = this.getModel("ui") as JSONModel;
+    uiModel.setProperty("/sapInvoiceLinkVisible", false);
+    uiModel.setProperty("/sapMode", false);
+
+    const systemInfo = await this.getSystemInfo();
+    const sapMode = systemInfo?.erp === "SAPB1";
+    uiModel.setProperty("/sapInvoiceLinkVisible", sapMode);
+    uiModel.setProperty("/sapMode", sapMode);
   }
 
   private detailRouteMatched(ev: Route$MatchedEvent): void {
@@ -192,6 +221,7 @@ export default class Detail extends BaseController {
     if (id == null) return;
 
     this._loadKey = id;
+    void this.applySapLinkVisibility();
     this.bindElement(`/ShipmentLoads(${id})`);
 
     // Passa a chave explícita: bindElement não espera a resposta, e currentLoadKey() leria a
@@ -364,6 +394,16 @@ export default class Detail extends BaseController {
     const values = await ctx.requestProperty(fields as string[]) as unknown[];
     const load = Object.fromEntries(fields.map((f, i) => [f, values[i]])) as BillingLoad;
     await this._billing.open(load);
+  }
+
+  async onLinkSapInvoice(): Promise<void> {
+    const ctx = this.getView().getBindingContext() as Context;
+    if (!ctx) return;
+
+    const fields: (keyof SapLinkLoad)[] = ["Key", "Code", "ItemCode"];
+    const values = await ctx.requestProperty(fields as string[]) as unknown[];
+    const load = Object.fromEntries(fields.map((f, i) => [f, values[i]])) as SapLinkLoad;
+    await this._sapLink.open(load);
   }
 
   saveBillingDialog() {
