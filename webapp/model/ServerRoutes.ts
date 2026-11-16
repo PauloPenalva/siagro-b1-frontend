@@ -584,6 +584,9 @@ export default {
   emailSettingsGet: '/odata/EmailSettingsGet',
   emailSettingsSave: '/odata/EmailSettingsSave',
   emailSettingsSendTest: '/odata/EmailSettingsSendTest',
+  sapIntegrationSettingsGet: '/odata/SapIntegrationSettingsGet',
+  sapIntegrationSettingsSave: '/odata/SapIntegrationSettingsSave',
+  sapInvoiceSyncRunNow: '/odata/SapInvoiceSyncRunNow',
 
   // Troca nota: romaneios de quebra/sobra de descarga (tela "Ajustes de Descarga").
   purchaseDischargesList: '/odata/PurchaseDischargesList',
