@@ -9,7 +9,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import { BilledRelease, requestAvailableSalesReleases } from "siagrob1/helpers/ShipmentBillingDialog";
 import {
-  defaultLinkPeriod, filterReleasesByCustomer, LinkableSapInvoice, normalizeLinkableInvoices, preselectedReleaseIndex,
+  defaultLinkPeriod, filterReleasesByCustomer, isStaleRequest, LinkableSapInvoice, normalizeLinkableInvoices, preselectedReleaseIndex,
 } from "siagrob1/helpers/SapInvoiceLinkHelpers";
 
 /** Carga a vincular — os campos que o diálogo usa. */
@@ -47,6 +47,11 @@ export default class SapInvoiceLinkDialog {
   private _linkInFlight = false;
   /** Descarta resposta atrasada de uma busca quando outra já foi disparada (ou o diálogo reabriu). */
   private _searchId = 0;
+  /**
+   * Token da carga das liberações: só `open`/`close` o mudam. Separado de `_searchId` porque "Buscar" durante a
+   * carga das liberações descartaria a resposta delas e a lista ficaria vazia até reabrir o diálogo.
+   */
+  private _openId = 0;
   /** Todas as liberações disponíveis do item; o model mostra só as do cliente da NF escolhida. */
   private _allReleases: BilledRelease[] = [];
   private _selectedInvoice: LinkableSapInvoice;
@@ -67,6 +72,7 @@ export default class SapInvoiceLinkDialog {
   async open(load: SapLinkLoad): Promise<void> {
     this._load = load;
     this._searchId++;
+    this._openId++;
     this._allReleases = [];
     this._selectedInvoice = undefined;
     this.model().setData(this.emptyState());
@@ -81,6 +87,7 @@ export default class SapInvoiceLinkDialog {
 
   close(): void {
     this._searchId++;
+    this._openId++;
     this._dialog?.close();
   }
 
@@ -145,16 +152,19 @@ export default class SapInvoiceLinkDialog {
   }
 
   private async loadReleases(): Promise<void> {
-    const requestId = this._searchId;
+    const openId = this._openId;
     try {
       const releases = await requestAvailableSalesReleases(this.host.view.getModel() as ODataModel, this._load.ItemCode ?? "");
-      if (requestId !== this._searchId) {
+      if (isStaleRequest(openId, this._openId)) {
         return;
       }
       this._allReleases = releases;
+      // Se a NF já foi escolhida enquanto as liberações carregavam, refaz o filtro e a pré-seleção dela.
       this.applyReleaseFilter();
     } catch (e) {
-      MessageBox.error((e as Error).message);
+      if (!isStaleRequest(openId, this._openId)) {
+        MessageBox.error((e as Error).message);
+      }
     }
   }
 
@@ -201,7 +211,11 @@ export default class SapInvoiceLinkDialog {
     try {
       const invoice = this._selectedInvoice;
       const release = this.selectedRelease();
-      if (!invoice || !release?.SalesShipmentReleaseKey) {
+      if (!invoice) {
+        return;
+      }
+      if (!release?.SalesShipmentReleaseKey) {
+        MessageBox.warning("Selecione a liberação de entrega.");
         return;
       }
 

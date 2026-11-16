@@ -1,5 +1,5 @@
 import {
-  defaultLinkPeriod, filterReleasesByCustomer, formatDateText, formatLocalDate, normalizeLinkableInvoices,
+  defaultLinkPeriod, filterReleasesByCustomer, formatDateText, formatLocalDate, isStaleRequest, normalizeLinkableInvoices,
   preselectedReleaseIndex,
 } from "siagrob1/helpers/SapInvoiceLinkHelpers";
 
@@ -53,4 +53,9 @@ QUnit.test("filterReleasesByCustomer e pré-seleção", function (assert) {
   assert.strictEqual(preselectedReleaseIndex(filterReleasesByCustomer(releases, "C2")), 0);
   assert.strictEqual(preselectedReleaseIndex(filterReleasesByCustomer(releases, "C1")), -1);
   assert.strictEqual(preselectedReleaseIndex([]), -1);
+});
+
+QUnit.test("isStaleRequest: só é velha quando o token mudou", function (assert) {
+  assert.strictEqual(isStaleRequest(3, 3), false);
+  assert.strictEqual(isStaleRequest(3, 4), true);
 });

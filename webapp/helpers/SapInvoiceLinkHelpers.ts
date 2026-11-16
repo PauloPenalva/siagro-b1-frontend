@@ -94,3 +94,8 @@ export function filterReleasesByCustomer<T extends CustomerRelease>(releases: T[
 export function preselectedReleaseIndex(filteredReleases: unknown[]): number {
   return Array.isArray(filteredReleases) && filteredReleases.length === 1 ? 0 : -1;
 }
+
+/** Resposta assíncrona é velha quando o token mudou desde que a requisição saiu. */
+export function isStaleRequest(requestToken: number, currentToken: number): boolean {
+  return requestToken !== currentToken;
+}
