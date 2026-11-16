@@ -3,6 +3,7 @@ import "./controller/Main.qunit";
 import "./services/TableLayoutService.qunit";
 import "./services/MarketModuleService.qunit";
 import "./helpers/FilterHelpers.qunit";
+import "./helpers/UserListFilters.qunit";
 import "./helpers/ActiveRecordsValueHelp.qunit";
 import "./helpers/StoragePartnerHelpers.qunit";
 import "./helpers/AllocationOriginHelpers.qunit";

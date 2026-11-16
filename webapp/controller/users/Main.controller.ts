@@ -1,8 +1,8 @@
-import { SearchField$SearchEvent } from "sap/m/SearchField";
+import SearchField from "sap/m/SearchField";
+import CheckBox from "sap/m/CheckBox";
 import BaseController from "../BaseController";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
-import Filter from "sap/ui/model/Filter";
-import FilterOperator from "sap/ui/model/FilterOperator";
+import { buildUserListFilters } from "siagrob1/helpers/UserListFilters";
 import Table from "sap/ui/table/Table";
 import MessageBox from "sap/m/MessageBox";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
@@ -27,18 +27,24 @@ export default class Main extends BaseController {
 		(this.getView().byId("tableUsers").getBinding("rows") as ODataListBinding).refresh();
 	}
 
-	onSearch(ev: SearchField$SearchEvent): void {
-		const query = ev.getParameter("query");
-		const oFilters = new Filter({
-			filters: [
-				new Filter("Username", FilterOperator.Contains, query),
-				new Filter("FullName", FilterOperator.Contains, query),
-				new Filter("Email", FilterOperator.Contains, query),
-			],
-			and: false,
-		});
+	onSearch(): void {
+		this.applyFilters();
+	}
 
-		(this.getView().byId("tableUsers").getBinding("rows") as ODataListBinding).filter([oFilters]);
+	onToggleInactive(): void {
+		this.applyFilters();
+	}
+
+	/**
+	 * Pesquisa e "Mostrar inativos" são reaplicados juntos: `filter()` substitui os filtros de
+	 * aplicação do binding, então aplicar só um apagaria o outro.
+	 */
+	private applyFilters(): void {
+		const query = (this.byId("searchUsers") as SearchField).getValue();
+		const showInactive = (this.byId("showInactiveUsers") as CheckBox).getSelected();
+
+		(this.byId("tableUsers").getBinding("rows") as ODataListBinding)
+			.filter(buildUserListFilters(query, showInactive));
 	}
 
 	onCreate() {
