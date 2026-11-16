@@ -21,13 +21,24 @@
 				enableBusyIndicator="true"
 				alternateRowColors="true"
 				rows="{
-					path: '/Users'
+					path: '/Users',
+					filters: [{ path: 'IsActive', operator: 'EQ', value1: true }]
 				}"
 			>
 				<t:extension>
 					<OverflowToolbar >
+						<!--
+							A lista abre só com os ativos (GAC-1220): usuário que sai do SAP nunca é
+							apagado, apenas desativado. O filtro inicial do binding acima e o estado
+							desta caixa precisam andar juntos.
+						-->
+						<CheckBox
+							id="showInactiveUsers"
+							text="Mostrar inativos"
+							selected="false"
+							select=".onToggleInactive"/>
             <ToolbarSpacer />
-						<SearchField placeholder="Pesquisar..." width="30%" search=".onSearch"/>
+						<SearchField id="searchUsers" placeholder="Pesquisar..." width="30%" search=".onSearch"/>
 					</OverflowToolbar>
 				</t:extension>
 				<t:columns>
