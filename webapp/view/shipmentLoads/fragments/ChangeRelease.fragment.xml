@@ -1,6 +1,7 @@
 <core:FragmentDefinition
 	xmlns="sap.m"
 	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
 	xmlns:f="sap.ui.layout.form">
 	<Dialog
 		id="changeReleaseDialog"
@@ -19,63 +20,97 @@
 				class="sapUiSmallMarginBottom"/>
 
 			<!-- Situação atual de cada romaneio selecionado e, na inversão, o destino de cada um. -->
-			<Table items="{changeRelease>/Rows}">
-				<headerToolbar>
+			<t:Table
+				id="changeReleaseRowsTable"
+				class="sapUiSizeCondensed sapUiSmallMarginBottom"
+				selectionMode="None"
+				alternateRowColors="true"
+				visibleRowCountMode="Fixed"
+				visibleRowCount="2"
+				noData="Nenhum romaneio selecionado."
+				rows="{changeRelease>/Rows}">
+				<t:extension>
 					<OverflowToolbar><Title text="Romaneios"/></OverflowToolbar>
-				</headerToolbar>
-				<columns>
-					<Column width="8rem"><Text text="Romaneio"/></Column>
-					<Column hAlign="End" width="9rem"><Text text="Peso Bruto"/></Column>
-					<Column><Text text="Contrato Atual"/></Column>
-					<Column visible="{changeRelease>/IsSwap}"><Text text="Novo Contrato"/></Column>
-					<Column><Text text="Armazém Atual"/></Column>
-					<Column visible="{changeRelease>/IsSwap}"><Text text="Novo Armazém"/></Column>
-				</columns>
-				<items>
-					<ColumnListItem>
-						<Text text="{changeRelease>Code}"/>
-						<ObjectNumber
-							number="{ path: 'changeRelease>GrossWeight', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
-						<Text text="{changeRelease>ContractCode} {changeRelease>CardName}"/>
-						<Text text="{changeRelease>NewContractCode} {changeRelease>NewCardName}"/>
-						<Text text="({changeRelease>WarehouseCode}) {changeRelease>WarehouseName}"/>
-						<Text text="({changeRelease>NewWarehouseCode}) {changeRelease>NewWarehouseName}"/>
-					</ColumnListItem>
-				</items>
-			</Table>
+				</t:extension>
+				<t:columns>
+					<t:Column id="changeReleaseRowsCodeColumn" width="8rem" sortProperty="Code" filterProperty="Code">
+						<Label text="Romaneio"/>
+						<t:template><Text text="{changeRelease>Code}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column id="changeReleaseRowsWeightColumn" width="9rem" hAlign="End" sortProperty="GrossWeight" filterProperty="GrossWeight" filterType="sap.ui.model.type.Float">
+						<Label text="Peso Bruto"/>
+						<t:template>
+							<ObjectNumber
+								number="{ path: 'changeRelease>GrossWeight', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+						</t:template>
+					</t:Column>
+					<t:Column id="changeReleaseRowsContractColumn" width="14rem" sortProperty="ContractText" filterProperty="ContractText">
+						<Label text="Contrato Atual"/>
+						<t:template><Text text="{changeRelease>ContractText}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column id="changeReleaseRowsNewContractColumn" width="14rem" visible="{changeRelease>/IsSwap}" sortProperty="NewContractText" filterProperty="NewContractText">
+						<Label text="Novo Contrato"/>
+						<t:template><Text text="{changeRelease>NewContractText}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column id="changeReleaseRowsWarehouseColumn" width="14rem" sortProperty="WarehouseText" filterProperty="WarehouseText">
+						<Label text="Armazém Atual"/>
+						<t:template><Text text="{changeRelease>WarehouseText}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column id="changeReleaseRowsNewWarehouseColumn" width="14rem" visible="{changeRelease>/IsSwap}" sortProperty="NewWarehouseText" filterProperty="NewWarehouseText">
+						<Label text="Novo Armazém"/>
+						<t:template><Text text="{changeRelease>NewWarehouseText}" wrapping="false"/></t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
 
 			<!-- Troca simples: escolher a liberação de destino. Na inversão o destino é o outro romaneio. -->
-			<Table
+			<t:Table
 				id="changeReleaseTargets"
+				class="sapUiSizeCondensed sapUiSmallMarginBottom"
 				visible="{= !${changeRelease>/IsSwap} }"
-				mode="SingleSelectLeft"
-				growing="true"
-				noDataText="Nenhuma outra liberação ativa com saldo para este produto, em qualquer armazém."
-				items="{changeRelease>/Targets}">
-				<headerToolbar>
+				selectionMode="Single"
+				selectionBehavior="RowSelector"
+				alternateRowColors="true"
+				visibleRowCountMode="Fixed"
+				visibleRowCount="6"
+				filter=".onChangeReleaseTargetsFilterOrSort"
+				sort=".onChangeReleaseTargetsFilterOrSort"
+				noData="Nenhuma outra liberação ativa com saldo para este produto, em qualquer armazém."
+				rows="{changeRelease>/Targets}">
+				<t:extension>
 					<OverflowToolbar><Title text="Liberação de Destino"/></OverflowToolbar>
-				</headerToolbar>
-				<columns>
-					<Column width="8rem"><Text text="Contrato"/></Column>
-					<Column width="8rem"><Text text="Prev. Pagto."/></Column>
-					<Column width="9rem"><Text text="Origem"/></Column>
-					<Column><Text text="Fornecedor"/></Column>
-					<Column><Text text="Armazém"/></Column>
-					<Column hAlign="End" width="9rem"><Text text="Saldo"/></Column>
-				</columns>
-				<items>
-					<ColumnListItem>
-						<Text text="{changeRelease>PurchaseContractCode}"/>
-						<Text text="{ path: 'changeRelease>StandardCashFlowDate', targetType: 'any', formatter: '.formatter.formatDate' }"/>
-						<Text text="{ path: 'changeRelease>Origin', targetType: 'any', formatter: '.formatter.releaseOriginText' }"/>
-						<Text text="{changeRelease>FName}"/>
-						<Text text="({changeRelease>DeliveryLocationCode}) {changeRelease>DeliveryLocationName}"/>
-						<ObjectNumber
-							number="{ path: 'changeRelease>AvailableQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
-							unit="{changeRelease>UnitOfMeasureCode}"/>
-					</ColumnListItem>
-				</items>
-			</Table>
+				</t:extension>
+				<t:columns>
+					<t:Column id="changeReleaseTargetsContractColumn" width="8rem" sortProperty="PurchaseContractCode" filterProperty="PurchaseContractCode">
+						<Label text="Contrato"/>
+						<t:template><Text text="{changeRelease>PurchaseContractCode}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column id="changeReleaseTargetsPaymentColumn" width="8rem" sortProperty="StandardCashFlowDate" filterProperty="StandardCashFlowDateText">
+						<Label text="Prev. Pagto."/>
+						<t:template><Text text="{changeRelease>StandardCashFlowDateText}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column id="changeReleaseTargetsOriginColumn" width="9rem" sortProperty="OriginText" filterProperty="OriginText">
+						<Label text="Origem"/>
+						<t:template><Text text="{changeRelease>OriginText}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column id="changeReleaseTargetsSupplierColumn" width="14rem" sortProperty="FName" filterProperty="FName">
+						<Label text="Fornecedor"/>
+						<t:template><Text text="{changeRelease>FName}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column id="changeReleaseTargetsWarehouseColumn" width="14rem" sortProperty="DeliveryLocationText" filterProperty="DeliveryLocationText">
+						<Label text="Armazém"/>
+						<t:template><Text text="{changeRelease>DeliveryLocationText}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column id="changeReleaseTargetsBalanceColumn" width="9rem" hAlign="End" sortProperty="AvailableQuantity" filterProperty="AvailableQuantity" filterType="sap.ui.model.type.Float">
+						<Label text="Saldo"/>
+						<t:template>
+							<ObjectNumber
+								number="{ path: 'changeRelease>AvailableQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+								unit="{changeRelease>UnitOfMeasureCode}"/>
+						</t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
 
 			<f:Form editable="true">
 				<f:layout><f:ColumnLayout columnsM="1" columnsL="1" columnsXL="1"/></f:layout>
