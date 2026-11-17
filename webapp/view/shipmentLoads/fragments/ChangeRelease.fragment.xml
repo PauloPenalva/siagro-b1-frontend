@@ -6,7 +6,7 @@
 	<Dialog
 		id="changeReleaseDialog"
 		title="{= ${changeRelease>/IsSwap} ? 'Inverter Liberações' : 'Trocar Liberação' }"
-		contentWidth="60rem"
+		contentWidth="76rem"
 		class="sapUiSizeCompact"
 		busy="{changeRelease>/busy}"
 		busyIndicatorDelay="0">
