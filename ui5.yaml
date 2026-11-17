@@ -77,6 +77,13 @@ server:
       mountPath: /market
       configuration:
         baseUri: "http://localhost:5246/market"
+    # /api são os endpoints REST fora do OData (logo e home da empresa, importação de custos).
+    # Sem este proxy o dev server responde "Cannot POST /api/..." e o envio do logo falha.
+    - name: ui5-middleware-simpleproxy
+      afterMiddleware: compression
+      mountPath: /api
+      configuration:
+        baseUri: "http://localhost:5246/api"
     - name: ui5-middleware-simpleproxy
       afterMiddleware: compression
       mountPath: /hangfire
