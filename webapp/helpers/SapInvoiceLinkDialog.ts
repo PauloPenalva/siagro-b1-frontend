@@ -11,9 +11,9 @@ import ListBinding from "sap/ui/model/ListBinding";
 import Table from "sap/ui/table/Table";
 import { BilledRelease, requestAvailableSalesReleases } from "siagrob1/helpers/ShipmentBillingDialog";
 import {
-  canLink, defaultLinkPeriod, exceedsAvailable, hasMixedCustomers, isStaleRequest, LinkableSapInvoice, LinkedDocument, matchesAvailable,
-  normalizeLinkableInvoices, normalizeLinkedDocuments, preselectedReleaseIndex, releasesForInvoices, selectionSummaryText,
-  sumQuantity,
+  canLink, commonCustomer, defaultLinkPeriod, exceedsAvailable, hasMixedCustomers, isStaleRequest, LinkableSapInvoice, LinkedDocument, matchesAvailable,
+  normalizeLinkableInvoices, normalizeLinkedDocuments, preselectedReleaseIndex, releasesForInvoices, selectionSummaryText, shouldKeepRelease,
+  sumQuantity, withReleaseDisplay,
 } from "siagrob1/helpers/SapInvoiceLinkHelpers";
 
 /** Carga a vincular — os campos que o diálogo usa. */
@@ -75,6 +75,8 @@ export default class SapInvoiceLinkDialog {
   private _allReleases: BilledRelease[] = [];
   /** NFs marcadas, lidas dos índices selecionados pelos contextos do binding (o que o usuário vê marcado). */
   private _selectedInvoices: LinkableSapInvoice[] = [];
+  /** Cliente comum das NFs para o qual as liberações do model foram filtradas (vazio: nenhum). */
+  private _releaseCustomer = "";
 
   /** Controller do fragmento: handlers como funções do próprio helper. */
   private readonly _fragmentController = {
@@ -97,6 +99,7 @@ export default class SapInvoiceLinkDialog {
     this._openId++;
     this._allReleases = [];
     this._selectedInvoices = [];
+    this._releaseCustomer = "";
     this.model().setData(this.emptyState());
 
     await this.ensureDialog();
@@ -151,7 +154,7 @@ export default class SapInvoiceLinkDialog {
     this.host.registerTableLayouts(this._dialog);
   }
 
-  /** NF do SAP do período escolhido (a function traz as de quantidade maior que zero e até o saldo da carga). */
+  /** NF do SAP do período escolhido (a function traz as de quantidade maior que zero, inclusive as maiores que o saldo da carga, para o usuário notar o erro). */
   private async search(): Promise<void> {
     const model = this.model();
     const requestId = ++this._searchId;
@@ -192,7 +195,9 @@ export default class SapInvoiceLinkDialog {
       if (isStaleRequest(openId, this._openId)) {
         return;
       }
-      this._allReleases = releases;
+      this._allReleases = releases.map(withReleaseDisplay);
+      // Lista recarregada: a liberação escolhida (se houver) deixa de valer.
+      this._releaseCustomer = "";
       // Se a NF já foi escolhida enquanto as liberações carregavam, refaz o filtro e a pré-seleção dela.
       this.applyReleaseFilter();
     } catch (e) {
@@ -226,12 +231,19 @@ export default class SapInvoiceLinkDialog {
     const releasesTable = this.releasesTable();
     const filtered = releasesForInvoices(this._allReleases, this._selectedInvoices);
 
-    releasesTable?.clearSelection();
-    this.model().setProperty("/Releases", filtered);
+    // Mesmo cliente comum de antes: a lista é a mesma e a liberação escolhida é mantida.
+    const keep = shouldKeepRelease(this._releaseCustomer, this._selectedInvoices);
+    this._releaseCustomer = commonCustomer(this._selectedInvoices);
+
+    if (!keep) {
+      releasesTable?.clearSelection();
+      this.model().setProperty("/Releases", filtered);
+    }
 
     // A pré-seleção é por índice do binding: só vale quando a tabela (com o filtro de coluna do usuário) mostra
-    // exatamente aquela liberação.
-    if (preselectedReleaseIndex(filtered) >= 0 && (releasesTable?.getBinding("rows") as ListBinding)?.getLength() === 1) {
+    // exatamente aquela liberação, e nada está escolhido.
+    if (!this.selectedRelease() && preselectedReleaseIndex(filtered) >= 0
+      && (releasesTable?.getBinding("rows") as ListBinding)?.getLength() === 1) {
       releasesTable.setSelectedIndex(0);
     }
     this.updateCanLink();

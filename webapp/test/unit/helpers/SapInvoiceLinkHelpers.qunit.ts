@@ -2,7 +2,7 @@ import {
   canLink, commonCustomer, exceedsAvailable, hasMixedCustomers, matchesAvailable, normalizeLinkedDocuments, releasesForInvoices,
   selectionSummaryText, sumQuantity,
   defaultLinkPeriod, filterReleasesByCustomer, formatDateText, formatLocalDate, isStaleRequest, normalizeLinkableInvoices,
-  preselectedReleaseIndex,
+  preselectedReleaseIndex, shouldKeepRelease, withReleaseDisplay,
 } from "siagrob1/helpers/SapInvoiceLinkHelpers";
 
 QUnit.module("SapInvoiceLinkHelpers - vínculo de NF do SAP (GAC-1226)");
@@ -126,4 +126,21 @@ QUnit.test("normalizeLinkedDocuments aceita camelCase e PascalCase", function (a
     [{ key: "a", invoiceNumber: "1" }, { key: "b", invoiceNumber: "2" }]);
   assert.deepEqual(normalizeLinkedDocuments({ Documents: [{ Key: "a", InvoiceNumber: "1" }] }), [{ key: "a", invoiceNumber: "1" }]);
   assert.deepEqual(normalizeLinkedDocuments(undefined), []);
+});
+
+QUnit.test("shouldKeepRelease: mantém só quando o cliente comum não mudou e a seleção não está vazia nem mista", function (assert) {
+  const c1 = { CardCode: "C1" };
+  assert.strictEqual(shouldKeepRelease("C1", [c1, c1]), true, "mesmo cliente");
+  assert.strictEqual(shouldKeepRelease("C1", [{ CardCode: "C2" }]), false, "cliente trocado");
+  assert.strictEqual(shouldKeepRelease("C1", []), false, "seleção vazia");
+  assert.strictEqual(shouldKeepRelease("C1", [c1, { CardCode: "C2" }]), false, "seleção mista");
+  assert.strictEqual(shouldKeepRelease("", [c1]), false, "nada filtrado antes");
+});
+
+QUnit.test("withReleaseDisplay: texto do cliente e preço exibido (comercial, senão o preço)", function (assert) {
+  const withCommercial = withReleaseDisplay({ CardCode: "C1", CardName: "ACME", CommercialPrice: 120, Price: "2" });
+  assert.strictEqual(withCommercial.CustomerText, "(C1) ACME");
+  assert.strictEqual(withCommercial.DisplayPrice, 120);
+  assert.strictEqual(withReleaseDisplay({ Price: "2.5" }).DisplayPrice, 2.5);
+  assert.strictEqual(withReleaseDisplay({}).DisplayPrice, undefined);
 });

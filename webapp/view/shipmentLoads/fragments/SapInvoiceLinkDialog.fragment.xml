@@ -54,7 +54,7 @@
 						<Toolbar><Title text="Notas fiscais do SAP"/></Toolbar>
 					</t:extension>
 					<t:columns>
-						<t:Column id="sapLinkInvoicesDateColumn" width="7rem" sortProperty="DocDateSort" filterProperty="DocDateSort">
+						<t:Column id="sapLinkInvoicesDateColumn" width="7rem" sortProperty="DocDateSort" filterProperty="DocDateText">
 							<Label text="Data"/>
 							<t:template>
 								<Text text="{sapLink>DocDateText}" wrapping="false"/>
@@ -161,10 +161,10 @@
 								<Text text="{sapLink>Complement}" wrapping="false"/>
 							</t:template>
 						</t:Column>
-						<t:Column id="sapLinkReleasesCustomerColumn" width="16rem" sortProperty="CardName" filterProperty="CardName">
+						<t:Column id="sapLinkReleasesCustomerColumn" width="16rem" sortProperty="CustomerText" filterProperty="CustomerText">
 							<Label text="Cliente"/>
 							<t:template>
-								<Text text="({sapLink>CardCode}) {sapLink>CardName}" wrapping="false"/>
+								<Text text="{sapLink>CustomerText}" wrapping="false"/>
 							</t:template>
 						</t:Column>
 						<t:Column id="sapLinkReleasesWarehouseColumn" width="15rem" sortProperty="DeliveryLocationName" filterProperty="DeliveryLocationName">
@@ -173,12 +173,12 @@
 								<Text text="({sapLink>DeliveryLocationCode}) {sapLink>DeliveryLocationName}" wrapping="false"/>
 							</t:template>
 						</t:Column>
-						<t:Column id="sapLinkReleasesPriceColumn" width="8rem" hAlign="End" sortProperty="Price" filterProperty="Price" filterType="sap.ui.model.type.Float">
+						<t:Column id="sapLinkReleasesPriceColumn" width="8rem" hAlign="End" sortProperty="DisplayPrice" filterProperty="DisplayPrice" filterType="sap.ui.model.type.Float">
 							<Label text="Preço Unit."/>
 							<t:template>
 								<ObjectNumber
 									number="{
-										parts: [{path: 'sapLink>CommercialPrice'}, {path: 'sapLink>Price'}],
+										parts: [{path: 'sapLink>DisplayPrice'}],
 										formatter: 'formatter.formatCommercialOrKgPrice'
 									}"/>
 							</t:template>

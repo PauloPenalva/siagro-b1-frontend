@@ -103,6 +103,28 @@ export function preselectedReleaseIndex(filteredReleases: unknown[]): number {
   return Array.isArray(filteredReleases) && filteredReleases.length === 1 ? 0 : -1;
 }
 
+/**
+ * Troca de seleção de NFs: a liberação escolhida só é mantida quando o cliente comum das NFs marcadas não mudou
+ * (e a seleção continua de um único cliente e não vazia). Cliente trocado, seleção vazia ou mista: limpa.
+ */
+export function shouldKeepRelease(previousCustomer: string, invoices: QuantityRow[]): boolean {
+  const customer = commonCustomer(invoices);
+  return !!customer && customer === previousCustomer;
+}
+
+/** Campos só de exibição da liberação: texto do cliente e o preço exibido (comercial, senão o preço em KG). */
+export function withReleaseDisplay<T extends { CardCode?: string, CardName?: string, CommercialPrice?: string | number, Price?: string | number }>(
+  release: T,
+): T & { CustomerText: string, DisplayPrice: number } {
+  const raw = release?.CommercialPrice ?? release?.Price;
+  const price = typeof raw === "string" ? parseFloat(raw) : raw;
+  return {
+    ...release,
+    CustomerText: `(${release?.CardCode ?? ""}) ${release?.CardName ?? ""}`,
+    DisplayPrice: price == null || isNaN(price) ? undefined : price,
+  };
+}
+
 /** Resposta assíncrona é velha quando o token mudou desde que a requisição saiu. */
 export function isStaleRequest(requestToken: number, currentToken: number): boolean {
   return requestToken !== currentToken;
