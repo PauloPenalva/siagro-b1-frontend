@@ -480,6 +480,9 @@ export default {
   shipmentLoadsPendingRefusal: (key: string): string => `/odata/ShipmentLoadsGetPendingRefusal(Key=${key})`,
   shipmentLoadsCancelRefusal: '/odata/ShipmentLoadsCancelRefusal',
 
+  // NF de devolução do SAP (A/R Credit Memo) na devolução da carga (GAC-1226); o vínculo é chamado pelo diálogo.
+  shipmentLoadsUnlinkSapCreditMemo: '/odata/ShipmentLoadsUnlinkSapCreditMemo',
+
   // NF-e STANDALONE (sub-projeto 2a).
   paymentConditions: '/odata/PaymentConditions',
   // Manifestação do destinatário (DF-e recebidos da SEFAZ).

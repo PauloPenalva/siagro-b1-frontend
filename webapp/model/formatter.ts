@@ -1345,6 +1345,9 @@ const formatter = {
     // Documento de saída: operação sem nota fiscal (GAC-1174).
     m.set("WithoutTaxDocument", "Operação sem nota fiscal");
 
+    // Devolução: NF de devolução do SAP vinculada/desvinculada (GAC-1226).
+    m.set("SapReturnInvoice", "NF de devolução do SAP");
+
     return m.get(value) ?? value;
   },
 
