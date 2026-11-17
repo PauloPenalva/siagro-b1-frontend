@@ -187,16 +187,18 @@ export default class Detail extends BaseController {
       },
     });
 
-    // Vínculo de NFs do SAP (GAC-1226): um documento de saída por NF. Com um só, leva o usuário direto a ele; com
-    // vários, fica na carga atualizada.
+    // Vínculo de NFs do SAP (GAC-1226): um documento de saída por NF. Com um só, SÓ navega até ele (sem
+    // refreshAll): as recargas assíncronas da carga rejeitariam ao sair da view e mostrariam caixas de erro
+    // falsas; ao voltar, o route matched recarrega a carga. Com vários, fica na carga e a atualiza.
     this._sapLink = new SapInvoiceLinkDialog({
       view: this.getView(),
       registerTableLayouts: (root) => this.registerTableLayouts(root),
       onLinked: (created) => {
-        this.refreshAll();
         if (created.length === 1 && created[0].key) {
           this.navTo("salesInvoicesDetail", { id: created[0].key });
+          return;
         }
+        this.refreshAll();
       },
     });
 
