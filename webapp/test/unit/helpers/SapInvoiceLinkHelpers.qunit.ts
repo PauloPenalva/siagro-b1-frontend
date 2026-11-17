@@ -1,4 +1,6 @@
 import {
+  canLink, commonCustomer, exceedsAvailable, hasMixedCustomers, matchesAvailable, normalizeLinkedDocuments, releasesForInvoices,
+  selectionSummaryText, sumQuantity,
   defaultLinkPeriod, filterReleasesByCustomer, formatDateText, formatLocalDate, isStaleRequest, normalizeLinkableInvoices,
   preselectedReleaseIndex,
 } from "siagrob1/helpers/SapInvoiceLinkHelpers";
@@ -58,4 +60,70 @@ QUnit.test("filterReleasesByCustomer e pré-seleção", function (assert) {
 QUnit.test("isStaleRequest: só é velha quando o token mudou", function (assert) {
   assert.strictEqual(isStaleRequest(3, 3), false);
   assert.strictEqual(isStaleRequest(3, 4), true);
+});
+
+QUnit.test("normalizeLinkableInvoices monta textos e chave de ordenação da data", function (assert) {
+  const [row] = normalizeLinkableInvoices([{ DocDate: "2026-11-10T00:00:00Z", CardCode: "C1", CardName: "Cli", TaxDocumentNumber: "12", TaxDocumentSeries: "1" }]);
+  assert.strictEqual(row.DocDateSort, "2026-11-10");
+  assert.strictEqual(row.InvoiceText, "12 / 1");
+  assert.strictEqual(row.CustomerText, "(C1) Cli");
+});
+
+QUnit.test("sumQuantity, cliente comum e clientes misturados", function (assert) {
+  const same = [{ Quantity: 30000.25, CardCode: "C1" }, { Quantity: 1000.5, CardCode: "C1" }];
+  const mixed = [{ Quantity: 1, CardCode: "C1" }, { Quantity: 2, CardCode: "C2" }];
+  assert.strictEqual(sumQuantity(same), 31000.75);
+  assert.strictEqual(sumQuantity([]), 0);
+  assert.strictEqual(commonCustomer(same), "C1");
+  assert.strictEqual(commonCustomer(mixed), "");
+  assert.strictEqual(commonCustomer([]), "");
+  assert.strictEqual(hasMixedCustomers(mixed), true);
+  assert.strictEqual(hasMixedCustomers(same), false);
+});
+
+QUnit.test("matchesAvailable usa tolerância de 0,001", function (assert) {
+  assert.strictEqual(matchesAvailable(1000.001, 1000), true);
+  assert.strictEqual(matchesAvailable(999.999, 1000), true);
+  assert.strictEqual(matchesAvailable(1000.002, 1000), false);
+  // Soma de ponto flutuante (0,1 + 0,2) não pode reprovar.
+  assert.strictEqual(matchesAvailable(sumQuantity([{ Quantity: 0.1 }, { Quantity: 0.2 }]), 0.3), true);
+});
+
+QUnit.test("canLink exige NF, mesmo cliente, soma igual ao saldo e liberação", function (assert) {
+  const ok = [{ Quantity: 600, CardCode: "C1" }, { Quantity: 400, CardCode: "C1" }];
+  assert.strictEqual(canLink(ok, 1000, true), true);
+  assert.strictEqual(canLink(ok, 1000, false), false);
+  assert.strictEqual(canLink(ok, 1200, true), false);
+  assert.strictEqual(canLink([], 0, true), false);
+  assert.strictEqual(canLink([{ Quantity: 600, CardCode: "C1" }, { Quantity: 400, CardCode: "C2" }], 1000, true), false);
+});
+
+QUnit.test("canLink: soma menor ou maior que o saldo não habilita", function (assert) {
+  assert.strictEqual(canLink([{ Quantity: 600, CardCode: "C1" }], 1000, true), false);
+  assert.strictEqual(canLink([{ Quantity: 1200, CardCode: "C1" }], 1000, true), false);
+  assert.strictEqual(canLink([{ Quantity: 1000.001, CardCode: "C1" }], 1000, true), true);
+});
+
+QUnit.test("exceedsAvailable respeita a tolerância", function (assert) {
+  assert.strictEqual(exceedsAvailable(1000.001, 1000), false);
+  assert.strictEqual(exceedsAvailable(1000.002, 1000), true);
+  assert.strictEqual(exceedsAvailable(500, 1000), false);
+});
+
+QUnit.test("releasesForInvoices filtra pelo cliente comum", function (assert) {
+  const releases = [{ CardCode: "C1" }, { CardCode: "C2" }];
+  assert.strictEqual(releasesForInvoices(releases, [{ CardCode: "C2" }, { CardCode: "C2" }]).length, 1);
+  assert.deepEqual(releasesForInvoices(releases, [{ CardCode: "C1" }, { CardCode: "C2" }]), []);
+  assert.deepEqual(releasesForInvoices(releases, []), []);
+});
+
+QUnit.test("selectionSummaryText em pt-BR com 3 casas", function (assert) {
+  assert.strictEqual(selectionSummaryText(31000.75, 32000), "Selecionado: 31.000,750 kg de 32.000,000 kg");
+});
+
+QUnit.test("normalizeLinkedDocuments aceita camelCase e PascalCase", function (assert) {
+  assert.deepEqual(normalizeLinkedDocuments({ documents: [{ key: "a", invoiceNumber: "1" }, { key: "b", invoiceNumber: "2" }] }),
+    [{ key: "a", invoiceNumber: "1" }, { key: "b", invoiceNumber: "2" }]);
+  assert.deepEqual(normalizeLinkedDocuments({ Documents: [{ Key: "a", InvoiceNumber: "1" }] }), [{ key: "a", invoiceNumber: "1" }]);
+  assert.deepEqual(normalizeLinkedDocuments(undefined), []);
 });

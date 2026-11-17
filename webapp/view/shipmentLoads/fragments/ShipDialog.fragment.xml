@@ -1,6 +1,7 @@
 <core:FragmentDefinition
 	xmlns="sap.m"
 	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
 	xmlns:f="sap.ui.layout.form">
 	<Dialog
 		id="shipDialog"
@@ -10,32 +11,41 @@
 		busy="{ui>/busy}"
 		class="sapUiSizeCompact">
 		<content>
-			<Table
+			<t:Table
 				id="shipReleasesTable"
-				mode="SingleSelectLeft"
-				items="{shipReleases>/}"
-				growing="true"
-				growingThreshold="50"
-				noDataText="Nenhuma liberação de embarque com saldo para este produto e armazém.">
-				<columns>
-					<Column><Text text="Contrato"/></Column>
-					<Column><Text text="Fornecedor"/></Column>
-					<Column><Text text="Origem"/></Column>
-					<Column hAlign="End"><Text text="Saldo"/></Column>
-				</columns>
-				<items>
-					<ColumnListItem>
-						<cells>
-							<Text text="{shipReleases>PurchaseContractCode}"/>
-							<Text text="{shipReleases>FName}"/>
-							<Text text="{ path: 'shipReleases>Origin', formatter: '.formatter.releaseOriginText' }"/>
+				class="sapUiSizeCondensed"
+				selectionMode="Single"
+				selectionBehavior="RowSelector"
+				alternateRowColors="true"
+				visibleRowCountMode="Fixed"
+				visibleRowCount="6"
+				filter=".onShipReleasesFilterOrSort"
+				sort=".onShipReleasesFilterOrSort"
+				noData="Nenhuma liberação de embarque com saldo para este produto e armazém."
+				rows="{shipReleases>/}">
+				<t:columns>
+					<t:Column id="shipReleasesContractColumn" width="9rem" sortProperty="PurchaseContractCode" filterProperty="PurchaseContractCode">
+						<Label text="Contrato"/>
+						<t:template><Text text="{shipReleases>PurchaseContractCode}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column id="shipReleasesSupplierColumn" width="18rem" sortProperty="FName" filterProperty="FName">
+						<Label text="Fornecedor"/>
+						<t:template><Text text="{shipReleases>FName}" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column id="shipReleasesOriginColumn" width="12rem" sortProperty="Origin" filterProperty="Origin">
+						<Label text="Origem"/>
+						<t:template><Text text="{ path: 'shipReleases>Origin', formatter: '.formatter.releaseOriginText' }" wrapping="false"/></t:template>
+					</t:Column>
+					<t:Column id="shipReleasesBalanceColumn" width="10rem" hAlign="End" sortProperty="AvailableQuantity" filterProperty="AvailableQuantity" filterType="sap.ui.model.type.Float">
+						<Label text="Saldo"/>
+						<t:template>
 							<ObjectNumber
 								number="{ path: 'shipReleases>AvailableQuantity', type: 'sap.ui.model.type.Float', formatOptions: { maxFractionDigits: 3 } }"
 								unit="{shipReleases>UnitOfMeasureCode}"/>
-						</cells>
-					</ColumnListItem>
-				</items>
-			</Table>
+						</t:template>
+					</t:Column>
+				</t:columns>
+			</t:Table>
 			<f:Form id="shipForm" editable="true">
 				<f:layout>
 					<f:ColumnLayout columnsM="2" columnsL="2" columnsXL="2"/>

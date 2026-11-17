@@ -187,13 +187,15 @@ export default class Detail extends BaseController {
       },
     });
 
-    // Vínculo da NF do SAP (GAC-1226): o documento de saída nasce da NF; leva o usuário direto a ele.
+    // Vínculo de NFs do SAP (GAC-1226): um documento de saída por NF. Com um só, leva o usuário direto a ele; com
+    // vários, fica na carga atualizada.
     this._sapLink = new SapInvoiceLinkDialog({
       view: this.getView(),
+      registerTableLayouts: (root) => this.registerTableLayouts(root),
       onLinked: (created) => {
         this.refreshAll();
-        if (created?.key) {
-          this.navTo("salesInvoicesDetail", { id: created.key });
+        if (created.length === 1 && created[0].key) {
+          this.navTo("salesInvoicesDetail", { id: created[0].key });
         }
       },
     });
@@ -292,6 +294,8 @@ export default class Detail extends BaseController {
     }) as Promise<Dialog>).then((dialog) => {
       this.getView().addDependent(dialog);
       this._shipDialog = dialog;
+      // Ordem e largura das colunas da tabela de liberações por usuário (ids estáveis no fragmento).
+      this.registerTableLayouts(dialog);
       return dialog;
     });
     await this._shipDialogLoading;
@@ -305,7 +309,7 @@ export default class Detail extends BaseController {
       ItemCode: string; WarehouseCode: string;
     };
     const releases = this.getView().getModel("shipReleases") as JSONModel;
-    (this.byId("shipReleasesTable") as SapMTable | undefined)?.removeSelections(true);
+    (this.byId("shipReleasesTable") as Table | undefined)?.clearSelection();
     this._shipReleasesWarehouse = ship.WarehouseCode;
 
     if (!ship.ItemCode || !ship.WarehouseCode) {
@@ -341,8 +345,11 @@ export default class Detail extends BaseController {
         LoadKey: string; WarehouseCode: string; TruckDriverCode: string;
         TransactionDate: string; GrossWeight: string | number; Comments: string;
       };
-      const selected = (this.byId("shipReleasesTable") as SapMTable).getSelectedItem();
-      const releaseKey = selected?.getBindingContext("shipReleases")?.getProperty("ShipmentReleaseKey") as string;
+      // Seleção da sap.ui.table é por índice do binding: o contexto do índice é a linha que o usuário vê marcada.
+      const releasesTable = this.byId("shipReleasesTable") as Table;
+      const selectedIndex = releasesTable.getSelectedIndex();
+      const releaseKey = (selectedIndex < 0 ? undefined
+        : releasesTable.getContextByIndex(selectedIndex)?.getProperty("ShipmentReleaseKey")) as string;
 
       if (!releaseKey) {
         MessageBox.warning("Selecione a liberação de embarque.");
@@ -392,6 +399,11 @@ export default class Detail extends BaseController {
     }
   }
 
+  /** Filtrar/ordenar muda os índices do binding: limpa a seleção para não apontar para outra liberação. */
+  onShipReleasesFilterOrSort(): void {
+    (this.byId("shipReleasesTable") as Table | undefined)?.clearSelection();
+  }
+
   onCloseShip(): void {
     this._shipDialog.close();
   }
@@ -413,9 +425,11 @@ export default class Detail extends BaseController {
     const ctx = this.getView().getBindingContext() as Context;
     if (!ctx) return;
 
-    const fields: (keyof SapLinkLoad)[] = ["Key", "Code", "ItemCode"];
+    const fields: (keyof SapLinkLoad)[] = ["Key", "Code", "ItemCode", "AvailableQuantity"];
     const values = await ctx.requestProperty(fields as string[]) as unknown[];
     const load = Object.fromEntries(fields.map((f, i) => [f, values[i]])) as SapLinkLoad;
+    // Edm.Decimal pode vir como string: a soma das NFs é comparada como número.
+    load.AvailableQuantity = Number(load.AvailableQuantity) || 0;
     await this._sapLink.open(load);
   }
 
