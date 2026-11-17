@@ -13,9 +13,9 @@ import { CompanyHome } from "siagrob1/types/Company";
 type DashboardState = Partial<Dashboard> & {
   loading: boolean;
   loadedAt: string;
-  /** true em SAPB1 (endpoint responde 404): a home fica vazia, como antes do painel. */
+  /** true quando não há painel: SAPB1 ou empresa com o painel desligado. */
   hidden: boolean;
-  /** Empresa com o painel desligado: a home mostra só o logo. */
+  /** Sem painel (SAPB1 ou painel desligado): a home mostra só o logo. */
   logoUrl: string;
 };
 
@@ -45,8 +45,9 @@ export default class Main extends BaseController {
       return;
     }
 
+    // SAPB1 não tem painel (o Reports responde 404): a home mostra o logo, como a empresa com o painel desligado.
     if (SessionService.isSapMode()) {
-      model.setProperty("/hidden", true);
+      this.showLogo(model, await this.loadCompanyHome());
       return;
     }
 
@@ -55,9 +56,7 @@ export default class Main extends BaseController {
     // Painel desligado no cadastro da empresa: nem chama o Reports.
     const home = await this.loadCompanyHome();
     if (home.showHomeDashboard === false) {
-      // `?v=` evita o browser mostrar o logo antigo depois de uma troca no cadastro.
-      const logoUrl = home.hasLogo ? `${ServerRoutes.currentCompanyLogo}?v=${Date.now()}` : SIAGRO_LOGO;
-      model.setData({ loading: false, loadedAt: "", hidden: true, logoUrl } as DashboardState);
+      this.showLogo(model, home);
       return;
     }
 
@@ -74,6 +73,13 @@ export default class Main extends BaseController {
       // RequestModel.get é um jQuery.get cru: ninguém mais mostra o erro (revisão do branch).
       MessageBox.error("Não foi possível carregar o painel. Tente atualizar.");
     }
+  }
+
+  /** Home sem painel: só o logo da empresa (sem logo cadastrado, o do Siagro). */
+  private showLogo(model: JSONModel, home: Partial<CompanyHome>): void {
+    // `?v=` evita o browser mostrar o logo antigo depois de uma troca no cadastro.
+    const logoUrl = home.hasLogo ? `${ServerRoutes.currentCompanyLogo}?v=${Date.now()}` : SIAGRO_LOGO;
+    model.setData({ loading: false, loadedAt: "", hidden: true, logoUrl } as DashboardState);
   }
 
   /** Falha aqui não pode esconder o painel: segue o comportamento de antes (com painel). */
