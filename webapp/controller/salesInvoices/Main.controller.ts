@@ -10,17 +10,14 @@ import { BaseController } from "./BaseController";
 import MessageToast from "sap/m/MessageToast";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import Dialog from "sap/m/Dialog";
-import { Input$LiveChangeEvent } from "sap/m/Input";
 import Fragment from "sap/ui/core/Fragment";
-import { isEmittedNfeStatus, isManualTaxDocumentBlocked, canCancelNfe, canVoidNfeNumber, nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
+import { canCancelNfe, canVoidNfeNumber, nfeOutcomeMessage, NfeOutcome } from "siagrob1/helpers/NfeHelpers";
 import { openNfeCancelDialog } from "siagrob1/dialogs/NfeCancelDialog";
 import { runNfeVoidNumber } from "siagrob1/dialogs/NfeVoidNumberAction";
 import { sendJson, odataValue } from "siagrob1/helpers/FetchHelpers";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
 import Sorter from "sap/ui/model/Sorter";
 import { anyOfFilter } from "siagrob1/helpers/FilterHelpers";
-
-const NFE_KEY_LENGTH = 44;
 
 /** Um romaneio do documento que ainda pode ser devolvido — linha da grade do retorno. */
 interface ReturnableShipment {
@@ -60,8 +57,6 @@ export default class Main extends BaseController {
 
   formatter = formatter;
 
-  private _notaFiscalDialog: Dialog;
-
   private _returnDialog: Dialog;
 
   private _returnInvoiceKey: string;
@@ -74,6 +69,7 @@ export default class Main extends BaseController {
     // Status em múltipla seleção: abre com todos menos Cancelado (nenhum marcado = todos).
     this.createFilterModel({ InvoiceStatus: ["Pending", "Confirmed", "Returned"] });
     this.getView().setModel(new JSONModel([]), "branches");
+    this.initSapModeFlag();
 
     this.getRouter().getRoute("salesInvoices")
       .attachPatternMatched(() => {
@@ -83,9 +79,31 @@ export default class Main extends BaseController {
           void this.loadBranches();
         }
         void this.refreshStandaloneFlag().then(() => this.refreshAnyBranchIssuesNfe());
+        void this.applySapModeVisibility();
         this.applyFilters();
       });
 	}
+
+  /**
+   * As colunas de vínculo com o SAP (Doc. SAP, Canc. SAP pendente) só fazem sentido em SAPB1.
+   * `ui>/sapMode` nasce `false` UMA vez (no init), o que evita a armadilha do `visible` com binding
+   * indefinido (valeria true e exibiria as colunas até a resposta chegar). O route matched só grava o valor
+   * resolvido, sem voltar a `false` antes: zerar a cada entrada fazia as colunas piscarem.
+   * O modelo `ui` é do Component: no onInit a view ainda não o herdou, daí o fallback.
+   */
+  private initSapModeFlag(): void {
+    const uiModel = (this.getView()?.getModel("ui") ?? this.getOwnerComponent()?.getModel("ui")) as JSONModel;
+    if (uiModel && uiModel.getProperty("/sapMode") === undefined) {
+      uiModel.setProperty("/sapMode", false);
+    }
+  }
+
+  private async applySapModeVisibility(): Promise<void> {
+    const uiModel = this.getModel("ui") as JSONModel;
+
+    const systemInfo = await this.getSystemInfo();
+    uiModel.setProperty("/sapMode", systemInfo?.erp === "SAPB1");
+  }
 
   /**
    * O Select de Filial da FilterBar carrega a lista UMA vez num JSONModel, em vez de bind direto
@@ -277,166 +295,6 @@ export default class Main extends BaseController {
         })
         .finally(() => this.setBusy(false));
     }
-  }
-
-  async onNotaFiscal() {
-    const table = this.byId("tableSalesInvoices") as Table;
-    const selectedInvoice = table.getSelectedIndices();
-    if (selectedInvoice.length == 0){
-      MessageBox.warning("Selecione um registro.")
-      throw new Error("Selecione um registro");
-    }
-
-    const ctx = table.getContextByIndex(selectedInvoice[0]);
-
-    // Na filial que emite NF-e pelo Siagro, número/série/chave do documento Normal vêm da emissão
-    // (o servidor também recusa). A devolução própria (Devolver) também vem da emissão; as demais
-    // devoluções seguem manuais: o cliente emite a NF-e dele e o número é digitado.
-    // Fora do STANDALONE (SAPB1) a regra de tributação nem é consultada.
-    const nfeStatus = ctx.getProperty("NfeStatus") as string;
-    const invoiceType = ctx.getProperty("InvoiceType") as string;
-    const standalone = (this.getModel("ui") as JSONModel).getProperty("/standalone") === true;
-    const taxLocked = standalone && !isEmittedNfeStatus(nfeStatus)
-      ? await this.refreshTaxLock(ctx.getProperty("BranchCode") as string)
-      : false;
-
-    // O complemento de ICMS é emitido pelo Siagro como a devolução própria: número, série e chave vêm da emissão.
-    if (isManualTaxDocumentBlocked(nfeStatus, taxLocked, invoiceType,
-      ctx.getProperty("IsNfeReturn") === true || invoiceType === "IcmsComplement",
-      ctx.getProperty("TaxDocumentKind") as string)) {
-      MessageBox.information(isEmittedNfeStatus(nfeStatus)
-        ? "Número, série e chave deste documento vêm da emissão da NF-e pelo Siagro."
-        : "Na filial que emite NF-e pelo Siagro, número, série e chave do documento do tipo NF-e vêm da emissão.");
-      return;
-    }
-
-    this._notaFiscalDialog ??= await DialogHelper.createDialog(
-      this,
-      "siagrob1.view.salesInvoices.fragments.NotaFiscalDialog"
-    );
-    const viewModel = this.getModel("viewModel") as JSONModel;
-    viewModel.setData({
-      TaxDocumentNumber: ctx.getProperty("TaxDocumentNumber") as string,
-      TaxDocumentSeries: ctx.getProperty("TaxDocumentSeries") as string,
-      ChaveNFe: ctx.getProperty("ChaveNFe") as string,
-      WithoutTaxDocument: ctx.getProperty("WithoutTaxDocument") === true,
-      // Documento Normal do tipo "Outro" (talão, nota de papel) na filial que emite NF-e: não há
-      // chave de 44 dígitos de onde tirar número e série, então os dois são digitados. Fora desse
-      // caso continuam vindo só da chave.
-      ManualNumber: taxLocked === true && invoiceType === "Normal"
-        && ctx.getProperty("TaxDocumentKind") !== "Nfe",
-    });
-
-    void this.openNotaFiscalDialog();
-  }
-
-  /**
-   * Operação sem nota fiscal e nota fiscal se excluem: marcar a caixa esvazia os campos da NF
-   * (que ficam bloqueados), para o diálogo não exibir um número que não será gravado.
-   */
-  onWithoutTaxDocumentSelect() {
-    const viewModel = this.getModel("viewModel") as JSONModel;
-
-    if (viewModel.getProperty("/WithoutTaxDocument") !== true) return;
-
-    viewModel.setProperty("/ChaveNFe", "");
-    viewModel.setProperty("/TaxDocumentSeries", "");
-    viewModel.setProperty("/TaxDocumentNumber", "");
-  }
-
-  private openNotaFiscalDialog(){
-    this._notaFiscalDialog?.open();
-  }
-
-  onCloseNotaFiscalDialog() {
-    this._notaFiscalDialog?.close();
-  }
-
-  /**
-   * A chave de acesso da NF-e tem layout fixo de 44 dígitos, com série e número em posições
-   * conhecidas — digitar só a chave já basta para preencher o resto do formulário.
-   */
-  onChaveNFeLiveChange(ev: Input$LiveChangeEvent) {
-    const viewModel = this.getModel("viewModel") as JSONModel;
-    const chave = (ev.getParameter("value") || "").replace(/\D/g, "");
-
-    // Número e série são somente leitura (fora o tipo "Outro", ver ManualNumber): a chave é a origem deles, então enquanto ela
-    // estiver incompleta os dois ficam em branco em vez de manter um valor órfão.
-    if (chave.length !== NFE_KEY_LENGTH) {
-      viewModel.setProperty("/TaxDocumentSeries", "");
-      viewModel.setProperty("/TaxDocumentNumber", "");
-      return;
-    }
-
-    // Série e número são gravados como estão na chave, zero-preenchidos (série 001, número
-    // 000000167) — é assim que o usuário informa manualmente.
-    viewModel.setProperty("/TaxDocumentSeries", chave.substring(22, 25));
-    viewModel.setProperty("/TaxDocumentNumber", chave.substring(25, 34));
-  }
-
-  onNotaFiscalConfirm() {
-    const viewModel = this.getModel("viewModel") as JSONModel;
-
-    if (viewModel.getProperty("/WithoutTaxDocument") === true) {
-      this.sendDocumentNumber(
-        "", "", "", true, "Documento de saída marcado como operação sem nota fiscal.");
-      return;
-    }
-
-    const notaFiscal = ((viewModel.getProperty("/TaxDocumentNumber") as string) || "").trim();
-    const serie = ((viewModel.getProperty("/TaxDocumentSeries") as string) || "").trim();
-    const chaveNfe = ((viewModel.getProperty("/ChaveNFe") as string) || "").trim();
-
-    if (!notaFiscal || !serie) {
-      MessageBox.warning("Preencha corretamente o formulário.");
-      return;
-    }
-
-    this.sendDocumentNumber(notaFiscal, serie, chaveNfe, false, "Documento de saída atualizado com sucesso.");
-  }
-
-  /**
-   * Limpar é a mesma action com os três campos em branco: o backend já normaliza vazio para
-   * null, então não há uma segunda regra de negócio a manter aqui. Também desmarca a operação
-   * sem nota fiscal — o documento volta a aparecer no filtro "Sem Nota Fiscal".
-   */
-  async onNotaFiscalClear() {
-    if (!await DialogHelper.confirmDialog(
-      "Limpar nota fiscal, série, chave de acesso e a marcação de operação sem nota fiscal deste documento ?"))
-      return;
-
-    this.sendDocumentNumber("", "", "", false, "Dados da nota fiscal removidos com sucesso.");
-  }
-
-  private sendDocumentNumber(
-    documentNumber: string, documentSeries: string, chaveNFe: string,
-    withoutTaxDocument: boolean, successMessage: string
-  ) {
-    const viewModel = this.getModel("viewModel") as JSONModel;
-    const table = this.byId("tableSalesInvoices") as Table;
-    const selectedInvoice = table.getSelectedIndices();
-
-    const ctx = table.getContextByIndex(selectedInvoice[0]) as Context;
-
-    const oModel = ctx.getModel() as ODataModel;
-    const action = oModel.bindContext("/SalesInvoicesSetDocumentNumber(...)")
-    action.setParameter("Key", ctx.getProperty("Key"));
-    action.setParameter("DocumentNumber", documentNumber);
-    action.setParameter("DocumentSeries", documentSeries);
-    action.setParameter("ChaveNFe", chaveNFe);
-    // SEMPRE boolean, nunca undefined: JSON.stringify omite chave undefined e o OData rejeita o
-    // corpo inteiro por parâmetro faltando, sem dizer qual.
-    action.setParameter("WithoutTaxDocument", withoutTaxDocument);
-
-    this.setBusy(true);
-    void action.invoke()
-      .then(() => {
-        this.onCloseNotaFiscalDialog();
-        viewModel.setData({});
-        MessageToast.show(successMessage);
-        this.refreshData();
-      })
-      .finally(() => this.setBusy(false));
   }
 
   /**

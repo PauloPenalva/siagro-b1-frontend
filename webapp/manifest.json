@@ -1074,6 +1074,11 @@
           "target": "emailSettings"
         },
         {
+          "pattern": "sap-integration-settings",
+          "name": "sapIntegrationSettings",
+          "target": "sapIntegrationSettings"
+        },
+        {
           "pattern": "usages",
           "name": "usages",
           "target": "usages"
@@ -2858,6 +2863,12 @@
           "id": "emailSettings",
           "level": 1,
           "name": "siagrob1.view.emailSettings.Main",
+          "clearControlAggregation": true
+        },
+        "sapIntegrationSettings": {
+          "id": "sapIntegrationSettings",
+          "level": 1,
+          "name": "siagrob1.view.sapIntegrationSettings.Main",
           "clearControlAggregation": true
         },
         "usages": {

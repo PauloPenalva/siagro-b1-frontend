@@ -12,6 +12,7 @@ import Table from "sap/ui/table/Table";
 import SearchField from "sap/m/SearchField";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import ServerRoutes from "siagrob1/model/ServerRoutes";
+import SessionService from "siagrob1/services/SessionService";
 import { filterBillingReleases } from "siagrob1/helpers/BillingReleaseSearch";
 
 /** Carga a faturar — os campos que o diálogo usa. */
@@ -73,6 +74,11 @@ type BillingForm = {
   TaxDocumentKind?: string,
   /** Só exibição — a filial da carga emite NF-e pelo Siagro (TaxCalculationGate). */
   TaxLocked?: boolean,
+  /**
+   * Só exibição — integração SAP Business One: o Faturar gera sempre documento "Sem NF" (tipo Other) e a nota
+   * fiscal vem do vínculo com a NF do SAP (GAC-1226). Esconde o Select de tipo e mostra o aviso.
+   */
+  SapMode?: boolean,
   /** Chave da carga faturada — substitui `SalesTransactions` no payload. */
   ShipmentLoadKey?: string,
   ShipmentLoadCode?: string,
@@ -101,11 +107,15 @@ type FiscalComplement = {
 }
 
 /** Liberação de entrega de venda selecionada, usada na montagem do documento de saída. */
-type BilledRelease = {
+export type BilledRelease = {
   SalesShipmentReleaseKey?: string,
   SalesContractKey?: string,
   SalesContractCode?: string,
+  Complement?: string,
   CardCode?: string,
+  CardName?: string,
+  DeliveryLocationCode?: string,
+  DeliveryLocationName?: string,
   Price?: string | number,
   UnitOfMeasureCode?: string,
   AvailableQuantity?: string | number,
@@ -113,6 +123,18 @@ type BilledRelease = {
   CommercialPrice?: string | number,
   /** Só exibição — acompanha CommercialPrice. */
   CommercialUnitOfMeasureCode?: string,
+}
+
+/**
+ * Liberações de venda disponíveis do item (function OData, resposta é array cru sem envelope). Compartilhada com o
+ * diálogo de vínculo da NF do SAP, que oferece as mesmas liberações do faturamento.
+ */
+export async function requestAvailableSalesReleases(model: ODataModel, itemCode: string): Promise<BilledRelease[]> {
+  const func = model.bindContext("/SalesShipmentReleasesGetAvailable(...)");
+  func.setParameter("ItemCode", itemCode);
+  await func.invoke();
+  const data = func.getBoundContext().getObject() as unknown;
+  return Array.isArray(data) ? data as BilledRelease[] : [];
 }
 
 /**
@@ -161,6 +183,9 @@ export default class ShipmentBillingDialog {
     const contractsTable = this.host.view.byId("shipmentBillingSalesContractsTable") as Table;
     const billingModel = this.host.view.getModel("billing") as JSONModel;
 
+    // Em SAPB1 o Faturar só gera documento "Sem NF" (tipo Other); em STANDALONE nada muda.
+    const sapMode = SessionService.isSapMode();
+
     billingModel.setData({
       // Emissão sugerida = hoje (a NF-e recusa outra data). ISO completo: o campo é DateTimeOffset,
       // mesmo padrão de salesInvoices/Add.
@@ -181,8 +206,9 @@ export default class ShipmentBillingDialog {
       TruckingCompanyName: load.CarrierName,
       FreightTerms: "",
       BranchCode: load.BranchCode,
-      TaxDocumentKind: "Nfe",
+      TaxDocumentKind: sapMode ? "Other" : "Nfe",
       TaxLocked: false,
+      SapMode: sapMode,
       FiscalComplement: null,
       FiscalContractKey: "",
       FiscalContractCode: "",
@@ -443,15 +469,11 @@ export default class ShipmentBillingDialog {
 
   private async loadAvailableReleases(itemCode: string): Promise<void> {
     const model = this.host.view.getModel() as ODataModel;
-    const func = model.bindContext("/SalesShipmentReleasesGetAvailable(...)");
-    func.setParameter("ItemCode", itemCode);
 
     this.host.setBusy(true);
     try {
-      await func.invoke();
       const releasesModel = this.host.view.getModel("billingReleases") as JSONModel;
-      const data = func.getBoundContext().getObject() as unknown;
-      this._allReleases = Array.isArray(data) ? data as BilledRelease[] : [];
+      this._allReleases = await requestAvailableSalesReleases(model, itemCode);
       releasesModel.setData(this._allReleases);
     } finally {
       this.host.setBusy(false);

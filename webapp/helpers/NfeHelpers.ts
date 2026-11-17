@@ -147,23 +147,6 @@ export function nfeOutcomeMessage(outcome: NfeOutcome): { type: "success" | "war
     : message;
 }
 
-/** NF-e já emitida (em processamento, autorizada, rejeitada, denegada ou cancelada). Nulo/None = nunca emitida. */
-export function isEmittedNfeStatus(nfeStatus?: string): boolean {
-  return !!nfeStatus && nfeStatus !== "None";
-}
-
-/**
- * "Informar Nota Fiscal" manual não vale quando a NF-e já foi emitida, no documento Normal do tipo NF-e de filial
- * que emite pelo Siagro, nem na devolução própria (criada pelo Devolver, sai com NF-e do Siagro). O documento Normal
- * do tipo Outro (papel/talão) e as demais devoluções seguem manuais.
- */
-export function isManualTaxDocumentBlocked(
-  nfeStatus: string, taxLocked: boolean, invoiceType: string, isNfeReturn = false, taxDocumentKind = "Nfe"
-): boolean {
-  return isEmittedNfeStatus(nfeStatus) || isNfeReturn === true
-    || (taxLocked === true && invoiceType === "Normal" && taxDocumentKind === "Nfe");
-}
-
 /** Campos do cabeçalho (entrada ou saída) que nomeiam o DANFE. */
 export type DanfeDocument = { ChaveNFe: string; TaxDocumentNumber: string; TaxDocumentSeries: string };
 

@@ -162,15 +162,21 @@
 						text="TER"
 					/>
 				</Select>
-				<Label text="Tipo de documento" visible="{= ${billing>/TaxLocked} === true }" />
+				<Label text="Tipo de documento" visible="{= ${billing>/TaxLocked} === true &amp;&amp; ${billing>/SapMode} !== true }" />
 				<Select
-					visible="{= ${billing>/TaxLocked} === true }"
+					visible="{= ${billing>/TaxLocked} === true &amp;&amp; ${billing>/SapMode} !== true }"
 					forceSelection="false"
 					selectedKey="{billing>/TaxDocumentKind}"
 				>
 					<core:Item key="Nfe" text="NF-e (eletrônica)" />
 					<core:Item key="Other" text="Outro (papel/talão…)" />
 				</Select>
+				<!-- GAC-1226: com integração SAP o Faturar nunca emite NF-e; a nota vem do vínculo com a NF do SAP. -->
+				<MessageStrip
+					type="Information"
+					showIcon="true"
+					text="Com integração SAP, o Faturar gera documento sem NF-e. Para nota fiscal use Vincular NF do SAP."
+					visible="{= ${billing>/SapMode} === true }" />
         
 
         <!-- Complemento fiscal do contrato da liberação escolhida (só filial que emite NF-e) -->

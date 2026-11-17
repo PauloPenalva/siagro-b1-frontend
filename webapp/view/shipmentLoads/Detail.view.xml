@@ -36,6 +36,11 @@
 						type="Emphasized"
 						press=".onBill"
 						visible="{= ${path: 'LoadType', targetType: 'any'} === 'Normal' &amp;&amp; (${path: 'Status', targetType: 'any'} === 'Open' || ${path: 'Status', targetType: 'any'} === 'PartiallyInvoiced') &amp;&amp; +${path: 'AvailableQuantity', targetType: 'any'} > 0 }"/>
+					<!-- GAC-1226: só em SAPB1 (flag iniciada false no controller); mesma condição do Faturar. -->
+					<Button
+						text="Vincular NF do SAP"
+						press=".onLinkSapInvoice"
+						visible="{= ${ui>/sapInvoiceLinkVisible} === true &amp;&amp; ${path: 'LoadType', targetType: 'any'} === 'Normal' &amp;&amp; (${path: 'Status', targetType: 'any'} === 'Open' || ${path: 'Status', targetType: 'any'} === 'PartiallyInvoiced') &amp;&amp; +${path: 'AvailableQuantity', targetType: 'any'} > 0 }"/>
 					<Button
 						text="Recalcular Saldo"
 						type="Transparent"
@@ -403,7 +408,7 @@
 								selectionMode="None"
 								class="sapUiSizeCondensed"
 								visibleRowCount="6"
-								rows="{ path: 'Invoices', parameters: { '$$ownRequest': true } }">
+								rows="{ path: 'Invoices', parameters: { '$$ownRequest': true, '$select': 'SapDocNum,SapCancelPending,SapCancelPendingReason' } }">
 								<t:columns>
 									<t:Column label="Número" width="9rem">
 										<t:template><Text text="{InvoiceNumber}" wrapping="false"/></t:template>
@@ -420,6 +425,9 @@
 											<Text wrapping="false" text="{ path: 'InvoiceType', targetType: 'any', formatter: '.formatter.formatSalesInvoiceType' }"/>
 										</t:template>
 									</t:Column>
+									<t:Column label="Doc. SAP" hAlign="Center" width="7rem" visible="{= ${path: 'ui>/sapMode', targetType: 'any'} === true }">
+										<t:template><Text text="{path: 'SapDocNum', targetType: 'any'}" wrapping="false"/></t:template>
+									</t:Column>
 									<t:Column label="Status" hAlign="Center" width="14rem">
 										<t:template>
 											<!-- GAC-1171 (rateio): nota Confirmada com parte devolvida pela Recusa. -->
@@ -433,6 +441,14 @@
 													state="Warning"
 													text="Dev. parcial"
 													visible="{ parts: [ { path: 'InvoiceStatus', targetType: 'any' }, { path: 'ReturnedQuantity', targetType: 'any' } ], formatter: '.formatter.isPartiallyReturned' }"/>
+												<!-- GAC-1226: o SAP cancelou a NF vinculada; o cancelamento aqui é do usuário.
+												     targetType any: o Boolean OData chegaria como texto localizado, sempre truthy. -->
+												<ObjectStatus
+													class="sapUiTinyMarginBegin"
+													state="Error"
+													text="Canc. SAP pendente"
+													tooltip="{SapCancelPendingReason}"
+													visible="{= ${path: 'ui>/sapMode', targetType: 'any'} === true &amp;&amp; ${path: 'SapCancelPending', targetType: 'any'} === true }"/>
 											</HBox>
 										</t:template>
 									</t:Column>

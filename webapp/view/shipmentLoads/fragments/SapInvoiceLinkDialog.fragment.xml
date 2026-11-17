@@ -1,0 +1,139 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	core:require="{
+		formatter: 'siagrob1/model/formatter'
+	}">
+	<Dialog
+		id="sapLinkDialog"
+		title="Vincular NF do SAP"
+		class="sapUiSizeCompact"
+		contentWidth="75rem"
+		resizable="true"
+		draggable="true"
+		busyIndicatorDelay="0">
+		<content>
+			<VBox class="sapUiSmallMargin">
+				<HBox alignItems="End" wrap="Wrap">
+					<VBox class="sapUiSmallMarginEnd">
+						<Label text="De" labelFor="sapLinkDateFrom"/>
+						<DatePicker
+							id="sapLinkDateFrom"
+							width="10rem"
+							valueFormat="yyyy-MM-dd"
+							displayFormat="dd/MM/yyyy"
+							value="{sapLink>/DateFrom}"/>
+					</VBox>
+					<VBox class="sapUiSmallMarginEnd">
+						<Label text="Até" labelFor="sapLinkDateTo"/>
+						<DatePicker
+							id="sapLinkDateTo"
+							width="10rem"
+							valueFormat="yyyy-MM-dd"
+							displayFormat="dd/MM/yyyy"
+							value="{sapLink>/DateTo}"/>
+					</VBox>
+					<Button text="Buscar" icon="sap-icon://search" press=".onSearch"/>
+				</HBox>
+
+				<Table
+					id="sapLinkInvoicesTable"
+					class="sapUiSmallMarginTop"
+					mode="SingleSelectLeft"
+					growing="true"
+					growingThreshold="50"
+					selectionChange=".onInvoiceSelect"
+					noDataText="Nenhuma nota fiscal do SAP com quantidade igual ao saldo da carga neste período."
+					items="{ path: 'sapLink>/Invoices' }">
+					<headerToolbar>
+						<Toolbar><Title text="Notas fiscais do SAP"/></Toolbar>
+					</headerToolbar>
+					<columns>
+						<Column width="7rem"><Text text="Data"/></Column>
+						<Column width="10rem"><Text text="NF / Série"/></Column>
+						<Column><Text text="Cliente"/></Column>
+						<Column hAlign="End" width="9rem"><Text text="Quantidade (kg)"/></Column>
+						<Column hAlign="End" width="8rem"><Text text="Preço"/></Column>
+						<Column hAlign="End" width="9rem"><Text text="Total"/></Column>
+						<Column width="9rem"><Text text="Transportadora"/></Column>
+					</columns>
+					<items>
+						<ColumnListItem>
+							<cells>
+								<Text text="{sapLink>DocDateText}" wrapping="false"/>
+								<Text text="{sapLink>TaxDocumentNumber} / {sapLink>TaxDocumentSeries}" wrapping="false"/>
+								<Text text="({sapLink>CardCode}) {sapLink>CardName}" wrapping="false"/>
+								<Text
+									text="{ path: 'sapLink>Quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+									wrapping="false"/>
+								<Text
+									text="{ path: 'sapLink>UnitPrice', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+									wrapping="false"/>
+								<Text
+									text="{ path: 'sapLink>LineTotal', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+									wrapping="false"/>
+								<HBox alignItems="Center">
+									<Text text="{sapLink>CarrierCode}" wrapping="false"/>
+									<core:Icon
+										class="sapUiTinyMarginBegin"
+										src="sap-icon://alert"
+										color="Critical"
+										tooltip="Transportadora da NF diferente da carga"
+										visible="{= ${path: 'sapLink>CarrierMismatch', targetType: 'any'} === true }"/>
+								</HBox>
+							</cells>
+						</ColumnListItem>
+					</items>
+				</Table>
+
+				<Table
+					id="sapLinkReleasesTable"
+					class="sapUiMediumMarginTop"
+					mode="SingleSelectLeft"
+					selectionChange=".onReleaseSelect"
+					noDataText="Nenhuma liberação de entrega disponível para o cliente da nota fiscal."
+					items="{ path: 'sapLink>/Releases' }">
+					<headerToolbar>
+						<Toolbar><Title text="Liberação de entrega"/></Toolbar>
+					</headerToolbar>
+					<columns>
+						<Column width="7rem"><Text text="Contrato"/></Column>
+						<Column width="9rem"><Text text="Compl."/></Column>
+						<Column><Text text="Cliente"/></Column>
+						<Column width="15rem"><Text text="Armazém"/></Column>
+						<Column hAlign="End" width="8rem"><Text text="Preço Unit."/></Column>
+						<Column hAlign="End" width="9rem"><Text text="Saldo"/></Column>
+						<Column width="4rem"><Text text="Um"/></Column>
+					</columns>
+					<items>
+						<ColumnListItem>
+							<cells>
+								<Text text="{sapLink>SalesContractCode}" wrapping="false"/>
+								<Text text="{sapLink>Complement}" wrapping="false"/>
+								<Text text="({sapLink>CardCode}) {sapLink>CardName}" wrapping="false"/>
+								<Text text="({sapLink>DeliveryLocationCode}) {sapLink>DeliveryLocationName}" wrapping="false"/>
+								<ObjectNumber
+									number="{
+										parts: [{path: 'sapLink>CommercialPrice'}, {path: 'sapLink>Price'}],
+										formatter: 'formatter.formatCommercialOrKgPrice'
+									}"/>
+								<Text
+									text="{ path: 'sapLink>AvailableQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
+									wrapping="false"/>
+								<Text text="{sapLink>UnitOfMeasureCode}" wrapping="false"/>
+							</cells>
+						</ColumnListItem>
+					</items>
+				</Table>
+			</VBox>
+		</content>
+		<buttons>
+			<Button
+				text="Vincular"
+				type="Emphasized"
+				enabled="{= ${sapLink>/CanLink} === true }"
+				press=".onLink"/>
+			<Button text="Cancelar" press=".onCancel"/>
+		</buttons>
+	</Dialog>
+</core:FragmentDefinition>
