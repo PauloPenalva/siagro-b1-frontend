@@ -1,0 +1,144 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table">
+	<Dialog
+		id="sapReturnLinkDialog"
+		title="Vincular NF de devolução"
+		class="sapUiSizeCompact"
+		contentWidth="78rem"
+		resizable="true"
+		draggable="true"
+		busyIndicatorDelay="0">
+		<content>
+			<VBox class="sapUiSmallMargin">
+				<ObjectStatus
+					class="sapUiSmallMarginBottom"
+					title="Documento"
+					text="{sapReturnLink>/ReturnText}"/>
+				<HBox alignItems="End" wrap="Wrap">
+					<VBox class="sapUiSmallMarginEnd">
+						<Label text="De" labelFor="sapReturnLinkDateFrom"/>
+						<DatePicker
+							id="sapReturnLinkDateFrom"
+							width="10rem"
+							valueFormat="yyyy-MM-dd"
+							displayFormat="dd/MM/yyyy"
+							value="{sapReturnLink>/DateFrom}"/>
+					</VBox>
+					<VBox class="sapUiSmallMarginEnd">
+						<Label text="Até" labelFor="sapReturnLinkDateTo"/>
+						<DatePicker
+							id="sapReturnLinkDateTo"
+							width="10rem"
+							valueFormat="yyyy-MM-dd"
+							displayFormat="dd/MM/yyyy"
+							value="{sapReturnLink>/DateTo}"/>
+					</VBox>
+					<Button text="Buscar" icon="sap-icon://search" press=".onSearch"/>
+				</HBox>
+
+				<t:Table
+					id="sapReturnLinkTable"
+					class="sapUiSmallMarginTop sapUiSizeCondensed"
+					selectionMode="Single"
+					selectionBehavior="RowSelector"
+					alternateRowColors="true"
+					visibleRowCountMode="Fixed"
+					visibleRowCount="8"
+					rowSelectionChange=".onSelect"
+					filter=".onFilterOrSort"
+					sort=".onFilterOrSort"
+					noData="Nenhuma NF de devolução do SAP disponível para esta devolução neste período."
+					rows="{ path: 'sapReturnLink>/CreditMemos' }">
+					<t:extension>
+						<Toolbar><Title text="Notas fiscais de devolução do SAP"/></Toolbar>
+					</t:extension>
+					<t:columns>
+						<t:Column id="sapReturnLinkDateColumn" width="7rem" sortProperty="DocDateSort" filterProperty="DocDateText">
+							<Label text="Emissão"/>
+							<t:template>
+								<Text text="{sapReturnLink>DocDateText}" wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapReturnLinkNumberColumn" width="10rem" sortProperty="InvoiceText" filterProperty="InvoiceText">
+							<Label text="NF / Série"/>
+							<t:template>
+								<Text text="{sapReturnLink>InvoiceText}" wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapReturnLinkDocNumColumn" width="6rem" hAlign="End" sortProperty="DocNum" filterProperty="DocNum" filterType="sap.ui.model.type.Integer">
+							<Label text="Doc. SAP"/>
+							<t:template>
+								<Text text="{ path: 'sapReturnLink>DocNum', type: 'sap.ui.model.type.Integer', formatOptions: { groupingEnabled: false } }" wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapReturnLinkCustomerColumn" width="15rem" sortProperty="CustomerText" filterProperty="CustomerText">
+							<Label text="Cliente"/>
+							<t:template>
+								<Text text="{sapReturnLink>CustomerText}" wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapReturnLinkQuantityColumn" width="10rem" hAlign="End" sortProperty="Quantity" filterProperty="Quantity" filterType="sap.ui.model.type.Float">
+							<Label text="Quantidade (kg)"/>
+							<t:template>
+								<HBox alignItems="Center" justifyContent="End">
+									<core:Icon
+										class="sapUiTinyMarginEnd"
+										src="sap-icon://alert"
+										color="Critical"
+										tooltip="Quantidade diferente da devolução"
+										visible="{= ${sapReturnLink>QuantityMatches} !== true }"/>
+									<Text text="{ path: 'sapReturnLink>Quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" wrapping="false"/>
+								</HBox>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapReturnLinkTotalColumn" width="9rem" hAlign="End" sortProperty="LineTotal" filterProperty="LineTotal" filterType="sap.ui.model.type.Float">
+							<Label text="Valor"/>
+							<t:template>
+								<Text text="{ path: 'sapReturnLink>LineTotal', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapReturnLinkCfopColumn" width="5rem" sortProperty="Cfop" filterProperty="Cfop">
+							<Label text="CFOP"/>
+							<t:template>
+								<Text text="{sapReturnLink>Cfop}" wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapReturnLinkUsageColumn" width="13rem" sortProperty="UsageText" filterProperty="UsageText">
+							<Label text="Natureza"/>
+							<t:template>
+								<Text text="{sapReturnLink>UsageText}" wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapReturnLinkOriginColumn" width="9rem" sortProperty="MatchesOrigin">
+							<Label text="Ref. NF de origem" tooltip="A nota referencia a NF de venda que originou esta devolução"/>
+							<t:template>
+								<ObjectStatus
+									text="Sim"
+									state="Success"
+									icon="sap-icon://accept"
+									visible="{= ${sapReturnLink>MatchesOrigin} === true }"/>
+							</t:template>
+						</t:Column>
+					</t:columns>
+					<t:footer>
+						<ObjectStatus
+							text="A quantidade da nota escolhida é diferente da quantidade da devolução."
+							state="Error"
+							icon="sap-icon://error"
+							visible="{= ${sapReturnLink>/QuantityDiffers} === true }"/>
+					</t:footer>
+				</t:Table>
+			</VBox>
+		</content>
+		<buttons>
+			<Button
+				text="Vincular"
+				type="Emphasized"
+				enabled="{= ${sapReturnLink>/CanLink} === true }"
+				press=".onLink"/>
+			<Button text="Cancelar" press=".onCancel"/>
+		</buttons>
+	</Dialog>
+</core:FragmentDefinition>
