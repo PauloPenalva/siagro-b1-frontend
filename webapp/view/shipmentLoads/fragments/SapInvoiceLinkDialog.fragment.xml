@@ -1,6 +1,7 @@
 <core:FragmentDefinition
 	xmlns="sap.m"
 	xmlns:core="sap.ui.core"
+	xmlns:t="sap.ui.table"
 	core:require="{
 		formatter: 'siagrob1/model/formatter'
 	}">
@@ -36,42 +37,62 @@
 					<Button text="Buscar" icon="sap-icon://search" press=".onSearch"/>
 				</HBox>
 
-				<Table
+				<t:Table
 					id="sapLinkInvoicesTable"
-					class="sapUiSmallMarginTop"
-					mode="SingleSelectLeft"
-					growing="true"
-					growingThreshold="50"
-					selectionChange=".onInvoiceSelect"
-					noDataText="Nenhuma nota fiscal do SAP com quantidade igual ao saldo da carga neste período."
-					items="{ path: 'sapLink>/Invoices' }">
-					<headerToolbar>
+					class="sapUiSmallMarginTop sapUiSizeCondensed"
+					selectionMode="MultiToggle"
+					selectionBehavior="RowSelector"
+					alternateRowColors="true"
+					visibleRowCountMode="Fixed"
+					visibleRowCount="8"
+					rowSelectionChange=".onInvoiceSelect"
+					filter=".onInvoicesFilterOrSort"
+					sort=".onInvoicesFilterOrSort"
+					noData="Nenhuma nota fiscal do SAP disponível para esta carga neste período."
+					rows="{ path: 'sapLink>/Invoices' }">
+					<t:extension>
 						<Toolbar><Title text="Notas fiscais do SAP"/></Toolbar>
-					</headerToolbar>
-					<columns>
-						<Column width="7rem"><Text text="Data"/></Column>
-						<Column width="10rem"><Text text="NF / Série"/></Column>
-						<Column><Text text="Cliente"/></Column>
-						<Column hAlign="End" width="9rem"><Text text="Quantidade (kg)"/></Column>
-						<Column hAlign="End" width="8rem"><Text text="Preço"/></Column>
-						<Column hAlign="End" width="9rem"><Text text="Total"/></Column>
-						<Column width="9rem"><Text text="Transportadora"/></Column>
-					</columns>
-					<items>
-						<ColumnListItem>
-							<cells>
+					</t:extension>
+					<t:columns>
+						<t:Column id="sapLinkInvoicesDateColumn" width="7rem" sortProperty="DocDateSort" filterProperty="DocDateText">
+							<Label text="Data"/>
+							<t:template>
 								<Text text="{sapLink>DocDateText}" wrapping="false"/>
-								<Text text="{sapLink>TaxDocumentNumber} / {sapLink>TaxDocumentSeries}" wrapping="false"/>
-								<Text text="({sapLink>CardCode}) {sapLink>CardName}" wrapping="false"/>
-								<Text
-									text="{ path: 'sapLink>Quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
-									wrapping="false"/>
-								<Text
-									text="{ path: 'sapLink>UnitPrice', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
-									wrapping="false"/>
-								<Text
-									text="{ path: 'sapLink>LineTotal', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
-									wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapLinkInvoicesNumberColumn" width="10rem" sortProperty="InvoiceText" filterProperty="InvoiceText">
+							<Label text="NF / Série"/>
+							<t:template>
+								<Text text="{sapLink>InvoiceText}" wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapLinkInvoicesCustomerColumn" width="16rem" sortProperty="CustomerText" filterProperty="CustomerText">
+							<Label text="Cliente"/>
+							<t:template>
+								<Text text="{sapLink>CustomerText}" wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapLinkInvoicesQuantityColumn" width="9rem" hAlign="End" sortProperty="Quantity" filterProperty="Quantity" filterType="sap.ui.model.type.Float">
+							<Label text="Quantidade (kg)"/>
+							<t:template>
+								<Text text="{ path: 'sapLink>Quantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapLinkInvoicesPriceColumn" width="8rem" hAlign="End" sortProperty="UnitPrice" filterProperty="UnitPrice" filterType="sap.ui.model.type.Float">
+							<Label text="Preço"/>
+							<t:template>
+								<Text text="{ path: 'sapLink>UnitPrice', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapLinkInvoicesTotalColumn" width="9rem" hAlign="End" sortProperty="LineTotal" filterProperty="LineTotal" filterType="sap.ui.model.type.Float">
+							<Label text="Total"/>
+							<t:template>
+								<Text text="{ path: 'sapLink>LineTotal', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapLinkInvoicesCarrierColumn" width="9rem" sortProperty="CarrierCode" filterProperty="CarrierCode">
+							<Label text="Transportadora"/>
+							<t:template>
 								<HBox alignItems="Center">
 									<Text text="{sapLink>CarrierCode}" wrapping="false"/>
 									<core:Icon
@@ -79,52 +100,103 @@
 										src="sap-icon://alert"
 										color="Critical"
 										tooltip="Transportadora da NF diferente da carga"
-										visible="{= ${path: 'sapLink>CarrierMismatch', targetType: 'any'} === true }"/>
+										visible="{= ${sapLink>CarrierMismatch} === true }"/>
 								</HBox>
-							</cells>
-						</ColumnListItem>
-					</items>
-				</Table>
+							</t:template>
+						</t:Column>
+					</t:columns>
+					<t:footer>
+						<HBox alignItems="Center" wrap="Wrap">
+							<ObjectStatus
+								text="{sapLink>/SummaryText}"
+								state="{= ${sapLink>/SumExceeds} === true ? 'Error' : (${sapLink>/SumBelow} === true ? 'Warning' : (${sapLink>/SumMatches} === true ? 'Success' : 'None')) }"/>
+							<ObjectStatus
+								class="sapUiSmallMarginBegin"
+								text="A soma das notas fiscais é maior que o saldo da carga."
+								state="Error"
+								icon="sap-icon://error"
+								visible="{= ${sapLink>/SumExceeds} === true }"/>
+							<ObjectStatus
+								class="sapUiSmallMarginBegin"
+								text="A soma das notas fiscais é menor que o saldo da carga."
+								state="Warning"
+								icon="sap-icon://message-warning"
+								visible="{= ${sapLink>/SumBelow} === true }"/>
+							<ObjectStatus
+								class="sapUiSmallMarginBegin"
+								text="Selecione notas fiscais do mesmo cliente."
+								state="Error"
+								icon="sap-icon://error"
+								visible="{= ${sapLink>/MixedCustomers} === true }"/>
+						</HBox>
+					</t:footer>
+				</t:Table>
 
-				<Table
+				<t:Table
 					id="sapLinkReleasesTable"
-					class="sapUiMediumMarginTop"
-					mode="SingleSelectLeft"
-					selectionChange=".onReleaseSelect"
-					noDataText="Nenhuma liberação de entrega disponível para o cliente da nota fiscal."
-					items="{ path: 'sapLink>/Releases' }">
-					<headerToolbar>
+					class="sapUiMediumMarginTop sapUiSizeCondensed"
+					selectionMode="Single"
+					selectionBehavior="RowSelector"
+					alternateRowColors="true"
+					visibleRowCountMode="Fixed"
+					visibleRowCount="5"
+					rowSelectionChange=".onReleaseSelect"
+					filter=".onReleasesFilterOrSort"
+					sort=".onReleasesFilterOrSort"
+					noData="Nenhuma liberação de entrega disponível para o cliente da nota fiscal."
+					rows="{ path: 'sapLink>/Releases' }">
+					<t:extension>
 						<Toolbar><Title text="Liberação de entrega"/></Toolbar>
-					</headerToolbar>
-					<columns>
-						<Column width="7rem"><Text text="Contrato"/></Column>
-						<Column width="9rem"><Text text="Compl."/></Column>
-						<Column><Text text="Cliente"/></Column>
-						<Column width="15rem"><Text text="Armazém"/></Column>
-						<Column hAlign="End" width="8rem"><Text text="Preço Unit."/></Column>
-						<Column hAlign="End" width="9rem"><Text text="Saldo"/></Column>
-						<Column width="4rem"><Text text="Um"/></Column>
-					</columns>
-					<items>
-						<ColumnListItem>
-							<cells>
+					</t:extension>
+					<t:columns>
+						<t:Column id="sapLinkReleasesContractColumn" width="7rem" sortProperty="SalesContractCode" filterProperty="SalesContractCode">
+							<Label text="Contrato"/>
+							<t:template>
 								<Text text="{sapLink>SalesContractCode}" wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapLinkReleasesComplementColumn" width="9rem" sortProperty="Complement" filterProperty="Complement">
+							<Label text="Compl."/>
+							<t:template>
 								<Text text="{sapLink>Complement}" wrapping="false"/>
-								<Text text="({sapLink>CardCode}) {sapLink>CardName}" wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapLinkReleasesCustomerColumn" width="16rem" sortProperty="CustomerText" filterProperty="CustomerText">
+							<Label text="Cliente"/>
+							<t:template>
+								<Text text="{sapLink>CustomerText}" wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapLinkReleasesWarehouseColumn" width="15rem" sortProperty="DeliveryLocationName" filterProperty="DeliveryLocationName">
+							<Label text="Armazém"/>
+							<t:template>
 								<Text text="({sapLink>DeliveryLocationCode}) {sapLink>DeliveryLocationName}" wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapLinkReleasesPriceColumn" width="8rem" hAlign="End" sortProperty="DisplayPrice" filterProperty="DisplayPrice" filterType="sap.ui.model.type.Float">
+							<Label text="Preço Unit."/>
+							<t:template>
 								<ObjectNumber
 									number="{
-										parts: [{path: 'sapLink>CommercialPrice'}, {path: 'sapLink>Price'}],
+										parts: [{path: 'sapLink>DisplayPrice'}],
 										formatter: 'formatter.formatCommercialOrKgPrice'
 									}"/>
-								<Text
-									text="{ path: 'sapLink>AvailableQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"
-									wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapLinkReleasesBalanceColumn" width="9rem" hAlign="End" sortProperty="AvailableQuantity" filterProperty="AvailableQuantity" filterType="sap.ui.model.type.Float">
+							<Label text="Saldo"/>
+							<t:template>
+								<Text text="{ path: 'sapLink>AvailableQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" wrapping="false"/>
+							</t:template>
+						</t:Column>
+						<t:Column id="sapLinkReleasesUomColumn" width="4rem" sortProperty="UnitOfMeasureCode" filterProperty="UnitOfMeasureCode">
+							<Label text="Um"/>
+							<t:template>
 								<Text text="{sapLink>UnitOfMeasureCode}" wrapping="false"/>
-							</cells>
-						</ColumnListItem>
-					</items>
-				</Table>
+							</t:template>
+						</t:Column>
+					</t:columns>
+				</t:Table>
 			</VBox>
 		</content>
 		<buttons>

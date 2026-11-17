@@ -4,6 +4,11 @@ export type LinkableSapInvoice = {
   DocNum: number,
   /** Texto dd/MM/yyyy, montado da string da data sem passar por `Date` (data pura em UTC recuaria um dia no Brasil). */
   DocDateText: string,
+  /** `yyyy-MM-dd` da data: chave de ordenação da coluna Data (o texto dd/MM/yyyy ordenaria errado). */
+  DocDateSort: string,
+  /** "NF / Série" e "(código) nome" prontos: a tabela filtra/ordena pela própria coluna exibida. */
+  InvoiceText: string,
+  CustomerText: string,
   CardCode: string,
   CardName: string,
   TaxDocumentNumber: string,
@@ -66,6 +71,9 @@ export function normalizeLinkableInvoices(data: unknown): LinkableSapInvoice[] {
       DocEntry: num("DocEntry"),
       DocNum: num("DocNum"),
       DocDateText: formatDateText(pick(raw, "DocDate")),
+      DocDateSort: (/^\d{4}-\d{2}-\d{2}/.exec(text("DocDate")) ?? [""])[0],
+      InvoiceText: `${text("TaxDocumentNumber")} / ${text("TaxDocumentSeries")}`,
+      CustomerText: `(${text("CardCode")}) ${text("CardName")}`,
       CardCode: text("CardCode"),
       CardName: text("CardName"),
       TaxDocumentNumber: text("TaxDocumentNumber"),
@@ -95,7 +103,98 @@ export function preselectedReleaseIndex(filteredReleases: unknown[]): number {
   return Array.isArray(filteredReleases) && filteredReleases.length === 1 ? 0 : -1;
 }
 
+/**
+ * Troca de seleção de NFs: a liberação escolhida só é mantida quando o cliente comum das NFs marcadas não mudou
+ * (e a seleção continua de um único cliente e não vazia). Cliente trocado, seleção vazia ou mista: limpa.
+ */
+export function shouldKeepRelease(previousCustomer: string, invoices: QuantityRow[]): boolean {
+  const customer = commonCustomer(invoices);
+  return !!customer && customer === previousCustomer;
+}
+
+/** Campos só de exibição da liberação: texto do cliente e o preço exibido (comercial, senão o preço em KG). */
+export function withReleaseDisplay<T extends { CardCode?: string, CardName?: string, CommercialPrice?: string | number, Price?: string | number }>(
+  release: T,
+): T & { CustomerText: string, DisplayPrice: number } {
+  const raw = release?.CommercialPrice ?? release?.Price;
+  const price = typeof raw === "string" ? parseFloat(raw) : raw;
+  return {
+    ...release,
+    CustomerText: `(${release?.CardCode ?? ""}) ${release?.CardName ?? ""}`,
+    DisplayPrice: price == null || isNaN(price) ? undefined : price,
+  };
+}
+
 /** Resposta assíncrona é velha quando o token mudou desde que a requisição saiu. */
 export function isStaleRequest(requestToken: number, currentToken: number): boolean {
   return requestToken !== currentToken;
+}
+
+/** Tolerância da comparação da soma das NFs com o saldo da carga (igual à do backend). */
+export const QUANTITY_TOLERANCE = 0.001;
+
+type QuantityRow = { Quantity?: number, CardCode?: string, DocEntry?: number };
+
+/** Soma das quantidades das NFs marcadas. */
+export function sumQuantity(invoices: QuantityRow[]): number {
+  return (invoices ?? []).reduce((total, invoice) => total + (Number(invoice?.Quantity) || 0), 0);
+}
+
+/** Cliente comum das NFs marcadas; vazio se nenhuma ou se há mais de um cliente. */
+export function commonCustomer(invoices: QuantityRow[]): string {
+  const codes = new Set((invoices ?? []).map((invoice) => invoice?.CardCode ?? ""));
+  return codes.size === 1 ? [...codes][0] : "";
+}
+
+/** Há NFs marcadas de mais de um cliente. */
+export function hasMixedCustomers(invoices: QuantityRow[]): boolean {
+  return new Set((invoices ?? []).map((invoice) => invoice?.CardCode ?? "")).size > 1;
+}
+
+/** Soma igual ao saldo, dentro da tolerância. */
+export function matchesAvailable(sum: number, available: number): boolean {
+  return Math.abs((Number(sum) || 0) - (Number(available) || 0)) <= QUANTITY_TOLERANCE + 1e-9;
+}
+
+/** Soma maior que o saldo (além da tolerância): a lista traz NFs acima do saldo para o usuário notar o erro. */
+export function exceedsAvailable(sum: number, available: number): boolean {
+  return (Number(sum) || 0) - (Number(available) || 0) > QUANTITY_TOLERANCE + 1e-9;
+}
+
+/**
+ * "Vincular" habilita com NF marcada, um único cliente, liberação escolhida e a soma IGUAL ao saldo (±0,001).
+ * Soma menor ou maior que o saldo mantém desabilitado (regra confirmada pelo dono do produto).
+ */
+export function canLink(invoices: QuantityRow[], available: number, hasRelease: boolean): boolean {
+  return Array.isArray(invoices) && invoices.length > 0 && !!commonCustomer(invoices) && hasRelease
+    && matchesAvailable(sumQuantity(invoices), available);
+}
+
+/** Liberações do cliente das NFs marcadas (nenhuma ou clientes misturados: lista vazia). */
+export function releasesForInvoices<T extends CustomerRelease>(releases: T[], invoices: QuantityRow[]): T[] {
+  return filterReleasesByCustomer(releases, commonCustomer(invoices));
+}
+
+/** Quantidade em pt-BR com 3 casas (1.234,500). */
+export function formatKg(value: number): string {
+  return (Number(value) || 0).toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+}
+
+/** Texto do rodapé da tabela de NFs. */
+export function selectionSummaryText(sum: number, available: number): string {
+  return `Selecionado: ${formatKg(sum)} kg de ${formatKg(available)} kg`;
+}
+
+export type LinkedDocument = { key: string, invoiceNumber: string };
+
+/** Normaliza a resposta da action de vínculo: `{ documents: [{ key, invoiceNumber }] }` em camelCase ou PascalCase. */
+export function normalizeLinkedDocuments(data: unknown): LinkedDocument[] {
+  const raw = (data ?? {}) as Raw;
+  const rows = pick(raw, "Documents");
+  return (Array.isArray(rows) ? rows : []).map((row) => {
+    const doc = (row ?? {}) as Raw;
+    const key = pick(doc, "Key");
+    const number = pick(doc, "InvoiceNumber");
+    return { key: key == null ? "" : String(key as string), invoiceNumber: number == null ? "" : String(number as string) };
+  });
 }

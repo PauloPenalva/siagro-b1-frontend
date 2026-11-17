@@ -8,7 +8,6 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Context from "sap/ui/model/odata/v4/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
-import SapMTable from "sap/m/Table";
 import Table from "sap/ui/table/Table";
 import RoyaltyFieldsHelper from "siagrob1/controller/royalties/RoyaltyFieldsHelper";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
@@ -114,9 +113,23 @@ type ChangeReleaseRow = {
   NewCardName?: string;
   NewWarehouseCode?: string;
   NewWarehouseName?: string;
+  // Textos compostos só de exibição: a tabela mostra, ordena e filtra pelo mesmo valor.
+  ContractText?: string;
+  NewContractText?: string;
+  WarehouseText?: string;
+  NewWarehouseText?: string;
 };
 
-type ReleaseTarget = { ShipmentReleaseKey: string };
+type ReleaseTarget = {
+  ShipmentReleaseKey: string;
+  Origin?: number;
+  StandardCashFlowDate?: string;
+  DeliveryLocationCode?: string;
+  DeliveryLocationName?: string;
+  OriginText?: string;
+  StandardCashFlowDateText?: string;
+  DeliveryLocationText?: string;
+};
 
 type ChangeReleaseForm = {
   IsSwap: boolean;
@@ -187,14 +200,18 @@ export default class Detail extends BaseController {
       },
     });
 
-    // Vínculo da NF do SAP (GAC-1226): o documento de saída nasce da NF; leva o usuário direto a ele.
+    // Vínculo de NFs do SAP (GAC-1226): um documento de saída por NF. Com um só, SÓ navega até ele (sem
+    // refreshAll): as recargas assíncronas da carga rejeitariam ao sair da view e mostrariam caixas de erro
+    // falsas; ao voltar, o route matched recarrega a carga. Com vários, fica na carga e a atualiza.
     this._sapLink = new SapInvoiceLinkDialog({
       view: this.getView(),
+      registerTableLayouts: (root) => this.registerTableLayouts(root),
       onLinked: (created) => {
-        this.refreshAll();
-        if (created?.key) {
-          this.navTo("salesInvoicesDetail", { id: created.key });
+        if (created.length === 1 && created[0].key) {
+          this.navTo("salesInvoicesDetail", { id: created[0].key });
+          return;
         }
+        this.refreshAll();
       },
     });
 
@@ -292,6 +309,8 @@ export default class Detail extends BaseController {
     }) as Promise<Dialog>).then((dialog) => {
       this.getView().addDependent(dialog);
       this._shipDialog = dialog;
+      // Ordem e largura das colunas da tabela de liberações por usuário (ids estáveis no fragmento).
+      this.registerTableLayouts(dialog);
       return dialog;
     });
     await this._shipDialogLoading;
@@ -305,7 +324,7 @@ export default class Detail extends BaseController {
       ItemCode: string; WarehouseCode: string;
     };
     const releases = this.getView().getModel("shipReleases") as JSONModel;
-    (this.byId("shipReleasesTable") as SapMTable | undefined)?.removeSelections(true);
+    (this.byId("shipReleasesTable") as Table | undefined)?.clearSelection();
     this._shipReleasesWarehouse = ship.WarehouseCode;
 
     if (!ship.ItemCode || !ship.WarehouseCode) {
@@ -341,8 +360,11 @@ export default class Detail extends BaseController {
         LoadKey: string; WarehouseCode: string; TruckDriverCode: string;
         TransactionDate: string; GrossWeight: string | number; Comments: string;
       };
-      const selected = (this.byId("shipReleasesTable") as SapMTable).getSelectedItem();
-      const releaseKey = selected?.getBindingContext("shipReleases")?.getProperty("ShipmentReleaseKey") as string;
+      // Seleção da sap.ui.table é por índice do binding: o contexto do índice é a linha que o usuário vê marcada.
+      const releasesTable = this.byId("shipReleasesTable") as Table;
+      const selectedIndex = releasesTable.getSelectedIndex();
+      const releaseKey = (selectedIndex < 0 ? undefined
+        : releasesTable.getContextByIndex(selectedIndex)?.getProperty("ShipmentReleaseKey")) as string;
 
       if (!releaseKey) {
         MessageBox.warning("Selecione a liberação de embarque.");
@@ -392,6 +414,11 @@ export default class Detail extends BaseController {
     }
   }
 
+  /** Filtrar/ordenar muda os índices do binding: limpa a seleção para não apontar para outra liberação. */
+  onShipReleasesFilterOrSort(): void {
+    (this.byId("shipReleasesTable") as Table | undefined)?.clearSelection();
+  }
+
   onCloseShip(): void {
     this._shipDialog.close();
   }
@@ -413,9 +440,11 @@ export default class Detail extends BaseController {
     const ctx = this.getView().getBindingContext() as Context;
     if (!ctx) return;
 
-    const fields: (keyof SapLinkLoad)[] = ["Key", "Code", "ItemCode"];
+    const fields: (keyof SapLinkLoad)[] = ["Key", "Code", "ItemCode", "AvailableQuantity"];
     const values = await ctx.requestProperty(fields as string[]) as unknown[];
     const load = Object.fromEntries(fields.map((f, i) => [f, values[i]])) as SapLinkLoad;
+    // Edm.Decimal pode vir como string: a soma das NFs é comparada como número.
+    load.AvailableQuantity = Number(load.AvailableQuantity) || 0;
     await this._sapLink.open(load);
   }
 
@@ -729,6 +758,15 @@ export default class Detail extends BaseController {
       rows[1].NewWarehouseName = rows[0].WarehouseName;
     }
 
+    for (const row of rows) {
+      row.ContractText = `${row.ContractCode ?? ""} ${row.CardName ?? ""}`.trim();
+      row.WarehouseText = `(${row.WarehouseCode ?? ""}) ${row.WarehouseName ?? ""}`;
+      if (isSwap) {
+        row.NewContractText = `${row.NewContractCode ?? ""} ${row.NewCardName ?? ""}`.trim();
+        row.NewWarehouseText = `(${row.NewWarehouseCode ?? ""}) ${row.NewWarehouseName ?? ""}`;
+      }
+    }
+
     this.setBusy(true);
     try {
       let targets: ReleaseTarget[] = [];
@@ -745,7 +783,14 @@ export default class Detail extends BaseController {
         // Coleção pode chegar como array ou como envelope { value: [...] }.
         const result = func.getBoundContext().getObject() as ReleaseTarget[] | { value?: ReleaseTarget[] };
         const all = Array.isArray(result) ? result : result?.value ?? [];
-        targets = all.filter(t => t.ShipmentReleaseKey?.toLowerCase() !== rows[0].ShipmentReleaseKey.toLowerCase());
+        targets = all
+          .filter(t => t.ShipmentReleaseKey?.toLowerCase() !== rows[0].ShipmentReleaseKey.toLowerCase())
+          .map(t => ({
+            ...t,
+            OriginText: formatter.releaseOriginText(t.Origin),
+            StandardCashFlowDateText: formatter.formatDate(t.StandardCashFlowDate),
+            DeliveryLocationText: `(${t.DeliveryLocationCode ?? ""}) ${t.DeliveryLocationName ?? ""}`,
+          }));
       }
 
       this.getView().setModel(new JSONModel({
@@ -759,9 +804,12 @@ export default class Detail extends BaseController {
           controller: this,
         }) as Dialog;
         this.getView().addDependent(this._changeReleaseDialog);
+        // Ordem e largura das colunas das duas tabelas por usuário (ids estáveis no fragmento).
+        this.registerTableLayouts(this._changeReleaseDialog);
       }
 
-      (this.byId("changeReleaseTargets") as SapMTable).removeSelections(true);
+      // Reabrir não herda a escolha da vez anterior.
+      (this.byId("changeReleaseTargets") as Table).clearSelection();
       this._changeReleaseDialog.open();
     } catch (e) {
       MessageBox.error((e as Error).message);
@@ -789,12 +837,15 @@ export default class Detail extends BaseController {
       salesKeys = [data.Rows[0].Key, data.Rows[1].Key];
       targetKeys = [data.Rows[1].ShipmentReleaseKey, data.Rows[0].ShipmentReleaseKey];
     } else {
-      const item = (this.byId("changeReleaseTargets") as SapMTable).getSelectedItem();
-      if (!item) {
+      const targetsTable = this.byId("changeReleaseTargets") as Table;
+      const index = targetsTable.getSelectedIndex();
+      const target = index >= 0
+        ? targetsTable.getContextByIndex(index)?.getObject() as ReleaseTarget
+        : undefined;
+      if (!target) {
         MessageBox.warning("Selecione a liberação de destino.");
         return;
       }
-      const target = item.getBindingContext("changeRelease").getObject() as ReleaseTarget;
       salesKeys = [data.Rows[0].Key];
       targetKeys = [target.ShipmentReleaseKey];
     }
@@ -819,6 +870,11 @@ export default class Detail extends BaseController {
       form.setProperty("/busy", false);
       this._changeReleaseInFlight = false;
     }
+  }
+
+  /** Filtrar/ordenar muda os índices do binding: limpa a seleção para não enviar outra liberação que a vista. */
+  onChangeReleaseTargetsFilterOrSort(): void {
+    (this.byId("changeReleaseTargets") as Table | undefined)?.clearSelection();
   }
 
   onCloseChangeRelease(): void {
