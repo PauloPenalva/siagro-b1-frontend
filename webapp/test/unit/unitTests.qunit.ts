@@ -1,5 +1,6 @@
 // import all your QUnit tests here
 import "./controller/Main.qunit";
+import "./controller/ownershipTransfers/OwnWarehouseCodes.qunit";
 import "./services/TableLayoutService.qunit";
 import "./services/MarketModuleService.qunit";
 import "./helpers/FilterHelpers.qunit";
