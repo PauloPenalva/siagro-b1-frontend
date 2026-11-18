@@ -218,6 +218,9 @@
               </uxap:snappedHeading>
             </uxap:ObjectPageDynamicHeaderTitle>
         </uxap:headerTitle>
+        <uxap:headerContent>
+            <core:Fragment fragmentName="siagrob1.view.ownershipTransfers.fragments.OriginLotHeader" type="XML" />
+        </uxap:headerContent>
         <uxap:sections>
             <uxap:ObjectPageSection
                 titleUppercase="false"
@@ -376,6 +379,7 @@
           </uxap:ObjectPageDynamicHeaderTitle>
         </uxap:headerTitle>
         <uxap:headerContent>
+            <core:Fragment fragmentName="siagrob1.view.ownershipTransfers.fragments.OriginLotHeader" type="XML" />
         </uxap:headerContent>
         <uxap:sections>
           <uxap:ObjectPageSection titleUppercase="false" title="Dados da Transferencia">

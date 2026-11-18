@@ -32,7 +32,9 @@ export default class Add extends BaseController {
     
     this.getView().setModel(new JSONModel(), "balance");
     this.getView().setModel(new JSONModel(), "destination");
-    
+    // Cabeçalho dos passos 2 e 3: o lote de origem escolhido no passo 1.
+    this.getView().setModel(new JSONModel({}), "origin");
+
 		this.getRouter().getRoute("ownershipTransfersNew").attachPatternMatched((ev) => void this.newRouteMatched(ev));
 	}
 
@@ -145,6 +147,11 @@ export default class Add extends BaseController {
 
     const originTable = this.byId("tableStorageAddressesBalance") as Table;
     const ctx = originTable.getSelectedItem()?.getBindingContext("balance")
+
+    // Cópia, não referência: o cabeçalho não pode alterar a linha da tabela de origem.
+    // setData com merge=false substitui tudo, então trocar de lote não deixa campo do anterior.
+    const originModel = this.getModel("origin") as JSONModel;
+    originModel.setData(ctx ? { ...ctx.getObject() } : {});
 
     if (!ctx) {
       this.navBack();

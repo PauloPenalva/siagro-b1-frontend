@@ -1,0 +1,47 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+>
+  <!-- Lote de origem escolhido no passo 1 (modelo "origin", cópia da linha selecionada).
+       Usado no cabeçalho dos passos 2 e 3 do assistente; sem ids para poder ser incluído duas vezes. -->
+  <VBox core:require="{ Float: 'sap/ui/model/type/Float' }">
+    <HBox class="sapUiTinyMarginBottom" alignItems="Center" wrap="Wrap">
+      <ObjectIdentifier
+        class="sapUiMediumMarginEnd"
+        title="Lote de Origem: {origin>/Code}"
+        text="{origin>/Description}"
+      />
+      <ObjectStatus
+        inverted="true"
+        state="Information"
+        text="{
+          path: 'origin>/OwnershipType',
+          formatter: '.formatter.formatStorageOwnershipType'
+        }"
+      />
+    </HBox>
+    <HBox class="sapUiTinyMarginBottom" wrap="Wrap">
+      <ObjectAttribute class="sapUiMediumMarginEnd" title="Filial" text="{origin>/BranchName}" />
+      <ObjectAttribute class="sapUiMediumMarginEnd" title="Produto" text="{origin>/ItemCode} - {origin>/ItemName}" />
+      <ObjectAttribute class="sapUiMediumMarginEnd" title="Depositante" text="{origin>/CardCode} - {origin>/CardName}" />
+      <ObjectAttribute title="Armazém" text="{origin>/WarehouseCode} - {origin>/WarehouseName}" />
+    </HBox>
+    <HBox alignItems="Center">
+      <Text class="sapUiTinyMarginEnd" text="Saldo:" />
+      <ObjectNumber
+        emphasized="true"
+        number="{
+          path: 'origin>/Balance',
+          type: 'Float',
+          formatOptions: {
+            decimals: 3,
+            decimalSeparator: ',',
+            groupingEnabled: true,
+            groupingSeparator: '.'
+          }
+        }"
+        unit="{origin>/UoM}"
+      />
+    </HBox>
+  </VBox>
+</core:FragmentDefinition>
