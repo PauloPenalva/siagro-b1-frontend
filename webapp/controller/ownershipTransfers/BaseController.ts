@@ -51,16 +51,13 @@ export abstract class BaseController extends CommonController {
    * Códigos dos armazéns marcados como próprios no complemento cadastral, que é
    * quem restringe os contratos ofertados no value help.
    *
-   * Lido uma vez por sessão da tela: é cadastro, não muda entre duas aberturas do
-   * diálogo, e a chamada extra atrasaria o clique do usuário.
+   * Consultado a cada abertura do diálogo, sem cache. O controller vive a sessão
+   * inteira do navegador, e um cache guardava também a lista vazia: quem abria a
+   * tela antes de marcar o armazém no complemento continuava recebendo "nenhum
+   * armazém próprio" até recarregar a página (CEAGUI, 17/11/2026). A consulta é
+   * leve; o cadastro ser visto na hora vale mais que a chamada economizada.
    */
-  private _ownWarehouseCodes: string[];
-
   private async getOwnWarehouseCodes(): Promise<string[]> {
-    if (this._ownWarehouseCodes) {
-      return this._ownWarehouseCodes;
-    }
-
     const oModel = this.getModel() as ODataModel;
     const func = oModel.bindContext(this.api.warehousesGetOwnComplements);
 
@@ -70,9 +67,7 @@ export abstract class BaseController extends CommonController {
     const result = func.getBoundContext().getObject() as
       { value?: { WarehouseCode: string }[] };
 
-    this._ownWarehouseCodes = (result?.value ?? []).map((x) => x.WarehouseCode);
-
-    return this._ownWarehouseCodes;
+    return (result?.value ?? []).map((x) => x.WarehouseCode);
   }
 
   /**
