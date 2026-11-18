@@ -143,7 +143,7 @@
 					rowSelectionChange=".onReleaseSelect"
 					filter=".onReleasesFilterOrSort"
 					sort=".onReleasesFilterOrSort"
-					noData="Nenhuma liberação de entrega disponível para o cliente da nota fiscal."
+					noData="Nenhuma liberação de entrega disponível."
 					rows="{ path: 'sapLink>/Releases' }">
 					<t:extension>
 						<Toolbar><Title text="Liberação de entrega"/></Toolbar>
@@ -164,7 +164,11 @@
 						<t:Column id="sapLinkReleasesCustomerColumn" width="16rem" sortProperty="CustomerText" filterProperty="CustomerText">
 							<Label text="Cliente"/>
 							<t:template>
-								<Text text="{sapLink>CustomerText}" wrapping="false"/>
+								<ObjectStatus
+									text="{sapLink>CustomerText}"
+									state="{= ${sapLink>OtherCustomer} === true ? 'Warning' : 'None' }"
+									icon="{= ${sapLink>OtherCustomer} === true ? 'sap-icon://message-warning' : '' }"
+									tooltip="{= ${sapLink>OtherCustomer} === true ? 'Cliente diferente do da nota fiscal. O documento de saída nasce com o cliente da nota fiscal; o saldo é baixado neste contrato.' : ${sapLink>CustomerText} }"/>
 							</t:template>
 						</t:Column>
 						<t:Column id="sapLinkReleasesWarehouseColumn" width="15rem" sortProperty="DeliveryLocationName" filterProperty="DeliveryLocationName">

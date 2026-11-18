@@ -90,7 +90,7 @@ export function normalizeLinkableInvoices(data: unknown): LinkableSapInvoice[] {
   });
 }
 
-/** Só as liberações do cliente da NF escolhida (o backend recusa de outro cliente). Sem NF escolhida, lista vazia. */
+/** Só as liberações de um cliente. Sem cliente, lista vazia. */
 export function filterReleasesByCustomer<T extends CustomerRelease>(releases: T[], cardCode: string): T[] {
   if (!cardCode || !Array.isArray(releases)) {
     return [];
@@ -170,9 +170,20 @@ export function canLink(invoices: QuantityRow[], available: number, hasRelease: 
     && matchesAvailable(sumQuantity(invoices), available);
 }
 
-/** Liberações do cliente das NFs marcadas (nenhuma ou clientes misturados: lista vazia). */
-export function releasesForInvoices<T extends CustomerRelease>(releases: T[], invoices: QuantityRow[]): T[] {
-  return filterReleasesByCustomer(releases, commonCustomer(invoices));
+/**
+ * Liberações oferecidas para as NFs marcadas (nenhuma NF ou clientes misturados: lista vazia). Entram TODAS: por
+ * instrução da trading o contrato é feito num cliente e o faturamento sai em outro. As do cliente da NF vêm
+ * primeiro; as demais vêm marcadas com `OtherCustomer` (o documento de saída nasce com o cliente da NF).
+ */
+export function releasesForInvoices<T extends CustomerRelease>(
+  releases: T[], invoices: QuantityRow[],
+): Array<T & { OtherCustomer: boolean }> {
+  const customer = commonCustomer(invoices);
+  if (!customer || !Array.isArray(releases)) {
+    return [];
+  }
+  const flagged = releases.map((release) => ({ ...release, OtherCustomer: release?.CardCode !== customer }));
+  return [...flagged.filter((release) => !release.OtherCustomer), ...flagged.filter((release) => release.OtherCustomer)];
 }
 
 /** Quantidade em pt-BR com 3 casas (1.234,500). */

@@ -226,7 +226,7 @@ export default class SapInvoiceLinkDialog {
     this.applyReleaseFilter();
   }
 
-  /** Liberações do cliente das NFs marcadas (clientes misturados: nenhuma); com uma só, já vem escolhida. */
+  /** Liberações para as NFs marcadas, as do cliente da NF primeiro (clientes misturados: nenhuma); com uma só, já vem escolhida. */
   private applyReleaseFilter(): void {
     const releasesTable = this.releasesTable();
     const filtered = releasesForInvoices(this._allReleases, this._selectedInvoices);

@@ -110,9 +110,10 @@ QUnit.test("exceedsAvailable respeita a tolerância", function (assert) {
   assert.strictEqual(exceedsAvailable(500, 1000), false);
 });
 
-QUnit.test("releasesForInvoices filtra pelo cliente comum", function (assert) {
+QUnit.test("releasesForInvoices traz todas: as do cliente da NF primeiro, as outras marcadas", function (assert) {
   const releases = [{ CardCode: "C1" }, { CardCode: "C2" }];
-  assert.strictEqual(releasesForInvoices(releases, [{ CardCode: "C2" }, { CardCode: "C2" }]).length, 1);
+  assert.deepEqual(releasesForInvoices(releases, [{ CardCode: "C2" }, { CardCode: "C2" }]),
+    [{ CardCode: "C2", OtherCustomer: false }, { CardCode: "C1", OtherCustomer: true }]);
   assert.deepEqual(releasesForInvoices(releases, [{ CardCode: "C1" }, { CardCode: "C2" }]), []);
   assert.deepEqual(releasesForInvoices(releases, []), []);
 });
