@@ -1303,7 +1303,7 @@ const formatter = {
   stateWeighTicketStatus: (value: string) => {
     const m = new Map<string, string>();
     m.set("Waiting"   , "None");
-    m.set("Canceled"  , "Error");
+    m.set("Cancelled" , "Error");
     m.set("Complete"  , "Success");
     m.set("Processing", "Information");
 

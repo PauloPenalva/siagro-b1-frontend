@@ -21,6 +21,16 @@
             </Select>
         </fb:control>
       </fb:FilterGroupItem>
+      <fb:FilterGroupItem name="status" label="Status" groupName="GroupStatus" visibleInFilterBar="true">
+        <fb:control>
+            <MultiComboBox width="100%" selectedKeys="{filter>/Status}">
+              <core:Item key="Waiting" text="Aguardando"/>
+              <core:Item key="Processing" text="Em Processo"/>
+              <core:Item key="Complete" text="Completo"/>
+              <core:Item key="Cancelled" text="Cancelado"/>
+            </MultiComboBox>
+        </fb:control>
+      </fb:FilterGroupItem>
       <fb:FilterGroupItem name="code" label="Codigo" groupName="GroupCode" visibleInFilterBar="true">
         <fb:control>
             <Input showClearIcon="true" value="{filter>/Code}">
