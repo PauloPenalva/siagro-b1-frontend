@@ -1,8 +1,17 @@
 import {
-	closedLoadWarning, completeTransferRefusal, reopenTransferRefusal, summarizeTransshipments, transshipmentTexts,
+	closedLoadWarning, completeTransferRefusal, entryNeedsReceipt, reopenTransferRefusal, summarizeTransshipments,
+	transshipmentTexts,
 } from "siagrob1/helpers/TransshipmentHelpers";
 
 QUnit.module("TransshipmentHelpers - transferência entre armazéns de terceiros (GAC-1176)");
+
+QUnit.test("entryNeedsReceipt: só o transbordo em armazém próprio pede o romaneio", assert => {
+	assert.strictEqual(entryNeedsReceipt(true, "Transshipment"), true);
+	assert.strictEqual(entryNeedsReceipt(true, undefined), true, "linha anterior ao GAC-1176");
+	assert.strictEqual(entryNeedsReceipt(true, "Transfer"), false, "GAC-1232");
+	assert.strictEqual(entryNeedsReceipt(false, "Transshipment"), false);
+	assert.strictEqual(entryNeedsReceipt(false, "Transfer"), false);
+});
 
 QUnit.test("resumo: rótulo por linha, quebra somada e se a carga terminou numa transferência", function (assert) {
 	const summary = summarizeTransshipments([
