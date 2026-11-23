@@ -29,7 +29,7 @@ import {
 } from "siagrob1/helpers/DischargeDistributionHelpers";
 import CommonController from "siagrob1/controller/common/CommonController";
 import {
-  completeTransferRefusal, reopenTransferRefusal, summarizeTransshipments, transshipmentTexts,
+  completeTransferRefusal, entryNeedsReceipt, reopenTransferRefusal, summarizeTransshipments, transshipmentTexts,
   TransshipmentRow, TransshipmentType,
 } from "siagrob1/helpers/TransshipmentHelpers";
 
@@ -915,7 +915,8 @@ export abstract class BaseController extends CommonController {
     this.setBusy(true);
 
     try {
-      const isOwn = await this.isOwnWarehouseAsync(warehouseCode);
+      // `isOwn` do form = "pede romaneio": a transferência (GAC-1232) pede o peso, mesmo em armazém próprio.
+      const isOwn = entryNeedsReceipt(await this.isOwnWarehouseAsync(warehouseCode), type);
       let receipts: TransshipmentReceiptOption[] = [];
 
       if (isOwn) {
@@ -1034,7 +1035,8 @@ export abstract class BaseController extends CommonController {
         action.setParameter("EntryDate", date);
 
         // Só um dos dois: GrossWeight (terceiro) ou ReceiptStorageTransactionKey (próprio), como
-        // o backend decide pelo IsOwn do complemento — nunca os dois, nunca nenhum.
+        // o backend decide por IsOwn do complemento E tipo Transbordo (Transferência é sempre por
+        // peso bruto) — nunca os dois, nunca nenhum.
         if (form.isOwn) {
           action.setParameter("ReceiptStorageTransactionKey", form.receiptKey);
         } else {

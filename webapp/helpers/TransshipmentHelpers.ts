@@ -101,6 +101,15 @@ export function closedLoadWarning(
 		`Cancele os documentos de saída da carga antes de ${action}.`;
 }
 
+/**
+ * A entrada pede o romaneio (Entrada em Armazenagem já pesada) só no transbordo em armazém próprio.
+ * A transferência (GAC-1232) termina em armazém próprio como em terceiros: entrada pelo peso bruto.
+ * Tipo ausente = linha anterior ao GAC-1176 = transbordo.
+ */
+export function entryNeedsReceipt(isOwnWarehouse: boolean, type?: string): boolean {
+	return isOwnWarehouse && type !== "Transfer";
+}
+
 export type TransshipmentTexts = {
 	startTitle: string;
 	entryTitle: string;
