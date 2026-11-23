@@ -1035,7 +1035,8 @@ export abstract class BaseController extends CommonController {
         action.setParameter("EntryDate", date);
 
         // Só um dos dois: GrossWeight (terceiro) ou ReceiptStorageTransactionKey (próprio), como
-        // o backend decide pelo IsOwn do complemento — nunca os dois, nunca nenhum.
+        // o backend decide por IsOwn do complemento E tipo Transbordo (Transferência é sempre por
+        // peso bruto) — nunca os dois, nunca nenhum.
         if (form.isOwn) {
           action.setParameter("ReceiptStorageTransactionKey", form.receiptKey);
         } else {

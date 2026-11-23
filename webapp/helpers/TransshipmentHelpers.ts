@@ -106,7 +106,7 @@ export function closedLoadWarning(
  * A transferência (GAC-1232) termina em armazém próprio como em terceiros: entrada pelo peso bruto.
  * Tipo ausente = linha anterior ao GAC-1176 = transbordo.
  */
-export function entryNeedsReceipt(isOwnWarehouse: boolean, type: string): boolean {
+export function entryNeedsReceipt(isOwnWarehouse: boolean, type?: string): boolean {
 	return isOwnWarehouse && type !== "Transfer";
 }
 
