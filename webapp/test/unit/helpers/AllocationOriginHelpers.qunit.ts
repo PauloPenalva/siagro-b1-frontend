@@ -40,7 +40,7 @@ QUnit.test("tooltip cita o número da conferência só na perda", function (asse
 
 QUnit.test("a legenda lista cada origem uma vez, começando pela normal", function (assert) {
 	const keys = ALLOCATION_ORIGINS.map((o) => o.key);
-	assert.deepEqual(keys, ["Standard", "WarehouseLoss", "DischargeLoss", "DischargeGain", "LoadRefusal", "ReturnRedelivery"]);
+	assert.deepEqual(keys, ["Standard", "WarehouseLoss", "DischargeLoss", "DischargeGain", "LoadRefusal", "ReturnRedelivery", "TransshipmentExit"]);
 	assert.strictEqual(ALLOCATION_ORIGINS[0].legend, "Normal");
 });
 
@@ -83,4 +83,16 @@ QUnit.test("reentrega de devolução baixa o contrato de novo (GAC-1214)", funct
 	assert.strictEqual(
 		allocationOriginTooltip("ReturnRedelivery", null, null, null),
 		"Saída pela liberação de devolução: o contrato foi baixado de novo.");
+});
+
+QUnit.test("saída de transbordo é informativa e não baixa o contrato (GAC-1233)", function (assert) {
+	const origin = ALLOCATION_ORIGINS.find((o) => o.key === "TransshipmentExit");
+	assert.strictEqual(origin?.legend, "Saída de transbordo");
+	assert.strictEqual(allocationOriginText("TransshipmentExit"), "Transbordo");
+	assert.strictEqual(allocationOriginHighlight("TransshipmentExit"), "None");
+	assert.strictEqual(allocationOriginState("TransshipmentExit"), "None");
+	assert.strictEqual(allocationOriginIcon("TransshipmentExit"), "sap-icon://shipping-status");
+	assert.strictEqual(
+		allocationOriginTooltip("TransshipmentExit", null, null, null),
+		"Saída pela liberação de transbordo: o contrato já foi baixado pelo romaneio de compra.");
 });
