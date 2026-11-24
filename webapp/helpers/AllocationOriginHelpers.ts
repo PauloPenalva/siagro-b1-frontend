@@ -72,6 +72,17 @@ export const ALLOCATION_ORIGINS: AllocationOrigin[] = [
     state: "Information",
     icon: "sap-icon://redo",
   },
+  {
+    // GAC-1233: saída pela liberação de TRANSBORDO. Linha só informativa, com quantidade ZERO: o contrato
+    // já foi baixado pela Compra na saída do fornecedor; o peso do romaneio vem no Motivo. Sem faixa de
+    // cor de propósito — não é ocorrência, é rastreio.
+    key: "TransshipmentExit",
+    legend: "Saída de transbordo",
+    text: "Transbordo",
+    highlight: "None",
+    state: "None",
+    icon: "sap-icon://shipping-status",
+  },
 ];
 
 const STANDARD = ALLOCATION_ORIGINS[0];
@@ -124,6 +135,10 @@ export function allocationOriginTooltip(
 
   if (origin === "ReturnRedelivery") {
     return "Saída pela liberação de devolução: o contrato foi baixado de novo.";
+  }
+
+  if (origin === "TransshipmentExit") {
+    return "Saída pela liberação de transbordo: o contrato já foi baixado pelo romaneio de compra.";
   }
 
   return "";
