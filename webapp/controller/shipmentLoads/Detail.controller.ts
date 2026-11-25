@@ -272,11 +272,18 @@ export default class Detail extends BaseController {
     this._loadKey = id;
     // O modo SAP só é conhecido de forma assíncrona: as divergências só são ligadas (e requisitadas) quando ele
     // vale true e a carga da rota ainda é a mesma (a view sobrevive à troca de carga).
+    // Síncrono, antes do round trip: a view sobrevive à troca de carga e a tabela não pode mostrar (nem
+    // recarregar, no refreshAll) as divergências da carga anterior. Modo SAP já conhecido: liga na hora; senão desliga.
+    if ((this.getModel("ui") as JSONModel)?.getProperty("/sapMode") === true) {
+      this.bindDivergences(id);
+    } else {
+      this.unbindDivergences();
+    }
     this.applySapLinkVisibility().then(sapMode => {
-      if (sapMode && this._loadKey === id) {
+      if (sapMode && this._loadKey === id && this._divergencesKey !== id) {
         this.bindDivergences(id);
       }
-    }).catch(() => Log.error("Não foi possível obter o modo de integração do sistema."));
+    }).catch((e: unknown) => Log.error("Não foi possível obter o modo de integração do sistema.", (e as Error)?.message));
     this.bindElement(`/ShipmentLoads(${id})`);
 
     // Passa a chave explícita: bindElement não espera a resposta, e currentLoadKey() leria a
@@ -299,12 +306,18 @@ export default class Detail extends BaseController {
    * Liga a tabela de divergências ao conjunto SalesInvoiceDivergences filtrado pela carga: o servidor não
    * serve a navegação `InvoiceDivergences` da carga (só métodos dedicados, como `Invoices`).
    */
+  private unbindDivergences(): void {
+    this._divergencesKey = "";
+    (this.byId("loadDivergencesTable") as Table)?.unbindRows();
+  }
+
   private bindDivergences(loadKey: string): void {
     const table = this.byId("loadDivergencesTable") as Table;
     if (!table) {
       Log.error("Tabela de divergências (loadDivergencesTable) não encontrada.");
       return;
     }
+    this._divergencesKey = loadKey;
     table.bindRows({
       path: "/SalesInvoiceDivergences",
       filters: [new Filter("ShipmentLoadKey", FilterOperator.EQ, loadKey)],
@@ -1707,6 +1720,9 @@ export default class Detail extends BaseController {
   }
 
   private _unlinkInFlight = false;
+
+  /** Chave da carga a que a tabela de divergências está ligada (vazio = desligada). */
+  private _divergencesKey = "";
 
   /** Desfaz o vínculo das NFs do SAP da carga; o servidor recusa o que não puder (descarga, recusa, cancelamento). */
   async onUnlinkSapInvoices(): Promise<void> {
