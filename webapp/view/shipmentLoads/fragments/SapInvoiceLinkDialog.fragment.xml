@@ -190,7 +190,8 @@
 					type="Warning"
 					showIcon="true"
 					visible="{= ${sapLink>/DivergenceText} !== '' }"/>
-				<VBox class="sapUiSmallMarginTop">
+				<VBox class="sapUiSmallMarginTop" busyIndicatorDelay="0" busy="{= ${sapLink>/PreviewLoading} === true }"
+					visible="{= ${sapLink>/PreviewVisible} === true || ${sapLink>/PreviewLoading} === true }">
 					<HBox alignItems="Center" wrap="Wrap">
 						<Label text="Quantidade (kg)" width="9rem"/>
 						<Label text="Efetivo:" class="sapUiTinyMarginEnd"/>

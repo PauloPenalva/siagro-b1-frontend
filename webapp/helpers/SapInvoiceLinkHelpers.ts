@@ -88,14 +88,6 @@ export function normalizeLinkableInvoices(data: unknown): LinkableSapInvoice[] {
   });
 }
 
-/** Só as liberações de um cliente. Sem cliente, lista vazia. */
-export function filterReleasesByCustomer<T extends CustomerRelease>(releases: T[], cardCode: string): T[] {
-  if (!cardCode || !Array.isArray(releases)) {
-    return [];
-  }
-  return releases.filter((release) => release?.CardCode === cardCode);
-}
-
 /** Pré-seleção: com exatamente uma liberação possível, ela é escolhida; senão, nenhuma (índice -1). */
 export function preselectedReleaseIndex(filteredReleases: unknown[]): number {
   return Array.isArray(filteredReleases) && filteredReleases.length === 1 ? 0 : -1;
@@ -120,11 +112,6 @@ export function isStaleRequest(requestToken: number, currentToken: number): bool
 }
 
 type QuantityRow = { Quantity?: number, DocEntry?: number };
-
-/** Soma das quantidades das NFs marcadas. */
-export function sumQuantity(invoices: QuantityRow[]): number {
-  return (invoices ?? []).reduce((total, invoice) => total + (Number(invoice?.Quantity) || 0), 0);
-}
 
 /** "Vincular" habilita com ao menos uma NF e a liberação escolhida; a diferença de saldo é avisada pelo servidor. */
 export function canLink(invoices: QuantityRow[], hasRelease: boolean): boolean {
@@ -170,7 +157,7 @@ export function normalizeLinkPreview(data: unknown): SapLinkPreview {
   }
   const raw = data as Raw;
   const linkType = pick(raw, "LinkType");
-  if (linkType == null || isNaN(Number(linkType))) {
+  if (linkType == null || linkType === "" || isNaN(Number(linkType))) {
     return undefined;
   }
   const num = (name: string) => Number(pick(raw, name) ?? 0);

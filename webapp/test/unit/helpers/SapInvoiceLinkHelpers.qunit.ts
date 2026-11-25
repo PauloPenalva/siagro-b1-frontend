@@ -1,6 +1,6 @@
 import {
-  canLink, formatMoney, normalizeLinkPreview, releasesForLoad, normalizeLinkedDocuments, sumQuantity,
-  defaultLinkPeriod, filterReleasesByCustomer, formatDateText, formatLocalDate, isStaleRequest, normalizeLinkableInvoices,
+  canLink, formatMoney, normalizeLinkPreview, releasesForLoad, normalizeLinkedDocuments,
+  defaultLinkPeriod, formatDateText, formatLocalDate, isStaleRequest, normalizeLinkableInvoices,
   preselectedReleaseIndex, withReleaseDisplay,
 } from "siagrob1/helpers/SapInvoiceLinkHelpers";
 
@@ -41,15 +41,9 @@ QUnit.test("normalizeLinkableInvoices: resposta ausente vira lista vazia", funct
   assert.deepEqual(normalizeLinkableInvoices(undefined), []);
 });
 
-QUnit.test("filterReleasesByCustomer e pré-seleção", function (assert) {
-  const releases = [{ CardCode: "C1", k: 1 }, { CardCode: "C2", k: 2 }, { CardCode: "C1", k: 3 }];
-
-  assert.strictEqual(filterReleasesByCustomer(releases, "C1").length, 2);
-  assert.deepEqual(filterReleasesByCustomer(releases, "C9"), []);
-  assert.deepEqual(filterReleasesByCustomer(releases, ""), []);
-
-  assert.strictEqual(preselectedReleaseIndex(filterReleasesByCustomer(releases, "C2")), 0);
-  assert.strictEqual(preselectedReleaseIndex(filterReleasesByCustomer(releases, "C1")), -1);
+QUnit.test("preselectedReleaseIndex só escolhe quando há exatamente uma liberação", function (assert) {
+  assert.strictEqual(preselectedReleaseIndex([{ k: 1 }]), 0);
+  assert.strictEqual(preselectedReleaseIndex([{ k: 1 }, { k: 2 }]), -1);
   assert.strictEqual(preselectedReleaseIndex([]), -1);
 });
 
@@ -63,12 +57,6 @@ QUnit.test("normalizeLinkableInvoices monta textos e chave de ordenação da dat
   assert.strictEqual(row.DocDateSort, "2026-11-10");
   assert.strictEqual(row.InvoiceText, "12 / 1");
   assert.strictEqual(row.CustomerText, "(C1) Cli");
-});
-
-QUnit.test("sumQuantity soma as quantidades", function (assert) {
-  const same = [{ Quantity: 30000.25, CardCode: "C1" }, { Quantity: 1000.5, CardCode: "C1" }];
-  assert.strictEqual(sumQuantity(same), 31000.75);
-  assert.strictEqual(sumQuantity([]), 0);
 });
 
 QUnit.test("normalizeLinkedDocuments aceita camelCase e PascalCase", function (assert) {
@@ -128,6 +116,8 @@ QUnit.test("normalizeLinkPreview converte Edm.Decimal em número e mantém nulos
 QUnit.test("normalizeLinkPreview recusa resposta sem LinkType", function (assert) {
   assert.strictEqual(normalizeLinkPreview({ Message: "x" }), undefined);
   assert.strictEqual(normalizeLinkPreview(undefined), undefined);
+  assert.strictEqual(normalizeLinkPreview({ LinkType: "" }), undefined, "LinkType vazio");
+  assert.strictEqual(normalizeLinkPreview({ LinkType: "abc" }), undefined, "LinkType não numérico");
 });
 
 QUnit.test("formatMoney formata em pt-BR e mostra travessão no nulo", function (assert) {

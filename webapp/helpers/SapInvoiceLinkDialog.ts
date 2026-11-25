@@ -16,7 +16,7 @@ import {
 } from "siagrob1/helpers/SapInvoiceLinkHelpers";
 
 /** Carga a vincular — os campos que o diálogo usa. */
-export type SapLinkLoad = { Key: string, Code: string, ItemCode: string, AvailableQuantity: number, CardCode: string }
+export type SapLinkLoad = { Key: string, Code: string, ItemCode: string, CardCode: string }
 
 export type { LinkedDocument };
 
@@ -80,6 +80,8 @@ export default class SapInvoiceLinkDialog {
   private _allReleases: BilledRelease[] = [];
   /** NFs marcadas, lidas dos índices selecionados pelos contextos do binding (o que o usuário vê marcado). */
   private _selectedInvoices: LinkableSapInvoice[] = [];
+  /** Montagem da lista de liberações em curso: os eventos de seleção dela não pedem prévia (só a chamada final). */
+  private _rebuildingReleases = false;
   /** Token da prévia: resposta de uma seleção antiga nunca sobrescreve a atual. */
   private _previewId = 0;
   /** Prévia da seleção atual (indefinida enquanto carrega, sem seleção ou com erro). */
@@ -89,7 +91,7 @@ export default class SapInvoiceLinkDialog {
   private readonly _fragmentController = {
     onSearch: (): void => void this.search(),
     onInvoiceSelect: (): void => this.onInvoiceSelect(),
-    onReleaseSelect: (): void => void this.refreshPreview(),
+    onReleaseSelect: (): void => { if (!this._rebuildingReleases) void this.refreshPreview(); },
     onShowOthersChange: (): void => this.rebuildReleases(),
     onInvoicesFilterOrSort: (): void => this.clearInvoiceSelection(),
     onReleasesFilterOrSort: (): void => { this.releasesTable()?.clearSelection(); },
@@ -242,13 +244,19 @@ export default class SapInvoiceLinkDialog {
     const showOthers = this.model().getProperty("/ShowOthers") === true;
     const releases = releasesForLoad(this._allReleases, this._load?.CardCode, showOthers);
 
-    releasesTable?.clearSelection();
-    this.model().setProperty("/Releases", releases);
+    // Os eventos de seleção disparados aqui não pedem a prévia: ela é pedida uma única vez, ao final.
+    this._rebuildingReleases = true;
+    try {
+      releasesTable?.clearSelection();
+      this.model().setProperty("/Releases", releases);
 
-    // A pré-seleção é por índice do binding: só vale quando a tabela (com o filtro de coluna do usuário) mostra
-    // exatamente aquela liberação.
-    if (preselectedReleaseIndex(releases) >= 0 && (releasesTable?.getBinding("rows") as ListBinding)?.getLength() === 1) {
-      releasesTable.setSelectedIndex(0);
+      // A pré-seleção é por índice do binding: só vale quando a tabela (com o filtro de coluna do usuário) mostra
+      // exatamente aquela liberação.
+      if (preselectedReleaseIndex(releases) >= 0 && (releasesTable?.getBinding("rows") as ListBinding)?.getLength() === 1) {
+        releasesTable.setSelectedIndex(0);
+      }
+    } finally {
+      this._rebuildingReleases = false;
     }
     void this.refreshPreview();
   }
@@ -273,6 +281,10 @@ export default class SapInvoiceLinkDialog {
     model.setProperty("/PreviewLoading", false);
     model.setProperty("/PreviewError", error);
     model.setProperty("/DivergenceText", "");
+    // Sem prévia da seleção atual, nenhum número da seleção anterior pode sobrar na tela.
+    for (const name of ["QuantityEffective", "QuantityInvoice", "QuantityDifference", "ValueEffective", "ValueInvoice", "ValueDifference"]) {
+      model.setProperty(`/${name}`, "—");
+    }
     this.setCanLink();
   }
 
