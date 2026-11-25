@@ -1,7 +1,7 @@
 import {
   canLink, formatMoney, normalizeLinkPreview, releasesForLoad, normalizeLinkedDocuments,
   defaultLinkPeriod, formatDateText, formatLocalDate, isStaleRequest, normalizeLinkableInvoices,
-  preselectedReleaseIndex, withReleaseDisplay,
+  preselectedReleaseIndex, withReleaseDisplay, canUnlinkSapInvoices, linkTypeText, divergenceStatusText,
 } from "siagrob1/helpers/SapInvoiceLinkHelpers";
 
 QUnit.module("SapInvoiceLinkHelpers - vínculo de NF do SAP (GAC-1226)");
@@ -125,4 +125,25 @@ QUnit.test("formatMoney formata em pt-BR e mostra travessão no nulo", function 
   assert.strictEqual(formatMoney(-1234.5), "R$ -1.234,50");
   assert.strictEqual(formatMoney(null), "—");
   assert.strictEqual(formatMoney(NaN), "—");
+});
+
+QUnit.test("canUnlinkSapInvoices só em SAP e com carga faturada", function (assert) {
+  assert.strictEqual(canUnlinkSapInvoices("Invoiced", true), true);
+  assert.strictEqual(canUnlinkSapInvoices("PartiallyInvoiced", true), true);
+  assert.strictEqual(canUnlinkSapInvoices("Discharged", true), false);
+  assert.strictEqual(canUnlinkSapInvoices("Invoiced", false), false);
+});
+
+QUnit.test("linkTypeText aceita número e nome do enum", function (assert) {
+  assert.strictEqual(linkTypeText(0), "Normal");
+  assert.strictEqual(linkTypeText(1), "Valor divergente");
+  assert.strictEqual(linkTypeText(2), "Quantidade e valor divergentes");
+  assert.strictEqual(linkTypeText("Normal"), "Normal");
+  assert.strictEqual(linkTypeText("ValueDivergent"), "Valor divergente");
+  assert.strictEqual(linkTypeText("QuantityAndValueDivergent"), "Quantidade e valor divergentes");
+});
+
+QUnit.test("divergenceStatusText traduz as duas situações", function (assert) {
+  assert.strictEqual(divergenceStatusText("Open"), "Aberta");
+  assert.strictEqual(divergenceStatusText("Voided"), "Anulada");
 });

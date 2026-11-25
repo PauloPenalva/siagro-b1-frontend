@@ -41,6 +41,12 @@
 						text="Vincular NF do SAP"
 						press=".onLinkSapInvoice"
 						visible="{= ${ui>/sapInvoiceLinkVisible} === true &amp;&amp; ${path: 'LoadType', targetType: 'any'} === 'Normal' &amp;&amp; (${path: 'Status', targetType: 'any'} === 'Open' || ${path: 'Status', targetType: 'any'} === 'PartiallyInvoiced') &amp;&amp; +${path: 'AvailableQuantity', targetType: 'any'} > 0 }"/>
+					<!-- GAC-1226: desfaz o vínculo; só SAPB1 e carga já faturada. -->
+					<Button
+						text="Desvincular NFs do SAP"
+						type="Transparent"
+						press=".onUnlinkSapInvoices"
+						visible="{= ${ui>/sapInvoiceLinkVisible} === true &amp;&amp; (${path: 'Status', targetType: 'any'} === 'Invoiced' || ${path: 'Status', targetType: 'any'} === 'PartiallyInvoiced') }"/>
 					<Button
 						text="Recalcular Saldo"
 						type="Transparent"
@@ -117,6 +123,13 @@
 						],
 						formatter: '.formatter.formatDischargedAgainstLoaded'
 					}"/>
+				<!-- GAC-1226: peso da carga menos o das NFs vinculadas; negativo quando a NF é maior. -->
+				<ObjectStatus
+					class="sapUiMediumMarginBegin"
+					title="Divergência de NF"
+					state="Warning"
+					visible="{= Math.abs(+${path: 'InvoiceDivergenceQuantity', targetType: 'any'}) > 0 }"
+					text="{ path: 'InvoiceDivergenceQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } } {UnitOfMeasureCode}"/>
 			</HBox>
 		</uxap:headerContent>
 		<uxap:sections>
@@ -559,6 +572,71 @@
 											<ObjectNumber
 												textAlign="End"
 												number="{ path: 'SalesContractFreightCostStandard', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+										</t:template>
+									</t:Column>
+								</t:columns>
+							</t:Table>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
+					<!-- GAC-1226: divergências dos vínculos de NF do SAP. Sem navegação própria no servidor
+					     (Invoices tem método dedicado, InvoiceDivergences não): o controller liga as linhas ao
+					     conjunto SalesInvoiceDivergences filtrando pela chave da carga. -->
+					<uxap:ObjectPageSubSection title="Divergências"
+						visible="{= ${path: 'ui>/sapMode', targetType: 'any'} === true }">
+						<uxap:blocks>
+							<t:Table
+								id="loadDivergencesTable"
+								selectionMode="None"
+								class="sapUiSizeCondensed"
+								visibleRowCount="4"
+								noData="Nenhuma divergência registrada.">
+								<t:columns>
+									<t:Column id="divergenceColumnDocument" label="Documento" width="9rem">
+										<t:template><Text text="{SalesInvoice/InvoiceNumber}" wrapping="false"/></t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnTaxDocument" label="NF" width="7rem">
+										<t:template><Text text="{SalesInvoice/TaxDocumentNumber}" wrapping="false"/></t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnType" label="Tipo" width="16rem">
+										<t:template>
+											<Text wrapping="false" text="{ path: 'LinkType', targetType: 'any', formatter: '.linkTypeText' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnEffectiveQuantity" label="Efetivo (kg)" hAlign="End" width="10rem">
+										<t:template>
+											<ObjectNumber textAlign="End" number="{ path: 'EffectiveQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+										</t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnInvoiceQuantity" label="NF (kg)" hAlign="End" width="10rem">
+										<t:template>
+											<ObjectNumber textAlign="End" number="{ path: 'InvoiceQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+										</t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnQuantityDifference" label="Diferença (kg)" hAlign="End" width="10rem">
+										<t:template>
+											<ObjectNumber textAlign="End" number="{ path: 'QuantityDifference', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+										</t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnEffectiveValue" label="Valor efetivo" hAlign="End" width="10rem">
+										<t:template>
+											<Text textAlign="End" wrapping="false" text="{ path: 'EffectiveValue', targetType: 'any', formatter: '.formatMoney' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnInvoiceValue" label="Valor da NF" hAlign="End" width="10rem">
+										<t:template>
+											<Text textAlign="End" wrapping="false" text="{ path: 'InvoiceValue', targetType: 'any', formatter: '.formatMoney' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnValueDifference" label="Diferença (R$)" hAlign="End" width="10rem">
+										<t:template>
+											<Text textAlign="End" wrapping="false" text="{ path: 'ValueDifference', targetType: 'any', formatter: '.formatMoney' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnStatus" label="Situação" hAlign="Center" width="8rem">
+										<t:template>
+											<ObjectStatus
+												state="{= ${path: 'Status', targetType: 'any'} === 'Open' ? 'Warning' : 'None' }"
+												text="{ path: 'Status', targetType: 'any', formatter: '.divergenceStatusText' }"/>
 										</t:template>
 									</t:Column>
 								</t:columns>

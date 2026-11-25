@@ -9,6 +9,9 @@ import Context from "sap/ui/model/odata/v4/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Table from "sap/ui/table/Table";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import Sorter from "sap/ui/model/Sorter";
 import RoyaltyFieldsHelper from "siagrob1/controller/royalties/RoyaltyFieldsHelper";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { openNfeIssueDialog } from "siagrob1/dialogs/NfeIssueDialog";
@@ -17,6 +20,7 @@ import { closedLoadWarning } from "siagrob1/helpers/TransshipmentHelpers";
 import { BaseController } from "./BaseController";
 import ShipmentBillingDialog, { BillingLoad } from "siagrob1/helpers/ShipmentBillingDialog";
 import SapInvoiceLinkDialog, { SapLinkLoad } from "siagrob1/helpers/SapInvoiceLinkDialog";
+import { formatMoney, linkTypeText, divergenceStatusText } from "siagrob1/helpers/SapInvoiceLinkHelpers";
 import { sendJson, odataCollection } from "siagrob1/helpers/FetchHelpers";
 import {
   destinationParameters, RefusalSuccessKind, refusalSuccessKind, transitLossConfirmText, validateRefusalForm,
@@ -146,6 +150,13 @@ export default class Detail extends BaseController {
 
   formatter = formatter;
 
+  // Helpers do vínculo de NF do SAP usados pelas colunas da tabela de divergências.
+  formatMoney = formatMoney;
+
+  linkTypeText = linkTypeText;
+
+  divergenceStatusText = divergenceStatusText;
+
   private _loadKey: string;
 
   private _refusalDialog: Dialog;
@@ -254,6 +265,7 @@ export default class Detail extends BaseController {
     this._loadKey = id;
     void this.applySapLinkVisibility();
     this.bindElement(`/ShipmentLoads(${id})`);
+    this.bindDivergences(id);
 
     // Passa a chave explícita: bindElement não espera a resposta, e currentLoadKey() leria a
     // Key de um contexto ainda sem dados nesta primeira chamada. `.catch()` em vez de `void`: uma
@@ -269,6 +281,23 @@ export default class Detail extends BaseController {
     (this.getView().getModel("pendingRefusal") as JSONModel).setData({ visible: false, Rows: [] });
     this.refreshPendingRefusal(id).catch(
       () => MessageBox.error("Erro ao carregar a recusa aguardando NF-e."));
+  }
+
+  /**
+   * Liga a tabela de divergências ao conjunto SalesInvoiceDivergences filtrado pela carga: o servidor não
+   * serve a navegação `InvoiceDivergences` da carga (só métodos dedicados, como `Invoices`).
+   */
+  private bindDivergences(loadKey: string): void {
+    const table = this.byId("loadDivergencesTable") as Table;
+    table?.bindRows({
+      path: "/SalesInvoiceDivergences",
+      filters: [new Filter("ShipmentLoadKey", FilterOperator.EQ, loadKey)],
+      sorter: new Sorter("CreatedAt", true),
+      parameters: {
+        $select: "Key,LinkType,EffectiveQuantity,InvoiceQuantity,QuantityDifference,EffectiveValue,InvoiceValue,ValueDifference,Status,CreatedAt",
+        $expand: "SalesInvoice($select=InvoiceNumber,TaxDocumentNumber)",
+      },
+    });
   }
 
   async onShip(): Promise<void> {
@@ -1531,7 +1560,7 @@ export default class Detail extends BaseController {
       "loadInvoicesTable",
       "loadMovementsTable",
       "loadRefusalReturnsTable",
-      "loadReturnDocumentsTable",
+      "loadDivergencesTable",
       "loadDischargesTable",
       "loadTransshipmentsTable",
       "loadPlannedPurchaseTable",
@@ -1658,6 +1687,40 @@ export default class Detail extends BaseController {
     } finally {
       this.setBusy(false);
       this.refreshAll();
+    }
+  }
+
+  private _unlinkInFlight = false;
+
+  /** Desfaz o vínculo das NFs do SAP da carga; o servidor recusa o que não puder (descarga, recusa, cancelamento). */
+  async onUnlinkSapInvoices(): Promise<void> {
+    if (this._unlinkInFlight) return;
+    this._unlinkInFlight = true;
+    try {
+      const confirmed = await new Promise<boolean>(resolve => {
+        MessageBox.confirm(
+          "Desvincular as notas fiscais do SAP desta carga? Os documentos de saída vinculados serão cancelados.", {
+            actions: ["Sim", "Não"],
+            emphasizedAction: "Sim",
+            onClose: (action: string) => resolve(action === "Sim"),
+          });
+      });
+      if (!confirmed) return;
+
+      this.setBusy(true);
+      try {
+        const result = await sendJson("POST", ServerRoutes.shipmentLoadsUnlinkSapInvoices, { Key: this._loadKey });
+        if (!result.ok) {
+          MessageBox.error(result.message);
+          return;
+        }
+        MessageToast.show("Notas fiscais do SAP desvinculadas.");
+        this.refreshAll();
+      } finally {
+        this.setBusy(false);
+      }
+    } finally {
+      this._unlinkInFlight = false;
     }
   }
 }

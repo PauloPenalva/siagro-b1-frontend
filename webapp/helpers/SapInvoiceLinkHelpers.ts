@@ -204,3 +204,24 @@ export function normalizeLinkedDocuments(data: unknown): LinkedDocument[] {
     return { key: key == null ? "" : String(key as string), invoiceNumber: number == null ? "" : String(number as string) };
   });
 }
+
+/** "Desvincular NFs do SAP" só em modo SAP e com a carga já faturada (total ou parcialmente). */
+export function canUnlinkSapInvoices(status: string, sapMode: boolean): boolean {
+  return sapMode === true && (status === "Invoiced" || status === "PartiallyInvoiced");
+}
+
+const LINK_TYPE_TEXTS: Record<string, string> = {
+  "0": "Normal", Normal: "Normal",
+  "1": "Valor divergente", ValueDivergent: "Valor divergente",
+  "2": "Quantidade e valor divergentes", QuantityAndValueDivergent: "Quantidade e valor divergentes",
+};
+
+/** Texto do tipo do vínculo; aceita o número ou o nome do enum que o OData devolve. */
+export function linkTypeText(linkType: number | string): string {
+  return LINK_TYPE_TEXTS[String(linkType)] ?? "";
+}
+
+/** Situação da divergência: Open → "Aberta", Voided → "Anulada". */
+export function divergenceStatusText(status: string): string {
+  return status === "Voided" ? "Anulada" : status === "Open" ? "Aberta" : "";
+}
