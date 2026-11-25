@@ -1,5 +1,6 @@
 import Dialog from "sap/m/Dialog";
 import MessageBox from "sap/m/MessageBox";
+import Log from "sap/base/Log";
 import MessageToast from "sap/m/MessageToast";
 import Fragment from "sap/ui/core/Fragment";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
@@ -20,7 +21,7 @@ import { closedLoadWarning } from "siagrob1/helpers/TransshipmentHelpers";
 import { BaseController } from "./BaseController";
 import ShipmentBillingDialog, { BillingLoad } from "siagrob1/helpers/ShipmentBillingDialog";
 import SapInvoiceLinkDialog, { SapLinkLoad } from "siagrob1/helpers/SapInvoiceLinkDialog";
-import { formatMoney, linkTypeText, divergenceStatusText } from "siagrob1/helpers/SapInvoiceLinkHelpers";
+import { canUnlinkSapInvoices, formatMoney, linkTypeText, divergenceStatusText } from "siagrob1/helpers/SapInvoiceLinkHelpers";
 import { sendJson, odataCollection } from "siagrob1/helpers/FetchHelpers";
 import {
   destinationParameters, RefusalSuccessKind, refusalSuccessKind, transitLossConfirmText, validateRefusalForm,
@@ -153,6 +154,11 @@ export default class Detail extends BaseController {
   // Helpers do vínculo de NF do SAP usados pelas colunas da tabela de divergências.
   formatMoney = formatMoney;
 
+  /** Visibilidade do "Desvincular NFs do SAP": parts ainda indefinidas no primeiro binding valem false. */
+  canUnlinkSapInvoices(status?: string, sapMode?: boolean): boolean {
+    return canUnlinkSapInvoices(status ?? "", sapMode === true);
+  }
+
   linkTypeText = linkTypeText;
 
   divergenceStatusText = divergenceStatusText;
@@ -249,13 +255,14 @@ export default class Detail extends BaseController {
     }
   }
 
-  private async applySapLinkVisibility(): Promise<void> {
+  private async applySapLinkVisibility(): Promise<boolean> {
     const uiModel = this.getModel("ui") as JSONModel;
 
     const systemInfo = await this.getSystemInfo();
     const sapMode = systemInfo?.erp === "SAPB1";
     uiModel.setProperty("/sapInvoiceLinkVisible", sapMode);
     uiModel.setProperty("/sapMode", sapMode);
+    return sapMode;
   }
 
   private detailRouteMatched(ev: Route$MatchedEvent): void {
@@ -263,9 +270,14 @@ export default class Detail extends BaseController {
     if (id == null) return;
 
     this._loadKey = id;
-    void this.applySapLinkVisibility();
+    // O modo SAP só é conhecido de forma assíncrona: as divergências só são ligadas (e requisitadas) quando ele
+    // vale true e a carga da rota ainda é a mesma (a view sobrevive à troca de carga).
+    this.applySapLinkVisibility().then(sapMode => {
+      if (sapMode && this._loadKey === id) {
+        this.bindDivergences(id);
+      }
+    }).catch(() => Log.error("Não foi possível obter o modo de integração do sistema."));
     this.bindElement(`/ShipmentLoads(${id})`);
-    this.bindDivergences(id);
 
     // Passa a chave explícita: bindElement não espera a resposta, e currentLoadKey() leria a
     // Key de um contexto ainda sem dados nesta primeira chamada. `.catch()` em vez de `void`: uma
@@ -289,7 +301,11 @@ export default class Detail extends BaseController {
    */
   private bindDivergences(loadKey: string): void {
     const table = this.byId("loadDivergencesTable") as Table;
-    table?.bindRows({
+    if (!table) {
+      Log.error("Tabela de divergências (loadDivergencesTable) não encontrada.");
+      return;
+    }
+    table.bindRows({
       path: "/SalesInvoiceDivergences",
       filters: [new Filter("ShipmentLoadKey", FilterOperator.EQ, loadKey)],
       sorter: new Sorter("CreatedAt", true),

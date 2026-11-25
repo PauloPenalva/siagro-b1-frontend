@@ -46,7 +46,7 @@
 						text="Desvincular NFs do SAP"
 						type="Transparent"
 						press=".onUnlinkSapInvoices"
-						visible="{= ${ui>/sapInvoiceLinkVisible} === true &amp;&amp; (${path: 'Status', targetType: 'any'} === 'Invoiced' || ${path: 'Status', targetType: 'any'} === 'PartiallyInvoiced') }"/>
+						visible="{ parts: [ { path: 'Status', targetType: 'any' }, { path: 'ui>/sapInvoiceLinkVisible', targetType: 'any' } ], formatter: '.canUnlinkSapInvoices' }"/>
 					<Button
 						text="Recalcular Saldo"
 						type="Transparent"
