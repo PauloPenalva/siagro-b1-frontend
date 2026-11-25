@@ -17,10 +17,6 @@ import { closedLoadWarning } from "siagrob1/helpers/TransshipmentHelpers";
 import { BaseController } from "./BaseController";
 import ShipmentBillingDialog, { BillingLoad } from "siagrob1/helpers/ShipmentBillingDialog";
 import SapInvoiceLinkDialog, { SapLinkLoad } from "siagrob1/helpers/SapInvoiceLinkDialog";
-import SapCreditMemoLinkDialog from "siagrob1/helpers/SapCreditMemoLinkDialog";
-import {
-  isAwaitingSapReturnInvoice, isSapReturnInvoiceLinked, ReturnDocumentRow, sapDocNumText,
-} from "siagrob1/helpers/SapCreditMemoLinkHelpers";
 import { sendJson, odataCollection } from "siagrob1/helpers/FetchHelpers";
 import {
   destinationParameters, RefusalSuccessKind, refusalSuccessKind, transitLossConfirmText, validateRefusalForm,
@@ -175,7 +171,6 @@ export default class Detail extends BaseController {
 
   private _sapLink: SapInvoiceLinkDialog;
 
-  private _sapReturnLink: SapCreditMemoLinkDialog;
 
   onInit(): void {
     this.getView().setModel(new JSONModel({}), "ship");
@@ -221,104 +216,8 @@ export default class Detail extends BaseController {
       },
     });
 
-    // NF de devolução do SAP (GAC-1226): só grava os dados fiscais na devolução; a carga se atualiza para o selo
-    // "Aguardando NF do SAP" sair da linha.
-    this._sapReturnLink = new SapCreditMemoLinkDialog({
-      view: this.getView(),
-      registerTableLayouts: (root) => this.registerTableLayouts(root),
-      onLinked: () => this.refreshAll(),
-    });
-
     this.getRouter().getRoute("shipmentLoadsDetail")
       .attachPatternMatched((ev) => this.detailRouteMatched(ev));
-  }
-
-  // ---------- NF de devolução do SAP (A/R Credit Memo, GAC-1226) ----------
-
-  /** Selo "Aguardando NF do SAP" (formatter da view: os campos chegam soltos, na ordem do binding). */
-  isAwaitingSapReturnInvoice(
-    invoiceType: string, invoiceStatus: string, sapCreditMemoDocEntry: number, taxDocumentNumber: string,
-    withoutTaxDocument: boolean, sapMode: boolean,
-  ): boolean {
-    return isAwaitingSapReturnInvoice({
-      InvoiceType: invoiceType, InvoiceStatus: invoiceStatus, SapCreditMemoDocEntry: sapCreditMemoDocEntry,
-      TaxDocumentNumber: taxDocumentNumber, WithoutTaxDocument: withoutTaxDocument,
-    }, sapMode);
-  }
-
-  isNotAwaitingSapReturnInvoice(
-    invoiceType: string, invoiceStatus: string, sapCreditMemoDocEntry: number, taxDocumentNumber: string,
-    withoutTaxDocument: boolean, sapMode: boolean,
-  ): boolean {
-    return !this.isAwaitingSapReturnInvoice(
-      invoiceType, invoiceStatus, sapCreditMemoDocEntry, taxDocumentNumber, withoutTaxDocument, sapMode);
-  }
-
-  /** "Vincular NF de devolução": toda devolução confirmada sem Credit Memo, mesmo com número digitado antes. */
-  canLinkSapReturnInvoice(
-    invoiceType: string, invoiceStatus: string, sapCreditMemoDocEntry: number, sapMode: boolean,
-  ): boolean {
-    return sapMode === true && invoiceType === "Return" && invoiceStatus === "Confirmed" && sapCreditMemoDocEntry == null;
-  }
-
-  isSapReturnInvoiceLinked(
-    invoiceType: string, invoiceStatus: string, sapCreditMemoDocEntry: number, sapMode: boolean,
-  ): boolean {
-    return isSapReturnInvoiceLinked(
-      { InvoiceType: invoiceType, InvoiceStatus: invoiceStatus, SapCreditMemoDocEntry: sapCreditMemoDocEntry }, sapMode);
-  }
-
-  sapDocNumText(sapDocNum: unknown, sapCreditMemoDocNum: unknown): string {
-    return sapDocNumText(sapDocNum, sapCreditMemoDocNum);
-  }
-
-  /** Linha da tabela "Documentos de devolução" de onde veio o clique. */
-  private returnDocumentRow(ev: Button$PressEvent | Link$PressEvent): ReturnDocumentRow {
-    const source = (ev as Button$PressEvent).getSource();
-    const row = (source.getBindingContext() as Context)?.getObject() as Record<string, unknown>;
-    return row ? { ...row, Quantity: Number(row.NetWeight) || 0 } as ReturnDocumentRow : undefined;
-  }
-
-  onOpenReturnDocument(ev: Link$PressEvent): void {
-    const row = this.returnDocumentRow(ev);
-    if (row?.Key) {
-      this.navTo("salesInvoicesDetail", { id: row.Key });
-    }
-  }
-
-  async onLinkSapCreditMemo(ev: Button$PressEvent): Promise<void> {
-    const row = this.returnDocumentRow(ev);
-    const loadKey = this.currentLoadKey();
-    if (!row?.Key || !loadKey) return;
-
-    await this._sapReturnLink.open(loadKey, row);
-  }
-
-  async onUnlinkSapCreditMemo(ev: Button$PressEvent): Promise<void> {
-    // Lidos ANTES do primeiro await: depois dele a linha pode ter sido recriada pelo refresh.
-    const row = this.returnDocumentRow(ev);
-    const loadKey = this.currentLoadKey();
-    if (!row?.Key || !loadKey) return;
-
-    if (!(await DialogHelper.confirmDialog(
-      `Desvincular a NF de devolução do SAP da devolução ${row.InvoiceNumber ?? ""} ? ` +
-      "Número, série e chave serão apagados e a devolução volta a aguardar a nota. O saldo da carga não muda."))) {
-      return;
-    }
-
-    this.setBusy(true);
-    try {
-      const result = await sendJson(
-        "POST", ServerRoutes.shipmentLoadsUnlinkSapCreditMemo, { Key: loadKey, SalesInvoiceKey: row.Key });
-      if (!result.ok) {
-        MessageBox.error(result.message);
-        return;
-      }
-      MessageToast.show("NF de devolução do SAP desvinculada.");
-    } finally {
-      this.setBusy(false);
-      this.refreshAll();
-    }
   }
 
   /**

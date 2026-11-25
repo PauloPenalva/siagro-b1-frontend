@@ -48,7 +48,6 @@ import "./helpers/InvoiceChargeTotalsHelpers.qunit";
 import "./helpers/AppSearchHelpers.qunit";
 import "./helpers/BillingReleaseSearch.qunit";
 import "./helpers/SapInvoiceLinkHelpers.qunit";
-import "./helpers/SapCreditMemoLinkHelpers.qunit";
 import "./helpers/PaymentReleaseExportHelpers.qunit";
 import "./helpers/ReinfHelpers.qunit";
 import "./helpers/DateHelpers.qunit";
