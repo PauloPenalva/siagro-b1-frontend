@@ -441,7 +441,7 @@ export default class Detail extends BaseController {
     const ctx = this.getView().getBindingContext() as Context;
     if (!ctx) return;
 
-    const fields: (keyof SapLinkLoad)[] = ["Key", "Code", "ItemCode", "AvailableQuantity"];
+    const fields: (keyof SapLinkLoad)[] = ["Key", "Code", "ItemCode", "AvailableQuantity", "CardCode"];
     const values = await ctx.requestProperty(fields as string[]) as unknown[];
     const load = Object.fromEntries(fields.map((f, i) => [f, values[i]])) as SapLinkLoad;
     // Edm.Decimal pode vir como string: a soma das NFs é comparada como número.
