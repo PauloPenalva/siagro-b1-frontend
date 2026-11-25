@@ -2,7 +2,9 @@ import {
   canLink, formatMoney, normalizeLinkPreview, releasesForLoad, normalizeLinkedDocuments,
   defaultLinkPeriod, formatDateText, formatLocalDate, isStaleRequest, normalizeLinkableInvoices,
   preselectedReleaseIndex, withReleaseDisplay, canUnlinkSapInvoices, linkTypeText, divergenceStatusText,
+  divergenceConfirmationText,
 } from "siagrob1/helpers/SapInvoiceLinkHelpers";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
 
 QUnit.module("SapInvoiceLinkHelpers - vínculo de NF do SAP (GAC-1226)");
 
@@ -146,4 +148,18 @@ QUnit.test("linkTypeText aceita número e nome do enum", function (assert) {
 QUnit.test("divergenceStatusText traduz as duas situações", function (assert) {
   assert.strictEqual(divergenceStatusText("Open"), "Aberta");
   assert.strictEqual(divergenceStatusText("Voided"), "Anulada");
+});
+
+QUnit.test("divergenceConfirmationText usa a mensagem do servidor e cai no texto fixo do tipo", function (assert) {
+  assert.strictEqual(divergenceConfirmationText({ LinkType: 1, Message: "Texto do servidor" }), "Texto do servidor");
+  assert.strictEqual(divergenceConfirmationText({ LinkType: 1, Message: null }),
+    "Valor(es) da(s) NF(s) diferente(s) do contrato, deseja finalizar o faturamento?");
+  assert.strictEqual(divergenceConfirmationText({ LinkType: 2, Message: "  " }),
+    "Valor(es) e qtde(s) da(s) NF(s) diferente(s) do contrato, deseja finalizar o faturamento?");
+});
+
+QUnit.test("rota da prévia leva todas as NFs separadas por vírgula, entre aspas", function (assert) {
+  assert.strictEqual(
+    ServerRoutes.shipmentLoadsSapLinkPreview("k1", "r1", [9172, 9171]),
+    "/odata/ShipmentLoadsGetSapLinkPreview(Key=k1,SalesShipmentReleaseKey=r1,SapDocEntries='9172,9171')");
 });

@@ -270,10 +270,10 @@ export default class Detail extends BaseController {
     if (id == null) return;
 
     this._loadKey = id;
-    // O modo SAP só é conhecido de forma assíncrona: as divergências só são ligadas (e requisitadas) quando ele
-    // vale true e a carga da rota ainda é a mesma (a view sobrevive à troca de carga).
     // Síncrono, antes do round trip: a view sobrevive à troca de carga e a tabela não pode mostrar (nem
     // recarregar, no refreshAll) as divergências da carga anterior. Modo SAP já conhecido: liga na hora; senão desliga.
+    // Desconhecido, o modo chega depois: as divergências são ligadas (e requisitadas) só se ele valer true e a carga
+    // da rota ainda for a mesma.
     if ((this.getModel("ui") as JSONModel)?.getProperty("/sapMode") === true) {
       this.bindDivergences(id);
     } else {
@@ -302,15 +302,16 @@ export default class Detail extends BaseController {
       () => MessageBox.error("Erro ao carregar a recusa aguardando NF-e."));
   }
 
-  /**
-   * Liga a tabela de divergências ao conjunto SalesInvoiceDivergences filtrado pela carga: o servidor não
-   * serve a navegação `InvoiceDivergences` da carga (só métodos dedicados, como `Invoices`).
-   */
+  /** Desliga a tabela de divergências (fora do modo SAP, ou enquanto o modo não é conhecido). */
   private unbindDivergences(): void {
     this._divergencesKey = "";
     (this.byId("loadDivergencesTable") as Table)?.unbindRows();
   }
 
+  /**
+   * Liga a tabela de divergências ao conjunto SalesInvoiceDivergences filtrado pela carga: o servidor não
+   * serve a navegação `InvoiceDivergences` da carga (só métodos dedicados, como `Invoices`).
+   */
   private bindDivergences(loadKey: string): void {
     const table = this.byId("loadDivergencesTable") as Table;
     if (!table) {

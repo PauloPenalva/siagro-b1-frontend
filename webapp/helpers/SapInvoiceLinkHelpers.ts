@@ -17,7 +17,6 @@ export type LinkableSapInvoice = {
   UnitPrice: number,
   LineTotal: number,
   Cfop: string,
-  CarrierCode: string,
   FreightTerms: string,
   AccessKey: string,
 }
@@ -81,7 +80,6 @@ export function normalizeLinkableInvoices(data: unknown): LinkableSapInvoice[] {
       UnitPrice: num("UnitPrice"),
       LineTotal: num("LineTotal"),
       Cfop: text("Cfop"),
-      CarrierCode: text("CarrierCode"),
       FreightTerms: text("FreightTerms"),
       AccessKey: text("AccessKey"),
     };
@@ -148,6 +146,18 @@ export type SapLinkPreview = {
   EffectiveValue: number,
   InvoiceValue: number,
   ValueDifference: number,
+}
+
+/** Textos fixos da confirmação, para a prévia de tipo 1 ou 2 que vier sem `Message`. */
+const DIVERGENCE_CONFIRMATION: Record<number, string> = {
+  1: "Valor(es) da(s) NF(s) diferente(s) do contrato, deseja finalizar o faturamento?",
+  2: "Valor(es) e qtde(s) da(s) NF(s) diferente(s) do contrato, deseja finalizar o faturamento?",
+};
+
+/** Pergunta da confirmação da divergência: a do servidor; vazia, o texto fixo do tipo (nunca uma caixa em branco). */
+export function divergenceConfirmationText(preview: Pick<SapLinkPreview, "LinkType" | "Message">): string {
+  const message = preview?.Message?.trim();
+  return message || DIVERGENCE_CONFIRMATION[preview?.LinkType] || DIVERGENCE_CONFIRMATION[2];
 }
 
 /** Normaliza a resposta da prévia (Edm.Decimal pode vir string; valores nulos continuam nulos). Sem `LinkType`: indefinido. */

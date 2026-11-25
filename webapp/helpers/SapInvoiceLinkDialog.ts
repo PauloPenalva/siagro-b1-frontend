@@ -9,9 +9,11 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import ListBinding from "sap/ui/model/ListBinding";
 import Table from "sap/ui/table/Table";
+import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import { BilledRelease, requestAvailableSalesReleases } from "siagrob1/helpers/ShipmentBillingDialog";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
 import {
-  canLink, defaultLinkPeriod, formatKg, formatMoney, isStaleRequest, LinkableSapInvoice, LinkedDocument, normalizeLinkableInvoices,
+  canLink, defaultLinkPeriod, divergenceConfirmationText, formatKg, formatMoney, isStaleRequest, LinkableSapInvoice, LinkedDocument, normalizeLinkableInvoices,
   normalizeLinkedDocuments, normalizeLinkPreview, preselectedReleaseIndex, releasesForLoad, SapLinkPreview, withReleaseDisplay,
 } from "siagrob1/helpers/SapInvoiceLinkHelpers";
 
@@ -166,7 +168,10 @@ export default class SapInvoiceLinkDialog {
     this.host.registerTableLayouts(this._dialog);
   }
 
-  /** NF do SAP do período escolhido (a function traz as de quantidade maior que zero, inclusive as maiores que o saldo da carga, para o usuário notar o erro). */
+  /**
+   * NF do SAP do período escolhido: as de quantidade maior que zero, inclusive as maiores que o saldo da carga (a
+   * divergência é classificada na prévia).
+   */
   private async search(): Promise<void> {
     const model = this.model();
     const requestId = ++this._searchId;
@@ -188,11 +193,9 @@ export default class SapInvoiceLinkDialog {
         return;
       }
       model.setProperty("/Invoices", normalizeLinkableInvoices(func.getBoundContext().getObject()));
-    } catch (e) {
-      if (requestId === this._searchId) {
-        // O 400 de negócio traz a mensagem em pt-BR do servidor; ela é mostrada como veio.
-        MessageBox.error((e as Error).message);
-      }
+    } catch {
+      // A mensagem do servidor já é exibida, uma vez, pelo handler global de mensagens OData
+      // (Component.onMessageBindingChange): mostrar aqui de novo empilhava duas caixas iguais.
     } finally {
       if (requestId === this._searchId) {
         this._dialog.setBusy(false);
@@ -209,10 +212,8 @@ export default class SapInvoiceLinkDialog {
       }
       this._allReleases = releases.map(withReleaseDisplay);
       this.rebuildReleases();
-    } catch (e) {
-      if (!isStaleRequest(openId, this._openId)) {
-        MessageBox.error((e as Error).message);
-      }
+    } catch {
+      // Chamada pelo modelo OData: o handler global de mensagens já mostra o erro.
     }
   }
 
@@ -220,7 +221,7 @@ export default class SapInvoiceLinkDialog {
    * Regra seleção x filtro/ordenação: a seleção da `sap.ui.table.Table` é por ÍNDICE do binding, e filtrar ou ordenar
    * muda os índices — a marcação passaria a apontar para outras NFs. Por isso, ao filtrar/ordenar (e ao buscar), a
    * seleção é LIMPA; e as NFs marcadas são sempre lidas dos índices selecionados pelos contextos do binding, de modo
-   * que a soma mostrada e as NFs enviadas são exatamente as linhas que o usuário vê marcadas.
+   * que a prévia e as NFs enviadas são exatamente as linhas que o usuário vê marcadas.
    */
   private clearInvoiceSelection(): void {
     this.invoicesTable()?.clearSelection();
@@ -291,6 +292,8 @@ export default class SapInvoiceLinkDialog {
   /**
    * Pede ao servidor a prévia (efetivo x NF, tipo do vínculo) para as NFs e a liberação escolhidas. A resposta de uma
    * seleção antiga é descartada pelo token. Erro de negócio aparece uma vez na faixa do rodapé e mantém "Vincular" desabilitado.
+   * Chamada por fetch, fora do modelo OData: pelo modelo o erro aparecia também na caixa global de erro técnico, e
+   * dentro do `$batch` a vírgula entre as NFs chegava codificada ao servidor.
    */
   private async refreshPreview(): Promise<void> {
     const requestId = ++this._previewId;
@@ -303,39 +306,34 @@ export default class SapInvoiceLinkDialog {
 
     const model = this.model();
     model.setProperty("/PreviewLoading", true);
-    const func = (this.host.view.getModel() as ODataModel).bindContext("/ShipmentLoadsGetSapLinkPreview(...)");
-    func.setParameter("Key", this._load.Key);
-    func.setParameter("SalesShipmentReleaseKey", release.SalesShipmentReleaseKey);
-    func.setParameter("SapDocEntries", invoices.map((invoice) => invoice.DocEntry).join(","));
-    try {
-      await func.invoke();
-      if (isStaleRequest(requestId, this._previewId)) {
-        return;
-      }
-      const preview = normalizeLinkPreview(func.getBoundContext().getObject());
-      if (!preview) {
-        this.clearPreview("Não foi possível calcular a prévia do vínculo.");
-        return;
-      }
-      this._preview = preview;
-      model.setProperty("/PreviewLoading", false);
-      model.setProperty("/PreviewError", "");
-      model.setProperty("/PreviewVisible", true);
-      model.setProperty("/QuantityEffective", formatKg(preview.EffectiveQuantity));
-      model.setProperty("/QuantityInvoice", formatKg(preview.InvoiceQuantity));
-      model.setProperty("/QuantityDifference", formatKg(preview.QuantityDifference));
-      model.setProperty("/ValueEffective", formatMoney(preview.EffectiveValue));
-      model.setProperty("/ValueInvoice", formatMoney(preview.InvoiceValue));
-      model.setProperty("/ValueDifference", formatMoney(preview.ValueDifference));
-      model.setProperty("/DivergenceText", preview.LinkType === 2
-        ? "Vínculo com divergência de quantidade e valor"
-        : preview.LinkType === 1 ? "Vínculo com divergência de valor" : "");
-      this.setCanLink();
-    } catch (e) {
-      if (!isStaleRequest(requestId, this._previewId)) {
-        this.clearPreview((e as Error).message);
-      }
+    const result = await sendJson("GET", ServerRoutes.shipmentLoadsSapLinkPreview(
+      this._load.Key, release.SalesShipmentReleaseKey, invoices.map((invoice) => invoice.DocEntry)));
+    if (isStaleRequest(requestId, this._previewId)) {
+      return;
     }
+    if (!result.ok) {
+      this.clearPreview(result.message);
+      return;
+    }
+    const preview = normalizeLinkPreview(odataValue(result.data));
+    if (!preview) {
+      this.clearPreview("Não foi possível calcular a prévia do vínculo.");
+      return;
+    }
+    this._preview = preview;
+    model.setProperty("/PreviewLoading", false);
+    model.setProperty("/PreviewError", "");
+    model.setProperty("/PreviewVisible", true);
+    model.setProperty("/QuantityEffective", formatKg(preview.EffectiveQuantity));
+    model.setProperty("/QuantityInvoice", formatKg(preview.InvoiceQuantity));
+    model.setProperty("/QuantityDifference", formatKg(preview.QuantityDifference));
+    model.setProperty("/ValueEffective", formatMoney(preview.EffectiveValue));
+    model.setProperty("/ValueInvoice", formatMoney(preview.InvoiceValue));
+    model.setProperty("/ValueDifference", formatMoney(preview.ValueDifference));
+    model.setProperty("/DivergenceText", preview.LinkType === 2
+      ? "Vínculo com divergência de quantidade e valor"
+      : preview.LinkType === 1 ? "Vínculo com divergência de valor" : "");
+    this.setCanLink();
   }
 
   /** Pergunta de confirmação da divergência; "Não" ou fechar não faz nada. */
@@ -369,7 +367,7 @@ export default class SapInvoiceLinkDialog {
         return;
       }
 
-      if (preview.LinkType !== 0 && !(await this.confirmDivergence(preview.Message))) {
+      if (preview.LinkType !== 0 && !(await this.confirmDivergence(divergenceConfirmationText(preview)))) {
         return;
       }
 
@@ -385,9 +383,11 @@ export default class SapInvoiceLinkDialog {
       try {
         await action.invoke();
         created = normalizeLinkedDocuments(action.getBoundContext()?.getObject());
-      } catch (e) {
-        // Fica aberto para o usuário escolher outra NF/liberação; a mensagem é a do servidor.
-        MessageBox.error((e as Error).message);
+      } catch {
+        // Fica aberto para o usuário escolher outra NF/liberação. A mensagem do servidor já é exibida, uma vez, pelo
+        // handler global de mensagens OData. A prévia é refeita: se o servidor classificou diferente, a mostrada está
+        // desatualizada e "Vincular" falharia igual de novo.
+        void this.refreshPreview();
         return;
       } finally {
         this._dialog.setBusy(false);
