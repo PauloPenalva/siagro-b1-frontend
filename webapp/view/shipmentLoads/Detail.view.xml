@@ -41,6 +41,12 @@
 						text="Vincular NF do SAP"
 						press=".onLinkSapInvoice"
 						visible="{= ${ui>/sapInvoiceLinkVisible} === true &amp;&amp; ${path: 'LoadType', targetType: 'any'} === 'Normal' &amp;&amp; (${path: 'Status', targetType: 'any'} === 'Open' || ${path: 'Status', targetType: 'any'} === 'PartiallyInvoiced') &amp;&amp; +${path: 'AvailableQuantity', targetType: 'any'} > 0 }"/>
+					<!-- GAC-1226: desfaz o vínculo; só SAPB1 e carga já faturada. -->
+					<Button
+						text="Desvincular NFs do SAP"
+						type="Transparent"
+						press=".onUnlinkSapInvoices"
+						visible="{ parts: [ { path: 'Status', targetType: 'any' }, { path: 'ui>/sapInvoiceLinkVisible', targetType: 'any' } ], formatter: '.canUnlinkSapInvoices' }"/>
 					<Button
 						text="Recalcular Saldo"
 						type="Transparent"
@@ -117,6 +123,13 @@
 						],
 						formatter: '.formatter.formatDischargedAgainstLoaded'
 					}"/>
+				<!-- GAC-1226: peso da carga menos o das NFs vinculadas; negativo quando a NF é maior. -->
+				<ObjectStatus
+					class="sapUiMediumMarginBegin"
+					title="Divergência de NF"
+					state="Warning"
+					visible="{= Math.abs(+${path: 'InvoiceDivergenceQuantity', targetType: 'any'}) > 0 }"
+					text="{ path: 'InvoiceDivergenceQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } } {UnitOfMeasureCode}"/>
 			</HBox>
 		</uxap:headerContent>
 		<uxap:sections>
@@ -408,7 +421,7 @@
 								selectionMode="None"
 								class="sapUiSizeCondensed"
 								visibleRowCount="6"
-								rows="{ path: 'Invoices', parameters: { '$$ownRequest': true, '$select': 'SapDocNum,SapCancelPending,SapCancelPendingReason,SapCreditMemoDocEntry,SapCreditMemoDocNum' } }">
+								rows="{ path: 'Invoices', parameters: { '$$ownRequest': true, '$select': 'SapDocNum,SapCancelPending,SapCancelPendingReason' } }">
 								<t:columns>
 									<t:Column label="Número" width="9rem">
 										<t:template><Text text="{InvoiceNumber}" wrapping="false"/></t:template>
@@ -426,8 +439,7 @@
 										</t:template>
 									</t:Column>
 									<t:Column label="Doc. SAP" hAlign="Center" width="7rem" visible="{= ${path: 'ui>/sapMode', targetType: 'any'} === true }">
-										<!-- Venda: número da invoice. Devolução: número do Credit Memo (GAC-1226). -->
-										<t:template><Text text="{ parts: [ { path: 'SapDocNum', targetType: 'any' }, { path: 'SapCreditMemoDocNum', targetType: 'any' } ], formatter: '.sapDocNumText' }" wrapping="false"/></t:template>
+										<t:template><Text text="{path: 'SapDocNum', targetType: 'any'}" wrapping="false"/></t:template>
 									</t:Column>
 									<t:Column label="Status" hAlign="Center" width="14rem">
 										<t:template>
@@ -450,12 +462,6 @@
 													text="Canc. SAP pendente"
 													tooltip="{SapCancelPendingReason}"
 													visible="{= ${path: 'ui>/sapMode', targetType: 'any'} === true &amp;&amp; ${path: 'SapCancelPending', targetType: 'any'} === true }"/>
-												<!-- GAC-1226: devolução confirmada cuja NF de devolução ainda não saiu no SAP. -->
-												<ObjectStatus
-													class="sapUiTinyMarginBegin"
-													state="Warning"
-													text="Aguardando NF do SAP"
-													visible="{ parts: [ { path: 'InvoiceType', targetType: 'any' }, { path: 'InvoiceStatus', targetType: 'any' }, { path: 'SapCreditMemoDocEntry', targetType: 'any' }, { path: 'TaxDocumentNumber', targetType: 'any' }, { path: 'WithoutTaxDocument', targetType: 'any' }, { path: 'ui>/sapMode', targetType: 'any' } ], formatter: '.isAwaitingSapReturnInvoice' }"/>
 											</HBox>
 										</t:template>
 									</t:Column>
@@ -572,6 +578,71 @@
 							</t:Table>
 						</uxap:blocks>
 					</uxap:ObjectPageSubSection>
+					<!-- GAC-1226: divergências dos vínculos de NF do SAP. Sem navegação própria no servidor
+					     (Invoices tem método dedicado, InvoiceDivergences não): o controller liga as linhas ao
+					     conjunto SalesInvoiceDivergences filtrando pela chave da carga. -->
+					<uxap:ObjectPageSubSection title="Divergências"
+						visible="{= ${path: 'ui>/sapMode', targetType: 'any'} === true }">
+						<uxap:blocks>
+							<t:Table
+								id="loadDivergencesTable"
+								selectionMode="None"
+								class="sapUiSizeCondensed"
+								visibleRowCount="4"
+								noData="Nenhuma divergência registrada.">
+								<t:columns>
+									<t:Column id="divergenceColumnDocument" label="Documento" width="9rem">
+										<t:template><Text text="{SalesInvoice/InvoiceNumber}" wrapping="false"/></t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnTaxDocument" label="NF" width="7rem">
+										<t:template><Text text="{SalesInvoice/TaxDocumentNumber}" wrapping="false"/></t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnType" label="Tipo" width="16rem">
+										<t:template>
+											<Text wrapping="false" text="{ path: 'LinkType', targetType: 'any', formatter: '.linkTypeText' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnEffectiveQuantity" label="Efetivo (kg)" hAlign="End" width="10rem">
+										<t:template>
+											<ObjectNumber textAlign="End" number="{ path: 'EffectiveQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+										</t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnInvoiceQuantity" label="NF (kg)" hAlign="End" width="10rem">
+										<t:template>
+											<ObjectNumber textAlign="End" number="{ path: 'InvoiceQuantity', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+										</t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnQuantityDifference" label="Diferença (kg)" hAlign="End" width="10rem">
+										<t:template>
+											<ObjectNumber textAlign="End" number="{ path: 'QuantityDifference', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
+										</t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnEffectiveValue" label="Valor efetivo" hAlign="End" width="10rem">
+										<t:template>
+											<Text textAlign="End" wrapping="false" text="{ path: 'EffectiveValue', targetType: 'any', formatter: '.formatMoney' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnInvoiceValue" label="Valor da NF" hAlign="End" width="10rem">
+										<t:template>
+											<Text textAlign="End" wrapping="false" text="{ path: 'InvoiceValue', targetType: 'any', formatter: '.formatMoney' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnValueDifference" label="Diferença (R$)" hAlign="End" width="10rem">
+										<t:template>
+											<Text textAlign="End" wrapping="false" text="{ path: 'ValueDifference', targetType: 'any', formatter: '.formatMoney' }"/>
+										</t:template>
+									</t:Column>
+									<t:Column id="divergenceColumnStatus" label="Situação" hAlign="Center" width="8rem">
+										<t:template>
+											<ObjectStatus
+												state="{= ${path: 'Status', targetType: 'any'} === 'Open' ? 'Warning' : 'None' }"
+												text="{ path: 'Status', targetType: 'any', formatter: '.divergenceStatusText' }"/>
+										</t:template>
+									</t:Column>
+								</t:columns>
+							</t:Table>
+						</uxap:blocks>
+					</uxap:ObjectPageSubSection>
 				</uxap:subSections>
 			</uxap:ObjectPageSection>
 
@@ -629,85 +700,6 @@
 			<uxap:ObjectPageSection titleUppercase="false" title="Devoluções e Quebras da Recusa"
 				visible="{= ${path: 'LoadType', targetType: 'any'} !== 'Removal' }">
 				<uxap:subSections>
-					<!-- GAC-1226: documentos de devolução da carga e a NF de devolução emitida no SAP (A/R Credit
-					     Memo). Só em SAPB1: lá a recusa confirma na hora e a nota sai no SAP dias depois. Todos os
-					     campos usados vão no $select explícito (campo de coluna/controle que nasce oculto vira late
-					     property e o GET dela dá 404). -->
-					<uxap:ObjectPageSubSection title="Documentos de devolução"
-						visible="{= ${path: 'ui>/sapMode', targetType: 'any'} === true }">
-						<uxap:blocks>
-							<t:Table
-								id="loadReturnDocumentsTable"
-								selectionMode="None"
-								class="sapUiSizeCondensed"
-								visibleRowCount="4"
-								noData="Nenhuma devolução registrada nesta carga."
-								rows="{ path: 'Invoices', parameters: { '$$ownRequest': true, '$filter': 'InvoiceType eq \'Return\' and InvoiceStatus ne \'Cancelled\'', '$select': 'Key,InvoiceNumber,InvoiceType,InvoiceStatus,InvoiceDate,NetWeight,TaxDocumentNumber,TaxDocumentSeries,WithoutTaxDocument,SapCreditMemoDocEntry,SapCreditMemoDocNum' } }">
-								<t:columns>
-									<t:Column label="Documento" width="9rem">
-										<t:template>
-											<Link text="{InvoiceNumber}" wrapping="false" press=".onOpenReturnDocument"/>
-										</t:template>
-									</t:Column>
-									<t:Column label="NF / Série" width="10rem">
-										<t:template>
-											<Text wrapping="false"
-												text="{= ${path: 'WithoutTaxDocument', targetType: 'any'} === true ? 'Sem NF' : (${path: 'TaxDocumentNumber', targetType: 'any'} ? ${path: 'TaxDocumentNumber', targetType: 'any'} + ' / ' + (${path: 'TaxDocumentSeries', targetType: 'any'} || '') : '') }"/>
-										</t:template>
-									</t:Column>
-									<t:Column label="Doc. SAP" hAlign="Center" width="7rem">
-										<t:template><Text text="{path: 'SapCreditMemoDocNum', targetType: 'any'}" wrapping="false"/></t:template>
-									</t:Column>
-									<t:Column label="Situação" hAlign="Center" width="14rem">
-										<t:template>
-											<HBox justifyContent="Center" alignItems="Center">
-												<ObjectStatus
-													inverted="true"
-													state="Warning"
-													text="Aguardando NF do SAP"
-													visible="{ parts: [ { path: 'InvoiceType', targetType: 'any' }, { path: 'InvoiceStatus', targetType: 'any' }, { path: 'SapCreditMemoDocEntry', targetType: 'any' }, { path: 'TaxDocumentNumber', targetType: 'any' }, { path: 'WithoutTaxDocument', targetType: 'any' }, { path: 'ui>/sapMode', targetType: 'any' } ], formatter: '.isAwaitingSapReturnInvoice' }"/>
-												<ObjectStatus
-													inverted="true"
-													state="{ path: 'InvoiceStatus', targetType: 'any', formatter: '.formatter.stateSalesInvoiceStatus' }"
-													text="{ path: 'InvoiceStatus', targetType: 'any', formatter: '.formatter.formatSalesInvoiceStatus' }"
-													visible="{ parts: [ { path: 'InvoiceType', targetType: 'any' }, { path: 'InvoiceStatus', targetType: 'any' }, { path: 'SapCreditMemoDocEntry', targetType: 'any' }, { path: 'TaxDocumentNumber', targetType: 'any' }, { path: 'WithoutTaxDocument', targetType: 'any' }, { path: 'ui>/sapMode', targetType: 'any' } ], formatter: '.isNotAwaitingSapReturnInvoice' }"/>
-											</HBox>
-										</t:template>
-									</t:Column>
-									<t:Column label="NF de devolução do SAP" width="16rem">
-										<t:template>
-											<HBox alignItems="Center">
-												<Button
-													type="Transparent"
-													icon="sap-icon://chain-link"
-													text="Vincular NF de devolução"
-													press=".onLinkSapCreditMemo"
-													visible="{ parts: [ { path: 'InvoiceType', targetType: 'any' }, { path: 'InvoiceStatus', targetType: 'any' }, { path: 'SapCreditMemoDocEntry', targetType: 'any' }, { path: 'ui>/sapMode', targetType: 'any' } ], formatter: '.canLinkSapReturnInvoice' }"/>
-												<Button
-													type="Transparent"
-													icon="sap-icon://broken-link"
-													text="Desvincular NF de devolução"
-													press=".onUnlinkSapCreditMemo"
-													visible="{ parts: [ { path: 'InvoiceType', targetType: 'any' }, { path: 'InvoiceStatus', targetType: 'any' }, { path: 'SapCreditMemoDocEntry', targetType: 'any' }, { path: 'ui>/sapMode', targetType: 'any' } ], formatter: '.isSapReturnInvoiceLinked' }"/>
-											</HBox>
-										</t:template>
-									</t:Column>
-									<t:Column label="Emissão" width="8rem">
-										<t:template>
-											<Text wrapping="false" text="{ path: 'InvoiceDate', targetType: 'any', formatter: '.formatter.formatDate' }"/>
-										</t:template>
-									</t:Column>
-									<t:Column label="Qtde" hAlign="End" width="9rem">
-										<t:template>
-											<ObjectNumber
-												textAlign="End"
-												number="{ path: 'NetWeight', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 3, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }"/>
-										</t:template>
-									</t:Column>
-								</t:columns>
-							</t:Table>
-						</uxap:blocks>
-					</uxap:ObjectPageSubSection>
 					<uxap:ObjectPageSubSection>
 						<uxap:blocks>
 							<!-- Coleção separada de Transactions de propósito: aquela é o que foi

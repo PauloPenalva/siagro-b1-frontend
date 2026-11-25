@@ -45,7 +45,7 @@
 				alternateRowColors="true"
         rows="{
 					path: '/SalesInvoices',
-          parameters: { $select: 'ShipmentLoadKey,NfeStatus,NfeCancelledAt,InvoiceStatus,InvoiceType,TotalInvoiceItems,TaxDocumentKind,SapDocNum,SapCreditMemoDocNum,SapCancelPending,SapCancelPendingReason' },
+          parameters: { $select: 'ShipmentLoadKey,NfeStatus,NfeCancelledAt,InvoiceStatus,InvoiceType,TotalInvoiceItems,TaxDocumentKind,SapDocNum,SapCancelPending,SapCancelPendingReason' },
           sorter: [
             { path: 'RowId', descending: true }
           ]
@@ -120,7 +120,7 @@
 					</t:Column>
           <t:Column label="Doc. SAP" sortProperty="SapDocNum" hAlign="Center" width="7rem" visible="{= ${path: 'ui>/sapMode', targetType: 'any'} === true }">
 						<t:template>
-							<Text text="{= ${path: 'SapDocNum', targetType: 'any'} || ${path: 'SapCreditMemoDocNum', targetType: 'any'} || '' }" wrapping="false" />
+							<Text text="{= ${path: 'SapDocNum', targetType: 'any'} || '' }" wrapping="false" />
 						</t:template>
 					</t:Column>
           <t:Column

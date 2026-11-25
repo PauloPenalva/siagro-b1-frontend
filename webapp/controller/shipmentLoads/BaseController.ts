@@ -824,11 +824,12 @@ export abstract class BaseController extends CommonController {
     const load = this.getView().getBindingContext() as Context;
 
     // requestProperty, NUNCA getProperty: com autoExpandSelect, o $select do bindElement da
-    // página é montado a partir dos bindings de CONTROLE existentes na view, e nenhum deles
-    // exibe ItemCode/BranchCode/UnitOfMeasureCode como escalar (a filial só aparece via
-    // {Branch/ShortName}, que expande a navegação, não o escalar). getProperty devolveria
-    // undefined em silêncio, e o filtro casaria a string "undefined" com nada — falha muda,
-    // com cara de regra de negócio (o diálogo diria sempre "não há Entrada em Armazenagem").
+    // página é montado a partir dos bindings de CONTROLE existentes na view. A filial só aparece
+    // via {Branch/ShortName}, que expande a navegação, não o escalar BranchCode; ItemCode e
+    // UnitOfMeasureCode hoje estão em bindings da view, mas tirar um deles da tela não pode
+    // quebrar este filtro. getProperty de um campo fora do $select devolveria undefined em
+    // silêncio, e o filtro casaria a string "undefined" com nada — falha muda, com cara de
+    // regra de negócio (o diálogo diria sempre "não há Entrada em Armazenagem").
     const [itemCode, branchCode, unitOfMeasureCode] = await Promise.all([
       load.requestProperty("ItemCode") as Promise<string>,
       load.requestProperty("BranchCode") as Promise<string>,

@@ -90,51 +90,21 @@
 								<Text text="{ path: 'sapLink>LineTotal', type: 'sap.ui.model.type.Float', formatOptions: { decimals: 2, decimalSeparator: ',', groupingEnabled: true, groupingSeparator: '.' } }" wrapping="false"/>
 							</t:template>
 						</t:Column>
-						<t:Column id="sapLinkInvoicesCarrierColumn" width="9rem" sortProperty="CarrierCode" filterProperty="CarrierCode">
-							<Label text="Transportadora"/>
-							<t:template>
-								<HBox alignItems="Center">
-									<Text text="{sapLink>CarrierCode}" wrapping="false"/>
-									<core:Icon
-										class="sapUiTinyMarginBegin"
-										src="sap-icon://alert"
-										color="Critical"
-										tooltip="Transportadora da NF diferente da carga"
-										visible="{= ${sapLink>CarrierMismatch} === true }"/>
-								</HBox>
-							</t:template>
-						</t:Column>
 					</t:columns>
-					<t:footer>
-						<HBox alignItems="Center" wrap="Wrap">
-							<ObjectStatus
-								text="{sapLink>/SummaryText}"
-								state="{= ${sapLink>/SumExceeds} === true ? 'Error' : (${sapLink>/SumBelow} === true ? 'Warning' : (${sapLink>/SumMatches} === true ? 'Success' : 'None')) }"/>
-							<ObjectStatus
-								class="sapUiSmallMarginBegin"
-								text="A soma das notas fiscais é maior que o saldo da carga."
-								state="Error"
-								icon="sap-icon://error"
-								visible="{= ${sapLink>/SumExceeds} === true }"/>
-							<ObjectStatus
-								class="sapUiSmallMarginBegin"
-								text="A soma das notas fiscais é menor que o saldo da carga."
-								state="Warning"
-								icon="sap-icon://message-warning"
-								visible="{= ${sapLink>/SumBelow} === true }"/>
-							<ObjectStatus
-								class="sapUiSmallMarginBegin"
-								text="Selecione notas fiscais do mesmo cliente."
-								state="Error"
-								icon="sap-icon://error"
-								visible="{= ${sapLink>/MixedCustomers} === true }"/>
-						</HBox>
-					</t:footer>
 				</t:Table>
+
+				<HBox class="sapUiMediumMarginTop" alignItems="Center">
+					<Label text="Mostrar liberações de outros clientes" class="sapUiSmallMarginEnd"/>
+					<Switch
+						state="{sapLink>/ShowOthers}"
+						change=".onShowOthersChange"
+						customTextOn="Sim"
+						customTextOff="Não"/>
+				</HBox>
 
 				<t:Table
 					id="sapLinkReleasesTable"
-					class="sapUiMediumMarginTop sapUiSizeCondensed"
+					class="sapUiTinyMarginTop sapUiSizeCondensed"
 					selectionMode="Single"
 					selectionBehavior="RowSelector"
 					alternateRowColors="true"
@@ -168,7 +138,7 @@
 									text="{sapLink>CustomerText}"
 									state="{= ${sapLink>OtherCustomer} === true ? 'Warning' : 'None' }"
 									icon="{= ${sapLink>OtherCustomer} === true ? 'sap-icon://message-warning' : '' }"
-									tooltip="{= ${sapLink>OtherCustomer} === true ? 'Cliente diferente do da nota fiscal. O documento de saída nasce com o cliente da nota fiscal; o saldo é baixado neste contrato.' : ${sapLink>CustomerText} }"/>
+									tooltip="{= ${sapLink>OtherCustomer} === true ? 'Cliente diferente do da carga. O documento de saída nasce com o cliente da nota fiscal; o saldo é baixado neste contrato.' : ${sapLink>CustomerText} }"/>
 							</t:template>
 						</t:Column>
 						<t:Column id="sapLinkReleasesWarehouseColumn" width="15rem" sortProperty="DeliveryLocationName" filterProperty="DeliveryLocationName">
@@ -201,6 +171,40 @@
 						</t:Column>
 					</t:columns>
 				</t:Table>
+
+				<MessageStrip
+					class="sapUiSmallMarginTop"
+					text="{sapLink>/PreviewError}"
+					type="Error"
+					showIcon="true"
+					visible="{= ${sapLink>/PreviewError} !== '' }"/>
+				<MessageStrip
+					class="sapUiSmallMarginTop"
+					text="{sapLink>/DivergenceText}"
+					type="Warning"
+					showIcon="true"
+					visible="{= ${sapLink>/DivergenceText} !== '' }"/>
+				<VBox class="sapUiSmallMarginTop" busyIndicatorDelay="0" busy="{= ${sapLink>/PreviewLoading} === true }"
+					visible="{= ${sapLink>/PreviewVisible} === true || ${sapLink>/PreviewLoading} === true }">
+					<HBox alignItems="Center" wrap="Wrap">
+						<Label text="Quantidade (kg)" width="9rem"/>
+						<Label text="Efetivo:" class="sapUiTinyMarginEnd"/>
+						<ObjectStatus text="{sapLink>/QuantityEffective}" class="sapUiMediumMarginEnd"/>
+						<Label text="NF:" class="sapUiTinyMarginEnd"/>
+						<ObjectStatus text="{sapLink>/QuantityInvoice}" class="sapUiMediumMarginEnd"/>
+						<Label text="Diferença:" class="sapUiTinyMarginEnd"/>
+						<ObjectStatus text="{sapLink>/QuantityDifference}"/>
+					</HBox>
+					<HBox alignItems="Center" wrap="Wrap">
+						<Label text="Valor (R$)" width="9rem"/>
+						<Label text="Valor efetivo:" class="sapUiTinyMarginEnd"/>
+						<ObjectStatus text="{sapLink>/ValueEffective}" class="sapUiMediumMarginEnd"/>
+						<Label text="Valor da NF:" class="sapUiTinyMarginEnd"/>
+						<ObjectStatus text="{sapLink>/ValueInvoice}" class="sapUiMediumMarginEnd"/>
+						<Label text="Diferença:" class="sapUiTinyMarginEnd"/>
+						<ObjectStatus text="{sapLink>/ValueDifference}"/>
+					</HBox>
+				</VBox>
 			</VBox>
 		</content>
 		<buttons>

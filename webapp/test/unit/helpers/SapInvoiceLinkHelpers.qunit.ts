@@ -1,9 +1,10 @@
 import {
-  canLink, commonCustomer, exceedsAvailable, hasMixedCustomers, matchesAvailable, normalizeLinkedDocuments, releasesForInvoices,
-  selectionSummaryText, sumQuantity,
-  defaultLinkPeriod, filterReleasesByCustomer, formatDateText, formatLocalDate, isStaleRequest, normalizeLinkableInvoices,
-  preselectedReleaseIndex, shouldKeepRelease, withReleaseDisplay,
+  canLink, formatMoney, normalizeLinkPreview, releasesForLoad, normalizeLinkedDocuments,
+  defaultLinkPeriod, formatDateText, formatLocalDate, isStaleRequest, normalizeLinkableInvoices,
+  preselectedReleaseIndex, withReleaseDisplay, canUnlinkSapInvoices, linkTypeText, divergenceStatusText,
+  divergenceConfirmationText,
 } from "siagrob1/helpers/SapInvoiceLinkHelpers";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
 
 QUnit.module("SapInvoiceLinkHelpers - vínculo de NF do SAP (GAC-1226)");
 
@@ -27,33 +28,24 @@ QUnit.test("formatDateText não passa por Date", function (assert) {
 QUnit.test("normalizeLinkableInvoices aceita PascalCase e camelCase", function (assert) {
   const pascal = normalizeLinkableInvoices([{
     DocEntry: 7, DocNum: 70, DocDate: "2026-11-10", CardCode: "C1", CardName: "Cli", TaxDocumentNumber: "000000123",
-    TaxDocumentSeries: "001", Quantity: 1500.5, UnitPrice: 2, LineTotal: 3001, CarrierMismatch: true,
+    TaxDocumentSeries: "001", Quantity: 1500.5, UnitPrice: 2, LineTotal: 3001,
   }]);
-  const camel = normalizeLinkableInvoices({ value: [{ docEntry: 7, cardCode: "C1", carrierMismatch: true, quantity: "1500.5" }] });
+  const camel = normalizeLinkableInvoices({ value: [{ docEntry: 7, cardCode: "C1", quantity: "1500.5" }] });
 
   assert.strictEqual(pascal[0].DocEntry, 7);
   assert.strictEqual(pascal[0].DocDateText, "10/11/2026");
-  assert.strictEqual(pascal[0].CarrierMismatch, true);
   assert.strictEqual(camel[0].DocEntry, 7);
   assert.strictEqual(camel[0].CardCode, "C1");
   assert.strictEqual(camel[0].Quantity, 1500.5);
-  assert.strictEqual(camel[0].CarrierMismatch, true);
 });
 
-QUnit.test("normalizeLinkableInvoices: resposta ausente vira lista vazia e mismatch não booleano é falso", function (assert) {
+QUnit.test("normalizeLinkableInvoices: resposta ausente vira lista vazia", function (assert) {
   assert.deepEqual(normalizeLinkableInvoices(undefined), []);
-  assert.strictEqual(normalizeLinkableInvoices([{ DocEntry: 1, CarrierMismatch: "true" }])[0].CarrierMismatch, false);
 });
 
-QUnit.test("filterReleasesByCustomer e pré-seleção", function (assert) {
-  const releases = [{ CardCode: "C1", k: 1 }, { CardCode: "C2", k: 2 }, { CardCode: "C1", k: 3 }];
-
-  assert.strictEqual(filterReleasesByCustomer(releases, "C1").length, 2);
-  assert.deepEqual(filterReleasesByCustomer(releases, "C9"), []);
-  assert.deepEqual(filterReleasesByCustomer(releases, ""), []);
-
-  assert.strictEqual(preselectedReleaseIndex(filterReleasesByCustomer(releases, "C2")), 0);
-  assert.strictEqual(preselectedReleaseIndex(filterReleasesByCustomer(releases, "C1")), -1);
+QUnit.test("preselectedReleaseIndex só escolhe quando há exatamente uma liberação", function (assert) {
+  assert.strictEqual(preselectedReleaseIndex([{ k: 1 }]), 0);
+  assert.strictEqual(preselectedReleaseIndex([{ k: 1 }, { k: 2 }]), -1);
   assert.strictEqual(preselectedReleaseIndex([]), -1);
 });
 
@@ -69,73 +61,11 @@ QUnit.test("normalizeLinkableInvoices monta textos e chave de ordenação da dat
   assert.strictEqual(row.CustomerText, "(C1) Cli");
 });
 
-QUnit.test("sumQuantity, cliente comum e clientes misturados", function (assert) {
-  const same = [{ Quantity: 30000.25, CardCode: "C1" }, { Quantity: 1000.5, CardCode: "C1" }];
-  const mixed = [{ Quantity: 1, CardCode: "C1" }, { Quantity: 2, CardCode: "C2" }];
-  assert.strictEqual(sumQuantity(same), 31000.75);
-  assert.strictEqual(sumQuantity([]), 0);
-  assert.strictEqual(commonCustomer(same), "C1");
-  assert.strictEqual(commonCustomer(mixed), "");
-  assert.strictEqual(commonCustomer([]), "");
-  assert.strictEqual(hasMixedCustomers(mixed), true);
-  assert.strictEqual(hasMixedCustomers(same), false);
-});
-
-QUnit.test("matchesAvailable usa tolerância de 0,001", function (assert) {
-  assert.strictEqual(matchesAvailable(1000.001, 1000), true);
-  assert.strictEqual(matchesAvailable(999.999, 1000), true);
-  assert.strictEqual(matchesAvailable(1000.002, 1000), false);
-  // Soma de ponto flutuante (0,1 + 0,2) não pode reprovar.
-  assert.strictEqual(matchesAvailable(sumQuantity([{ Quantity: 0.1 }, { Quantity: 0.2 }]), 0.3), true);
-});
-
-QUnit.test("canLink exige NF, mesmo cliente, soma igual ao saldo e liberação", function (assert) {
-  const ok = [{ Quantity: 600, CardCode: "C1" }, { Quantity: 400, CardCode: "C1" }];
-  assert.strictEqual(canLink(ok, 1000, true), true);
-  assert.strictEqual(canLink(ok, 1000, false), false);
-  assert.strictEqual(canLink(ok, 1200, true), false);
-  assert.strictEqual(canLink([], 0, true), false);
-  assert.strictEqual(canLink([{ Quantity: 600, CardCode: "C1" }, { Quantity: 400, CardCode: "C2" }], 1000, true), false);
-});
-
-QUnit.test("canLink: soma menor ou maior que o saldo não habilita", function (assert) {
-  assert.strictEqual(canLink([{ Quantity: 600, CardCode: "C1" }], 1000, true), false);
-  assert.strictEqual(canLink([{ Quantity: 1200, CardCode: "C1" }], 1000, true), false);
-  assert.strictEqual(canLink([{ Quantity: 1000.001, CardCode: "C1" }], 1000, true), true);
-});
-
-QUnit.test("exceedsAvailable respeita a tolerância", function (assert) {
-  assert.strictEqual(exceedsAvailable(1000.001, 1000), false);
-  assert.strictEqual(exceedsAvailable(1000.002, 1000), true);
-  assert.strictEqual(exceedsAvailable(500, 1000), false);
-});
-
-QUnit.test("releasesForInvoices traz todas: as do cliente da NF primeiro, as outras marcadas", function (assert) {
-  const releases = [{ CardCode: "C1" }, { CardCode: "C2" }];
-  assert.deepEqual(releasesForInvoices(releases, [{ CardCode: "C2" }, { CardCode: "C2" }]),
-    [{ CardCode: "C2", OtherCustomer: false }, { CardCode: "C1", OtherCustomer: true }]);
-  assert.deepEqual(releasesForInvoices(releases, [{ CardCode: "C1" }, { CardCode: "C2" }]), []);
-  assert.deepEqual(releasesForInvoices(releases, []), []);
-});
-
-QUnit.test("selectionSummaryText em pt-BR com 3 casas", function (assert) {
-  assert.strictEqual(selectionSummaryText(31000.75, 32000), "Selecionado: 31.000,750 kg de 32.000,000 kg");
-});
-
 QUnit.test("normalizeLinkedDocuments aceita camelCase e PascalCase", function (assert) {
   assert.deepEqual(normalizeLinkedDocuments({ documents: [{ key: "a", invoiceNumber: "1" }, { key: "b", invoiceNumber: "2" }] }),
     [{ key: "a", invoiceNumber: "1" }, { key: "b", invoiceNumber: "2" }]);
   assert.deepEqual(normalizeLinkedDocuments({ Documents: [{ Key: "a", InvoiceNumber: "1" }] }), [{ key: "a", invoiceNumber: "1" }]);
   assert.deepEqual(normalizeLinkedDocuments(undefined), []);
-});
-
-QUnit.test("shouldKeepRelease: mantém só quando o cliente comum não mudou e a seleção não está vazia nem mista", function (assert) {
-  const c1 = { CardCode: "C1" };
-  assert.strictEqual(shouldKeepRelease("C1", [c1, c1]), true, "mesmo cliente");
-  assert.strictEqual(shouldKeepRelease("C1", [{ CardCode: "C2" }]), false, "cliente trocado");
-  assert.strictEqual(shouldKeepRelease("C1", []), false, "seleção vazia");
-  assert.strictEqual(shouldKeepRelease("C1", [c1, { CardCode: "C2" }]), false, "seleção mista");
-  assert.strictEqual(shouldKeepRelease("", [c1]), false, "nada filtrado antes");
 });
 
 QUnit.test("withReleaseDisplay: texto do cliente e preço exibido (comercial, senão o preço)", function (assert) {
@@ -144,4 +74,92 @@ QUnit.test("withReleaseDisplay: texto do cliente e preço exibido (comercial, se
   assert.strictEqual(withCommercial.DisplayPrice, 120);
   assert.strictEqual(withReleaseDisplay({ Price: "2.5" }).DisplayPrice, 2.5);
   assert.strictEqual(withReleaseDisplay({}).DisplayPrice, undefined);
+});
+
+QUnit.test("releasesForLoad mostra só as do cliente da carga por padrão", function (assert) {
+  const releases = [{ CardCode: "C1", k: 1 }, { CardCode: "C2", k: 2 }, { CardCode: "C3", k: 3 }];
+  assert.deepEqual(releasesForLoad(releases, "C2", false), [{ CardCode: "C2", k: 2, OtherCustomer: false }]);
+  assert.strictEqual(releasesForLoad(releases, " C2 ", false).length, 1, "o código da carga é aparado");
+});
+
+QUnit.test("releasesForLoad com showOthers traz todas, as do cliente primeiro, marcadas", function (assert) {
+  const releases = [{ CardCode: "C1" }, { CardCode: "C2" }, { CardCode: "C1" }];
+  assert.deepEqual(releasesForLoad(releases, "C2", true), [
+    { CardCode: "C2", OtherCustomer: false }, { CardCode: "C1", OtherCustomer: true }, { CardCode: "C1", OtherCustomer: true },
+  ]);
+});
+
+QUnit.test("releasesForLoad sem cliente na carga devolve vazio", function (assert) {
+  assert.deepEqual(releasesForLoad([{ CardCode: "C1" }], "", true), []);
+  assert.deepEqual(releasesForLoad([{ CardCode: "C1" }], undefined, false), []);
+});
+
+QUnit.test("canLink exige NF e liberação e não olha o saldo", function (assert) {
+  assert.strictEqual(canLink([{ Quantity: 600 }, { Quantity: 100 }], true), true, "soma diferente do saldo");
+  assert.strictEqual(canLink([{ Quantity: 600 }], false), false);
+  assert.strictEqual(canLink([], true), false);
+});
+
+QUnit.test("normalizeLinkPreview converte Edm.Decimal em número e mantém nulos", function (assert) {
+  const preview = normalizeLinkPreview({
+    LinkType: 2, Message: "Deseja finalizar o faturamento?", EffectiveQuantity: "30000.000", InvoiceQuantity: "29000.5",
+    QuantityDifference: "-999.5", EffectiveValue: null, InvoiceValue: "59600.00", ValueDifference: null,
+  });
+  assert.strictEqual(preview.LinkType, 2);
+  assert.strictEqual(preview.Message, "Deseja finalizar o faturamento?");
+  assert.strictEqual(preview.EffectiveQuantity, 30000);
+  assert.strictEqual(preview.QuantityDifference, -999.5);
+  assert.strictEqual(preview.EffectiveValue, null);
+  assert.strictEqual(preview.InvoiceValue, 59600);
+  assert.strictEqual(preview.ValueDifference, null);
+  assert.strictEqual(normalizeLinkPreview({ linkType: 0, invoiceQuantity: 5 }).InvoiceQuantity, 5, "camelCase");
+});
+
+QUnit.test("normalizeLinkPreview recusa resposta sem LinkType", function (assert) {
+  assert.strictEqual(normalizeLinkPreview({ Message: "x" }), undefined);
+  assert.strictEqual(normalizeLinkPreview(undefined), undefined);
+  assert.strictEqual(normalizeLinkPreview({ LinkType: "" }), undefined, "LinkType vazio");
+  assert.strictEqual(normalizeLinkPreview({ LinkType: "abc" }), undefined, "LinkType não numérico");
+});
+
+QUnit.test("formatMoney formata em pt-BR e mostra travessão no nulo", function (assert) {
+  assert.strictEqual(formatMoney(59600), "R$ 59.600,00");
+  assert.strictEqual(formatMoney(-1234.5), "R$ -1.234,50");
+  assert.strictEqual(formatMoney(null), "—");
+  assert.strictEqual(formatMoney(NaN), "—");
+});
+
+QUnit.test("canUnlinkSapInvoices só em SAP e com carga faturada", function (assert) {
+  assert.strictEqual(canUnlinkSapInvoices("Invoiced", true), true);
+  assert.strictEqual(canUnlinkSapInvoices("PartiallyInvoiced", true), true);
+  assert.strictEqual(canUnlinkSapInvoices("Discharged", true), false);
+  assert.strictEqual(canUnlinkSapInvoices("Invoiced", false), false);
+});
+
+QUnit.test("linkTypeText aceita número e nome do enum", function (assert) {
+  assert.strictEqual(linkTypeText(0), "Normal");
+  assert.strictEqual(linkTypeText(1), "Valor divergente");
+  assert.strictEqual(linkTypeText(2), "Quantidade e valor divergentes");
+  assert.strictEqual(linkTypeText("Normal"), "Normal");
+  assert.strictEqual(linkTypeText("ValueDivergent"), "Valor divergente");
+  assert.strictEqual(linkTypeText("QuantityAndValueDivergent"), "Quantidade e valor divergentes");
+});
+
+QUnit.test("divergenceStatusText traduz as duas situações", function (assert) {
+  assert.strictEqual(divergenceStatusText("Open"), "Aberta");
+  assert.strictEqual(divergenceStatusText("Voided"), "Anulada");
+});
+
+QUnit.test("divergenceConfirmationText usa a mensagem do servidor e cai no texto fixo do tipo", function (assert) {
+  assert.strictEqual(divergenceConfirmationText({ LinkType: 1, Message: "Texto do servidor" }), "Texto do servidor");
+  assert.strictEqual(divergenceConfirmationText({ LinkType: 1, Message: null }),
+    "Valor(es) da(s) NF(s) diferente(s) do contrato, deseja finalizar o faturamento?");
+  assert.strictEqual(divergenceConfirmationText({ LinkType: 2, Message: "  " }),
+    "Valor(es) e qtde(s) da(s) NF(s) diferente(s) do contrato, deseja finalizar o faturamento?");
+});
+
+QUnit.test("rota da prévia leva todas as NFs separadas por vírgula, entre aspas", function (assert) {
+  assert.strictEqual(
+    ServerRoutes.shipmentLoadsSapLinkPreview("k1", "r1", [9172, 9171]),
+    "/odata/ShipmentLoadsGetSapLinkPreview(Key=k1,SalesShipmentReleaseKey=r1,SapDocEntries='9172,9171')");
 });

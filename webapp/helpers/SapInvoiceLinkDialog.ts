@@ -9,15 +9,16 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import ListBinding from "sap/ui/model/ListBinding";
 import Table from "sap/ui/table/Table";
+import { odataValue, sendJson } from "siagrob1/helpers/FetchHelpers";
 import { BilledRelease, requestAvailableSalesReleases } from "siagrob1/helpers/ShipmentBillingDialog";
+import ServerRoutes from "siagrob1/model/ServerRoutes";
 import {
-  canLink, commonCustomer, defaultLinkPeriod, exceedsAvailable, hasMixedCustomers, isStaleRequest, LinkableSapInvoice, LinkedDocument, matchesAvailable,
-  normalizeLinkableInvoices, normalizeLinkedDocuments, preselectedReleaseIndex, releasesForInvoices, selectionSummaryText, shouldKeepRelease,
-  sumQuantity, withReleaseDisplay,
+  canLink, defaultLinkPeriod, divergenceConfirmationText, formatKg, formatMoney, isStaleRequest, LinkableSapInvoice, LinkedDocument, normalizeLinkableInvoices,
+  normalizeLinkedDocuments, normalizeLinkPreview, preselectedReleaseIndex, releasesForLoad, SapLinkPreview, withReleaseDisplay,
 } from "siagrob1/helpers/SapInvoiceLinkHelpers";
 
 /** Carga a vincular — os campos que o diálogo usa. */
-export type SapLinkLoad = { Key: string, Code: string, ItemCode: string, AvailableQuantity: number }
+export type SapLinkLoad = { Key: string, Code: string, ItemCode: string, CardCode: string }
 
 export type { LinkedDocument };
 
@@ -38,23 +39,29 @@ type SapLinkState = {
   DateTo: string,
   Invoices: LinkableSapInvoice[],
   Releases: BilledRelease[],
-  /** Rodapé "Selecionado: … kg de … kg". */
-  SummaryText: string,
-  /** Soma marcada igual ao saldo da carga. */
-  SumMatches: boolean,
-  /** Soma marcada maior que o saldo: rodapé em erro. */
-  SumExceeds: boolean,
-  /** Há NF marcada e a soma é menor que o saldo: rodapé em aviso. */
-  SumBelow: boolean,
-  /** NFs marcadas de mais de um cliente: rodapé em erro. */
-  MixedCustomers: boolean,
-  /** NFs do mesmo cliente com soma igual ao saldo e liberação escolhida: habilita "Vincular". */
+  /** Mostra também as liberações de outros clientes (desligado a cada abertura). */
+  ShowOthers: boolean,
+  /** Há prévia válida para a seleção atual: mostra o rodapé de valores. */
+  PreviewVisible: boolean,
+  /** Prévia em andamento. */
+  PreviewLoading: boolean,
+  /** Mensagem do servidor quando a prévia falha (vazio: sem erro). */
+  PreviewError: string,
+  /** Faixa de aviso do vínculo com divergência (vazio: sem divergência). */
+  DivergenceText: string,
+  QuantityEffective: string,
+  QuantityInvoice: string,
+  QuantityDifference: string,
+  ValueEffective: string,
+  ValueInvoice: string,
+  ValueDifference: string,
+  /** Há NF, liberação e a prévia da seleção atual deu certo: habilita "Vincular". */
   CanLink: boolean,
 }
 
 /**
- * Diálogo "Vincular NF do SAP" da carga (GAC-1226): escolhe uma ou mais NFs do SAP ainda não vinculadas, do mesmo
- * cliente e com soma igual ao saldo da carga, e uma liberação de entrega desse cliente; o backend cria um documento
+ * Diálogo "Vincular NF do SAP" da carga (GAC-1226): escolhe uma ou mais NFs do SAP ainda não vinculadas e uma liberação de entrega; o backend calcula a prévia
+ * (efetivo x NF) e aceita divergência de quantidade e/ou valor após a confirmação do usuário; cria um documento
  * de saída por NF. O model do fragmento chama-se
  * "sapLink" para não colidir com o "viewModel" do detalhe nem com os "billing…" do diálogo de faturar.
  */
@@ -71,18 +78,23 @@ export default class SapInvoiceLinkDialog {
    * carga das liberações descartaria a resposta delas e a lista ficaria vazia até reabrir o diálogo.
    */
   private _openId = 0;
-  /** Todas as liberações disponíveis do item; o model mostra só as do cliente da NF escolhida. */
+  /** Todas as liberações disponíveis do item; o model mostra as do cliente da carga (ou todas, com o switch). */
   private _allReleases: BilledRelease[] = [];
   /** NFs marcadas, lidas dos índices selecionados pelos contextos do binding (o que o usuário vê marcado). */
   private _selectedInvoices: LinkableSapInvoice[] = [];
-  /** Cliente comum das NFs para o qual as liberações do model foram filtradas (vazio: nenhum). */
-  private _releaseCustomer = "";
+  /** Montagem da lista de liberações em curso: os eventos de seleção dela não pedem prévia (só a chamada final). */
+  private _rebuildingReleases = false;
+  /** Token da prévia: resposta de uma seleção antiga nunca sobrescreve a atual. */
+  private _previewId = 0;
+  /** Prévia da seleção atual (indefinida enquanto carrega, sem seleção ou com erro). */
+  private _preview: SapLinkPreview;
 
   /** Controller do fragmento: handlers como funções do próprio helper. */
   private readonly _fragmentController = {
     onSearch: (): void => void this.search(),
     onInvoiceSelect: (): void => this.onInvoiceSelect(),
-    onReleaseSelect: (): void => this.updateCanLink(),
+    onReleaseSelect: (): void => { if (!this._rebuildingReleases) void this.refreshPreview(); },
+    onShowOthersChange: (): void => this.rebuildReleases(),
     onInvoicesFilterOrSort: (): void => this.clearInvoiceSelection(),
     onReleasesFilterOrSort: (): void => { this.releasesTable()?.clearSelection(); },
     onLink: (): Promise<void> => this.link(),
@@ -99,13 +111,13 @@ export default class SapInvoiceLinkDialog {
     this._openId++;
     this._allReleases = [];
     this._selectedInvoices = [];
-    this._releaseCustomer = "";
+    this._preview = undefined;
+    this._previewId++;
     this.model().setData(this.emptyState());
 
     await this.ensureDialog();
     this.invoicesTable().clearSelection();
     this.releasesTable().clearSelection();
-    this.updateCanLink();
     this._dialog.open();
 
     await Promise.all([this.search(), this.loadReleases()]);
@@ -114,13 +126,15 @@ export default class SapInvoiceLinkDialog {
   close(): void {
     this._searchId++;
     this._openId++;
+    this._previewId++;
     this._dialog?.close();
   }
 
   private emptyState(): SapLinkState {
     return {
-      ...defaultLinkPeriod(), Invoices: [], Releases: [], SummaryText: selectionSummaryText(0, this._load?.AvailableQuantity),
-      SumMatches: false, SumExceeds: false, SumBelow: false, MixedCustomers: false, CanLink: false,
+      ...defaultLinkPeriod(), Invoices: [], Releases: [], ShowOthers: false, PreviewVisible: false, PreviewLoading: false,
+      PreviewError: "", DivergenceText: "", QuantityEffective: "—", QuantityInvoice: "—", QuantityDifference: "—",
+      ValueEffective: "—", ValueInvoice: "—", ValueDifference: "—", CanLink: false,
     };
   }
 
@@ -154,7 +168,10 @@ export default class SapInvoiceLinkDialog {
     this.host.registerTableLayouts(this._dialog);
   }
 
-  /** NF do SAP do período escolhido (a function traz as de quantidade maior que zero, inclusive as maiores que o saldo da carga, para o usuário notar o erro). */
+  /**
+   * NF do SAP do período escolhido: as de quantidade maior que zero, inclusive as maiores que o saldo da carga (a
+   * divergência é classificada na prévia).
+   */
   private async search(): Promise<void> {
     const model = this.model();
     const requestId = ++this._searchId;
@@ -176,11 +193,9 @@ export default class SapInvoiceLinkDialog {
         return;
       }
       model.setProperty("/Invoices", normalizeLinkableInvoices(func.getBoundContext().getObject()));
-    } catch (e) {
-      if (requestId === this._searchId) {
-        // O 400 de negócio traz a mensagem em pt-BR do servidor; ela é mostrada como veio.
-        MessageBox.error((e as Error).message);
-      }
+    } catch {
+      // A mensagem do servidor já é exibida, uma vez, pelo handler global de mensagens OData
+      // (Component.onMessageBindingChange): mostrar aqui de novo empilhava duas caixas iguais.
     } finally {
       if (requestId === this._searchId) {
         this._dialog.setBusy(false);
@@ -196,14 +211,9 @@ export default class SapInvoiceLinkDialog {
         return;
       }
       this._allReleases = releases.map(withReleaseDisplay);
-      // Lista recarregada: a liberação escolhida (se houver) deixa de valer.
-      this._releaseCustomer = "";
-      // Se a NF já foi escolhida enquanto as liberações carregavam, refaz o filtro e a pré-seleção dela.
-      this.applyReleaseFilter();
-    } catch (e) {
-      if (!isStaleRequest(openId, this._openId)) {
-        MessageBox.error((e as Error).message);
-      }
+      this.rebuildReleases();
+    } catch {
+      // Chamada pelo modelo OData: o handler global de mensagens já mostra o erro.
     }
   }
 
@@ -211,7 +221,7 @@ export default class SapInvoiceLinkDialog {
    * Regra seleção x filtro/ordenação: a seleção da `sap.ui.table.Table` é por ÍNDICE do binding, e filtrar ou ordenar
    * muda os índices — a marcação passaria a apontar para outras NFs. Por isso, ao filtrar/ordenar (e ao buscar), a
    * seleção é LIMPA; e as NFs marcadas são sempre lidas dos índices selecionados pelos contextos do binding, de modo
-   * que a soma mostrada e as NFs enviadas são exatamente as linhas que o usuário vê marcadas.
+   * que a prévia e as NFs enviadas são exatamente as linhas que o usuário vê marcadas.
    */
   private clearInvoiceSelection(): void {
     this.invoicesTable()?.clearSelection();
@@ -223,30 +233,33 @@ export default class SapInvoiceLinkDialog {
     this._selectedInvoices = (table?.getSelectedIndices() ?? [])
       .map((index) => table.getContextByIndex(index)?.getObject() as LinkableSapInvoice)
       .filter(Boolean);
-    this.applyReleaseFilter();
+    void this.refreshPreview();
   }
 
-  /** Liberações para as NFs marcadas, as do cliente da NF primeiro (clientes misturados: nenhuma); com uma só, já vem escolhida. */
-  private applyReleaseFilter(): void {
+  /**
+   * Monta a lista de liberações (do cliente da carga; com o switch, todas) e limpa a escolhida: a lista mudou. Com uma
+   * única liberação visível, ela já vem escolhida.
+   */
+  private rebuildReleases(): void {
     const releasesTable = this.releasesTable();
-    const filtered = releasesForInvoices(this._allReleases, this._selectedInvoices);
+    const showOthers = this.model().getProperty("/ShowOthers") === true;
+    const releases = releasesForLoad(this._allReleases, this._load?.CardCode, showOthers);
 
-    // Mesmo cliente comum de antes: a lista é a mesma e a liberação escolhida é mantida.
-    const keep = shouldKeepRelease(this._releaseCustomer, this._selectedInvoices);
-    this._releaseCustomer = commonCustomer(this._selectedInvoices);
-
-    if (!keep) {
+    // Os eventos de seleção disparados aqui não pedem a prévia: ela é pedida uma única vez, ao final.
+    this._rebuildingReleases = true;
+    try {
       releasesTable?.clearSelection();
-      this.model().setProperty("/Releases", filtered);
-    }
+      this.model().setProperty("/Releases", releases);
 
-    // A pré-seleção é por índice do binding: só vale quando a tabela (com o filtro de coluna do usuário) mostra
-    // exatamente aquela liberação, e nada está escolhido.
-    if (!this.selectedRelease() && preselectedReleaseIndex(filtered) >= 0
-      && (releasesTable?.getBinding("rows") as ListBinding)?.getLength() === 1) {
-      releasesTable.setSelectedIndex(0);
+      // A pré-seleção é por índice do binding: só vale quando a tabela (com o filtro de coluna do usuário) mostra
+      // exatamente aquela liberação.
+      if (preselectedReleaseIndex(releases) >= 0 && (releasesTable?.getBinding("rows") as ListBinding)?.getLength() === 1) {
+        releasesTable.setSelectedIndex(0);
+      }
+    } finally {
+      this._rebuildingReleases = false;
     }
-    this.updateCanLink();
+    void this.refreshPreview();
   }
 
   private selectedRelease(): BilledRelease {
@@ -255,17 +268,84 @@ export default class SapInvoiceLinkDialog {
     return index < 0 ? undefined : table.getContextByIndex(index)?.getObject() as BilledRelease;
   }
 
-  private updateCanLink(): void {
+  private setCanLink(): void {
     const model = this.model();
-    const invoices = this._selectedInvoices;
-    const available = this._load?.AvailableQuantity;
-    const sum = sumQuantity(invoices);
-    model.setProperty("/SummaryText", selectionSummaryText(sum, available));
-    model.setProperty("/SumMatches", invoices.length > 0 && matchesAvailable(sum, available));
-    model.setProperty("/SumExceeds", exceedsAvailable(sum, available));
-    model.setProperty("/SumBelow", invoices.length > 0 && !exceedsAvailable(sum, available) && !matchesAvailable(sum, available));
-    model.setProperty("/MixedCustomers", hasMixedCustomers(invoices));
-    model.setProperty("/CanLink", canLink(invoices, available, !!this.selectedRelease()));
+    model.setProperty("/CanLink",
+      canLink(this._selectedInvoices, !!this.selectedRelease()) && !!this._preview && model.getProperty("/PreviewLoading") !== true);
+  }
+
+  /** Limpa o rodapé de valores e o aviso (a seleção não tem prévia válida). */
+  private clearPreview(error = ""): void {
+    const model = this.model();
+    this._preview = undefined;
+    model.setProperty("/PreviewVisible", false);
+    model.setProperty("/PreviewLoading", false);
+    model.setProperty("/PreviewError", error);
+    model.setProperty("/DivergenceText", "");
+    // Sem prévia da seleção atual, nenhum número da seleção anterior pode sobrar na tela.
+    for (const name of ["QuantityEffective", "QuantityInvoice", "QuantityDifference", "ValueEffective", "ValueInvoice", "ValueDifference"]) {
+      model.setProperty(`/${name}`, "—");
+    }
+    this.setCanLink();
+  }
+
+  /**
+   * Pede ao servidor a prévia (efetivo x NF, tipo do vínculo) para as NFs e a liberação escolhidas. A resposta de uma
+   * seleção antiga é descartada pelo token. Erro de negócio aparece uma vez na faixa do rodapé e mantém "Vincular" desabilitado.
+   * Chamada por fetch, fora do modelo OData: pelo modelo o erro aparecia também na caixa global de erro técnico, e
+   * dentro do `$batch` a vírgula entre as NFs chegava codificada ao servidor.
+   */
+  private async refreshPreview(): Promise<void> {
+    const requestId = ++this._previewId;
+    const invoices = this._selectedInvoices.slice();
+    const release = this.selectedRelease();
+    this.clearPreview();
+    if (!canLink(invoices, !!release) || !release?.SalesShipmentReleaseKey) {
+      return;
+    }
+
+    const model = this.model();
+    model.setProperty("/PreviewLoading", true);
+    const result = await sendJson("GET", ServerRoutes.shipmentLoadsSapLinkPreview(
+      this._load.Key, release.SalesShipmentReleaseKey, invoices.map((invoice) => invoice.DocEntry)));
+    if (isStaleRequest(requestId, this._previewId)) {
+      return;
+    }
+    if (!result.ok) {
+      this.clearPreview(result.message);
+      return;
+    }
+    const preview = normalizeLinkPreview(odataValue(result.data));
+    if (!preview) {
+      this.clearPreview("Não foi possível calcular a prévia do vínculo.");
+      return;
+    }
+    this._preview = preview;
+    model.setProperty("/PreviewLoading", false);
+    model.setProperty("/PreviewError", "");
+    model.setProperty("/PreviewVisible", true);
+    model.setProperty("/QuantityEffective", formatKg(preview.EffectiveQuantity));
+    model.setProperty("/QuantityInvoice", formatKg(preview.InvoiceQuantity));
+    model.setProperty("/QuantityDifference", formatKg(preview.QuantityDifference));
+    model.setProperty("/ValueEffective", formatMoney(preview.EffectiveValue));
+    model.setProperty("/ValueInvoice", formatMoney(preview.InvoiceValue));
+    model.setProperty("/ValueDifference", formatMoney(preview.ValueDifference));
+    model.setProperty("/DivergenceText", preview.LinkType === 2
+      ? "Vínculo com divergência de quantidade e valor"
+      : preview.LinkType === 1 ? "Vínculo com divergência de valor" : "");
+    this.setCanLink();
+  }
+
+  /** Pergunta de confirmação da divergência; "Não" ou fechar não faz nada. */
+  private confirmDivergence(message: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      MessageBox.confirm(message, {
+        title: "Divergência no vínculo",
+        actions: ["Sim", "Não"],
+        emphasizedAction: "Sim",
+        onClose: (action: string) => resolve(action === "Sim"),
+      });
+    });
   }
 
   private async link(): Promise<void> {
@@ -278,11 +358,16 @@ export default class SapInvoiceLinkDialog {
     try {
       const invoices = this._selectedInvoices.slice();
       const release = this.selectedRelease();
-      if (!canLink(invoices, this._load?.AvailableQuantity, !!release)) {
+      const preview = this._preview;
+      if (!canLink(invoices, !!release) || !preview) {
         return;
       }
       if (!release?.SalesShipmentReleaseKey) {
         MessageBox.warning("Selecione a liberação de entrega.");
+        return;
+      }
+
+      if (preview.LinkType !== 0 && !(await this.confirmDivergence(divergenceConfirmationText(preview)))) {
         return;
       }
 
@@ -291,14 +376,18 @@ export default class SapInvoiceLinkDialog {
       action.setParameter("Key", this._load.Key);
       action.setParameter("SapDocEntries", invoices.map((invoice) => invoice.DocEntry));
       action.setParameter("SalesShipmentReleaseKey", release.SalesShipmentReleaseKey);
+      // Boolean não anulável no servidor: sempre true ou false, nunca nulo.
+      action.setParameter("ConfirmDivergence", preview.LinkType !== 0);
 
       let created: LinkedDocument[];
       try {
         await action.invoke();
         created = normalizeLinkedDocuments(action.getBoundContext()?.getObject());
-      } catch (e) {
-        // Fica aberto para o usuário escolher outra NF/liberação; a mensagem é a do servidor.
-        MessageBox.error((e as Error).message);
+      } catch {
+        // Fica aberto para o usuário escolher outra NF/liberação. A mensagem do servidor já é exibida, uma vez, pelo
+        // handler global de mensagens OData. A prévia é refeita: se o servidor classificou diferente, a mostrada está
+        // desatualizada e "Vincular" falharia igual de novo.
+        void this.refreshPreview();
         return;
       } finally {
         this._dialog.setBusy(false);

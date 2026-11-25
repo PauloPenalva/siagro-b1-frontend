@@ -17,8 +17,6 @@ export type LinkableSapInvoice = {
   UnitPrice: number,
   LineTotal: number,
   Cfop: string,
-  CarrierCode: string,
-  CarrierMismatch: boolean,
   FreightTerms: string,
   AccessKey: string,
 }
@@ -82,34 +80,15 @@ export function normalizeLinkableInvoices(data: unknown): LinkableSapInvoice[] {
       UnitPrice: num("UnitPrice"),
       LineTotal: num("LineTotal"),
       Cfop: text("Cfop"),
-      CarrierCode: text("CarrierCode"),
-      CarrierMismatch: pick(raw, "CarrierMismatch") === true,
       FreightTerms: text("FreightTerms"),
       AccessKey: text("AccessKey"),
     };
   });
 }
 
-/** Só as liberações de um cliente. Sem cliente, lista vazia. */
-export function filterReleasesByCustomer<T extends CustomerRelease>(releases: T[], cardCode: string): T[] {
-  if (!cardCode || !Array.isArray(releases)) {
-    return [];
-  }
-  return releases.filter((release) => release?.CardCode === cardCode);
-}
-
 /** Pré-seleção: com exatamente uma liberação possível, ela é escolhida; senão, nenhuma (índice -1). */
 export function preselectedReleaseIndex(filteredReleases: unknown[]): number {
   return Array.isArray(filteredReleases) && filteredReleases.length === 1 ? 0 : -1;
-}
-
-/**
- * Troca de seleção de NFs: a liberação escolhida só é mantida quando o cliente comum das NFs marcadas não mudou
- * (e a seleção continua de um único cliente e não vazia). Cliente trocado, seleção vazia ou mista: limpa.
- */
-export function shouldKeepRelease(previousCustomer: string, invoices: QuantityRow[]): boolean {
-  const customer = commonCustomer(invoices);
-  return !!customer && customer === previousCustomer;
 }
 
 /** Campos só de exibição da liberação: texto do cliente e o preço exibido (comercial, senão o preço em KG). */
@@ -130,60 +109,83 @@ export function isStaleRequest(requestToken: number, currentToken: number): bool
   return requestToken !== currentToken;
 }
 
-/** Tolerância da comparação da soma das NFs com o saldo da carga (igual à do backend). */
-export const QUANTITY_TOLERANCE = 0.001;
+type QuantityRow = { Quantity?: number, DocEntry?: number };
 
-type QuantityRow = { Quantity?: number, CardCode?: string, DocEntry?: number };
-
-/** Soma das quantidades das NFs marcadas. */
-export function sumQuantity(invoices: QuantityRow[]): number {
-  return (invoices ?? []).reduce((total, invoice) => total + (Number(invoice?.Quantity) || 0), 0);
-}
-
-/** Cliente comum das NFs marcadas; vazio se nenhuma ou se há mais de um cliente. */
-export function commonCustomer(invoices: QuantityRow[]): string {
-  const codes = new Set((invoices ?? []).map((invoice) => invoice?.CardCode ?? ""));
-  return codes.size === 1 ? [...codes][0] : "";
-}
-
-/** Há NFs marcadas de mais de um cliente. */
-export function hasMixedCustomers(invoices: QuantityRow[]): boolean {
-  return new Set((invoices ?? []).map((invoice) => invoice?.CardCode ?? "")).size > 1;
-}
-
-/** Soma igual ao saldo, dentro da tolerância. */
-export function matchesAvailable(sum: number, available: number): boolean {
-  return Math.abs((Number(sum) || 0) - (Number(available) || 0)) <= QUANTITY_TOLERANCE + 1e-9;
-}
-
-/** Soma maior que o saldo (além da tolerância): a lista traz NFs acima do saldo para o usuário notar o erro. */
-export function exceedsAvailable(sum: number, available: number): boolean {
-  return (Number(sum) || 0) - (Number(available) || 0) > QUANTITY_TOLERANCE + 1e-9;
+/** "Vincular" habilita com ao menos uma NF e a liberação escolhida; a diferença de saldo é avisada pelo servidor. */
+export function canLink(invoices: QuantityRow[], hasRelease: boolean): boolean {
+  return Array.isArray(invoices) && invoices.length > 0 && hasRelease;
 }
 
 /**
- * "Vincular" habilita com NF marcada, um único cliente, liberação escolhida e a soma IGUAL ao saldo (±0,001).
- * Soma menor ou maior que o saldo mantém desabilitado (regra confirmada pelo dono do produto).
+ * Liberações oferecidas para a carga: por padrão só as do cliente dela. Com `showOthers`, todas: as do cliente da
+ * carga primeiro e as demais marcadas com `OtherCustomer` (o documento de saída nasce com o cliente da NF). Carga
+ * sem cliente: lista vazia.
  */
-export function canLink(invoices: QuantityRow[], available: number, hasRelease: boolean): boolean {
-  return Array.isArray(invoices) && invoices.length > 0 && !!commonCustomer(invoices) && hasRelease
-    && matchesAvailable(sumQuantity(invoices), available);
-}
-
-/**
- * Liberações oferecidas para as NFs marcadas (nenhuma NF ou clientes misturados: lista vazia). Entram TODAS: por
- * instrução da trading o contrato é feito num cliente e o faturamento sai em outro. As do cliente da NF vêm
- * primeiro; as demais vêm marcadas com `OtherCustomer` (o documento de saída nasce com o cliente da NF).
- */
-export function releasesForInvoices<T extends CustomerRelease>(
-  releases: T[], invoices: QuantityRow[],
+export function releasesForLoad<T extends CustomerRelease>(
+  releases: T[], loadCardCode: string, showOthers: boolean,
 ): Array<T & { OtherCustomer: boolean }> {
-  const customer = commonCustomer(invoices);
+  const customer = (loadCardCode ?? "").trim();
   if (!customer || !Array.isArray(releases)) {
     return [];
   }
-  const flagged = releases.map((release) => ({ ...release, OtherCustomer: release?.CardCode !== customer }));
-  return [...flagged.filter((release) => !release.OtherCustomer), ...flagged.filter((release) => release.OtherCustomer)];
+  const flagged = releases.map((release) => ({ ...release, OtherCustomer: (release?.CardCode ?? "").trim() !== customer }));
+  const own = flagged.filter((release) => !release.OtherCustomer);
+  return showOthers ? [...own, ...flagged.filter((release) => release.OtherCustomer)] : own;
+}
+
+/** Prévia do vínculo (function `ShipmentLoadsGetSapLinkPreview`), com os decimais já convertidos em número. */
+export type SapLinkPreview = {
+  /** 0 normal, 1 valor divergente, 2 quantidade e valor divergentes. */
+  LinkType: number,
+  /** Pergunta de confirmação (tipos 1 e 2); nula no tipo 0. */
+  Message: string,
+  EffectiveQuantity: number,
+  InvoiceQuantity: number,
+  QuantityDifference: number,
+  /** Nulo quando o contrato não tem preço confirmado ou está em dólar. */
+  EffectiveValue: number,
+  InvoiceValue: number,
+  ValueDifference: number,
+}
+
+/** Textos fixos da confirmação, para a prévia de tipo 1 ou 2 que vier sem `Message`. */
+const DIVERGENCE_CONFIRMATION: Record<number, string> = {
+  1: "Valor(es) da(s) NF(s) diferente(s) do contrato, deseja finalizar o faturamento?",
+  2: "Valor(es) e qtde(s) da(s) NF(s) diferente(s) do contrato, deseja finalizar o faturamento?",
+};
+
+/** Pergunta da confirmação da divergência: a do servidor; vazia, o texto fixo do tipo (nunca uma caixa em branco). */
+export function divergenceConfirmationText(preview: Pick<SapLinkPreview, "LinkType" | "Message">): string {
+  const message = preview?.Message?.trim();
+  return message || DIVERGENCE_CONFIRMATION[preview?.LinkType] || DIVERGENCE_CONFIRMATION[2];
+}
+
+/** Normaliza a resposta da prévia (Edm.Decimal pode vir string; valores nulos continuam nulos). Sem `LinkType`: indefinido. */
+export function normalizeLinkPreview(data: unknown): SapLinkPreview {
+  if (!data || typeof data !== "object") {
+    return undefined;
+  }
+  const raw = data as Raw;
+  const linkType = pick(raw, "LinkType");
+  if (linkType == null || linkType === "" || isNaN(Number(linkType))) {
+    return undefined;
+  }
+  const num = (name: string) => Number(pick(raw, name) ?? 0);
+  const nullable = (name: string) => {
+    const value = pick(raw, name);
+    return value == null ? null : Number(value);
+  };
+  const message = pick(raw, "Message");
+  return {
+    LinkType: Number(linkType),
+    Message: message == null ? null : String(message as string),
+    EffectiveQuantity: num("EffectiveQuantity"),
+    InvoiceQuantity: num("InvoiceQuantity"),
+    QuantityDifference: num("QuantityDifference"),
+    EffectiveValue: nullable("EffectiveValue"),
+    InvoiceValue: num("InvoiceValue"),
+    ValueDifference: nullable("ValueDifference"),
+  };
 }
 
 /** Quantidade em pt-BR com 3 casas (1.234,500). */
@@ -191,9 +193,12 @@ export function formatKg(value: number): string {
   return (Number(value) || 0).toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 }
 
-/** Texto do rodapé da tabela de NFs. */
-export function selectionSummaryText(sum: number, available: number): string {
-  return `Selecionado: ${formatKg(sum)} kg de ${formatKg(available)} kg`;
+/** Valor em reais no padrão "R$ 59.600,00"; "—" quando nulo ou inválido. */
+export function formatMoney(value: number): string {
+  if (value == null || isNaN(Number(value))) {
+    return "—";
+  }
+  return `R$ ${Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export type LinkedDocument = { key: string, invoiceNumber: string };
@@ -208,4 +213,25 @@ export function normalizeLinkedDocuments(data: unknown): LinkedDocument[] {
     const number = pick(doc, "InvoiceNumber");
     return { key: key == null ? "" : String(key as string), invoiceNumber: number == null ? "" : String(number as string) };
   });
+}
+
+/** "Desvincular NFs do SAP" só em modo SAP e com a carga já faturada (total ou parcialmente). */
+export function canUnlinkSapInvoices(status: string, sapMode: boolean): boolean {
+  return sapMode === true && (status === "Invoiced" || status === "PartiallyInvoiced");
+}
+
+const LINK_TYPE_TEXTS: Record<string, string> = {
+  "0": "Normal", Normal: "Normal",
+  "1": "Valor divergente", ValueDivergent: "Valor divergente",
+  "2": "Quantidade e valor divergentes", QuantityAndValueDivergent: "Quantidade e valor divergentes",
+};
+
+/** Texto do tipo do vínculo; aceita o número ou o nome do enum que o OData devolve. */
+export function linkTypeText(linkType: number | string): string {
+  return LINK_TYPE_TEXTS[String(linkType)] ?? "";
+}
+
+/** Situação da divergência: Open → "Aberta", Voided → "Anulada". */
+export function divergenceStatusText(status: string): string {
+  return status === "Voided" ? "Anulada" : status === "Open" ? "Aberta" : "";
 }

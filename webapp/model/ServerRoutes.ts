@@ -479,9 +479,11 @@ export default {
   // Recusa da carga com NF-e de entrada própria (spec 2026-10-09).
   shipmentLoadsPendingRefusal: (key: string): string => `/odata/ShipmentLoadsGetPendingRefusal(Key=${key})`,
   shipmentLoadsCancelRefusal: '/odata/ShipmentLoadsCancelRefusal',
-
-  // NF de devolução do SAP (A/R Credit Memo) na devolução da carga (GAC-1226); o vínculo é chamado pelo diálogo.
-  shipmentLoadsUnlinkSapCreditMemo: '/odata/ShipmentLoadsUnlinkSapCreditMemo',
+  shipmentLoadsUnlinkSapInvoices: '/odata/ShipmentLoadsUnlinkSapInvoices',
+  // Prévia do "Vincular NF do SAP" (GAC-1226), chamada por fetch, fora do modelo OData: fora do $batch e sem a
+  // MessageBox global de erro técnico (o erro da prévia aparece só na faixa do rodapé do diálogo).
+  shipmentLoadsSapLinkPreview: (key: string, releaseKey: string, docEntries: number[]): string =>
+    `/odata/ShipmentLoadsGetSapLinkPreview(Key=${key},SalesShipmentReleaseKey=${releaseKey},SapDocEntries='${docEntries.join(",")}')`,
 
   // NF-e STANDALONE (sub-projeto 2a).
   paymentConditions: '/odata/PaymentConditions',

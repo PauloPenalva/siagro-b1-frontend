@@ -1,5 +1,6 @@
 import Dialog from "sap/m/Dialog";
 import MessageBox from "sap/m/MessageBox";
+import Log from "sap/base/Log";
 import MessageToast from "sap/m/MessageToast";
 import Fragment from "sap/ui/core/Fragment";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
@@ -9,6 +10,9 @@ import Context from "sap/ui/model/odata/v4/Context";
 import ODataListBinding from "sap/ui/model/odata/v4/ODataListBinding";
 import ODataModel from "sap/ui/model/odata/v4/ODataModel";
 import Table from "sap/ui/table/Table";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import Sorter from "sap/ui/model/Sorter";
 import RoyaltyFieldsHelper from "siagrob1/controller/royalties/RoyaltyFieldsHelper";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { openNfeIssueDialog } from "siagrob1/dialogs/NfeIssueDialog";
@@ -17,10 +21,7 @@ import { closedLoadWarning } from "siagrob1/helpers/TransshipmentHelpers";
 import { BaseController } from "./BaseController";
 import ShipmentBillingDialog, { BillingLoad } from "siagrob1/helpers/ShipmentBillingDialog";
 import SapInvoiceLinkDialog, { SapLinkLoad } from "siagrob1/helpers/SapInvoiceLinkDialog";
-import SapCreditMemoLinkDialog from "siagrob1/helpers/SapCreditMemoLinkDialog";
-import {
-  isAwaitingSapReturnInvoice, isSapReturnInvoiceLinked, ReturnDocumentRow, sapDocNumText,
-} from "siagrob1/helpers/SapCreditMemoLinkHelpers";
+import { canUnlinkSapInvoices, formatMoney, linkTypeText, divergenceStatusText } from "siagrob1/helpers/SapInvoiceLinkHelpers";
 import { sendJson, odataCollection } from "siagrob1/helpers/FetchHelpers";
 import {
   destinationParameters, RefusalSuccessKind, refusalSuccessKind, transitLossConfirmText, validateRefusalForm,
@@ -150,6 +151,18 @@ export default class Detail extends BaseController {
 
   formatter = formatter;
 
+  // Helpers do vínculo de NF do SAP usados pelas colunas da tabela de divergências.
+  formatMoney = formatMoney;
+
+  /** Visibilidade do "Desvincular NFs do SAP": parts ainda indefinidas no primeiro binding valem false. */
+  canUnlinkSapInvoices(status?: string, sapMode?: boolean): boolean {
+    return canUnlinkSapInvoices(status ?? "", sapMode === true);
+  }
+
+  linkTypeText = linkTypeText;
+
+  divergenceStatusText = divergenceStatusText;
+
   private _loadKey: string;
 
   private _refusalDialog: Dialog;
@@ -175,7 +188,6 @@ export default class Detail extends BaseController {
 
   private _sapLink: SapInvoiceLinkDialog;
 
-  private _sapReturnLink: SapCreditMemoLinkDialog;
 
   onInit(): void {
     this.getView().setModel(new JSONModel({}), "ship");
@@ -221,104 +233,8 @@ export default class Detail extends BaseController {
       },
     });
 
-    // NF de devolução do SAP (GAC-1226): só grava os dados fiscais na devolução; a carga se atualiza para o selo
-    // "Aguardando NF do SAP" sair da linha.
-    this._sapReturnLink = new SapCreditMemoLinkDialog({
-      view: this.getView(),
-      registerTableLayouts: (root) => this.registerTableLayouts(root),
-      onLinked: () => this.refreshAll(),
-    });
-
     this.getRouter().getRoute("shipmentLoadsDetail")
       .attachPatternMatched((ev) => this.detailRouteMatched(ev));
-  }
-
-  // ---------- NF de devolução do SAP (A/R Credit Memo, GAC-1226) ----------
-
-  /** Selo "Aguardando NF do SAP" (formatter da view: os campos chegam soltos, na ordem do binding). */
-  isAwaitingSapReturnInvoice(
-    invoiceType: string, invoiceStatus: string, sapCreditMemoDocEntry: number, taxDocumentNumber: string,
-    withoutTaxDocument: boolean, sapMode: boolean,
-  ): boolean {
-    return isAwaitingSapReturnInvoice({
-      InvoiceType: invoiceType, InvoiceStatus: invoiceStatus, SapCreditMemoDocEntry: sapCreditMemoDocEntry,
-      TaxDocumentNumber: taxDocumentNumber, WithoutTaxDocument: withoutTaxDocument,
-    }, sapMode);
-  }
-
-  isNotAwaitingSapReturnInvoice(
-    invoiceType: string, invoiceStatus: string, sapCreditMemoDocEntry: number, taxDocumentNumber: string,
-    withoutTaxDocument: boolean, sapMode: boolean,
-  ): boolean {
-    return !this.isAwaitingSapReturnInvoice(
-      invoiceType, invoiceStatus, sapCreditMemoDocEntry, taxDocumentNumber, withoutTaxDocument, sapMode);
-  }
-
-  /** "Vincular NF de devolução": toda devolução confirmada sem Credit Memo, mesmo com número digitado antes. */
-  canLinkSapReturnInvoice(
-    invoiceType: string, invoiceStatus: string, sapCreditMemoDocEntry: number, sapMode: boolean,
-  ): boolean {
-    return sapMode === true && invoiceType === "Return" && invoiceStatus === "Confirmed" && sapCreditMemoDocEntry == null;
-  }
-
-  isSapReturnInvoiceLinked(
-    invoiceType: string, invoiceStatus: string, sapCreditMemoDocEntry: number, sapMode: boolean,
-  ): boolean {
-    return isSapReturnInvoiceLinked(
-      { InvoiceType: invoiceType, InvoiceStatus: invoiceStatus, SapCreditMemoDocEntry: sapCreditMemoDocEntry }, sapMode);
-  }
-
-  sapDocNumText(sapDocNum: unknown, sapCreditMemoDocNum: unknown): string {
-    return sapDocNumText(sapDocNum, sapCreditMemoDocNum);
-  }
-
-  /** Linha da tabela "Documentos de devolução" de onde veio o clique. */
-  private returnDocumentRow(ev: Button$PressEvent | Link$PressEvent): ReturnDocumentRow {
-    const source = (ev as Button$PressEvent).getSource();
-    const row = (source.getBindingContext() as Context)?.getObject() as Record<string, unknown>;
-    return row ? { ...row, Quantity: Number(row.NetWeight) || 0 } as ReturnDocumentRow : undefined;
-  }
-
-  onOpenReturnDocument(ev: Link$PressEvent): void {
-    const row = this.returnDocumentRow(ev);
-    if (row?.Key) {
-      this.navTo("salesInvoicesDetail", { id: row.Key });
-    }
-  }
-
-  async onLinkSapCreditMemo(ev: Button$PressEvent): Promise<void> {
-    const row = this.returnDocumentRow(ev);
-    const loadKey = this.currentLoadKey();
-    if (!row?.Key || !loadKey) return;
-
-    await this._sapReturnLink.open(loadKey, row);
-  }
-
-  async onUnlinkSapCreditMemo(ev: Button$PressEvent): Promise<void> {
-    // Lidos ANTES do primeiro await: depois dele a linha pode ter sido recriada pelo refresh.
-    const row = this.returnDocumentRow(ev);
-    const loadKey = this.currentLoadKey();
-    if (!row?.Key || !loadKey) return;
-
-    if (!(await DialogHelper.confirmDialog(
-      `Desvincular a NF de devolução do SAP da devolução ${row.InvoiceNumber ?? ""} ? ` +
-      "Número, série e chave serão apagados e a devolução volta a aguardar a nota. O saldo da carga não muda."))) {
-      return;
-    }
-
-    this.setBusy(true);
-    try {
-      const result = await sendJson(
-        "POST", ServerRoutes.shipmentLoadsUnlinkSapCreditMemo, { Key: loadKey, SalesInvoiceKey: row.Key });
-      if (!result.ok) {
-        MessageBox.error(result.message);
-        return;
-      }
-      MessageToast.show("NF de devolução do SAP desvinculada.");
-    } finally {
-      this.setBusy(false);
-      this.refreshAll();
-    }
   }
 
   /**
@@ -339,13 +255,14 @@ export default class Detail extends BaseController {
     }
   }
 
-  private async applySapLinkVisibility(): Promise<void> {
+  private async applySapLinkVisibility(): Promise<boolean> {
     const uiModel = this.getModel("ui") as JSONModel;
 
     const systemInfo = await this.getSystemInfo();
     const sapMode = systemInfo?.erp === "SAPB1";
     uiModel.setProperty("/sapInvoiceLinkVisible", sapMode);
     uiModel.setProperty("/sapMode", sapMode);
+    return sapMode;
   }
 
   private detailRouteMatched(ev: Route$MatchedEvent): void {
@@ -353,7 +270,20 @@ export default class Detail extends BaseController {
     if (id == null) return;
 
     this._loadKey = id;
-    void this.applySapLinkVisibility();
+    // Síncrono, antes do round trip: a view sobrevive à troca de carga e a tabela não pode mostrar (nem
+    // recarregar, no refreshAll) as divergências da carga anterior. Modo SAP já conhecido: liga na hora; senão desliga.
+    // Desconhecido, o modo chega depois: as divergências são ligadas (e requisitadas) só se ele valer true e a carga
+    // da rota ainda for a mesma.
+    if ((this.getModel("ui") as JSONModel)?.getProperty("/sapMode") === true) {
+      this.bindDivergences(id);
+    } else {
+      this.unbindDivergences();
+    }
+    this.applySapLinkVisibility().then(sapMode => {
+      if (sapMode && this._loadKey === id && this._divergencesKey !== id) {
+        this.bindDivergences(id);
+      }
+    }).catch((e: unknown) => Log.error("Não foi possível obter o modo de integração do sistema.", (e as Error)?.message));
     this.bindElement(`/ShipmentLoads(${id})`);
 
     // Passa a chave explícita: bindElement não espera a resposta, e currentLoadKey() leria a
@@ -370,6 +300,34 @@ export default class Detail extends BaseController {
     (this.getView().getModel("pendingRefusal") as JSONModel).setData({ visible: false, Rows: [] });
     this.refreshPendingRefusal(id).catch(
       () => MessageBox.error("Erro ao carregar a recusa aguardando NF-e."));
+  }
+
+  /** Desliga a tabela de divergências (fora do modo SAP, ou enquanto o modo não é conhecido). */
+  private unbindDivergences(): void {
+    this._divergencesKey = "";
+    (this.byId("loadDivergencesTable") as Table)?.unbindRows();
+  }
+
+  /**
+   * Liga a tabela de divergências ao conjunto SalesInvoiceDivergences filtrado pela carga: o servidor não
+   * serve a navegação `InvoiceDivergences` da carga (só métodos dedicados, como `Invoices`).
+   */
+  private bindDivergences(loadKey: string): void {
+    const table = this.byId("loadDivergencesTable") as Table;
+    if (!table) {
+      Log.error("Tabela de divergências (loadDivergencesTable) não encontrada.");
+      return;
+    }
+    this._divergencesKey = loadKey;
+    table.bindRows({
+      path: "/SalesInvoiceDivergences",
+      filters: [new Filter("ShipmentLoadKey", FilterOperator.EQ, loadKey)],
+      sorter: new Sorter("CreatedAt", true),
+      parameters: {
+        $select: "Key,LinkType,EffectiveQuantity,InvoiceQuantity,QuantityDifference,EffectiveValue,InvoiceValue,ValueDifference,Status,CreatedAt",
+        $expand: "SalesInvoice($select=InvoiceNumber,TaxDocumentNumber)",
+      },
+    });
   }
 
   async onShip(): Promise<void> {
@@ -542,11 +500,9 @@ export default class Detail extends BaseController {
     const ctx = this.getView().getBindingContext() as Context;
     if (!ctx) return;
 
-    const fields: (keyof SapLinkLoad)[] = ["Key", "Code", "ItemCode", "AvailableQuantity"];
+    const fields: (keyof SapLinkLoad)[] = ["Key", "Code", "ItemCode", "CardCode"];
     const values = await ctx.requestProperty(fields as string[]) as unknown[];
     const load = Object.fromEntries(fields.map((f, i) => [f, values[i]])) as SapLinkLoad;
-    // Edm.Decimal pode vir como string: a soma das NFs é comparada como número.
-    load.AvailableQuantity = Number(load.AvailableQuantity) || 0;
     await this._sapLink.open(load);
   }
 
@@ -1634,7 +1590,7 @@ export default class Detail extends BaseController {
       "loadInvoicesTable",
       "loadMovementsTable",
       "loadRefusalReturnsTable",
-      "loadReturnDocumentsTable",
+      "loadDivergencesTable",
       "loadDischargesTable",
       "loadTransshipmentsTable",
       "loadPlannedPurchaseTable",
@@ -1761,6 +1717,43 @@ export default class Detail extends BaseController {
     } finally {
       this.setBusy(false);
       this.refreshAll();
+    }
+  }
+
+  private _unlinkInFlight = false;
+
+  /** Chave da carga a que a tabela de divergências está ligada (vazio = desligada). */
+  private _divergencesKey = "";
+
+  /** Desfaz o vínculo das NFs do SAP da carga; o servidor recusa o que não puder (descarga, recusa, cancelamento). */
+  async onUnlinkSapInvoices(): Promise<void> {
+    if (this._unlinkInFlight) return;
+    this._unlinkInFlight = true;
+    try {
+      const confirmed = await new Promise<boolean>(resolve => {
+        MessageBox.confirm(
+          "Desvincular as notas fiscais do SAP desta carga? Os documentos de saída vinculados serão cancelados.", {
+            actions: ["Sim", "Não"],
+            emphasizedAction: "Sim",
+            onClose: (action: string) => resolve(action === "Sim"),
+          });
+      });
+      if (!confirmed) return;
+
+      this.setBusy(true);
+      try {
+        const result = await sendJson("POST", ServerRoutes.shipmentLoadsUnlinkSapInvoices, { Key: this._loadKey });
+        if (!result.ok) {
+          MessageBox.error(result.message);
+          return;
+        }
+        MessageToast.show("Notas fiscais do SAP desvinculadas.");
+        this.refreshAll();
+      } finally {
+        this.setBusy(false);
+      }
+    } finally {
+      this._unlinkInFlight = false;
     }
   }
 }
