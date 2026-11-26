@@ -12,7 +12,7 @@ import RequestModel from "siagrob1/model/RequestModel";
 import DialogHelper from "siagrob1/dialogs/DialogHelper";
 import { sendJson } from "siagrob1/helpers/FetchHelpers";
 import { calculateWashoutAmount, formatNumberPtBr } from "siagrob1/helpers/WashoutHelpers";
-import { ALLOCATION_ORIGINS } from "siagrob1/helpers/AllocationOriginHelpers";
+import { ALLOCATION_ORIGINS, parseOriginPurchases } from "siagrob1/helpers/AllocationOriginHelpers";
 import { WashoutDialogState, WashoutFixationOption, WashoutReverseState } from "siagrob1/types/PurchaseContractWashout";
 import { openAttachmentViewer } from "siagrob1/dialogs/AttachmentViewer";
 import { Link$PressEvent } from "sap/m/Link";
@@ -1500,6 +1500,18 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
     });
   }
 
+  /** GAC-1233: o número do romaneio na aba Entregas abre o detalhe dele. */
+  onOpenAllocationTransaction(event: Link$PressEvent): void {
+    const key = event.getSource().getBindingContext("allocationModel")?.getProperty("StorageTransactionKey") as string;
+    if (key) this.navTo("storageTransactionsDetail", { id: key });
+  }
+
+  /** GAC-1233: abre o romaneio de compra que baixou o contrato pelo volume da saída de transbordo. */
+  onOpenOriginPurchase(event: Link$PressEvent): void {
+    const key = event.getSource().getBindingContext("allocationModel")?.getProperty("key") as string;
+    if (key) this.navTo("storageTransactionsDetail", { id: key });
+  }
+
   getAllocations(key: string){
     const oView = this.getView();
     const allocationModel = new JSONModel();
@@ -1516,7 +1528,14 @@ export default abstract class PurchaseContractsBaseController extends ContractDr
       .then(() => {
         const resultContext = funcImport.getBoundContext();
         const viewModel = this.getModel("allocationModel") as JSONModel
-        viewModel.setData(resultContext.getObject() as object);
+        const result = resultContext.getObject() as {
+          allocations?: { OriginPurchaseKeys?: string; OriginPurchaseCodes?: string; OriginPurchases?: unknown }[];
+        };
+        // GAC-1233: a coluna "Compra original" mostra um link por romaneio de compra de origem.
+        (result?.allocations ?? []).forEach((row) => {
+          row.OriginPurchases = parseOriginPurchases(row.OriginPurchaseKeys, row.OriginPurchaseCodes);
+        });
+        viewModel.setData(result);
       })
       .finally(() => this.setBusy(false))
   }

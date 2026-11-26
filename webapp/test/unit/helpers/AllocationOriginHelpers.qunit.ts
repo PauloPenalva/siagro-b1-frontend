@@ -4,7 +4,8 @@ import {
 	allocationOriginText,
 	allocationOriginState,
 	allocationOriginIcon,
-	allocationOriginTooltip
+	allocationOriginTooltip,
+	parseOriginPurchases
 } from "siagrob1/helpers/AllocationOriginHelpers";
 
 QUnit.module("AllocationOriginHelpers - origem da entrega do contrato (GAC-1164)");
@@ -95,4 +96,20 @@ QUnit.test("saída de transbordo é informativa e não baixa o contrato (GAC-123
 	assert.strictEqual(
 		allocationOriginTooltip("TransshipmentExit", null, null, null),
 		"Saída pela liberação de transbordo: o contrato já foi baixado pelo romaneio de compra.");
+});
+
+QUnit.test("compra original da saída de transbordo vira um link por romaneio (GAC-1233)", function (assert) {
+	assert.deepEqual(
+		parseOriginPurchases("a3d10515-fbe7-46f6-929c-e4fce7092b97", "00017645"),
+		[{ key: "a3d10515-fbe7-46f6-929c-e4fce7092b97", code: "00017645" }]);
+	assert.deepEqual(
+		parseOriginPurchases("k1,k2", "00017645,00017700"),
+		[{ key: "k1", code: "00017645" }, { key: "k2", code: "00017700" }]);
+});
+
+QUnit.test("linha sem compra original não gera link (GAC-1233)", function (assert) {
+	assert.deepEqual(parseOriginPurchases(null, null), []);
+	assert.deepEqual(parseOriginPurchases(undefined, undefined), []);
+	assert.deepEqual(parseOriginPurchases("", ""), []);
+	assert.deepEqual(parseOriginPurchases("k1,", "00017645,"), [{ key: "k1", code: "00017645" }]);
 });

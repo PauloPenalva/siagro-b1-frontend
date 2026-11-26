@@ -48,7 +48,13 @@
       </t:Column>
       <t:Column label="Romaneio" tooltip="Romaneio">
         <t:template>
-          <Text text="{allocationModel>StorageTransactionCode}" tooltip="{allocationModel>StorageTransactionCode}" wrapping="false" />
+          <!-- GAC-1233: o número abre o romaneio. Linha antiga sem chave de romaneio fica sem ação. -->
+          <Link
+            text="{allocationModel>StorageTransactionCode}"
+            tooltip="Abrir o romaneio {allocationModel>StorageTransactionCode}"
+            enabled="{= !!${allocationModel>StorageTransactionKey} }"
+            wrapping="false"
+            press=".onOpenAllocationTransaction" />
         </t:template>
       </t:Column>
       <t:Column label="Carga" tooltip="Carga">
@@ -85,6 +91,19 @@
       <t:Column label="Motivo" tooltip="Motivo" width="12rem">
         <t:template>
           <Text text="{allocationModel>ReasonDescription}" tooltip="{allocationModel>ReasonDescription}" wrapping="false" />
+        </t:template>
+      </t:Column>
+      <!-- GAC-1233: trilha da mercadoria. Só as saídas de transbordo trazem a compra que baixou o contrato. -->
+      <t:Column label="Compra original" tooltip="Romaneio de compra que baixou o contrato por este volume" width="8rem">
+        <t:template>
+          <HBox items="{ path: 'allocationModel>OriginPurchases', templateShareable: false }" renderType="Bare">
+            <Link
+              class="sapUiTinyMarginEnd"
+              text="{allocationModel>code}"
+              tooltip="Abrir o romaneio de compra {allocationModel>code}"
+              wrapping="false"
+              press=".onOpenOriginPurchase" />
+          </HBox>
         </t:template>
       </t:Column>
       <t:Column label="Quantidade" tooltip="Quantidade" hAlign="End">

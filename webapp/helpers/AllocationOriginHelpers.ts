@@ -143,3 +143,24 @@ export function allocationOriginTooltip(
 
   return "";
 }
+
+/** GAC-1233: romaneio de compra que baixou o contrato pelo volume de uma saída de transbordo. */
+export interface OriginPurchase {
+  key: string;
+  code: string;
+}
+
+/**
+ * GAC-1233: o backend manda as compras de origem em dois textos paralelos, separados por vírgula
+ * (`OriginPurchaseKeys` e `OriginPurchaseCodes`, na mesma ordem); a coluna "Compra original" mostra um
+ * link por romaneio. Par sem chave ou sem código é descartado.
+ */
+export function parseOriginPurchases(keys?: string, codes?: string): OriginPurchase[] {
+  if (!keys || !codes) return [];
+
+  const codeList = codes.split(",");
+  return keys
+    .split(",")
+    .map((key, index) => ({ key: key.trim(), code: (codeList[index] ?? "").trim() }))
+    .filter((purchase) => purchase.key !== "" && purchase.code !== "");
+}
